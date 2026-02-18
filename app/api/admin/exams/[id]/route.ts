@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -78,6 +79,13 @@ async function getExam(request: Request, { params }: Params) {
 
   const { id } = params;
 
+  
+    const cacheKey = `admin:exams:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const exam = await prisma.exam.findUnique({
     where: { id },
     include: {
@@ -99,6 +107,12 @@ async function getExam(request: Request, { params }: Params) {
       _count: { select: { questions: true, submissions: true } },
     },
   });
+
+  try {
+    if (exam) {
+      await cacheSet(cacheKey, exam, 60);
+    }
+  } catch (e) {}
 
   if (!exam) {
     return formatResponse(false, null, "Exam not found", 404);
@@ -222,6 +236,8 @@ async function updateExam(request: Request, { params }: Params) {
     });
 
     const responseData = transformExamResponse(updatedExam);
+    
+    try { await cacheDel(`admin:exams:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { data: responseData }, null, 200);
 
   } catch (error: any) {
@@ -251,6 +267,8 @@ async function deleteExam(request: Request, { params }: Params) {
     const deletedExam = await prisma.exam.delete({
       where: { id },
     });
+    
+    try { await cacheDel(`admin:exams:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { message: "Exam deleted successfully", deletedId: deletedExam.id }, null, 200);
   } catch (error: any) {
     if (error.code === 'P2003') {

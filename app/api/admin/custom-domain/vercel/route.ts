@@ -1,12 +1,13 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { verifyAuth } from "@/lib/verifyAuth";
 import { z } from "zod";
 
-/* -------------------------------------------------------------------------- */
-/*                               ENV VALIDATION                               */
-/* -------------------------------------------------------------------------- */
+
+
+
 
 const VERCEL_TOKEN = process.env.VERCEL_TOKEN;
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID;
@@ -16,9 +17,9 @@ if (!VERCEL_TOKEN || !VERCEL_PROJECT_ID) {
   throw new Error("Missing Vercel environment configuration");
 }
 
-/* -------------------------------------------------------------------------- */
-/*                               DOMAIN VALIDATION                            */
-/* -------------------------------------------------------------------------- */
+
+
+
 
 const domainSchema = z.object({
   domain: z
@@ -30,9 +31,9 @@ const domainSchema = z.object({
     ),
 });
 
-/* -------------------------------------------------------------------------- */
-/*                                    GET                                     */
-/* -------------------------------------------------------------------------- */
+
+
+
 
 export async function GET(req: NextRequest) {
   const auth = await verifyAuth(req);
@@ -87,11 +88,7 @@ export async function GET(req: NextRequest) {
 
     const data = await vercelResponse.json();
 
-    /**
-     * Vercel flags:
-     * misconfigured → DNS not pointing correctly
-     * verified → ownership verified
-     */
+    
 
     const isActive = data.verified && !data.misconfigured;
 
@@ -125,9 +122,9 @@ export async function GET(req: NextRequest) {
   }
 }
 
-/* -------------------------------------------------------------------------- */
-/*                                    POST                                    */
-/* -------------------------------------------------------------------------- */
+
+
+
 
 export async function POST(req: NextRequest) {
   const auth = await verifyAuth(req);
@@ -161,7 +158,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    /* --------------------------- Add to Vercel --------------------------- */
+    
 
     const vercelResponse = await fetch(
       `https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}/domains${
@@ -188,7 +185,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    /* ---------------------------- Update DB ----------------------------- */
+    
 
     await prisma.company.updateMany({
       where: { userId: auth.user.id },
@@ -198,6 +195,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    
+    try { await cacheDel(`admin:vercel:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(
       true,
       {

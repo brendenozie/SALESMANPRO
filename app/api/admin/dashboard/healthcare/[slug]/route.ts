@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -12,10 +13,23 @@ export const GET = withApiHandler(
     }
 
     try {
-      const company = await prisma.company.findUnique({
+      
+    const cacheKey = `admin:healthcare:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const company = await prisma.company.findUnique({
         where: { id: companyId },
         select: { id: true },
       });
+
+  try {
+    if (company) {
+      await cacheSet(cacheKey, company, 60);
+    }
+  } catch (e) {}
 
       if (!company) {
         return formatResponse(false, { message: "Company not found" });

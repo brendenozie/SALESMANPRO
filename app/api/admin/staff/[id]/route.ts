@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/[adminSlug]/staff/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 
@@ -33,10 +34,23 @@ async function getStaff(req: Request, { params }: { params: { id: string } }) {
   
   const { id } = params;
   try {
-    const staffMember = await prisma.staffProfile.findUnique({
+    
+    const cacheKey = `admin:staff:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const staffMember = await prisma.staffProfile.findUnique({
       where: { id },
       include: { user: { select: { id: true, name: true, email: true, phone: true, profilePicture: true } } },
     });
+
+  try {
+    if (staffMember) {
+      await cacheSet(cacheKey, staffMember, 60);
+    }
+  } catch (e) {}
 
     if (!staffMember) return formatResponse(false, null, "Staff member not found", 404);
 
@@ -75,6 +89,8 @@ async function updateStaff(req: Request, { params }: { params: { id: string } })
     });
 
     const formattedUpdatedStaff = await formatStaffData(updatedStaff);
+    
+    try { await cacheDel(`admin:staff:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, formattedUpdatedStaff, "Staff updated successfully", 200);
   } catch (err: any) {
     console.error(`PUT staff/${id} error:`, err);
@@ -91,6 +107,8 @@ async function deleteStaff(req: Request, { params }: { params: { id: string } })
     if (!existingStaff) return formatResponse(false, null, "Staff member not found", 404);
 
     await prisma.staffProfile.delete({ where: { id } });
+    
+    try { await cacheDel(`admin:staff:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Staff member deleted successfully", 200);
   } catch (err: any) {
     console.error(`DELETE staff/${id} error:`, err);

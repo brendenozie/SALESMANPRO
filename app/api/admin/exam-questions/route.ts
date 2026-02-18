@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -47,6 +48,13 @@ async function getExamQuestions(request: Request) {
   }
   whereClause.examId = examId;
 
+  
+    const cacheKey = `admin:exam-questions:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const examQuestions = await prisma.examQuestion.findMany({
     where: whereClause,
     include: {
@@ -63,6 +71,12 @@ async function getExamQuestions(request: Request) {
       order: 'asc',
     },
   });
+
+  try {
+    if (examQuestions) {
+      await cacheSet(cacheKey, examQuestions, 60);
+    }
+  } catch (e) {}
 
   const responseData = examQuestions.map(transformQuestionResponse);
   return formatResponse(true, { data: responseData }, null, 200);
@@ -142,7 +156,9 @@ async function createExamQuestion(request: Request) {
   });
 
   const responseData = transformQuestionResponse(newQuestion);
-  return formatResponse(true, { data: responseData }, null, 201);
+  
+    try { await cacheDel(`admin:exam-questions:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { data: responseData }, null, 201);
 }
 
 // Export the handlers wrapped in the `withApiHandler` utility.

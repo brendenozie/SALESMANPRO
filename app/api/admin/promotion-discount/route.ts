@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/[adminSlug]/promotions/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -22,10 +23,23 @@ export const GET = withApiHandler(async (request: Request) => {
     return formatResponse(false, null, "companyId is required", 400);
   }
 
+  
+    const cacheKey = `admin:promotion-discount:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const company = await prisma.company.findUnique({
     where: { id: companyId },
     select: { id: true },
   });
+
+  try {
+    if (company) {
+      await cacheSet(cacheKey, company, 60);
+    }
+  } catch (e) {}
 
   if (!company) {
     return formatResponse(false, null, "Company not found for the given slug.", 404);
@@ -132,5 +146,7 @@ export const POST = withApiHandler(async (request: Request) => {
     imageUrl: newPromotion.imageUrl || "",
   };
 
-  return formatResponse(true, formattedNewPromotion, "Promotion created successfully.", 201);
+  
+    try { await cacheDel(`admin:promotion-discount:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, formattedNewPromotion, "Promotion created successfully.", 201);
 });

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -117,12 +118,7 @@ export const POST = withApiHandler(createCampaign, {
   requireRateLimit: true,
 });
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-
-// // ✅ GET: Fetch all campaigns for the user's company
-// const getCampaigns = async (_request: Request, context: { user?: any }) => {
+ => {
 //   const companyId = context.user?.companyId;
 
 //   if (!companyId) return formatResponse(false, null, "Unauthorized", 401);
@@ -188,11 +184,7 @@ export const POST = withApiHandler(createCampaign, {
 // export const GET = withApiHandler(getCampaigns, { requireAuth: true });
 // export const POST = withApiHandler(createCampaign, { requireAuth: true });
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-
-// // ✅ GET all campaigns
-// const getCampaigns = async (_request: Request, _context: { user?: any }) => {
+ => {
 //   const campaigns = await prisma.campaign.findMany({
 //     include: {
 //       donations: true, // include related donations

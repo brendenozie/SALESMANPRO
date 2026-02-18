@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
@@ -6,13 +7,26 @@ export async function GET(request: Request) {
   const companyId = searchParams.get("companyId");
 
   try {
-    const reviews = await prisma.staffPerformanceReview.findMany({
+    
+    const cacheKey = `admin:performance:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const reviews = await prisma.staffPerformanceReview.findMany({
       where: { companyId },
       include: {
         staff: { include: { user: { select: { name: true } } } },
       },
       orderBy: { overallScore: 'desc' }
     });
+
+  try {
+    if (reviews) {
+      await cacheSet(cacheKey, reviews, 60);
+    }
+  } catch (e) {}
 
     return NextResponse.json({ data: reviews });
   } catch (error) {
@@ -37,6 +51,8 @@ export async function POST(request: Request) {
       }
     });
 
+    
+    try { await cacheDel(`admin:performance:${companyId || 'global'}:*`); } catch (e) {}
     return NextResponse.json({ success: true, data: review });
   } catch (error) {
     return NextResponse.json({ error: "Appraisal submission failed" }, { status: 500 });

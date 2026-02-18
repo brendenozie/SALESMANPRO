@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -18,6 +19,13 @@ async function getDonor(request: Request, { params }: Params) {
 
   const { id } = params;
 
+  
+    const cacheKey = `admin:donors:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const donor = await prisma.donor.findUnique({
     where: { id },
     include: {
@@ -35,6 +43,12 @@ async function getDonor(request: Request, { params }: Params) {
       },
     },
   });
+
+  try {
+    if (donor) {
+      await cacheSet(cacheKey, donor, 60);
+    }
+  } catch (e) {}
 
   if (!donor) {
     return formatResponse(false, null, 'Donor profile not found.', 404);
@@ -63,7 +77,9 @@ async function updateDonor(request: Request, { params }: Params) {
     include: { user: true, company: true },
   });
 
-  return formatResponse(true, { data: updatedDonor }, null, 200);
+  
+    try { await cacheDel(`admin:donors:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { data: updatedDonor }, null, 200);
 }
 
 // =======================================================================
@@ -79,7 +95,9 @@ async function deleteDonor(request: Request, { params }: Params) {
     where: { id },
   });
 
-  return formatResponse(true, { message: "Donor profile deleted successfully" }, null, 200);
+  
+    try { await cacheDel(`admin:donors:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { message: "Donor profile deleted successfully" }, null, 200);
 }
 
 // Export handlers with standardized wrapper

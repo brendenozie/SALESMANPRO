@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // app/api/academic-levels/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -11,6 +12,13 @@ export const GET = withApiHandler(async (req, context) => {
 
   // OPTIMIZATION: Use 'select' to only pull what you need
   // and use a lean findUnique call.
+  
+    const cacheKey = `admin:academic-levels:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const academicLevel = await prisma.academicLevel.findUnique({ 
     where: { id },
     select: {
@@ -21,6 +29,12 @@ export const GET = withApiHandler(async (req, context) => {
       // Avoid fetching massive 'createdAt' or 'updatedAt' if not needed
     }
   });
+
+  try {
+    if (academicLevel) {
+      await cacheSet(cacheKey, academicLevel, 60);
+    }
+  } catch (e) {}
 
   if (!academicLevel) {
     return formatResponse(false, null, "Not found", 404);
@@ -49,27 +63,11 @@ export const PATCH = withApiHandler(async (request, context) => {
     },
   });
 
-  return formatResponse(true, updated, "Updated", 200);
+  
+    try { await cacheDel(`admin:academic-levels:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, updated, "Updated", 200);
 });
-// import prisma from "@/server/db/prismadb";
-// import { withAuthAndRateLimit } from "@/lib/hooks/withAuthAndRateLimit";
-// import { formatResponse } from "@/lib/formatResponse";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { VerifiedUser } from "@/lib/verifyAuth"; 
 
-// // Define a consistent type for the context that our handlers will receive.
-// type HandlerContext = {
-//   params: any;
-//   user?: VerifiedUser; // Use the imported type here
-// };
-
-// export const GET = withApiHandler(async (req: Request, context: HandlerContext) => {
-//   // No need to check for the user's existence!
-//   // The withApiHandler wrapper guarantees that 'context.user' is present.
-//   const { user } = context;
-//   const { id } = context.params;
-
-//   const academicLevel = await prisma.academicLevel.findUnique({ where: { id } });
 //   if (!academicLevel) {
 //     return formatResponse(false, null, "Academic level not found", 404);
 //   }
@@ -94,5 +92,7 @@ export const PATCH = withApiHandler(async (request, context) => {
 //   const { id } = context.params;
 
 //   const deleted = await prisma.academicLevel.delete({ where: { id } });
-//   return formatResponse(true, { deletedId: deleted.id }, "Deleted successfully", 200);
+//   
+    try { await cacheDel(`admin:academic-levels:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { deletedId: deleted.id }, "Deleted successfully", 200);
 // });

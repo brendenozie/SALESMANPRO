@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -8,9 +9,7 @@ import { formatResponse } from "@/lib/formatResponse";
 type RouteParams = { params: {} };
 
 // --- GET Handler Core Logic ---
-/**
- * Fetches a paginated list of marketplace listings for a specific companyId.
- */
+
 async function handleGetListings(req: Request, { params }: RouteParams) {
   const { searchParams } = new URL(req.url);
 
@@ -41,9 +40,22 @@ async function handleGetListings(req: Request, { params }: RouteParams) {
   }
 
   // 2. Total count for pagination UI
+  
+    const cacheKey = `admin:my-market-place:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const total = await prisma.marketplaceListings.count({
     where: whereClause,
   });
+
+  try {
+    if (total) {
+      await cacheSet(cacheKey, total, 60);
+    }
+  } catch (e) {}
 
   // 3. Fetch the paginated slice
   const listings = await prisma.marketplaceListings.findMany({

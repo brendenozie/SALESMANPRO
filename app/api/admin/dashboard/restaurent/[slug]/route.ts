@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -19,12 +20,25 @@ export const GET = withApiHandler(
       // --- METRIC CALCULATIONS FOR TODAY ---
 
       // 1. Total Orders Today
-      const totalOrders = await prisma.customerOrder.count({
+      
+    const cacheKey = `admin:restaurent:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const totalOrders = await prisma.customerOrder.count({
         where: { 
           companyId: companyId,
           createdAt: { gte: todayStart, lte: todayEnd }
         },
       });
+
+  try {
+    if (totalOrders) {
+      await cacheSet(cacheKey, totalOrders, 60);
+    }
+  } catch (e) {}
 
       // 2. Active Deliveries
       const activeDeliveries = await prisma.delivery.count({

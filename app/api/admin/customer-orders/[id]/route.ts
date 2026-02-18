@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // app/api/customer-orders/[id]/route.ts
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -35,22 +36,31 @@ const updateOrderSchema = z.object({
   deliveryPersonContact: z.string().optional(),
 });
 
-/**
- * GET: Fetch single order with optimized selection
- */
+
 export const GET = withApiHandler(async (_req, { params }) => {
+  
+    const cacheKey = `admin:customer-orders:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const order = await prisma.customerOrder.findUnique({
     where: { id: params.id },
     select: ORDER_SELECT,
   });
 
+  try {
+    if (order) {
+      await cacheSet(cacheKey, order, 60);
+    }
+  } catch (e) {}
+
   if (!order) return formatResponse(false, null, 'Order not found', 404);
   return formatResponse(true, order, 'Order fetched successfully');
 });
 
-/**
- * PUT: Atomic update with enum validation
- */
+
 export const PUT = withApiHandler(async (req, { params }) => {
   const body = await req.json();
   const parsed = updateOrderSchema.safeParse(body);
@@ -66,6 +76,8 @@ export const PUT = withApiHandler(async (req, { params }) => {
       select: ORDER_SELECT,
     });
 
+    
+    try { await cacheDel(`admin:customer-orders:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedOrder, 'Order updated successfully');
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -75,15 +87,15 @@ export const PUT = withApiHandler(async (req, { params }) => {
   }
 });
 
-/**
- * DELETE: Atomic delete
- */
+
 export const DELETE = withApiHandler(async (_req, { params }) => {
   try {
     const deleted = await prisma.customerOrder.delete({
       where: { id: params.id },
       select: { id: true },
     });
+    
+    try { await cacheDel(`admin:customer-orders:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { deletedId: deleted.id }, 'Order deleted successfully');
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -92,19 +104,7 @@ export const DELETE = withApiHandler(async (_req, { params }) => {
     throw error;
   }
 });
-// import prisma from '@/server/db/prismadb';
-// import { withApiHandler } from '@/lib/hooks/withApiHandler';
-// import { formatResponse } from '@/lib/formatResponse';
-// import { z } from 'zod';
-// import { OrderStatus } from '@prisma/client';
 
-// // --- Validation schema
-// const updateOrderSchema = z.object({
-//   status: z.string().optional(),
-//   deliveryStatus: z.string().optional(),
-//   deliveryPersonName: z.string().optional(),
-//   deliveryPersonContact: z.string().optional(),
-// });
 
 // // --- GET /api/customer-orders/:id
 // // Fetches a single customer order by ID

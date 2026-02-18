@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/[adminSlug]/travel-bookings/route.ts
 import prisma from '@/server/db/prismadb';
 
@@ -16,7 +17,20 @@ async function handleGET(request: Request) {
   if (!companyId) return formatResponse(false, null, 'Company ID is required', 400);
 
   try {
-    const company = await prisma.company.findUnique({ where: { id: companyId }, select: { id: true } });
+    
+    const cacheKey = `admin:travel-bookings:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const company = await prisma.company.findUnique({ where: { id: companyId }, select: { id: true } });
+
+  try {
+    if (company) {
+      await cacheSet(cacheKey, company, 60);
+    }
+  } catch (e) {}
     if (!company) return formatResponse(false, null, 'Company not found', 404);
 
     const bookings = await prisma.booking.findMany({
@@ -129,6 +143,8 @@ async function handlePOST(request: Request) {
       destinationName: newBooking.destination?.name || 'N/A',
     };
 
+    
+    try { await cacheDel(`admin:travel-bookings:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, formatted, 'Booking created successfully');
   } catch (error: any) {
     console.error('Error creating travel booking:', error);

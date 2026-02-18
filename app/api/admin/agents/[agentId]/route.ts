@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // app/api/sales-agents/[agentId]/route.ts
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -27,6 +28,8 @@ export const PUT = withAuthAndRateLimit(async (request, { params }) => {
       },
     });
 
+    
+    try { await cacheDel(`admin:agents:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedAgent, "Updated", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -54,6 +57,8 @@ export const DELETE = withAuthAndRateLimit(async (_request, { params }) => {
       await prisma.user.delete({ where: { id: deletedAgent.userId } });
     }
 
+    
+    try { await cacheDel(`admin:agents:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { deletedId: agentId }, "Deleted", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

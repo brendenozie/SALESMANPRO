@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -9,12 +10,17 @@ import { Prisma } from "@prisma/client"; // For catching Prisma-specific errors
 type RouteParams = { params: { id: string } };
 
 // --- GET Handler ---
-/**
- * Retrieves a single Location record by its ID.
- */
+
 async function handleGetLocation(request: Request, { params }: RouteParams) {
   const { id } = params;
 
+  
+    const cacheKey = `admin:locations:${slug || adminSlug || 'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const location = await prisma.location.findUnique({
     where: { id },
     include: {
@@ -22,6 +28,12 @@ async function handleGetLocation(request: Request, { params }: RouteParams) {
       children: { select: { id: true, name: true, slug: true } },
     },
   });
+
+  try {
+    if (location) {
+      await cacheSet(cacheKey, location, 60);
+    }
+  } catch (e) {}
 
   if (!location) {
     // Return explicit failure response for 404
@@ -33,10 +45,7 @@ async function handleGetLocation(request: Request, { params }: RouteParams) {
 }
 
 // --- PATCH Handler ---
-/**
- * Updates one or more fields of an existing Location record.
- * This is meant for partial updates.
- */
+
 async function handlePatchLocation(request: Request, { params }: RouteParams) {
   const { id } = params;
   const body = await request.json();
@@ -58,6 +67,8 @@ async function handlePatchLocation(request: Request, { params }: RouteParams) {
         updatedAt: new Date(),
       },
     });
+    
+    try { await cacheDel(`admin:locations:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedLocation, "Location updated successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -68,10 +79,7 @@ async function handlePatchLocation(request: Request, { params }: RouteParams) {
 }
 
 // --- PUT Handler ---
-/**
- * Fully replaces/updates an existing Location record.
- * This is meant for full updates and includes robust checks.
- */
+
 async function handlePutLocation(request: Request, { params }: RouteParams) {
   const { id: locationId } = params;
   const body = await request.json();
@@ -141,13 +149,13 @@ async function handlePutLocation(request: Request, { params }: RouteParams) {
     },
   });
 
-  return formatResponse(true, updatedLocation, "Location updated successfully", 200);
+  
+    try { await cacheDel(`admin:locations:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, updatedLocation, "Location updated successfully", 200);
 }
 
 // --- DELETE Handler ---
-/**
- * Deletes a Location record after checking for dependencies (children and associations).
- */
+
 async function handleDeleteLocation(request: Request, { params }: RouteParams) {
   const { id: locationId } = params;
 
@@ -180,7 +188,9 @@ async function handleDeleteLocation(request: Request, { params }: RouteParams) {
   });
 
   // Return success response with 204 No Content (standard for DELETE)
-  return formatResponse(true, null, "Location deleted successfully", 204);
+  
+    try { await cacheDel(`admin:locations:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, null, "Location deleted successfully", 204);
 }
 
 // --- Export Handlers Wrapped in Middleware ---

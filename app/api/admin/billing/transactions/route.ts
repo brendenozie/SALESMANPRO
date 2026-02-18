@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // app/api/admin/[slug]/billing/transactions/route.ts
 import prisma from "@/server/db/prismadb";
 import { TransactionStatus, TransactionType, Prisma } from "@prisma/client";
@@ -24,6 +25,13 @@ const getTransactions = async (request: Request, context: { params: any; user?: 
   };
 
   // ✅ OPTIMIZATION: Parallel execution to eliminate Query Waterfall
+  
+    const cacheKey = `admin:transactions:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const [totalItems, transactions] = await Promise.all([
     prisma.billingTransaction.count({ where: whereClause }),
     prisma.billingTransaction.findMany({
@@ -46,6 +54,12 @@ const getTransactions = async (request: Request, context: { params: any; user?: 
       },
     }),
   ]);
+
+  try {
+    if (totalItems) {
+      await cacheSet(cacheKey, totalItems, 60);
+    }
+  } catch (e) {}
 
   // ✅ OPTIMIZATION: Leaner Mapping
   const transactionsData = transactions.map((t) => ({
@@ -72,15 +86,7 @@ const getTransactions = async (request: Request, context: { params: any; user?: 
 
 export const GET = withApiHandler(getTransactions);
 // import { NextRequest } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { TransactionStatus, TransactionType } from "@prisma/client";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { VerifiedUser } from "@/lib/verifyAuth";
-
-// const getTransactions = async (request: Request, context:{
-//   params: any;
-//   user?: VerifiedUser; // Use the imported type here
-// })  => {
+  => {
 //   const companyId = context.params.slug;
 //   const user = context.user;
 //   const { searchParams } = new URL(request.url);

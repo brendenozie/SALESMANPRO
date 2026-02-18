@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/writers/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb";
@@ -9,13 +10,26 @@ export const GET = withApiHandler(async (request: Request, { params }: { params:
 
 const { id } = params;
 
-const writer = await prisma.writer.findUnique({
+
+    const cacheKey = `admin:writers:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const writer = await prisma.writer.findUnique({
 where: { id },
 include: {
 user: true,
 company: true,
 },
 });
+
+  try {
+    if (writer) {
+      await cacheSet(cacheKey, writer, 60);
+    }
+  } catch (e) {}
 
 if (!writer) {
 return NextResponse.json({ message: 'Writer not found' }, { status: 404 });
@@ -87,7 +101,9 @@ company: true,
 },
 });
 
-return NextResponse.json(updatedWriter, { status: 200 });
+
+    try { await cacheDel(`admin:writers:${companyId || 'global'}:*`); } catch (e) {}
+    return NextResponse.json(updatedWriter, { status: 200 });
 });
 
 // DELETE /api/admin/writers/[id] - Delete a writer by ID
@@ -107,5 +123,7 @@ await prisma.writer.delete({
 where: { id },
 });
 
-return NextResponse.json({ message: 'Writer deleted successfully' }, { status: 200 });
+
+    try { await cacheDel(`admin:writers:${'global' || 'global'}:*`); } catch (e) {}
+    return NextResponse.json({ message: 'Writer deleted successfully' }, { status: 200 });
 });

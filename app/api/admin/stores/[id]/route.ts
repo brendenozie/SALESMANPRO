@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/[adminSlug]/staff/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 
@@ -10,7 +11,14 @@ async function getStore(req: Request, { params }: { params: { id: string } }) {
   try {
     const storeId = params.id;
 
-    const store = await prisma.company.findUnique({
+    
+    const cacheKey = `admin:stores:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const store = await prisma.company.findUnique({
       where: { id: storeId },
       include: {
         productCategories: true,
@@ -19,6 +27,12 @@ async function getStore(req: Request, { params }: { params: { id: string } }) {
         },
       },
     });
+
+  try {
+    if (store) {
+      await cacheSet(cacheKey, store, 60);
+    }
+  } catch (e) {}
 
     if (!store) {
       return formatResponse(false, null, "Store not found", 404);

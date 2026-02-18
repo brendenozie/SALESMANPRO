@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -11,9 +12,7 @@ type RouteParams = { params: {} };
 const VALID_STATUSES = ['Pending', 'Accepted', 'Rejected', 'Closed'];
 
 // --- GET Handler Core Logic ---
-/**
- * Fetches all Offers for a specific company.
- */
+
 async function handleGetOffers(request: Request, { params }: RouteParams) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
@@ -23,6 +22,13 @@ async function handleGetOffers(request: Request, { params }: RouteParams) {
     return formatResponse(false, null, 'Company ID is required to fetch offers.', 400);
   }
 
+  
+    const cacheKey = `admin:offers:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const offers = await prisma.offerContract.findMany({
     where: {
       companyId: companyId,
@@ -42,6 +48,12 @@ async function handleGetOffers(request: Request, { params }: RouteParams) {
       },
     },
   });
+
+  try {
+    if (offers) {
+      await cacheSet(cacheKey, offers, 60);
+    }
+  } catch (e) {}
 
   // Format the response to match the frontend's expected OfferContract type
   const formattedOffers = offers.map(offer => ({
@@ -67,9 +79,7 @@ async function handleGetOffers(request: Request, { params }: RouteParams) {
 }
 
 // --- POST Handler Core Logic ---
-/**
- * Creates a new Offer.
- */
+
 async function handlePostOffer(request: Request, { params }: RouteParams) {
   const body = await request.json();
   const {
@@ -142,6 +152,8 @@ async function handlePostOffer(request: Request, { params }: RouteParams) {
     });
 
     // Explicitly return success with status 201
+    
+    try { await cacheDel(`admin:offers:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newOffer, null, 201);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

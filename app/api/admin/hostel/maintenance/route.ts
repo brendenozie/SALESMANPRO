@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatDistanceToNow } from "date-fns";
@@ -7,7 +8,14 @@ export async function GET(req: Request) {
   const companyId = searchParams.get("companyId");
 
   try {
-    const tickets = await prisma.hostelMaintenanceRequest.findMany({
+    
+    const cacheKey = `admin:maintenance:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const tickets = await prisma.hostelMaintenanceRequest.findMany({
       where: { room: { block: { companyId: companyId || undefined } } },
       include: { 
         room: { 
@@ -26,6 +34,12 @@ export async function GET(req: Request) {
       },
       orderBy: { createdAt: 'desc' }
     });
+
+  try {
+    if (tickets) {
+      await cacheSet(cacheKey, tickets, 60);
+    }
+  } catch (e) {}
 
     const data = tickets.map((t) => ({
       id: `MNT-${t.id.slice(-5).toUpperCase()}`,

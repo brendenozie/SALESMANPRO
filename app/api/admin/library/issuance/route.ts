@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { NextResponse } from "next/server";
 
@@ -7,6 +8,13 @@ export async function GET(req: Request) {
 
   if (!companyId) return NextResponse.json({ error: "Missing Company ID" }, { status: 400 });
 
+  
+    const cacheKey = `admin:issuance:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const records = await prisma.libraryIssuance.findMany({
     where: { companyId },
     include: {
@@ -20,6 +28,12 @@ export async function GET(req: Request) {
     },
     orderBy: { createdAt: 'desc' }
   });
+
+  try {
+    if (records) {
+      await cacheSet(cacheKey, records, 60);
+    }
+  } catch (e) {}
 
   return NextResponse.json({ data: records });
 }

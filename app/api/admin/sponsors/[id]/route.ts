@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/sponsors/[id]/route.ts
 import prisma from '@/server/db/prismadb';
 
@@ -10,7 +11,20 @@ async function getSponsor(req: Request, { params }: { params: { id: string } }) 
   
   const { id } = params;
   try {
-    const sponsor = await prisma.sponsor.findUnique({ where: { id } });
+    
+    const cacheKey = `admin:sponsors:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const sponsor = await prisma.sponsor.findUnique({ where: { id } });
+
+  try {
+    if (sponsor) {
+      await cacheSet(cacheKey, sponsor, 60);
+    }
+  } catch (e) {}
     if (!sponsor) return formatResponse(false, null, 'Sponsor not found', 404);
 
     return formatResponse(true, sponsor, 'Sponsor fetched successfully', 200);
@@ -42,6 +56,8 @@ async function updateSponsor(req: Request, { params }: { params: { id: string } 
       },
     });
 
+    
+    try { await cacheDel(`admin:sponsors:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedSponsor, 'Sponsor updated successfully', 200);
   } catch (error: any) {
     console.error(`Error updating sponsor with ID ${id}:`, error);
@@ -55,6 +71,8 @@ async function deleteSponsor(req: Request, { params }: { params: { id: string } 
   const { id } = params;
   try {
     await prisma.sponsor.delete({ where: { id } });
+    
+    try { await cacheDel(`admin:sponsors:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, 'Sponsor deleted successfully', 204);
   } catch (error: any) {
     console.error(`Error deleting sponsor with ID ${id}:`, error);

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -16,6 +17,13 @@ async function getEducator(request: Request, { params }: Params) {
   
   const { id } = params;
 
+  
+    const cacheKey = `admin:educators:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const educator = await prisma.educator.findUnique({
     where: { id },
     include: {
@@ -61,6 +69,12 @@ async function getEducator(request: Request, { params }: Params) {
       },
     },
   });
+
+  try {
+    if (educator) {
+      await cacheSet(cacheKey, educator, 60);
+    }
+  } catch (e) {}
 
   if (!educator) {
     return formatResponse(false, null, "Educator not found", 404);
@@ -247,7 +261,9 @@ async function deleteEducator(request: Request, { params }: Params) {
     where: { id },
   });
 
-  return formatResponse(true, { message: "Educator deleted successfully", deletedId: deletedEducator.id }, null, 200);
+  
+    try { await cacheDel(`admin:educators:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { message: "Educator deleted successfully", deletedId: deletedEducator.id }, null, 200);
 }
 
 // Export handlers with standardized wrapper

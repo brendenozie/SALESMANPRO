@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -37,6 +38,8 @@ async function handlePut(request: Request, context: { params: { adminSlug: strin
 
     const isCheckedIn = updated.status === "ATTENDED";
 
+    
+    try { await cacheDel(`admin:company-check-in:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, {
       id: updated.id,
       name: updated.user?.name || 'N/A',
@@ -55,32 +58,7 @@ async function handlePut(request: Request, context: { params: { adminSlug: strin
 
 export const PUT = withApiHandler(handlePut);
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// // --- Type Definitions for the Handler ---
-
-// type RouteParams = {
-//   adminSlug: string;
-//   registrationId: string;
-// };
-
-// type HandlerContext = {
-//   params: RouteParams;
-//   user?: any; // Replace 'any' with your actual User type if defined
-// };
-
-// // --- Core Logic for PUT request ---
-// // This function contains only the business logic, with no
-// // manual auth check or top-level try/catch block.
-// async function handlePut(request: Request, context: HandlerContext): Promise<NextResponse> {
-//   const { adminSlug, registrationId } = context.params;
-//   const body = await request.json();
-//   const { status } = body;
-
-//   // Business logic validation remains inside the handler
-//   if (!status) {
-//     return NextResponse.json({ message: "Status is required" }, { status: 400 });
 //   }
 
 //   const validToggleStatuses = ["ATTENDED", "REGISTERED"];
@@ -132,8 +110,5 @@ export const PUT = withApiHandler(handlePut);
 
 // // --- Exported Route Handler (Wrapped) ---
 
-// /**
-//  * PUT /api/admin/[adminSlug]/check-in/[registrationId]
-//  * Toggles the check-in status of an event attendee.
-//  */
+// 
 // export const PUT = withApiHandler(handlePut);

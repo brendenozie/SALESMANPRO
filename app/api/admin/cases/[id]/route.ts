@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -94,19 +95,7 @@ export const GET = withApiHandler(getCase, { requireAuth: true, requireRateLimit
 export const PUT = withApiHandler(updateCase, { requireAuth: true, requireRateLimit: true });
 export const DELETE = withApiHandler(deleteCase, { requireAuth: true, requireRateLimit: true });
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// // GET: Fetch a single case
-// const getCase = async (_req: Request, context: { params: { id: string } , user?: any} ) => {
-
-//   const singleCase = await prisma.case.findUnique({
-//     where: { id: context.params.id },
-//     include: {
-//       client: { include: { user: true } },
-//       assignedTo: true,
-//     },
-//   });
 
 //   if (!singleCase) {
 //     return NextResponse.json({ error: "Case not found" }, { status: 404 });

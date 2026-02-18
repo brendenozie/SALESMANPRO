@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/[adminSlug]/virtual-tours/[tourId]/route.ts
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -65,7 +66,9 @@ export const PUT = withApiHandler(async (request, { params }) => {
     published: updatedTour.published,
   };
 
-  return formatResponse(true, formattedUpdatedTour, 'Virtual tour updated successfully.', 200);
+  
+    try { await cacheDel(`admin:virtual-tours:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, formattedUpdatedTour, 'Virtual tour updated successfully.', 200);
 });
 
 // DELETE /api/admin/[adminSlug]/virtual-tours/[tourId]
@@ -94,5 +97,7 @@ export const DELETE = withApiHandler(async (_request, { params }) => {
     where: { id: tourId },
   });
 
-  return formatResponse(true, null, 'Virtual tour deleted successfully.', 200);
+  
+    try { await cacheDel(`admin:virtual-tours:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, null, 'Virtual tour deleted successfully.', 200);
 });

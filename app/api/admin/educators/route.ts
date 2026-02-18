@@ -1,12 +1,11 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 import { verifyAuth } from "@/lib/verifyAuth";
 
-/**
- * Generate unique 6-digit educator login code
- */
+
 async function generateUniqueLoginCode(): Promise<string> {
   while (true) {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
@@ -19,15 +18,20 @@ async function generateUniqueLoginCode(): Promise<string> {
   }
 }
 
-/**
- * GET /api/educators
- */
+
 async function getEducators(request: Request) {
   await verifyAuth(request);
 
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
+  
+    const cacheKey = `admin:educators:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const educators = await prisma.educator.findMany({
     where: companyId ? { companyId } : undefined,
     include: {
@@ -58,6 +62,12 @@ async function getEducators(request: Request) {
     },
     orderBy: { user: { name: "asc" } },
   });
+
+  try {
+    if (educators) {
+      await cacheSet(cacheKey, educators, 60);
+    }
+  } catch (e) {}
 
   const data = educators.map((educator) => ({
     id: educator.id,
@@ -101,9 +111,7 @@ async function getEducators(request: Request) {
 }
 
 
-/**
- * POST /api/educators
- */
+
 async function createEducator(request: Request) {
   await verifyAuth(request);
 
@@ -181,29 +189,16 @@ async function createEducator(request: Request) {
     return newEducator;
   });
 
-  return formatResponse(true, { id: educator.id }, null, 201);
+  
+    try { await cacheDel(`admin:educators:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { id: educator.id }, null, 201);
 }
 
 export const GET = withApiHandler(getEducators);
 export const POST = withApiHandler(createEducator);
 
 // import { NextResponse, NextRequest } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-// import { verifyAuth } from "@/lib/verifyAuth";
 
-// // Helper function to generate a unique 6-digit login code
-// async function generateUniqueLoginCode(): Promise<string> {
-//   let code: string = '';
-//   let isUnique = false;
-//   while (!isUnique) {
-//     code = Math.floor(100000 + Math.random() * 900000).toString();
-//     code = code.padStart(6, '0'); // Ensure it's 6 digits, e.g., '001234'
-
-//     const existingEducator = await prisma.educator.findUnique({
-//       where: { loginCode: code },
-//     });
 
 //     if (!existingEducator) {
 //       isUnique = true;

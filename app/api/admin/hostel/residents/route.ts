@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
@@ -23,7 +24,14 @@ export async function GET(req: Request) {
   if (Object.keys(whereClause.hostelMember).length === 0) delete whereClause.hostelMember;
 
   try {
-    const residents = await prisma.hostelAllocation.findMany({
+    
+    const cacheKey = `admin:residents:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const residents = await prisma.hostelAllocation.findMany({
       where: whereClause,
       include: {
         hostelMember: {
@@ -39,6 +47,12 @@ export async function GET(req: Request) {
         room: true,
       }
     });
+
+  try {
+    if (residents) {
+      await cacheSet(cacheKey, residents, 60);
+    }
+  } catch (e) {}
 
     const data = residents.map((res) => {
       // Safety check: ensure hostelMember exists before processing

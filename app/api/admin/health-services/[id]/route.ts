@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -19,17 +20,28 @@ async function formatServiceData(service: any) {
   };
 }
 
-/**
- * GET Handler: Fetches a single service by ID.
- */
+
 async function handleGetService(request: Request, { params }: ServiceParams) {
   const { id } = params;
 
   // We can skip the try/catch and 401 check, as withApiHandler handles it.
 
+  
+    const cacheKey = `admin:health-services:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const service = await prisma.service.findUnique({
     where: { id },
   });
+
+  try {
+    if (service) {
+      await cacheSet(cacheKey, service, 60);
+    }
+  } catch (e) {}
 
   if (!service) {
     // Explicitly return an error response for known business logic failures
@@ -42,9 +54,7 @@ async function handleGetService(request: Request, { params }: ServiceParams) {
   return formatResponse(true, formattedService, "Service fetched successfully", 200);
 }
 
-/**
- * PUT Handler: Updates an existing service by ID.
- */
+
 async function handleUpdateService(request: Request, { params }: ServiceParams) {
   const { id } = params;
   const body = await request.json();
@@ -63,6 +73,8 @@ async function handleUpdateService(request: Request, { params }: ServiceParams) 
     });
 
     const formattedUpdatedService = await formatServiceData(updatedService);
+    
+    try { await cacheDel(`admin:health-services:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, formattedUpdatedService, "Service updated successfully", 200);
 
   } catch (err: any) {
@@ -75,9 +87,7 @@ async function handleUpdateService(request: Request, { params }: ServiceParams) 
   }
 }
 
-/**
- * DELETE Handler: Deletes a service by ID.
- */
+
 async function handleDeleteService(request: Request, { params }: ServiceParams) {
   const { id } = params;
 
@@ -86,7 +96,9 @@ async function handleDeleteService(request: Request, { params }: ServiceParams) 
   });
 
   // Return a success message with 200/204 status
-  return formatResponse(true, null, "Service deleted successfully", 200);
+  
+    try { await cacheDel(`admin:health-services:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, null, "Service deleted successfully", 200);
 }
 
 // Wrap the core handlers with the middleware

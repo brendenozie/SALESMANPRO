@@ -1,10 +1,9 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/**
- * GET Handler: Generates a comprehensive sales report based on order items, aggregating by product, doctor, patient, and daily trends.
- */
+
 async function getSalesReport(request: Request) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
@@ -43,6 +42,13 @@ async function getSalesReport(request: Request) {
   }
 
   // 2. Fetch OrderItems with required related data
+  
+    const cacheKey = `admin:sales:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const orderItems = await prisma.orderItem.findMany({
     where: whereClause,
     include: {
@@ -76,6 +82,12 @@ async function getSalesReport(request: Request) {
     },
     orderBy: { createdAt: 'desc' },
   });
+
+  try {
+    if (orderItems) {
+      await cacheSet(cacheKey, orderItems, 60);
+    }
+  } catch (e) {}
 
   // 3. Perform Aggregation
   let totalSales = 0;

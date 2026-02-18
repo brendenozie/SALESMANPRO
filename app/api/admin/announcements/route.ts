@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // app/api/announcements/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -26,6 +27,13 @@ export const GET = withApiHandler(async (request) => {
 
   // OPTIMIZATION: Use 'select' to flatten the response in the DB layer.
   // This removes the need for a .map() loop later.
+  
+    const cacheKey = `admin:announcements:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const announcements = await prisma.announcement.findMany({
     where,
     orderBy: { publishedAt: "desc" },
@@ -50,6 +58,12 @@ export const GET = withApiHandler(async (request) => {
       targetParentIds: true,
     }
   });
+
+  try {
+    if (announcements) {
+      await cacheSet(cacheKey, announcements, 60);
+    }
+  } catch (e) {}
 
   // OPTIMIZATION: Browser & Edge Caching
   const response = formatResponse(true, announcements, "Fetched", 200);
@@ -80,6 +94,8 @@ export const POST = withApiHandler(async (request) => {
       select: { id: true, title: true } // Only return what's needed to confirm creation
     });
 
+    
+    try { await cacheDel(`admin:announcements:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newAnnouncement, "Created", 201);
   } catch (error: any) {
     // Catch foreign key failures (invalid authorId or companyId)
@@ -89,137 +105,7 @@ export const POST = withApiHandler(async (request) => {
     throw error;
   }
 });
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
 
-// // Define valid Enum values (must match your Prisma enums)
-// const VALID_ANNOUNCEMENT_STATUSES = ["PENDING", "PUBLISHED", "ARCHIVED"];
-// const VALID_ANNOUNCEMENT_TYPES = [
-//   "GENERAL",
-//   "ACADEMIC",
-//   "EVENT",
-//   "HOLIDAY",
-//   "ALERT",
-//   "NEWS",
-//   "POLICY_UPDATE",
-//   "FEEDBACK",
-//   "SURVEY",
-//   "OTHER",
-// ];
-// const VALID_ANNOUNCEMENT_AUDIENCES = [
-//   "ALL",
-//   "ACADEMIC_LEVEL",
-//   "COURSE",
-//   "EDUCATOR",
-//   "STUDENT",
-//   "DEPARTMENT",
-//   "STAFF",
-//   "PARENT",
-// ];
-
-// /**
-//  * GET /api/announcements
-//  * Fetches announcements filtered by companyId and optional criteria
-//  */
-// export const GET = withApiHandler(async (request) => {
-//   const { searchParams } = new URL(request.url);
-//   const companyId = searchParams.get("companyId");
-//   const status = searchParams.get("status");
-//   const type = searchParams.get("type");
-//   const audience = searchParams.get("audience");
-//   const authorId = searchParams.get("authorId");
-//   const publishedAfter = searchParams.get("publishedAfter");
-//   const publishedBefore = searchParams.get("publishedBefore");
-//   const expiresAfter = searchParams.get("expiresAfter");
-//   const expiresBefore = searchParams.get("expiresBefore");
-
-//   if (!companyId) {
-//     return formatResponse(false, null, "Company ID is required", 400);
-//   }
-
-//   const whereClause: any = { companyId };
-
-//   if (status) {
-//     if (!VALID_ANNOUNCEMENT_STATUSES.includes(status.toUpperCase())) {
-//       return formatResponse(
-//         false,
-//         null,
-//         `Invalid status: ${status}. Must be one of ${VALID_ANNOUNCEMENT_STATUSES.join(", ")}.`,
-//         400
-//       );
-//     }
-//     whereClause.status = status.toUpperCase();
-//   }
-
-//   if (type) {
-//     if (!VALID_ANNOUNCEMENT_TYPES.includes(type.toUpperCase())) {
-//       return formatResponse(
-//         false,
-//         null,
-//         `Invalid type: ${type}. Must be one of ${VALID_ANNOUNCEMENT_TYPES.join(", ")}.`,
-//         400
-//       );
-//     }
-//     whereClause.type = type.toUpperCase();
-//   }
-
-//   if (audience) {
-//     if (!VALID_ANNOUNCEMENT_AUDIENCES.includes(audience.toUpperCase())) {
-//       return formatResponse(
-//         false,
-//         null,
-//         `Invalid audience: ${audience}. Must be one of ${VALID_ANNOUNCEMENT_AUDIENCES.join(", ")}.`,
-//         400
-//       );
-//     }
-//     whereClause.audience = audience.toUpperCase();
-//   }
-
-//   if (authorId) {
-//     whereClause.authorId = authorId;
-//   }
-
-//   if (publishedAfter || publishedBefore) {
-//     whereClause.publishedAt = {};
-//     if (publishedAfter) {
-//       const date = new Date(publishedAfter);
-//       if (isNaN(date.getTime()))
-//         return formatResponse(false, null, "Invalid publishedAfter date", 400);
-//       whereClause.publishedAt.gte = date;
-//     }
-//     if (publishedBefore) {
-//       const date = new Date(publishedBefore);
-//       if (isNaN(date.getTime()))
-//         return formatResponse(false, null, "Invalid publishedBefore date", 400);
-//       whereClause.publishedAt.lte = date;
-//     }
-//   }
-
-//   if (expiresAfter || expiresBefore) {
-//     whereClause.expiresAt = {};
-//     if (expiresAfter) {
-//       const date = new Date(expiresAfter);
-//       if (isNaN(date.getTime()))
-//         return formatResponse(false, null, "Invalid expiresAfter date", 400);
-//       whereClause.expiresAt.gte = date;
-//     }
-//     if (expiresBefore) {
-//       const date = new Date(expiresBefore);
-//       if (isNaN(date.getTime()))
-//         return formatResponse(false, null, "Invalid expiresBefore date", 400);
-//       whereClause.expiresAt.lte = date;
-//     }
-//   }
-
-//   const announcements = await prisma.announcement.findMany({
-//     where: whereClause,
-//     include: {
-//       author: { select: { id: true, name: true, email: true } },
-//       company: { select: { id: true, name: true } },
-//     },
-//     orderBy: { publishedAt: "desc" },
-//   });
 
 //   const response = announcements.map((a) => ({
 //     id: a.id,
@@ -249,10 +135,7 @@ export const POST = withApiHandler(async (request) => {
 //   return formatResponse(true, response, "Fetched announcements", 200);
 // });
 
-// /**
-//  * POST /api/announcements
-//  * Creates a new announcement
-//  */
+// 
 // export const POST = withApiHandler(async (request) => {
 //   const body = await request.json();
 //   const {

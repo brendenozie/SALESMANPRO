@@ -1,12 +1,11 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // // app/api/admin/fees/route.ts
 // app/api/admin/fees/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-/* ----------------------------------
-   Shared Select (performance win)
------------------------------------ */
+
 const caseSelect = {
   id: true,
   title: true,
@@ -39,9 +38,7 @@ const caseSelect = {
   },
 };
 
-/* ----------------------------------
-   GET — Paginated cases
------------------------------------ */
+
 const getCases = async (req: Request, context: { user?: any }) => {
   const { searchParams } = new URL(req.url);
 
@@ -78,9 +75,7 @@ const getCases = async (req: Request, context: { user?: any }) => {
   );
 };
 
-/* ----------------------------------
-   POST — Create new case
------------------------------------ */
+
 const createCase = async (req: Request, context: { user?: any }) => {
   const body = await req.json();
 
@@ -117,9 +112,7 @@ const createCase = async (req: Request, context: { user?: any }) => {
   return NextResponse.json(newCase, { status: 201 });
 };
 
-/* ----------------------------------
-   Exports
------------------------------------ */
+
 export const GET = withApiHandler(getCases, {
   requireAuth: true,
   requireRateLimit: true,
@@ -131,12 +124,7 @@ export const POST = withApiHandler(createCase, {
 });
 
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-
-// // ✅ GET all cases with Pagination and Selective Fetching
-// const getCases = async (req: Request, context: { user?: any }) => {
+ => {
 //   const { searchParams } = new URL(req.url);
 //   const companyId = context.user?.companyId;
   
@@ -224,11 +212,7 @@ export const POST = withApiHandler(createCase, {
 // export const GET = withApiHandler(getCases, { requireAuth: true, requireRateLimit: true });
 // export const POST = withApiHandler(createCase, { requireAuth: true, requireRateLimit: true });
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-
-// // --- GET all cases
-// const getCases = async (_req: Request, context: { user?: any }) => {
+ => {
 //   const cases = await prisma.case.findMany({
 //     include: {
 //       client: {

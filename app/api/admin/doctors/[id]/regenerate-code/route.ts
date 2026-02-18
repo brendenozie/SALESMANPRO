@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -39,7 +40,9 @@ async function regenerateLoginCode(req: Request, { params }: { params: { id: str
     }
   }
 
-  return formatResponse(true, { data: { ...updatedDoctor, loginCode } }, null, 200);
+  
+    try { await cacheDel(`admin:regenerate-code:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { data: { ...updatedDoctor, loginCode } }, null, 200);
 }
 
 export const PATCH = withApiHandler(regenerateLoginCode);

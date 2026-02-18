@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
@@ -15,6 +16,8 @@ export async function POST(request: Request) {
       },
     });
 
+    
+    try { await cacheDel(`admin:freeze:${companyId || 'global'}:*`); } catch (e) {}
     return NextResponse.json({ success: true, data: freeze });
   } catch (error) {
     return NextResponse.json({ error: "Failed to set freeze period" }, { status: 500 });

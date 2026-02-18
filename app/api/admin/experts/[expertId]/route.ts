@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler'; // New import
 import { formatResponse } from '@/lib/formatResponse'; // New import
@@ -166,6 +167,8 @@ async function deleteExpert(request: Request, { params }: Params) {
       where: { id: expertId },
     });
 
+    
+    try { await cacheDel(`admin:experts:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { message: 'Expert deleted successfully.' }, null, 200);
   } catch (error : any) {
     console.error(`Error deleting expert ${expertId}:`, error);

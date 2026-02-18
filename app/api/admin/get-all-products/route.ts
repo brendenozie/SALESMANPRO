@@ -1,15 +1,9 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb"; 
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/**
- * Core handler logic to fetch products for a specific company.
- * * This function assumes:
- * 1. Authentication/Authorization check is performed by `withApiHandler`.
- * 2. Automatic try/catch wrapping is performed by `withApiHandler`.
- * 3. The final successful response will be wrapped in a 200 OK NextResponse
- * by `withApiHandler`.
- */
+
 async function fetchProductsByCompany(req: Request) {
   // NOTE: We no longer need manual authentication or try/catch.
 
@@ -25,6 +19,13 @@ async function fetchProductsByCompany(req: Request) {
   // --- Data Fetching ---
   // If an error occurs here (e.g., Prisma failure), withApiHandler will catch it
   // and return a 500 Internal Server Error.
+  
+    const cacheKey = `admin:get-all-products:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const products = await prisma.product.findMany({
     where: { companyId },
     include: {
@@ -32,6 +33,12 @@ async function fetchProductsByCompany(req: Request) {
       // commissionRate: true, // Retaining original comment
     },
   });
+
+  try {
+    if (products) {
+      await cacheSet(cacheKey, products, 60);
+    }
+  } catch (e) {}
 
   // --- Success Response ---
   // Return the raw data structure. `withApiHandler` wraps this into the final response.

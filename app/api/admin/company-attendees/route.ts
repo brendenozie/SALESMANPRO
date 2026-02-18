@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -40,7 +41,14 @@ async function handleGet(request: Request, context: { params: { adminSlug: strin
 
   try {
     // 4. Parallelize Data and Total Count
-    const [attendees, totalItems] = await Promise.all([
+    
+    const cacheKey = `admin:company-attendees:${slug || adminSlug || 'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const [attendees, totalItems] = await Promise.all([
       prisma.eventRegistration.findMany({
         where,
         orderBy,
@@ -56,6 +64,12 @@ async function handleGet(request: Request, context: { params: { adminSlug: strin
       }),
       prisma.eventRegistration.count({ where }),
     ]);
+
+  try {
+    if (attendees) {
+      await cacheSet(cacheKey, attendees, 60);
+    }
+  } catch (e) {}
 
     const formatted = attendees.map(reg => ({
       id: reg.id,
@@ -96,38 +110,7 @@ async function handleGet(request: Request, context: { params: { adminSlug: strin
 
 export const GET = withApiHandler(handleGet);
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// // --- Type Definitions for the Handler ---
-
-// type RouteParams = {
-//   adminSlug: string;
-// };
-
-// type HandlerContext = {
-//   params: RouteParams;
-//   user?: any; // Replace 'any' with your actual User type if defined
-// };
-
-// // --- Core Logic for GET request ---
-
-// async function handleGet(request: Request, context: HandlerContext): Promise<NextResponse> {
-//   const { adminSlug } = context.params;
-//   const { searchParams } = new URL(request.url);
-
-//   const eventIdFilter = searchParams.get("eventId");
-//   const searchKeyword = searchParams.get("search");
-//   const statusFilter = searchParams.get("status");
-//   const page = parseInt(searchParams.get("page") || "1");
-//   const limit = parseInt(searchParams.get("limit") || "10");
-//   const sortBy = searchParams.get("sortBy") || "registeredAt";
-//   const sortOrder = searchParams.get("sortOrder") || "desc";
-
-//   // Retain parameter validation
-//   const validSortBy = ["registeredAt", "status", "user.name", "event.title"];
-//   if (!validSortBy.includes(sortBy)) {
-//     return NextResponse.json({ message: "Invalid sortBy parameter" }, { status: 400 });
 //   }
 
 //   const validSortOrder = ["asc", "desc"];
@@ -228,8 +211,5 @@ export const GET = withApiHandler(handleGet);
 
 // // --- Exported Route Handler (Wrapped) ---
 
-// /**
-//  * GET /api/admin/[adminSlug]/attendees
-//  * Fetches a list of attendees with filtering, sorting, and pagination.
-//  */
+// 
 // export const GET = withApiHandler(handleGet);

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/store-categories/route.ts
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -20,6 +21,13 @@ const getStoreCategories = async (request: Request) => {
 
   const whereClause = companyId ? { companyId } : {};
 
+  
+    const cacheKey = `admin:pos-categories:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const storeCategories = await prisma.storeCategory.findMany({
     where: whereClause,
     include: {
@@ -38,6 +46,12 @@ const getStoreCategories = async (request: Request) => {
       sortOrder: "asc",
     },
   });
+
+  try {
+    if (storeCategories) {
+      await cacheSet(cacheKey, storeCategories, 60);
+    }
+  } catch (e) {}
 
   const response = storeCategories.map((sc) => ({
     id: sc.id,

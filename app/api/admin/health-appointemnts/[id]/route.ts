@@ -1,15 +1,10 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 // Note: verifyAuth and NextResponse are no longer needed here, as they are managed by the middleware utilities.
 
-/**
- * Helper function to handle the complex authorization required for all methods:
- * 1. Find the Company by adminSlug.
- * 2. Find all User IDs associated with that Company.
- * 3. Validate that the Appointment ID is linked to one of those User IDs.
- * @returns The Company object and the list of associated User IDs.
- */
+
 async function authorizeAppointmentAccess(adminSlug: string, appointmentId: string) {
     // 1. Find Company by slug
     const company = await prisma.company.findUnique({
@@ -43,9 +38,7 @@ async function authorizeAppointmentAccess(adminSlug: string, appointmentId: stri
 }
 
 
-/**
- * GET Handler: Fetches a single appointment with nested details.
- */
+
 async function getAppointment(
   request: Request,
   { params }: { params: { adminSlug: string; id: string } }
@@ -58,6 +51,13 @@ async function getAppointment(
   if (authCheck.success === false) return formatResponse(false, null, authCheck.error, authCheck.status); // Returns 403/404 error response
 
   // --- Data Fetching ---
+  
+    const cacheKey = `admin:health-appointemnts:${adminSlug || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const appointment = await prisma.appointment.findUnique({
     where: { id: id },
     select: {
@@ -74,6 +74,12 @@ async function getAppointment(
       }
     },
   });
+
+  try {
+    if (appointment) {
+      await cacheSet(cacheKey, appointment, 60);
+    }
+  } catch (e) {}
 
   if (!appointment) {
       // Should ideally not happen due to the authCheck, but kept as a safeguard
@@ -99,9 +105,7 @@ async function getAppointment(
 }
 
 
-/**
- * PUT Handler: Updates an existing appointment.
- */
+
 async function updateAppointment(request: Request, context: { params: { adminSlug: string; id: string } }) {
   const { params } = context;
   const { adminSlug, id } = params;
@@ -134,13 +138,13 @@ async function updateAppointment(request: Request, context: { params: { adminSlu
   });
 
   // --- Success Response ---
-  return formatResponse(true, { message: "Appointment updated successfully", appointment: updatedAppointment }, "Appointment updated successfully", 200);
+  
+    try { await cacheDel(`admin:health-appointemnts:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { message: "Appointment updated successfully", appointment: updatedAppointment }, "Appointment updated successfully", 200);
 }
 
 
-/**
- * DELETE Handler: Deletes an appointment.
- */
+
 async function deleteAppointment(
   request: Request,
   { params }: { params: { adminSlug: string; id: string } }
@@ -164,7 +168,9 @@ async function deleteAppointment(
 
   // --- Success Response ---
   // Use 200 OK or 204 No Content for successful deletion. Using 200 with a message.
-  return formatResponse(true, { message: "Appointment deleted successfully" }, "Appointment deleted successfully", 200);
+  
+    try { await cacheDel(`admin:health-appointemnts:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { message: "Appointment deleted successfully" }, "Appointment deleted successfully", 200);
 }
 
 

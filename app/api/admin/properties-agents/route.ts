@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/agents/route.ts
 import prisma from "@/server/db/prismadb";
 import bcrypt from "bcryptjs";
@@ -17,10 +18,7 @@ const authorizeAdmin = async (req: Request) => {
   return { authorized: true, status: 200, message: "Authorized" };
 };
 
-/**
- * GET /api/admin/agents
- * Fetch all sales agents (optionally filtered by companyId)
- */
+
 async function getHandler(req: Request) {
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
@@ -33,11 +31,24 @@ async function getHandler(req: Request) {
   const { searchParams } = new URL(req.url);
   const companyId = searchParams.get("companyId") || undefined;
 
+  
+    const cacheKey = `admin:properties-agents:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const salesAgents = await prisma.salesAgent.findMany({
     where: companyId ? { companyId } : {},
     include: { user: true },
     orderBy: { createdAt: "desc" },
   });
+
+  try {
+    if (salesAgents) {
+      await cacheSet(cacheKey, salesAgents, 60);
+    }
+  } catch (e) {}
 
   const agents: AgentProfile[] = salesAgents.map((sa) => ({
     id: sa.id,
@@ -57,10 +68,7 @@ async function getHandler(req: Request) {
   return formatResponse(true, agents, "Agents fetched successfully", 200);
 }
 
-/**
- * POST /api/admin/agents
- * Create a new sales agent
- */
+
 async function postHandler(req: Request) {
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
@@ -151,7 +159,9 @@ async function postHandler(req: Request) {
       newSalesAgent.createdAt?.toISOString() || new Date().toISOString(),
   };
 
-  return formatResponse(true, agentProfile, "Agent created successfully", 201);
+  
+    try { await cacheDel(`admin:properties-agents:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, agentProfile, "Agent created successfully", 201);
 }
 
 // Wrap handlers with API handler utility

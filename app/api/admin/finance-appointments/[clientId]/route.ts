@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import { PrismaClient } from '@prisma/client';
@@ -21,10 +22,23 @@ async function handleGetAppointment(request: Request, context: Context) {
 
   const { id } = context.params;
 
+  
+    const cacheKey = `admin:finance-appointments:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const appointment = await prisma.financeAppointment.findUnique({
     where: { id: String(id) },
     include: { client: { include: { user: true } }, expert: true },
   });
+
+  try {
+    if (appointment) {
+      await cacheSet(cacheKey, appointment, 60);
+    }
+  } catch (e) {}
 
   if (!appointment) {
     return formatResponse(false, null, 'Appointment not found', 404);
@@ -53,7 +67,9 @@ async function handlePutAppointment(request: Request, context: Context) {
     },
   });
 
-  return formatResponse(true, updatedAppointment, null, 200);
+  
+    try { await cacheDel(`admin:finance-appointments:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, updatedAppointment, null, 200);
 }
 
 // =======================================================================
@@ -74,7 +90,9 @@ async function handleDeleteAppointment(request: Request, context: Context) {
   });
 
   // Successful deletion returns a 204 No Content response
-  return formatResponse(true, null, 'Appointment deleted successfully', 204);
+  
+    try { await cacheDel(`admin:finance-appointments:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, null, 'Appointment deleted successfully', 204);
 }
 
 // Export the handlers wrapped in withApiHandler

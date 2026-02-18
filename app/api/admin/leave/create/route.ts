@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
@@ -40,6 +41,8 @@ export async function POST(request: Request) {
       },
     });
 
+    
+    try { await cacheDel(`admin:create:${companyId || 'global'}:*`); } catch (e) {}
     return NextResponse.json({ success: true, data: newRequest });
   } catch (error) {
     return NextResponse.json({ error: "Failed to post request" }, { status: 500 });

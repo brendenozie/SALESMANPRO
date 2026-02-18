@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
@@ -13,10 +14,23 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Company ID is required" }, { status: 400 });
     }
 
-    const categories = await prisma.librarySupplierCategory.findMany({
+    
+    const cacheKey = `admin:suppliers-categories:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const categories = await prisma.librarySupplierCategory.findMany({
       where: { companyId },
       orderBy: { name: "asc" },
     });
+
+  try {
+    if (categories) {
+      await cacheSet(cacheKey, categories, 60);
+    }
+  } catch (e) {}
 
     return NextResponse.json({ data: categories });
   } catch (error) {
@@ -38,6 +52,8 @@ export async function POST(req: Request) {
       data: { name, companyId },
     });
 
+    
+    try { await cacheDel(`admin:suppliers-categories:${companyId || 'global'}:*`); } catch (e) {}
     return NextResponse.json({ data: category }, { status: 201 });
   } catch (error: any) {
     if (error.code === 'P2002') {

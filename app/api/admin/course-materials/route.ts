@@ -1,12 +1,13 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { verifyAuth } from "@/lib/verifyAuth";
 import prisma from "@/server/db/prismadb";
 import { z } from "zod";
 
-/* -------------------------------------------------------------------------- */
-/*                                  ENUM                                      */
-/* -------------------------------------------------------------------------- */
+
+
+
 
 enum CourseMaterialType {
   DOCUMENT = "DOCUMENT",
@@ -17,9 +18,9 @@ enum CourseMaterialType {
   OTHER = "OTHER",
 }
 
-/* -------------------------------------------------------------------------- */
-/*                                  SCHEMA                                    */
-/* -------------------------------------------------------------------------- */
+
+
+
 
 const CourseMaterialSchema = z
   .object({
@@ -35,9 +36,9 @@ const CourseMaterialSchema = z
     message: "Provide either fileUrl or linkUrl, not both.",
   });
 
-/* -------------------------------------------------------------------------- */
-/*                                    GET                                     */
-/* -------------------------------------------------------------------------- */
+
+
+
 
 export const GET = withApiHandler(async (req: Request) => {
   const { searchParams } = new URL(req.url);
@@ -53,6 +54,13 @@ export const GET = withApiHandler(async (req: Request) => {
     );
   }
 
+  
+    const cacheKey = `admin:course-materials:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const materials = await prisma.courseMaterial.findMany({
     where: {
       ...(courseId && { courseId }),
@@ -81,6 +89,12 @@ export const GET = withApiHandler(async (req: Request) => {
     },
   });
 
+  try {
+    if (materials) {
+      await cacheSet(cacheKey, materials, 60);
+    }
+  } catch (e) {}
+
   const response = materials.map((m) => ({
     id: m.id,
     courseId: m.courseId,
@@ -100,9 +114,9 @@ export const GET = withApiHandler(async (req: Request) => {
   return formatResponse(true, response, null, 200);
 });
 
-/* -------------------------------------------------------------------------- */
-/*                                    POST                                    */
-/* -------------------------------------------------------------------------- */
+
+
+
 
 export const POST = withApiHandler(async (req: Request) => {
   const auth = await verifyAuth(req);
@@ -124,7 +138,7 @@ export const POST = withApiHandler(async (req: Request) => {
   const { courseId, title, description, fileUrl, linkUrl, type, uploadedById } =
     parsed.data;
 
-  /* -------------------- Validate course & educator in parallel -------------------- */
+  
   const [course, educator] = await Promise.all([
     prisma.course.findUnique({ where: { id: courseId }, select: { id: true } }),
     prisma.educator.findUnique({ where: { id: uploadedById }, select: { id: true } }),
@@ -166,7 +180,9 @@ export const POST = withApiHandler(async (req: Request) => {
     },
   });
 
-  return formatResponse(
+  
+    try { await cacheDel(`admin:course-materials:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(
     true,
     {
       id: created.id,
@@ -191,63 +207,7 @@ export const POST = withApiHandler(async (req: Request) => {
 // import { formatResponse } from "@/lib/formatResponse";
 // import { withApiHandler } from "@/lib/hooks/withApiHandler";
 // import { verifyAuth } from "@/lib/verifyAuth";
-// import prisma from "@/server/db/prismadb";
-// import z from "zod";
 
-// // Zod schema with improved validation logic
-// const CourseMaterialSchema = z.object({
-//   courseId: z.string().min(1),
-//   title: z.string().min(1),
-//   description: z.string().optional(),
-//   fileUrl: z.string().optional().nullable(),
-//   linkUrl: z.string().optional().nullable(),
-//   type: z.enum(["DOCUMENT", "VIDEO", "LINK", "IMAGE", "AUDIO", "OTHER"]),
-//   uploadedById: z.string().min(1),
-// }).refine(data => !(data.fileUrl && data.linkUrl), {
-//   message: "Cannot provide both fileUrl and linkUrl",
-//   path: ["fileUrl"]
-// });
-
-// const MATERIAL_SELECT = {
-//   id: true,
-//   courseId: true,
-//   title: true,
-//   description: true,
-//   fileUrl: true,
-//   linkUrl: true,
-//   type: true,
-//   uploadedById: true,
-//   createdAt: true,
-//   updatedAt: true,
-//   course: { select: { title: true } },
-//   uploadedBy: { select: { user: { select: { name: true, email: true } } } },
-// };
-
-// const flatten = (m: any) => ({
-//   ...m,
-//   courseTitle: m.course?.title || "N/A",
-//   uploadedByName: m.uploadedBy?.user?.name || "N/A",
-//   uploadedByEmail: m.uploadedBy?.user?.email || "N/A",
-//   course: undefined,
-//   uploadedBy: undefined,
-// });
-
-// /**
-//  * GET: Filtered materials list
-//  */
-// export const GET = withApiHandler(async (req) => {
-//   const { searchParams } = new URL(req.url);
-//   const courseId = searchParams.get("courseId");
-//   const companyId = searchParams.get("companyId");
-
-//   if (!courseId && !companyId) {
-//     return formatResponse(false, null, "courseId or companyId required", 400);
-//   }
-
-//   // Optimized relational filter
-//   const materials = await prisma.courseMaterial.findMany({
-//     where: {
-//       ...(courseId ? { courseId } : { course: { companyId } })
 //     },
 //     select: MATERIAL_SELECT,
 //     orderBy: { createdAt: "asc" },
@@ -256,9 +216,7 @@ export const POST = withApiHandler(async (req: Request) => {
 //   return formatResponse(true, materials.map(flatten));
 // });
 
-/**
- * POST: Atomic creation with relationship guarding
- */
+
 // export const POST = withApiHandler(async (req) => {
 //   const auth = await verifyAuth(req);
 //   if (!auth.success) return formatResponse(false, null, auth.error, 401);
@@ -291,48 +249,7 @@ export const POST = withApiHandler(async (req: Request) => {
 // import { formatResponse } from "@/lib/formatResponse";
 // import { withApiHandler } from "@/lib/hooks/withApiHandler";
 // import { verifyAuth } from "@/lib/verifyAuth";
-// import prisma from "@/server/db/prismadb";
-// import z from "zod";
 
-// // Define the CourseMaterialType enum for validation
-// enum CourseMaterialType {
-//   DOCUMENT = "DOCUMENT",
-//   VIDEO = "VIDEO",
-//   LINK = "LINK",
-//   IMAGE = "IMAGE",
-//   AUDIO = "AUDIO",
-//   OTHER = "OTHER",
-// }
-
-// // Zod schema for creating a course material
-// const CourseMaterialSchema = z.object({
-//   courseId: z.string().min(1, "Course ID is required"),
-//   title: z.string().min(1, "Title is required"),
-//   description: z.string().optional(),
-//   fileUrl: z.string().optional(),
-//   linkUrl: z.string().optional(),
-//   type: z.nativeEnum(CourseMaterialType),
-//   uploadedById: z.string().min(1, "Uploader ID is required"),
-// });
-
-// // GET /api/course-materials
-// // Fetches all course materials, filtered by courseId or companyId
-// export const GET = withApiHandler(async ( req ) => {
-  
-
-//   const { searchParams } = new URL(req.url);
-//   const courseId = searchParams.get("courseId");
-//   const companyId = searchParams.get("companyId");
-
-//   const whereClause: any = {};
-
-//   if (courseId) {
-//     whereClause.courseId = courseId;
-//   } else if (companyId) {
-//     const coursesInCompany = await prisma.course.findMany({
-//       where: { companyId },
-//       select: { id: true },
-//     });
 //     const courseIdsInCompany = coursesInCompany.map((c) => c.id);
 //     whereClause.courseId = { in: courseIdsInCompany };
 //   } else {

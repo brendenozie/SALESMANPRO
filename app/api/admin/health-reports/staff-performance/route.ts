@@ -1,11 +1,10 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 import { AppointmentStatus } from "@prisma/client"; // Assuming AppointmentStatus enum is available
 
-/**
- * GET Handler: Generates a staff performance report for Doctors and/or general Staff.
- */
+
 async function getStaffPerformanceReport(request: Request) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
@@ -32,7 +31,14 @@ async function getStaffPerformanceReport(request: Request) {
     };
     if (staffId) doctorWhereClause.id = staffId;
 
-    const doctors = await prisma.doctor.findMany({
+    
+    const cacheKey = `admin:staff-performance:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const doctors = await prisma.doctor.findMany({
       where: doctorWhereClause,
       include: {
         User: { select: { id: true, name: true, email: true } },
@@ -51,6 +57,12 @@ async function getStaffPerformanceReport(request: Request) {
         },
       },
     });
+
+  try {
+    if (doctors) {
+      await cacheSet(cacheKey, doctors, 60);
+    }
+  } catch (e) {}
 
     doctors.forEach(doctor => {
       let totalAppointments = 0;

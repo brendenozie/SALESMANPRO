@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/invoices/route.ts
 import { PrismaClient } from '@prisma/client';
 // Incorporate the new imports
@@ -19,7 +20,14 @@ const getInvoicesLogic = async (req: Request) => {
     const companyId = searchParams.get('companyId');
 
     // Fetch all invoices for the specified company
-    const invoices = await prisma.invoice.findMany({
+    
+    const cacheKey = `admin:finance-invoices:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const invoices = await prisma.invoice.findMany({
         where: { companyId: companyId || undefined },
         include: {
             client: {
@@ -30,6 +38,12 @@ const getInvoicesLogic = async (req: Request) => {
             issueDate: 'desc'
         }
     });
+
+  try {
+    if (invoices) {
+      await cacheSet(cacheKey, invoices, 60);
+    }
+  } catch (e) {}
 
     // Use formatResponse for success
     return formatResponse(true, invoices, 'Invoices retrieved successfully', 200);
@@ -58,6 +72,8 @@ const postInvoiceLogic = async (req: Request) => {
     });
 
     // Use formatResponse for success
+    
+    try { await cacheDel(`admin:finance-invoices:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newInvoice, 'Invoice created successfully', 201);
 };
 

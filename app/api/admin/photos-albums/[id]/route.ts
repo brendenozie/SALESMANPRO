@@ -1,19 +1,30 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/photo-albums/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-// /**
-//  * @route GET /api/photo-albums/:id
-//  * @description Fetches a single photo album by ID.
-//  */
+// 
 export const GET = withApiHandler(async (_request: Request, { params }: { params: { id: string } }) => {
   const { id } = params;
 
+  
+    const cacheKey = `admin:photos-albums:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const photoAlbum = await prisma.photoAlbum.findUnique({
     where: { id },
     include: { photos: true },
   });
+
+  try {
+    if (photoAlbum) {
+      await cacheSet(cacheKey, photoAlbum, 60);
+    }
+  } catch (e) {}
 
   if (!photoAlbum) {
     return formatResponse(false, null, "Photo album not found", 404);
@@ -22,10 +33,7 @@ export const GET = withApiHandler(async (_request: Request, { params }: { params
   return formatResponse(true, photoAlbum, null, 200);
 });
 
-// /**
-//  * @route PUT /api/photo-albums/:id
-//  * @description Updates an existing photo album's metadata.
-//  */
+// 
 export const PUT = withApiHandler(async (request: Request, { params }: { params: { id: string } }) => {
   const { id } = params;
   const body = await request.json();
@@ -42,13 +50,12 @@ export const PUT = withApiHandler(async (request: Request, { params }: { params:
     include: { photos: true },
   });
 
-  return formatResponse(true, updatedPhotoAlbum, null, 200);
+  
+    try { await cacheDel(`admin:photos-albums:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, updatedPhotoAlbum, null, 200);
 });
 
-// /**
-//  * @route DELETE /api/photo-albums/:id
-//  * @description Deletes a photo album and all its associated photos.
-//  */
+// 
 export const DELETE = withApiHandler(async (_request: Request, { params }: { params: { id: string } }) => {
   const { id } = params;
 
@@ -57,5 +64,7 @@ export const DELETE = withApiHandler(async (_request: Request, { params }: { par
     prisma.photoAlbum.delete({ where: { id } }),
   ]);
 
-  return formatResponse(true, null, "Photo album deleted successfully", 204);
+  
+    try { await cacheDel(`admin:photos-albums:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, null, "Photo album deleted successfully", 204);
 });

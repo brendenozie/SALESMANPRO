@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -6,9 +7,7 @@ import { InquiryStatus } from "@prisma/client"; // Assuming you have InquiryStat
 // Define the expected structure for route parameters
 type PatchParams = { params: { inquiryId: string } };
 
-/**
- * PATCH Handler: Updates an Inquiry's status.
- */
+
 async function handlePatchInquiryStatus(request: Request, { params }: PatchParams) {
   const { inquiryId } = params;
   const body = await request.json();
@@ -36,6 +35,8 @@ async function handlePatchInquiryStatus(request: Request, { params }: PatchParam
     });
 
     // withApiHandler will wrap this result in formatResponse(true, ...) with status 200
+    
+    try { await cacheDel(`admin:status:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedInquiry, 'Inquiry status updated successfully.', 200);
   } catch (error: any) {
     // Handle Prisma error for record not found

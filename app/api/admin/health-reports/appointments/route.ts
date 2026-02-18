@@ -1,11 +1,10 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 import { AppointmentStatus } from "@prisma/client"; // Assuming AppointmentStatus enum is available
 
-/**
- * GET Handler: Fetches a filtered list of appointments and provides summary statistics.
- */
+
 async function getAppointmentReport(request: Request) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
@@ -46,6 +45,13 @@ async function getAppointmentReport(request: Request) {
   }
 
   // 1. Fetch Appointments with related data
+  
+    const cacheKey = `admin:appointments:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const appointments = await prisma.appointment.findMany({
     where: whereClause,
     include: {
@@ -62,6 +68,12 @@ async function getAppointmentReport(request: Request) {
     },
     orderBy: { date: 'desc' },
   });
+
+  try {
+    if (appointments) {
+      await cacheSet(cacheKey, appointments, 60);
+    }
+  } catch (e) {}
 
   // 2. Format Appointment Summary
   const appointmentSummary = appointments.map(appt => {

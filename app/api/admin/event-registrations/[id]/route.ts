@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
 import { verifyAuth } from "@/lib/verifyAuth"; // Keep verifyAuth
@@ -22,6 +23,13 @@ async function getRegistration(request: Request, { params }: Params) {
 
   const { id } = params;
 
+  
+    const cacheKey = `admin:event-registrations:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const registration = await prisma.eventRegistration.findUnique({
     where: { id },
     include: {
@@ -30,6 +38,12 @@ async function getRegistration(request: Request, { params }: Params) {
       student: { select: { id: true, user: { select: { name: true, email: true } } } },
     },
   });
+
+  try {
+    if (registration) {
+      await cacheSet(cacheKey, registration, 60);
+    }
+  } catch (e) {}
 
   if (!registration) {
     return formatResponse(false, null, "Event registration not found", 404);
@@ -135,7 +149,9 @@ async function updateRegistration(request: Request, { params }: Params) {
     status: updatedRegistration.status,
   };
 
-  return formatResponse(true, { data: responseData }, null, 200);
+  
+    try { await cacheDel(`admin:event-registrations:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { data: responseData }, null, 200);
 }
 
 // =======================================================================
@@ -160,7 +176,9 @@ async function deleteRegistration(request: Request, { params }: Params) {
     where: { id },
   });
 
-  return formatResponse(true, { message: "Event registration deleted successfully", deletedId: deletedRegistration.id }, null, 200);
+  
+    try { await cacheDel(`admin:event-registrations:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { message: "Event registration deleted successfully", deletedId: deletedRegistration.id }, null, 200);
 }
 
 // Export the handlers wrapped in the `withApiHandler` utility.

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -39,9 +40,22 @@ async function handleGetListings(req: Request, { params }: RouteParams) {
     );
   }
 
+  
+    const cacheKey = `admin:bulk-create:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const total = await prisma.marketplaceListings.count({
     where: whereClause,
   });
+
+  try {
+    if (total) {
+      await cacheSet(cacheKey, total, 60);
+    }
+  } catch (e) {}
 
   const listings = await prisma.marketplaceListings.findMany({
     where: whereClause,
@@ -75,16 +89,7 @@ export const GET = withApiHandler(handleGetListings);
 // ============== POST — BULK CREATE ENDPOINT ==========
 // =====================================================
 
-/**
- * Body example:
- * {
- *   "companyId": "cmp_123",
- *   "listings": [
- *      { title: "...", price: 999, type: "ebook", ... },
- *      { title: "...", price: 450, type: null, ... }
- *   ]
- * }
- */
+
 
 async function handleBulkCreate(req: Request) {
   const body = await req.json();
@@ -120,6 +125,8 @@ async function handleBulkCreate(req: Request) {
 
     await revalidateCompanyCache(created?.[0]?.company?.slug || "");
 
+    
+    try { await cacheDel(`admin:bulk-create:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(
       true,
       { createdCount: created.length, created },

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/[adminSlug]/promotions/[promotionId]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -101,7 +102,9 @@ export const PUT = withApiHandler(async (request, { params }) => {
     imageUrl: updatedPromotion.imageUrl || "",
   };
 
-  return formatResponse(true, formattedUpdatedPromotion, "Promotion updated.");
+  
+    try { await cacheDel(`admin:promotion-discount:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, formattedUpdatedPromotion, "Promotion updated.");
 });
 
 // DELETE /api/admin/[adminSlug]/promotions/[promotionId]
@@ -135,5 +138,7 @@ export const DELETE = withApiHandler(async (_request, { params }) => {
     where: { id: promotionId },
   });
 
-  return formatResponse(true, null, "Promotion deleted successfully.");
+  
+    try { await cacheDel(`admin:promotion-discount:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, null, "Promotion deleted successfully.");
 });

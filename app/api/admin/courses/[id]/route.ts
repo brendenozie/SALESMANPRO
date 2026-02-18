@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -53,22 +54,31 @@ const mapCourseResponse = (course: any) => ({
   _count: undefined,
 });
 
-/**
- * GET: Fetch single course
- */
+
 export const GET = withApiHandler(async (_req, { params }) => {
+  
+    const cacheKey = `admin:courses:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const course = await prisma.course.findUnique({
     where: { id: params.id },
     select: COURSE_SELECT,
   });
 
+  try {
+    if (course) {
+      await cacheSet(cacheKey, course, 60);
+    }
+  } catch (e) {}
+
   if (!course) return NextResponse.json({ error: "Course not found" }, { status: 404 });
   return NextResponse.json(mapCourseResponse(course), { status: 200 });
 });
 
-/**
- * PATCH: Optimized Atomic Update
- */
+
 export const PATCH = withApiHandler(async (req, { params }) => {
   const { id } = params;
   const body = await req.json();
@@ -109,40 +119,18 @@ export const PATCH = withApiHandler(async (req, { params }) => {
   }
 });
 
-/**
- * DELETE: Direct Atomic Delete
- */
+
 export const DELETE = withApiHandler(async (_, { params }) => {
   try {
     await prisma.course.delete({ where: { id: params.id } });
+    
+    try { await cacheDel(`admin:courses:${'global' || 'global'}:*`); } catch (e) {}
     return NextResponse.json({ message: "Course deleted", deletedId: params.id }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: "Course not found or has active dependencies" }, { status: 404 });
   }
 });
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// // --- Types ---
-// type HandlerContext = { params: { id: string }; user?: any };
-
-// // --- GET /api/courses/[id] ---
-// export const GET = withApiHandler(async (request: Request, context: HandlerContext) => {
-//   const { id } = context.params;
-
-//   const course = await prisma.course.findUnique({
-//     where: { id },
-//     include: {
-//       CourseEducatorAssignment: {
-//         include: {
-//           educator: { select: { id: true, user: { select: { name: true, email: true } } } },
-//         },
-//       },
-//       department: { select: { id: true, name: true } },
-//       academicLevels: { include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } } },
-//       _count: { select: { enrollments: true, CourseMaterial: true, assignmentSubmission: true } },
-//     },
-//   });
 
 //   if (!course) throw new Error("Course not found");
 

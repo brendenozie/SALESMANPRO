@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/properties/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -35,6 +36,13 @@ export const GET = withApiHandler(async (request: Request) => {
     ];
   }
 
+  
+    const cacheKey = `admin:properties:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const properties = await prisma.property.findMany({
     where,
     include: {
@@ -46,6 +54,12 @@ export const GET = withApiHandler(async (request: Request) => {
     },
     orderBy: { createdAt: "desc" },
   });
+
+  try {
+    if (properties) {
+      await cacheSet(cacheKey, properties, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, properties, "Properties fetched successfully");
 });
@@ -101,5 +115,7 @@ export const POST = withApiHandler(async (request: Request) => {
     },
   });
 
-  return formatResponse(true, newProperty, "Property created successfully", 201);
+  
+    try { await cacheDel(`admin:properties:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, newProperty, "Property created successfully", 201);
 });

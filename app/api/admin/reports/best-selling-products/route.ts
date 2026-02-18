@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/reports/best-selling-products/route.ts
 import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -49,10 +50,23 @@ const getBestSellingProducts = async (req: Request) => {
     .map((item) => item.marketplaceListingId)
     .filter((id): id is string => typeof id === "string" && id !== null);
 
+  
+    const cacheKey = `admin:best-selling-products:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const listings = await prisma.marketplaceListings.findMany({
     where: { id: { in: listingIds } },
     select: { id: true, name: true },
   });
+
+  try {
+    if (listings) {
+      await cacheSet(cacheKey, listings, 60);
+    }
+  } catch (e) {}
 
   const listingMap = new Map(listings.map((l) => [l.id, l.name || "Unknown Product"]));
 

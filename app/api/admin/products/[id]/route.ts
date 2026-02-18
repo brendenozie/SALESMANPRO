@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/products/[id]/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -66,7 +67,9 @@ export const PUT = withApiHandler(async (request: Request, { params }: { params:
     },
   });
 
-  return formatResponse(true, updatedProduct, "Product updated successfully", 200);
+  
+    try { await cacheDel(`admin:products:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, updatedProduct, "Product updated successfully", 200);
 });
 
 // DELETE /api/products/:id
@@ -78,5 +81,7 @@ export const DELETE = withApiHandler(async (request: Request, { params }: { para
     where: { id },
   });
 
-  return formatResponse(true, null, "Product deleted successfully", 200);
+  
+    try { await cacheDel(`admin:products:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, null, "Product deleted successfully", 200);
 });

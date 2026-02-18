@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 
@@ -18,7 +19,14 @@ type RouteContext = {
 const getPropertyLogic = async (request: Request, { params }: RouteContext) => {
     const { id } = params;
 
-    const property = await prisma.property.findUnique({
+    
+    const cacheKey = `admin:fitness-report:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const property = await prisma.property.findUnique({
         where: { id },
         include: {
             category: true,
@@ -28,6 +36,12 @@ const getPropertyLogic = async (request: Request, { params }: RouteContext) => {
             },
         },
     });
+
+  try {
+    if (property) {
+      await cacheSet(cacheKey, property, 60);
+    }
+  } catch (e) {}
 
     if (!property) {
         // Return 404 response
@@ -90,7 +104,9 @@ const putPropertyLogic = async (request: Request, { params }: RouteContext) => {
         });
 
         // Return 200 success response
-        return formatResponse(true, updatedProperty, 'Property updated successfully', 200);
+        
+    try { await cacheDel(`admin:fitness-report:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, updatedProperty, 'Property updated successfully', 200);
     } catch (error: any) {
         if (error.code === 'P2025') { // Prisma error code for record not found
             return formatResponse(false, null, 'Property not found for update.', 404);
@@ -111,7 +127,9 @@ const deletePropertyLogic = async (request: Request, { params }: RouteContext) =
             where: { id },
         });
         // Return 200 success response
-        return formatResponse(true, null, 'Property deleted successfully', 200);
+        
+    try { await cacheDel(`admin:fitness-report:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, null, 'Property deleted successfully', 200);
     } catch (error: any) {
         if (error.code === 'P2025') { // Prisma error code for record not found
             return formatResponse(false, null, 'Property not found for deletion.', 404);

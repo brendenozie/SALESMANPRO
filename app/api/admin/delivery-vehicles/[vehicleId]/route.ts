@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/vehicles/[vehicleId]/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -30,10 +31,7 @@ const mapStatusToPrisma = (status: VehicleData['status']): ListingStatus => {
 };
 
 
-/**
- * PUT /api/vehicles/[vehicleId]
- * Updates an existing vehicle's details.
- */
+
 export const PUT = withApiHandler(async (request, context) => {
   const vehicleId = context.params.vehicleId;
   const userCompanyId = context.user?.companyId;
@@ -69,14 +67,13 @@ export const PUT = withApiHandler(async (request, context) => {
     data: dataToUpdate,
   });
 
-  return formatResponse(true, updatedProduct, "Vehicle updated successfully.", 200);
+  
+    try { await cacheDel(`admin:delivery-vehicles:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, updatedProduct, "Vehicle updated successfully.", 200);
 });
 
 
-/**
- * DELETE /api/vehicles/[vehicleId]
- * Deletes a vehicle from the database.
- */
+
 export const DELETE = withApiHandler(async (request, context) => {
   const vehicleId = context.params.vehicleId;
   const userCompanyId = context.user?.companyId;
@@ -94,5 +91,7 @@ export const DELETE = withApiHandler(async (request, context) => {
     where: { id: vehicleId },
   });
 
-  return formatResponse(true, null, "Vehicle deleted successfully.", 200);
+  
+    try { await cacheDel(`admin:delivery-vehicles:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, null, "Vehicle deleted successfully.", 200);
 });

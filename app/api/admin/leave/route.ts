@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
@@ -7,7 +8,14 @@ export async function GET(request: Request) {
   const status = searchParams.get("status");
 
   try {
-    const requests = await prisma.leaveRequest.findMany({
+    
+    const cacheKey = `admin:leave:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const requests = await prisma.leaveRequest.findMany({
       where: {
         companyId,
         ...(status !== 'All' && { status: status.toUpperCase() })
@@ -18,6 +26,12 @@ export async function GET(request: Request) {
       },
       orderBy: { createdAt: 'desc' }
     });
+
+  try {
+    if (requests) {
+      await cacheSet(cacheKey, requests, 60);
+    }
+  } catch (e) {}
 
     return NextResponse.json({ data: requests });
   } catch (error) {
@@ -39,6 +53,8 @@ export async function PATCH(request: Request) {
        // await updateLeaveBalance(updated.userId, updated.daysRequested);
     }
 
+    
+    try { await cacheDel(`admin:leave:${'global' || 'global'}:*`); } catch (e) {}
     return NextResponse.json({ success: true, data: updated });
   } catch (error) {
     return NextResponse.json({ error: "Update failed" }, { status: 500 });

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/deliveries/[deliveryId]/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -5,10 +6,7 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 import { DeliveryStatus, Prisma } from "@prisma/client";
 
-/**
- * PUT /api/deliveries/[deliveryId]
- * Updates an existing delivery's details (e.g., status, rider assignment).
- */
+
 export const PUT = withApiHandler(async (request, context) => {
   const deliveryId = context.params.deliveryId;
   const userCompanyId = context.user?.companyId;
@@ -51,14 +49,13 @@ export const PUT = withApiHandler(async (request, context) => {
     riderName: updatedDelivery.rider?.name || 'Unassigned',
   };
 
-  return formatResponse(true, formattedDelivery, "Delivery updated successfully.", 200);
+  
+    try { await cacheDel(`admin:deliveries:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, formattedDelivery, "Delivery updated successfully.", 200);
 });
 
 
-/**
- * DELETE /api/deliveries/[deliveryId]
- * Deletes a delivery record.
- */
+
 export const DELETE = withApiHandler(async (request, context) => {
   const deliveryId = context.params.deliveryId;
   const userCompanyId = context.user?.companyId;
@@ -76,5 +73,7 @@ export const DELETE = withApiHandler(async (request, context) => {
     where: { id: deliveryId },
   });
 
-  return formatResponse(true, null, "Delivery deleted successfully.", 200);
+  
+    try { await cacheDel(`admin:deliveries:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, null, "Delivery deleted successfully.", 200);
 });

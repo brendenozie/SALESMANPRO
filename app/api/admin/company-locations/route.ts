@@ -1,12 +1,10 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { Prisma } from '@prisma/client';
 
-/**
- * POST: Create a new association
- * Uses atomic error handling instead of manual existence checks.
- */
+
 async function handlePost(request: Request) {
   const body = await request.json();
   const { companyId, locationId, ...overrides } = body;
@@ -35,6 +33,8 @@ async function handlePost(request: Request) {
       }
     });
 
+    
+    try { await cacheDel(`admin:company-locations:${companyId || 'global'}:*`); } catch (e) {}
     return NextResponse.json(newRecord, { status: 201 });
   } catch (error) {
     // Catch unique constraint violation (P2002)
@@ -45,10 +45,7 @@ async function handlePost(request: Request) {
   }
 }
 
-/**
- * GET: Paginated list
- * Optimized with concurrent queries and selective data fetching.
- */
+
 async function handleGet(request: Request) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
@@ -67,6 +64,13 @@ async function handleGet(request: Request) {
   };
 
   // OPTIMIZATION: Parallelize data fetch and count
+  
+    const cacheKey = `admin:company-locations:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const [data, totalItems] = await Promise.all([
     prisma.companyLocation.findMany({
       where,
@@ -86,6 +90,12 @@ async function handleGet(request: Request) {
     prisma.companyLocation.count({ where }),
   ]);
 
+  try {
+    if (data) {
+      await cacheSet(cacheKey, data, 60);
+    }
+  } catch (e) {}
+
   return NextResponse.json({
     data,
     pagination: {
@@ -100,22 +110,7 @@ async function handleGet(request: Request) {
 export const POST = withApiHandler(handlePost);
 export const GET = withApiHandler(handleGet);
 // import { NextResponse } from 'next/server';
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
-// // --- Type Definitions for the Handler ---
-// type HandlerContext = {
-//   params: {}; // No dynamic params for this route
-//   user?: any; // Replace with your actual User type if defined
-// };
-
-// // --- Core Logic for POST request ---
-// async function handlePost(request: Request, context: HandlerContext): Promise<NextResponse> {
-//   const body = await request.json();
-
-//   // Basic validation: Ensure required foreign keys are present
-//   if (!body.companyId || !body.locationId) {
-//     return NextResponse.json({ message: 'Company ID and Location ID are required.' }, { status: 400 });
 //   }
 
 //   // Check for existing association to enforce @@unique([companyId, locationId])
@@ -207,14 +202,8 @@ export const GET = withApiHandler(handleGet);
 
 // // --- Exported Route Handlers (Wrapped) ---
 
-// /**
-//  * POST /api/company-locations
-//  * Creates a new CompanyLocation association.
-//  */
+// 
 // export const POST = withApiHandler(handlePost);
 
-// /**
-//  * GET /api/company-locations
-//  * Retrieves a list of CompanyLocation records for a specific company.
-//  */
+// 
 // export const GET = withApiHandler(handleGet);

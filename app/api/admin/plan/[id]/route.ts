@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/plans/[id]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -11,10 +12,7 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 // These routes use dynamic paths for specific plan management.
 // =================================================================================================
 
-/**
- * PUT /api/plans/[id]
- * Updates a specific plan.
- */
+
 // import { NextResponse } from "next/server";
 // import prisma from "@/server/db/prismadb";
 
@@ -75,10 +73,7 @@ const putHandler = async (
   return NextResponse.json(updatedPlan, { status: 200 });
 };
 
-/**
- * DELETE /api/plans/[id]
- * Deletes a specific plan (only if no active subscriptions exist).
- */
+
 const deleteHandler = async (
   request: Request,
   { params }: { params: { id: string } }

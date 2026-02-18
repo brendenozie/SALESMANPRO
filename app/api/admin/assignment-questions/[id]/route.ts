@@ -88,6 +88,8 @@ export const PATCH = withApiHandler(async (request, context) => {
 
     const cacheKey = `examQuestion:${id}`;
     await cacheSet(cacheKey, flatten(updated), 120); // Update cache with new data
+    
+    try { await cacheDel(`admin:assignment-questions:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, flatten(updated), null, 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -115,62 +117,7 @@ export const DELETE = withApiHandler(async (request, context) => {
   }
 });
 
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler"; // New import
-// import { formatResponse } from "@/lib/formatResponse"; // New import
-// import { verifyAuth } from "@/lib/verifyAuth"; // Existing import
 
-// // Define valid QuestionTypes (must match your Prisma enum)
-// const VALID_QUESTION_TYPES = ["MULTIPLE_CHOICE", "TRUE_FALSE", "SHORT_ANSWER", "ESSAY", "FILL_IN_THE_BLANK", "MATCHING", "NUMERIC"];
-
-// // Define the type for the dynamic segment 'id' from the URL
-// interface Params {
-//   params: { id: string };
-// }
-
-// // Helper to transform the Prisma question object into the desired API structure
-// function transformQuestionResponse(question: any) {
-//   return {
-//     id: question.id,
-//     examId: question.examId,
-//     examTitle: question.exam?.title || 'N/A',
-//     examCourseTitle: question.exam?.course?.title || 'N/A',
-//     questionText: question.questionText,
-//     imageUrl: question.imageUrl,
-//     videoUrl: question.videoUrl,
-//     questionType: question.questionType,
-//     options: question.options,
-//     correctAnswer: question.correctAnswer,
-//     points: question.points,
-//     order: question.order,
-//     createdAt: question.createdAt,
-//     updatedAt: question.updatedAt,
-//   };
-// }
-
-// // =======================================================================
-// // GET /api/exam-questions/[id]
-// // Fetches a single ExamQuestion by its ID.
-// // =======================================================================
-// async function getQuestion(request: Request, { params }: Params) {
-  
-
-
-//   const { id } = params;
-
-//   const question = await prisma.examQuestion.findUnique({
-//     where: { id },
-//     include: {
-//       exam: {
-//         select: {
-//           id: true,
-//           title: true,
-//           courseId: true,
-//           course: { select: { title: true } },
-//         },
-//       },
-//     },
-//   });
 
 //   if (!question) {
 //     return formatResponse(false, null, "Exam question not found", 404);

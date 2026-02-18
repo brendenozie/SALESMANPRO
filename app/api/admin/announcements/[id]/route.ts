@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -215,29 +216,12 @@ export const DELETE = withApiHandler(async (request, context) => {
     return formatResponse(false, null, "Announcement not found", 404);
   }
 
-  return formatResponse(true, { deletedId: id }, "Announcement deleted", 200);
+  
+    try { await cacheDel(`admin:announcements:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { deletedId: id }, "Announcement deleted", 200);
 });
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-// import { Prisma } from "@prisma/client";
 
-// export const GET = withApiHandler(async (request, context) => {
-//   const { id } = context.params;
-//   const { user } = context;
-
-//   const announcement = await prisma.announcement.findUnique({
-//     where: { id },
-//     // Only select what we actually use to reduce I/O
-//     select: {
-//       id: true, title: true, summary: true, content: true,
-//       status: true, type: true, audience: true,
-//       publishedAt: true, expiresAt: true, companyId: true,
-//       author: { select: { name: true, email: true } },
-//       company: { select: { name: true } },
-//     },
-//   });
 
 //   if (!announcement || announcement.companyId !== user.companyId) {
 //     return formatResponse(false, null, "Not found", 404);
@@ -306,54 +290,7 @@ export const DELETE = withApiHandler(async (request, context) => {
 //   }
 // });
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
 
-// // Define valid Enum values (must match your Prisma enums)
-// const VALID_ANNOUNCEMENT_STATUSES = ["PENDING", "PUBLISHED", "ARCHIVED"];
-// const VALID_ANNOUNCEMENT_TYPES = [
-//   "GENERAL",
-//   "ACADEMIC",
-//   "EVENT",
-//   "HOLIDAY",
-//   "ALERT",
-//   "NEWS",
-//   "POLICY_UPDATE",
-//   "FEEDBACK",
-//   "SURVEY",
-//   "OTHER",
-// ];
-// const VALID_ANNOUNCEMENT_AUDIENCES = [
-//   "ALL",
-//   "ACADEMIC_LEVEL",
-//   "COURSE",
-//   "EDUCATOR",
-//   "STUDENT",
-//   "DEPARTMENT",
-//   "STAFF",
-//   "PARENT",
-// ];
-
-// /**
-//  * GET /api/announcements/[id]
-//  * Fetch a single announcement
-//  */
-// export const GET = withApiHandler(async (request, context) => {
-//   const { id } = context.params;
-//   const { user } = context;
-
-//   if (!user) {
-//     return formatResponse(false, null, "Unauthorized", 401);
-//   }
-
-//   const announcement = await prisma.announcement.findUnique({
-//     where: { id },
-//     include: {
-//       author: { select: { id: true, name: true, email: true } },
-//       company: { select: { id: true, name: true } },
-//     },
-//   });
 
 //   if (!announcement) {
 //     return formatResponse(false, null, "Announcement not found", 404);
@@ -378,10 +315,7 @@ export const DELETE = withApiHandler(async (request, context) => {
 //   return NextResponse.json(responseData, { status: 200 });
 // });
 
-// /**
-//  * PATCH /api/announcements/[id]
-//  * Update an announcement
-//  */
+// 
 // export const PATCH = withApiHandler(async (request, context) => {
 //   const { id } = context.params;
 //   const { user } = context;
@@ -501,10 +435,7 @@ export const DELETE = withApiHandler(async (request, context) => {
 //   return NextResponse.json(responseData, { status: 200 });
 // });
 
-// /**
-//  * DELETE /api/announcements/[id]
-//  * Delete an announcement
-//  */
+// 
 // export const DELETE = withApiHandler(async (request, context) => {
 //   const { user } = context;
 

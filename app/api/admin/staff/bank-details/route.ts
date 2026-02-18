@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
@@ -19,6 +20,8 @@ export async function POST(request: Request) {
       },
     });
 
+    
+    try { await cacheDel(`admin:bank-details:${'global' || 'global'}:*`); } catch (e) {}
     return NextResponse.json({ success: true, data: updated });
   } catch (error) {
     return NextResponse.json({ error: "Failed to save bank details" }, { status: 500 });

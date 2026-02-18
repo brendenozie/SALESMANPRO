@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/locations/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { verifyAuth } from "@/lib/verifyAuth";
@@ -8,6 +9,13 @@ import { formatResponse } from "@/lib/formatResponse";
 const getLocation = async (req: Request, { params }: { params: { id: string } }) => {
   
   const { id } = params;
+  
+    const cacheKey = `admin:properties-locations:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const location = await prisma.location.findUnique({
     where: { id },
     include: {
@@ -15,6 +23,12 @@ const getLocation = async (req: Request, { params }: { params: { id: string } })
       parent: { select: { id: true, name: true } },
     },
   });
+
+  try {
+    if (location) {
+      await cacheSet(cacheKey, location, 60);
+    }
+  } catch (e) {}
 
   if (!location) {
     return formatResponse(false, null, "Location not found", 404);
@@ -42,7 +56,9 @@ const updateLocation = async (req: Request, { params }: { params: { id: string }
     data: { name, description, latitude, longitude, parentId:parentLocationId },
   });
 
-  return formatResponse(true, updatedLocation, "Location updated successfully", 200);
+  
+    try { await cacheDel(`admin:properties-locations:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, updatedLocation, "Location updated successfully", 200);
 };
 
 // DELETE /api/locations/:id
@@ -58,7 +74,9 @@ const deleteLocation = async (req: Request, { params }: { params: { id: string }
   }
 
   await prisma.location.delete({ where: { id } });
-  return formatResponse(true, null, "Location deleted successfully", 200);
+  
+    try { await cacheDel(`admin:properties-locations:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, null, "Location deleted successfully", 200);
 };
 
 // Wrap withApiHandler to unify error handling

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/agents/[id]/route.ts
 import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -96,6 +97,8 @@ async function updateAgent(req: Request, { params }: { params: { id: string } })
       joinedAt: updatedSalesAgent.createdAt?.toISOString() || new Date().toISOString(),
     };
 
+    
+    try { await cacheDel(`admin:sales-agents:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, agentProfile, "Agent updated successfully", 200);
   } catch (error: any) {
     console.error("Error updating agent:", error);
@@ -128,7 +131,9 @@ async function deleteAgent(req: Request, { params }: { params: { id: string } })
     // If there is no associated userId, delete only the salesAgent and return a clear result.
     if (!salesAgent.userId) {
       await prisma.salesAgent.delete({ where: { id: agentId } });
-      return formatResponse(true, null, "Agent deleted (no associated user)", 200);
+      
+    try { await cacheDel(`admin:sales-agents:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, null, "Agent deleted (no associated user)", 200);
     }
 
     await prisma.salesAgent.delete({ where: { id: agentId } });

@@ -1,12 +1,11 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 import { InquiryStatus } from "@prisma/client"; // Assuming InquiryStatus enum is available
 
 // --- GET Handler ---
-/**
- * GET Handler: Fetches all Inquiries for a specific company. (Authenticated)
- */
+
 async function handleGetInquiries(request: Request) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
@@ -16,6 +15,13 @@ async function handleGetInquiries(request: Request) {
     throw new Error("Company ID is required to fetch inquiries.");
   }
 
+  
+    const cacheKey = `admin:inquiries:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const inquiries = await prisma.inquiry.findMany({
     where: {
       companyId: companyId,
@@ -25,14 +31,18 @@ async function handleGetInquiries(request: Request) {
     },
   });
 
+  try {
+    if (inquiries) {
+      await cacheSet(cacheKey, inquiries, 60);
+    }
+  } catch (e) {}
+
   // withApiHandler will wrap this result in formatResponse(true, ...) with status 200
   return formatResponse(true, { results: inquiries }, "Inquiries fetched successfully", 200);
 }
 
 // --- POST Handler ---
-/**
- * POST Handler: Creates a new Inquiry (e.g., from a public contact form). (Unauthenticated but uses wrapper for response formatting)
- */
+
 async function handlePostInquiry(request: Request) {
   const body = await request.json();
   const {
@@ -75,7 +85,9 @@ async function handlePostInquiry(request: Request) {
   });
 
   // Return success response with status 201
-  return formatResponse(true, newInquiry, "Inquiry created successfully", 201);
+  
+    try { await cacheDel(`admin:inquiries:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, newInquiry, "Inquiry created successfully", 201);
 }
 
 // Wrap the core logic with the API handler middleware

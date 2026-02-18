@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -136,7 +137,9 @@ async function handlePostFeeRecord(request: Request) {
     })),
   });
 
-  return formatResponse(
+  
+    try { await cacheDel(`admin:fees:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(
     true,
     {
       created: eligibleStudentIds.length,

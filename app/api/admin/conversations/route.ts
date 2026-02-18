@@ -1,12 +1,13 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // // app/api/conversations/route.ts
 // app/api/conversations/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-/* -------------------------------------------------------------------------- */
-/*                                   Utils                                    */
-/* -------------------------------------------------------------------------- */
+
+
+
 
 const serializeConversation = (entry: any) => {
   const conv = entry.conversation;
@@ -36,9 +37,9 @@ const serializeConversation = (entry: any) => {
   };
 };
 
-/* -------------------------------------------------------------------------- */
-/*                                    GET                                     */
-/* -------------------------------------------------------------------------- */
+
+
+
 
 async function handleGet(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -53,6 +54,13 @@ async function handleGet(request: Request) {
     );
   }
 
+  
+    const cacheKey = `admin:conversations:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const participantEntries =
     await prisma.conversationParticipant.findMany({
       where: {
@@ -98,6 +106,12 @@ async function handleGet(request: Request) {
       },
     });
 
+  try {
+    if (participantEntries) {
+      await cacheSet(cacheKey, participantEntries, 60);
+    }
+  } catch (e) {}
+
   return NextResponse.json(
     participantEntries.map(serializeConversation),
     { status: 200 }
@@ -106,9 +120,9 @@ async function handleGet(request: Request) {
 
 export const GET = withApiHandler(handleGet);
 
-/* -------------------------------------------------------------------------- */
-/*                                    POST                                    */
-/* -------------------------------------------------------------------------- */
+
+
+
 
 async function handlePost(request: Request) {
   const body = await request.json();
@@ -140,7 +154,7 @@ async function handlePost(request: Request) {
     );
   }
 
-  /* ---------------------- Prevent duplicate 1-on-1 chats --------------------- */
+  
   if (uniqueParticipantIds.length === 2 && !title) {
     const [user1, user2] = [...uniqueParticipantIds].sort();
 
@@ -166,7 +180,7 @@ async function handlePost(request: Request) {
     }
   }
 
-  /* --------------------------- Create conversation --------------------------- */
+  
 
   const conversation = await prisma.conversation.create({
     data: {
@@ -217,22 +231,7 @@ async function handlePost(request: Request) {
 export const POST = withApiHandler(handlePost);
 
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// /**
-//  * GET: Fetch paginated inbox for a user
-//  */
-// async function handleGet(request: Request) {
-//   const { searchParams } = new URL(request.url);
-//   const userId = searchParams.get("userId");
-//   const companyId = searchParams.get("companyId");
-//   const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
-//   const limit = Math.min(50, parseInt(searchParams.get("limit") || "20"));
-//   const includeArchived = searchParams.get("includeArchived") === "true";
-
-//   if (!userId || !companyId) {
-//     return NextResponse.json({ message: "userId and companyId required" }, { status: 400 });
 //   }
 
 //   const entries = await prisma.conversationParticipant.findMany({
@@ -290,9 +289,7 @@ export const POST = withApiHandler(handlePost);
 //   return NextResponse.json(formatted);
 // }
 
-// /**
-//  * POST: Create conversation or return existing DM
-//  */
+// 
 // async function handlePost(request: Request) {
 //   const { companyId, participantIds, title } = await request.json();
 
@@ -346,66 +343,7 @@ export const POST = withApiHandler(handlePost);
 // export const GET = withApiHandler(handleGet);
 // export const POST = withApiHandler(handlePost);
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// // --- Type Definitions ---
-// type HandlerContext = {
-//   params: {}; // no dynamic params for this route
-//   user?: any; // replace with actual user type if available
-// };
-
-// // -------------------- GET --------------------
-// // GET /api/conversations
-// // Fetches all conversations for a given userId within a company.
-// async function handleGet(
-//   request: Request,
-//   _context: HandlerContext
-// ): Promise<NextResponse> {
-//   const { searchParams } = new URL(request.url);
-//   const userId = searchParams.get("userId");
-//   const companyId = searchParams.get("companyId");
-//   const includeArchived = searchParams.get("includeArchived") === "true";
-
-//   if (!userId || !companyId) {
-//     return NextResponse.json(
-//       { message: "User ID and Company ID are required to fetch conversations." },
-//       { status: 400 }
-//     );
-//   }
-
-//   const participantEntries = await prisma.conversationParticipant.findMany({
-//     where: {
-//       userId,
-//       isArchived: includeArchived ? undefined : false,
-//       isDeleted: false,
-//       conversation: { companyId },
-//     },
-//     include: {
-//       conversation: {
-//         include: {
-//           participants: {
-//             include: {
-//               user: { select: { id: true, name: true, email: true } },
-//             },
-//           },
-//           messages: {
-//             orderBy: { createdAt: "desc" },
-//             take: 1,
-//             select: {
-//               id: true,
-//               content: true,
-//               createdAt: true,
-//               sender: { select: { id: true, name: true } },
-//             },
-//           },
-//         },
-//       },
-//     },
-//     orderBy: {
-//       conversation: { lastMessageAt: "desc" },
-//     },
-//   });
 
 //   const conversations = participantEntries.map((entry) => {
 //     const conv = entry.conversation;

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -28,6 +29,13 @@ export const GET = withApiHandler(async (request) => {
   const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
   // --- 1. Basic Stats ---
+  
+    const cacheKey = `admin:principle:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const [studentCount, teacherCount, classCount, upcomingEvents] = await Promise.all([
     prisma.student.count({ where: { companyId } }),
     prisma.educator.count({ where: { companyId } }),
@@ -36,6 +44,12 @@ export const GET = withApiHandler(async (request) => {
       where: { companyId, startDateTime: { gte: now }, eventStatus: "SCHEDULED" } 
     }),
   ]);
+
+  try {
+    if (studentCount) {
+      await cacheSet(cacheKey, studentCount, 60);
+    }
+  } catch (e) {}
 
   // --- 2. Spotlight: Student & Teacher of the Week ---
   const [topWeeklyGrade, topWeeklyReview] = await Promise.all([

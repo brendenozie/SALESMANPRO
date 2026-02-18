@@ -1,11 +1,10 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { ROLES } from "@prisma/client";
 
-/* ----------------------------------
-   Types
------------------------------------ */
+
 type HandlerContext = {
   params: { adminSlug: string };
   user?: any;
@@ -16,9 +15,7 @@ type SaleItem = {
   quantity: number;
 };
 
-/* ----------------------------------
-   POST — POS Sale
------------------------------------ */
+
 async function handlePost(req: Request, context: HandlerContext) {
   const { adminSlug } = context.params;
   const body = await req.json();
@@ -43,9 +40,7 @@ async function handlePost(req: Request, context: HandlerContext) {
     return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
   }
 
-  /* ----------------------------------
-     Fetch company + event in parallel
-  ----------------------------------- */
+  
   const [company, event] = await Promise.all([
     prisma.company.findUnique({
       where: { slug: adminSlug },
@@ -71,9 +66,7 @@ async function handlePost(req: Request, context: HandlerContext) {
     );
   }
 
-  /* ----------------------------------
-     Load all ticket products at once
-  ----------------------------------- */
+  
   const productIds = items.map(i => i.ticketProductId);
 
   const products = await prisma.marketplaceListings.findMany({
@@ -121,11 +114,9 @@ async function handlePost(req: Request, context: HandlerContext) {
     });
   }
 
-  /* ----------------------------------
-     Atomic transaction
-  ----------------------------------- */
+  
   const order = await prisma.$transaction(async tx => {
-    /* --- User / Consumer upsert --- */
+    
     const user = await tx.user.upsert({
       where: { email: customerEmail },
       update: { name: customerName },
@@ -147,7 +138,7 @@ async function handlePost(req: Request, context: HandlerContext) {
       select: { id: true },
     });
 
-    /* --- Order creation --- */
+    
     const order = await tx.customerOrder.create({
       data: {
         consumerId: consumer.id,
@@ -168,7 +159,7 @@ async function handlePost(req: Request, context: HandlerContext) {
       },
     });
 
-    /* --- Payment record --- */
+    
     await tx.payment.create({
       data: {
         userId: consumer.id,
@@ -179,7 +170,7 @@ async function handlePost(req: Request, context: HandlerContext) {
       },
     });
 
-    /* --- Inventory decrement (batched) --- */
+    
     await Promise.all(
       orderItems.map(item =>
         tx.marketplaceListings.update({
@@ -189,7 +180,7 @@ async function handlePost(req: Request, context: HandlerContext) {
       )
     );
 
-    /* --- Bulk event registrations --- */
+    
     const registrations = orderItems.flatMap(item =>
       Array.from({ length: item.quantity }).map(() => ({
         eventId: event.id,
@@ -217,20 +208,14 @@ async function handlePost(req: Request, context: HandlerContext) {
   );
 }
 
-/**
- * POST /api/admin/[adminSlug]/pos/sale
- */
+
 export const POST = withApiHandler(handlePost, {
   requireAuth: true,
   requireRateLimit: true,
 });
 
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { ROLES } from "@prisma/client";
-
-// async function handlePost(request: Request, context: { params: { adminSlug: string } }) {
+ {
 //   const { adminSlug } = context.params;
 //   const body = await request.json();
 //   const { eventId, customerName, customerEmail, paymentMethod, items, notes } = body;
@@ -349,32 +334,7 @@ export const POST = withApiHandler(handlePost, {
 
 // export const POST = withApiHandler(handlePost);
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { ROLES } from "@prisma/client";
 
-// // --- Type Definitions for the Handler ---
-
-// type RouteParams = {
-//   adminSlug: string;
-// };
-
-// type HandlerContext = {
-//   params: RouteParams;
-//   user?: any; // Replace with your actual User type if defined
-// };
-
-// // --- Core Logic for POST request ---
-// // This function contains only the business logic, with the wrapper handling
-// // authentication and the top-level try/catch.
-// async function handlePost(request: Request, context: HandlerContext): Promise<NextResponse> {
-//   const { adminSlug } = context.params;
-//   const body = await request.json();
-
-//   const { eventId, customerName, customerEmail, paymentMethod, items, notes } = body;
-
-//   if (!eventId || !customerName || !customerEmail || !paymentMethod || !items || items.length === 0) {
-//     return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
 //   }
 
 //   const company = await prisma.company.findUnique({
@@ -521,8 +481,5 @@ export const POST = withApiHandler(handlePost, {
 
 // // --- Exported Route Handler (Wrapped) ---
 
-// /**
-//  * POST /api/admin/[adminSlug]/pos/sale
-//  * Processes a point-of-sale transaction for an event.
-//  */
+// 
 // export const POST = withApiHandler(handlePost);

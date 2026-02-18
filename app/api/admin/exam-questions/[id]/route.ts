@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -43,6 +44,13 @@ async function getQuestion(request: Request, { params }: Params) {
 
   const { id } = params;
 
+  
+    const cacheKey = `admin:exam-questions:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const question = await prisma.examQuestion.findUnique({
     where: { id },
     include: {
@@ -56,6 +64,12 @@ async function getQuestion(request: Request, { params }: Params) {
       },
     },
   });
+
+  try {
+    if (question) {
+      await cacheSet(cacheKey, question, 60);
+    }
+  } catch (e) {}
 
   if (!question) {
     return formatResponse(false, null, "Exam question not found", 404);
@@ -141,6 +155,8 @@ async function updateQuestion(request: Request, { params }: Params) {
     });
 
     const responseData = transformQuestionResponse(updatedQuestion);
+    
+    try { await cacheDel(`admin:exam-questions:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { data: responseData }, null, 200);
   } catch (error: any) {
     if (error.code === 'P2025') { // Record not found
@@ -174,6 +190,8 @@ async function deleteQuestion(request: Request, { params }: Params) {
       where: { id },
     });
 
+    
+    try { await cacheDel(`admin:exam-questions:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { message: "Exam question deleted successfully", deletedId: deletedQuestion.id }, null, 200);
   } catch (error: any) {
     if (error.code === 'P2003') { // Foreign key constraint failed

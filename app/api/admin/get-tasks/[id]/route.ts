@@ -1,15 +1,10 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 // Note: Removed NextApiRequest, NextApiResponse, and NextJs Response objects (NextResponse).
 
-/**
- * Core handler logic to fetch a single task by ID.
- * This function assumes the App Router path is /api/tasks/[id].
- * * This function assumes:
- * 1. Authentication/Authorization is performed by `withApiHandler`.
- * 2. Automatic try/catch wrapping (for 500 errors) is performed by `withApiHandler`.
- */
+
 async function getTaskById(
   req: Request,
   { params }: { params: { id: string } }

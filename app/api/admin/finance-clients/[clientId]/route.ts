@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/clients/[id]/route.ts
 import { PrismaClient } from '@prisma/client';
 
@@ -16,12 +17,25 @@ const getClientId = (req: Request, context: { params: { id: string } }) => {
 const getClientLogic = async (req: Request, context: { params: { id: string } }) => {
     const clientId = getClientId(req, context);
 
-    const client = await prisma.client.findUnique({
+    
+    const cacheKey = `admin:finance-clients:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const client = await prisma.client.findUnique({
         where: { id: clientId },
         include: {
             user: true,
         },
     });
+
+  try {
+    if (client) {
+      await cacheSet(cacheKey, client, 60);
+    }
+  } catch (e) {}
 
     if (!client) {
         // Use formatResponse for business-logic failure (404)
@@ -70,6 +84,8 @@ const putClientLogic = async (req: Request, context: { params: { id: string } })
         },
     });
 
+    
+    try { await cacheDel(`admin:finance-clients:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedClient, 'Client updated successfully', 200);
 };
 
@@ -97,6 +113,8 @@ const deleteClientLogic = async (req: Request, context: { params: { id: string }
         where: { id: existingClient.userId },
     });
 
+    
+    try { await cacheDel(`admin:finance-clients:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, 'Client and user deleted successfully', 200);
 };
 

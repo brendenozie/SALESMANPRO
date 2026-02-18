@@ -1,10 +1,9 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/**
- * GET Handler: Fetches a paginated and filtered list of services (MarketplaceListings).
- */
+
 async function getServices(
   request: Request,
   { params }: { params: { adminSlug: string } }
@@ -30,10 +29,23 @@ async function getServices(
   }
 
   // 1. Find Company
+  
+    const cacheKey = `admin:health-inventory:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const company = await prisma.company.findUnique({
     where: { slug: adminSlug },
     select: { id: true }
   });
+
+  try {
+    if (company) {
+      await cacheSet(cacheKey, company, 60);
+    }
+  } catch (e) {}
 
   if (!company) {
     return formatResponse(false, null, "Company not found", 404);
@@ -96,9 +108,7 @@ async function getServices(
   }, "Services list fetched successfully", 200);
 }
 
-/**
- * POST Handler: Creates a new service (MarketplaceListing).
- */
+
 async function createService(
   request: Request,
   { params }: { params: { adminSlug: string } }
@@ -168,7 +178,9 @@ async function createService(
     }),
   ]);
 
-  return formatResponse(true, newService, "Service created successfully", 201);
+  
+    try { await cacheDel(`admin:health-inventory:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, newService, "Service created successfully", 201);
 }
 
 // Wrap the core logic with the API handler middleware

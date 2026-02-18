@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -49,9 +50,7 @@ function formatSettings(company: Awaited<ReturnType<typeof fetchCompanySettings>
   };
 }
 
-/**
- * GET Handler: Fetches all settings for a specific company (adminSlug).
- */
+
 async function handleGetSettings(request: Request, { params }: SettingsParams) {
   const company = await fetchCompanySettings(params.adminSlug);
 
@@ -65,9 +64,7 @@ async function handleGetSettings(request: Request, { params }: SettingsParams) {
   return formatResponse(true, settings, "Settings fetched successfully", 200);
 }
 
-/**
- * PUT Handler: Updates company settings across multiple related tables.
- */
+
 async function handleUpdateSettings(request: Request, { params }: SettingsParams) {
   const { adminSlug } = params;
   const body = await request.json();
@@ -160,7 +157,9 @@ async function handleUpdateSettings(request: Request, { params }: SettingsParams
   const updatedSettings = formatSettings(updatedCompany);
 
   // Return success response with updated data
-  return formatResponse(true, { message: "Settings updated successfully", settings: updatedSettings }, "Settings updated successfully", 200);
+  
+    try { await cacheDel(`admin:health-settings:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { message: "Settings updated successfully", settings: updatedSettings }, "Settings updated successfully", 200);
 }
 
 // Wrap the core logic with the API handler middleware

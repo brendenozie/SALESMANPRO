@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -12,6 +13,13 @@ export const GET = withApiHandler(async (request: Request) => {
   // Calculate date 24 hours ago
   const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
+  
+    const cacheKey = `admin:return-scan:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const history = await prisma.libraryIssuance.findMany({
     where: {
       // companyId,
@@ -29,6 +37,12 @@ export const GET = withApiHandler(async (request: Request) => {
     },
     orderBy: { returnDate: 'desc' }
   });
+
+  try {
+    if (history) {
+      await cacheSet(cacheKey, history, 60);
+    }
+  } catch (e) {}
 
   const formatted = history.map(h => ({
     book: h.book.title,

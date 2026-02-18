@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -5,9 +6,7 @@ import { formatResponse } from "@/lib/formatResponse";
 // Define the expected structure for route parameters (adminSlug)
 type POSTParams = { params: { adminSlug: string } };
 
-/**
- * POST Handler: Processes a new Point of Sale transaction.
- */
+
 async function handlePostTransaction(request: Request, { params }: POSTParams) {
   const { adminSlug } = params;
   const body = await request.json();
@@ -107,7 +106,9 @@ async function handlePostTransaction(request: Request, { params }: POSTParams) {
     timestamp: newOrder.createdAt,
   };
 
-  return formatResponse(true, responseData, "Transaction successful", 201);
+  
+    try { await cacheDel(`admin:health-transactions:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, responseData, "Transaction successful", 201);
 }
 
 // Wrap the core logic with the API handler middleware

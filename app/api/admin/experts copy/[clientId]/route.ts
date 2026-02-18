@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -35,12 +36,25 @@ async function getClient(req: Request, { params }: Params) {
     return formatResponse(false, null, "Missing client ID.", 400);
   }
 
+  
+    const cacheKey = `admin:experts copy:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const client = await prisma.client.findUnique({
     where: { id: clientId },
     include: {
       user: { select: { name: true, email: true, phone: true } },
     },
   });
+
+  try {
+    if (client) {
+      await cacheSet(cacheKey, client, 60);
+    }
+  } catch (e) {}
 
   if (!client) {
     return formatResponse(false, null, "Client not found.", 404);
@@ -90,7 +104,9 @@ async function patchClient(req: Request, { params }: Params) {
     ...formatClientData({ id: clientId, user: updatedUser }),
   };
 
-  return formatResponse(true, { data: updatedClientResponse }, null, 200);
+  
+    try { await cacheDel(`admin:experts copy:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { data: updatedClientResponse }, null, 200);
 }
 
 
@@ -111,7 +127,9 @@ async function deleteClient(req: Request, { params }: Params) {
   await prisma.client.delete({ where: { id: clientId } });
 
   // Use 200 with a success message or 204 (No Content)
-  return formatResponse(true, { message: "Client successfully deleted." }, null, 200);
+  
+    try { await cacheDel(`admin:experts copy:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { message: "Client successfully deleted." }, null, 200);
 }
 
 // Export the wrapped handlers

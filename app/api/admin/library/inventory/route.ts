@@ -1,11 +1,10 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/**
- * GET: Fetch Master Inventory
- */
+
 const getInventory = async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
@@ -29,9 +28,7 @@ const getInventory = async (request: Request) => {
   return formatResponse(true, books, "Inventory data synced", 200);
 };
 
-/**
- * PATCH: Perform Audit / Verification
- */
+
 export const PATCH = withApiHandler(async (request: Request) => {
   const { bookId, integrity, condition } = await request.json();
 
@@ -44,7 +41,9 @@ export const PATCH = withApiHandler(async (request: Request) => {
     }
   });
 
-  return formatResponse(true, updatedBook, "Audit log updated", 200);
+  
+    try { await cacheDel(`admin:inventory:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, updatedBook, "Audit log updated", 200);
 }, { requireAuth: true });
 
 export const GET = withApiHandler(getInventory, { requireAuth: true });

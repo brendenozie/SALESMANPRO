@@ -1,13 +1,9 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/**
- * GET Handler: Generates an inventory report with filtering by category and stock status.
- *
- * This handler assumes the InventoryItem model holds the definitive stock (quantity)
- * and threshold (reorderThreshold) for reporting purposes.
- */
+
 async function getInventoryReport(request: Request) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
@@ -33,6 +29,13 @@ async function getInventoryReport(request: Request) {
   }
 
   // 2. Fetch Inventory Items
+  
+    const cacheKey = `admin:inventory:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const inventoryItems = await prisma.inventoryItem.findMany({
     where: whereClause,
     select: {
@@ -52,6 +55,12 @@ async function getInventoryReport(request: Request) {
     },
     orderBy: { product: { name: 'asc' } },
   });
+
+  try {
+    if (inventoryItems) {
+      await cacheSet(cacheKey, inventoryItems, 60);
+    }
+  } catch (e) {}
 
   // 3. Process and Filter Report Data in memory (after fetching relevant items)
   const inventoryReport = inventoryItems

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import { PrismaClient } from '@prisma/client';
@@ -23,6 +24,13 @@ async function handleGetAppointments(request: Request) {
     return formatResponse(false, null, 'companyId search parameter is required.', 400);
   }
 
+  
+    const cacheKey = `admin:finance-appointments:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const appointments = await prisma.financeAppointment.findMany({
     where: { companyId: companyId },
     include: {
@@ -37,6 +45,12 @@ async function handleGetAppointments(request: Request) {
       date: 'asc'
     }
   });
+
+  try {
+    if (appointments) {
+      await cacheSet(cacheKey, appointments, 60);
+    }
+  } catch (e) {}
 
   // Note: The original code wrapped the appointments array in an object {appointments}.
   // We'll follow the formatResponse convention of returning the data directly.
@@ -70,7 +84,9 @@ async function handlePostAppointment(request: Request) {
     },
   });
 
-  return formatResponse(true, newAppointment, null, 201);
+  
+    try { await cacheDel(`admin:finance-appointments:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, newAppointment, null, 201);
 }
 
 // Export the refactored handlers wrapped in withApiHandler

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/locations/route.ts
 import prisma from "@/server/db/prismadb";
 import { verifyAuth } from "@/lib/verifyAuth";
@@ -10,6 +11,13 @@ const getLocations = async (req: Request) => {
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
+  
+    const cacheKey = `admin:properties-locations:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const locations = await prisma.location.findMany({
     include: {
       _count: { select: { marketplaceListings: true } },
@@ -17,6 +25,12 @@ const getLocations = async (req: Request) => {
     },
     orderBy: { name: "asc" },
   });
+
+  try {
+    if (locations) {
+      await cacheSet(cacheKey, locations, 60);
+    }
+  } catch (e) {}
 
   const formattedLocations = locations.map((loc) => ({
     ...loc,
@@ -57,7 +71,9 @@ const createLocation = async (req: Request) => {
     },
   });
 
-  return formatResponse(true, newLocation, "Location created successfully", 201);
+  
+    try { await cacheDel(`admin:properties-locations:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, newLocation, "Location created successfully", 201);
 };
 
 export const GET = withApiHandler(getLocations);

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/parents/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -32,6 +33,13 @@ async function handleGetParents(request: Request) {
   const whereClause: any = {};
   if (companyId) whereClause.companyId = companyId;
 
+  
+    const cacheKey = `admin:parents:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const parents = await prisma.parent.findMany({
     where: whereClause,
     include: {
@@ -42,6 +50,12 @@ async function handleGetParents(request: Request) {
     },
     orderBy: { user: { name: "asc" } },
   });
+
+  try {
+    if (parents) {
+      await cacheSet(cacheKey, parents, 60);
+    }
+  } catch (e) {}
 
   const response = parents.map((parent) => ({
     id: parent.id,
@@ -121,7 +135,9 @@ async function handlePostParent(request: Request) {
     updatedAt: newParent.updatedAt,
   };
 
-  return formatResponse(true, responseData, "Parent created successfully", 201);
+  
+    try { await cacheDel(`admin:parents:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, responseData, "Parent created successfully", 201);
 }
 
 // --- Export with handler wrapper ---

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/testimonials/route.ts
 import prisma from '@/server/db/prismadb';
 import { formatResponse } from "@/lib/formatResponse";
@@ -15,10 +16,23 @@ async function handleGET(request: Request) {
     if (companyId) where.companyId = companyId;
     if (status) where.status = String(status);
 
-    const testimonials = await prisma.testimonial.findMany({
+    
+    const cacheKey = `admin:testimonials:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const testimonials = await prisma.testimonial.findMany({
       where,
       // orderBy: { createdAt: 'desc' },
     });
+
+  try {
+    if (testimonials) {
+      await cacheSet(cacheKey, testimonials, 60);
+    }
+  } catch (e) {}
 
     return formatResponse(true, { testimonials });
   } catch (error: any) {
@@ -40,6 +54,8 @@ async function handlePOST(request: Request) {
       data: { quote, authorId, authorName, authorTitle, status, companyId },
     });
 
+    
+    try { await cacheDel(`admin:testimonials:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { newTestimonial });
   } catch (error: any) {
     console.error('Failed to create testimonial:', error);

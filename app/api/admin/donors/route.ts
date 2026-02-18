@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -11,6 +12,13 @@ async function getDonors(request: Request) {
   
 
 
+  
+    const cacheKey = `admin:donors:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const donors = await prisma.donor.findMany({
     include: {
       user: {
@@ -34,6 +42,12 @@ async function getDonors(request: Request) {
       createdAt: 'desc',
     },
   });
+
+  try {
+    if (donors) {
+      await cacheSet(cacheKey, donors, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, { data: donors }, null, 200);
 }
@@ -79,7 +93,9 @@ async function createDonor(request: Request) {
     include: { user: true, company: true }, // Include relations in the response
   });
 
-  return formatResponse(true, { data: newDonor }, null, 201);
+  
+    try { await cacheDel(`admin:donors:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { data: newDonor }, null, 201);
 }
 
 // Export handlers with standardized wrapper

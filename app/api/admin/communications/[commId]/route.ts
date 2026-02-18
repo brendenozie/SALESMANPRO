@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // app/api/admin/[adminSlug]/communications/[commId]/route.ts
 
 import { NextResponse } from 'next/server';
@@ -6,10 +7,7 @@ import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse';
 import { Prisma } from '@prisma/client';
 
-/**
- * PUT: Update Communication
- * Optimized to perform security check and update in one DB round-trip.
- */
+
 async function handlePut(request: Request, context: { params: { adminSlug: string; commId: string }; user?: any }) {
   const { adminSlug, commId } = context.params;
   const body = await request.json();
@@ -43,6 +41,8 @@ async function handlePut(request: Request, context: { params: { adminSlug: strin
       data: updateData,
     });
 
+    
+    try { await cacheDel(`admin:communications:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updated, "Updated successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -52,9 +52,7 @@ async function handlePut(request: Request, context: { params: { adminSlug: strin
   }
 }
 
-/**
- * DELETE: Remove Communication
- */
+
 async function handleDelete(request: Request, context: { params: { adminSlug: string; commId: string } }) {
   const { adminSlug, commId } = context.params;
 
@@ -67,6 +65,8 @@ async function handleDelete(request: Request, context: { params: { adminSlug: st
       },
     });
 
+    
+    try { await cacheDel(`admin:communications:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Deleted successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -79,56 +79,7 @@ async function handleDelete(request: Request, context: { params: { adminSlug: st
 export const PUT = withApiHandler(handlePut);
 export const DELETE = withApiHandler(handleDelete);
 // import { NextResponse } from 'next/server';
-// import prisma from '@/server/db/prismadb';
-// import { withApiHandler } from '@/lib/hooks/withApiHandler'; 
-// // Assuming the path to your wrapper is correct
 
-// // 1. Define Context and Body Types (Best Practice for Type Safety)
-// // You should define these types in a central place if they are reused.
-// // For now, we'll define them here for clarity.
-
-// type RouteParams = {
-//   adminSlug: string;
-//   commId: string;
-// };
-
-// // This matches the context type expected by withApiHandler
-// type HandlerContext = {
-//   params: RouteParams;
-//   user?: any; // Replace 'any' with your actual User type if defined
-// };
-
-// type CommunicationBody = {
-//   subject: string;
-//   content: string;
-//   communicationType: string;
-//   status: 'DRAFT' | 'SCHEDULED' | 'SENT'; // Use actual string literals or enum
-//   recipients: string[]; // Adjust type based on what 'recipients' holds
-//   scheduledDate?: string | Date;
-// };
-
-// // --- Handler Functions (Core Logic) ---
-
-// /**
-//  * Core logic for the PUT request.
-//  */
-// async function handlePut(request: Request, context: HandlerContext): Promise<Response> {
-//   const { adminSlug, commId } = context.params;
-
-//   const body: CommunicationBody = await request.json();
-//   const {
-//     subject,
-//     content,
-//     communicationType,
-//     status,
-//     recipients,
-//     scheduledDate,
-//   } = body;
-
-//   const company = await prisma.company.findUnique({
-//     where: { slug: adminSlug },
-//     select: { id: true },
-//   });
 
 //   if (!company) {
 //     return NextResponse.json({ message: 'Company not found.' }, { status: 404 });
@@ -182,9 +133,7 @@ export const DELETE = withApiHandler(handleDelete);
 //   return NextResponse.json(formattedUpdatedCommunication);
 // }
 
-// /**
-//  * Core logic for the DELETE request.
-//  */
+// 
 // async function handleDelete(request: Request, context: HandlerContext): Promise<Response> {
 //   const { adminSlug, commId } = context.params;
 
@@ -215,14 +164,8 @@ export const DELETE = withApiHandler(handleDelete);
 
 // // --- Exported Route Handlers (Wrapped) ---
 
-// /**
-//  * PUT /api/admin/[adminSlug]/communications/[commId]
-//  * Wrapped to include Auth, Rate Limiting, and Error Handling.
-//  */
+// 
 // export const PUT = withApiHandler(handlePut); // Uses defaults (requireAuth: true, requireRateLimit: true)
 
-// /**
-//  * DELETE /api/admin/[adminSlug]/communications/[commId]
-//  * Wrapped to include Auth, Rate Limiting, and Error Handling.
-//  */
+// 
 // export const DELETE = withApiHandler(handleDelete); // Uses defaults

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
@@ -16,6 +17,8 @@ export async function POST(req: Request) {
 
     await prisma.$transaction(updates);
 
+    
+    try { await cacheDel(`admin:restock:${companyId || 'global'}:*`); } catch (e) {}
     return NextResponse.json({ message: "Restock successful" }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: "Restock failed" }, { status: 500 });

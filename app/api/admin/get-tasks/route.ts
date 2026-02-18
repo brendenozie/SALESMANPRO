@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -5,13 +6,7 @@ import { formatResponse } from "@/lib/formatResponse";
 
 const PAGE_SIZE = 20;
 
-/**
- * Core handler logic to fetch paginated User data.
- * This function assumes:
- * 1. Authentication/Authorization is performed by `withApiHandler` (returns 401).
- * 2. Automatic try/catch wrapping (returns 500) is performed by `withApiHandler`.
- * 3. The final returned object is wrapped in a 200 OK NextResponse.
- */
+
 async function fetchPaginatedUsers(req: Request) {
   // NOTE: Authentication and method check are handled externally.
 
@@ -37,6 +32,13 @@ async function fetchPaginatedUsers(req: Request) {
 
   // --- Data Fetching ---
   // Use transaction for atomic count and fetch operations.
+  
+    const cacheKey = `admin:get-tasks:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const [totalCount, results] = await prisma.$transaction([
     // 1. Get total count of all users (DO NOT use skip/take here)
     prisma.user.count(),
@@ -48,6 +50,12 @@ async function fetchPaginatedUsers(req: Request) {
       orderBy: { createdAt: 'desc' } // Adding a consistent order by field is recommended
     }),
   ]);
+
+  try {
+    if (totalCount) {
+      await cacheSet(cacheKey, totalCount, 60);
+    }
+  } catch (e) {}
 
   // --- Calculate Pagination Metadata ---
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/podcasts/[id]/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -60,6 +61,8 @@ const putHandler = async (
       },
     });
 
+    
+    try { await cacheDel(`admin:podcasts:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedPodcast, null, 200);
   } catch (error: any) {
     console.error("Error updating podcast:", error);
@@ -88,6 +91,8 @@ const deleteHandler = async (
       where: { id },
     });
 
+    
+    try { await cacheDel(`admin:podcasts:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, null, 204);
   } catch (error: any) {
     console.error("Error deleting podcast:", error);

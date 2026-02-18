@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { NextResponse } from "next/server";
 
@@ -61,6 +62,8 @@ export async function POST(req: Request) {
       },
     });
 
+    
+    try { await cacheDel(`admin:send-whatsapp:${'global' || 'global'}:*`); } catch (e) {}
     return NextResponse.json({ success: true, messageId: result.messages[0].id });
 
   } catch (error: any) {

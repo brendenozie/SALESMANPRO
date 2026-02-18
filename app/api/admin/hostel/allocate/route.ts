@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
@@ -12,7 +13,14 @@ export async function GET(req: Request) {
   try {
     // We search for Students first (the most common use case)
     // We only want students who don't have an ACTIVE hostel allocation
-    const students = await prisma.student.findMany({
+    
+    const cacheKey = `admin:allocate:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const students = await prisma.student.findMany({
       where: {
         companyId,
         OR: [
@@ -37,6 +45,12 @@ export async function GET(req: Request) {
       },
       take: 10
     });
+
+  try {
+    if (students) {
+      await cacheSet(cacheKey, students, 60);
+    }
+  } catch (e) {}
 
     return NextResponse.json({ data: students });
   } catch (error) {

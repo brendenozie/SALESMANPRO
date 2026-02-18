@@ -1,11 +1,10 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/**
- * GET: Fetch all active reservations for a company
- */
+
 const getReservationsLogic = async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
@@ -31,9 +30,7 @@ const getReservationsLogic = async (request: Request) => {
   return formatResponse(true, reservations, "Reservation queue retrieved", 200);
 };
 
-/**
- * POST: Create a new reservation
- */
+
 const postReservationLogic = async (request: Request) => {
   const body = await request.json();
   const { libraryMemberId, bookId, expiryDate, companyId } = body;

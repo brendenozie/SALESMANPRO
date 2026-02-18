@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
@@ -8,7 +9,14 @@ export async function GET(req: Request) {
   if (!blockId) return NextResponse.json({ error: "Missing blockId" }, { status: 400 });
 
   try {
-    const rooms = await prisma.hostelRoom.findMany({
+    
+    const cacheKey = `admin:rooms:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const rooms = await prisma.hostelRoom.findMany({
       where: {
         block: { id: blockId }
       },
@@ -22,6 +30,12 @@ export async function GET(req: Request) {
         }
       }
     });
+
+  try {
+    if (rooms) {
+      await cacheSet(cacheKey, rooms, 60);
+    }
+  } catch (e) {}
 
     // Transform data for the UI
     const transformedRooms = rooms.map(room => ({
@@ -66,6 +80,8 @@ export async function POST(req: Request) {
       },
     });
 
+    
+    try { await cacheDel(`admin:rooms:${'global' || 'global'}:*`); } catch (e) {}
     return NextResponse.json({ data: newRoom, message: "Room created successfully" }, { status: 201 });
   } catch (error: any) {
     // Handle Prisma unique constraint error (P2002) for [blockId, roomNumber]
@@ -77,33 +93,7 @@ export async function POST(req: Request) {
 }
 
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
 
-// // GET /api/admin/hostel/rooms
-// // Fetches all hostel rooms filtered by companyId
-// const getRoomsLogic = async (request: Request) => {
-//   const { searchParams } = new URL(request.url);
-//   const companyId = searchParams.get("companyId");
-
-//   if (!companyId) {
-//     return formatResponse(false, null, "Company ID is required to fetch rooms.", 400);
-//   }
-
-//   const rooms = await prisma.hostelRoom.findMany({
-//     where: {
-//       block: {
-//         companyId,
-//       },
-//     },
-//     include: {
-//       block: {
-//         select: { id: true, name: true, type: true },
-//       },
-//     },
-//     orderBy: { createdAt: "desc" },
-//   });
 
 //   return formatResponse(true, rooms, "Rooms retrieved successfully", 200);
 // };

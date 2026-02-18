@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
@@ -9,12 +10,25 @@ export async function GET(request: Request) {
 
   try {
     // 1. Fetch staff with their bank details and payroll profiles
-    const staff = await prisma.staffProfile.findMany({
+    
+    const cacheKey = `admin:export:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const staff = await prisma.staffProfile.findMany({
       where: { companyId },
       include: { 
         user: { select: { name: true } } 
       }
     });
+
+  try {
+    if (staff) {
+      await cacheSet(cacheKey, staff, 60);
+    }
+  } catch (e) {}
 
     // 2. Construct CSV Header
     let csvContent = "Beneficiary Name,Account Number,Bank Code,Amount,Currency,Payment Reference\n";

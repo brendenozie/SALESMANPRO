@@ -1,12 +1,11 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // // app/api/course-assignments/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 import { Prisma } from "@prisma/client";
 
-/**
- * POST: Submit and Auto-grade
- */
+
 export const POST = withApiHandler(async (req: Request, { params }) => {
   const assignmentId = params.id;
   const { studentId, courseId, companyId, responses } = await req.json();
@@ -63,13 +62,20 @@ export const POST = withApiHandler(async (req: Request, { params }) => {
     select: { id: true, grade: true }
   });
 
-  return formatResponse(true, { submissionId: submission.id, score: submission.grade }, "Submitted", 201);
+  
+    try { await cacheDel(`admin:submit:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { submissionId: submission.id, score: submission.grade }, "Submitted", 201);
 });
 
-/**
- * GET: Shallow fetch with flattened relations
- */
+
 export const GET = withApiHandler(async (_req: Request, { params }) => {
+  
+    const cacheKey = `admin:submit:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const assignment = await prisma.courseAssignment.findUnique({
     where: { id: params.id },
     select: {
@@ -95,6 +101,12 @@ export const GET = withApiHandler(async (_req: Request, { params }) => {
     }
   });
 
+  try {
+    if (assignment) {
+      await cacheSet(cacheKey, assignment, 60);
+    }
+  } catch (e) {}
+
   if (!assignment) return formatResponse(false, null, "Not found", 404);
 
   // Formatting logic remains but is faster due to smaller DB payload
@@ -105,12 +117,12 @@ export const GET = withApiHandler(async (_req: Request, { params }) => {
   });
 });
 
-/**
- * DELETE: Atomic delete with constraint check
- */
+
 export const DELETE = withApiHandler(async (_req, { params }) => {
   try {
     await prisma.courseAssignment.delete({ where: { id: params.id } });
+    
+    try { await cacheDel(`admin:submit:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Deleted", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
@@ -119,13 +131,7 @@ export const DELETE = withApiHandler(async (_req, { params }) => {
     return formatResponse(false, null, "Error deleting", 500);
   }
 });
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-
-
-
-// export const POST = withApiHandler(async (req: Request, { params }: { params: { id: string } }) => {
+ => {
 //   const assignmentId = params.id;
 //   const body = await req.json();
 //   const { studentId, courseId, companyId, responses } = body; 
@@ -209,13 +215,7 @@ export const DELETE = withApiHandler(async (_req, { params }) => {
 //   );
 // });
 
-// // import prisma from "@/server/db/prismadb";
-// // import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// // import { formatResponse } from "@/lib/formatResponse";
-
-// // // ---------------- GET ----------------
-// // // /api/course-assignments/[id]
-// // const getHandler = async (_req: Request, { params }: { params: { id: string } }) => {
+//  => {
 // //   const { id } = params;
 
 // //   const assignment = await prisma.courseAssignment.findUnique({
@@ -347,7 +347,9 @@ export const DELETE = withApiHandler(async (_req, { params }) => {
 // //     totalSubmissions: updatedAssignment._count.submissions,
 // //   };
 
-// //   return formatResponse(true, responseData, null, 200);
+// //   
+    try { await cacheDel(`admin:submit:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, responseData, null, 200);
 // // };
 // // export const PATCH = withApiHandler(patchHandler);
 

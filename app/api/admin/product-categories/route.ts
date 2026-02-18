@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/product-categories/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -13,10 +14,23 @@ export const GET = withApiHandler(async (request: Request, context: any) => {
     return NextResponse.json({ message: "companyId is required" }, { status: 400 });
   }
 
+  
+    const cacheKey = `admin:product-categories:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const categories = await prisma.productCategory.findMany({
     where: { companyId },
     orderBy: { sortOrder: "asc" },
   });
+
+  try {
+    if (categories) {
+      await cacheSet(cacheKey, categories, 60);
+    }
+  } catch (e) {}
 
   return NextResponse.json(categories);
 });
@@ -90,5 +104,7 @@ export const POST = withApiHandler(async (request: Request) => {
     },
   });
 
-  return NextResponse.json(category, { status: 201 });
+  
+    try { await cacheDel(`admin:product-categories:${companyId || 'global'}:*`); } catch (e) {}
+    return NextResponse.json(category, { status: 201 });
 });

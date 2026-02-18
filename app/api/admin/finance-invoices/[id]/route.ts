@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/invoices/[id]/route.ts
 import { PrismaClient } from '@prisma/client';
 
@@ -28,10 +29,23 @@ const getInvoiceId = (context: RouteContext) => context.params.id;
 const getInvoiceLogic = async (req: Request, context: RouteContext) => {
     const invoiceId = getInvoiceId(context);
 
-    const invoice = await prisma.invoice.findUnique({
+    
+    const cacheKey = `admin:finance-invoices:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const invoice = await prisma.invoice.findUnique({
         where: { id: invoiceId },
         include: { client: { include: { user: true } } }
     });
+
+  try {
+    if (invoice) {
+      await cacheSet(cacheKey, invoice, 60);
+    }
+  } catch (e) {}
 
     if (!invoice) {
         // Use formatResponse for business-logic failure (404 Not Found)
@@ -77,6 +91,8 @@ const putInvoiceLogic = async (req: Request, context: RouteContext) => {
     });
 
     // Use formatResponse for success
+    
+    try { await cacheDel(`admin:finance-invoices:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedInvoice, 'Invoice updated successfully', 200);
 };
 
@@ -97,6 +113,8 @@ const deleteInvoiceLogic = async (req: Request, context: RouteContext) => {
     });
     
     // Use formatResponse for success (no data returned)
+    
+    try { await cacheDel(`admin:finance-invoices:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, 'Invoice deleted successfully', 200);
 };
 

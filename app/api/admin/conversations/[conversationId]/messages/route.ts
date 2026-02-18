@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // app/api/conversations/[conversationId]/messages/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -5,10 +6,7 @@ import { formatResponse } from "@/lib/formatResponse";
 
 const VALID_MESSAGE_TYPES = ["TEXT", "IMAGE", "FILE", "AUDIO", "VIDEO", "SYSTEM_NOTIFICATION", "OTHER"];
 
-/**
- * GET: Fetch messages & Mark as Read
- * Collapses verification and message fetching into a more streamlined flow.
- */
+
 export const GET = withApiHandler(async (request, { params }) => {
   const { conversationId } = params;
   const { searchParams } = new URL(request.url);
@@ -20,6 +18,13 @@ export const GET = withApiHandler(async (request, { params }) => {
   if (!userId) return formatResponse(false, null, "User ID required", 400);
 
   // 1. Fetch messages and check membership in parallel
+  
+    const cacheKey = `admin:messages:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const [participant, messages] = await Promise.all([
     prisma.conversationParticipant.findUnique({
       where: { conversationId_userId: { conversationId, userId } },
@@ -33,6 +38,12 @@ export const GET = withApiHandler(async (request, { params }) => {
       include: { sender: { select: { id: true, name: true, email: true } } },
     })
   ]);
+
+  try {
+    if (participant) {
+      await cacheSet(cacheKey, participant, 60);
+    }
+  } catch (e) {}
 
   if (!participant) return formatResponse(false, null, "Access denied", 403);
 
@@ -52,9 +63,7 @@ export const GET = withApiHandler(async (request, { params }) => {
   });
 });
 
-/**
- * POST: Atomic Message Dispatch
- */
+
 export const POST = withApiHandler(async (request, { params }) => {
   const { conversationId } = params;
   const { senderId, content, messageType = "TEXT", attachmentUrls = [] } = await request.json();
@@ -97,27 +106,7 @@ export const POST = withApiHandler(async (request, { params }) => {
     return formatResponse(false, null, error.message, status);
   }
 });
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-
-// // Define valid Enum values for MessageType (from your Prisma schema)
-// const VALID_MESSAGE_TYPES = [
-//   "TEXT",
-//   "IMAGE",
-//   "FILE",
-//   "AUDIO",
-//   "VIDEO",
-//   "SYSTEM_NOTIFICATION",
-//   "OTHER",
-// ];
-
-// /**
-//  * @route GET /api/conversations/[conversationId]/messages
-//  * Fetches messages for a specific conversation and marks them as read.
-//  * Query Params: userId (required), limit (optional), cursor (optional)
-//  */
-// export const GET = withApiHandler(async (request, { params }) => {
+ => {
 //   const { conversationId } = params;
 //   const { searchParams } = new URL(request.url);
 
@@ -191,10 +180,7 @@ export const POST = withApiHandler(async (request, { params }) => {
 //   return formatResponse(true, { messages: response, nextCursor }, null, 200);
 // });
 
-// /**
-//  * @route POST /api/conversations/[conversationId]/messages
-//  * Sends a new message to a conversation.
-//  */
+// 
 // export const POST = withApiHandler(async (request, { params }) => {
 //   const { conversationId } = params;
 //   const body = await request.json();

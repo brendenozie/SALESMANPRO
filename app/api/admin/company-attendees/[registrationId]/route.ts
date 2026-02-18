@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -51,31 +52,7 @@ async function handleGet(request: Request, context: { params: { adminSlug: strin
 
 export const GET = withApiHandler(handleGet);
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// // --- Type Definitions for the Handler ---
-
-// type RouteParams = {
-//   adminSlug: string;
-//   registrationId: string;
-// };
-
-// type HandlerContext = {
-//   params: RouteParams;
-//   user?: any; // Replace 'any' with your actual User type if defined
-// };
-
-// // --- Core Logic for GET request ---
-// // This function contains only the business logic.
-// // The wrapper handles authentication and the try/catch block.
-// async function handleGet(request: Request, context: HandlerContext): Promise<NextResponse> {
-//   const { adminSlug, registrationId } = context.params;
-
-//   const company = await prisma.company.findUnique({
-//     where: { slug: adminSlug },
-//     select: { id: true }
-//   });
 
 //   if (!company) {
 //     return NextResponse.json({ message: "Company not found" }, { status: 404 });
@@ -112,8 +89,5 @@ export const GET = withApiHandler(handleGet);
 
 // // --- Exported Route Handler (Wrapped) ---
 
-// /**
-//  * GET /api/admin/[adminSlug]/attendees/[registrationId]
-//  * Fetches a single attendee's registration details.
-//  */
+// 
 // export const GET = withApiHandler(handleGet);

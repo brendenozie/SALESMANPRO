@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/tour-packages/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -22,10 +23,23 @@ async function handleGET(request: Request, { params }: { params: { id: string } 
   if (!id) return formatResponse(false, null, "Tour package ID is required", 400);
 
   try {
-    const tourPackage = await prisma.tourPackage.findUnique({
+    
+    const cacheKey = `admin:travel-packages:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const tourPackage = await prisma.tourPackage.findUnique({
       where: { id },
       include: { destinations: true },
     });
+
+  try {
+    if (tourPackage) {
+      await cacheSet(cacheKey, tourPackage, 60);
+    }
+  } catch (e) {}
 
     if (!tourPackage) return formatResponse(false, null, "Tour package not found", 404);
 

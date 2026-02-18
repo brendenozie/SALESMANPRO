@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -18,7 +19,14 @@ export const GET = withApiHandler(
       const todayEnd = new Date(now.setHours(23, 59, 59, 999));
 
       // Use a transaction for parallel queries
-      const [
+      
+    const cacheKey = `admin:finance-legal:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const [
         totalClients,
         activeContracts,
         pendingInvoices,
@@ -68,6 +76,12 @@ export const GET = withApiHandler(
             orderBy: { caseType: 'asc' }
         })
       ]);
+
+  try {
+    if (totalClients) {
+      await cacheSet(cacheKey, totalClients, 60);
+    }
+  } catch (e) {}
 
       const revenueThisMonth = revenueData._sum.amount || 0;
 

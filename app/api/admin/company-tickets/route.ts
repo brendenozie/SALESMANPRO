@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // // app/api/admin/[adminSlug]/tickets/route.ts
 // app/api/admin/[adminSlug]/tickets/route.ts
 import { NextResponse } from "next/server";
@@ -69,6 +70,13 @@ export const GET = withApiHandler(async (request, { params }) => {
     ];
   }
 
+  
+    const cacheKey = `admin:company-tickets:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const [tickets, totalItems] = await prisma.$transaction([
     prisma.marketplaceListings.findMany({
       where,
@@ -84,6 +92,12 @@ export const GET = withApiHandler(async (request, { params }) => {
     }),
     prisma.marketplaceListings.count({ where }),
   ]);
+
+  try {
+    if (tickets) {
+      await cacheSet(cacheKey, tickets, 60);
+    }
+  } catch (e) {}
 
   const formatted = tickets.map(t => {
     const sold = Math.floor(t.quantity * 0.6); // placeholder
@@ -204,14 +218,7 @@ export const POST = withApiHandler(async (request, { params }) => {
 });
 
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-
-// /**
-//  * GET: Fetch tickets with real sales data and event names.
-//  */
-// export const GET = withApiHandler(async (request, { params }) => {
+ => {
 //   const { adminSlug } = params;
 //   const { searchParams } = new URL(request.url);
 
@@ -274,9 +281,7 @@ export const POST = withApiHandler(async (request, { params }) => {
 //   });
 // });
 
-// /**
-//  * POST: Create ticket listing with atomic category link.
-//  */
+// 
 // export const POST = withApiHandler(async (request, { params, user }) => {
 //   const { adminSlug } = params;
 //   const body = await request.json();
@@ -328,13 +333,7 @@ export const POST = withApiHandler(async (request, { params }) => {
 //   return formatResponse(true, result, "Ticket created successfully", 201);
 // });
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-
-// // GET /api/admin/[adminSlug]/tickets
-// export const GET = withApiHandler(
-//   async (request, { params }) => {
+ => {
 //     const { adminSlug } = params;
 //     const { searchParams } = new URL(request.url);
 

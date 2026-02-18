@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -38,6 +39,13 @@ async function formatDoctorData(doctor: any) {
 async function getDoctor(_req: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
+  
+    const cacheKey = `admin:doctors:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const doctor = await prisma.doctor.findUnique({
     where: { id },
     include: {
@@ -45,6 +53,12 @@ async function getDoctor(_req: Request, { params }: { params: { id: string } }) 
       StaffProfile: true,
     },
   });
+
+  try {
+    if (doctor) {
+      await cacheSet(cacheKey, doctor, 60);
+    }
+  } catch (e) {}
 
   if (!doctor) return formatResponse(false, null, "Doctor not found", 404);
 
@@ -98,6 +112,8 @@ async function updateDoctor(req: Request, { params }: { params: { id: string } }
     }
 
     const formatted = await formatDoctorData(updatedDoctor);
+    
+    try { await cacheDel(`admin:doctors:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, formatted, "Doctor updated successfully", 200);
   } catch (err: any) {
     if (err.code === "P2002" && err.meta?.target?.includes("email")) {
@@ -140,7 +156,9 @@ async function deleteDoctor(_req: Request, { params }: { params: { id: string } 
     }
   }
 
-  return formatResponse(true, { deletedId: id }, "Doctor deleted successfully", 200);
+  
+    try { await cacheDel(`admin:doctors:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { deletedId: id }, "Doctor deleted successfully", 200);
 }
 
 // =======================================================================

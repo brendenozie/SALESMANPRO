@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/product/route.ts
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -448,7 +449,9 @@ async function handlePost(req: Request) {
           createdAt: new Date(),
                }});
 
-  return formatResponse(true, product, "Product saved successfully.", id ? 200 : 201);
+  
+    try { await cacheDel(`admin:post-product:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, product, "Product saved successfully.", id ? 200 : 201);
 }
 
 export const POST = withApiHandler(handlePost);

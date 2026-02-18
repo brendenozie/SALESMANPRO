@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -17,6 +18,13 @@ export async function GET(req: Request) {
     }
   } : {};
 
+  
+    const cacheKey = `admin:shifts:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const shifts = await prisma.transportShift.findMany({
     where: { companyId, ...dateFilter },
     include: {
@@ -27,6 +35,12 @@ export async function GET(req: Request) {
     },
     orderBy: { startTime: 'asc' }
   });
+
+  try {
+    if (shifts) {
+      await cacheSet(cacheKey, shifts, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, shifts, "Shifts retrieved successfully", 200);
 }
@@ -84,6 +98,8 @@ export async function POST(req: Request) {
       }
     });
 
+    
+    try { await cacheDel(`admin:shifts:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newShift, "Shift authorized and dispatched", 201);
   } catch (error: any) {
     console.error("SHIFT_POST_ERROR", error);

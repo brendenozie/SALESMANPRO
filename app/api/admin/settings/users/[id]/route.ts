@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/settings/users/[id]/route.ts
 import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -20,6 +21,8 @@ async function updateUser(req: Request, { params }: { params: { id: string } }) 
       data: { name, email, role, status },
     });
 
+    
+    try { await cacheDel(`admin:users:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedUser, "User updated successfully", 200);
   } catch (error: any) {
     console.error("Failed to update user:", error);
@@ -38,6 +41,8 @@ async function deleteUser(req: Request, { params }: { params: { id: string } }) 
       where: { id },
     });
 
+    
+    try { await cacheDel(`admin:users:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "User deleted successfully", 200);
   } catch (error: any) {
     console.error("Failed to delete user:", error);

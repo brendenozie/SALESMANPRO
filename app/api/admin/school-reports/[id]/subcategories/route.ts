@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/store-categories/[id]/subcategories/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -54,6 +55,8 @@ async function addSubcategory(req: Request, { params }: { params: { id: string }
       data: { subcategories: updatedItems },
     });
 
+    
+    try { await cacheDel(`admin:subcategories:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newSubcategory, "Subcategory added successfully", 201);
   } catch (error: any) {
     console.error(`Error adding subcategory to store category ${id}:`, error);

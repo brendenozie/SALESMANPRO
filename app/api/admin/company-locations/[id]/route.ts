@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb"; 
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -22,14 +23,25 @@ const DEFAULT_SELECT = {
   }
 };
 
-/**
- * GET Handler
- */
+
 async function handleGet(_req: Request, context: { params: { id: string } }) {
+  
+    const cacheKey = `admin:company-locations:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const companyLocation = await prisma.companyLocation.findUnique({
     where: { id: context.params.id },
     select: DEFAULT_SELECT,
   });
+
+  try {
+    if (companyLocation) {
+      await cacheSet(cacheKey, companyLocation, 60);
+    }
+  } catch (e) {}
 
   if (!companyLocation) {
     return NextResponse.json({ message: 'Company location association not found.' }, { status: 404 });
@@ -38,9 +50,7 @@ async function handleGet(_req: Request, context: { params: { id: string } }) {
   return NextResponse.json(companyLocation);
 }
 
-/**
- * PATCH Handler
- */
+
 async function handlePatch(request: Request, context: { params: { id: string } }) {
   const { id } = context.params;
   const body = await request.json();
@@ -72,9 +82,7 @@ async function handlePatch(request: Request, context: { params: { id: string } }
   }
 }
 
-/**
- * DELETE Handler
- */
+
 async function handleDelete(_req: Request, context: { params: { id: string } }) {
   try {
     await prisma.companyLocation.delete({ where: { id: context.params.id } });
@@ -91,29 +99,7 @@ export const GET = withApiHandler(handleGet);
 export const PATCH = withApiHandler(handlePatch);
 export const DELETE = withApiHandler(handleDelete);
 // import { NextResponse } from 'next/server';
-// import prisma from "@/server/db/prismadb"; 
-// import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
-// // --- Type Definitions for the Handlers ---
-// type RouteParams = {
-//   id: string;
-// };
-
-// type HandlerContext = {
-//   params: RouteParams;
-//   user?: any; // Replace with your actual User type if defined
-// };
-
-// // --- Core Logic for GET request ---
-// async function handleGet(request: Request, context: HandlerContext): Promise<NextResponse> {
-//   const { id } = context.params;
-
-//   const companyLocation = await prisma.companyLocation.findUnique({
-//     where: { id },
-//     include: {
-//       location: true,
-//     },
-//   });
 
 //   if (!companyLocation) {
 //     return NextResponse.json({ message: 'Company location association not found.' }, { status: 404 });
@@ -182,20 +168,11 @@ export const DELETE = withApiHandler(handleDelete);
 
 // // --- Exported Route Handlers (Wrapped) ---
 
-// /**
-//  * GET /api/company-locations/:id
-//  * Retrieves a single CompanyLocation record by its ID.
-//  */
+// 
 // export const GET = withApiHandler(handleGet);
 
-// /**
-//  * PATCH /api/company-locations/:id
-//  * Updates one or more fields of an existing CompanyLocation record.
-//  */
+// 
 // export const PATCH = withApiHandler(handlePatch);
 
-// /**
-//  * DELETE /api/company-locations/:id
-//  * Deletes a CompanyLocation association.
-//  */
+// 
 // export const DELETE = withApiHandler(handleDelete);

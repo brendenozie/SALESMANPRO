@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -140,6 +141,13 @@ async function getEvents(request: Request) {
     whereClause.isPaid = isPaid === 'true';
   }
 
+  
+    const cacheKey = `admin:events:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const events = await prisma.event.findMany({
     where: whereClause,
     include: {
@@ -154,6 +162,12 @@ async function getEvents(request: Request) {
       startDateTime: 'asc',
     },
   });
+
+  try {
+    if (events) {
+      await cacheSet(cacheKey, events, 60);
+    }
+  } catch (e) {}
 
   const response = events.map(transformEventResponse);
 
@@ -303,7 +317,9 @@ async function createEvent(request: Request) {
 
   const responseData = transformEventResponse(newEvent);
 
-  return formatResponse(true, { data: responseData }, null, 201);
+  
+    try { await cacheDel(`admin:events:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { data: responseData }, null, 201);
 }
 
 // Export the handlers wrapped in the `withApiHandler` utility.

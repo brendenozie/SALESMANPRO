@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { isWithinInterval } from "date-fns";
@@ -24,13 +25,26 @@ export async function GET(req: Request) {
     });
 
     // 2. Fetch Fee Records with relevant payments
-    const feeRecords = await prisma.studentFeeRecord.findMany({
+    
+    const cacheKey = `admin:profit-loss:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const feeRecords = await prisma.studentFeeRecord.findMany({
       where: { 
         student: { companyId: companyId || undefined },
         // Optimization: Only fetch records that have had payments since the start date
         lastPaymentDate: { gte: start.split('T')[0] } 
       }
     });
+
+  try {
+    if (feeRecords) {
+      await cacheSet(cacheKey, feeRecords, 60);
+    }
+  } catch (e) {}
 
     let totalIncome = 0;
     // You can later expand this logic to check p.feeType if you add it to the payment JSON

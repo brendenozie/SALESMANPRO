@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
@@ -8,13 +9,26 @@ export async function GET(req: Request) {
 
     if (!companyId) return new NextResponse("Missing Company ID", { status: 400 });
 
-    const drivers = await prisma.transportDriver.findMany({
+    
+    const cacheKey = `admin:drivers:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const drivers = await prisma.transportDriver.findMany({
       where: { companyId },
       include: {
         user: true, // Join with User table to get name, phone, etc.
       },
       orderBy: { createdAt: 'desc' }
     });
+
+  try {
+    if (drivers) {
+      await cacheSet(cacheKey, drivers, 60);
+    }
+  } catch (e) {}
 
     // Map to match your Frontend Interface
     const formattedDrivers = drivers.map(d => ({

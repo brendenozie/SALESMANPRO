@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
@@ -11,7 +12,14 @@ export async function GET(req: Request) {
     }
 
     // 1. Fetch Unassigned Students
-    const unassignedStudents = await prisma.student.findMany({
+    
+    const cacheKey = `admin:room-assignments:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const unassignedStudents = await prisma.student.findMany({
       where: {
         companyId,
         OR: [
@@ -26,6 +34,12 @@ export async function GET(req: Request) {
         admissionNumber: true,
       }
     });
+
+  try {
+    if (unassignedStudents) {
+      await cacheSet(cacheKey, unassignedStudents, 60);
+    }
+  } catch (e) {}
 
     // 2. Fetch Unassigned Educators
     const unassignedEducators = await prisma.educator.findMany({

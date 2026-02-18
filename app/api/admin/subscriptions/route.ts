@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from '@/server/db/prismadb';
 import { PlanStatus, SubscriptionStatus, BillingCycle } from '@prisma/client';
 import { formatResponse } from "@/lib/formatResponse";
@@ -26,7 +27,20 @@ async function handleGET(request: Request) {
     if (planId) where.planId = planId;
     if (status) where.status = status;
 
-    const totalItems = await prisma.subscription.count({ where });
+    
+    const cacheKey = `admin:subscriptions:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const totalItems = await prisma.subscription.count({ where });
+
+  try {
+    if (totalItems) {
+      await cacheSet(cacheKey, totalItems, 60);
+    }
+  } catch (e) {}
 
     const subscriptions = await prisma.subscription.findMany({
       skip,
@@ -91,6 +105,8 @@ async function handlePOST(request: Request) {
       },
     });
 
+    
+    try { await cacheDel(`admin:subscriptions:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newSubscription, 'Subscription created successfully.');
 
   } catch (error: any) {

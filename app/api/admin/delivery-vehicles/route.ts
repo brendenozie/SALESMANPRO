@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/vehicles/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -24,11 +25,7 @@ type VehicleData = {
 
 // --- Data Mapping Helpers ---
 
-/**
- * Maps frontend vehicle status to the Prisma ListingStatus enum.
- * @param status The status from the frontend ('Active', 'Maintenance', 'Retired').
- * @returns The corresponding ListingStatus enum value.
- */
+
 const mapStatusToPrisma = (status: VehicleData['status']): ListingStatus => {
   switch (status) {
     case 'Active':
@@ -44,11 +41,7 @@ const mapStatusToPrisma = (status: VehicleData['status']): ListingStatus => {
   }
 };
 
-/**
- * Maps Prisma ListingStatus enum to the frontend vehicle status.
- * @param status The ListingStatus enum value from Prisma.
- * @returns The corresponding frontend status string.
- */
+
 const mapPrismaToStatus = (status: ListingStatus): VehicleData['status'] => {
     switch (status) {
       case ListingStatus.ACTIVE:
@@ -63,12 +56,7 @@ const mapPrismaToStatus = (status: ListingStatus): VehicleData['status'] => {
     }
 }
 
-/**
- * Transforms a Prisma Product object into the frontend VehicleData format.
- * Note the assumptions made for fields not directly present in the schema.
- * @param product The Product object from Prisma.
- * @returns A VehicleData object for the frontend.
- */
+
 const formatProductAsVehicle = (product: Product): VehicleData => {
   return {
     id: product.id,
@@ -90,10 +78,7 @@ const formatProductAsVehicle = (product: Product): VehicleData => {
 
 // --- API Handlers ---
 
-/**
- * GET /api/vehicles
- * Fetches and filters the list of vehicles for a given company.
- */
+
 export const GET = withApiHandler(async (request, context) => {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId") || context.user?.companyId;
@@ -133,10 +118,23 @@ export const GET = withApiHandler(async (request, context) => {
     where.status = mapStatusToPrisma(filterStatus as VehicleData['status']);
   }
 
+  
+    const cacheKey = `admin:delivery-vehicles:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const products = await prisma.product.findMany({
     where,
     orderBy: { createdAt: 'desc' },
   });
+
+  try {
+    if (products) {
+      await cacheSet(cacheKey, products, 60);
+    }
+  } catch (e) {}
 
   const vehicles = products.map(formatProductAsVehicle);
 
@@ -144,10 +142,7 @@ export const GET = withApiHandler(async (request, context) => {
 });
 
 
-/**
- * POST /api/vehicles
- * Creates a new vehicle (as a Product) in the database.
- */
+
 export const POST = withApiHandler(async (request, context) => {
   
   const body: Omit<VehicleData, 'id'> = await request.json();
@@ -189,5 +184,7 @@ export const POST = withApiHandler(async (request, context) => {
   });
 
   const newVehicle = formatProductAsVehicle(newProduct);
-  return formatResponse(true, newVehicle, "Vehicle created successfully.", 201);
+  
+    try { await cacheDel(`admin:delivery-vehicles:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, newVehicle, "Vehicle created successfully.", 201);
 });

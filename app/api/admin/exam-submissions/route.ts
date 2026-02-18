@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -77,6 +78,13 @@ async function getExamSubmissions(request: Request) {
     whereClause.exam.createdByEducatorId = createdByEducatorId;
   }
 
+  
+    const cacheKey = `admin:exam-submissions:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const submissions = await prisma.examSubmission.findMany({
     where: whereClause,
     include: {
@@ -127,6 +135,12 @@ async function getExamSubmissions(request: Request) {
       submittedAt: 'desc',
     },
   });
+
+  try {
+    if (submissions) {
+      await cacheSet(cacheKey, submissions, 60);
+    }
+  } catch (e) {}
 
   const responseData = submissions.map(transformSubmissionResponse);
   return formatResponse(true, { data: responseData }, null, 200);

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -101,13 +102,7 @@ export const DELETE = withApiHandler(deleteCampaign, {
   requireRateLimit: true,
 });
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-// import { Prisma } from "@prisma/client";
-
-// // ✅ PUT: Update Campaign
-// const updateCampaign = async (request: Request, context: { params: { id: string }; user?: any }) => {
+ => {
 //   const { id } = context.params;
 //   const userCompanyId = context.user?.companyId;
 //   const body = await request.json();
@@ -172,11 +167,7 @@ export const DELETE = withApiHandler(deleteCampaign, {
 // export const PUT = withApiHandler(updateCampaign, { requireAuth: true });
 // export const DELETE = withApiHandler(deleteCampaign, { requireAuth: true });
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-
-// // ✅ PUT handler (update campaign)
-// const updateCampaign = async (request: Request, context: { params: { id: string }; user?: any }) => {
+ => {
 //   const { id } = context.params;
 //   const body = await request.json();
 //   const { name, description, startDate, endDate, goalAmount, status } = body;

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // app/api/sales-agents/route.ts
 // app/api/sales-agents/route.ts
 import prisma from "@/server/db/prismadb";
@@ -17,6 +18,13 @@ export const GET = withApiHandler(async (request, context) => {
     return formatResponse(false, null, "Company ID is required", 400);
   }
 
+  
+    const cacheKey = `admin:agents:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const agents = await prisma.salesAgent.findMany({
     where: { companyId },
     select: {
@@ -43,6 +51,12 @@ export const GET = withApiHandler(async (request, context) => {
       },
     },
   });
+
+  try {
+    if (agents) {
+      await cacheSet(cacheKey, agents, 60);
+    }
+  } catch (e) {}
 
   const totals = await prisma.salesAgent.findMany({
     where: { companyId },
@@ -147,33 +161,7 @@ export const POST = withAuthAndRateLimit(async (request) => {
 
   return formatResponse(true, agent, "Agent created successfully", 201);
 });
-// import prisma from "@/server/db/prismadb";
-// import { formatResponse } from "@/lib/formatResponse";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import bcrypt from "bcryptjs";
 
-// export const GET = withApiHandler(async (request, context) => {
-//   const { searchParams } = new URL(request.url);
-//   const companyId = searchParams.get("companyId") || context.user?.companyId;
-
-//   if (!companyId) return formatResponse(false, null, "Company ID required", 400);
-
-//   // OPTIMIZATION: Use select to avoid pulling unnecessary data.
-//   // Note: For complex aggregations like "totalSales", 
-//   // specialized aggregate queries are much faster than .reduce() in JS.
-//   const salesAgents = await prisma.salesAgent.findMany({
-//     where: { companyId },
-//     select: {
-//       id: true,
-//       phoneNumber: true,
-//       user: { select: { name: true, email: true } },
-//       // Fetch only the most recent items instead of the whole history
-//       transactions: { orderBy: { date: "desc" }, take: 1 },
-//       commissions: { orderBy: { createdAt: "desc" }, take: 1 },
-//       // Use _count for metadata without fetching rows
-//       _count: { select: { transactions: true, commissions: true } }
-//     },
-//   });
 
 //   // OPTIMIZATION: Get totals in a single batch aggregate query 
 //   // instead of fetching all records.
@@ -244,30 +232,7 @@ export const POST = withAuthAndRateLimit(async (request) => {
 //     throw error;
 //   }
 // });
-// import prisma from "@/server/db/prismadb";
-// import { withAuthAndRateLimit } from "@/lib/hooks/withAuthAndRateLimit";
-// import { formatResponse } from "@/lib/formatResponse";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import bcrypt from "bcryptjs";
 
-// // GET /api/sales-agents
-// // Fetch all sales agents for a company, including sales/commission aggregates
-// export const GET = withApiHandler(async (request, context) => {
-//   const { searchParams } = new URL(request.url);
-//   const companyId = searchParams.get("companyId") || context.user?.companyId;
-
-//   if (!companyId) {
-//     return formatResponse(false, null, "Company ID is required", 400);
-//   }
-
-//   const salesAgents = await prisma.salesAgent.findMany({
-//     where: { companyId },
-//     include: {
-//       user: true,
-//       transactions: { orderBy: { date: "desc" } },
-//       commissions: { orderBy: { createdAt: "desc" } },
-//     },
-//   });
 
 //   const formattedAgents = salesAgents.map((agent) => {
 //     const totalSales = agent.transactions.reduce(

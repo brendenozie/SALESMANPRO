@@ -1,12 +1,10 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/**
- * GET: Retrieve all fines for a company
- * Useful for a "Fine Ledger" or "Debt Management" view
- */
+
 const getFinesLogic = async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
@@ -40,9 +38,7 @@ const getFinesLogic = async (request: Request) => {
   return formatResponse(true, fines, "Fine ledger retrieved", 200);
 };
 
-/**
- * PATCH: Settle a fine (Mark as PAID)
- */
+
 const patchFineLogic = async (request: Request) => {
   const body = await request.json();
   const { fineId } = body;

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 
 import { formatResponse } from "@/lib/formatResponse";
@@ -9,7 +10,14 @@ async function handleGET(request: Request, { params }: { params: { id: string } 
   const { id } = params;
 
   try {
-    // const subject = await prisma.subject.findUnique({
+    // 
+    const cacheKey = `admin:subjects:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const subject = await prisma.subject.findUnique({
     //   where: { id },
     //   include: {
     //     _count: {
@@ -17,6 +25,12 @@ async function handleGET(request: Request, { params }: { params: { id: string } 
     //     },
     //   },
     // });
+
+  try {
+    if (subject) {
+      await cacheSet(cacheKey, subject, 60);
+    }
+  } catch (e) {}
 
     // if (!subject) return formatResponse(false, null, "Subject not found", 404);
 
@@ -56,6 +70,8 @@ async function handlePUT(request: Request, { params }: { params: { id: string } 
     //   data: { name, description, type },
     // });
 
+    
+    try { await cacheDel(`admin:subjects:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, {updatedSubject: "updatedSubject"}, "Subject updated successfully");
   } catch (error: any) {
     console.error(`Error updating subject with ID ${id}:`, error);
@@ -78,6 +94,8 @@ async function handleDELETE(request: Request, { params }: { params: { id: string
   try {
     // const deletedSubject = await prisma.subject.delete({ where: { id } });
 
+    
+    try { await cacheDel(`admin:subjects:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { deletedSubjectId: "deletedSubject.id", message: "Subject deleted successfully" });
   } catch (error: any) {
     console.error(`Error deleting subject with ID ${id}:`, error);

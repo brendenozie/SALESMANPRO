@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/podcasts/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -19,6 +20,13 @@ const getPodcasts = async (request: Request) => {
     whereClause.creatorId = companyId;
   }
 
+  
+    const cacheKey = `admin:podcasts:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const podcasts = await prisma.podcast.findMany({
     where: whereClause,
     include: {
@@ -30,6 +38,12 @@ const getPodcasts = async (request: Request) => {
       tags: true,
     },
   });
+
+  try {
+    if (podcasts) {
+      await cacheSet(cacheKey, podcasts, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, podcasts, null, 200);
 };
@@ -123,7 +137,9 @@ const createPodcast = async (request: Request) => {
     },
   });
 
-  return formatResponse(true, newPodcast, null, 201);
+  
+    try { await cacheDel(`admin:podcasts:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, newPodcast, null, 201);
 };
 
 // Wrap handlers withApiHandler for consistent error handling

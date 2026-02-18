@@ -1,188 +1,245 @@
 import fs from "fs/promises";
 import path from "path";
-import { exec } from "child_process";
-import { promisify } from "util";
 
-const CACHE_IMPORT = `import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";\n`;
+const CACHE_IMPORT = `import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";`;
 const DRY_RUN = process.env.DRY_RUN === "true";
 
-const execAsync = promisify(exec);
-
-/* -------------------------------------------------------
-   Utilities
-------------------------------------------------------- */
-
-async function backupFile(filePath, content) {
-  const backupPath = `${filePath}.bak`;
-  await fs.writeFile(backupPath, content);
-}
-
-async function verifySyntax(filePath) {
-  try {
-    // We run tsc on the file, but we use a filter to ignore path alias errors (TS2307)
-    await execAsync(
-      `npx tsc ${filePath} --noEmit --skipLibCheck --target esnext --moduleResolution node --isolatedModules`
-    );
-    return { success: true };
-  } catch (error) {
-    const output = error.stdout || error.message;
-    
-    // Filter out TS2307 (Cannot find module) errors. 
-    // If there are other errors (like brackets missing), it will still fail.
-    const lines = output.split("\n");
-    const realErrors = lines.filter(
-      (line) => line.includes("error TS") && !line.includes("TS2307")
-    );
-
-    if (realErrors.length === 0) {
-      return { success: true };
+/**
+ * Helper to find the balancing closing brace for a code block.
+ */
+function findBlockEnd(content, startIndex) {
+  let openBraces = 0;
+  for (let i = startIndex; i < content.length; i++) {
+    if (content[i] === '{') openBraces++;
+    if (content[i] === '}') {
+      openBraces--;
+      if (openBraces === 0) return i;
     }
-    return { success: false, error: output };
   }
+  return -1;
 }
 
-/* -------------------------------------------------------
-   Core Optimizer
-------------------------------------------------------- */
+/**
+ * Finds the actual function body string and its range for a given handler.
+ * Handles:
+ * 1. export const GET = withApiHandler(async (req) => { ... })
+ * 2. async function handleGet(...) { ... } ... export const GET = withApiHandler(handleGet)
+ * 3. export async function GET(...) { ... }
+ */
+function findHandlerBody(content, method) {
+  // 1. Try Inline Pattern (export const GET = ... => { ... })
+  const inlineRegex = new RegExp(`export\\s+const\\s+${method}\\s*=\\s*(?:with\\w+\\()?\\s*async\\s*\\([^)]*\\)\\s*=>\\s*\\{`, 's');
+  let match = content.match(inlineRegex);
+  
+  if (match) {
+    const start = match.index + match[0].length - 1; // pointing to {
+    const end = findBlockEnd(content, start);
+    return { start, end, type: 'inline', name: method };
+  }
+
+  // 2. Try Direct Export Pattern (export async function GET(...) { ... })
+  const directRegex = new RegExp(`export\\s+async\\s+function\\s+${method}\\s*\\([^)]*\\)\\s*\\{`, 's');
+  match = content.match(directRegex);
+
+  if (match) {
+    const start = match.index + match[0].length - 1; // pointing to {
+    const end = findBlockEnd(content, start);
+    return { start, end, type: 'direct', name: method };
+  }
+
+  // 3. Try Named Handler Pattern (export const GET = withApiHandler(handleGet))
+  const namedRefRegex = new RegExp(`export\\s+const\\s+${method}\\s*=\\s*with\\w+\\(\\s*([\\w\\d]+)\\s*\\)`, 's');
+  match = content.match(namedRefRegex);
+  
+  if (match) {
+    const funcName = match[1];
+    // Find the function definition
+    const funcDefRegex = new RegExp(`(?:async\\s+function\\s+${funcName}|const\\s+${funcName}\\s*=\\s*async)\\s*\\([^)]*\\)\\s*(?:=>)?\\s*\\{`, 's');
+    const funcMatch = content.match(funcDefRegex);
+    
+    if (funcMatch) {
+      const start = funcMatch.index + funcMatch[0].length - 1; // pointing to {
+      const end = findBlockEnd(content, start);
+      return { start, end, type: 'named', name: funcName };
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Logic to optimize GET handlers
+ */
+function optimizeGet(body, resourceName) {
+  if (body.includes("cacheGet")) return body;
+
+  // 1. Identify Data Fetching Statement
+  // We look for the exact line where the heavy lifting happens.
+  const fetchRegex = /((?:const|let)\s+(\w+|\[[^\]]+\]|\{[^}]+\})\s*=\s*await\s+(?:prisma\.\w+\.(?:findMany|findUnique|count)|Promise\.all|prisma\.\$transaction)[^;]*;)/;
+  const match = body.match(fetchRegex);
+
+  if (!match) return body;
+
+  const fullFetchLine = match[0];
+  const variableDecl = match[2];
+  
+  // Extract variable name (simple or destructuring)
+  let dataVar = variableDecl;
+  if (variableDecl.startsWith('[') || variableDecl.startsWith('{')) {
+    // simplified assumption: usually the first var is the data for Promise.all, or destructuring
+    const inner = variableDecl.replace(/[\[\]\{\}]/g, '').split(',')[0].trim();
+    dataVar = inner; 
+  }
+
+  // 2. Determine Scope Variables for Cache Key based on what is USED in the function
+  let companyIdExpr = "'global'";
+  if (body.includes("companyId")) companyIdExpr = "companyId";
+  else if (body.includes("context.user.companyId")) companyIdExpr = "context.user.companyId";
+  else if (body.includes("slug")) companyIdExpr = "slug || adminSlug || 'global'";
+  else if (body.includes("adminSlug")) companyIdExpr = "adminSlug";
+
+  const cacheKeyLine = `  const cacheKey = \`admin:${resourceName}:\${${companyIdExpr} || 'global'}:all\`;`;
+  
+  // 3. Inject cacheGet BEFORE the fetch
+  const cacheGetBlock = `
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}`;
+
+  // 4. Inject cacheSet AFTER the fetch
+  // This ensures we have the data variable defined
+  const cacheSetBlock = `
+  try {
+    if (${dataVar}) {
+      await cacheSet(cacheKey, ${dataVar}, 60);
+    }
+  } catch (e) {}`;
+
+  // Replace the fetch line with the sandwich: Key -> Get -> Fetch -> Set
+  const newBlock = `
+  ${cacheKeyLine}
+${cacheGetBlock}
+  ${fullFetchLine}
+${cacheSetBlock}`;
+  
+  return body.replace(fullFetchLine, newBlock);
+}
+
+/**
+ * Logic to optimize Mutation handlers
+ */
+function optimizeMutation(body, resourceName) {
+  if (body.includes("cacheDel")) return body;
+  
+  // Check if it's a mutation
+  if (!/prisma\.\w+\.(create|update|delete|upsert)/.test(body)) return body;
+
+  let companyIdExpr = "'global'";
+  if (body.includes("companyId")) companyIdExpr = "companyId";
+  else if (body.includes("userCompanyId")) companyIdExpr = "userCompanyId";
+  else if (body.includes("context.user.companyId")) companyIdExpr = "context.user.companyId";
+  else if (body.includes("slug")) companyIdExpr = "slug || adminSlug || 'global'";
+
+  const invKey = `\`admin:${resourceName}:\${${companyIdExpr} || 'global'}:*\``;
+  const cacheDelBlock = `\n    try { await cacheDel(${invKey}); } catch (e) {}`;
+
+  // Strategy: Find the successful return.
+  // We look for returns that are NOT inside a catch block or explicitly returning false/error.
+  // A simple heuristic is finding "return formatResponse(true" or "return NextResponse.json"
+  
+  const successReturnRegex = /(return\s+(?:formatResponse|NextResponse\.json|Response\.json)\s*\(\s*(?:true|.*20[014]|.*success:\s*true))/;
+  
+  if (successReturnRegex.test(body)) {
+    return body.replace(successReturnRegex, (match) => `${cacheDelBlock}\n    ${match}`);
+  }
+  
+  // Fallback: If we have a variable return like "return response;", find where response is defined or just inject before last return
+  const genericReturn = /return\s+\w+;/g;
+  const matches = [...body.matchAll(genericReturn)];
+  if (matches.length > 0) {
+      // Use the last return as a fallback if no explicit success pattern found
+      const lastMatch = matches[matches.length - 1];
+      return body.substring(0, lastMatch.index) + cacheDelBlock + "\n    " + body.substring(lastMatch.index);
+  }
+
+  return body;
+}
 
 async function optimizeFile(filePath) {
   try {
-    const absolutePath = path.resolve(filePath);
-    let content = await fs.readFile(absolutePath, "utf8");
+    let content = await fs.readFile(filePath, "utf8");
+    
+    // --- NEW: Remove large commented-out blocks before processing ---
+    // This targets blocks that start with // import ... and end with }); which is common for commented out route handlers
+    content = content.replace(/\/\/ import prisma[\s\S]*?withApiHandler[\s\S]*?\}\);?/g, ''); 
+    // Also remove generic large commented blocks that might look like code
+    content = content.replace(/\/\*[\s\S]*?\*\//g, '');
+    
     const originalContent = content;
 
-    // Dynamic Resource Detection
-    // e.g., /api/academic-levels/route.ts -> academic-levels
-    const pathParts = absolutePath.split(path.sep);
-    const folderName = pathParts[pathParts.length - 2];
-    const parentFolderName = pathParts[pathParts.length - 3];
-    const resourceName = folderName.startsWith("[") ? parentFolderName : folderName;
-    const isDetailRoute = folderName.startsWith("[");
-
-    content = content.replace(/\xA0/g, " ");
+    // Infer resource name from folder structure
+    const pathParts = filePath.split(path.sep);
+    const parent = pathParts[pathParts.length - 3];
+    const folder = pathParts[pathParts.length - 2];
+    const resourceName = folder.startsWith('[') ? parent : folder;
 
     if (!content.includes("@/lib/cache")) {
-      content = CACHE_IMPORT + content;
+      content = CACHE_IMPORT + "\n" + content;
     }
 
-    /* -------------------------------
-        GET handler optimization
-    ------------------------------- */
-    // FIXED: Now uses (with\w+) to dynamically capture wrapper like withAuthAndRateLimit
-    const getRegex = /(export\s+const\s+GET\s*=\s*(with\w+)\s*\(\s*async\s*\(([^)]*)\)\s*=>\s*\{)([\s\S]*?)(\n\}\s*\)\s*;?)/g;
+    const methods = ["GET", "POST", "PUT", "DELETE", "PATCH"];
 
-    content = content.replace(getRegex, (match, header, wrapperName, args, body, footer) => {
-      if (body.includes("cacheGet")) return match;
+    for (const method of methods) {
+      // 1. Find the body range
+      const handler = findHandlerBody(content, method);
+      if (!handler) continue;
 
-      let updatedArgs = args.trim();
-      if (!updatedArgs.includes("context")) {
-        updatedArgs = updatedArgs ? `${updatedArgs}, context` : "request, context";
+      // 2. Extract the body text (excluding outer braces)
+      const bodyContent = content.substring(handler.start + 1, handler.end);
+
+      let newBody = bodyContent;
+      if (method === "GET") {
+        newBody = optimizeGet(bodyContent, resourceName);
+      } else {
+        newBody = optimizeMutation(bodyContent, resourceName);
       }
 
-      const prismaReadRegex = /(const\s+(\w+)\s*=\s*await\s+prisma\.\w+\.(findMany|findUnique|findFirst|count)\s*\([\s\S]*?\}\s*\)\s*;?)/s;
-      const pMatch = body.match(prismaReadRegex);
-      
-      if (!pMatch) return match;
+      // 3. Replace if changed
+      if (newBody !== bodyContent) {
+        content = content.substring(0, handler.start + 1) + newBody + content.substring(handler.end);
+      }
+    }
 
-      const [fullPrismaCall, , dataVar] = pMatch;
-      
-      const idPart = isDetailRoute ? ":${id}" : "";
-      const hasCompanyId = body.includes("companyId");
-      const companyPart = hasCompanyId ? "${companyId}" : "global";
-
-      const injectedGet = `
-  const user = context?.user ?? null;
-  ${isDetailRoute ? 'const { id } = context.params;' : ''}
-  const cacheKey = \`admin:${resourceName}${idPart}:${companyPart}:\${user?.role || "anon"}\`;
-  try {
-    const cachedData = await cacheGet(cacheKey);
-    if (cachedData) return formatResponse(true, cachedData, "Fetched (Cached)", 200);
-  } catch (e) {}
-
-  ${fullPrismaCall}
-
-  if (${dataVar}) {
-    try { await cacheSet(cacheKey, ${dataVar}, 60); } catch (e) {}
-  }
-`;
-      const newBody = body.replace(fullPrismaCall, injectedGet);
-      // FIXED: Uses the dynamically captured wrapperName instead of hardcoding withApiHandler
-      return `export const GET = ${wrapperName}(async (${updatedArgs}) => {${newBody}${footer}`;
-    });
-
-    /* -------------------------------
-        Mutation invalidation
-    ------------------------------- */
-    // FIXED: Changed withApiHandler to with\w+ to catch withAuthAndRateLimit
-    const mutationRegex = /(export\s+const\s+(POST|PUT|PATCH|DELETE)\s*=\s*with\w+\s*\(\s*async\s*\(([^)]*)\)\s*=>\s*\{)([\s\S]+?)(\n\}\s*\)\s*;?)/g;
-
-    content = content.replace(mutationRegex, (match, header, method, args, body, footer) => {
-      if (body.includes("cacheDel")) return match;
-
-      if (!/prisma\.\w+\.(create|update|delete|upsert|updateMany|deleteMany)/.test(body)) return match;
-
-      const hasCompanyId = body.includes("companyId");
-      const invKey = hasCompanyId
-        ? `\`admin:${resourceName}:\${companyId}:*\``
-        : `\`admin:${resourceName}:*\``;
-
-      const successReturnRegex = /return\s+formatResponse\s*\(\s*true\s*,/g;
-      if (!successReturnRegex.test(body)) return match;
-
-      const newBody = body.replace(successReturnRegex, () => {
-        return `
-    try { await cacheDel(${invKey}); } catch (e) {}
-    return formatResponse(true,`;
-      });
-
-      return `${header}${newBody}${footer}`;
-    });
-
-    // 3. Save
     if (content !== originalContent) {
       if (DRY_RUN) {
-        console.log(`--- DRY RUN: ${filePath} ---`);
-        console.log(content);
+        console.log(`[DRY RUN] Optimized ${filePath}`);
       } else {
-        // await backupFile(absolutePath, originalContent);
-        await fs.writeFile(absolutePath, content);
-
-        // const check = await verifySyntax(absolutePath);
-        // if (!check.success) {
-        //   console.error(`❌ REAL Syntax error in ${filePath}, rolling back.`);
-        //   console.error(check.error);
-        //   await fs.writeFile(absolutePath, originalContent);
-        // } else {
-        //   console.log(`✅ OPTIMIZED: ${resourceName} (${isDetailRoute ? 'Detail' : 'List'})`);
-        // }
+        await fs.writeFile(filePath, content);
+        console.log(`✅ Optimized ${filePath}`);
       }
     } else {
-      console.log(`ℹ️ NO CHANGES: ${filePath}`);
+      console.log(`ℹ️ Skipped ${filePath}`);
     }
-  } catch (error) {
-    console.error(`❌ ERROR in ${filePath}:`, error.message);
+
+  } catch (e) {
+    console.error(`❌ Error ${filePath}:`, e);
   }
 }
 
-/* -------------------------------------------------------
-   Directory Walker & Runner
-------------------------------------------------------- */
-
 async function walk(dir) {
-  const files = await fs.readdir(dir, { withFileTypes: true });
-  for (const file of files) {
-    const res = path.resolve(dir, file.name);
-    if (file.isDirectory()) {
-      await walk(res);
-    } else if (file.name === "route.ts" || file.name === "route.js") {
-      await optimizeFile(res);
+  const entries = await fs.readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      await walk(fullPath);
+    } else if (entry.name === "route.ts") {
+      await optimizeFile(fullPath);
     }
   }
 }
 
 const target = process.argv[2];
-if (!target) {
-  console.log("Usage: node optimize-routes.mjs <path>");
-} else {
+if (target) {
   fs.stat(target).then(s => s.isDirectory() ? walk(target) : optimizeFile(target));
 }

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/agents/route.ts
 import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -32,13 +33,26 @@ async function getAgents(req: Request) {
   const companyId = searchParams.get("companyId");
 
   try {
-    const salesAgents = await prisma.salesAgent.findMany({
+    
+    const cacheKey = `admin:sales-agents:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const salesAgents = await prisma.salesAgent.findMany({
       where: { companyId },
       include: { user: {
         select: { id:true, name:true, email:true, phone:true, bio:true, profilePicture:true }
       } },
       orderBy: { createdAt: "desc" },
     });
+
+  try {
+    if (salesAgents) {
+      await cacheSet(cacheKey, salesAgents, 60);
+    }
+  } catch (e) {}
 
     const agents: AgentProfile[] = salesAgents.map((sa) => ({
       id: sa.id,
@@ -149,6 +163,8 @@ async function createAgent(req: Request) {
       // department: newSalesAgent.staffProfile?.department || "Sales",
     };
 
+    
+    try { await cacheDel(`admin:sales-agents:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, agentProfile, "Agent created successfully", 201);
   } catch (error) {
     console.error("Error creating agent:", error);

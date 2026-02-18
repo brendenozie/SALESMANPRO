@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from '@/server/db/prismadb';
@@ -10,27 +11,36 @@ type RouteParams = { params: {} };
 
 
 // --- GET Handler Core Logic ---
-/**
- * Fetches all product categories, optionally filtered by companyId.
- */
+
 async function handleGetCategories(request: Request, { params }: RouteParams) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
 
+  
+    const cacheKey = `admin:menu-categories:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const categories = await prisma.productCategory.findMany({
     // Only filter by companyId if it is provided
     where: companyId ? { companyId } : {},
     orderBy: { sortOrder: 'asc' },
   });
 
+  try {
+    if (categories) {
+      await cacheSet(cacheKey, categories, 60);
+    }
+  } catch (e) {}
+
   // withApiHandler handles wrapping this result in a success formatResponse with status 200
   return formatResponse(true, categories , "Product categories fetched successfully", 200);
 }
 
 // --- POST Handler Core Logic ---
-/**
- * Creates a new product category.
- */
+
 async function handlePostCategory(request: Request, { params }: RouteParams) {
   const body = await request.json();
   const { name, slug, description, image, sortOrder, visible, companyId } = body;
@@ -73,6 +83,8 @@ async function handlePostCategory(request: Request, { params }: RouteParams) {
     });
 
     // Explicitly return success with status 201
+    
+    try { await cacheDel(`admin:menu-categories:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newCategory, null, 201);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {

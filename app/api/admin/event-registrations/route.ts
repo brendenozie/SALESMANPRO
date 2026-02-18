@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextRequest } from "next/server"; // Use NextRequest for better handler typing
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -46,6 +47,13 @@ async function getRegistrations(request: Request) {
     whereClause.status = upperStatus;
   }
 
+  
+    const cacheKey = `admin:event-registrations:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const registrations = await prisma.eventRegistration.findMany({
     where: whereClause,
     include: {
@@ -79,6 +87,12 @@ async function getRegistrations(request: Request) {
       registeredAt: 'desc',
     },
   });
+
+  try {
+    if (registrations) {
+      await cacheSet(cacheKey, registrations, 60);
+    }
+  } catch (e) {}
 
   // Transform the data to flatten relations
   const response = registrations.map((registration) => ({
@@ -201,7 +215,9 @@ async function createRegistration(request: Request) {
     status: newRegistration.status,
   };
 
-  return formatResponse(true, { data: responseData }, null, 201);
+  
+    try { await cacheDel(`admin:event-registrations:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { data: responseData }, null, 201);
 }
 
 // Export the handlers wrapped in the `withApiHandler` utility.

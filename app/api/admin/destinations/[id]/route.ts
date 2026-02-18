@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextRequest } from 'next/server';
 import prisma from "@/server/db/prismadb";
 import { verifyAuth } from '@/lib/verifyAuth';
@@ -19,9 +20,22 @@ async function getDestination(req: Request, { params }: Params) {
 
   const { id } = params;
 
+  
+    const cacheKey = `admin:destinations:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const destination = await prisma.destination.findUnique({
     where: { id },
   });
+
+  try {
+    if (destination) {
+      await cacheSet(cacheKey, destination, 60);
+    }
+  } catch (e) {}
 
   if (!destination) {
     return formatResponse(false, null, 'Destination not found', 404);
@@ -45,7 +59,9 @@ async function updateDestination(req: Request, { params }: Params) {
     data: body,
   });
 
-  return formatResponse(true, { data: updatedDestination }, null, 200);
+  
+    try { await cacheDel(`admin:destinations:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { data: updatedDestination }, null, 200);
 }
 
 // =======================================================================
@@ -61,7 +77,9 @@ async function deleteDestination(req: Request, { params }: Params) {
     where: { id },
   });
 
-  return formatResponse(true, { message: "Destination deleted successfully" }, null, 200);
+  
+    try { await cacheDel(`admin:destinations:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { message: "Destination deleted successfully" }, null, 200);
 }
 
 // Export handlers with standardized wrapper

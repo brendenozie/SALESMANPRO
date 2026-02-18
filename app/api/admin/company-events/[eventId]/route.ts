@@ -1,13 +1,11 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 import { Prisma } from "@prisma/client";
 
-/**
- * GET: Fetch event details
- * Optimized to verify company slug and event ID in one query.
- */
+
 async function handleGet(request: Request, context: { params: { adminSlug: string, eventId: string } }) {
   const { adminSlug, eventId } = context.params;
 
@@ -22,10 +20,7 @@ async function handleGet(request: Request, context: { params: { adminSlug: strin
   return formatResponse(true, event);
 }
 
-/**
- * PUT: Update event
- * Optimized with relational scoping to remove the extra company lookup.
- */
+
 async function handlePut(request: Request, context: { params: { adminSlug: string, eventId: string } }) {
   const { adminSlug, eventId } = context.params;
   const body = await request.json();
@@ -44,6 +39,8 @@ async function handlePut(request: Request, context: { params: { adminSlug: strin
       },
     });
 
+    
+    try { await cacheDel(`admin:company-events:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedEvent, "Event updated successfully");
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -53,9 +50,7 @@ async function handlePut(request: Request, context: { params: { adminSlug: strin
   }
 }
 
-/**
- * DELETE: Remove event
- */
+
 async function handleDelete(request: Request, context: { params: { adminSlug: string, eventId: string } }) {
   const { adminSlug, eventId } = context.params;
 
@@ -67,6 +62,8 @@ async function handleDelete(request: Request, context: { params: { adminSlug: st
       },
     });
 
+    
+    try { await cacheDel(`admin:company-events:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Event deleted successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -80,30 +77,7 @@ export const GET = withApiHandler(handleGet);
 export const PUT = withApiHandler(handlePut);
 export const DELETE = withApiHandler(handleDelete);
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// // --- Type Definitions for the Handlers ---
-
-// type RouteParams = {
-//   adminSlug: string;
-//   eventId: string;
-// };
-
-// type HandlerContext = {
-//   params: RouteParams;
-//   user?: any; // Replace with your actual User type if defined
-// };
-
-// // --- Core Logic for GET request ---
-
-// async function handleGet(request: Request, context: HandlerContext): Promise<NextResponse> {
-//   const { adminSlug, eventId } = context.params;
-
-//   const company = await prisma.company.findUnique({
-//     where: { slug: adminSlug },
-//     select: { id: true }
-//   });
 
 //   if (!company) {
 //     return NextResponse.json({ message: "Company not found" }, { status: 404 });
@@ -218,20 +192,11 @@ export const DELETE = withApiHandler(handleDelete);
 
 // // --- Exported Route Handlers (Wrapped) ---
 
-// /**
-//  * GET /api/admin/[adminSlug]/events/[eventId]
-//  * Fetches a single event's details.
-//  */
+// 
 // export const GET = withApiHandler(handleGet);
 
-// /**
-//  * PUT /api/admin/[adminSlug]/events/[eventId]
-//  * Updates an existing event.
-//  */
+// 
 // export const PUT = withApiHandler(handlePut);
 
-// /**
-//  * DELETE /api/admin/[adminSlug]/events/[eventId]
-//  * Deletes an event.
-//  */
+// 
 // export const DELETE = withApiHandler(handleDelete);

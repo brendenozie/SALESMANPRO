@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -50,6 +51,13 @@ async function getDoctors(request: Request) {
     whereClause.status = filterStatus;
   }
 
+  
+    const cacheKey = `admin:doctors:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   let doctors = await prisma.doctor.findMany({
     where: whereClause,
     include: {
@@ -58,6 +66,12 @@ async function getDoctors(request: Request) {
     },
     orderBy: { createdAt: "asc" },
   });
+
+  try {
+    if (doctors) {
+      await cacheSet(cacheKey, doctors, 60);
+    }
+  } catch (e) {}
 
   if (searchTerm) {
     const lower = searchTerm.toLowerCase();
@@ -155,7 +169,9 @@ async function createDoctor(request: Request) {
   });
 
   const formatted = await formatDoctorData(newDoctor);
-  return formatResponse(true, { data: formatted }, null, 201);
+  
+    try { await cacheDel(`admin:doctors:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { data: formatted }, null, 201);
 }
 
 // =======================================================================

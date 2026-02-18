@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/sponsors/route.ts
 import prisma from '@/server/db/prismadb';
 import { formatResponse } from "@/lib/formatResponse";
@@ -10,10 +11,23 @@ async function getSponsors(req: Request) {
     const { searchParams } = new URL(req.url);
     const companyId = searchParams.get('companyId');
 
-    const sponsors = await prisma.sponsor.findMany({
+    
+    const cacheKey = `admin:sponsors:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const sponsors = await prisma.sponsor.findMany({
       where: companyId ? { companyId } : undefined,
       orderBy: { createdAt: 'desc' },
     });
+
+  try {
+    if (sponsors) {
+      await cacheSet(cacheKey, sponsors, 60);
+    }
+  } catch (e) {}
 
     return formatResponse(true, sponsors, 'Sponsors fetched successfully', 200);
   } catch (error: any) {
@@ -46,6 +60,8 @@ async function createSponsor(req: Request) {
       },
     });
 
+    
+    try { await cacheDel(`admin:sponsors:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newSponsor, 'Sponsor created successfully', 201);
   } catch (error: any) {
     console.error('Error creating sponsor:', error);

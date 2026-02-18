@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -9,12 +10,25 @@ async function getLeads(req: Request) {
     return formatResponse(false, null, "Company ID is required", 400);
   }
     
+  
+    const cacheKey = `admin:leads:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const leads = await prisma.lead.findMany({
     where: {
       companyId: companyId,
     },
     orderBy: { createdAt: "desc" },
   });
+
+  try {
+    if (leads) {
+      await cacheSet(cacheKey, leads, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, leads, "Leads fetched", 200);
 }
@@ -44,7 +58,9 @@ async function createLead(req: Request) {
      },
   });
 
-  return formatResponse(true, lead, "Lead saved", 201);
+  
+    try { await cacheDel(`admin:leads:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, lead, "Lead saved", 201);
 }
 
 export const GET = withApiHandler(getLeads);

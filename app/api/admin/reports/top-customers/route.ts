@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/reports/top-customers/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -55,7 +56,14 @@ async function getTopCustomers(req: Request) {
     const userIds = topSpenders.map(spender => spender.consumerId);
 
     // 4. Fetch the user details (name) for those top spenders
-    const users = await prisma.user.findMany({
+    
+    const cacheKey = `admin:top-customers:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const users = await prisma.user.findMany({
       where: {
         id: { in: userIds },
       },
@@ -65,6 +73,12 @@ async function getTopCustomers(req: Request) {
         email: true,
       },
     });
+
+  try {
+    if (users) {
+      await cacheSet(cacheKey, users, 60);
+    }
+  } catch (e) {}
     
     // Create a map for easy lookup
     const userMap = new Map(users.map(user => [user.id, user]));

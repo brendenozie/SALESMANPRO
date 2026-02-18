@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -117,7 +118,9 @@ export const PUT = withApiHandler(async (request, context) => {
     select: baseSelect,
   });
 
-  return NextResponse.json(formatAppointmentData(updated), { status: 200 });
+  
+    try { await cacheDel(`admin:appointments:${'global' || 'global'}:*`); } catch (e) {}
+    return NextResponse.json(formatAppointmentData(updated), { status: 200 });
 });
 
 // --------------------
@@ -142,23 +145,12 @@ export const DELETE = withApiHandler(async (_request, context) => {
     return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
   }
 
-  return NextResponse.json({ message: "Appointment deleted successfully" }, { status: 200 });
+  
+    try { await cacheDel(`admin:appointments:${'global' || 'global'}:*`); } catch (e) {}
+    return NextResponse.json({ message: "Appointment deleted successfully" }, { status: 200 });
 });
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { Prisma } from "@prisma/client";
-
-// // OPTIMIZATION: Synchronous and focused on string manipulation only
-// function formatAppointment(appt: any) {
-//   const dateObj = new Date(appt.date);
-//   return {
-//     id: appt.id,
-//     patientName: appt.user?.name ?? "N/A",
-//     doctorId: appt.doctorId,
-//     doctorName: appt.doctor?.User?.name ?? "N/A",
-//     date: dateObj.toISOString().split("T")[0],
-//     time: dateObj.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true }),
+,
 //     status: appt.status,
 //     service: appt.service ?? "N/A",
 //     createdAt: appt.createdAt?.toISOString() ?? "N/A",
@@ -251,24 +243,7 @@ export const DELETE = withApiHandler(async (_request, context) => {
 //   }
 // });
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// // Helper function to format appointment data for the frontend
-// async function formatAppointmentData(appointment: any) {
-//   const patientName = appointment.user?.name || "N/A";
-//   const doctorName = appointment.doctor?.User?.name || "N/A";
-//   const dateObj = new Date(appointment.date);
-
-//   // Format date as YYYY-MM-DD
-//   const formattedDate = dateObj.toISOString().split("T")[0];
-
-//   // Format time as HH:MM AM/PM
-//   const formattedTime = dateObj.toLocaleTimeString("en-US", {
-//     hour: "2-digit",
-//     minute: "2-digit",
-//     hour12: true,
-//   });
 
 //   return {
 //     id: appointment.id,

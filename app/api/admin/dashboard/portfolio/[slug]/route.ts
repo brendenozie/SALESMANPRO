@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -28,7 +29,14 @@ export const GET = withApiHandler(
       // --- METRIC CALCULATIONS ---
 
       // 1. Total Projects: Count projects where the user is a member
-      const totalProjects = await prisma.project.count({
+      
+    const cacheKey = `admin:portfolio:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const totalProjects = await prisma.project.count({
         where: {
           members: {
             some: {
@@ -37,6 +45,12 @@ export const GET = withApiHandler(
           },
         },
       });
+
+  try {
+    if (totalProjects) {
+      await cacheSet(cacheKey, totalProjects, 60);
+    }
+  } catch (e) {}
 
       // 2. Core Skills: Count expertise fields from the Expert profile
       const expertProfile = await prisma.expert.findUnique({

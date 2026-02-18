@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/video-albums/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
@@ -8,10 +9,23 @@ import { formatResponse } from '@/lib/formatResponse';
 export const GET = withApiHandler(async (request: Request, { params }: { params: { id: string } }) => {
   const { id } = params;
 
+  
+    const cacheKey = `admin:videos-albums:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const videoAlbum = await prisma.videoAlbum.findUnique({
     where: { id },
     include: { videos: true },
   });
+
+  try {
+    if (videoAlbum) {
+      await cacheSet(cacheKey, videoAlbum, 60);
+    }
+  } catch (e) {}
 
   if (!videoAlbum) {
     return formatResponse(false, null, 'Video album not found', 404);
@@ -37,7 +51,9 @@ export const PUT = withApiHandler(async (request: Request, { params }: { params:
     include: { videos: true },
   });
 
-  return formatResponse(true, updatedVideoAlbum, 'Video album updated successfully', 200);
+  
+    try { await cacheDel(`admin:videos-albums:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, updatedVideoAlbum, 'Video album updated successfully', 200);
 });
 
 // DELETE /api/video-albums/:id

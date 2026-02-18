@@ -1,12 +1,10 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/**
- * GET: Fetch all vehicles for a specific company
- * Filters available via query params: status, type
- */
+
 const getVehicles = async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
@@ -32,9 +30,7 @@ const getVehicles = async (request: Request) => {
   return formatResponse(true, vehicles, "Fleet data retrieved", 200);
 };
 
-/**
- * POST: Register a new vehicle to the fleet
- */
+
 const postVehicle = async (request: Request) => {
   const body = await request.json();
   const { 

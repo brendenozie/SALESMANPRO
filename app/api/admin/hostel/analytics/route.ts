@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { startOfDay, subDays } from "date-fns";
@@ -17,12 +18,25 @@ export async function GET(req: Request) {
     });
 
     // Count currently active allocations
-    const activeAllocations = await prisma.hostelAllocation.count({
+    
+    const cacheKey = `admin:analytics:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const activeAllocations = await prisma.hostelAllocation.count({
       where: { 
         status: "ACTIVE",
         room: { block: { companyId } }
       }
     });
+
+  try {
+    if (activeAllocations) {
+      await cacheSet(cacheKey, activeAllocations, 60);
+    }
+  } catch (e) {}
 
     const totalCapacity = totalBeds._sum.capacity || 0;
     const occupancyRate = totalCapacity > 0 

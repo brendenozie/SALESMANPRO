@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/departments/[id]/route.ts
 import { z } from "zod";
 import prisma from "@/server/db/prismadb";
@@ -16,6 +17,13 @@ const updateDepartmentSchema = z.object({
 async function getDepartment(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
+  
+    const cacheKey = `admin:departments:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const department = await prisma.department.findUnique({
     where: { id },
     include: {
@@ -32,6 +40,12 @@ async function getDepartment(request: Request, { params }: { params: { id: strin
       },
     },
   });
+
+  try {
+    if (department) {
+      await cacheSet(cacheKey, department, 60);
+    }
+  } catch (e) {}
 
   if (!department) {
     return formatResponse(false, null, "Department not found", 404);
@@ -77,6 +91,8 @@ async function updateDepartment(request: Request, { params }: { params: { id: st
       data: parsed.data,
     });
 
+    
+    try { await cacheDel(`admin:departments:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, {data: updatedDepartment  },null,200 );
     
   } catch (error: any) {
@@ -94,6 +110,8 @@ async function deleteDepartment(request: Request, { params }: { params: { id: st
 
   try {
     const deleted = await prisma.department.delete({ where: { id } });
+    
+    try { await cacheDel(`admin:departments:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, {data: { deletedDepartmentId: deleted.id, message: "Department deleted successfully" }  },null,200 );
     
     

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { z } from "zod";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -21,6 +22,13 @@ async function getDepartments(request: Request) {
     return formatResponse(false, null, "companyId is required", 400);
   }
 
+  
+    const cacheKey = `admin:departments:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const departments = await prisma.department.findMany({
     where: { companyId },
     include: {
@@ -33,6 +41,12 @@ async function getDepartments(request: Request) {
     },
     orderBy: { name: "asc" },
   });
+
+  try {
+    if (departments) {
+      await cacheSet(cacheKey, departments, 60);
+    }
+  } catch (e) {}
 
   const response = departments.map((d) => ({
     id: d.id,
@@ -65,6 +79,8 @@ async function createDepartment(request: Request) {
       data: parsed.data,
     });
 
+    
+    try { await cacheDel(`admin:departments:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { data: newDepartment }, null, 201);
   } catch (error: any) {
     if (error.code === "P2002" && error.meta?.target?.includes("name")) {

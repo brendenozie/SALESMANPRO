@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/photo-albums/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -5,10 +6,7 @@ import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// /**
-//  * @route GET /api/photo-albums
-//  * @description Fetches all photo albums, optionally filtered by companyId.
-//  */
+// 
 const getHandler = async (request: Request) => {
   
 
@@ -16,6 +14,13 @@ const getHandler = async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
+  
+    const cacheKey = `admin:photos-albums:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const photoAlbums = await prisma.photoAlbum.findMany({
     where: companyId ? { companyId } : {},
     include: {
@@ -24,13 +29,16 @@ const getHandler = async (request: Request) => {
     orderBy: { createdAt: "desc" },
   });
 
+  try {
+    if (photoAlbums) {
+      await cacheSet(cacheKey, photoAlbums, 60);
+    }
+  } catch (e) {}
+
   return NextResponse.json(photoAlbums, { status: 200 });
 };
 
-// /**
-//  * @route POST /api/photo-albums
-//  * @description Creates a new photo album and its associated photos.
-//  */
+// 
 const postHandler = async (request: Request) => {
   
 
@@ -64,7 +72,9 @@ const postHandler = async (request: Request) => {
     },
   });
 
-  return NextResponse.json(newPhotoAlbum, { status: 201 });
+  
+    try { await cacheDel(`admin:photos-albums:${companyId || 'global'}:*`); } catch (e) {}
+    return NextResponse.json(newPhotoAlbum, { status: 201 });
 };
 
 export const GET = withApiHandler(getHandler);

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/students/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { EnrollmentStatus, StudentLevelStatus, ROLE } from "@prisma/client";
@@ -12,7 +13,14 @@ async function getStudent(req: Request, { params }: { params: { id: string } }) 
   const { id } = params;
 
   try {
-    const student = await prisma.student.findUnique({
+    
+    const cacheKey = `admin:students:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const student = await prisma.student.findUnique({
       where: { id },
       include: {
         user: { select: { id: true, name: true, email: true, image: true, emailVerified: true } },
@@ -41,6 +49,12 @@ async function getStudent(req: Request, { params }: { params: { id: string } }) 
         },
       },
     });
+
+  try {
+    if (student) {
+      await cacheSet(cacheKey, student, 60);
+    }
+  } catch (e) {}
 
     if (!student) return formatResponse(false, null, "Student not found", 404);
 

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from '@/server/db/prismadb'; // Assuming this is your Prisma client instance
@@ -133,6 +134,8 @@ const deleteClientLogic = async (request: Request, context: RouteContext) => {
     });
 
     // Use formatResponse for success
+    
+    try { await cacheDel(`admin:fitness-clients:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, 'Client deleted successfully.', 200);
 };
 

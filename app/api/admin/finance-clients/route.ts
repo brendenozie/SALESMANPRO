@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/clients/route.ts
 import { PrismaClient } from '@prisma/client';
 // 1. Incorporate the new imports
@@ -21,12 +22,25 @@ const getClientsLogic = async (req: Request) => {
   const companyId = searchParams.get('companyId');
 
   // Find all clients and include their associated user data
+  
+    const cacheKey = `admin:finance-clients:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const clients = await prisma.client.findMany({
     where: { companyId: companyId || undefined },
     include: {
       user: true, // Includes the related User model fields
     },
   });
+
+  try {
+    if (clients) {
+      await cacheSet(cacheKey, clients, 60);
+    }
+  } catch (e) {}
 
   // Use formatResponse to generate the final NextResponse
   // ASSUMPTION: formatResponse is modified to return a NextResponse/Response object
@@ -76,7 +90,9 @@ const postClientLogic = async (req: Request) => {
   });
 
   // Use formatResponse for success
-  return formatResponse(true, newClient, 'Client created successfully', 201);
+  
+    try { await cacheDel(`admin:finance-clients:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, newClient, 'Client created successfully', 201);
 };
 
 // Export the wrapped POST function

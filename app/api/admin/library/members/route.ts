@@ -1,11 +1,10 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/**
- * GET: Fetch all library members with profile details and pending fines
- */
+
 const getMembersLogic = async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
@@ -48,9 +47,7 @@ const getMembersLogic = async (request: Request) => {
   return formatResponse(true, members, "Library directory retrieved", 200);
 };
 
-/**
- * POST: Onboard a Student or Educator as a Library Member
- */
+
 const postMemberLogic = async (request: Request) => {
   const body = await request.json();
   const { profileId, type, memberId, companyId } = body;
@@ -109,28 +106,7 @@ const postMemberLogic = async (request: Request) => {
 export const GET = withApiHandler(getMembersLogic, { requireAuth: true });
 export const POST = withApiHandler(postMemberLogic, { requireAuth: true, requireRateLimit: true });
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
 
-// // GET /api/admin/library/books
-// const getBooksLogic = async (request: Request) => {
-//   const { searchParams } = new URL(request.url);
-//   const companyId = searchParams.get("companyId");
-
-//   if (!companyId) {
-//     return formatResponse(false, null, "Company ID is required.", 400);
-//   }
-
-//   const books = await prisma.libraryBook.findMany({
-//     where: { companyId },
-//     include: {
-//       category: {
-//         select: { name: true, id: true } // Fetches category info
-//       }
-//     },
-//     orderBy: { createdAt: "desc" },
-//   });
 
 //   return formatResponse(true, books, "Archive retrieved successfully", 200);
 // };

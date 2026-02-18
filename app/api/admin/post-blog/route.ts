@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/blogs/route.ts
 import prisma from "@/server/db/prismadb";
 import { verifyAuth } from "@/lib/verifyAuth";
@@ -132,7 +133,9 @@ const createOrUpdateBlog = async (req: Request) => {
     });
   }
 
-  return formatResponse(true, { blog }, "Blog saved successfully.", 201);
+  
+    try { await cacheDel(`admin:post-blog:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { blog }, "Blog saved successfully.", 201);
 };
 
 // Export wrapped handler

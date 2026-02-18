@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -102,6 +103,13 @@ async function getExams(request: Request) {
     whereClause.isPublished = isPublished === 'true';
   }
 
+  
+    const cacheKey = `admin:exams:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const exams = await prisma.exam.findMany({
     where: {
       ...whereClause,
@@ -130,6 +138,12 @@ async function getExams(request: Request) {
       date: 'desc',
     },
   });
+
+  try {
+    if (exams) {
+      await cacheSet(cacheKey, exams, 60);
+    }
+  } catch (e) {}
 
   const responseData = exams.map(transformExamResponse);
   return formatResponse(true, { data: responseData }, null, 200);
@@ -217,6 +231,8 @@ async function createExam(request: Request) {
     });
 
     const responseData = transformExamResponse(newExam);
+    
+    try { await cacheDel(`admin:exams:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { data: responseData }, null, 201);
   } catch (error: any) {
     if (error.code === 'P2002') {

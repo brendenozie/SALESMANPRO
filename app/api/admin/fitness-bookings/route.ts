@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from '@/server/db/prismadb';
@@ -30,10 +31,23 @@ const getBookingsLogic = async (req: Request, context: RouteContext) => {
     }
 
     // 1. Verify Company
-    const company = await prisma.company.findUnique({
+    
+    const cacheKey = `admin:fitness-bookings:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const company = await prisma.company.findUnique({
         where: { id: companyId },
         select: { id: true },
     });
+
+  try {
+    if (company) {
+      await cacheSet(cacheKey, company, 60);
+    }
+  } catch (e) {}
 
     if (!company) {
         return formatResponse(false, null, 'Company not found.', 404);
@@ -177,6 +191,8 @@ const postBookingLogic = async (req: Request, context: RouteContext) => {
     };
 
     // Use formatResponse for success
+    
+    try { await cacheDel(`admin:fitness-bookings:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, formattedNewBooking, 'Booking created successfully', 201);
 };
 

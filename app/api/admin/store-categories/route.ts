@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/store-categories/route.ts
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -20,7 +21,14 @@ async function getStoreCategories(req: Request) {
 
   try {
     const whereClause = companyId ? { companyId } : {};
-    const storeCategories = await prisma.storeCategory.findMany({
+    
+    const cacheKey = `admin:store-categories:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const storeCategories = await prisma.storeCategory.findMany({
       where: whereClause,
       include: {
         category: {
@@ -36,6 +44,12 @@ async function getStoreCategories(req: Request) {
       },
       orderBy: { sortOrder: "asc" },
     });
+
+  try {
+    if (storeCategories) {
+      await cacheSet(cacheKey, storeCategories, 60);
+    }
+  } catch (e) {}
 
     const response = storeCategories.map(sc => ({
       id: sc.id,
@@ -105,6 +119,8 @@ async function postStoreCategory(req: Request) {
       categorySlug: newStoreCategory.category?.slug,
     };
 
+    
+    try { await cacheDel(`admin:store-categories:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, responseData, "Store category created successfully", 201);
   } catch (err: any) {
     console.error("Error creating store category:", err);
@@ -127,6 +143,8 @@ async function deleteStoreCategory(req: Request) {
     if (!existingStoreCategory) return formatResponse(false, null, "Store category not found", 404);
 
     await prisma.storeCategory.delete({ where: { id } });
+    
+    try { await cacheDel(`admin:store-categories:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Store category deleted successfully");
   } catch (err: any) {
     console.error("Error deleting store category:", err);

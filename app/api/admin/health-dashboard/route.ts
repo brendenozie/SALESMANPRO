@@ -1,11 +1,10 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 import { ROLE } from "@prisma/client";
 
-/**
- * Core logic to fetch dashboard summary statistics for a given company.
- */
+
 async function getDashboardSummary(
   request: Request,
   { params }: { params: { adminSlug: string } }
@@ -14,10 +13,23 @@ async function getDashboardSummary(
   const { adminSlug } = params;
 
   // 1. Find Company and Get Company ID
+  
+    const cacheKey = `admin:health-dashboard:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const company = await prisma.company.findUnique({
     where: { slug: adminSlug },
     select: { id: true }
   });
+
+  try {
+    if (company) {
+      await cacheSet(cacheKey, company, 60);
+    }
+  } catch (e) {}
 
   if (!company) {
     return formatResponse(false, null, "Company not found.", 404);

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/videos/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { VideoStatus } from "@prisma/client";
@@ -11,9 +12,22 @@ async function handleGET(request: Request, { params }: { params: { id: string } 
     const auth = await verifyAuth(request);
     if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-    const video = await prisma.video.findUnique({
+    
+    const cacheKey = `admin:videos:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const video = await prisma.video.findUnique({
       where: { id: params.id },
     });
+
+  try {
+    if (video) {
+      await cacheSet(cacheKey, video, 60);
+    }
+  } catch (e) {}
 
     if (!video) {
       return formatResponse(false, null, "Video not found", 404);
@@ -62,6 +76,8 @@ async function handlePUT(request: Request, { params }: { params: { id: string } 
       },
     });
 
+    
+    try { await cacheDel(`admin:videos:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedVideo, "Video updated successfully", 200);
   } catch (error: any) {
     console.error("Error updating video:", error);
@@ -79,6 +95,8 @@ async function handleDELETE(request: Request, { params }: { params: { id: string
 
     await prisma.video.delete({ where: { id } });
 
+    
+    try { await cacheDel(`admin:videos:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Video deleted successfully", 204);
   } catch (error: any) {
     console.error(`Error deleting video with ID ${params.id}:`, error);

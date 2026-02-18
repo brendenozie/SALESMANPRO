@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -19,9 +20,7 @@ async function formatServiceData(service: any) {
   };
 }
 
-/**
- * GET Handler: Fetches a list of services, supports searching and filtering.
- */
+
 async function handleGetServices(request: Request, { params }: RouteParams) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
@@ -49,10 +48,23 @@ async function handleGetServices(request: Request, { params }: RouteParams) {
     ];
   }
 
+  
+    const cacheKey = `admin:health-services:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const services = await prisma.service.findMany({
     where: whereClause,
     orderBy: { name: 'asc' }, // Order by service name
   });
+
+  try {
+    if (services) {
+      await cacheSet(cacheKey, services, 60);
+    }
+  } catch (e) {}
 
   const formattedServices = await Promise.all(
     services.map(async (service) => formatServiceData(service))
@@ -62,9 +74,7 @@ async function handleGetServices(request: Request, { params }: RouteParams) {
   return formatResponse(true, formattedServices, "Services fetched successfully", 200);
 }
 
-/**
- * POST Handler: Creates a new service.
- */
+
 async function handleCreateService(request: Request, { params }: RouteParams) {
   const body = await request.json();
   const { name, description, price, duration, status, companyId } = body;
@@ -88,6 +98,8 @@ async function handleCreateService(request: Request, { params }: RouteParams) {
     const formattedNewService = await formatServiceData(newService);
 
     // Return the data; withApiHandler will use the provided status 201
+    
+    try { await cacheDel(`admin:health-services:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, formattedNewService, "Service created successfully", 201);
   } catch (err: any) {
     // Handle unique constraint violation specifically (Prisma code P2002)

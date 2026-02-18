@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { StudentLevelStatus, ROLES } from "@prisma/client";
 import { formatResponse } from "@/lib/formatResponse";
@@ -29,6 +30,13 @@ async function handleGET(request: Request) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
 
+  
+    const cacheKey = `admin:students:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const students = await prisma.student.findMany({
     where: companyId ? { companyId } : {},
     include: {
@@ -49,6 +57,12 @@ async function handleGET(request: Request) {
       _count: { select: { enrolledCourses: true, assignmentSubmission: true, AttendanceRecord: true, ExamSubmission: true  } },
     },
   });
+
+  try {
+    if (students) {
+      await cacheSet(cacheKey, students, 60);
+    }
+  } catch (e) {}
 
   const response = students.map((student) => ({
     id: student.id,
@@ -140,22 +154,7 @@ async function handlePOST(request: Request) {
 export const GET = withApiHandler(handleGET);
 export const POST = withApiHandler(handlePOST);
 
-// import prisma from "@/server/db/prismadb";
-// import { EnrollmentStatus, StudentLevelStatus, ROLE } from "@prisma/client";
 
-// import { formatResponse } from "@/lib/formatResponse";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-
-// // Helper function to generate a unique 6-digit login code
-// async function generateUniqueLoginCode(): Promise<string> {
-//   let code = '';
-//   let isUnique = false;
-//   while (!isUnique) {
-//     code = Math.floor(100000 + Math.random() * 900000).toString().padStart(6, '0');
-
-//     const existingStudent = await prisma.student.findUnique({
-//       where: { loginCode: code },
-//     });
 
 //     if (!existingStudent) isUnique = true;
 //   }

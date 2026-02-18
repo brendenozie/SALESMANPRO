@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // app/api/class-schedules/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -38,11 +39,24 @@ export const GET = withApiHandler(async (request: Request, context) => {
     ),
   };
 
+  
+    const cacheKey = `admin:class-schedules:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const schedules = await prisma.classSchedule.findMany({
     where: filters,
     select: SCHEDULE_SELECT,
     orderBy: { startTime: "asc" },
   });
+
+  try {
+    if (schedules) {
+      await cacheSet(cacheKey, schedules, 60);
+    }
+  } catch (e) {}
 
   // Sort by dayOfWeek using the index
   const sorted = schedules.sort((a, b) => DAY_ORDER[a.dayOfWeek] - DAY_ORDER[b.dayOfWeek]);
@@ -84,6 +98,8 @@ export const POST = withApiHandler(async (request: Request, context) => {
       select: SCHEDULE_SELECT
     });
 
+    
+    try { await cacheDel(`admin:class-schedules:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newSchedule, "Schedule created successfully", 201);
   } catch (error: any) {
     // Catch Foreign Key violations (P2002/P2025)
@@ -92,70 +108,7 @@ export const POST = withApiHandler(async (request: Request, context) => {
 }, { requireAuth: true });
 
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// const VALID_DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-
-// // GET /api/class-schedules
-// // Fetches all class schedules, optionally filtered by companyId, courseId, educatorId, or dayOfWeek.
-// export const GET = withApiHandler(async (request: Request, context) => {
-//   const { searchParams } = new URL(request.url);
-//   const companyId = searchParams.get("companyId");
-//   const courseId = searchParams.get("courseId");
-//   const educatorId = searchParams.get("educatorId");
-//   const academicLevelId = searchParams.get("academicLevelId");
-//   const classroomId = searchParams.get("classroomId");
-//   const dayOfWeek = searchParams.get("dayOfWeek");
-
-
-//   const whereClause: any = {  };
-//   if (companyId) whereClause.companyId = companyId;
-//   if (courseId) whereClause.courseId = courseId;
-//   if (educatorId) whereClause.educatorId = educatorId;
-//   // if (academicLevelId) whereClause.academicLevelId = academicLevelId;
-//   if (classroomId) { whereClause.classroomId = classroomId; }else{ whereClause.academicLevelId = academicLevelId; }
-  
-//   if (dayOfWeek) {
-//     if (!VALID_DAYS_OF_WEEK.includes(dayOfWeek)) {
-//       return NextResponse.json(
-//         { message: `Invalid dayOfWeek: ${dayOfWeek}. Must be one of ${VALID_DAYS_OF_WEEK.join(", ")}.` },
-//         { status: 400 }
-//       );
-//     }
-//     whereClause.dayOfWeek = dayOfWeek;
-//   }
-
-//   const classSchedules = await prisma.classSchedule.findMany({
-//     where: whereClause,
-//     include: {
-//         course: {
-//           select: { id: true, title: true, code: true }
-//         },
-//         educator: {
-//           select: { id: true, user: { select: { name: true, email: true } } }
-//         },
-//         classroom: { select: { id: true, name: true, academicLevelId: true } },
-//         academicLevel: { select: { id: true, name: true } }, // ✅ ADD THIS
-//       },
-//     // include: {
-//     //   course: {
-//     //     select: {
-//     //       id: true,
-//     //       title: true,
-//     //       code: true,
-//     //       academicLevels: {
-//     //         include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } },
-//     //       },
-//     //     },
-//     //   },
-//     //   educator: {
-//     //     select: { id: true, user: { select: { name: true, email: true } } },
-//     //   },
-//     //   classroom: { select: { id: true, name: true, academicLevelId: true } },
-//     // },
-//     orderBy: [{ startTime: "asc" }],
-//   });
 
 //   const dayOrder: Record<string, number> = {
 //     Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4,

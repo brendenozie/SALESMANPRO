@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -10,7 +11,9 @@ async function updateLead(req: Request, { params }: { params: { id: string } }) 
     data,
   });
 
-  return formatResponse(true, lead, "Updated", 200);
+  
+    try { await cacheDel(`admin:leads:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, lead, "Updated", 200);
 }
 
 export const PUT = withApiHandler(updateLead);

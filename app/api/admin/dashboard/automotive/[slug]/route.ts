@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -17,7 +18,14 @@ export const GET = withApiHandler(
       const todayStart = new Date(now.setHours(0, 0, 0, 0));
       const todayEnd = new Date(now.setHours(23, 59, 59, 999));
 
-      const [
+      
+    const cacheKey = `admin:automotive:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const [
         totalVehicles,
         vehiclesSold,
         activeListings,
@@ -85,6 +93,12 @@ export const GET = withApiHandler(
             take: 4
         })
       ]);
+
+  try {
+    if (totalVehicles) {
+      await cacheSet(cacheKey, totalVehicles, 60);
+    }
+  } catch (e) {}
 
       const revenueThisMonth = revenueData._sum.totalFinalPrice || 0;
       

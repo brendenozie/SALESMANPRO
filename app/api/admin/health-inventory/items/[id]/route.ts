@@ -1,10 +1,9 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/**
- * Common validation step to verify company existence and item ownership.
- */
+
 async function validateInventoryAccess(adminSlug: string, itemId: string) {
   const company = await prisma.company.findUnique({
     where: { slug: adminSlug },
@@ -28,9 +27,7 @@ async function validateInventoryAccess(adminSlug: string, itemId: string) {
   return { error: null, status: 200, companyId, item };
 }
 
-/**
- * GET Handler: Fetches detailed information about a single inventory item.
- */
+
 async function getInventoryItem(
   request: Request,
   { params }: { params: { adminSlug: string; id: string } }
@@ -44,6 +41,13 @@ async function getInventoryItem(
   }
   // At this point, the item and company are validated.
 
+  
+    const cacheKey = `admin:items:${adminSlug || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const inventoryItem = await prisma.inventoryItem.findUnique({
     where: { id: id },
     select: {
@@ -67,6 +71,12 @@ async function getInventoryItem(
     },
   });
 
+  try {
+    if (inventoryItem) {
+      await cacheSet(cacheKey, inventoryItem, 60);
+    }
+  } catch (e) {}
+
   // Re-check for null if the select fields somehow caused an issue, though unlikely after validation
   if (!inventoryItem) {
      return formatResponse(false, null, "Inventory item not found.", 404);
@@ -87,9 +97,7 @@ async function getInventoryItem(
   return formatResponse(true, formattedItem, "Inventory item details fetched successfully", 200);
 }
 
-/**
- * PUT Handler: Updates an inventory item's quantity or reorder threshold.
- */
+
 async function updateInventoryItem(
   request: Request,
   { params }: { params: { adminSlug: string; id: string } }
@@ -133,12 +141,12 @@ async function updateInventoryItem(
     });
   }
 
-  return formatResponse(true, updatedItem, "Inventory item updated successfully", 200);
+  
+    try { await cacheDel(`admin:items:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, updatedItem, "Inventory item updated successfully", 200);
 }
 
-/**
- * DELETE Handler: Deletes an inventory item and its associated logs.
- */
+
 async function deleteInventoryItem(
   request: Request,
   { params }: { params: { adminSlug: string; id: string } }
@@ -164,7 +172,9 @@ async function deleteInventoryItem(
   ]);
 
   // Successful deletion typically returns 204 No Content, but we use 200 with a message for consistency.
-  return formatResponse(true, null, "Inventory item deleted successfully", 200);
+  
+    try { await cacheDel(`admin:items:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, null, "Inventory item deleted successfully", 200);
 }
 
 // Wrap and export all handlers

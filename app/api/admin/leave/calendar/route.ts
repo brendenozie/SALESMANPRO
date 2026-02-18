@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
@@ -6,13 +7,26 @@ export async function GET(request: Request) {
   const companyId = searchParams.get("companyId");
 
   try {
-    const events = await prisma.leaveRequest.findMany({
+    
+    const cacheKey = `admin:calendar:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const events = await prisma.leaveRequest.findMany({
       where: { 
         companyId,
         status: { in: ['APPROVED', 'PENDING'] } 
       },
       include: { user: { select: { name: true } } }
     });
+
+  try {
+    if (events) {
+      await cacheSet(cacheKey, events, 60);
+    }
+  } catch (e) {}
 
     const formattedEvents = events.map(e => ({
       id: e.id,

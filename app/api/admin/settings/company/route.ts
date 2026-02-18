@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/settings/company/route.ts
 import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb"; // Use your Prisma instance
@@ -15,10 +16,23 @@ async function getCompanySettings(req: Request) {
   if (!companyId) return formatResponse(false, null, "Company ID is required", 400);
 
   try {
-    const companySettings = await prisma.company.findUnique({
+    
+    const cacheKey = `admin:company:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const companySettings = await prisma.company.findUnique({
       where: { id: companyId },
       select: { name: true, contactEmail: true, contactPhone: true, address: true, logoUrl: true },
     });
+
+  try {
+    if (companySettings) {
+      await cacheSet(cacheKey, companySettings, 60);
+    }
+  } catch (e) {}
 
     if (!companySettings) return formatResponse(false, null, "Company not found", 404);
 
@@ -46,6 +60,8 @@ async function updateCompanySettings(req: Request) {
       data: { name, contactEmail, contactPhone, address, logoUrl },
     });
 
+    
+    try { await cacheDel(`admin:company:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedSettings, "Company settings updated successfully", 200);
   } catch (error: any) {
     console.error("Failed to update company settings:", error);

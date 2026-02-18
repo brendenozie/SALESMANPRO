@@ -1,15 +1,10 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb"; 
 import { getAuthSession } from "@/lib/auth"; // Used for fetching the user session
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/**
- * Core handler logic to fetch locations associated with a specific company ID.
- * This route enforces ownership: only the user who owns the company can fetch its locations.
- * * This function assumes:
- * 1. Automatic try/catch wrapping (for 500 errors) is performed by `withApiHandler`.
- * 2. Successful responses are wrapped into a 200 OK NextResponse.
- */
+
 async function fetchCompanyLocations(
   req: Request,
   { params }: { params: { id: string } } // `id` is the companyId (storeId)

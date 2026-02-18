@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/users/route.ts
 import prisma from "@/server/db/prismadb";
 import { UserStatus, Plan, ROLES } from "@prisma/client";
@@ -47,7 +48,20 @@ async function handleGET(request: Request) {
     if (filterRole) where.role = filterRole;
 
     // Fetch total count for pagination
-    const totalItems = await prisma.user.count({ where });
+    
+    const cacheKey = `admin:users:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const totalItems = await prisma.user.count({ where });
+
+  try {
+    if (totalItems) {
+      await cacheSet(cacheKey, totalItems, 60);
+    }
+  } catch (e) {}
 
     // Fetch users
     const users = await prisma.user.findMany({

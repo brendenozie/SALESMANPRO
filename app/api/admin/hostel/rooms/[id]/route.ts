@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
@@ -13,7 +14,14 @@ export async function GET(req: Request, { params }: RouteParams) {
       return NextResponse.json({ error: "Missing Room ID" }, { status: 400 });
     }
 
-    const room = await prisma.hostelRoom.findUnique({
+    
+    const cacheKey = `admin:rooms:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const room = await prisma.hostelRoom.findUnique({
       where: { id },
       include: {
         block: {
@@ -36,6 +44,12 @@ export async function GET(req: Request, { params }: RouteParams) {
         }
       }
     });
+
+  try {
+    if (room) {
+      await cacheSet(cacheKey, room, 60);
+    }
+  } catch (e) {}
 
     if (!room) {
       return NextResponse.json({ error: "Room not found" }, { status: 404 });

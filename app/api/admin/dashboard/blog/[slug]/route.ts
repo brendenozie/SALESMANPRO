@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -20,9 +21,22 @@ export const GET = withApiHandler(
       // --- METRIC CALCULATIONS ---
 
       // 1. Total Posts: All blogs written by the user
-      const totalPosts = await prisma.blog.count({
+      
+    const cacheKey = `admin:blog:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const totalPosts = await prisma.blog.count({
         where: { authorId: userId, companyId: companyId },
       });
+
+  try {
+    if (totalPosts) {
+      await cacheSet(cacheKey, totalPosts, 60);
+    }
+  } catch (e) {}
 
       // 2. Total Categories: All product categories for the company
       const totalCategories = await prisma.productCategory.count({

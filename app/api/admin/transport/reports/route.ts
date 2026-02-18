@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -15,12 +16,25 @@ export async function GET(req: Request) {
   const monthEnd = endOfMonth(targetDate);
 
   // 1. Fuel & Financial Analysis
+  
+    const cacheKey = `admin:reports:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const fuelLogs = await prisma.transportFuelLog.findMany({
     where: { 
       vehicle: { companyId },
       date: { gte: monthStart, lte: monthEnd } 
     }
   });
+
+  try {
+    if (fuelLogs) {
+      await cacheSet(cacheKey, fuelLogs, 60);
+    }
+  } catch (e) {}
 
   const totalFuelCost = fuelLogs.reduce((acc, log) => acc + log.cost, 0);
   const totalLiters = fuelLogs.reduce((acc, log) => acc + log.quantity, 0);

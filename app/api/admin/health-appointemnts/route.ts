@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -21,9 +22,7 @@ async function getCompanyAndUserIds(adminSlug: string) {
     return { company, companyUserIds };
 }
 
-/**
- * GET Handler: Fetches a list of appointments with filtering, searching, sorting, and pagination.
- */
+
 async function getAppointments(
   request: Request,
   { params }: { params: { adminSlug: string } }
@@ -96,6 +95,13 @@ async function getAppointments(
   // --- Data Fetching ---
   const skip = (page - 1) * limit;
 
+  
+    const cacheKey = `admin:health-appointemnts:${adminSlug || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const [totalItems, appointments] = await prisma.$transaction([
     prisma.appointment.count({ where: whereClause }),
     prisma.appointment.findMany({
@@ -116,6 +122,12 @@ async function getAppointments(
       },
     }),
   ]);
+
+  try {
+    if (totalItems) {
+      await cacheSet(cacheKey, totalItems, 60);
+    }
+  } catch (e) {}
 
   // --- Data Formatting ---
   const formattedAppointments = appointments.map(appt => ({
@@ -138,9 +150,7 @@ async function getAppointments(
 }
 
 
-/**
- * POST Handler: Creates a new appointment.
- */
+
 async function createAppointment(
   request: Request,
   { params }: { params: { adminSlug: string } }
@@ -214,7 +224,9 @@ async function createAppointment(
   });
 
   // --- Success Response ---
-  return formatResponse(true, { message: "Appointment created successfully", appointment: newAppointment }, "Appointment created successfully", 201);
+  
+    try { await cacheDel(`admin:health-appointemnts:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { message: "Appointment created successfully", appointment: newAppointment }, "Appointment created successfully", 201);
 }
 
 

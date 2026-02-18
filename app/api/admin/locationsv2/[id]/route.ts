@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -21,9 +22,7 @@ const slugify = (text: string): string => {
 };
 
 // --- PUT Handler Core Logic ---
-/**
- * Updates an existing location for a specific company.
- */
+
 async function handlePutLocation(request: Request, { params }: RouteParams) {
   const { adminSlug, locationId } = params;
   const body = await request.json();
@@ -120,6 +119,8 @@ async function handlePutLocation(request: Request, { params }: RouteParams) {
     };
 
     // withApiHandler will wrap this in formatResponse(true, formattedUpdatedLocation, null, 200)
+    
+    try { await cacheDel(`admin:locationsv2:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, formattedUpdatedLocation, "Location updated successfully", 200);
 
   } catch (error) {
@@ -135,9 +136,7 @@ async function handlePutLocation(request: Request, { params }: RouteParams) {
 }
 
 // --- DELETE Handler Core Logic ---
-/**
- * Deletes a specific location for a specific company.
- */
+
 async function handleDeleteLocation(request: Request, { params }: RouteParams) {
   const { adminSlug, locationId } = params;
 
@@ -165,6 +164,8 @@ async function handleDeleteLocation(request: Request, { params }: RouteParams) {
     });
 
     // Return success response with status 200
+    
+    try { await cacheDel(`admin:locationsv2:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, 'Location deleted successfully.', 200);
 
   } catch (error) {

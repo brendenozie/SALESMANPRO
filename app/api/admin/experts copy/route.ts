@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from '@/server/db/prismadb';
@@ -43,10 +44,23 @@ async function getExperts(request: Request, { params }: Params) {
   const { adminSlug } = params;
 
   // 1. Find the company ID based on the adminSlug
+  
+    const cacheKey = `admin:experts copy:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const company = await prisma.company.findUnique({
     where: { slug: adminSlug },
     select: { id: true },
   });
+
+  try {
+    if (company) {
+      await cacheSet(cacheKey, company, 60);
+    }
+  } catch (e) {}
 
   if (!company) {
     return formatResponse(false, null, 'Company not found for the given slug.', 404);

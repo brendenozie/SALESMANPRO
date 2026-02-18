@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -33,10 +34,23 @@ export const GET = withApiHandler(
       const totalDonations = donationAggregate._sum.amount || 0;
 
       // 2. Active Campaigns
-      const activeCampaigns = await prisma.campaign.count({
+      
+    const cacheKey = `admin:nonprofit:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const activeCampaigns = await prisma.campaign.count({
         where: { status: 'ACTIVE' },
         // Note: Campaign model isn't directly linked to Company in schema, so this is a global count.
       });
+
+  try {
+    if (activeCampaigns) {
+      await cacheSet(cacheKey, activeCampaigns, 60);
+    }
+  } catch (e) {}
 
       // 3. Total Volunteers (assumed to be distinct users who are project members)
       const volunteerMembers = await prisma.projectMember.findMany({

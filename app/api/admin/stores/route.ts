@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/staff/route.ts
 import prisma from "@/server/db/prismadb";
 
@@ -52,13 +53,26 @@ async function getStaff(req: Request) {
       whereClause.employmentStatus = filterStatus;
     }
 
-    let staffMembers = await prisma.staffProfile.findMany({
+    
+    const cacheKey = `admin:stores:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  let staffMembers = await prisma.staffProfile.findMany({
       where: whereClause,
       include: {
         user: { select: { id: true, name: true, email: true, phone: true, profilePicture: true } },
       },
       orderBy: { createdAt: "asc" },
     });
+
+  try {
+    if (staffMembers) {
+      await cacheSet(cacheKey, staffMembers, 60);
+    }
+  } catch (e) {}
 
     if (searchTerm) {
       const lowerCaseSearchTerm = searchTerm.toLowerCase();
@@ -120,6 +134,8 @@ async function createStaff(req: Request) {
     });
 
     const formattedNewStaff = await formatStaffData(newStaff);
+    
+    try { await cacheDel(`admin:stores:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, formattedNewStaff, "Staff created successfully", 201);
   } catch (err: any) {
     console.error("POST /api/admin/staff error:", err);

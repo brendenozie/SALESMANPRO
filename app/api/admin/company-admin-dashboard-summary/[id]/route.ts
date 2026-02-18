@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // app/api/courses/[id]/route.ts
 
 import { NextResponse } from "next/server";
@@ -52,10 +53,23 @@ const formatCourse = (course: any) => ({
 
 // --- GET Handler ---
 async function handleGet(_req: Request, context: { params: { id: string } }) {
+  
+    const cacheKey = `admin:company-admin-dashboard-summary:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const course = await prisma.course.findUnique({
     where: { id: context.params.id },
     select: COURSE_FULL_SELECT
   });
+
+  try {
+    if (course) {
+      await cacheSet(cacheKey, course, 60);
+    }
+  } catch (e) {}
 
   if (!course) return formatResponse(false, null, "Course not found", 404);
   return formatResponse(true, formatCourse(course));
@@ -86,6 +100,8 @@ async function handlePatch(request: Request, context: { params: { id: string } }
       select: COURSE_FULL_SELECT
     });
 
+    
+    try { await cacheDel(`admin:company-admin-dashboard-summary:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, formatCourse(updated), "Course updated successfully");
   } catch (error: any) {
     if (error.code === 'P2002') return formatResponse(false, null, "Course code already exists", 409);
@@ -98,6 +114,8 @@ async function handlePatch(request: Request, context: { params: { id: string } }
 async function handleDelete(_req: Request, context: { params: { id: string } }) {
   try {
     await prisma.course.delete({ where: { id: context.params.id } });
+    
+    try { await cacheDel(`admin:company-admin-dashboard-summary:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Course deleted successfully");
   } catch (error: any) {
     if (error.code === 'P2025') return formatResponse(false, null, "Course not found", 404);
@@ -110,75 +128,7 @@ export const GET = withApiHandler(handleGet);
 export const PATCH = withApiHandler(handlePatch);
 export const DELETE = withApiHandler(handleDelete);
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler"; 
-// // Adjust path to your wrapper
 
-// // --- Type Definitions for the Handler ---
-
-// type RouteParams = {
-//   id: string; // The course ID from the dynamic route segment
-// };
-
-// type HandlerContext = {
-//   params: RouteParams;
-//   user?: any; // Replace 'any' with your actual User type if defined
-// };
-
-// // Define the expected body structure for PATCH requests
-// type CoursePatchBody = {
-//   title?: string;
-//   description?: string;
-//   imageUrl?: string;
-//   code?: string;
-//   credits?: number;
-//   departmentId?: string | null;
-//   rating?: number;
-//   academicLevelIds?: string[];
-//   educatorIds?: string[];
-//   [key: string]: any; // Allow other properties for rest spread check
-// };
-
-
-// // --- Core Logic for GET request ---
-
-// async function handleGet(request: Request, context: HandlerContext): Promise<NextResponse> {
-//   const { id } = context.params;
-
-//   const course = await prisma.course.findUnique({
-//     where: { id },
-//     include: {
-//       CourseEducatorAssignment: { 
-//         include: {
-//           educator: { 
-//             select: {
-//               id: true,
-//               user: {
-//                 select: { name: true, email: true },
-//               },
-//             },
-//           },
-//         },
-//       },
-//       department: {
-//         select: { id: true, name: true },
-//       },
-//       academicLevels: {
-//         include: {
-//           academicLevel: {
-//             select: { id: true, name: true, sortOrder: true },
-//           },
-//         },
-//       },
-//       _count: {
-//         select: {
-//           enrollments: true,
-//           CourseMaterial: true,
-//           assignmentSubmission: true,
-//         },
-//       },
-//     },
-//   });
 
 //   if (!course) {
 //     return NextResponse.json({ message: "Course not found" }, { status: 404 });
@@ -428,17 +378,11 @@ export const DELETE = withApiHandler(handleDelete);
 
 // // --- Exported Route Handlers (Wrapped) ---
 
-// /**
-//  * GET /api/courses/[id]
-//  */
+// 
 // export const GET = withApiHandler(handleGet);
 
-// /**
-//  * PATCH /api/courses/[id]
-//  */
+// 
 // export const PATCH = withApiHandler(handlePatch);
 
-// /**
-//  * DELETE /api/courses/[id]
-//  */
+// 
 // export const DELETE = withApiHandler(handleDelete);

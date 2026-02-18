@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/tour-packages/route.ts
 import prisma from "@/server/db/prismadb";
 import { NextResponse } from "next/server";
@@ -26,10 +27,23 @@ async function handleGET(request: Request) {
 
 
   try {
-    const tourPackages = await prisma.tourPackage.findMany({
+    
+    const cacheKey = `admin:travel-packages:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const tourPackages = await prisma.tourPackage.findMany({
       include: { destinations: true },
       orderBy: { createdAt: "desc" },
     });
+
+  try {
+    if (tourPackages) {
+      await cacheSet(cacheKey, tourPackages, 60);
+    }
+  } catch (e) {}
 
     return formatResponse(true, tourPackages);
   } catch (error: any) {

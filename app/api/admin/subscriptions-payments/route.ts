@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/subscription-payments/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -7,7 +8,14 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
 
-    const subscriptions = await prisma.subscriptionCompany.findMany({
+    
+    const cacheKey = `admin:subscriptions-payments:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const subscriptions = await prisma.subscriptionCompany.findMany({
       where: status ? { status: status as any } : {},
       include: {
         user: { 
@@ -32,6 +40,12 @@ export async function GET(request: Request) {
       },
       orderBy: { createdAt: 'desc' },
     });
+
+  try {
+    if (subscriptions) {
+      await cacheSet(cacheKey, subscriptions, 60);
+    }
+  } catch (e) {}
 
     return NextResponse.json({ success: true, data: subscriptions });
   } catch (error: any) {

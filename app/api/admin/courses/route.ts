@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // app/api/courses/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -59,9 +60,7 @@ const mapCourse = (course: any) => ({
   _count: undefined,
 });
 
-/**
- * GET: Fetch courses with optimized projections
- */
+
 export const GET = withApiHandler(async (request: Request) => {
   const auth = await verifyAuth(request);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
@@ -71,18 +70,29 @@ export const GET = withApiHandler(async (request: Request) => {
 
   if (!companyId) return formatResponse(false, null, "Company ID is required.", 400);
 
+  
+    const cacheKey = `admin:courses:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const courses = await prisma.course.findMany({
     where: { companyId },
     select: COURSE_SELECT,
     orderBy: { title: "asc" },
   });
 
+  try {
+    if (courses) {
+      await cacheSet(cacheKey, courses, 60);
+    }
+  } catch (e) {}
+
   return formatResponse(true, courses.map(mapCourse), null, 200);
 });
 
-/**
- * POST: Atomic course creation using nested connects
- */
+
 export const POST = withApiHandler(async (request: Request) => {
   const auth = await verifyAuth(request);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
@@ -116,6 +126,8 @@ export const POST = withApiHandler(async (request: Request) => {
       select: COURSE_SELECT,
     });
 
+    
+    try { await cacheDel(`admin:courses:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, mapCourse(newCourse), "Course created successfully", 201);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -129,51 +141,7 @@ export const POST = withApiHandler(async (request: Request) => {
     throw error;
   }
 });
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { verifyAuth } from "@/lib/verifyAuth";
-// import { formatResponse } from "@/lib/formatResponse";
 
-// /**
-//  * @route GET /api/courses
-//  * @description Fetches all courses for a given company, including related data and calculated counts.
-//  */
-// export const GET = withApiHandler(async (request: Request) => {
-//   const auth = await verifyAuth(request);
-//   if (!auth.success) throw new Error(auth.error);
-
-//   const { searchParams } = new URL(request.url);
-//   const companyId = searchParams.get("companyId");
-
-//   if (!companyId) {
-//     return  formatResponse(false, null, `Company ID is required to fetch courses.`, 400 );
-//   }
-
-//   const courses = await prisma.course.findMany({
-//     where: { companyId },
-//     include: {
-//       CourseEducatorAssignment: {
-//         include: {
-//           educator: {
-//             select: {
-//               id: true,
-//               user: { select: { name: true, email: true } },
-//             },
-//           },
-//         },
-//       },
-//       department: { select: { id: true, name: true } },
-//       academicLevels: {
-//         include: {
-//           academicLevel: {
-//             select: { id: true, name: true, sortOrder: true },
-//           },
-//         },
-//       },
-//       _count: { select: { enrollments: true, CourseMaterial: true } },
-//     },
-//     orderBy: { title: "asc" },
-//   });
 
 //   const response = courses.map((course) => {
 //     const totalLessons = course._count.CourseMaterial;
@@ -215,10 +183,7 @@ export const POST = withApiHandler(async (request: Request) => {
 //   return formatResponse(true, response, null, 200);
 // });
 
-// /**
-//  * @route POST /api/courses
-//  * @description Creates a new Course, with optional department, academic level, and educator assignments.
-//  */
+// 
 // export const POST = withApiHandler(async (request: Request) => {
 //   const auth = await verifyAuth(request);
 //   if (!auth.success) throw new Error(auth.error);

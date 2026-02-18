@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { subMonths, startOfMonth, endOfMonth, format, isWithinInterval } from "date-fns";
@@ -9,8 +10,21 @@ export async function GET(req: Request) {
 
     const months = Array.from({ length: 6 }).map((_, i) => subMonths(new Date(), i)).reverse();
     
-    const trendData = await Promise.all(months.map(async (date) => {
+    
+    const cacheKey = `admin:trend:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const trendData = await Promise.all(months.map(async (date) => {
       const start = startOfMonth(date);
+
+  try {
+    if (trendData) {
+      await cacheSet(cacheKey, trendData, 60);
+    }
+  } catch (e) {}
       const end = endOfMonth(date);
 
       // 1. Sum Expenses for this specific month

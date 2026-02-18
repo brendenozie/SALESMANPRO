@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -10,10 +11,7 @@ import { Prisma } from "@prisma/client";
 type RouteParams = { params: {} };
 
 // --- GET Handler Core Logic ---
-/**
- * Fetches all order items for a specific company (seller dashboard),
- * including pagination and revenue metrics.
- */
+
 async function handleGetSellerOrders(req: Request, { params }: RouteParams) {
   const { searchParams } = new URL(req.url);
 
@@ -44,6 +42,13 @@ async function handleGetSellerOrders(req: Request, { params }: RouteParams) {
   };
 
   // 2. Fetch Paginated Order Items and Total Count in a transaction
+  
+    const cacheKey = `admin:orders:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const [orderItems, totalOrderItems] = await prisma.$transaction([
     prisma.orderItem.findMany({
       where: whereFilter,
@@ -64,6 +69,12 @@ async function handleGetSellerOrders(req: Request, { params }: RouteParams) {
     }),
     prisma.orderItem.count({ where: whereFilter }),
   ]);
+
+  try {
+    if (orderItems) {
+      await cacheSet(cacheKey, orderItems, 60);
+    }
+  } catch (e) {}
 
   // 3. Calculate Revenue Aggregates
   const [totalRevenueAgg, pendingRevenueAgg, completedRevenueAgg, orderItemsForMonthly] = await prisma.$transaction([

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from '@/server/db/prismadb'; // Adjust this path
@@ -18,9 +19,22 @@ type RouteContext = {
 const getFaqLogic = async (request: Request, { params }: RouteContext) => {
     const { id } = params;
 
-    const faq = await prisma.fAQ.findUnique({
+    
+    const cacheKey = `admin:fitness-settings:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const faq = await prisma.fAQ.findUnique({
         where: { id },
     });
+
+  try {
+    if (faq) {
+      await cacheSet(cacheKey, faq, 60);
+    }
+  } catch (e) {}
 
     if (!faq) {
         // Use formatResponse for 404
@@ -45,7 +59,9 @@ const putFaqLogic = async (request: Request, { params }: RouteContext) => {
         });
 
         // Return 200 success response
-        return formatResponse(true, updatedFaq, 'FAQ updated successfully', 200);
+        
+    try { await cacheDel(`admin:fitness-settings:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, updatedFaq, 'FAQ updated successfully', 200);
     } catch (error: any) {
         if (error.code === 'P2025') { // Prisma error code for record not found
             return formatResponse(false, null, 'FAQ not found for update.', 404);
@@ -67,7 +83,9 @@ const deleteFaqLogic = async (request: Request, { params }: RouteContext) => {
         });
 
         // Return 200 success response
-        return formatResponse(true, null, 'FAQ deleted successfully', 200);
+        
+    try { await cacheDel(`admin:fitness-settings:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, null, 'FAQ deleted successfully', 200);
     } catch (error: any) {
         if (error.code === 'P2025') { // Prisma error code for record not found
             return formatResponse(false, null, 'FAQ not found for deletion.', 404);

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/project-members/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -11,15 +12,19 @@ interface ProjectMemberCreateData {
   role: string; // Adjust if using an enum
 }
 
-/**
- * Handles GET requests to retrieve project members.
- * Can filter by projectId.
- */
+
 export const GET = withApiHandler(async (request: Request) => {
   
   const { searchParams } = new URL(request.url);
   const projectId = searchParams.get("projectId");
 
+  
+    const cacheKey = `admin:project-members:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const projectMembers = await prisma.projectMember.findMany({
     where: projectId ? { projectId } : {},
     include: {
@@ -28,12 +33,16 @@ export const GET = withApiHandler(async (request: Request) => {
     },
   });
 
+  try {
+    if (projectMembers) {
+      await cacheSet(cacheKey, projectMembers, 60);
+    }
+  } catch (e) {}
+
   return formatResponse(true, projectMembers, "Project members fetched successfully", 200);
 });
 
-/**
- * Handles POST requests to create a new project member.
- */
+
 export const POST = withApiHandler(async (request: Request) => {
   
 
@@ -53,6 +62,8 @@ export const POST = withApiHandler(async (request: Request) => {
       },
     });
 
+    
+    try { await cacheDel(`admin:project-members:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newProjectMember, "Project member created successfully", 201);
   } catch (error: any) {
     if (error.code === "P2002") {
@@ -62,9 +73,7 @@ export const POST = withApiHandler(async (request: Request) => {
   }
 });
 
-/**
- * Disallow unsupported methods explicitly.
- */
+
 export async function PUT() {
   return formatResponse(false, null, "Method Not Allowed", 405);
 }

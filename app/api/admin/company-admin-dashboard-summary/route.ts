@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -15,16 +16,19 @@ async function handleGet(_req: Request, context: HandlerContext) {
 
   const now = new Date();
 
-  /* ----------------------------------
-     Shared company filter
-  ----------------------------------- */
+  
   const companyFilter = {
     company: { slug: adminSlug },
   };
 
-  /* ----------------------------------
-     Parallelized queries
-  ----------------------------------- */
+  
+  
+    const cacheKey = `admin:company-admin-dashboard-summary:${slug || adminSlug || 'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const [
     totalEvents,
     upcomingEvents,
@@ -103,9 +107,13 @@ async function handleGet(_req: Request, context: HandlerContext) {
     }),
   ]);
 
-  /* ----------------------------------
-     Formatting
-  ----------------------------------- */
+  try {
+    if (totalEvents) {
+      await cacheSet(cacheKey, totalEvents, 60);
+    }
+  } catch (e) {}
+
+  
   const totalTicketsSold = ticketsSoldAgg._sum.quantity ?? 0;
   const totalRevenue = revenueAgg._sum.totalPrice ?? 0;
 
@@ -124,9 +132,7 @@ async function handleGet(_req: Request, context: HandlerContext) {
     ticketsSold: null, // can be aggregated later per event
   }));
 
-  /* ----------------------------------
-     Response
-  ----------------------------------- */
+  
   return NextResponse.json(
     {
       totalEvents,
@@ -140,20 +146,14 @@ async function handleGet(_req: Request, context: HandlerContext) {
   );
 }
 
-/**
- * GET /api/admin/[adminSlug]/dashboard-summary
- */
+
 export const GET = withApiHandler(handleGet, {
   requireAuth: true,
   requireRateLimit: true,
 });
 
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-
-// async function handleGet(request: Request, context: { params: { adminSlug: string } }) {
+ {
 //   const { adminSlug } = context.params;
 //   const now = new Date();
 
@@ -253,29 +253,7 @@ export const GET = withApiHandler(handleGet, {
 
 // export const GET = withApiHandler(handleGet);
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// // --- Type Definitions for the Handler ---
-
-// type RouteParams = {
-//   adminSlug: string;
-// };
-
-// type HandlerContext = {
-//   params: RouteParams;
-//   user?: any; // Replace with your actual User type if defined
-// };
-
-// // --- Core Logic for GET request ---
-
-// async function handleGet(request: Request, context: HandlerContext): Promise<NextResponse> {
-//   const { adminSlug } = context.params;
-
-//   // 1. Total Events
-//   const totalEvents = await prisma.event.count({
-//     where: { company: { slug: adminSlug } },
-//   });
 
 //   // 2. Upcoming Events
 //   const upcomingEvents = await prisma.event.count({
@@ -373,8 +351,5 @@ export const GET = withApiHandler(handleGet, {
 
 // // --- Exported Route Handler (Wrapped) ---
 
-// /**
-//  * GET /api/admin/[adminSlug]/dashboard-summary
-//  * Provides a summary of key metrics for an admin dashboard.
-//  */
+// 
 // export const GET = withApiHandler(handleGet);

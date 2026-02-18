@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -69,6 +70,8 @@ async function updateSubmission(request: Request, { params }: Params) {
     });
 
     const responseData = transformSubmissionResponse(updatedSubmission);
+    
+    try { await cacheDel(`admin:exam-submissions:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { data: responseData }, null, 200);
   } catch (error: any) {
     if (error.code === 'P2025') { // Record not found
@@ -93,6 +96,8 @@ async function deleteSubmission(request: Request, { params }: Params) {
     const deletedSubmission = await prisma.examSubmission.delete({
       where: { id },
     });
+    
+    try { await cacheDel(`admin:exam-submissions:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { message: "Exam submission deleted successfully", deletedId: deletedSubmission.id }, null, 200);
   } catch (error: any) {
     if (error.code === 'P2025') {

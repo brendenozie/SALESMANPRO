@@ -1,12 +1,10 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 // Note: verifyAuth and NextResponse are no longer needed here, as they are managed by the middleware utilities.
 
-/**
- * Helper function to format invoice data for the frontend.
- * This is crucial for handling the stored JSON string 'items'.
- */
+
 async function formatInvoiceData(invoice: any) {
   const patientName = invoice.patient?.name || 'N/A';
   // Safely parse the 'items' field, which is stored as a JSON string in Prisma.
@@ -28,9 +26,7 @@ async function formatInvoiceData(invoice: any) {
   };
 }
 
-/**
- * GET Handler: Fetches a list of invoices with filtering and searching.
- */
+
 async function getInvoices(request: Request) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
@@ -53,6 +49,13 @@ async function getInvoices(request: Request) {
 
   // --- Data Fetching ---
   // Fetching all relevant data first, as the search filter logic is client-side/in-memory
+  
+    const cacheKey = `admin:health-billing:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   let invoices = await prisma.patientInvoices.findMany({
     where: whereClause,
     include: {
@@ -60,6 +63,12 @@ async function getInvoices(request: Request) {
     },
     orderBy: { invoiceDate: 'desc' },
   });
+
+  try {
+    if (invoices) {
+      await cacheSet(cacheKey, invoices, 60);
+    }
+  } catch (e) {}
 
   // --- In-Memory Search Filtering ---
   if (searchTerm) {
@@ -92,9 +101,7 @@ async function getInvoices(request: Request) {
   return formatResponse(true, enrichedInvoices, "Invoices list fetched successfully", 200);
 }
 
-/**
- * POST Handler: Creates a new invoice.
- */
+
 async function createInvoice(request: Request) {
   const body = await request.json();
   const { patientId, amount, invoiceDate, dueDate, items, notes, status, companyId } = body;
@@ -142,7 +149,9 @@ async function createInvoice(request: Request) {
 
   // --- Success Response ---
   const formattedNewInvoice = await formatInvoiceData(newInvoice);
-  return formatResponse(true, formattedNewInvoice, "Invoice created successfully", 201);
+  
+    try { await cacheDel(`admin:health-billing:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, formattedNewInvoice, "Invoice created successfully", 201);
 }
 
 

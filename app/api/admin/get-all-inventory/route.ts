@@ -1,16 +1,9 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse'; // Assumed to return a full NextResponse for errors
 
-/**
- * Core handler logic to fetch products and aggregate inventory data for a company.
- * This function is wrapped by `withApiHandler`, which handles authentication,
- * general try/catch, and standardizes the final successful response (200 OK).
- *
- * @param req The incoming Next.js Request object.
- * @returns The structured inventory data object (which the wrapper converts to JSON),
- * or a direct NextResponse (from formatResponse) for validation errors.
- */
+
 async function getInventory(req: Request) {
   // NOTE: Authentication and general error handling (try/catch) are handled by withApiHandler.
 
@@ -28,6 +21,13 @@ async function getInventory(req: Request) {
   const skip = (page - 1) * limit;
 
   // Fetch all products for this company, including any inventory and nested relations
+  
+    const cacheKey = `admin:get-all-inventory:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const products = await prisma.product.findMany({
     where: { companyId },
     include: {
@@ -39,6 +39,12 @@ async function getInventory(req: Request) {
     take: limit,
     orderBy: { createdAt: 'desc' },
   });
+
+  try {
+    if (products) {
+      await cacheSet(cacheKey, products, 60);
+    }
+  } catch (e) {}
 
   const items = products.map((p) => {
     // find override category if exists

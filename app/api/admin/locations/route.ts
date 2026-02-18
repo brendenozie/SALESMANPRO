@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -6,15 +7,19 @@ import { formatResponse } from "@/lib/formatResponse";
 import { getAuthSession } from "@/lib/auth"; // Used to fetch session for createdBy field
 
 // --- GET Handler ---
-/**
- * GET Handler: Retrieves a comprehensive list of all Location records, typically used
- * for building a location tree or selection list in an admin panel.
- */
+
 async function handleGetLocations(request: Request) {
   // Although authentication is handled by withApiHandler, the user session
   // is often needed inside the handler logic (e.g., filtering based on user role/permissions).
   // We'll proceed with fetching all, as the original code did.
 
+  
+    const cacheKey = `admin:locations:${slug || adminSlug || 'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const rawLocations = await prisma.location.findMany({
     orderBy: {
       sortOrder: 'asc', // Order by sortOrder for consistent list/tree building
@@ -48,6 +53,12 @@ async function handleGetLocations(request: Request) {
     },
   });
 
+  try {
+    if (rawLocations) {
+      await cacheSet(cacheKey, rawLocations, 60);
+    }
+  } catch (e) {}
+
    const locations = rawLocations.map((loc) => ({
       ...loc,
       name: loc.name ?? "Unnamed Location",
@@ -64,9 +75,7 @@ async function handleGetLocations(request: Request) {
 }
 
 // --- POST Handler ---
-/**
- * POST Handler: Creates a new Location record.
- */
+
 async function handlePostLocation(request: Request) {
   // Fetch session data again to reliably get the userId for the 'createdBy' field,
   // which is separate from the basic auth check performed by withApiHandler.
@@ -136,7 +145,9 @@ async function handlePostLocation(request: Request) {
   });
 
   // Return success response with status 201 via formatResponse wrapped by withApiHandler
-  return formatResponse(true, newLocation, null, 201);
+  
+    try { await cacheDel(`admin:locations:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, newLocation, null, 201);
 }
 
 // Wrap the core logic with the API handler middleware

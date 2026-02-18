@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/[adminSlug]/prescriptions/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -31,12 +32,17 @@ async function formatPrescriptionData(prescription: any) {
   };
 }
 
-/**
- * GET /api/admin/[adminSlug]/prescriptions/[id]
- */
+
 export const GET = withApiHandler(async (_req, { params }) => {
   const { id } = params;
 
+  
+    const cacheKey = `admin:prescriptions:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const prescription = await prisma.prescription.findUnique({
     where: { id },
     include: {
@@ -47,6 +53,12 @@ export const GET = withApiHandler(async (_req, { params }) => {
     },
   });
 
+  try {
+    if (prescription) {
+      await cacheSet(cacheKey, prescription, 60);
+    }
+  } catch (e) {}
+
   if (!prescription) {
     return formatResponse(false, null, "Prescription not found", 404);
   }
@@ -55,9 +67,7 @@ export const GET = withApiHandler(async (_req, { params }) => {
   return formatResponse(true, formatted, "Prescription fetched successfully");
 });
 
-/**
- * PUT /api/admin/[adminSlug]/prescriptions/[id]
- */
+
 export const PUT = withApiHandler(async (req, { params }) => {
   const { id } = params;
   const body = await req.json();
@@ -94,16 +104,18 @@ export const PUT = withApiHandler(async (req, { params }) => {
   });
 
   const formatted = await formatPrescriptionData(updatedPrescription);
-  return formatResponse(true, formatted, "Prescription updated successfully", 200);
+  
+    try { await cacheDel(`admin:prescriptions:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, formatted, "Prescription updated successfully", 200);
 });
 
-/**
- * DELETE /api/admin/[adminSlug]/prescriptions/[id]
- */
+
 export const DELETE = withApiHandler(async (_req, { params }) => {
   const { id } = params;
   await prisma.prescription.delete({ where: { id } });
-  return formatResponse(true, null, "Prescription deleted successfully", 204);
+  
+    try { await cacheDel(`admin:prescriptions:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, null, "Prescription deleted successfully", 204);
 });
 
 // Note: Authentication and authorization checks should be added as needed

@@ -1,10 +1,9 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/**
- * GET Handler: Fetches a paginated, filtered, and sorted list of inventory items.
- */
+
 async function getInventoryItems(
   request: Request,
   { params }: { params: { adminSlug: string } }
@@ -32,10 +31,23 @@ async function getInventoryItems(
   }
 
   // 1. Find Company
+  
+    const cacheKey = `admin:items:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const company = await prisma.company.findUnique({
     where: { slug: adminSlug },
     select: { id: true }
   });
+
+  try {
+    if (company) {
+      await cacheSet(cacheKey, company, 60);
+    }
+  } catch (e) {}
 
   if (!company) {
     return formatResponse(false, null, "Company not found", 404);
@@ -125,9 +137,7 @@ async function getInventoryItems(
   }, "Inventory items fetched successfully", 200);
 }
 
-/**
- * POST Handler: Adds a new product to inventory or restocks an existing one.
- */
+
 async function createOrRestockItem(
   request: Request,
   { params }: { params: { adminSlug: string } }

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // app/api/requests/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -68,33 +69,7 @@ async function getRequests(req: Request) {
 
 export const GET = withApiHandler(getRequests, { requireAuth: true });
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// async function getRequests(req: Request) {
-//   const { searchParams } = new URL(req.url);
-
-//   const agentId = searchParams.get("agentId");
-//   const limit = parseInt(searchParams.get("limit") || "10", 10);
-//   const offset = parseInt(searchParams.get("offset") || "0", 10);
-
-//   if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-//     return NextResponse.json(
-//       { message: "Invalid pagination parameters." },
-//       { status: 400 }
-//     );
-//   }
-
-//   try {
-//     const productRequests = await prisma.request.findMany({
-//       where: { requestedByType: "CLIENT" },
-//       include: {
-//         product: true,
-//         requester: true,
-//       },
-//       take: limit,
-//       skip: offset,
-//     });
 
 //     const formattedRequests = productRequests.map((request) => ({
 //       requestId: request.id,

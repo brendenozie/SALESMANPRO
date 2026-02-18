@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from '@/server/db/prismadb'; // Adjust this path
@@ -47,10 +48,23 @@ const getReportsLogic = async (request: Request, { params }: RouteContext) => {
 
     // const companyId = searchParams.get('id');
 
-    const company = await prisma.company.findUnique({
+    
+    const cacheKey = `admin:fitness-report:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const company = await prisma.company.findUnique({
         where: { slug: adminSlug },
         select: { id: true },
     });
+
+  try {
+    if (company) {
+      await cacheSet(cacheKey, company, 60);
+    }
+  } catch (e) {}
 
     if (!company) {
         // Use formatResponse for 404

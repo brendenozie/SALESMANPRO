@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/writers/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -10,13 +11,26 @@ export const GET = withApiHandler(async (request: Request) => {
 const { searchParams } = new URL(request.url);
 const companyId = searchParams.get('companyId');
 
-const writers = await prisma.writer.findMany({
+
+    const cacheKey = `admin:writers:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const writers = await prisma.writer.findMany({
 where: companyId ? { companyId } : {},
 include: {
 user: true,
 company: true,
 },
 });
+
+  try {
+    if (writers) {
+      await cacheSet(cacheKey, writers, 60);
+    }
+  } catch (e) {}
 
 return formatResponse(true, writers, "Writers fetched successfully", 200);
 });
@@ -106,5 +120,7 @@ company: true,
 },
 });
 
-return formatResponse(true, newWriter, "Writer created successfully", 201);
+
+    try { await cacheDel(`admin:writers:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, newWriter, "Writer created successfully", 201);
 });

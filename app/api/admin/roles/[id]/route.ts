@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/users/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";

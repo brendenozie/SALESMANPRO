@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/products/route.ts
 import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -11,6 +12,13 @@ export const GET = withApiHandler(async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
+  
+    const cacheKey = `admin:products:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const products = await prisma.product.findMany({
     where: companyId ? { companyId } : {},
     include: {
@@ -18,6 +26,12 @@ export const GET = withApiHandler(async (request: Request) => {
     },
     orderBy: { createdAt: "desc" },
   });
+
+  try {
+    if (products) {
+      await cacheSet(cacheKey, products, 60);
+    }
+  } catch (e) {}
 
   const formattedProducts = products.map((product) => ({
     ...product,
@@ -127,5 +141,7 @@ export const POST = withApiHandler(async (request: Request) => {
     },
   });
 
-  return formatResponse(true, newProduct, "Product created successfully", 201);
+  
+    try { await cacheDel(`admin:products:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, newProduct, "Product created successfully", 201);
 });

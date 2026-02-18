@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -13,11 +14,15 @@ export const PATCH = withApiHandler(async (request: Request, { params }: any) =>
     include: { vehicle: true }
   });
 
-  return formatResponse(true, updatedRoute, "Route updated", 200);
+  
+    try { await cacheDel(`admin:routes:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, updatedRoute, "Route updated", 200);
 }, { requireAuth: true });
 
 export const DELETE = withApiHandler(async (request: Request, { params }: any) => {
   const { id } = params;
   await prisma.transportRoute.delete({ where: { id } });
-  return formatResponse(true, null, "Route deleted", 200);
+  
+    try { await cacheDel(`admin:routes:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, null, "Route deleted", 200);
 }, { requireAuth: true });

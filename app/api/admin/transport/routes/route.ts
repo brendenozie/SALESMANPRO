@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -51,50 +52,5 @@ const postRoute = async (request: Request) => {
 };
 
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { formatResponse } from "@/lib/formatResponse";
 
-const postRouteV2 = async (req: Request) => {
-  try {
-    const body = await req.json();
-    const { type, ...data } = body;
-
-    // Handle Route Creation
-    if (type === "CREATE_ROUTE") {
-      const route = await prisma.transportRoute.create({
-        data: {
-          name: data.name,
-          startPoint: data.startPoint,
-          endPoint: data.endPoint,
-          stops: data.stops, // Expecting Array of objects {lat, lng, name}
-          companyId: data.companyId,
-          vehicleId: data.vehicleId
-        }
-      });
-      return formatResponse(true, route, "Route established", 201);
-    }
-
-    // Handle Shift Dispatch
-    if (type === "DISPATCH_SHIFT") {
-      const shift = await prisma.transportShift.create({
-        data: {
-          startTime: new Date(data.startTime),
-          endTime: new Date(data.endTime),
-          routeId: data.routeId,
-          driverId: data.driverId,
-          vehicleId: data.vehicleId,
-          companyId: data.companyId,
-          status: "SCHEDULED"
-        }
-      });
-      return formatResponse(true, shift, "Shift dispatched to driver", 201);
-    }
-
-    return formatResponse(false, null, "Invalid request type", 400);
-  } catch (error: any) {
-    return formatResponse(false, null, error.message, 500);
-  }
-}
-
-export const GET = withApiHandler(getRoutes, { requireAuth: true });
 export const POST = withApiHandler(postRoute, { requireAuth: true });

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from '@/server/db/prismadb'; // Assuming this is your standard Prisma client import
@@ -9,9 +10,7 @@ import { Prisma } from '@prisma/client';
 type RouteParams = { params: {} };
 
 // --- GET Handler Core Logic ---
-/**
- * Fetches all packages, filtered by companyId.
- */
+
 async function handleGetPackages(request: Request, { params }: RouteParams) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
@@ -20,6 +19,13 @@ async function handleGetPackages(request: Request, { params }: RouteParams) {
     return formatResponse(false, null, 'The companyId query parameter is required to fetch packages.', 400);
   }
 
+  
+    const cacheKey = `admin:packages:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const packages = await prisma.package.findMany({
     where: { companyId },
     orderBy: {
@@ -27,14 +33,18 @@ async function handleGetPackages(request: Request, { params }: RouteParams) {
     }
   });
 
+  try {
+    if (packages) {
+      await cacheSet(cacheKey, packages, 60);
+    }
+  } catch (e) {}
+
   // withApiHandler handles wrapping this result in a success formatResponse with status 200
   return formatResponse(true, { packages }, "Packages fetched successfully", 200);
 }
 
 // --- POST Handler Core Logic ---
-/**
- * Creates a new package.
- */
+
 async function handlePostPackage(request: Request, { params }: RouteParams) {
   const body = await request.json();
 
@@ -58,6 +68,8 @@ async function handlePostPackage(request: Request, { params }: RouteParams) {
     });
 
     // Explicitly return success with status 201 (Created)
+    
+    try { await cacheDel(`admin:packages:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newPackage, null, 201);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {

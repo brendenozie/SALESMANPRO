@@ -1,14 +1,9 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb"; 
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/**
- * Core handler logic to fetch paginated store categories for a specific company.
- * * This function assumes:
- * 1. Authentication/Authorization is performed by `withApiHandler`.
- * 2. Automatic try/catch wrapping (for 500 errors) is performed by `withApiHandler`.
- * 3. Successful responses are wrapped into a 200 OK NextResponse.
- */
+
 async function fetchStoreCategories(req: Request) {
   // NOTE: Manual authentication and try/catch are no longer needed.
 
@@ -41,6 +36,13 @@ async function fetchStoreCategories(req: Request) {
   const whereFilter = { companyId: companyId };
 
   // Run count and paginated query in a transaction for efficiency
+  
+    const cacheKey = `admin:get-store-categories:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const [totalCount, categories] = await prisma.$transaction([
     prisma.storeCategory.count({ where: whereFilter }),
     prisma.storeCategory.findMany({
@@ -64,6 +66,12 @@ async function fetchStoreCategories(req: Request) {
       orderBy: { sortOrder: 'asc' }
     }),
   ]);
+
+  try {
+    if (totalCount) {
+      await cacheSet(cacheKey, totalCount, 60);
+    }
+  } catch (e) {}
 
   // --- Calculate Metadata ---
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);

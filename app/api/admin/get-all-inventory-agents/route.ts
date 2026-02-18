@@ -1,20 +1,22 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/get-all-agents/route.ts
 import prisma from "@/server/db/prismadb"; 
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/**
- * Core handler logic to fetch all sales agents and their inventory.
- * Authentication, authorization (e.g., admin check), try/catch, and
- * response wrapping (200 OK) are assumed to be handled by withApiHandler.
- * * NOTE: The original logic fetched ALL agents without pagination. This
- * should be reviewed for potential performance issues if you have many agents.
- */
+
 async function fetchAllAgents() {
   // NOTE: Authentication and `try/catch` are handled by `withApiHandler`.
 
   // --- Data Fetching ---
   // Fetch all agents and their AgentInventory entries (with product details)
+  
+    const cacheKey = `admin:get-all-inventory-agents:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const agents = await prisma.salesAgent.findMany({
     where: {
       AgentInventory: {
@@ -49,6 +51,12 @@ async function fetchAllAgents() {
       },
     },
   });
+
+  try {
+    if (agents) {
+      await cacheSet(cacheKey, agents, 60);
+    }
+  } catch (e) {}
 
 
   // --- Data Transformation ---

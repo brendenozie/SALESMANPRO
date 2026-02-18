@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/settings/notifications/[userId]/route.ts
 import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -13,9 +14,22 @@ async function getUserSettings(req: Request, { params }: { params: { userId: str
   if (!userId) return formatResponse(false, null, "User ID is required", 400);
 
   try {
-    const userSettings = await prisma.settings.findUnique({
+    
+    const cacheKey = `admin:notifications:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const userSettings = await prisma.settings.findUnique({
       where: { userId },
     });
+
+  try {
+    if (userSettings) {
+      await cacheSet(cacheKey, userSettings, 60);
+    }
+  } catch (e) {}
 
     return formatResponse(true, userSettings, "User settings fetched successfully", 200);
   } catch (error: any) {
@@ -41,6 +55,8 @@ async function updateUserSettings(req: Request, { params }: { params: { userId: 
       create: { userId, newClientNotify, invoicePaidNotify },
     });
 
+    
+    try { await cacheDel(`admin:notifications:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedSettings, "User settings updated successfully", 200);
   } catch (error: any) {
     console.error("Failed to update user settings:", error);

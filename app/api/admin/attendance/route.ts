@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -12,6 +13,13 @@ export async function GET(req: Request) {
   today.setHours(0, 0, 0, 0);
 
   // OPTIMIZATION: Run queries in parallel to reduce waterfall latency
+  
+    const cacheKey = `admin:attendance:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const [logs, totalUsers] = await Promise.all([
     prisma.staffAttendanceRecord.findMany({
       where: { date: today },//companyId, 
@@ -26,6 +34,12 @@ export async function GET(req: Request) {
     }),
     prisma.user.count({ where: { companyId, role: "STAFF" } }), // Ensure we only count relevant users
   ]);
+
+  try {
+    if (logs) {
+      await cacheSet(cacheKey, logs, 60);
+    }
+  } catch (e) {}
 
   // OPTIMIZATION: Calculate stats in a single pass instead of multiple .filter() calls
   let presentCount = 0;

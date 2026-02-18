@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -27,11 +28,24 @@ export const GET = withApiHandler(async (request, context) => {
     return formatResponse(false, null, "Unauthorized: No company context found", 401);
   }
 
+  
+    const cacheKey = `admin:classrooms:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const classrooms = await prisma.classroom.findMany({
     where: { companyId },
     select: CLASSROOM_LIST_SELECT,
     orderBy: { name: "asc" },
   });
+
+  try {
+    if (classrooms) {
+      await cacheSet(cacheKey, classrooms, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, classrooms, "Classrooms fetched successfully", 200);
 }, { requireAuth: true });
@@ -59,26 +73,11 @@ export const POST = withApiHandler(async (request, context) => {
     select: CLASSROOM_LIST_SELECT // Return formatted object immediately
   });
 
-  return formatResponse(true, newClassroom, "Classroom created successfully", 201);
+  
+    try { await cacheDel(`admin:classrooms:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, newClassroom, "Classroom created successfully", 201);
 }, { requireAuth: true });
-// import prisma from "@/server/db/prismadb";
-// import { formatResponse } from "@/lib/formatResponse";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// // GET /api/classrooms?companyId=XYZ
-// export const GET = withApiHandler(async (request) => {
-//   const { searchParams } = new URL(request.url);
-//   const companyId = searchParams.get("companyId");
-
-//   if (!companyId) {
-//     return formatResponse(false, null, "Company ID is required", 400);
-//   }
-
-//   const classrooms = await prisma.classroom.findMany({
-//     where: { companyId },
-//     include: { academicLevel: true }, // Optional: includes level details
-//     orderBy: { name: "asc" },
-//   });
 
 //   return formatResponse(true, classrooms, "Classrooms fetched successfully", 200);
 // });

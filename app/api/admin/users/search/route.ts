@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import  prisma  from "@/server/db/prismadb";
 
@@ -9,7 +10,14 @@ export async function GET(req: Request) {
   if (!companyId) return NextResponse.json({ error: "Company ID required" }, { status: 400 });
 
   try {
-    const users = await prisma.user.findMany({
+    
+    const cacheKey = `admin:search:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const users = await prisma.user.findMany({
       where: {
         companyId: companyId,
         staffProfile: { is: null }, // Only users who AREN'T staff yet
@@ -26,6 +34,12 @@ export async function GET(req: Request) {
       },
       take: 5, // Limit results for performance
     });
+
+  try {
+    if (users) {
+      await cacheSet(cacheKey, users, 60);
+    }
+  } catch (e) {}
 
     return NextResponse.json({ data: users });
   } catch (error) {

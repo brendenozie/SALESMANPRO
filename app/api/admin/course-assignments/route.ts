@@ -1,12 +1,11 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // // app/api/course-assignments/route.ts
 
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/**
- * GET: Fetch paginated assignments with flat metadata
- */
+
 export const GET = withApiHandler(async (req: Request) => {
   const { searchParams } = new URL(req.url);
   const courseId = searchParams.get("courseId");
@@ -22,6 +21,13 @@ export const GET = withApiHandler(async (req: Request) => {
 
   const whereClause = courseId ? { courseId } : { companyId };
 
+  
+    const cacheKey = `admin:course-assignments:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const [assignments, totalCount] = await Promise.all([
     prisma.courseAssignment.findMany({
       where: whereClause,
@@ -61,6 +67,12 @@ export const GET = withApiHandler(async (req: Request) => {
     prisma.courseAssignment.count({ where: whereClause })
   ]);
 
+  try {
+    if (assignments) {
+      await cacheSet(cacheKey, assignments, 60);
+    }
+  } catch (e) {}
+
   // Flatten the response in one pass
   const responseData = assignments.map(a => ({
     ...a,
@@ -79,9 +91,7 @@ export const GET = withApiHandler(async (req: Request) => {
   }, null, 200);
 });
 
-/**
- * POST: Create assignment with input sanitization
- */
+
 export const POST = withApiHandler(async (req: Request) => {
   const body = await req.json();
   const { 
@@ -110,45 +120,15 @@ export const POST = withApiHandler(async (req: Request) => {
       select: { id: true, title: true, createdAt: true }
     });
 
+    
+    try { await cacheDel(`admin:course-assignments:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newAssignment, "Created", 201);
   } catch (error) {
     return formatResponse(false, null, "Failed to create assignment. Verify IDs.", 400);
   }
 });
 
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-
-// // Helper to map the assignment response consistently
-// const mapAssignmentResponse = (assignment: any) => ({
-//   id: assignment.id,
-//   title: assignment.title,
-//   description: assignment.description,
-//   type: assignment.type,
-//   status: assignment.status,
-//   dueDate: assignment.dueDate,
-//   maxGrade: assignment.maxGrade,
-//   isOnline: assignment.isOnline,
-//   durationMinutes: assignment.durationMinutes,
-//   autoGrade: assignment.autoGrade,
-//   courseId: assignment.courseId,
-//   courseTitle: assignment.course?.title || "N/A",
-//   courseInstructorName: assignment.course?.CourseEducatorAssignment?.[0]?.educator?.user?.name || "N/A",
-//   totalSubmissions: assignment._count?.submissions || 0,
-//   questionCount: assignment._count?.courseAssignmentQuestions || 0,
-//   createdAt: assignment.createdAt,
-//   updatedAt: assignment.updatedAt,
-//   classroomId: assignment.classroomId,
-//   classroomName: assignment.classroom?.name || "N/A",
-//   classroom: { id: assignment.classroom?.id || null, name: assignment.classroom?.name || null, academicLevelId: assignment.classroom?.academicLevelId || null },
-  
-//   course: { id: assignment.course?.id || null, title: assignment.course?.title || null },
-//   // courseAcademicLevels: assignment.course?.academicLevels
-//   //   .map((al: any) => al.academicLevel)
-//   //   .filter((level: any) => level)
-//   //   .sort((a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0))
-//   //   .map((level: any) => ({ id: level.id, name: level.name })) || [],
+) || [],
   
 //   date: assignment.date || null,
 //   startTime: assignment.startTime || null,
@@ -238,27 +218,7 @@ export const POST = withApiHandler(async (req: Request) => {
 //   return formatResponse(true, newAssignment, "Assignment created successfully", 201);
 // });
 
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
 
-// // ---------------- GET ----------------
-// // /api/course-assignments
-// const getHandler = async (req: Request) => {
-//   const { searchParams } = new URL(req.url);
-//   const courseId = searchParams.get("courseId");
-//   const companyId = searchParams.get("companyId");
-
-//   const whereClause: any = {};
-
-//   if (courseId) {
-//     whereClause.courseId = courseId;
-//   } else if (companyId) {
-//     // get courses belonging to company
-//     const coursesInCompany = await prisma.course.findMany({
-//       where: { companyId },
-//       select: { id: true },
-//     });
 //     const courseIdsInCompany = coursesInCompany.map((c) => c.id);
 //     whereClause.courseId = { in: courseIdsInCompany };
 //   } else {

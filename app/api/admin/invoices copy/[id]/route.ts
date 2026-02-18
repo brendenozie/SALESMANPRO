@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -8,16 +9,27 @@ import { OrderStatus } from "@prisma/client";
 type RouteParams = { params: { adminSlug: string; id: string } };
 
 // --- GET Handler ---
-/**
- * GET Handler: Fetches detailed information for a specific invoice ID.
- */
+
 async function handleGetInvoice(request: Request, { params }: RouteParams) {
   const { adminSlug, id } = params;
 
+  
+    const cacheKey = `admin:invoices copy:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const company = await prisma.company.findUnique({
     where: { slug: adminSlug },
     select: { id: true }
   });
+
+  try {
+    if (company) {
+      await cacheSet(cacheKey, company, 60);
+    }
+  } catch (e) {}
 
   if (!company) {
     return formatResponse(false, null, "Company not found", 404);
@@ -77,9 +89,7 @@ async function handleGetInvoice(request: Request, { params }: RouteParams) {
 }
 
 // --- PUT Handler ---
-/**
- * PUT Handler: Updates an invoice's status, payment method, and handles payment recording.
- */
+
 async function handlePutInvoice(request: Request, { params }: RouteParams) {
   const { adminSlug, id } = params;
   const body = await request.json();
@@ -142,7 +152,9 @@ async function handlePutInvoice(request: Request, { params }: RouteParams) {
   }
 
   // withApiHandler will wrap this result in formatResponse(true, ...) with status 200
-  return formatResponse(true, updatedInvoice, "Invoice updated successfully", 200);
+  
+    try { await cacheDel(`admin:invoices copy:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, updatedInvoice, "Invoice updated successfully", 200);
 }
 
 // Wrap the core logic with the API handler middleware

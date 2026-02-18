@@ -1,21 +1,9 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb"; // adjust path if needed
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse"; // Assumed to return a NextResponse for errors
 
-/**
- * Core handler logic to fetch blogs.
- * This function is wrapped by `withApiHandler`, which is assumed to handle:
- * 1. Authentication/Authorization (and returning 401 if failed).
- * 2. Automatic try/catch wrapping (returning a 500 on internal errors).
- * 3. Converting the successful returned object into a 200 OK JSON response.
- *
- * For immediate validation errors, we use `formatResponse` which is assumed
- * to return a complete NextResponse object with the appropriate status (e.g., 400).
- *
- * @param req The incoming Next.js Request object.
- * @returns The blog data object (which the wrapper converts to a successful JSON response),
- * or a direct NextResponse (created via formatResponse) for validation errors.
- */
+
 async function fetchBlogs(req: Request) {
   // NOTE: The manual authentication check and try/catch blocks are removed,
   // as they are now handled by the `withApiHandler` wrapper.
@@ -39,9 +27,22 @@ async function fetchBlogs(req: Request) {
   }
 
   // --- Data Fetching ---
+  
+    const cacheKey = `admin:get-all-blogs:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const totalItems = await prisma.blog.count({
     where: { companyId }
   });
+
+  try {
+    if (totalItems) {
+      await cacheSet(cacheKey, totalItems, 60);
+    }
+  } catch (e) {}
 
   const results = await prisma.blog.findMany({
     where: { companyId },

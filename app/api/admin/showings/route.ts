@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/showings/route.ts
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -14,12 +15,25 @@ async function getShowings(req: Request) {
       return formatResponse(false, null, "Company ID is required to fetch showings", 400);
     }
 
-    const showings = await prisma.showing.findMany({
+    
+    const cacheKey = `admin:showings:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const showings = await prisma.showing.findMany({
       where: { companyId },
       orderBy: { dateTime: "asc" },
       // Include relations if needed
       // include: { company: true, agent: true, property: true, client: true }
     });
+
+  try {
+    if (showings) {
+      await cacheSet(cacheKey, showings, 60);
+    }
+  } catch (e) {}
 
     return formatResponse(true, showings, "Showings fetched successfully", 200);
   } catch (error: any) {
@@ -77,6 +91,8 @@ async function createShowing(req: Request) {
       },
     });
 
+    
+    try { await cacheDel(`admin:showings:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newShowing, "Showing created successfully", 201);
   } catch (error: any) {
     console.error("Error creating showing:", error);

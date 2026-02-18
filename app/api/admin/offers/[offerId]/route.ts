@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -11,12 +12,17 @@ type RouteParams = { params: { offerId: string } };
 const VALID_STATUSES = ['Pending', 'Accepted', 'Rejected', 'Closed'];
 
 // --- GET Handler Core Logic ---
-/**
- * Fetches a single Offer by ID.
- */
+
 async function handleGetOffer(request: Request, { params }: RouteParams) {
   const { offerId } = params;
 
+  
+    const cacheKey = `admin:offers:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const offer = await prisma.offerContract.findUnique({
     where: { id: offerId },
     include: {
@@ -31,6 +37,12 @@ async function handleGetOffer(request: Request, { params }: RouteParams) {
       },
     },
   });
+
+  try {
+    if (offer) {
+      await cacheSet(cacheKey, offer, 60);
+    }
+  } catch (e) {}
 
   if (!offer) {
     // Manually format a 404 response
@@ -61,9 +73,7 @@ async function handleGetOffer(request: Request, { params }: RouteParams) {
 }
 
 // --- PATCH Handler Core Logic ---
-/**
- * Updates an Offer by ID.
- */
+
 async function handlePatchOffer(request: Request, { params }: RouteParams) {
   const { offerId } = params;
   const body = await request.json();
@@ -138,6 +148,8 @@ async function handlePatchOffer(request: Request, { params }: RouteParams) {
       data: updateData,
     });
 
+    
+    try { await cacheDel(`admin:offers:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedOffer, "Offer updated successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -149,9 +161,7 @@ async function handlePatchOffer(request: Request, { params }: RouteParams) {
 }
 
 // --- DELETE Handler Core Logic ---
-/**
- * Deletes an Offer by ID.
- */
+
 async function handleDeleteOffer(request: Request, { params }: RouteParams) {
   const { offerId } = params;
 
@@ -160,6 +170,8 @@ async function handleDeleteOffer(request: Request, { params }: RouteParams) {
       where: { id: offerId },
     });
 
+    
+    try { await cacheDel(`admin:offers:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, 'Offer deleted successfully.', 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

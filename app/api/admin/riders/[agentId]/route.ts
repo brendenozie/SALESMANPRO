@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/sales-agents/[agentId]/route.ts
 import prisma from "@/server/db/prismadb";
 import { withAuthAndRateLimit } from "@/lib/hooks/withAuthAndRateLimit";
@@ -38,7 +39,9 @@ export const PUT = withAuthAndRateLimit(async (request, { params }) => {
     include: { user: true },
   });
 
-  return formatResponse(true, updatedAgent, "Agent updated successfully", 200);
+  
+    try { await cacheDel(`admin:riders:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, updatedAgent, "Agent updated successfully", 200);
 });
 
 // DELETE /api/sales-agents/[agentId]
@@ -63,5 +66,7 @@ export const DELETE = withAuthAndRateLimit(async (_request, { params }) => {
     prisma.user.delete({ where: { id: agentToDelete.userId || "" } }),
   ]);
 
-  return formatResponse(true, { deletedId: agentId }, "Agent deleted successfully", 200);
+  
+    try { await cacheDel(`admin:riders:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { deletedId: agentId }, "Agent deleted successfully", 200);
 });

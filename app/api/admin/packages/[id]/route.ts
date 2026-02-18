@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from '@/server/db/prismadb'; // Assuming this is your standard Prisma client import
@@ -9,15 +10,26 @@ import { Prisma } from '@prisma/client';
 type RouteParams = { params: { id: string } };
 
 // --- GET Handler Core Logic ---
-/**
- * Fetches a single package by ID.
- */
+
 async function handleGetPackage(request: Request, { params }: RouteParams) {
   const { id } = params;
 
+  
+    const cacheKey = `admin:packages:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const pkg = await prisma.package.findUnique({
     where: { id: id },
   });
+
+  try {
+    if (pkg) {
+      await cacheSet(cacheKey, pkg, 60);
+    }
+  } catch (e) {}
 
   if (!pkg) {
     return formatResponse(false, null, 'Package not found.', 404);
@@ -28,9 +40,7 @@ async function handleGetPackage(request: Request, { params }: RouteParams) {
 }
 
 // --- PUT Handler Core Logic ---
-/**
- * Updates a package by ID.
- */
+
 async function handlePutPackage(request: Request, { params }: RouteParams) {
   const { id } = params;
   const body = await request.json();
@@ -51,6 +61,8 @@ async function handlePutPackage(request: Request, { params }: RouteParams) {
     });
 
     // Explicitly return success with status 200
+    
+    try { await cacheDel(`admin:packages:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedPackage, null, 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -63,9 +75,7 @@ async function handlePutPackage(request: Request, { params }: RouteParams) {
 }
 
 // --- DELETE Handler Core Logic ---
-/**
- * Deletes a package by ID.
- */
+
 async function handleDeletePackage(request: Request, { params }: RouteParams) {
   const { id } = params;
 
@@ -75,6 +85,8 @@ async function handleDeletePackage(request: Request, { params }: RouteParams) {
     });
 
     // Explicitly return success with status 200 (No Content)
+    
+    try { await cacheDel(`admin:packages:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { message: 'Package deleted successfully' }, null, 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

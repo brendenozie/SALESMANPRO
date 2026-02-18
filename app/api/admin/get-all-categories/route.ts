@@ -1,17 +1,9 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/**
- * Core handler logic to fetch product categories with pagination.
- * This function is wrapped by `withApiHandler`, which is assumed to handle:
- * 1. Authentication/Authorization check (returning 401 if failed).
- * 2. Automatic try/catch wrapping (returning a 500 on internal errors).
- * 3. Converting the successful returned object into a 200 OK JSON response.
- *
- * For immediate validation errors, we use `formatResponse` which is assumed
- * to return a complete NextResponse object with the appropriate status (e.g., 400).
- */
+
 async function fetchCategories(req: Request) {
   // NOTE: Authentication and `try/catch` are handled by `withApiHandler`.
 
@@ -32,6 +24,13 @@ async function fetchCategories(req: Request) {
   }
 
   // --- Data Fetching ---
+  
+    const cacheKey = `admin:get-all-categories:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const [totalCount, results] = await prisma.$transaction([
     // 1. Get total count
     prisma.productCategory.count(),
@@ -43,6 +42,12 @@ async function fetchCategories(req: Request) {
       orderBy: { name: "asc" } // Adding a consistent order by field
     }),
   ]);
+
+  try {
+    if (totalCount) {
+      await cacheSet(cacheKey, totalCount, 60);
+    }
+  } catch (e) {}
 
   // Calculate pagination metadata
   const totalPages = Math.ceil(totalCount / limit);

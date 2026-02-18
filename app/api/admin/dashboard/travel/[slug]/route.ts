@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -22,7 +23,14 @@ export const GET = withApiHandler(
         'ECOTOURISM', 'CRUISES', 'CULTURAL_TOURS', 'HONEYMOONS'
       ];
 
-      const [
+      
+    const cacheKey = `admin:travel:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const [
         totalDestinations,
         totalBookings,
         revenueData,
@@ -65,6 +73,12 @@ export const GET = withApiHandler(
             }
         })
       ]);
+
+  try {
+    if (totalDestinations) {
+      await cacheSet(cacheKey, totalDestinations, 60);
+    }
+  } catch (e) {}
 
       const monthlyRevenue = revenueData._sum.totalPrice || 0;
 

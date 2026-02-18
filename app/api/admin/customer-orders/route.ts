@@ -1,11 +1,12 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse';
 import { z } from 'zod';
 
-/* -------------------------------------------------------------------------- */
-/*                               VALIDATION                                   */
-/* -------------------------------------------------------------------------- */
+
+
+
 
 const createOrderSchema = z.object({
   companyId: z.string().min(1),
@@ -19,9 +20,9 @@ const createOrderSchema = z.object({
   ).min(1),
 });
 
-/* -------------------------------------------------------------------------- */
-/*                                    GET                                     */
-/* -------------------------------------------------------------------------- */
+
+
+
 
 export const GET = withApiHandler(async (request) => {
   const { searchParams } = new URL(request.url);
@@ -39,6 +40,13 @@ export const GET = withApiHandler(async (request) => {
     ...(deliveryFilter === 'false' && { delivery: false }),
   };
 
+  
+    const cacheKey = `admin:customer-orders:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const [totalCount, orders] = await Promise.all([
     prisma.customerOrder.count({ where }),
     prisma.customerOrder.findMany({
@@ -71,6 +79,12 @@ export const GET = withApiHandler(async (request) => {
     }),
   ]);
 
+  try {
+    if (totalCount) {
+      await cacheSet(cacheKey, totalCount, 60);
+    }
+  } catch (e) {}
+
   const formatted = orders.map((order) => ({
     ...order,
     createdAt: order.createdAt?.toISOString(),
@@ -94,9 +108,9 @@ export const GET = withApiHandler(async (request) => {
   });
 });
 
-/* -------------------------------------------------------------------------- */
-/*                                    POST                                    */
-/* -------------------------------------------------------------------------- */
+
+
+
 
 export const POST = withApiHandler(async (request) => {
   const body = await request.json();
@@ -182,38 +196,7 @@ export const POST = withApiHandler(async (request) => {
   );
 });
 
-// import prisma from '@/server/db/prismadb';
-// import { withApiHandler } from '@/lib/hooks/withApiHandler';
-// import { formatResponse } from '@/lib/formatResponse';
-// import { z } from 'zod';
-
-// const ORDER_ITEM_SELECT = {
-//   id: true,
-//   quantity: true,
-//   price: true,
-//   marketplaceListing: {
-//     select: {
-//       name: true,
-//       images: true,
-//       finalPrice: true,
-//     },
-//   },
-// };
-
-// /**
-//  * GET: Paginated Orders with Lean Selectors
-//  */
-// export const GET = withApiHandler(async (request) => {
-//   const { searchParams } = new URL(request.url);
-//   const companyId = searchParams.get('companyId');
-//   const delivery = searchParams.get('delivery');
-
-//   // Strict pagination
-//   const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
-//   const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '10')));
-
-//   const where = {
-//     ...(companyId && { companyId }),
+,
 //     ...(delivery !== null && { delivery: delivery === 'true' }),
 //   };
 
@@ -241,9 +224,7 @@ export const POST = withApiHandler(async (request) => {
 //   });
 // });
 
-// /**
-//  * POST: Transactional Order Creation with Stock Protection
-//  */
+// 
 // export const POST = withApiHandler(async (request) => {
 //   const body = await request.json();
 //   const parsed = z.object({
@@ -300,22 +281,7 @@ export const POST = withApiHandler(async (request) => {
 //     return formatResponse(false, null, error.message || 'Failed to process order', 400);
 //   }
 // });
-// import prisma from '@/server/db/prismadb';
-// import { withApiHandler } from '@/lib/hooks/withApiHandler';
-// import { formatResponse } from '@/lib/formatResponse';
-// import { z } from 'zod';
 
-// // --- Validation schema for creating an order
-// const createOrderSchema = z.object({
-//   companyId: z.string(),
-//   customerId: z.string(),
-//   delivery: z.boolean().default(false),
-//   items: z.array(
-//     z.object({
-//       marketplaceListingId: z.string(),
-//       quantity: z.number().positive(),
-//       price: z.number().nonnegative(),
-//     })
 //   ),
 // });
 

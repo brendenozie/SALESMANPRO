@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -51,6 +52,8 @@ async function deleteSubmission(request: Request, { params }: Params) {
   const { id } = params;
   try {
     await prisma.assignmentSubmission.delete({ where: { id } });
+    
+    try { await cacheDel(`admin:payroll:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { message: "Submission deleted." }, null, 200);
   } catch (error) {
     return formatResponse(false, null, "Failed to delete submission.", 500);

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse, NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -19,9 +20,22 @@ async function getDocument(request: Request, { params }: Params) {
 
 
   const { id } = params;
+  
+    const cacheKey = `admin:documents:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const document = await prisma.document.findUnique({
     where: { id },
   });
+
+  try {
+    if (document) {
+      await cacheSet(cacheKey, document, 60);
+    }
+  } catch (e) {}
 
   if (!document) {
     return formatResponse(false, null, 'Document not found', 404);
@@ -45,7 +59,9 @@ async function updateDocument(request: Request, { params }: Params) {
     data: body,
   });
 
-  return formatResponse(true, { data: updatedDocument }, null, 200);
+  
+    try { await cacheDel(`admin:documents:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { data: updatedDocument }, null, 200);
 }
 
 // =======================================================================
@@ -61,7 +77,9 @@ async function deleteDocument(request: Request, { params }: Params) {
     where: { id },
   });
 
-  return formatResponse(true, { message: 'Document deleted successfully' }, null, 200);
+  
+    try { await cacheDel(`admin:documents:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { message: 'Document deleted successfully' }, null, 200);
 }
 
 // Export handlers with standardized wrapper

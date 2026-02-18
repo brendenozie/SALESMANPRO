@@ -1,10 +1,11 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // // app/api/conversations/[conversationId]/participants/route.ts
 // app/api/conversations/[conversationId]/participants/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/* ---------------------------------- Utils --------------------------------- */
+
 
 const mapParticipant = (p: any) => ({
   id: p.id,
@@ -19,11 +20,8 @@ const mapParticipant = (p: any) => ({
   updatedAt: p.updatedAt?.toISOString(),
 });
 
-/* ---------------------------------- PATCH ---------------------------------- */
-/**
- * @route PATCH /api/conversations/[conversationId]/participants
- * Update participant flags
- */
+
+
 export const PATCH = withApiHandler(async (request, { params }) => {
   const { conversationId } = params;
   const { userId, isArchived, isDeleted, unreadCount } =
@@ -61,17 +59,16 @@ export const PATCH = withApiHandler(async (request, { params }) => {
       },
     });
 
+    
+    try { await cacheDel(`admin:participants:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, mapParticipant(updated), null, 200);
   } catch {
     return formatResponse(false, null, "Participant not found", 404);
   }
 });
 
-/* ----------------------------------- POST ---------------------------------- */
-/**
- * @route POST /api/conversations/[conversationId]/participants
- * Add new participants
- */
+
+
 export const POST = withApiHandler(async (request, { params }) => {
   const { conversationId } = params;
   const { newParticipantIds } = await request.json();
@@ -123,7 +120,9 @@ export const POST = withApiHandler(async (request, { params }) => {
     },
   });
 
-  return formatResponse(
+  
+    try { await cacheDel(`admin:participants:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(
     true,
     { addedParticipants: participants.map(mapParticipant) },
     null,
@@ -131,11 +130,8 @@ export const POST = withApiHandler(async (request, { params }) => {
   );
 });
 
-/* ---------------------------------- DELETE --------------------------------- */
-/**
- * @route DELETE /api/conversations/[conversationId]/participants
- * Soft delete participant
- */
+
+
 export const DELETE = withApiHandler(async (request, { params }) => {
   const { conversationId } = params;
   const { searchParams } = new URL(request.url);
@@ -160,6 +156,8 @@ export const DELETE = withApiHandler(async (request, { params }) => {
       },
     });
 
+    
+    try { await cacheDel(`admin:participants:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(
       true,
       {
@@ -174,15 +172,7 @@ export const DELETE = withApiHandler(async (request, { params }) => {
   }
 });
 
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-// import { Prisma } from "@prisma/client";
-
-// /**
-//  * PATCH: Update participant state
-//  */
-// export const PATCH = withApiHandler(async (request, { params }) => {
+ => {
 //   const { conversationId } = params;
 //   const { userId, isArchived, isDeleted, unreadCount } = await request.json();
 
@@ -208,9 +198,7 @@ export const DELETE = withApiHandler(async (request, { params }) => {
 //   }
 // });
 
-// /**
-//  * POST: Add multiple participants atomically
-//  */
+// 
 // export const POST = withApiHandler(async (request, { params }) => {
 //   const { conversationId } = params;
 //   const { newParticipantIds } = await request.json();
@@ -242,9 +230,7 @@ export const DELETE = withApiHandler(async (request, { params }) => {
 //   }
 // });
 
-// /**
-//  * DELETE: Soft-remove participant
-//  */
+// 
 // export const DELETE = withApiHandler(async (request, { params }) => {
 //   const { conversationId } = params;
 //   const userId = new URL(request.url).searchParams.get("userId");
@@ -266,15 +252,7 @@ export const DELETE = withApiHandler(async (request, { params }) => {
 //     throw error;
 //   }
 // });
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-
-// /**
-//  * @route PATCH /api/conversations/[conversationId]/participants
-//  * Updates a participant's status (isArchived, isDeleted, unreadCount).
-//  */
-// export const PATCH = withApiHandler(async (request, { params }) => {
+ => {
 //   const { conversationId } = params;
 //   const body = await request.json();
 //   const { userId, isArchived, isDeleted, unreadCount, ...rest } = body;
@@ -335,10 +313,7 @@ export const DELETE = withApiHandler(async (request, { params }) => {
 //   return formatResponse(true, responseData, null, 200);
 // });
 
-// /**
-//  * @route POST /api/conversations/[conversationId]/participants
-//  * Adds one or more new participants.
-//  */
+// 
 // export const POST = withApiHandler(async (request, { params }) => {
 //   const { conversationId } = params;
 //   const body = await request.json();
@@ -424,10 +399,7 @@ export const DELETE = withApiHandler(async (request, { params }) => {
 //   return formatResponse(true, { addedParticipants: responseData }, null, 201);
 // });
 
-// /**
-//  * @route DELETE /api/conversations/[conversationId]/participants
-//  * Soft-removes a participant.
-//  */
+// 
 // export const DELETE = withApiHandler(async (request, { params }) => {
 //   const { conversationId } = params;
 //   const { searchParams } = new URL(request.url);

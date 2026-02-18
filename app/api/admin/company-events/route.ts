@@ -1,10 +1,9 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-/* ----------------------------------
-   Types
------------------------------------ */
+
 type HandlerContext = {
   params: { adminSlug: string };
   user?: any;
@@ -13,9 +12,7 @@ type HandlerContext = {
 const VALID_SORT_FIELDS = ["startDateTime", "title", "eventStatus"] as const;
 const VALID_SORT_ORDER = ["asc", "desc"] as const;
 
-/* ----------------------------------
-   GET — List events
------------------------------------ */
+
 async function handleGet(req: Request, context: HandlerContext) {
   const { adminSlug } = context.params;
   const { searchParams } = new URL(req.url);
@@ -35,9 +32,7 @@ async function handleGet(req: Request, context: HandlerContext) {
     return NextResponse.json({ message: "Invalid sortOrder parameter" }, { status: 400 });
   }
 
-  /* ----------------------------------
-     Tenant-safe filter (no company query)
-  ----------------------------------- */
+  
   const where: any = {
     company: { slug: adminSlug },
   };
@@ -54,9 +49,14 @@ async function handleGet(req: Request, context: HandlerContext) {
     ];
   }
 
-  /* ----------------------------------
-     Parallel queries
-  ----------------------------------- */
+  
+  
+    const cacheKey = `admin:company-events:${slug || adminSlug || 'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const [events, totalItems] = await Promise.all([
     prisma.event.findMany({
       where,
@@ -75,6 +75,12 @@ async function handleGet(req: Request, context: HandlerContext) {
     prisma.event.count({ where }),
   ]);
 
+  try {
+    if (events) {
+      await cacheSet(cacheKey, events, 60);
+    }
+  } catch (e) {}
+
   const formattedEvents = events.map(event => ({
     ...event,
     date: event.startDateTime.toISOString(),
@@ -92,9 +98,7 @@ async function handleGet(req: Request, context: HandlerContext) {
   );
 }
 
-/* ----------------------------------
-   POST — Create event
------------------------------------ */
+
 async function handlePost(req: Request, context: HandlerContext) {
   const { adminSlug } = context.params;
   const body = await req.json();
@@ -132,9 +136,7 @@ async function handlePost(req: Request, context: HandlerContext) {
     return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
   }
 
-  /* ----------------------------------
-     Validate organizer + tenant in parallel
-  ----------------------------------- */
+  
   const [organizer, company] = await Promise.all([
     prisma.user.findUnique({
       where: { id: organizerId },
@@ -201,9 +203,7 @@ async function handlePost(req: Request, context: HandlerContext) {
   );
 }
 
-/* ----------------------------------
-   Exports
------------------------------------ */
+
 export const GET = withApiHandler(handleGet, {
   requireAuth: true,
   requireRateLimit: true,
@@ -215,14 +215,7 @@ export const POST = withApiHandler(handlePost, {
 });
 
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-
-// /**
-//  * GET: Fetch paginated events with real registration counts.
-//  */
-// async function handleGet(request: Request, context: { params: { adminSlug: string } }) {
+ {
 //   const { adminSlug } = context.params;
 //   const { searchParams } = new URL(request.url);
 
@@ -277,9 +270,7 @@ export const POST = withApiHandler(handlePost, {
 //   });
 // }
 
-// /**
-//  * POST: Create event with atomic relational connection.
-//  */
+// 
 // async function handlePost(request: Request, context: { params: { adminSlug: string } }) {
 //   const { adminSlug } = context.params;
 //   const body = await request.json();
@@ -315,37 +306,7 @@ export const POST = withApiHandler(handlePost, {
 // export const GET = withApiHandler(handleGet);
 // export const POST = withApiHandler(handlePost);
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// // --- Type Definitions for the Handlers ---
-
-// type RouteParams = {
-//   adminSlug: string;
-// };
-
-// type HandlerContext = {
-//   params: RouteParams;
-//   user?: any; // Replace 'any' with your actual User type if defined
-// };
-
-// // --- Core Logic for GET request ---
-
-// async function handleGet(request: Request, context: HandlerContext): Promise<NextResponse> {
-//   const { adminSlug } = context.params;
-//   const { searchParams } = new URL(request.url);
-
-//   const statusFilter = searchParams.get("status");
-//   const searchKeyword = searchParams.get("search");
-//   const page = parseInt(searchParams.get("page") || "1");
-//   const limit = parseInt(searchParams.get("limit") || "10");
-//   const sortBy = searchParams.get("sortBy") || "startDateTime";
-//   const sortOrder = searchParams.get("sortOrder") || "asc";
-
-//   // Retain validation for query parameters
-//   const validSortBy = ["startDateTime", "title", "eventStatus"];
-//   if (!validSortBy.includes(sortBy)) {
-//     return NextResponse.json({ message: "Invalid sortBy parameter" }, { status: 400 });
 //   }
 
 //   const validSortOrder = ["asc", "desc"];
@@ -487,14 +448,8 @@ export const POST = withApiHandler(handlePost, {
 
 // // --- Exported Route Handlers (Wrapped) ---
 
-// /**
-//  * GET /api/admin/[adminSlug]/events
-//  * Fetches a list of events with filtering, sorting, and pagination.
-//  */
+// 
 // export const GET = withApiHandler(handleGet);
 
-// /**
-//  * POST /api/admin/[adminSlug]/events
-//  * Creates a new event.
-//  */
+// 
 // export const POST = withApiHandler(handlePost);

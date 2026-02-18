@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/reports/route.ts
 import prisma from "@/server/db/prismadb";
 
@@ -114,7 +115,14 @@ async function getReports(req: Request) {
     const upcomingEventsSummary: { type: string; count: number; nextDate: string | null }[] = [];
 
     try {
-      const events = await prisma.event.findMany({
+      
+    const cacheKey = `admin:school-reports:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const events = await prisma.event.findMany({
         where: {
           companyId,
           eventStatus: "SCHEDULED",
@@ -128,6 +136,12 @@ async function getReports(req: Request) {
         orderBy: { startDateTime: "asc" },
         select: { eventType: true, startDateTime: true },
       });
+
+  try {
+    if (events) {
+      await cacheSet(cacheKey, events, 60);
+    }
+  } catch (e) {}
 
       const eventTypeCounts: Record<string, { count: number; nextDate: Date | null }> = {};
 

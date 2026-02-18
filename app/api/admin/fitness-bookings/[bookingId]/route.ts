@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from '@/server/db/prismadb'; // Assuming this is your Prisma client instance
@@ -109,7 +110,9 @@ const putBookingLogic = async (request: Request, context: any) => {
   };
 
   // Use formatResponse for success
-  return formatResponse(true, formattedUpdatedBooking, 'Booking updated successfully', 200);
+  
+    try { await cacheDel(`admin:fitness-bookings:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, formattedUpdatedBooking, 'Booking updated successfully', 200);
 };
 
 // Export the wrapped PUT function
@@ -147,7 +150,9 @@ const deleteBookingLogic = async (request: Request, context: any) => {
   });
 
   // Use formatResponse for success
-  return formatResponse(true, null, 'Booking deleted successfully.', 200);
+  
+    try { await cacheDel(`admin:fitness-bookings:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, null, 'Booking deleted successfully.', 200);
 };
 
 // Export the wrapped DELETE function

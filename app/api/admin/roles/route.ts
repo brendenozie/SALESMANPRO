@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
@@ -8,10 +9,23 @@ export async function GET(req: Request) {
 
   if (!companyId) return NextResponse.json({ error: "Missing Company ID" }, { status: 400 });
 
+  
+    const cacheKey = `admin:roles:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const roles = await prisma.role.findMany({
     where: { companyId },
     orderBy: { createdAt: 'desc' }
   });
+
+  try {
+    if (roles) {
+      await cacheSet(cacheKey, roles, 60);
+    }
+  } catch (e) {}
   return NextResponse.json(roles);
 }
 

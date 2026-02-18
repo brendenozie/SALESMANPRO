@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse';
 import { getStudentsByTarget, batchApplySpecificFees } from '@/lib/data';
@@ -41,13 +42,7 @@ export async function POST(request: Request) {
 //   batchApplyFeesToStudents 
 // } from '@/lib/data';
 
-/**
- * POST /api/admin/fees/batch
- * Logic: 
- * 1. Identify target students (All, specific Level, or specific Class)
- * 2. Identify selected Fee Item templates
- * 3. Generate Fee Records (Invoices) for the specific Term/Year
- */
+
 // async function handleBatchFeeGeneration(request: Request) {
 //   const body = await request.json();
 //   const { 

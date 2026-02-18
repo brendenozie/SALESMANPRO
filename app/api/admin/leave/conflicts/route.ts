@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { eachDayOfInterval, format } from "date-fns";
@@ -15,10 +16,23 @@ export async function GET(request: Request) {
     });
 
     // 2. Get all active/pending leave
-    const leave = await prisma.leaveRequest.findMany({
+    
+    const cacheKey = `admin:conflicts:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const leave = await prisma.leaveRequest.findMany({
       where: { companyId, status: { in: ['APPROVED', 'PENDING'] } },
       include: { user: { include: { staffProfile: true } } }
     });
+
+  try {
+    if (leave) {
+      await cacheSet(cacheKey, leave, 60);
+    }
+  } catch (e) {}
 
     const conflicts: Record<string, string[]> = {}; // Date -> Dept[]
 

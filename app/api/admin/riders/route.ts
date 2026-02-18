@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/sales-agents/route.ts
 import prisma from "@/server/db/prismadb";
 import { withAuthAndRateLimit } from "@/lib/hooks/withAuthAndRateLimit";
@@ -15,6 +16,13 @@ export const GET = withApiHandler(async (request, context) => {
     return formatResponse(false, null, "Company ID is required", 400);
   }
 
+  
+    const cacheKey = `admin:riders:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const salesAgents = await prisma.salesAgent.findMany({
     where: { 
       companyId,
@@ -26,6 +34,12 @@ export const GET = withApiHandler(async (request, context) => {
       commissions: { orderBy: { createdAt: "desc" } },
     },
   });
+
+  try {
+    if (salesAgents) {
+      await cacheSet(cacheKey, salesAgents, 60);
+    }
+  } catch (e) {}
 
   const formattedAgents = salesAgents.map((agent) => {
     const totalSales = agent.transactions.reduce(
@@ -116,5 +130,7 @@ export const POST = withAuthAndRateLimit(async (request) => {
     include: { salesAgentProfile: true },
   });
 
-  return formatResponse(true, newAgent, "Agent created successfully", 201);
+  
+    try { await cacheDel(`admin:riders:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, newAgent, "Agent created successfully", 201);
 });

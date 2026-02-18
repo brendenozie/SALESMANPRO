@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse';
@@ -26,7 +27,20 @@ async function handleGET(request: Request) {
     if (type) where.type = type;
     if (gateway) where.gateway = gateway;
 
-    const totalItems = await prisma.subscriptionPayment.count({ where });
+    
+    const cacheKey = `admin:payments-companies:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const totalItems = await prisma.subscriptionPayment.count({ where });
+
+  try {
+    if (totalItems) {
+      await cacheSet(cacheKey, totalItems, 60);
+    }
+  } catch (e) {}
 
     const payments = await prisma.subscriptionPayment.findMany({
       skip,

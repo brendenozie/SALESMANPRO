@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -41,6 +42,13 @@ async function getSubmissions(request: Request) {
 
   if (!companyId) return formatResponse(false, null, "Company ID required", 400);
 
+  
+    const cacheKey = `admin:assignment-submissions:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const submissions = await prisma.assignmentSubmission.findMany({
     where: { 
       companyId,
@@ -55,6 +63,12 @@ async function getSubmissions(request: Request) {
     orderBy: { submittedAt: 'desc' },
     take: 50, // Added safety pagination limit
   });
+
+  try {
+    if (submissions) {
+      await cacheSet(cacheKey, submissions, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, submissions.map(flattenSubmission), null, 200);
 }
@@ -89,6 +103,8 @@ async function createSubmission(request: Request) {
       select: { id: true, submittedAt: true } // Return minimal data for confirmation
     });
 
+    
+    try { await cacheDel(`admin:assignment-submissions:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newSubmission, "Submission received.", 201);
   } catch (error: any) {
     if (error.code === 'P2002') {
@@ -100,56 +116,7 @@ async function createSubmission(request: Request) {
 
 export const GET = withApiHandler(getSubmissions);
 export const POST = withApiHandler(createSubmission);
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
 
-// function transformSubmissionResponse(submission: any) {
-//   return {
-//     id: submission.id,
-//     assignmentId: submission.assignmentId,
-//     assignmentTitle: submission.assignment?.title || 'N/A',
-//     studentId: submission.studentId,
-//     studentName: submission.student?.user?.name || 'N/A',
-//     courseId: submission.courseId,
-//     courseTitle: submission.course?.title || 'N/A',
-//     grade: submission.grade,
-//     gradedAt: submission.gradedAt,
-//     submissionContent: submission.submissionContent,
-//     submissionUrl: submission.submissionUrl,
-//     submittedAt: submission.submittedAt,
-//     comments: submission.comments,
-//     reviewedByName: submission.reviewedBy?.user?.name || 'Pending Review',
-//     responses: submission.assignmentQuestionResponses || [],
-//   };
-// }
-
-// // GET: Fetch submissions with filters
-// async function getSubmissions(request: Request) {
-//   const { searchParams } = new URL(request.url);
-//   const companyId = searchParams.get('companyId');
-//   const assignmentId = searchParams.get('assignmentId');
-//   const studentId = searchParams.get('studentId');
-
-//   if (!companyId) {
-//     return formatResponse(false, null, "Company ID is required.", 400);
-//   }
-
-//   const whereClause: any = { companyId };
-//   if (assignmentId) whereClause.assignmentId = assignmentId;
-//   if (studentId) whereClause.studentId = studentId;
-
-//   const submissions = await prisma.assignmentSubmission.findMany({
-//     where: whereClause,
-//     include: {
-//       assignment: { select: { title: true } },
-//       student: { include: { user: { select: { name: true } } } },
-//       course: { select: { title: true } },
-//       reviewedBy: { include: { user: { select: { name: true } } } },
-//       assignmentQuestionResponses: true
-//     },
-//     orderBy: { submittedAt: 'desc' },
-//   });
 
 //   return formatResponse(true, { data: submissions.map(transformSubmissionResponse) }, null, 200);
 // }

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/agents/[id]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -17,10 +18,7 @@ const authorizeAdmin = async (req: Request) => {
   return { authorized: true, status: 200, message: "Authorized" };
 };
 
-/**
- * PUT /api/admin/agents/[id]
- * Update an existing agent
- */
+
 async function putHandler(req: Request, { params }: { params: { id: string } }) {
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
@@ -92,13 +90,12 @@ async function putHandler(req: Request, { params }: { params: { id: string } }) 
       updatedSalesAgent.createdAt?.toISOString() || new Date().toISOString(),
   };
 
-  return formatResponse(true, agentProfile, "Agent updated successfully", 200);
+  
+    try { await cacheDel(`admin:properties-agents:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, agentProfile, "Agent updated successfully", 200);
 }
 
-/**
- * DELETE /api/admin/agents/[id]
- * Delete an agent and its associated user
- */
+
 async function deleteHandler(req: Request, { params }: { params: { id: string } }) {
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
@@ -122,7 +119,9 @@ async function deleteHandler(req: Request, { params }: { params: { id: string } 
   await prisma.salesAgent.delete({ where: { id: agentId } });
   await prisma.user.delete({ where: { id: salesAgent.userId || "" } });
 
-  return formatResponse(true, null, "Agent deleted successfully", 200);
+  
+    try { await cacheDel(`admin:properties-agents:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, null, "Agent deleted successfully", 200);
 }
 
 // Export handlers wrapped with withApiHandler

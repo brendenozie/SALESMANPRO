@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // app/api/content/[id]/route.ts
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -22,16 +23,27 @@ const CONTENT_SELECT = {
   updatedAt: true,
 };
 
-/**
- * GET: Fetch single content item
- */
+
 export const GET = withApiHandler(async (_req, { params }) => {
   const { id } = params;
 
+  
+    const cacheKey = `admin:content:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const content = await prisma.content.findUnique({
     where: { id },
     select: CONTENT_SELECT,
   });
+
+  try {
+    if (content) {
+      await cacheSet(cacheKey, content, 60);
+    }
+  } catch (e) {}
 
   if (!content) {
     return formatResponse(false, null, 'Content not found', 404);
@@ -40,9 +52,7 @@ export const GET = withApiHandler(async (_req, { params }) => {
   return formatResponse(true, content);
 });
 
-/**
- * PUT: Update content
- */
+
 export const PUT = withApiHandler(async (request, { params }) => {
   const { id } = params;
   const body = await request.json();
@@ -62,6 +72,8 @@ export const PUT = withApiHandler(async (request, { params }) => {
       select: CONTENT_SELECT,
     });
 
+    
+    try { await cacheDel(`admin:content:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedContent, 'Content updated successfully');
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -71,14 +83,14 @@ export const PUT = withApiHandler(async (request, { params }) => {
   }
 });
 
-/**
- * DELETE: Remove content
- */
+
 export const DELETE = withApiHandler(async (_req, { params }) => {
   const { id } = params;
 
   try {
     await prisma.content.delete({ where: { id } });
+    
+    try { await cacheDel(`admin:content:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, 'Content deleted', 200); // 204 doesn't usually return a body
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -87,15 +99,7 @@ export const DELETE = withApiHandler(async (_req, { params }) => {
     throw error;
   }
 });
-// import prisma from '@/server/db/prismadb';
-// import { withApiHandler } from '@/lib/hooks/withApiHandler';
-// import { formatResponse } from '@/lib/formatResponse';
-
-// /**
-//  * @route GET /api/content/:id
-//  * @description Fetches a single content item.
-//  */
-// export const GET = withApiHandler(async (request, { params }) => {
+ => {
 //   const { id } = params;
 
 //   const content = await prisma.content.findUnique({
@@ -113,10 +117,7 @@ export const DELETE = withApiHandler(async (_req, { params }) => {
 //   return formatResponse(true, content, null, 200);
 // });
 
-// /**
-//  * @route PUT /api/content/:id
-//  * @description Updates a content item.
-//  */
+// 
 // export const PUT = withApiHandler(async (request, { params }) => {
 //   const { id } = params;
 //   const body = await request.json();
@@ -142,10 +143,7 @@ export const DELETE = withApiHandler(async (_req, { params }) => {
 //   return formatResponse(true, updatedContent, null, 200);
 // });
 
-// /**
-//  * @route DELETE /api/content/:id
-//  * @description Deletes a content item.
-//  */
+// 
 // export const DELETE = withApiHandler(async (request, { params }) => {
 //   const { id } = params;
 

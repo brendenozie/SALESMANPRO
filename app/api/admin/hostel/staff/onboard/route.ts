@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
@@ -37,6 +38,8 @@ export async function POST(req: Request) {
       }
     });
 
+    
+    try { await cacheDel(`admin:onboard:${companyId || 'global'}:*`); } catch (e) {}
     return NextResponse.json({ data: newStaff }, { status: 201 });
   } catch (error: any) {
     console.error("ONBOARD_ERROR", error);

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb"; // Make sure this path is correct
@@ -29,7 +30,14 @@ const slugify = (text: string) => {
 const getTourPackageLogic = async (request: Request, { params }: RouteContext) => {
     const { id } = params;
 
-    const tourPackage = await prisma.tourPackage.findUnique({
+    
+    const cacheKey = `admin:fitness-programs:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const tourPackage = await prisma.tourPackage.findUnique({
         where: { id },
         include: {
             destinations: {
@@ -37,6 +45,12 @@ const getTourPackageLogic = async (request: Request, { params }: RouteContext) =
             },
         },
     });
+
+  try {
+    if (tourPackage) {
+      await cacheSet(cacheKey, tourPackage, 60);
+    }
+  } catch (e) {}
 
     if (!tourPackage) {
         // Return 404 response using formatResponse utility

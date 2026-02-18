@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/[adminSlug]/clients/route.ts
 import prisma from "@/server/db/prismadb";
 import bcrypt from "bcryptjs";
@@ -19,10 +20,23 @@ async function handleGET(request: Request) {
   if (!companyId) return formatResponse(false, null, "Missing companyId", 400);
 
   try {
-    const company = await prisma.company.findUnique({
+    
+    const cacheKey = `admin:travel-users:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const company = await prisma.company.findUnique({
       where: { id: companyId },
       select: { id: true },
     });
+
+  try {
+    if (company) {
+      await cacheSet(cacheKey, company, 60);
+    }
+  } catch (e) {}
     if (!company) return formatResponse(false, null, "Company not found", 404);
 
     const clients = await prisma.client.findMany({

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/students/[id]/promote/route.ts
 import prisma from "@/server/db/prismadb";
 import { StudentLevelStatus } from "@prisma/client";

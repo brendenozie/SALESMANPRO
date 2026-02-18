@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -21,7 +22,14 @@ export const GET = withApiHandler(
       weekStart.setDate(weekStart.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1)); // Monday of current week
 
       // --- METRIC & DATA FETCHING ---
-      const [
+      
+    const cacheKey = `admin:fitness:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const [
         totalMembers,
         totalTrainers,
         monthlyCheckins,
@@ -75,6 +83,12 @@ export const GET = withApiHandler(
             take: 3
         })
       ]);
+
+  try {
+    if (totalMembers) {
+      await cacheSet(cacheKey, totalMembers, 60);
+    }
+  } catch (e) {}
 
       const membershipGoal = {
         target: 50, // This can be moved to a settings model

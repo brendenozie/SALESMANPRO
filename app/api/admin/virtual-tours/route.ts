@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/[adminSlug]/virtual-tours/route.ts
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -8,10 +9,23 @@ export const GET = withApiHandler(async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
 
+  
+    const cacheKey = `admin:virtual-tours:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const company = await prisma.company.findUnique({
     where: { id: companyId || undefined },
     select: { id: true },
   });
+
+  try {
+    if (company) {
+      await cacheSet(cacheKey, company, 60);
+    }
+  } catch (e) {}
 
   if (!company) {
     return formatResponse(false, null, 'Company not found for the given slug.', 404);
@@ -104,5 +118,7 @@ export const POST = withApiHandler(async (request: Request) => {
     published: newVirtualTour.published,
   };
 
-  return formatResponse(true, formattedNewTour, 'Virtual tour created successfully.', 201);
+  
+    try { await cacheDel(`admin:virtual-tours:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, formattedNewTour, 'Virtual tour created successfully.', 201);
 });

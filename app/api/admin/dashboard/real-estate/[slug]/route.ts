@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -17,7 +18,14 @@ export const GET = withApiHandler(
       const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
       const todayEnd = new Date(new Date().setHours(23, 59, 59, 999));
 
-      const [
+      
+    const cacheKey = `admin:real-estate:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const [
         totalProperties,
         totalAgents,
         totalClients,
@@ -39,6 +47,12 @@ export const GET = withApiHandler(
           const invoiceWhere: any = { companyId: companyId, status: 'PAID', 
             // invoiceDate: { gte: monthStart } 
           };
+
+  try {
+    if (totalProperties) {
+      await cacheSet(cacheKey, totalProperties, 60);
+    }
+  } catch (e) {}
           return prisma.invoice.aggregate({
             _sum: { amount: true },
             where: invoiceWhere,

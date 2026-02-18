@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
@@ -7,6 +8,13 @@ export async function GET(req: Request) {
 
   if (!companyId) return NextResponse.json({ error: "Missing companyId" }, { status: 400 });
 
+  
+    const cacheKey = `admin:blocks:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const blocks = await prisma.hostelBlock.findMany({
     where: { companyId },
     include: {
@@ -19,6 +27,12 @@ export async function GET(req: Request) {
       }
     }
   });
+
+  try {
+    if (blocks) {
+      await cacheSet(cacheKey, blocks, 60);
+    }
+  } catch (e) {}
 
   // Transform data to include aggregated stats the UI expects
   const formattedBlocks = blocks.map(block => ({
@@ -50,6 +64,8 @@ export async function DELETE(req: Request) {
 
   try {
     await prisma.hostelBlock.delete({ where: { id } });
+    
+    try { await cacheDel(`admin:blocks:${'global' || 'global'}:*`); } catch (e) {}
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: "Cannot delete block with active rooms" }, { status: 400 });

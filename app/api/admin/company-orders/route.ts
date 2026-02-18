@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -182,11 +183,7 @@ async function handleGet(
 export const GET = withApiHandler(handleGet);
 
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-
-// async function handleGet(request: Request, context: { params: { adminSlug: string } }) {
+ {
 //   const { adminSlug } = context.params;
 //   const { searchParams } = new URL(request.url);
 
@@ -275,34 +272,7 @@ export const GET = withApiHandler(handleGet);
 
 // export const GET = withApiHandler(handleGet);
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// // --- Type Definitions for the Handlers ---
-// type RouteParams = {
-//   adminSlug: string;
-// };
-
-// type HandlerContext = {
-//   params: RouteParams;
-//   user?: any; // Replace with your actual User type if defined
-// };
-
-// // --- Core Logic for GET request ---
-// async function handleGet(request: Request, context: HandlerContext): Promise<NextResponse> {
-//   const { adminSlug } = context.params;
-//   const { searchParams } = new URL(request.url);
-
-//   const statusFilter = searchParams.get("status");
-//   const searchKeyword = searchParams.get("search");
-//   const page = parseInt(searchParams.get("page") || "1");
-//   const limit = parseInt(searchParams.get("limit") || "10");
-//   const sortBy = searchParams.get("sortBy") || "createdAt";
-//   const sortOrder = searchParams.get("sortOrder") || "desc";
-
-//   const validSortBy = ["createdAt", "totalPrice", "status"];
-//   if (!validSortBy.includes(sortBy)) {
-//     return NextResponse.json({ message: "Invalid sortBy parameter" }, { status: 400 });
 //   }
 
 //   const validSortOrder = ["asc", "desc"];
@@ -405,8 +375,5 @@ export const GET = withApiHandler(handleGet);
 
 // // --- Exported Route Handler (Wrapped) ---
 
-// /**
-//  * GET /api/admin/[adminSlug]/orders
-//  * Fetches a paginated and filterable list of orders.
-//  */
+// 
 // export const GET = withApiHandler(handleGet);

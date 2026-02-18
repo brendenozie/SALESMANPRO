@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from '@/server/db/prismadb';
@@ -21,10 +22,7 @@ const slugify = (text: string): string => {
 };
 
 // --- GET Handler Core Logic ---
-/**
- * GET Handler: Fetches all CompanyLocation records for a specific company ID (passed via query).
- * It also fetches any necessary parent locations not directly associated with the company.
- */
+
 async function handleGetLocations(req: Request, { params }: RouteParams) {
   const { searchParams } = new URL(req.url);
   const companyId = searchParams.get("companyId");
@@ -35,11 +33,24 @@ async function handleGetLocations(req: Request, { params }: RouteParams) {
   }
 
   // Fetch company-specific associations
+  
+    const cacheKey = `admin:locationsv2:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const companyLocations = await prisma.companyLocation.findMany({
     where: { companyId },
     include: { location: true },
     orderBy: { sortOrder: "asc" },
   });
+
+  try {
+    if (companyLocations) {
+      await cacheSet(cacheKey, companyLocations, 60);
+    }
+  } catch (e) {}
 
   // Identify and fetch parent location details for locations that are not explicitly
   // listed as CompanyLocations themselves (for tree structure display)
@@ -106,9 +117,7 @@ async function handleGetLocations(req: Request, { params }: RouteParams) {
 }
 
 // --- POST Handler Core Logic ---
-/**
- * POST Handler: Creates a new base Location and associates it with the Company.
- */
+
 async function handlePostLocation(request: Request, { params }: RouteParams) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
@@ -214,7 +223,9 @@ async function handlePostLocation(request: Request, { params }: RouteParams) {
   };
 
   // Explicitly return success with status 201
-  return formatResponse(true, formatted, null, 201);
+  
+    try { await cacheDel(`admin:locationsv2:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, formatted, null, 201);
 }
 
 // Wrap the core logic with the API handler middleware

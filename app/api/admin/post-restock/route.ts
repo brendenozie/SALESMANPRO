@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/inventory/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -54,6 +55,8 @@ export const POST = withApiHandler(async (req: Request) => {
       },
     });
 
+    
+    try { await cacheDel(`admin:post-restock:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { inventory: inventoryItem }, "New inventory item added.", 201);
   }
 

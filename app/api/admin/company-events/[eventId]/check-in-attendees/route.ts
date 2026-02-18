@@ -1,10 +1,9 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-/* ----------------------------------
-   Types
------------------------------------ */
+
 type HandlerContext = {
   params: {
     adminSlug: string;
@@ -13,9 +12,7 @@ type HandlerContext = {
   user?: any;
 };
 
-/* ----------------------------------
-   GET — Event attendees (check-in)
------------------------------------ */
+
 async function handleGet(req: Request, context: HandlerContext) {
   const { adminSlug, eventId } = context.params;
   const { searchParams } = new URL(req.url);
@@ -23,10 +20,7 @@ async function handleGet(req: Request, context: HandlerContext) {
   const search = searchParams.get("search")?.trim();
   const status = searchParams.get("status");
 
-  /* ----------------------------------
-     Single tenant-safe filter
-     (no extra company query)
-  ----------------------------------- */
+  
   const where: any = {
     eventId,
     event: {
@@ -53,9 +47,14 @@ async function handleGet(req: Request, context: HandlerContext) {
     ];
   }
 
-  /* ----------------------------------
-     Query (minimal payload)
-  ----------------------------------- */
+  
+  
+    const cacheKey = `admin:check-in-attendees:${slug || adminSlug || 'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const attendees = await prisma.eventRegistration.findMany({
     where,
     orderBy: {
@@ -74,9 +73,13 @@ async function handleGet(req: Request, context: HandlerContext) {
     },
   });
 
-  /* ----------------------------------
-     Format response
-  ----------------------------------- */
+  try {
+    if (attendees) {
+      await cacheSet(cacheKey, attendees, 60);
+    }
+  } catch (e) {}
+
+  
   const formatted = attendees.map(reg => ({
     id: reg.id,
     name: reg.user?.name ?? "N/A",
@@ -89,20 +92,14 @@ async function handleGet(req: Request, context: HandlerContext) {
   return NextResponse.json(formatted, { status: 200 });
 }
 
-/**
- * GET /api/admin/[adminSlug]/events/[eventId]/check-in-attendees
- */
+
 export const GET = withApiHandler(handleGet, {
   requireAuth: true,
   requireRateLimit: true,
 });
 
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-
-// async function handleGet(request: Request, context: { params: { adminSlug: string, eventId: string } }) {
+ {
 //   const { adminSlug, eventId } = context.params;
 //   const { searchParams } = new URL(request.url);
   
@@ -155,34 +152,7 @@ export const GET = withApiHandler(handleGet, {
 
 // export const GET = withApiHandler(handleGet);
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// // --- Type Definitions for the Handler ---
-
-// type RouteParams = {
-//   adminSlug: string;
-//   eventId: string;
-// };
-
-// type HandlerContext = {
-//   params: RouteParams;
-//   user?: any; // Replace 'any' with your actual User type if defined
-// };
-
-// // --- Core Logic for GET request ---
-// // This function contains only the business logic.
-// // The wrapper handles authentication and the top-level try/catch block.
-// async function handleGet(request: Request, context: HandlerContext): Promise<NextResponse> {
-//   const { adminSlug, eventId } = context.params;
-//   const { searchParams } = new URL(request.url);
-//   const searchKeyword = searchParams.get("search");
-//   const statusFilter = searchParams.get("status");
-
-//   const company = await prisma.company.findUnique({
-//     where: { slug: adminSlug },
-//     select: { id: true }
-//   });
 
 //   if (!company) {
 //     return NextResponse.json({ message: "Company not found" }, { status: 404 });
@@ -226,8 +196,5 @@ export const GET = withApiHandler(handleGet, {
 
 // // --- Exported Route Handler (Wrapped) ---
 
-// /**
-//  * GET /api/admin/[adminSlug]/events/[eventId]/check-in-attendees
-//  * Fetches a list of attendees for a specific event, with search and status filters.
-//  */
+// 
 // export const GET = withApiHandler(handleGet);

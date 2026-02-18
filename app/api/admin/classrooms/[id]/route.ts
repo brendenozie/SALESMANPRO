@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -18,10 +19,23 @@ export const GET = withApiHandler(async (req, context: { params: { id: string },
   const { id } = context.params;
   const companyId = context.user?.companyId;
 
+  
+    const cacheKey = `admin:classrooms:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const classroom = await prisma.classroom.findUnique({
     where: { id, companyId }, // Security: Scoped to user company
     select: CLASSROOM_SELECT
   });
+
+  try {
+    if (classroom) {
+      await cacheSet(cacheKey, classroom, 60);
+    }
+  } catch (e) {}
 
   if (!classroom) {
     return formatResponse(false, null, "Classroom not found or unauthorized", 404);
@@ -49,6 +63,8 @@ export const PATCH = withApiHandler(async (request, context: { params: { id: str
       select: CLASSROOM_SELECT
     });
 
+    
+    try { await cacheDel(`admin:classrooms:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updated, "Classroom updated", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -67,6 +83,8 @@ export const DELETE = withApiHandler(async (request, context: { params: { id: st
     const deleted = await prisma.classroom.delete({ 
       where: { id, companyId } 
     });
+    
+    try { await cacheDel(`admin:classrooms:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { deletedId: deleted.id }, "Classroom deleted", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -79,22 +97,7 @@ export const DELETE = withApiHandler(async (request, context: { params: { id: st
     return formatResponse(false, null, "Failed to delete classroom", 500);
   }
 });
-// import prisma from "@/server/db/prismadb";
-// import { formatResponse } from "@/lib/formatResponse";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// type HandlerContext = {
-//   params: { id: string };
-// };
-
-// // GET /api/classrooms/[id]
-// export const GET = withApiHandler(async (req, context: HandlerContext) => {
-//   const { id } = context.params;
-
-//   const classroom = await prisma.classroom.findUnique({
-//     where: { id },
-//     include: { academicLevel: true }
-//   });
 
 //   if (!classroom) {
 //     return formatResponse(false, null, "Classroom not found", 404);

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
@@ -27,6 +28,13 @@ async function handleGetParent(request: Request, context: { params: { id: string
   
   const { id } = context.params;
 
+  
+    const cacheKey = `admin:parents:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const parent = await prisma.parent.findUnique({
     where: { id },
     include: {
@@ -46,6 +54,12 @@ async function handleGetParent(request: Request, context: { params: { id: string
       },
     },
   });
+
+  try {
+    if (parent) {
+      await cacheSet(cacheKey, parent, 60);
+    }
+  } catch (e) {}
 
   if (!parent) {
     return formatResponse(false, null, "Parent not found", 404);
@@ -134,7 +148,9 @@ async function handlePatchParent(request: Request, context: { params: { id: stri
     return formatResponse(false, null, "Failed to retrieve updated parent record.", 500);
   }
 
-  return formatResponse(true, formatParentResponse(finalParent), "Parent updated successfully", 200);
+  
+    try { await cacheDel(`admin:parents:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, formatParentResponse(finalParent), "Parent updated successfully", 200);
 }
 
 // --- DELETE Handler Core Logic ---
@@ -149,6 +165,8 @@ async function handleDeleteParent(request: Request, context: { params: { id: str
     // Attempt to delete the associated User record as well (optional, depending on business logic)
     // await prisma.user.delete({ where: { id: deletedParent.userId } });
 
+    
+    try { await cacheDel(`admin:parents:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { message: "Parent deleted successfully", deletedId: deletedParent.id }, null, 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {

@@ -1,12 +1,11 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 import bcrypt from "bcryptjs";
 
-/**
- * GET: Retrieve all suppliers for a school
- */
+
 const getSuppliers = async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
@@ -21,9 +20,7 @@ const getSuppliers = async (request: Request) => {
   return formatResponse(true, suppliers, "Suppliers retrieved", 200);
 };
 
-/**
- * POST: Onboard a new vendor
- */
+
 
 const postSupplier = async (request: Request) => {
   const body = await request.json();

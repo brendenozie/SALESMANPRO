@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/video-albums/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
@@ -10,11 +11,24 @@ export const GET = withApiHandler(async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
 
+  
+    const cacheKey = `admin:videos-albums:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const videoAlbums = await prisma.videoAlbum.findMany({
     where: companyId ? { companyId } : {},
     include: { videos: true },
     orderBy: { createdAt: 'desc' },
   });
+
+  try {
+    if (videoAlbums) {
+      await cacheSet(cacheKey, videoAlbums, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, videoAlbums, 'Video albums fetched successfully', 200);
 });
@@ -49,5 +63,7 @@ export const POST = withApiHandler(async (request: Request) => {
     include: { videos: true },
   });
 
-  return formatResponse(true, newVideoAlbum, 'Video album created successfully', 201);
+  
+    try { await cacheDel(`admin:videos-albums:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, newVideoAlbum, 'Video album created successfully', 201);
 });

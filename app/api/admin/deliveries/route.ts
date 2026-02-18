@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/deliveries/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -5,10 +6,7 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 import { DeliveryStatus, Prisma } from "@prisma/client";
 
-/**
- * GET /api/deliveries
- * Fetches and filters the list of deliveries for a company, including linked orders for table display.
- */
+
 export const GET = withApiHandler(async (request, context) => {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId") || context.user?.companyId;
@@ -40,6 +38,13 @@ export const GET = withApiHandler(async (request, context) => {
     ];
   }
 
+  
+    const cacheKey = `admin:deliveries:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const deliveries = await prisma.delivery.findMany({
     where,
     include: {
@@ -74,6 +79,12 @@ export const GET = withApiHandler(async (request, context) => {
     },
   });
 
+  try {
+    if (deliveries) {
+      await cacheSet(cacheKey, deliveries, 60);
+    }
+  } catch (e) {}
+
   const formattedDeliveries = deliveries.map((d) => ({
     ...d,
     riderName: d.rider?.name || 'Unassigned',
@@ -83,10 +94,7 @@ export const GET = withApiHandler(async (request, context) => {
 });
 
 
-/**
- * POST /api/deliveries
- * Creates a new delivery record and auto-populates fields from linked CustomerOrders.
- */
+
 export const POST = withApiHandler(async (request, context) => {
   const body = await request.json();
   const {
@@ -225,6 +233,8 @@ export const POST = withApiHandler(async (request, context) => {
       riderName: newDelivery.rider?.name || 'Unassigned',
     };
 
+    
+    try { await cacheDel(`admin:deliveries:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, formattedDelivery, "Delivery created successfully.", 201);
   } catch (error: any) {
     if (error.code === 'P2002') { 

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // app/api/class-schedules/[id]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -95,40 +96,7 @@ export const GET = withApiHandler(getClassSchedule, { requireAuth: true });
 export const PATCH = withApiHandler(updateClassSchedule, { requireAuth: true });
 export const DELETE = withApiHandler(deleteClassSchedule, { requireAuth: true });
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// const VALID_DAYS_OF_WEEK = [
-//   "Monday",
-//   "Tuesday",
-//   "Wednesday",
-//   "Thursday",
-//   "Friday",
-//   "Saturday",
-//   "Sunday",
-// ];
-
-// // --- GET a single class schedule
-// const getClassSchedule = async (_req: Request,  context: { params: { id: string } , user?: any} ) => {
-//   const { id } = context.params;
-
-//   const schedule = await prisma.classSchedule.findUnique({
-//     where: { id },
-//     include: {
-//       course: {
-//         select: {
-//           id: true,
-//           title: true,
-//           code: true,
-//         },
-//       },
-//       educator: {
-//         select: { id: true, user: { select: { name: true, email: true } } },
-//       },
-//       classroom: { select: { id: true, name: true, academicLevelId: true } },
-//       academicLevel: { select: { id: true, name: true } },
-//     },
-//   });
 
 //   if (!schedule) {
 //     return NextResponse.json({ message: "Class schedule not found" }, { status: 404 });

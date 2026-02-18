@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/photos/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -8,10 +9,23 @@ export const GET = withApiHandler(async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
+  
+    const cacheKey = `admin:photos:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const photos = await prisma.photo.findMany({
     where: companyId ? { companyId } : {},
     orderBy: { createdAt: "desc" },
   });
+
+  try {
+    if (photos) {
+      await cacheSet(cacheKey, photos, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, photos, null, 200);
 });
@@ -52,5 +66,7 @@ export const POST = withApiHandler(async (request: Request) => {
     },
   });
 
-  return formatResponse(true, newPhoto, null, 201);
+  
+    try { await cacheDel(`admin:photos:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, newPhoto, null, 201);
 });

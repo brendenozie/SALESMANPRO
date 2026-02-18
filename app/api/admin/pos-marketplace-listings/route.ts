@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/marketplace-list/route.ts
 import prisma from "@/server/db/prismadb";
 import { verifyAuth } from "@/lib/verifyAuth";
@@ -23,7 +24,20 @@ const getMarketplaceListings = async (req: Request) => {
   }
 
   // 1. Total count for pagination
+  
+    const cacheKey = `admin:pos-marketplace-listings:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const total = await prisma.marketplaceListings.count({ where: { companyId } });
+
+  try {
+    if (total) {
+      await cacheSet(cacheKey, total, 60);
+    }
+  } catch (e) {}
 
   // 2. Fetch paginated slice
   const listings = await prisma.marketplaceListings.findMany({

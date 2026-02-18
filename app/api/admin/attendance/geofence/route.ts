@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { getDistance } from "@/lib/geo-utils.ts"; 
 import { formatResponse } from "@/lib/formatResponse";
@@ -56,6 +57,8 @@ export async function POST(req: Request) {
       select: { id: true, checkInTime: true, status: true }
     });
 
+    
+    try { await cacheDel(`admin:geofence:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, attendance, "Clock-in successful.", 200);
   } catch (error) {
     return formatResponse(false, null, "Database sync error.", 500);

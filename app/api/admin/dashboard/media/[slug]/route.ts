@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -18,7 +19,14 @@ export const GET = withApiHandler(
       const weekEnd = new Date(new Date().setDate(todayStart.getDate() + 7));
 
       // --- METRIC CALCULATIONS ---
-      const [
+      
+    const cacheKey = `admin:media:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const [
         totalVideos,
         totalArticles,
         activeSubscribers,
@@ -59,6 +67,12 @@ export const GET = withApiHandler(
             select: { id: true, taskName: true, dueDate: true, dueTime: true },
         })
       ]);
+
+  try {
+    if (totalVideos) {
+      await cacheSet(cacheKey, totalVideos, 60);
+    }
+  } catch (e) {}
 
       const revenueThisMonth = revenueData._sum.amount || 0;
 

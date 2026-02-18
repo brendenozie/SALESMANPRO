@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/patients/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -52,6 +53,13 @@ export const GET = withApiHandler(async (request: Request) => {
     return formatResponse(false, null, "Missing companyId", 400);
   }
 
+  
+    const cacheKey = `admin:patients:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   let patients = await prisma.patient.findMany({
     where: { user: { companyId } }, // filter by company via user
     include: {
@@ -69,6 +77,12 @@ export const GET = withApiHandler(async (request: Request) => {
     },
     orderBy: { createdAt: "desc" },
   });
+
+  try {
+    if (patients) {
+      await cacheSet(cacheKey, patients, 60);
+    }
+  } catch (e) {}
 
   console.log(`Fetched ${patients.length} patients for companyId ${companyId}`);
 
@@ -123,6 +137,8 @@ export const POST = withApiHandler(async (request: Request) => {
     });
 
     const newPatient = await formatPatientData(patient);
+    
+    try { await cacheDel(`admin:patients:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newPatient, null, 201);
   } catch (err: any) {
     if (err.code === "P2002" && err.meta?.target?.includes("email")) {

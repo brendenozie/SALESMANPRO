@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -7,9 +8,7 @@ import { OrderStatus } from "@prisma/client";
 type RouteParams = { params: { adminSlug: string } };
 
 // --- GET Handler ---
-/**
- * GET Handler: Fetches a paginated and filtered list of invoices for the company.
- */
+
 async function handleGetInvoices(request: Request, { params }: RouteParams) {
   const { adminSlug } = params;
   const { searchParams } = new URL(request.url);
@@ -33,10 +32,23 @@ async function handleGetInvoices(request: Request, { params }: RouteParams) {
     return formatResponse(false, null, "Invalid sortOrder parameter", 400);
   }
 
+  
+    const cacheKey = `admin:invoices copy:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const company = await prisma.company.findUnique({
     where: { slug: adminSlug },
     select: { id: true }
   });
+
+  try {
+    if (company) {
+      await cacheSet(cacheKey, company, 60);
+    }
+  } catch (e) {}
 
   if (!company) {
     return formatResponse(false, null, "Company not found", 404);
@@ -119,9 +131,7 @@ async function handleGetInvoices(request: Request, { params }: RouteParams) {
 }
 
 // --- POST Handler ---
-/**
- * POST Handler: Creates a new invoice (CustomerOrder).
- */
+
 async function handlePostInvoice(request: Request, { params }: RouteParams) {
   const { adminSlug } = params;
   const body = await request.json();
@@ -200,7 +210,9 @@ async function handlePostInvoice(request: Request, { params }: RouteParams) {
   }
 
   // Return success response with status 201
-  return formatResponse(true, { message: "Invoice generated successfully", invoice: newInvoice }, null, 201);
+  
+    try { await cacheDel(`admin:invoices copy:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { message: "Invoice generated successfully", invoice: newInvoice }, null, 201);
 }
 
 // Wrap the core logic with the API handler middleware

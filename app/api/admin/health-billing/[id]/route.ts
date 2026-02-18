@@ -1,11 +1,9 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/**
- * Helper function to format invoice data for the frontend.
- * This is crucial for handling the stored JSON string 'items'.
- */
+
 async function formatInvoiceData(invoice: any) {
   const patientName = invoice.patient?.name || 'N/A';
   // Safely parse the 'items' field, which is stored as a JSON string in Prisma.
@@ -27,9 +25,7 @@ async function formatInvoiceData(invoice: any) {
   };
 }
 
-/**
- * GET Handler: Retrieves a single invoice by ID.
- */
+
 async function getInvoice(
   request: Request,
   { params }: { params: { adminSlug: string; id: string } }
@@ -37,12 +33,25 @@ async function getInvoice(
   const { id } = params;
 
   // --- Data Fetching ---
+  
+    const cacheKey = `admin:health-billing:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const invoice = await prisma.patientInvoices.findUnique({
     where: { id },
     include: {
       patient: { select: { name: true } },
     },
   });
+
+  try {
+    if (invoice) {
+      await cacheSet(cacheKey, invoice, 60);
+    }
+  } catch (e) {}
 
   if (!invoice) {
     return formatResponse(false, null, "Invoice not found.", 404);
@@ -53,9 +62,7 @@ async function getInvoice(
   return formatResponse(true, formattedInvoice, "Invoice retrieved successfully.", 200);
 }
 
-/**
- * PUT Handler: Updates an existing invoice.
- */
+
 async function updateInvoice(
   request: Request,
   { params }: { params: { adminSlug: string; id: string } }
@@ -87,12 +94,12 @@ async function updateInvoice(
 
   // --- Success Response ---
   const formattedUpdatedInvoice = await formatInvoiceData(updatedInvoice);
-  return formatResponse(true, formattedUpdatedInvoice, "Invoice updated successfully.", 200);
+  
+    try { await cacheDel(`admin:health-billing:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, formattedUpdatedInvoice, "Invoice updated successfully.", 200);
 }
 
-/**
- * DELETE Handler: Deletes an invoice.
- */
+
 async function deleteInvoice(
   request: Request,
   { params }: { params: { adminSlug: string; id: string } }
@@ -111,7 +118,9 @@ async function deleteInvoice(
   });
 
   // --- Success Response ---
-  return formatResponse(true, { message: "Invoice deleted successfully" }, "Invoice deleted successfully.", 200);
+  
+    try { await cacheDel(`admin:health-billing:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { message: "Invoice deleted successfully" }, "Invoice deleted successfully.", 200);
 }
 
 

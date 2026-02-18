@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/users/[id]/route.ts
 import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -36,6 +37,8 @@ async function handlePUT(
       data: updateData,
     });
 
+    
+    try { await cacheDel(`admin:users:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedUser, "User updated successfully", 200);
   } catch (error: any) {
     console.error("Error updating user:", error);
@@ -63,6 +66,8 @@ async function handleDELETE(
 
     await prisma.user.delete({ where: { id } });
 
+    
+    try { await cacheDel(`admin:users:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "User deleted successfully", 204);
   } catch (error: any) {
     console.error("Error deleting user:", error);

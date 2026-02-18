@@ -1,12 +1,11 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // app/api/content/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/**
- * GET: Paginated list of content with metadata summaries.
- */
+
 export const GET = withApiHandler(async (request: Request) => {
   const { searchParams } = new URL(request.url);
   
@@ -21,6 +20,13 @@ export const GET = withApiHandler(async (request: Request) => {
   };
 
   // 2. Fetch data and count in parallel
+  
+    const cacheKey = `admin:content:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const [content, totalItems] = await Promise.all([
     prisma.content.findMany({
       where,
@@ -53,6 +59,12 @@ export const GET = withApiHandler(async (request: Request) => {
     prisma.content.count({ where }),
   ]);
 
+  try {
+    if (content) {
+      await cacheSet(cacheKey, content, 60);
+    }
+  } catch (e) {}
+
   return formatResponse(true, {
     content,
     pagination: {
@@ -63,9 +75,7 @@ export const GET = withApiHandler(async (request: Request) => {
   });
 });
 
-/**
- * POST: Atomic content creation.
- */
+
 export const POST = withApiHandler(async (request: Request, context: any) => {
   const body = await request.json();
   const { title, type, publishDate, authorId, photoAlbumId, videoAlbumId, status } = body;
@@ -96,6 +106,8 @@ export const POST = withApiHandler(async (request: Request, context: any) => {
       },
     });
 
+    
+    try { await cacheDel(`admin:content:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newContent, "Content created successfully", 201);
   } catch (error: any) {
     // P2025: Record to connect not found (Slug or Author)
@@ -105,48 +117,12 @@ export const POST = withApiHandler(async (request: Request, context: any) => {
     throw error;
   }
 });
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-// import { NextResponse } from "next/server";
 
-// /**
-//  * @route GET /api/content
-//  * @description Fetches all content, including related photo and video albums.
-//  */
-
-// // --- Type Definitions for the Handlers ---
-
-// type RouteParams = {
-//   adminSlug: string;
-//   orderId: string;
-// };
-
-// type HandlerContext = {
-//   params: RouteParams;
-//   user?: any; // Replace with your actual User type if defined
-// };
-
-// export const GET = withApiHandler(async (request: Request, context: HandlerContext) => {
-//   const content = await prisma.content.findMany({
-//     include: {
-//       photoAlbum: {
-//         include: { photos: true },
-//       },
-//       videoAlbum: {
-//         include: { videos: true },
-//       },
-//     },
-//     orderBy: { createdAt: "desc" },
-//   });
 
 //   return formatResponse(true, content, null, 200);
 // });
 
-// /**
-//  * @route POST /api/content
-//  * @description Creates a new content item.
-//  */
+// 
 // export const POST = withApiHandler(async (request: Request, context: HandlerContext) => {
 
 //   const company = await prisma.company.findUnique({

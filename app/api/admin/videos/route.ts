@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/videos/route.ts
 import prisma from "@/server/db/prismadb";
 import { VideoStatus } from "@prisma/client";
@@ -14,10 +15,23 @@ async function handleGET(request: Request) {
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get("companyId");
 
-    const videos = await prisma.video.findMany({
+    
+    const cacheKey = `admin:videos:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const videos = await prisma.video.findMany({
       where: companyId ? { companyId } : {},
       orderBy: { createdAt: "desc" },
     });
+
+  try {
+    if (videos) {
+      await cacheSet(cacheKey, videos, 60);
+    }
+  } catch (e) {}
 
     return formatResponse(true, videos, "Videos fetched successfully", 200);
   } catch (error: any) {
@@ -67,6 +81,8 @@ async function handlePOST(request: Request) {
       } as any,
     });
 
+    
+    try { await cacheDel(`admin:videos:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newVideo, "Video created successfully", 201);
   } catch (error: any) {
     console.error("Error creating video:", error);

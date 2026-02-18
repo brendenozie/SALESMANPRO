@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // app/api/admin/clients/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -97,25 +98,7 @@ async function createClient(request: Request, context: { user?: any }) {
 export const GET = withApiHandler(listClients, { requireAuth: true });
 export const POST = withApiHandler(createClient, { requireAuth: true });
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
 
-// async function listClients(request: Request) {
-//   const { searchParams } = new URL(request.url);
-//   const companyId = searchParams.get("companyId") || "";
-
-//   if (!companyId) {
-//     return formatResponse(false, null, "Missing companyId", 400);
-//   }
-
-//   try {
-//     const clients = await prisma.client.findMany({
-//       where: { companyId },
-//       include: {
-//         user: { select: { name: true, email: true, phone: true } },
-//       },
-//     });
 
 //     const enriched = await Promise.all(
 //       clients.map(async (c) => {

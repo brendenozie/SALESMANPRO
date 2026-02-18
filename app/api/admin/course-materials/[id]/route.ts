@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import prisma from "@/server/db/prismadb";
@@ -29,22 +30,31 @@ const flattenMaterial = (m: any) => ({
   uploadedBy: undefined,
 });
 
-/**
- * GET: Single round-trip fetch
- */
+
 export const GET = withApiHandler(async (req, { params }) => {
+  
+    const cacheKey = `admin:course-materials:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const material = await prisma.courseMaterial.findUnique({
     where: { id: params.id },
     select: MATERIAL_SELECT,
   });
 
+  try {
+    if (material) {
+      await cacheSet(cacheKey, material, 60);
+    }
+  } catch (e) {}
+
   if (!material) return formatResponse(false, null, "Material not found", 404);
   return formatResponse(true, flattenMaterial(material));
 });
 
-/**
- * PATCH: Atomic update with guard rails
- */
+
 export const PATCH = withApiHandler(async (req, { params }) => {
   const { title, description, fileUrl, linkUrl, type, uploadedById } = await req.json();
 
@@ -68,6 +78,8 @@ export const PATCH = withApiHandler(async (req, { params }) => {
       select: MATERIAL_SELECT,
     });
 
+    
+    try { await cacheDel(`admin:course-materials:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, flattenMaterial(updated));
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
@@ -77,12 +89,12 @@ export const PATCH = withApiHandler(async (req, { params }) => {
   }
 });
 
-/**
- * DELETE: Atomic delete
- */
+
 export const DELETE = withApiHandler(async (req, { params }) => {
   try {
     await prisma.courseMaterial.delete({ where: { id: params.id } });
+    
+    try { await cacheDel(`admin:course-materials:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { deletedId: params.id }, "Deleted successfully");
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
@@ -95,31 +107,7 @@ export const DELETE = withApiHandler(async (req, { params }) => {
 
 // import { formatResponse } from "@/lib/formatResponse";
 // import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import prisma from "@/server/db/prismadb";
 
-// // Define the CourseMaterialType enum for validation
-// enum CourseMaterialType {
-//   DOCUMENT = "DOCUMENT",
-//   VIDEO = "VIDEO",
-//   LINK = "LINK",
-//   IMAGE = "IMAGE",
-//   AUDIO = "AUDIO",
-//   OTHER = "OTHER",
-// }
-
-// // GET /api/course-materials/[id]
-// // Fetches a single CourseMaterial by its ID.
-// export const GET = withApiHandler(async ( req, context ) => {
-  
-//   const { id } = context.params;
-
-//   const courseMaterial = await prisma.courseMaterial.findUnique({
-//     where: { id },
-//     include: {
-//       course: { select: { id: true, title: true } },
-//       uploadedBy: { select: { id: true, user: { select: { name: true, email: true } } } },
-//     },
-//   });
 
 //   if (!courseMaterial) {
 //     return formatResponse(false, null, "Course material not found", 404);

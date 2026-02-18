@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
@@ -7,7 +8,20 @@ export async function GET(request: Request) {
 
   try {
     // 1. Fetch Basic Metrics
-    const totalStaff = await prisma.staffProfile.count({ where: { companyId } });
+    
+    const cacheKey = `admin:reports:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const totalStaff = await prisma.staffProfile.count({ where: { companyId } });
+
+  try {
+    if (totalStaff) {
+      await cacheSet(cacheKey, totalStaff, 60);
+    }
+  } catch (e) {}
     const payrollAgg = await prisma.staffProfile.aggregate({
       where: { companyId },
       _sum: { salary: true }

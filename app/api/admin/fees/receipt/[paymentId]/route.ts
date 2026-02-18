@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import prisma from "@/server/db/prismadb";
@@ -18,7 +19,14 @@ export async function GET(
     if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     // 1. Find by ID - This is lightning fast because it's indexed
-    const feeRecord = await prisma.studentFeeRecord.findUnique({
+    
+    const cacheKey = `admin:receipt:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const feeRecord = await prisma.studentFeeRecord.findUnique({
       where: { id: params.recordId },
       include: {
         student: {
@@ -26,6 +34,12 @@ export async function GET(
         },
       },
     });
+
+  try {
+    if (feeRecord) {
+      await cacheSet(cacheKey, feeRecord, 60);
+    }
+  } catch (e) {}
 
     if (!feeRecord) return NextResponse.json({ error: "Record not found" }, { status: 404 });
 
@@ -39,9 +53,7 @@ export async function GET(
 
     if (!payment) return NextResponse.json({ error: "No payment found" }, { status: 404 });
 
-    /* ---------------------------
-       Compute totals
-    ---------------------------- */
+    
     const appliedFeeItems = feeRecord.appliedFeeItems as {
       amount: number;
     }[];
@@ -54,9 +66,7 @@ export async function GET(
     const amountPaid = feeRecord.amountPaid;
     const balance = totalFeesDue - amountPaid;
 
-    /* ---------------------------
-       PDF setup
-    ---------------------------- */
+    
     const doc = new jsPDF();
 
     const PRIMARY: [number, number, number] = [37, 99, 235];
@@ -64,18 +74,14 @@ export async function GET(
     const DANGER: [number, number, number] = [244, 63, 94];
     const TEXT: [number, number, number] = [31, 41, 55];
 
-    /* ---------------------------
-       Logo
-    ---------------------------- */
+    
     const logoPath = path.join(process.cwd(), "public", "school-logo.png");
     if (fs.existsSync(logoPath)) {
       const logo = fs.readFileSync(logoPath, "base64");
       doc.addImage(`data:image/png;base64,${logo}`, "PNG", 14, 10, 26, 26);
     }
 
-    /* ---------------------------
-       Header
-    ---------------------------- */
+    
     doc.setFontSize(18);
     doc.setTextColor(...PRIMARY);
     doc.text("PAYMENT RECEIPT", 105, 22, { align: "center" });
@@ -92,9 +98,7 @@ export async function GET(
 
     doc.line(14, 42, 196, 42);
 
-    /* ---------------------------
-       Student Info
-    ---------------------------- */
+    
     doc.setFontSize(11);
     doc.text("Student Information", 14, 52);
 
@@ -103,9 +107,7 @@ export async function GET(
     doc.text(`Email: ${feeRecord.student.user.email ?? "-"}`, 14, 66);
     doc.text(`Phone: ${feeRecord.student.user.phone ?? "-"}`, 14, 72);
 
-    /* ---------------------------
-       Payment Details
-    ---------------------------- */
+    
     doc.setFontSize(11);
     doc.text("Payment Details", 14, 86);
 
@@ -126,9 +128,7 @@ export async function GET(
 
     doc.line(14, 110, 196, 110);
 
-    /* ---------------------------
-       Totals
-    ---------------------------- */
+    
     let y = 122;
 
     doc.setTextColor(...TEXT);
@@ -161,9 +161,7 @@ export async function GET(
       });
     }
 
-    /* ---------------------------
-       Footer
-    ---------------------------- */
+    
     doc.setFontSize(9);
     doc.setTextColor(107, 114, 128);
     doc.text(
@@ -173,9 +171,7 @@ export async function GET(
       { align: "center" }
     );
 
-    /* ---------------------------
-       Return PDF
-    ---------------------------- */
+    
     const pdfBuffer = doc.output("arraybuffer");
 
     return new NextResponse(pdfBuffer, {

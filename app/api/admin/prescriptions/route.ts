@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/prescriptions/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -31,10 +32,7 @@ async function formatPrescriptionData(prescription: any) {
   };
 }
 
-/**
- * GET /api/admin/prescriptions
- * Supports ?companyId, ?searchTerm, ?filterStatus
- */
+
 export const GET = withApiHandler(async (req) => {
   const { searchParams } = new URL(req.url);
   const companyId = searchParams.get("companyId");
@@ -51,6 +49,13 @@ export const GET = withApiHandler(async (req) => {
     whereClause.status = filterStatus;
   }
 
+  
+    const cacheKey = `admin:prescriptions:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   let prescriptions = await prisma.prescription.findMany({
     where: whereClause,
     include: {
@@ -59,6 +64,12 @@ export const GET = withApiHandler(async (req) => {
     },
     orderBy: { issuedDate: "desc" },
   });
+
+  try {
+    if (prescriptions) {
+      await cacheSet(cacheKey, prescriptions, 60);
+    }
+  } catch (e) {}
 
   if (searchTerm) {
     const lower = searchTerm.toLowerCase();
@@ -77,9 +88,7 @@ export const GET = withApiHandler(async (req) => {
   return formatResponse(true, enriched, "Prescriptions fetched successfully");
 });
 
-/**
- * POST /api/admin/prescriptions
- */
+
 export const POST = withApiHandler(async (req) => {
   const body = await req.json();
   const {
@@ -124,5 +133,7 @@ export const POST = withApiHandler(async (req) => {
   });
 
   const formatted = await formatPrescriptionData(newPrescription);
-  return formatResponse(true, formatted, "Prescription created successfully", 201);
+  
+    try { await cacheDel(`admin:prescriptions:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, formatted, "Prescription created successfully", 201);
 });

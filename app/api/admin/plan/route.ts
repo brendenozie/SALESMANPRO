@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/plans/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -9,10 +10,7 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 // These routes handle fetching, creating, updating, and deleting plans.
 // =================================================================================================
 
-/**
- * GET /api/plans
- * Fetch all plans with support for pagination and filtering by companyId.
- */
+
 const getHandler = async (request: Request) => {
   
   const { searchParams } = new URL(request.url);
@@ -49,10 +47,7 @@ const getHandler = async (request: Request) => {
   );
 };
 
-/**
- * POST /api/plans
- * Create a new plan.
- */
+
 const postHandlerV1 = async (request: Request) => {
   
   const {
@@ -134,7 +129,9 @@ const postHandler = async (request: Request) => {
     },
   });
 
-  return NextResponse.json(newPlan, { status: 201 });
+  
+    try { await cacheDel(`admin:plan:${companyId || 'global'}:*`); } catch (e) {}
+    return NextResponse.json(newPlan, { status: 201 });
 };
 
 

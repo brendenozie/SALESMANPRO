@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/categories/route.ts  
 import prisma from '@/server/db/prismadb';
 

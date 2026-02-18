@@ -1,10 +1,9 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/**
- * POST Handler: Handles the restock transaction for a specific inventory item.
- */
+
 async function restockInventory(
   request: Request,
   { params }: { params: { adminSlug: string; id: string } }
@@ -76,7 +75,9 @@ async function restockInventory(
   ]);
 
   // --- Success Response ---
-  return formatResponse(true, {
+  
+    try { await cacheDel(`admin:restock:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, {
     message: `Successfully restocked ${parsedQuantity} units.`,
     newStock: updatedItem.quantity,
     logId: logEntry.id,

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse, NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -13,6 +14,13 @@ async function getDocuments(request: Request) {
   
 
 
+  
+    const cacheKey = `admin:documents:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const documents = await prisma.document.findMany({
     include: {
       uploader: {
@@ -23,6 +31,12 @@ async function getDocuments(request: Request) {
       },
     },
   });
+
+  try {
+    if (documents) {
+      await cacheSet(cacheKey, documents, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, { data: documents }, null, 200);
 }
@@ -51,7 +65,9 @@ async function createDocument(request: Request) {
     },
   });
 
-  return formatResponse(true, { data: newDocument }, null, 201);
+  
+    try { await cacheDel(`admin:documents:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { data: newDocument }, null, 201);
 }
 
 // Export handlers with standardized wrapper

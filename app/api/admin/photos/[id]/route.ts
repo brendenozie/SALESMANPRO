@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/photos/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -8,7 +9,20 @@ export const GET = withApiHandler(
   async (request: Request, { params }: { params: { id: string } }) => {
     const { id } = params;
 
-    const photo = await prisma.photo.findUnique({ where: { id } });
+    
+    const cacheKey = `admin:photos:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const photo = await prisma.photo.findUnique({ where: { id } });
+
+  try {
+    if (photo) {
+      await cacheSet(cacheKey, photo, 60);
+    }
+  } catch (e) {}
     if (!photo) {
       return formatResponse(false, null, "Photo not found", 404);
     }
@@ -36,7 +50,9 @@ export const PUT = withApiHandler(
         },
       });
 
-      return formatResponse(true, updatedPhoto, null, 200);
+      
+    try { await cacheDel(`admin:photos:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, updatedPhoto, null, 200);
     } catch (err: any) {
       if (err.code === "P2025") {
         return formatResponse(false, null, "Photo not found", 404);
@@ -53,7 +69,9 @@ export const DELETE = withApiHandler(
 
     try {
       await prisma.photo.delete({ where: { id } });
-      return formatResponse(true, null, null, 204);
+      
+    try { await cacheDel(`admin:photos:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, null, null, 204);
     } catch (err: any) {
       if (err.code === "P2025") {
         return formatResponse(false, null, "Photo not found", 404);

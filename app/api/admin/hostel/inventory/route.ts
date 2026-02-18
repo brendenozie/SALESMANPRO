@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
@@ -6,10 +7,23 @@ export async function GET(req: Request) {
   const companyId = searchParams.get("companyId");
 
   try {
-    const items = await prisma.hostelInventory.findMany({
+    
+    const cacheKey = `admin:inventory:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const items = await prisma.hostelInventory.findMany({
       where: { companyId },
       orderBy: { itemName: 'asc' }
     });
+
+  try {
+    if (items) {
+      await cacheSet(cacheKey, items, 60);
+    }
+  } catch (e) {}
 
     const data = items.map(item => {
       let status = "Healthy";

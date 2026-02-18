@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -194,16 +195,7 @@ export const GET = withApiHandler(handleGet);
 export const PUT = withApiHandler(handlePut);
 
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-// import { Prisma } from "@prisma/client";
-
-// /**
-//  * GET: Fetch detailed order info
-//  * Collapses company check, order fetch, and event name lookup into one query.
-//  */
-// async function handleGet(request: Request, context: { params: { adminSlug: string, orderId: string } }) {
+ {
 //   const { adminSlug, orderId } = context.params;
 
 //   const order = await prisma.customerOrder.findFirst({
@@ -263,10 +255,7 @@ export const PUT = withApiHandler(handlePut);
 //   return NextResponse.json(formattedOrder);
 // }
 
-// /**
-//  * PUT: Update status and restock inventory
-//  * All-or-nothing transactional logic.
-//  */
+// 
 // async function handlePut(request: Request, context: { params: { adminSlug: string, orderId: string } }) {
 //   const { adminSlug, orderId } = context.params;
 //   const { status } = await request.json();
@@ -317,30 +306,7 @@ export const PUT = withApiHandler(handlePut);
 // export const GET = withApiHandler(handleGet);
 // export const PUT = withApiHandler(handlePut);
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// // --- Type Definitions for the Handlers ---
-
-// type RouteParams = {
-//   adminSlug: string;
-//   orderId: string;
-// };
-
-// type HandlerContext = {
-//   params: RouteParams;
-//   user?: any; // Replace with your actual User type if defined
-// };
-
-// // --- Core Logic for GET request ---
-
-// async function handleGet(request: Request, context: HandlerContext): Promise<NextResponse> {
-//   const { adminSlug, orderId } = context.params;
-
-//   const company = await prisma.company.findUnique({
-//     where: { slug: adminSlug },
-//     select: { id: true }
-//   });
 
 //   if (!company) {
 //     return NextResponse.json({ message: "Company not found" }, { status: 404 });
@@ -450,14 +416,8 @@ export const PUT = withApiHandler(handlePut);
 
 // // --- Exported Route Handlers (Wrapped) ---
 
-// /**
-//  * GET /api/admin/[adminSlug]/orders/[orderId]
-//  * Fetches a single order's details.
-//  */
+// 
 // export const GET = withApiHandler(handleGet);
 
-// /**
-//  * PUT /api/admin/[adminSlug]/orders/[orderId]
-//  * Updates an order's status and handles related business logic like refunds.
-//  */
+// 
 // export const PUT = withApiHandler(handlePut);

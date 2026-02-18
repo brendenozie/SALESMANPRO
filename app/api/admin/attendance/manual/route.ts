@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -51,6 +52,8 @@ export async function POST(req: Request) {
       select: { id: true, checkInTime: true, checkOutTime: true, status: true }
     });
 
+    
+    try { await cacheDel(`admin:manual:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, attendance, "Manual override successful", 200);
 
   } catch (error: any) {

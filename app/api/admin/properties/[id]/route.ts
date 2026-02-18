@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/properties/[id]/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -8,6 +9,13 @@ import { formatResponse } from "@/lib/formatResponse";
 export const GET = withApiHandler(async (_req: Request, { params }: { params: { id: string } }) => {
   const { id } = params;
 
+  
+    const cacheKey = `admin:properties:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const property = await prisma.property.findUnique({
     where: { id },
     include: {
@@ -18,6 +26,12 @@ export const GET = withApiHandler(async (_req: Request, { params }: { params: { 
       },
     },
   });
+
+  try {
+    if (property) {
+      await cacheSet(cacheKey, property, 60);
+    }
+  } catch (e) {}
 
   if (!property) {
     return formatResponse(false, null, "Property not found", 404);
@@ -74,7 +88,9 @@ export const PUT = withApiHandler(async (request: Request, { params }: { params:
     },
   });
 
-  return formatResponse(true, updatedProperty, "Property updated successfully");
+  
+    try { await cacheDel(`admin:properties:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, updatedProperty, "Property updated successfully");
 });
 
 // DELETE /api/properties/:id
@@ -85,5 +101,7 @@ export const DELETE = withApiHandler(async (_req: Request, { params }: { params:
     where: { id },
   });
 
-  return formatResponse(true, null, "Property deleted successfully");
+  
+    try { await cacheDel(`admin:properties:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, null, "Property deleted successfully");
 });

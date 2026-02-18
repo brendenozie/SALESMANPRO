@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/admin/student-fee-records/[id]/route.ts
 
 import { getStudentFeeRecordById, updateStudentFeeRecord, deleteStudentFeeRecord, StudentFeeRecord } from '@/lib/data';

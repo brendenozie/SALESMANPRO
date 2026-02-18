@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -29,10 +30,23 @@ async function handleGetService(
   }
 
   // 1. Find Company
+  
+    const cacheKey = `admin:health-reports:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const company = await prisma.company.findUnique({
     where: { slug: adminSlug },
     select: { id: true }
   });
+
+  try {
+    if (company) {
+      await cacheSet(cacheKey, company, 60);
+    }
+  } catch (e) {}
 
   if (!company) {
     return formatResponse(false, null, "Company not found", 404);
@@ -161,7 +175,9 @@ async function handleCreateService(
   });
 
   // 5. Return Success Response
-  return formatResponse(true, { service: newService }, "Service created successfully", 201);
+  
+    try { await cacheDel(`admin:health-reports:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { service: newService }, "Service created successfully", 201);
 }
 
 // Wrap the core logic with the API handler middleware

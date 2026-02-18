@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -22,11 +23,24 @@ async function handleGet(request: Request, context: { user?: any }) {
   const companyId = context.user?.companyId;
   if (!companyId) return formatResponse(false, null, 'Unauthorized', 401);
 
+  
+    const cacheKey = `admin:communications:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const communications = await prisma.communication.findMany({
     where: { companyId },
     select: COMM_SELECT,
     orderBy: { createdAt: 'desc' },
   });
+
+  try {
+    if (communications) {
+      await cacheSet(cacheKey, communications, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, communications);
 }
@@ -64,44 +78,15 @@ async function handlePost(request: Request, context: { user?: any }) {
     select: COMM_SELECT,
   });
 
-  return formatResponse(true, newComm, 'Communication created', 201);
+  
+    try { await cacheDel(`admin:communications:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, newComm, 'Communication created', 201);
 }
 
 export const GET = withApiHandler(handleGet);
 export const POST = withApiHandler(handlePost);
 // import { NextResponse } from 'next/server';
-// import prisma from '@/server/db/prismadb';
-// // Import the unified API handler wrapper
-// import { withApiHandler } from '@/lib/hooks/withApiHandler';
-// import { CommunicationType } from '@prisma/client';
 
-// // Define the types for the handler context and request body
-// type HandlerContext = {
-//   params: {
-//     // The [adminSlug] dynamic segment is not used here,
-//     // as the companyId is taken from searchParams, but it's part of the route.
-//     adminSlug: string; 
-//   };
-//   user?: any; // Replace with your actual User type if available
-// };
-
-// type CommunicationBody = {
-//   subject: string;
-//   content: string;
-//   communicationType: string;
-//   status: 'DRAFT' | 'SCHEDULED' | 'SENT';
-//   recipients: string[];
-//   scheduledDate?: string;
-// };
-
-// // --- Core Logic for GET request ---
-// // The wrapper handles authentication and the try/catch block.
-// async function handleGet(request: Request, context: HandlerContext): Promise<NextResponse> {
-//   const { searchParams } = new URL(request.url);
-//   const companyId = searchParams.get('companyId');
-
-//   if (!companyId) {
-//     return NextResponse.json({ message: 'Missing companyId' }, { status: 400 });
 //   }
 
 //   const company = await prisma.company.findUnique({
@@ -206,14 +191,8 @@ export const POST = withApiHandler(handlePost);
 
 // // --- Exported Route Handlers (Wrapped) ---
 
-// /**
-//  * GET /api/admin/[adminSlug]/communications
-//  * Fetches all communications for a specific company.
-//  */
+// 
 // export const GET = withApiHandler(handleGet);
 
-// /**
-//  * POST /api/admin/[adminSlug]/communications
-//  * Creates a new communication.
-//  */
+// 
 // export const POST = withApiHandler(handlePost);

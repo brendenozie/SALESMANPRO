@@ -1,13 +1,11 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // app/api/conversations/[conversationId]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { Prisma } from "@prisma/client";
 
-/**
- * PATCH /api/conversations/[conversationId]
- * Atomic update for conversation properties.
- */
+
 async function handlePatch(request: Request, context: { params: { conversationId: string } }) {
   const { conversationId } = context.params;
   const { title } = await request.json();
@@ -33,6 +31,8 @@ async function handlePatch(request: Request, context: { params: { conversationId
       }
     });
 
+    
+    try { await cacheDel(`admin:conversations:${companyId || 'global'}:*`); } catch (e) {}
     return NextResponse.json(updated, { status: 200 });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -42,10 +42,7 @@ async function handlePatch(request: Request, context: { params: { conversationId
   }
 }
 
-/**
- * DELETE /api/conversations/[conversationId]
- * Atomic deletion with automated error handling.
- */
+
 async function handleDelete(_request: Request, context: { params: { conversationId: string } }) {
   const { conversationId } = context.params;
 
@@ -69,37 +66,7 @@ async function handleDelete(_request: Request, context: { params: { conversation
 export const PATCH = withApiHandler(handlePatch);
 export const DELETE = withApiHandler(handleDelete);
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// // --- Type Definitions ---
-// type RouteParams = {
-//   conversationId: string;
-// };
-
-// type HandlerContext = {
-//   params: RouteParams;
-//   user?: any; // replace with your actual user type
-// };
-
-// // -------------------- PATCH --------------------
-// // PATCH /api/conversations/[conversationId]
-// // Updates a conversation's properties (e.g., title).
-// async function handlePatch(
-//   request: Request,
-//   context: HandlerContext
-// ): Promise<NextResponse> {
-//   const { conversationId } = context.params;
-//   const body = await request.json();
-
-//   const { title, ...rest } = body;
-//   if (Object.keys(rest).length > 0) {
-//     console.warn("Unexpected fields in PATCH request for conversation:", rest);
-//   }
-
-//   const existingConversation = await prisma.conversation.findUnique({
-//     where: { id: conversationId },
-//   });
 
 //   if (!existingConversation) {
 //     return NextResponse.json({ message: "Conversation not found" }, { status: 404 });

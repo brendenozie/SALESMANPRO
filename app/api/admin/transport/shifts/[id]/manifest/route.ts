@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -8,7 +9,14 @@ export async function GET(
 ) {
   try {
     // 1. Fetch the shift to get the Route ID
-    const shift = await prisma.transportShift.findUnique({
+    
+    const cacheKey = `admin:manifest:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const shift = await prisma.transportShift.findUnique({
       where: { id: params.id },
       include: {
         route: true,
@@ -16,6 +24,12 @@ export async function GET(
         driver: true,
       }
     });
+
+  try {
+    if (shift) {
+      await cacheSet(cacheKey, shift, 60);
+    }
+  } catch (e) {}
 
     if (!shift) return formatResponse(false, null, "Shift not found", 404);
 

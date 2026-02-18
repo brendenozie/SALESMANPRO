@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -10,9 +11,7 @@ import { Prisma } from "@prisma/client"; // Import for handling specific Prisma 
 type RouteParams = { params: { id: string } };
 
 // --- PUT Handler Core Logic ---
-/**
- * Updates a specific order item's rider and/or the parent order's status.
- */
+
 async function handlePutOrderItem(req: Request, { params }: RouteParams) {
   const orderItemId = params.id;
   const { searchParams } = new URL(req.url);
@@ -53,6 +52,8 @@ async function handlePutOrderItem(req: Request, { params }: RouteParams) {
     });
 
     // withApiHandler wraps this result in a success formatResponse with status 200
+    
+    try { await cacheDel(`admin:orders:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Order item and associated order status updated successfully.", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

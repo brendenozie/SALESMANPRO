@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -11,10 +12,23 @@ export async function GET(req: Request) {
 
   try {
     // 1. Get all staff for this company
-    const staffMembers = await prisma.staffProfile.findMany({
+    
+    const cacheKey = `admin:payroll:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const staffMembers = await prisma.staffProfile.findMany({
       where: { companyId: companyId as string },
       include: { user: { select: { name: true } } }
     });
+
+  try {
+    if (staffMembers) {
+      await cacheSet(cacheKey, staffMembers, 60);
+    }
+  } catch (e) {}
 
     // 2. Generate or Update records for current month
     const payrollRows = staffMembers.map(staff => {

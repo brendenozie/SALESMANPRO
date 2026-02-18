@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -8,9 +9,7 @@ import { Prisma } from '@prisma/client';
 type RouteParams = { params: { id: string } };
 
 // --- PUT Handler Core Logic ---
-/**
- * Updates a specific product category.
- */
+
 async function handlePutCategory(request: Request, { params }: RouteParams) {
   const { id } = params;
   const body = await request.json();
@@ -32,6 +31,8 @@ async function handlePutCategory(request: Request, { params }: RouteParams) {
     });
 
     // withApiHandler will wrap this result in a success formatResponse with status 200
+    
+    try { await cacheDel(`admin:menu-categories:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedCategory, "Product category updated successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -50,9 +51,7 @@ async function handlePutCategory(request: Request, { params }: RouteParams) {
 }
 
 // --- DELETE Handler Core Logic ---
-/**
- * Deletes a specific product category.
- */
+
 async function handleDeleteCategory(request: Request, { params }: RouteParams) {
   const { id } = params;
 
@@ -62,6 +61,8 @@ async function handleDeleteCategory(request: Request, { params }: RouteParams) {
     });
 
     // withApiHandler will wrap this result in a success formatResponse with status 200
+    
+    try { await cacheDel(`admin:menu-categories:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, 'Product category deleted successfully', 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // app/api/deliveries/[deliveryId]/route.ts
 
 import prisma from "@/server/db/prismadb";
@@ -41,6 +42,8 @@ export const PUT = withApiHandler(async (request, context) => {
       }
     });
 
+    
+    try { await cacheDel(`admin:attendance:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, {
       ...updated,
       riderName: updated.rider?.name || 'Unassigned'
@@ -66,6 +69,8 @@ export const DELETE = withApiHandler(async (request, context) => {
         companyId: userCompanyId 
       },
     });
+    
+    try { await cacheDel(`admin:attendance:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Delivery deleted successfully.", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -74,23 +79,7 @@ export const DELETE = withApiHandler(async (request, context) => {
     throw error;
   }
 });
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-// import { DeliveryStatus, Prisma } from "@prisma/client";
 
-// /**
-//  * PUT /api/deliveries/[deliveryId]
-//  * Updates an existing delivery's details (e.g., status, rider assignment).
-//  */
-// export const PUT = withApiHandler(async (request, context) => {
-//   const deliveryId = context.params.deliveryId;
-//   const userCompanyId = context.user?.companyId;
-//   const body = await request.json();
-
-//   const deliveryToUpdate = await prisma.delivery.findUnique({
-//     where: { id: deliveryId },
-//   });
 
 //   // Security check: ensure the delivery belongs to the user's company
 //   if (!deliveryToUpdate || deliveryToUpdate.companyId !== userCompanyId) {
@@ -129,10 +118,7 @@ export const DELETE = withApiHandler(async (request, context) => {
 // });
 
 
-// /**
-//  * DELETE /api/deliveries/[deliveryId]
-//  * Deletes a delivery record.
-//  */
+// 
 // export const DELETE = withApiHandler(async (request, context) => {
 //   const deliveryId = context.params.deliveryId;
 //   const userCompanyId = context.user?.companyId;

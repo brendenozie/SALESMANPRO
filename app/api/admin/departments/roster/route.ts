@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -13,7 +14,14 @@ export async function GET(request: Request) {
   }
 
   try {
-    const roster = await prisma.staffProfile.findMany({
+    
+    const cacheKey = `admin:roster:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const roster = await prisma.staffProfile.findMany({
       where: {
         companyId,
         department: department,
@@ -29,6 +37,12 @@ export async function GET(request: Request) {
       },
       orderBy: { jobTitle: 'asc' }
     });
+
+  try {
+    if (roster) {
+      await cacheSet(cacheKey, roster, 60);
+    }
+  } catch (e) {}
 
     return NextResponse.json({ data: roster });
   } catch (error) {

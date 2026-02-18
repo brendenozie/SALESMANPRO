@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import prisma from "@/server/db/prismadb";
@@ -64,6 +65,13 @@ async function getEvent(request: Request, { params }: Params) {
 
   const { id } = params;
 
+  
+    const cacheKey = `admin:events:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const event = await prisma.event.findUnique({
     where: { id },
     include: {
@@ -71,6 +79,12 @@ async function getEvent(request: Request, { params }: Params) {
       company: { select: { id: true, name: true } },
     },
   });
+
+  try {
+    if (event) {
+      await cacheSet(cacheKey, event, 60);
+    }
+  } catch (e) {}
 
   if (!event) {
     return formatResponse(false, null, "Event not found", 404);
@@ -222,6 +236,8 @@ async function updateEvent(request: Request, { params }: Params) {
     });
 
     const responseData = transformEventResponse(updatedEvent);
+    
+    try { await cacheDel(`admin:events:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { data: responseData }, null, 200);
   } catch (error: any) {
     if (error.code === 'P2025') { // Record not found
@@ -254,6 +270,8 @@ async function deleteEvent(request: Request, { params }: Params) {
     const deletedEvent = await prisma.event.delete({
       where: { id },
     });
+    
+    try { await cacheDel(`admin:events:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { message: "Event deleted successfully", deletedId: deletedEvent.id }, null, 200);
   } catch (error: any) {
     if (error.code === 'P2003') { // Foreign key constraint failed (e.g., if EventRegistration exists)

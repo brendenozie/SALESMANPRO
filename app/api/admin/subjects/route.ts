@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 
 import { formatResponse } from "@/lib/formatResponse";
@@ -9,7 +10,14 @@ async function handleGET(request: Request) {
 
 
   try {
-    // const subjects = await prisma.subject.findMany({
+    // 
+    const cacheKey = `admin:subjects:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const subjects = await prisma.subject.findMany({
     //   include: {
     //     _count: {
     //       select: { courses: true }, // Count of courses under this subject
@@ -17,6 +25,12 @@ async function handleGET(request: Request) {
     //   },
     //   orderBy: { name: "asc" },
     // });
+
+  try {
+    if (subjects) {
+      await cacheSet(cacheKey, subjects, 60);
+    }
+  } catch (e) {}
 
     // const response = subjects.map(subject => ({
     //   id: subject.id,
@@ -52,6 +66,8 @@ async function handlePOST(request: Request) {
     //   data: { name, description, type },
     // });
 
+    
+    try { await cacheDel(`admin:subjects:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, {newSubject:""}, "Subject created successfully.");
   } catch (error: any) {
     console.error("Error creating subject:", error);

@@ -1,12 +1,11 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // // app/api/admin/clients/[id]/route.ts
 // app/api/admin/clients/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/* ----------------------------------
-   Shared Select (performance win)
------------------------------------ */
+
 const clientSelect = {
   id: true,
   createdAt: true,
@@ -20,9 +19,7 @@ const clientSelect = {
   },
 };
 
-/* ----------------------------------
-   GET — Client details
------------------------------------ */
+
 const getClient = async (
   _req: Request,
   context: { params: { id: string }; user?: any }
@@ -56,9 +53,7 @@ const getClient = async (
   });
 };
 
-/* ----------------------------------
-   PATCH — Update client
------------------------------------ */
+
 const updateClient = async (
   req: Request,
   context: { params: { id: string }; user?: any }
@@ -102,9 +97,7 @@ const updateClient = async (
   });
 };
 
-/* ----------------------------------
-   DELETE — Soft delete ready
------------------------------------ */
+
 const deleteClient = async (
   _req: Request,
   context: { params: { id: string }; user?: any }
@@ -124,28 +117,12 @@ const deleteClient = async (
   return formatResponse(true, null, "Client deleted successfully", 204);
 };
 
-/* ----------------------------------
-   Exports
------------------------------------ */
+
 export const GET = withApiHandler(getClient, { requireAuth: true });
 export const PATCH = withApiHandler(updateClient, { requireAuth: true });
 export const DELETE = withApiHandler(deleteClient, { requireAuth: true });
 
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-// import { Prisma } from "@prisma/client";
 
-// // Shared Logic: Fetch client with Aggregated Stats
-// async function getFullClientData(clientId: string, companyId: string) {
-//   const client = await prisma.client.findUnique({
-//     where: { id: clientId, companyId }, // Security: Scope to company
-//     include: {
-//       user: { select: { name: true, email: true, phone: true } },
-//       // Aggregating stats without fetching all order rows
-//       _count: { select: { requests: true } }, 
-//     },
-//   });
 
 //   if (!client) return null;
 
@@ -229,19 +206,7 @@ export const DELETE = withApiHandler(deleteClient, { requireAuth: true });
 // export const PATCH = withApiHandler(updateClient, { requireAuth: true });
 // export const DELETE = withApiHandler(deleteClient, { requireAuth: true });
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-
-// interface Params {
-//   context:{
-//     params: { id: string };
-//   }
-// }
-
-// async function getClient(_req: Request,  context : {
-//     params: { id: string };
-//   }) {
+ {
 //   const clientId = context.params.id;
 //   if (!clientId) {
 //     return formatResponse(false, null, "Missing client id", 400);

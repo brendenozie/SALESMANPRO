@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import jsPDF from "jspdf";
@@ -10,7 +11,14 @@ export async function GET(
 ) {
   try {
     // 1️⃣ Fetch fee record with required relations
-    const record = await prisma.studentFeeRecord.findUnique({
+    
+    const cacheKey = `admin:invoice:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const record = await prisma.studentFeeRecord.findUnique({
       where: { id: params.recordId },
       include: {
         student: {
@@ -28,6 +36,12 @@ export async function GET(
         },
       },
     });
+
+  try {
+    if (record) {
+      await cacheSet(cacheKey, record, 60);
+    }
+  } catch (e) {}
 
     if (!record) {
       return NextResponse.json({ error: "Invoice not found" }, { status: 404 });

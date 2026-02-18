@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -102,38 +103,7 @@ async function deleteSubmission(_request: Request, { params }: Params) {
 
 export const PATCH = withApiHandler(updateSubmission);
 export const DELETE = withApiHandler(deleteSubmission);
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-// import { Prisma } from "@prisma/client";
 
-// interface Params {
-//   params: { id: string };
-// }
-
-// export const PATCH = withApiHandler(async (request: Request, { params }: Params) => {
-//   const { id } = params;
-//   const body = await request.json();
-//   const { grade, comments, reviewedById, questionGrades } = body;
-
-//   const updateData = {
-//     grade,
-//     comments,
-//     reviewedById,
-//     gradedAt: new Date(),
-//     reviewedAt: new Date(),
-//   };
-
-//   try {
-//     // OPTIMIZATION: Fire all updates in a single Transaction Batch
-//     // This reduces total wait time to roughly the speed of the slowest single update
-//     const result = await prisma.$transaction(async (tx) => {
-//       if (questionGrades && Array.isArray(questionGrades)) {
-//         const updatePromises = questionGrades.map((qg) =>
-//           tx.assignmentQuestionResponse.update({
-//             where: { id: qg.responseId },
-//             data: { pointsAwarded: qg.pointsAwarded },
-//           })
 //         );
 //         await Promise.all(updatePromises);
 //       }
@@ -165,7 +135,9 @@ export const DELETE = withApiHandler(deleteSubmission);
 //   try {
 //     // OPTIMIZATION: Atomic Delete (removes findUnique check)
 //     await prisma.assignmentSubmission.delete({ where: { id } });
-//     return formatResponse(true, { deletedId: id }, "Submission deleted.", 200);
+//     
+    try { await cacheDel(`admin:assignment-submissions:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { deletedId: id }, "Submission deleted.", 200);
 //   } catch (error) {
 //     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
 //       return formatResponse(false, null, "Submission not found.", 404);
@@ -173,37 +145,7 @@ export const DELETE = withApiHandler(deleteSubmission);
 //     throw error;
 //   }
 // });
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
 
-// interface Params {
-//   params: { id: string };
-// }
-
-// // PATCH: Update grade and feedback
-// async function updateSubmission(request: Request, { params }: Params) {
-//   const { id } = params;
-//   const body = await request.json();
-//   const { grade, comments, reviewedById, questionGrades } = body;
-
-//   const updateData: any = {
-//     grade,
-//     comments,
-//     reviewedById,
-//     gradedAt: new Date(),
-//     reviewedAt: new Date(),
-//   };
-
-//   try {
-//     const updated = await prisma.$transaction(async (tx) => {
-//       // 1. Update individual question points if provided
-//       if (questionGrades && Array.isArray(questionGrades)) {
-//         for (const qg of questionGrades) {
-//           await tx.assignmentQuestionResponse.update({
-//             where: { id: qg.responseId },
-//             data: { pointsAwarded: qg.pointsAwarded }
-//           });
 //         }
 //       }
 

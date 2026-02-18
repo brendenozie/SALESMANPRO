@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // // app/api/admin/[adminSlug]/tickets/[ticketProductId]/route.ts
 
 // app/api/admin/[adminSlug]/tickets/[ticketProductId]/route.ts
@@ -117,7 +118,9 @@ export const PUT = withApiHandler(async (request, { params }) => {
     return formatResponse(false, null, "Ticket type not found", 404);
   }
 
-  return formatResponse(true, null, "Ticket type updated successfully");
+  
+    try { await cacheDel(`admin:company-tickets:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, null, "Ticket type updated successfully");
 });
 
 // --------------------
@@ -147,15 +150,7 @@ export const DELETE = withApiHandler(async (_, { params }) => {
 });
 
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-// import { Prisma } from "@prisma/client";
-
-// /**
-//  * GET: Fetch ticket details with actual sales metrics
-//  */
-// export const GET = withApiHandler(async (request, { params }) => {
+ => {
 //   const { adminSlug, ticketProductId } = params;
 
 //   const ticketProduct = await prisma.marketplaceListings.findFirst({
@@ -200,9 +195,7 @@ export const DELETE = withApiHandler(async (_, { params }) => {
 //   });
 // });
 
-// /**
-//  * PUT: Atomic Update
-//  */
+// 
 // export const PUT = withApiHandler(async (request, { params }) => {
 //   const { adminSlug, ticketProductId } = params;
 //   const body = await request.json();
@@ -232,9 +225,7 @@ export const DELETE = withApiHandler(async (_, { params }) => {
 //   }
 // });
 
-// /**
-//  * DELETE: Scoped Deletion
-//  */
+// 
 // export const DELETE = withApiHandler(async (request, { params }) => {
 //   const { adminSlug, ticketProductId } = params;
 
@@ -255,13 +246,7 @@ export const DELETE = withApiHandler(async (_, { params }) => {
 //   }
 // });
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-
-// // GET /api/admin/[adminSlug]/tickets/[ticketProductId]
-// export const GET = withApiHandler(
-//   async (request, { params }) => {
+ => {
 //     const { adminSlug, ticketProductId } = params;
 
 //     const company = await prisma.company.findUnique({

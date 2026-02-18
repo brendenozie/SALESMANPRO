@@ -1,10 +1,9 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/**
- * GET Handler: Fetches appointment trends data based on a specified time period.
- */
+
 async function getAppointmentTrends(
   request: Request,
   { params }: { params: { adminSlug: string } }
@@ -17,10 +16,23 @@ async function getAppointmentTrends(
   const endDateParam = searchParams.get("endDate");
 
   // 1. Find Company
+  
+    const cacheKey = `admin:appointment-trends:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const company = await prisma.company.findUnique({
     where: { slug: adminSlug },
     select: { id: true }
   });
+
+  try {
+    if (company) {
+      await cacheSet(cacheKey, company, 60);
+    }
+  } catch (e) {}
 
   if (!company) {
     // Use formatResponse for expected domain-specific errors (like 404)

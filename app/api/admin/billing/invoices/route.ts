@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -32,6 +33,13 @@ export const GET = withApiHandler(async (req, { user }) => {
   }
 
   // ✅ Run in parallel
+  
+    const cacheKey = `admin:invoices:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const [totalInvoiceItems, invoices] = await prisma.$transaction([
     prisma.patientInvoices.count({ where: whereClause }),
     prisma.patientInvoices.findMany({
@@ -57,6 +65,12 @@ export const GET = withApiHandler(async (req, { user }) => {
       },
     }),
   ]);
+
+  try {
+    if (totalInvoiceItems) {
+      await cacheSet(cacheKey, totalInvoiceItems, 60);
+    }
+  } catch (e) {}
 
   const invoicesData = invoices.map((inv) => {
     const issued = inv.invoiceDate;
@@ -148,13 +162,7 @@ export const POST = withApiHandler(async (req, { user }) => {
 
   return formatResponse(true, newInvoice, "Invoice created successfully", 201);
 });
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-
-// const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
-
-// export const GET = withApiHandler(async (req, { user }) => {
+ => {
 //   const { searchParams } = new URL(req.url);
 //   const companyId = searchParams.get("companyId");
 //   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
@@ -241,14 +249,7 @@ export const POST = withApiHandler(async (req, { user }) => {
 //   return formatResponse(true, newInvoice, "Invoice created", 201);
 // });
 // import { NextResponse } from "next/server";
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-
-// const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
-
-// // --- GET /api/admin/[slug]/billing/invoices
-// export const GET = withApiHandler(async (req, { params, user }) => {
+ => {
   
 //   if (!user) {
 //     return formatResponse(false, "Unauthorized", 'error', 401);

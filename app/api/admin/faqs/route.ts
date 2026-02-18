@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 import { PrismaClient } from '@prisma/client';
@@ -22,12 +23,25 @@ async function getFaqs(request: Request) {
     return formatResponse(false, null, 'Company ID is required to fetch FAQs.', 400);
   }
 
+  
+    const cacheKey = `admin:faqs:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const faqs = await prisma.fAQ.findMany({
     where: { companyId },
     orderBy: {
       createdAt: 'asc'
     }
   });
+
+  try {
+    if (faqs) {
+      await cacheSet(cacheKey, faqs, 60);
+    }
+  } catch (e) {}
 
   // The original response returned { faqs: [...] }, so we retain that structure for consistency.
   return formatResponse(true, { faqs }, null, 200);
@@ -57,7 +71,9 @@ async function createFaq(request: Request) {
   });
 
   // The original response returned { newFaq: {...} }
-  return formatResponse(true, { newFaq }, null, 201);
+  
+    try { await cacheDel(`admin:faqs:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { newFaq }, null, 201);
 }
 
 // Export the refactored handlers wrapped in withApiHandler

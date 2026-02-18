@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // app/api/course-assignments/[id]/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -56,12 +57,7 @@ export const POST = withApiHandler(
   }
 );
 
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-
-
-// export const POST = withApiHandler(async (req: Request, { params }: { params: { id: string } }) => {
+ => {
 //   const { questions } = await req.json(); // Expecting an array of questions
 
 //   // Example: Delete old questions and replace with new ones (Syncing)
@@ -78,13 +74,7 @@ export const POST = withApiHandler(
 //   return formatResponse(true, null, "Questions synced successfully", 200);
 // });
 
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-
-// // ---------------- GET ----------------
-// // /api/course-assignments/[id]
-// const getHandler = async (_req: Request, { params }: { params: { id: string } }) => {
+ => {
 //   const { id } = params;
 
 //   const assignment = await prisma.courseAssignment.findUnique({
@@ -216,7 +206,9 @@ export const POST = withApiHandler(
 //     totalSubmissions: updatedAssignment._count.submissions,
 //   };
 
-//   return formatResponse(true, responseData, null, 200);
+//   
+    try { await cacheDel(`admin:questions:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, responseData, null, 200);
 // };
 // export const PATCH = withApiHandler(patchHandler);
 
@@ -232,7 +224,9 @@ export const POST = withApiHandler(
 
 //   try {
 //     const deletedAssignment = await prisma.courseAssignment.delete({ where: { id } });
-//     return formatResponse(true, { deletedId: deletedAssignment.id }, "Course assignment deleted successfully", 200);
+//     
+    try { await cacheDel(`admin:questions:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { deletedId: deletedAssignment.id }, "Course assignment deleted successfully", 200);
 //   } catch (error: any) {
 //     if (error.code === "P2003") {
 //       return formatResponse(false, null, "Cannot delete assignment: It has associated submissions.", 409);

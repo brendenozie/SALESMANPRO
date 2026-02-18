@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -10,7 +11,14 @@ const getHandler = async (request: Request) => {
 
   try {
     // 1. Find Parent and their children with their active Classroom
-    const parent = await prisma.parent.findUnique({
+    
+    const cacheKey = `admin:parent:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const parent = await prisma.parent.findUnique({
       where: { userId: parentUserId },
       include: {
         children: {
@@ -54,6 +62,12 @@ const getHandler = async (request: Request) => {
         }
       }
     });
+
+  try {
+    if (parent) {
+      await cacheSet(cacheKey, parent, 60);
+    }
+  } catch (e) {}
 
     if (!parent) return formatResponse(false, null, "Parent not found", 404);
 

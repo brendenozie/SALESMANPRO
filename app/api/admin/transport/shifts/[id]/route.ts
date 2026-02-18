@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { formatResponse } from "@/lib/formatResponse";
 import prisma from "@/server/db/prismadb";
 import { NextResponse } from "next/server";
@@ -20,6 +21,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       });
     }
 
+    
+    try { await cacheDel(`admin:shifts:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedShift, `Shift marked as ${status}`, 200);
   } catch (error) {
     return formatResponse(false, null, "Update failed", 500);

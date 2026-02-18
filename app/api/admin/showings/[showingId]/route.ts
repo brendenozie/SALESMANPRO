@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/showings/[showingId]/route.ts
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -10,10 +11,23 @@ async function getShowing(req: Request, { params }: { params: { showingId: strin
   const { showingId } = params;
 
   try {
-    const showing = await prisma.showing.findUnique({
+    
+    const cacheKey = `admin:showings:${'global' || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const showing = await prisma.showing.findUnique({
       where: { id: showingId },
       // include related data if needed
     });
+
+  try {
+    if (showing) {
+      await cacheSet(cacheKey, showing, 60);
+    }
+  } catch (e) {}
 
     if (!showing) return formatResponse(false, null, "Showing not found", 404);
     return formatResponse(true, showing, "Showing fetched successfully", 200);
@@ -73,6 +87,8 @@ async function updateShowing(req: Request, { params }: { params: { showingId: st
       data: updateData,
     });
 
+    
+    try { await cacheDel(`admin:showings:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedShowing, "Showing updated successfully", 200);
   } catch (error: any) {
     console.error(`Error updating showing with ID ${showingId}:`, error);
@@ -90,6 +106,8 @@ async function deleteShowing(req: Request, { params }: { params: { showingId: st
 
   try {
     await prisma.showing.delete({ where: { id: showingId } });
+    
+    try { await cacheDel(`admin:showings:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Showing deleted successfully", 200);
   } catch (error: any) {
     console.error(`Error deleting showing with ID ${showingId}:`, error);

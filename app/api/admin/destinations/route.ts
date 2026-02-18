@@ -1,13 +1,11 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from "@/server/db/prismadb";
 import { verifyAuth } from '@/lib/verifyAuth';
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-/**
- * API Route for handling multiple destinations.
- * Path: /api/destinations
- */
+
 
 // =======================================================================
 // GET: Fetch all destinations with their associated location data
@@ -19,12 +17,25 @@ async function getDestinations(request: Request) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
 
+  
+    const cacheKey = `admin:destinations:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const destinations = await prisma.destination.findMany({
     where: { companyId: companyId },
     include: {
       location: true,
     },
   });
+
+  try {
+    if (destinations) {
+      await cacheSet(cacheKey, destinations, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, { data: destinations }, null, 200);
 }
@@ -80,7 +91,9 @@ async function createDestination(req: Request) {
     },
   });
 
-  return formatResponse(true, { data: newDestination }, null, 201);
+  
+    try { await cacheDel(`admin:destinations:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, { data: newDestination }, null, 201);
 }
 
 // Export handlers with standardized wrapper

@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
@@ -8,11 +9,24 @@ export async function GET(req: Request) {
 
   if (!companyId) return formatResponse(false, null, "Company ID required", 400);
 
+  
+    const cacheKey = `admin:fuel:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
   const logs = await prisma.transportFuelLog.findMany({
     where: { vehicle: { companyId } },
     include: { vehicle: { select: { registration: true, type: true } } },
     orderBy: { date: 'desc' }
   });
+
+  try {
+    if (logs) {
+      await cacheSet(cacheKey, logs, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, logs, "Fuel logs retrieved", 200);
 }
@@ -34,6 +48,8 @@ export async function POST(req: Request) {
       include: { vehicle: true }
     });
 
+    
+    try { await cacheDel(`admin:fuel:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, log, "Refuel event recorded", 201);
   } catch (error: any) {
     return formatResponse(false, null, error.message, 500);

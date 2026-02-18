@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { NextResponse } from "next/server";
 
@@ -12,7 +13,14 @@ export async function GET(
 
   try {
     // 1. Fetch the Educator AND their associated companyId
-    const educator = await prisma.educator.findUnique({
+    
+    const cacheKey = `admin:educator:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+  const educator = await prisma.educator.findUnique({
       where: { userId: userId },
       include: {
         user: true,
@@ -28,6 +36,12 @@ export async function GET(
         },
       }
     });
+
+  try {
+    if (educator) {
+      await cacheSet(cacheKey, educator, 60);
+    }
+  } catch (e) {}
 
     if (!educator) return NextResponse.json({ error: "Educator not found" }, { status: 404 });
 

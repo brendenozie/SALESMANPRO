@@ -1,3 +1,4 @@
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // // // app/api/custom-domain/route.ts
 
 // app/api/custom-domain/route.ts
@@ -8,15 +9,15 @@ import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
 import { z } from "zod";
 
-/* -------------------------------------------------------------------------- */
-/*                                CONFIG                                      */
-/* -------------------------------------------------------------------------- */
+
+
+
 
 const EXPECTED_TARGET = "app.your-production-domain.com";
 
-/* -------------------------------------------------------------------------- */
-/*                               VALIDATION                                   */
-/* -------------------------------------------------------------------------- */
+
+
+
 
 const DomainSchema = z.object({
   domain: z
@@ -29,12 +30,12 @@ const DomainSchema = z.object({
     ),
 });
 
-/* -------------------------------------------------------------------------- */
-/*                                    POST                                    */
-/* -------------------------------------------------------------------------- */
+
+
+
 
 export async function POST(req: NextRequest) {
-  /* ----------------------------- Auth check ----------------------------- */
+  
 
   const auth = await verifyAuth(req);
   if (!auth.success) {
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
     return formatResponse(false, null, "User not found", 404);
   }
 
-  /* ----------------------------- Body parse ----------------------------- */
+  
 
   const body = await req.json();
   const parsed = DomainSchema.safeParse(body);
@@ -63,7 +64,7 @@ export async function POST(req: NextRequest) {
   // Normalize domain
   const domain = parsed.data.domain.toLowerCase().trim();
 
-  /* ---------------------- Prevent duplicate usage ----------------------- */
+  
 
   const existingDomain = await prisma.company.findFirst({
     where: { domain },
@@ -79,7 +80,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  /* ------------------------- DNS Verification --------------------------- */
+  
 
   let cnameRecords: string[] = [];
   let txtRecords: string[] = [];
@@ -131,7 +132,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  /* -------------------------- Update Company ---------------------------- */
+  
 
   const company = await prisma.company.findFirst({
     where: { userId: user.id },
@@ -147,7 +148,9 @@ export async function POST(req: NextRequest) {
     data: { domain },
   });
 
-  return formatResponse(
+  
+    try { await cacheDel(`admin:custom-domain:${'global' || 'global'}:*`); } catch (e) {}
+    return formatResponse(
     true,
     { domain },
     `${domain} connected successfully!`,
@@ -163,9 +166,7 @@ export async function POST(req: NextRequest) {
 // const DNS_TIMEOUT = 5000; // 5 seconds
 // const EXPECTED_TARGET = "app.your-production-domain.com";
 
-// /**
-//  * Helper to resolve DNS with a timeout guard
-//  */
+// 
 // async function resolveWithTimeout<T>(promise: Promise<T>): Promise<T> {
 //   const timeout = new Promise<never>((_, reject) =>
 //     setTimeout(() => reject(new Error("DNS_TIMEOUT")), DNS_TIMEOUT)
