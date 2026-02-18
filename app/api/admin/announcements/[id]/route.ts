@@ -217,7 +217,7 @@ export const DELETE = withApiHandler(async (request, context) => {
   }
 
   
-    try { await cacheDel(`admin:announcements:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:announcements:${user.companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { deletedId: id }, "Announcement deleted", 200);
 });
 // import { NextResponse } from "next/server";

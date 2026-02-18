@@ -18,6 +18,10 @@ const updateCampaign = async (request: Request, context: { params: { id: string 
     where: { id },
     data: updateData,
   });
+  
+
+  // Invalidate relevant caches
+  try { await cacheDel(`admin:campaigns:*`); } catch (e) {}
 
   return NextResponse.json(updatedCampaign, { status: 200 });
 };
@@ -30,6 +34,9 @@ const deleteCampaign = async (_request: Request, context: { params: { id: string
   await prisma.campaign.delete({
     where: { id },
   });
+
+  // Invalidate relevant caches
+  try { await cacheDel(`admin:campaigns:*`); } catch (e) {}
 
   return new NextResponse(null, { status: 204 }); // No Content
 };

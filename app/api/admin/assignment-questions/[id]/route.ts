@@ -89,7 +89,7 @@ export const PATCH = withApiHandler(async (request, context) => {
     const cacheKey = `examQuestion:${id}`;
     await cacheSet(cacheKey, flatten(updated), 120); // Update cache with new data
     
-    try { await cacheDel(`admin:assignment-questions:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:assignment-questions:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, flatten(updated), null, 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

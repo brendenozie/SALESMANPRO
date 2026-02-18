@@ -46,20 +46,38 @@ const getCases = async (req: Request, context: { user?: any }) => {
   const limit = Number(searchParams.get("limit") ?? 20);
   const skip = (page - 1) * limit;
 
+    const status = searchParams.get("status");
+
+    const where: any = {
+      companyId: context.user?.companyId,
+      ...(status && { status }),
+    };
+
+    const cacheKey = `admin:cases:${status || 'all'}:page:${page}:limit:${limit}`;
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return NextResponse.json(cached, { status: 200 });
+  } catch (e) {}
+
+    // OPTIMIZATION: Run count and fetch in parallel
+
   const [cases, total] = await Promise.all([
     prisma.case.findMany({
-      where: {
-        companyId: context.user.companyId,
-      },
+      where: where,
       skip,
       take: limit,
       orderBy: { createdAt: "desc" },
       select: caseSelect,
     }),
     prisma.case.count({
-      where: { companyId: context.user.companyId },
+      where: where,
     }),
   ]);
+
+  // Cache the result for 1 minute
+  try {
+    await cacheSet(cacheKey, { data: cases, meta: { page, limit, total } }, 60);
+  } catch (e) {}
 
   return NextResponse.json(
     {
@@ -109,6 +127,10 @@ const createCase = async (req: Request, context: { user?: any }) => {
     select: caseSelect,
   });
 
+    // Invalidate relevant caches
+  try {    await cacheDel(`admin:cases:*`); // Invalidate all cases list caches
+  } catch (e) {}
+
   return NextResponse.json(newCase, { status: 201 });
 };
 
@@ -124,7 +146,7 @@ export const POST = withApiHandler(createCase, {
 });
 
 // import { NextResponse } from "next/server";
- => {
+//  => {
 //   const { searchParams } = new URL(req.url);
 //   const companyId = context.user?.companyId;
   
@@ -212,7 +234,7 @@ export const POST = withApiHandler(createCase, {
 // export const GET = withApiHandler(getCases, { requireAuth: true, requireRateLimit: true });
 // export const POST = withApiHandler(createCase, { requireAuth: true, requireRateLimit: true });
 // import { NextResponse } from "next/server";
- => {
+//  => {
 //   const cases = await prisma.case.findMany({
 //     include: {
 //       client: {

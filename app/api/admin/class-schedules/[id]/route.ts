@@ -27,12 +27,24 @@ const getClassSchedule = async (_req: Request, context: { params: { id: string, 
   const { id, companyId } = context.params;
   // const companyId = context.user?.companyId;
 
+  const cacheKey = `admin:classSchedule:${id}`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, null, 200);
+  } catch (e) {}
+
   const schedule = await prisma.classSchedule.findUnique({
     where: { id, companyId }, // Security: Scoped to company
     select: SCHEDULE_SELECT,
   });
 
   if (!schedule) return formatResponse(false, null, "Schedule not found", 404);
+
+  // Cache the result for 1 minute
+  try {
+    await cacheSet(cacheKey, schedule, 60);
+  } catch (e) {}
 
   return formatResponse(true, schedule, null, 200);
 };
@@ -58,6 +70,8 @@ const updateClassSchedule = async (req: Request, context: { params: { id: string
   delete updateData.companyId;
   delete updateData.id;
 
+  const cacheKey = `admin:classSchedule:${id}`;
+    
   try {
     // OPTIMIZATION: Atomic update with companyId scoping
     const updated = await prisma.classSchedule.update({
@@ -65,6 +79,11 @@ const updateClassSchedule = async (req: Request, context: { params: { id: string
       data: updateData,
       select: SCHEDULE_SELECT,
     });
+
+    // Invalidate cache for this specific schedule
+    try {
+      await cacheDel(cacheKey);
+    } catch (e) {}
 
     return formatResponse(true, updated, "Schedule updated", 200);
   } catch (error) {
@@ -83,6 +102,10 @@ const deleteClassSchedule = async (_req: Request, context: { params: { id: strin
 
   try {
     await prisma.classSchedule.delete({ where: { id, companyId } });
+    // Invalidate cache for this specific schedule
+    try {
+      await cacheDel(`admin:classSchedule:${id}`);
+    } catch (e) {}
     return formatResponse(true, { id }, "Deleted successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

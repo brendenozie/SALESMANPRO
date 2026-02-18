@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb"; 
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { Prisma } from '@prisma/client';
+import { formatResponse } from "@/lib/formatResponse";
 
 const DEFAULT_SELECT = {
   id: true,
@@ -26,7 +27,7 @@ const DEFAULT_SELECT = {
 
 async function handleGet(_req: Request, context: { params: { id: string } }) {
   
-    const cacheKey = `admin:company-locations:${'global' || 'global'}:all`;
+    const cacheKey = `admin:company-locations:${context.params.id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);

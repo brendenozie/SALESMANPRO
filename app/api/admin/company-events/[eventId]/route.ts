@@ -9,6 +9,12 @@ import { Prisma } from "@prisma/client";
 async function handleGet(request: Request, context: { params: { adminSlug: string, eventId: string } }) {
   const { adminSlug, eventId } = context.params;
 
+  const cacheKey = `admin:company-events:${adminSlug || 'global'}:${eventId}`;
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   const event = await prisma.event.findFirst({
     where: { 
       id: eventId, 
@@ -17,6 +23,12 @@ async function handleGet(request: Request, context: { params: { adminSlug: strin
   });
 
   if (!event) return formatResponse(false, null, "Event not found", 404);
+
+  try {
+    await cacheSet(cacheKey, event, 60);
+  }
+  catch (e) {}
+
   return formatResponse(true, event);
 }
 
@@ -40,7 +52,7 @@ async function handlePut(request: Request, context: { params: { adminSlug: strin
     });
 
     
-    try { await cacheDel(`admin:company-events:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:company-events:${adminSlug || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedEvent, "Event updated successfully");
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -63,7 +75,7 @@ async function handleDelete(request: Request, context: { params: { adminSlug: st
     });
 
     
-    try { await cacheDel(`admin:company-events:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:company-events:${adminSlug || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Event deleted successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

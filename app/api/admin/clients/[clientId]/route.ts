@@ -30,6 +30,12 @@ const getClient = async (
     return formatResponse(false, null, "Missing client id", 400);
   }
 
+  const cacheKey = `admin:client:${clientId}`;
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   const client = await prisma.client.findFirst({
     where: {
       id: clientId,
@@ -41,6 +47,11 @@ const getClient = async (
   if (!client) {
     return formatResponse(false, null, "Client not found", 404);
   }
+
+  // Cache the result for 1 minute
+  try {
+    await cacheSet(cacheKey, client, 60);
+  } catch (e) {}
 
   return formatResponse(true, {
     id: client.id,
@@ -86,6 +97,12 @@ const updateClient = async (
     },
   });
 
+  // Invalidate cache for this specific client
+  const cacheKey = `admin:client:${clientId}`;
+  try {
+    await cacheDel(cacheKey);
+  } catch (e) {}
+
   return formatResponse(true, {
     id: clientId,
     name: updatedUser.name,
@@ -113,6 +130,12 @@ const deleteClient = async (
       companyId: context.user.companyId,
     },
   });
+
+  // Invalidate cache for this specific client
+  const cacheKey = `admin:client:${clientId}`;
+  try {
+    await cacheDel(cacheKey);
+  } catch (e) {}
 
   return formatResponse(true, null, "Client deleted successfully", 204);
 };
@@ -206,7 +229,7 @@ export const DELETE = withApiHandler(deleteClient, { requireAuth: true });
 // export const PATCH = withApiHandler(updateClient, { requireAuth: true });
 // export const DELETE = withApiHandler(deleteClient, { requireAuth: true });
 // import { NextResponse } from "next/server";
- {
+ 
 //   const clientId = context.params.id;
 //   if (!clientId) {
 //     return formatResponse(false, null, "Missing client id", 400);
@@ -292,12 +315,10 @@ export const DELETE = withApiHandler(deleteClient, { requireAuth: true });
 
 //   try {
 //     await prisma.client.delete({ where: { id: clientId } });
+//     // Invalidate cache for this specific client
+//     try {
+//       await cacheDel(cacheKey);
+//     } catch (e) {}
 //     return formatResponse(true, null, "Client deleted successfully", 204);
 //   } catch (err: any) {
-//     return formatResponse(false, null, err.message, 500);
-//   }
-// }
-
-// export const GET = withApiHandler(getClient, { requireAuth: true });
-// export const PATCH = withApiHandler(updateClient, { requireAuth: true });
-// export const DELETE = withApiHandler(deleteClient, { requireAuth: true });
+//     return formatResponse(fa

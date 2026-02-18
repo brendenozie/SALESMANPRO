@@ -18,6 +18,12 @@ async function getRequests(req: Request) {
     ...(agentId && { requesterId: agentId }), // Apply agent filter if provided
   };
 
+  const cacheKey = `admin:client-product-request:${agentId || 'global'}:limit:${limit}:offset:${offset}`;
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   try {
     // 2. Parallelize Data and Count queries
     const [productRequests, totalCount] = await Promise.all([
@@ -50,6 +56,11 @@ async function getRequests(req: Request) {
       status: req.status || "Pending",
       requestedAt: req.createdAt,
     }));
+
+    // 4. Cache the result for 1 minute    
+    try {
+      await cacheSet(cacheKey, { requests, totalCount }, 60);
+    } catch (e) {}
 
     return formatResponse(true, {
       requests,

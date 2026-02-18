@@ -5,6 +5,11 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // ✅ GET all campaigns
 const getCampaigns = async (_request: Request, _context: { user?: any }) => {
+
+  try {    const cached = await cacheGet(`admin:campaigns:all`);
+    if (cached) return NextResponse.json(cached, { status: 200 });
+  } catch (e) {}
+
   const campaigns = await prisma.campaign.findMany({
     include: {
       donations: true, // include related donations
@@ -13,6 +18,11 @@ const getCampaigns = async (_request: Request, _context: { user?: any }) => {
       createdAt: "desc", // newest first
     },
   });
+
+  // Cache the result for 1 minute
+  try {
+    await cacheSet(`admin:campaigns:all`, campaigns, 60);
+  } catch (e) {}
 
   return NextResponse.json(campaigns, { status: 200 });
 };
@@ -52,6 +62,9 @@ const createCampaign = async (request: Request, _context: { user?: any }) => {
       status,
     },
   });
+
+  // Invalidate relevant caches
+  try { await cacheDel(`admin:campaigns:*`); } catch (e) {}
 
   return NextResponse.json(newCampaign, { status: 201 });
 };

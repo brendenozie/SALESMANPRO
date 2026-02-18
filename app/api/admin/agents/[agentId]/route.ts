@@ -8,7 +8,7 @@ import { Prisma } from "@prisma/client";
 export const PUT = withAuthAndRateLimit(async (request, { params }) => {
   const { agentId } = params;
   const body = await request.json();
-  const { name, email, phoneNumber } = body;
+  const { name, email, phoneNumber, } = body;
 
   try {
     // OPTIMIZATION: Update directly. Prisma handles the join internally.
@@ -24,12 +24,13 @@ export const PUT = withAuthAndRateLimit(async (request, { params }) => {
       select: { 
         id: true, 
         phoneNumber: true,
+        companyId: true,
         user: { select: { name: true, email: true } } 
       },
     });
 
     
-    try { await cacheDel(`admin:agents:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:agents:${updatedAgent.companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedAgent, "Updated", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -48,7 +49,7 @@ export const DELETE = withAuthAndRateLimit(async (_request, { params }) => {
     // if not using Schema-level Cascades.
     const deletedAgent = await prisma.salesAgent.delete({
       where: { id: agentId },
-      select: { userId: true }
+      select: { userId: true, companyId: true }
     });
 
     // If your schema doesn't have Cascade Delete, delete the user second.
@@ -58,7 +59,7 @@ export const DELETE = withAuthAndRateLimit(async (_request, { params }) => {
     }
 
     
-    try { await cacheDel(`admin:agents:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:agents:${deletedAgent.companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { deletedId: agentId }, "Deleted", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

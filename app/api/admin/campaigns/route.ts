@@ -16,6 +16,11 @@ const getCampaigns = async (request: Request, context: { user?: any }) => {
   const where: any = {};
   if (status) where.status = status;
 
+    const cacheKey = `admin:campaigns:${status || 'all'}:page:${page}:limit:${limit}`;
+  try {    const cached = await cacheGet(cacheKey);
+    if (cached) return NextResponse.json(cached, { status: 200 });
+  } catch (e) {}
+
   const [total, campaigns] = await prisma.$transaction([
     prisma.campaign.count({ where }),
     prisma.campaign.findMany({
@@ -40,6 +45,10 @@ const getCampaigns = async (request: Request, context: { user?: any }) => {
     }),
   ]);
 
+  // Cache total count for pagination (optional)
+  try {
+    await cacheSet(`admin:campaigns:total:${status || 'all'}`, total, 60); // Cache for 1 minute
+  } catch (e) {}
   return NextResponse.json(
     {
       data: campaigns.map((c) => ({
@@ -105,6 +114,9 @@ const createCampaign = async (request: Request, context: { user?: any }) => {
     },
   });
 
+    // Invalidate relevant caches
+  try { await cacheDel(`admin:campaigns:*`); } catch (e) {}
+
   return NextResponse.json(newCampaign, { status: 201 });
 };
 
@@ -118,7 +130,7 @@ export const POST = withApiHandler(createCampaign, {
   requireRateLimit: true,
 });
 // import { NextResponse } from "next/server";
- => {
+//  => {
 //   const companyId = context.user?.companyId;
 
 //   if (!companyId) return formatResponse(false, null, "Unauthorized", 401);
@@ -184,7 +196,7 @@ export const POST = withApiHandler(createCampaign, {
 // export const GET = withApiHandler(getCampaigns, { requireAuth: true });
 // export const POST = withApiHandler(createCampaign, { requireAuth: true });
 // import { NextResponse } from "next/server";
- => {
+//  => {
 //   const campaigns = await prisma.campaign.findMany({
 //     include: {
 //       donations: true, // include related donations

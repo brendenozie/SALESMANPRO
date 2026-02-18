@@ -39,7 +39,7 @@ async function handlePut(request: Request, context: { params: { adminSlug: strin
     const isCheckedIn = updated.status === "ATTENDED";
 
     
-    try { await cacheDel(`admin:company-check-in:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:company-check-in:${adminSlug || 'global'}:*`); } catch (e) {}
     return formatResponse(true, {
       id: updated.id,
       name: updated.user?.name || 'N/A',

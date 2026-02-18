@@ -2,6 +2,7 @@ import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
 type HandlerContext = {
   params: { adminSlug: string };
@@ -9,7 +10,7 @@ type HandlerContext = {
 };
 
 const COMPLETED = "COMPLETED";
-const UPCOMING_STATUSES = ["SCHEDULED", "POSTPONED",] as const;
+const UPCOMING_STATUSES = ["SCHEDULED", "POSTPONED"] as const;
 
 async function handleGet(_req: Request, context: HandlerContext) {
   const { adminSlug } = context.params;
@@ -23,7 +24,7 @@ async function handleGet(_req: Request, context: HandlerContext) {
 
   
   
-    const cacheKey = `admin:company-admin-dashboard-summary:${slug || adminSlug || 'global' || 'global'}:all`;
+    const cacheKey = `admin:company-admin-dashboard-summary:${adminSlug || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -48,7 +49,7 @@ async function handleGet(_req: Request, context: HandlerContext) {
         ...companyFilter,
         startDateTime: { gt: now },
         eventStatus:{
-          in: UPCOMING_STATUSES,
+          in: [...UPCOMING_STATUSES],
         }
       },
     }),
@@ -95,7 +96,7 @@ async function handleGet(_req: Request, context: HandlerContext) {
       where: {
         ...companyFilter,
         startDateTime: { gt: now },
-        eventStatus: { in: UPCOMING_STATUSES },
+        eventStatus: { in: [...UPCOMING_STATUSES] },
       },
       orderBy: { startDateTime: "asc" },
       take: 3,
@@ -107,13 +108,6 @@ async function handleGet(_req: Request, context: HandlerContext) {
     }),
   ]);
 
-  try {
-    if (totalEvents) {
-      await cacheSet(cacheKey, totalEvents, 60);
-    }
-  } catch (e) {}
-
-  
   const totalTicketsSold = ticketsSoldAgg._sum.quantity ?? 0;
   const totalRevenue = revenueAgg._sum.totalPrice ?? 0;
 
@@ -131,6 +125,19 @@ async function handleGet(_req: Request, context: HandlerContext) {
     date: event.startDateTime.toISOString(),
     ticketsSold: null, // can be aggregated later per event
   }));
+
+  try {
+    if (totalEvents) {
+      await cacheSet(cacheKey, {
+        totalEvents,
+        upcomingEvents,
+        totalTicketsSold: ticketsSoldAgg._sum.quantity ?? 0,
+        totalRevenue: revenueAgg._sum.totalPrice ?? 0,
+        recentActivities,
+        upcomingEventsList
+      }, 60);
+    }
+  } catch (e) {}
 
   
   return NextResponse.json(
@@ -153,7 +160,7 @@ export const GET = withApiHandler(handleGet, {
 });
 
 // import { NextResponse } from "next/server";
- {
+//  {
 //   const { adminSlug } = context.params;
 //   const now = new Date();
 

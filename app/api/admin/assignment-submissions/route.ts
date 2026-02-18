@@ -43,7 +43,7 @@ async function getSubmissions(request: Request) {
   if (!companyId) return formatResponse(false, null, "Company ID required", 400);
 
   
-    const cacheKey = `admin:assignment-submissions:${companyId || 'global'}:all`;
+    const cacheKey = `admin:assignment-submissions:${assignmentId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);

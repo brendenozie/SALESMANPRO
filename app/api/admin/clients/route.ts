@@ -9,6 +9,13 @@ async function listClients(request: Request, context: { user?: any }) {
   const companyId = context.user?.companyId; // Securely get from auth context
   if (!companyId) return formatResponse(false, null, "Unauthorized", 401);
 
+  const cacheKey = `admin:clients:${companyId}`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   try {
     // 1. Fetch clients and user data in one shot
     const clients = await prisma.client.findMany({
@@ -51,6 +58,11 @@ async function listClients(request: Request, context: { user?: any }) {
       };
     });
 
+    // Cache the result for 1 minute
+    try {
+      await cacheSet(cacheKey, enriched, 60);
+    } catch (e) {}
+
     return formatResponse(true, enriched, "Clients fetched successfully");
   } catch (err: any) {
     return formatResponse(false, null, err.message, 500);
@@ -80,6 +92,12 @@ async function createClient(request: Request, context: { user?: any }) {
 
       return { user, client };
     });
+
+    // Invalidate cache for this company's clients list
+    const cacheKey = `admin:clients:${companyId}`;
+    try {
+      await cacheDel(cacheKey);
+    } catch (e) {}
 
     return formatResponse(true, {
       id: result.client.id,

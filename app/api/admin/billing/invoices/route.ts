@@ -162,7 +162,7 @@ export const POST = withApiHandler(async (req, { user }) => {
 
   return formatResponse(true, newInvoice, "Invoice created successfully", 201);
 });
- => {
+//  => {
 //   const { searchParams } = new URL(req.url);
 //   const companyId = searchParams.get("companyId");
 //   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
@@ -249,7 +249,7 @@ export const POST = withApiHandler(async (req, { user }) => {
 //   return formatResponse(true, newInvoice, "Invoice created", 201);
 // });
 // import { NextResponse } from "next/server";
- => {
+//  => {
   
 //   if (!user) {
 //     return formatResponse(false, "Unauthorized", 'error', 401);

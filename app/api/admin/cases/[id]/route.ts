@@ -29,6 +29,12 @@ const getCase = async (_req: Request, context: { params: { id: string }; user?: 
   const { id } = context.params;
   const companyId = context.user?.companyId;
 
+  const cacheKey = `admin:case:${id}`;
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, null, 200);
+  } catch (e) {}
+
   const singleCase = await prisma.case.findUnique({
     where: { id, companyId }, // Security: Must match user's company
     select: CASE_SELECT
@@ -37,6 +43,11 @@ const getCase = async (_req: Request, context: { params: { id: string }; user?: 
   if (!singleCase) {
     return formatResponse(false, null, "Case not found or access denied", 404);
   }
+
+  // Cache the result for 1 minute
+  try {
+    await cacheSet(cacheKey, singleCase, 60);
+  } catch (e) {}
 
   return formatResponse(true, singleCase, null, 200);
 };
@@ -50,6 +61,7 @@ const updateCase = async (req: Request, context: { params: { id: string }; user?
   // Filter body to prevent accidental overwriting of sensitive fields like companyId
   const { clientId, assignedToId, title, description, status, priority } = body;
 
+    const cacheKey = `admin:case:${id}`;
   try {
     const updatedCase = await prisma.case.update({
       where: { id, companyId },
@@ -63,6 +75,9 @@ const updateCase = async (req: Request, context: { params: { id: string }; user?
       },
       select: CASE_SELECT
     });
+
+    // Invalidate cache for this specific case
+    try { await cacheDel(cacheKey); } catch (e) {}
 
     return formatResponse(true, updatedCase, "Case updated successfully", 200);
   } catch (error) {
@@ -82,6 +97,10 @@ const deleteCase = async (_req: Request, context: { params: { id: string }; user
     await prisma.case.delete({
       where: { id, companyId },
     });
+
+      // Invalidate cache for this specific case
+    try { await cacheDel(`admin:case:${id}`); } catch (e) {}
+    
     return formatResponse(true, { id }, "Case deleted successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

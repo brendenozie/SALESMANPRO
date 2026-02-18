@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { Prisma } from '@prisma/client';
+import { formatResponse } from "@/lib/formatResponse";
 
 
 async function handlePost(request: Request) {

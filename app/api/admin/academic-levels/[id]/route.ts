@@ -9,11 +9,13 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 export const GET = withApiHandler(async (req, context) => {
   const { id } = context.params;
+  const { searchParams } = new URL(req.url);
+  const companyId = searchParams.get("companyId");
 
   // OPTIMIZATION: Use 'select' to only pull what you need
   // and use a lean findUnique call.
   
-    const cacheKey = `admin:academic-levels:${'global' || 'global'}:all`;
+    const cacheKey = `admin:academic-levels:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -50,6 +52,8 @@ export const GET = withApiHandler(async (req, context) => {
 export const PATCH = withApiHandler(async (request, context) => {
   const { id } = context.params;
   const body = await request.json();
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId");
   
   // OPTIMIZATION: Data validation before hitting the DB
   if (!body.name) return formatResponse(false, null, "Name is required", 400);
@@ -64,7 +68,7 @@ export const PATCH = withApiHandler(async (request, context) => {
   });
 
   
-    try { await cacheDel(`admin:academic-levels:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:academic-levels:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updated, "Updated", 200);
 });
 
@@ -93,6 +97,6 @@ export const PATCH = withApiHandler(async (request, context) => {
 
 //   const deleted = await prisma.academicLevel.delete({ where: { id } });
 //   
-    try { await cacheDel(`admin:academic-levels:${'global' || 'global'}:*`); } catch (e) {}
-    return formatResponse(true, { deletedId: deleted.id }, "Deleted successfully", 200);
+    // try { await cacheDel(`admin:academic-levels:${companyId || 'global'}:*`); } catch (e) {}
+    // return formatResponse(true, { deletedId: deleted.id }, "Deleted successfully", 200);
 // });

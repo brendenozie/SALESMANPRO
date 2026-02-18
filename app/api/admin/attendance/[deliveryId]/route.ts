@@ -38,12 +38,13 @@ export const PUT = withApiHandler(async (request, context) => {
       select: {
         id: true, status: true, pickupAddress: true, deliveryAddress: true,
         packageDescription: true, weightKg: true, deliveryFee: true, scheduledFor: true,
-        rider: { select: { name: true } }
+        rider: { select: { name: true } },
+        companyId: true
       }
     });
 
     
-    try { await cacheDel(`admin:attendance:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:attendance:${updated.companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, {
       ...updated,
       riderName: updated.rider?.name || 'Unassigned'
@@ -70,7 +71,7 @@ export const DELETE = withApiHandler(async (request, context) => {
       },
     });
     
-    try { await cacheDel(`admin:attendance:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:attendance:${userCompanyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Delivery deleted successfully.", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

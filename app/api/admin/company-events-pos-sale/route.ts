@@ -215,7 +215,7 @@ export const POST = withApiHandler(handlePost, {
 });
 
 // import { NextResponse } from "next/server";
- {
+//  {
 //   const { adminSlug } = context.params;
 //   const body = await request.json();
 //   const { eventId, customerName, customerEmail, paymentMethod, items, notes } = body;

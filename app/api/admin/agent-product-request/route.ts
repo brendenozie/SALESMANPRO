@@ -23,7 +23,7 @@ export const GET = withApiHandler(async (request, context) => {
 
   // OPTIMIZATION: Use 'select' to avoid over-fetching and eliminate the .map() overhead
   
-    const cacheKey = `admin:agent-product-request:${'global' || 'global'}:all`;
+    const cacheKey = `admin:agent-product-request:${user.id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);

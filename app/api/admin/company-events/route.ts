@@ -2,6 +2,7 @@ import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
 
 type HandlerContext = {
@@ -51,7 +52,7 @@ async function handleGet(req: Request, context: HandlerContext) {
 
   
   
-    const cacheKey = `admin:company-events:${slug || adminSlug || 'global' || 'global'}:all`;
+    const cacheKey = `admin:company-events:${adminSlug || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -215,7 +216,7 @@ export const POST = withApiHandler(handlePost, {
 });
 
 // import { NextResponse } from "next/server";
- {
+//  {
 //   const { adminSlug } = context.params;
 //   const { searchParams } = new URL(request.url);
 

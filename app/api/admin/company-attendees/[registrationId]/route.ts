@@ -7,6 +7,12 @@ import { formatResponse } from "@/lib/formatResponse";
 async function handleGet(request: Request, context: { params: { adminSlug: string, registrationId: string } }) {
   const { adminSlug, registrationId } = context.params;
 
+  const cacheKey = `admin:attendee:${adminSlug || 'global'}:${registrationId}`;
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   // OPTIMIZATION: Combine company verification and registration fetch into ONE query
   const registration = await prisma.eventRegistration.findFirst({
     where: { 
@@ -34,6 +40,11 @@ async function handleGet(request: Request, context: { params: { adminSlug: strin
     return formatResponse(false, null, "Attendee registration not found in this company scope", 404);
   }
 
+  try {
+    await cacheSet(cacheKey, registration, 60);
+  }
+  catch (e) {}
+  
   // Formatting the response
   const responseData = {
     id: registration.id,

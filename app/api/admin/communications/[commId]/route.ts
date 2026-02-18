@@ -33,6 +33,9 @@ async function handlePut(request: Request, context: { params: { adminSlug: strin
       updateData.sentDate = null;
     }
 
+    const cacheKey = `admin:communications:${adminSlug || 'global'}:all`; // Cache key for invalidation
+
+
     const updated = await prisma.communication.update({
       where: { 
         id: commId,
@@ -42,7 +45,7 @@ async function handlePut(request: Request, context: { params: { adminSlug: strin
     });
 
     
-    try { await cacheDel(`admin:communications:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(cacheKey); } catch (e) {}
     return formatResponse(true, updated, "Updated successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -65,8 +68,8 @@ async function handleDelete(request: Request, context: { params: { adminSlug: st
       },
     });
 
-    
-    try { await cacheDel(`admin:communications:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
+    const cacheKey = `admin:communications:${adminSlug || 'global'}:all`;
+    try { await cacheDel(cacheKey); } catch (e) {}
     return formatResponse(true, null, "Deleted successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

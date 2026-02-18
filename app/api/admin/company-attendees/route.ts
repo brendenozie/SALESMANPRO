@@ -42,7 +42,7 @@ async function handleGet(request: Request, context: { params: { adminSlug: strin
   try {
     // 4. Parallelize Data and Total Count
     
-    const cacheKey = `admin:company-attendees:${slug || adminSlug || 'global' || 'global'}:all`;
+    const cacheKey = `admin:company-attendees:${adminSlug || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);

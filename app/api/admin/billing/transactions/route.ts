@@ -86,7 +86,7 @@ const getTransactions = async (request: Request, context: { params: any; user?: 
 
 export const GET = withApiHandler(getTransactions);
 // import { NextRequest } from "next/server";
-  => {
+  // => {
 //   const companyId = context.params.slug;
 //   const user = context.user;
 //   const { searchParams } = new URL(request.url);

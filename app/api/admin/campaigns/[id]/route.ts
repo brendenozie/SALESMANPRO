@@ -102,7 +102,7 @@ export const DELETE = withApiHandler(deleteCampaign, {
   requireRateLimit: true,
 });
 // import { NextResponse } from "next/server";
- => {
+//  => {
 //   const { id } = context.params;
 //   const userCompanyId = context.user?.companyId;
 //   const body = await request.json();
@@ -167,7 +167,7 @@ export const DELETE = withApiHandler(deleteCampaign, {
 // export const PUT = withApiHandler(updateCampaign, { requireAuth: true });
 // export const DELETE = withApiHandler(deleteCampaign, { requireAuth: true });
 // import { NextResponse } from "next/server";
- => {
+//  => {
 //   const { id } = context.params;
 //   const body = await request.json();
 //   const { name, description, startDate, endDate, goalAmount, status } = body;

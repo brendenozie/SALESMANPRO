@@ -64,6 +64,8 @@ async function updateSubmission(request: Request, { params }: Params) {
       });
     });
 
+    try { await cacheDel(`admin:assignment-submissions:${id || 'global'}:*`); } catch (e) {}
+    
     return formatResponse(true, updated, "Grading updated successfully.", 200);
   } catch (error: any) {
     if (error.code === "P2025") {
@@ -94,6 +96,8 @@ async function deleteSubmission(_request: Request, { params }: Params) {
       return formatResponse(false, null, "Submission not found.", 404);
     }
 
+    // Clear cache for this specific submission
+    await cacheDel(`admin:assignment-submission:${id}`);
     return formatResponse(true, { deletedId: id }, "Submission deleted.", 200);
   } catch (error) {
     console.error("Delete submission error:", error);
@@ -136,8 +140,8 @@ export const DELETE = withApiHandler(deleteSubmission);
 //     // OPTIMIZATION: Atomic Delete (removes findUnique check)
 //     await prisma.assignmentSubmission.delete({ where: { id } });
 //     
-    try { await cacheDel(`admin:assignment-submissions:${'global' || 'global'}:*`); } catch (e) {}
-    return formatResponse(true, { deletedId: id }, "Submission deleted.", 200);
+    // 
+    // return formatResponse(true, { deletedId: id }, "Submission deleted.", 200);
 //   } catch (error) {
 //     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
 //       return formatResponse(false, null, "Submission not found.", 404);
