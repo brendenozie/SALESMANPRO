@@ -55,13 +55,8 @@ async function handleGET(request: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
-  const totalItems = await prisma.user.count({ where });
 
-  try {
-    if (totalItems) {
-      await cacheSet(cacheKey, totalItems, 60);
-    }
-  } catch (e) {}
+  const totalItems = await prisma.user.count({ where });
 
     // Fetch users
     const users = await prisma.user.findMany({
@@ -83,6 +78,11 @@ async function handleGET(request: Request) {
 
     const totalPages = Math.ceil(totalItems / perPage);
 
+    try {
+      await cacheSet(cacheKey, { users, totalItems, totalPages, currentPage: page }, 60);
+    } catch (e) {
+      console.error("Error caching users:", e);
+    }
     return formatResponse(true, {
       users,
       totalItems,
@@ -114,6 +114,9 @@ async function handlePOST(request: Request) {
       },
     });
 
+    try{ await cacheDel(`admin:users:${companyId || 'global'}:*`); } catch (e) {
+      console.error("Error deleting cached users:", e);
+    }
     return formatResponse(true, newUser, "User created successfully", 201);
   } catch (error: any) {
     console.error("Error creating user:", error);

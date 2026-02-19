@@ -112,7 +112,7 @@ async function handlePUT(request: Request) {
         },
       });
     });
-
+    try { await cacheDel(`admin:travel-packages:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedPackage, "Tour package updated successfully");
   } catch (error: any) {
     console.error("Error updating tour package:", error);
@@ -138,6 +138,7 @@ async function handleDELETE(request: Request) {
       await tx.tourPackage.delete({ where: { id } });
     });
 
+    try { await cacheDel(`admin:travel-packages:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Tour package deleted successfully");
   } catch (error: any) {
     console.error("Error deleting tour package:", error);

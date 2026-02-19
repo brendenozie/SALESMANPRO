@@ -27,17 +27,11 @@ async function handleGET(request: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const company = await prisma.company.findUnique({
       where: { id: companyId },
       select: { id: true },
     });
-
-  try {
-    if (company) {
-      await cacheSet(cacheKey, company, 60);
-    }
-  } catch (e) {}
-    if (!company) return formatResponse(false, null, "Company not found", 404);
 
     const clients = await prisma.client.findMany({
       where: { companyId: company.id },
@@ -58,6 +52,11 @@ async function handleGET(request: Request) {
       photoUrl: client.photoUrl || "https://placehold.co/128x128/E0E7FF/4338CA?text=No+Photo",
     }));
 
+    try {
+      await cacheSet(cacheKey, formattedClients, 60);
+    } catch (e) {
+      console.error("Error caching clients:", e);
+    }
     return formatResponse(true, formattedClients);
   } catch (error: any) {
     console.error("Error fetching clients:", error);
@@ -138,6 +137,11 @@ async function handlePOST(request: Request) {
       photoUrl: newClientData.photoUrl || "https://placehold.co/128x128/E0E7FF/4338CA?text=No+Photo",
     };
 
+    try {
+      await cacheDel(`admin:travel-users:${companyId || 'global'}:*`);
+    } catch (e) {
+      console.error("Error deleting cached clients:", e);
+    }
     return formatResponse(true, formattedNewClient, undefined, 201);
   } catch (error: any) {
     console.error("Error creating client:", error);

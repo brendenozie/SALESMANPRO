@@ -13,6 +13,13 @@ const getVehicles = async (request: Request) => {
 
   if (!companyId) return formatResponse(false, null, "Company ID required", 400);
 
+  const cacheKey = `admin:vehicles:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   const vehicles = await prisma.transportVehicle.findMany({
     where: { 
       companyId,
@@ -26,6 +33,12 @@ const getVehicles = async (request: Request) => {
     },
     orderBy: { createdAt: 'desc' }
   });
+
+  try {
+    if (vehicles) {
+      await cacheSet(cacheKey, vehicles, 60);
+    }
+    } catch (e) {}
 
   return formatResponse(true, vehicles, "Fleet data retrieved", 200);
 };
@@ -60,6 +73,7 @@ const postVehicle = async (request: Request) => {
       }
     });
 
+    try { await cacheDel(`admin:vehicles:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, vehicle, "Vehicle successfully added to fleet", 201);
   } catch (error: any) {
     if (error.code === 'P2002') {

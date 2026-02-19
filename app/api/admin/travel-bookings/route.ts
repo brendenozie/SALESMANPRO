@@ -24,13 +24,10 @@ async function handleGET(request: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const company = await prisma.company.findUnique({ where: { id: companyId }, select: { id: true } });
 
-  try {
-    if (company) {
-      await cacheSet(cacheKey, company, 60);
-    }
-  } catch (e) {}
+ 
     if (!company) return formatResponse(false, null, 'Company not found', 404);
 
     const bookings = await prisma.booking.findMany({
@@ -62,6 +59,7 @@ async function handleGET(request: Request) {
       destinationName: booking.destination?.name || 'N/A',
     }));
 
+    try { await cacheSet(cacheKey, formatted, 60); } catch (e) {}
     return formatResponse(true, formatted);
   } catch (error: any) {
     console.error('Error fetching travel bookings:', error);

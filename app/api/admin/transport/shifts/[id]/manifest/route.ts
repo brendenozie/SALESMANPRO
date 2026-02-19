@@ -16,6 +16,7 @@ export async function GET(
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const shift = await prisma.transportShift.findUnique({
       where: { id: params.id },
       include: {
@@ -24,12 +25,6 @@ export async function GET(
         driver: true,
       }
     });
-
-  try {
-    if (shift) {
-      await cacheSet(cacheKey, shift, 60);
-    }
-  } catch (e) {}
 
     if (!shift) return formatResponse(false, null, "Shift not found", 404);
 
@@ -55,6 +50,15 @@ export async function GET(
         }
       }
     });
+
+    try {
+      if (passengers) {
+        await cacheSet(cacheKey, {
+      shift,
+      passengers: passengers.map(p => p.user),
+      stops: shift.route.stops // Include stops for sequence planning
+    }, 60);
+      }
 
     return formatResponse(true, {
       shift,

@@ -53,6 +53,11 @@ export const GET = withApiHandler(async (request: Request) => {
     published: tour.published,
   }));
 
+  try {
+    await cacheSet(cacheKey, formattedTours, 60);
+  } catch (e) {
+    console.error("Error caching virtual tours:", e);
+  }
   return formatResponse(true, formattedTours, 'Virtual tours fetched successfully.', 200);
 });
 

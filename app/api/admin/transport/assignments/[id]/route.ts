@@ -16,7 +16,7 @@ export const PATCH = withApiHandler(async (request: Request, { params }: any) =>
   });
 
   
-    try { await cacheDel(`admin:assignments:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:assignments:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updated, "Assignment updated", 200);
 }, { requireAuth: true });
 
@@ -24,6 +24,6 @@ export const DELETE = withApiHandler(async (request: Request, { params }: any) =
   const { id } = params;
   await prisma.transportAssignment.delete({ where: { id } });
   
-    try { await cacheDel(`admin:assignments:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:assignments:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Assignment removed", 200);
 }, { requireAuth: true });

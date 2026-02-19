@@ -1,6 +1,7 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import  prisma  from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -17,6 +18,7 @@ export async function GET(req: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const users = await prisma.user.findMany({
       where: {
         companyId: companyId,
@@ -41,8 +43,13 @@ export async function GET(req: Request) {
     }
   } catch (e) {}
 
-    return NextResponse.json({ data: users });
+  try {    
+    await cacheSet(cacheKey, users, 60);
+  } catch (e) {
+    console.error("Error caching search results:", e);
+  }
+    return formatResponse(true, users);
   } catch (error) {
-    return NextResponse.json({ error: "Search failed" }, { status: 500 });
+    return formatResponse(false, null, "Search failed", 500);
   }
 }

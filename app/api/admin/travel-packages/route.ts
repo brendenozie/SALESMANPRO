@@ -93,6 +93,14 @@ async function handlePOST(request: Request) {
       return newPackage;
     });
 
+    try {
+      if (newTourPackage) {
+        await cacheSet(`admin:travel-packages:${'global' || 'global'}:${newTourPackage.id}`, newTourPackage, 60);
+      }
+    } catch (e) {
+      console.error("Error caching new tour package:", e);
+    }
+    
     return formatResponse(true, newTourPackage, "Tour package created successfully");
   } catch (error: any) {
     console.error("Error creating tour package:", error);

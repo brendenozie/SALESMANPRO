@@ -10,6 +10,13 @@ const getRoutes = async (request: Request) => {
 
   if (!companyId) return formatResponse(false, null, "Company ID required", 400);
 
+  const cacheKey = `admin:routes:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   const routes = await prisma.transportRoute.findMany({
     where: { companyId },
     include: {
@@ -23,6 +30,12 @@ const getRoutes = async (request: Request) => {
     orderBy: { createdAt: 'desc' }
   });
 
+  try {
+    if (routes) {
+      await cacheSet(cacheKey, routes, 60);
+    }
+  } catch (e) {}
+  
   return formatResponse(true, routes, "Routes retrieved successfully", 200);
 };
 
@@ -48,9 +61,10 @@ const postRoute = async (request: Request) => {
     }
   });
 
+    try { await cacheDel(`admin:routes:${companyId || 'global'}:*`); } catch (e) {}
   return formatResponse(true, route, "New route established", 201);
 };
 
 // import { NextResponse } from "next/server";
-
+export const GET = withApiHandler(getRoutes, { requireAuth: true });
 export const POST = withApiHandler(postRoute, { requireAuth: true });

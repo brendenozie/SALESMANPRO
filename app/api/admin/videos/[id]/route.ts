@@ -33,6 +33,9 @@ async function handleGET(request: Request, { params }: { params: { id: string } 
       return formatResponse(false, null, "Video not found", 404);
     }
 
+    try{ await cacheDel(`admin:videos:${'global' || 'global'}:*`); } catch (e) {
+      console.error("Error deleting cached videos:", e);
+    }
     return formatResponse(true, video, "Video fetched successfully", 200);
   } catch (error: any) {
     console.error("Error fetching video:", error);

@@ -25,16 +25,13 @@ company: true,
 },
 });
 
-  try {
-    if (writer) {
-      await cacheSet(cacheKey, writer, 60);
-    }
-  } catch (e) {}
-
 if (!writer) {
 return NextResponse.json({ message: 'Writer not found' }, { status: 404 });
 }
 
+    try { await cacheDel(`admin:writers:${'global' || 'global'}:*`); } catch (e) {
+      console.error("Error deleting cached writers:", e);
+    }
 return NextResponse.json(writer, { status: 200 });
 });
 

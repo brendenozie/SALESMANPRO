@@ -18,5 +18,8 @@ export async function POST(req: Request) {
     }
   });
 
+  try{
+    await cacheSet(`admin:shifts:availability:${driverId || vehicleId}`, !conflict, 60);
+  } catch (e) {}
   return NextResponse.json({ available: !conflict });
 }

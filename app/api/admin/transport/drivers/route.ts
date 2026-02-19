@@ -1,6 +1,7 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function GET(req: Request) {
   try {
@@ -16,6 +17,7 @@ export async function GET(req: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const drivers = await prisma.transportDriver.findMany({
       where: { companyId },
       include: {
@@ -23,12 +25,6 @@ export async function GET(req: Request) {
       },
       orderBy: { createdAt: 'desc' }
     });
-
-  try {
-    if (drivers) {
-      await cacheSet(cacheKey, drivers, 60);
-    }
-  } catch (e) {}
 
     // Map to match your Frontend Interface
     const formattedDrivers = drivers.map(d => ({
@@ -41,9 +37,15 @@ export async function GET(req: Request) {
       status: d.status, // ACTIVE, SUSPENDED, INACTIVE
     }));
 
-    return NextResponse.json({ success: true, data: formattedDrivers });
+  try {
+    if (drivers) {
+      await cacheSet(cacheKey, formattedDrivers, 60);
+    }
+  } catch (e) {}
+
+    return formatResponse(true, formattedDrivers, "Drivers retrieved", 200);
   } catch (error) {
-    return new NextResponse("Internal Error", { status: 500 });
+    return formatResponse(false, null, "Internal Error", 500);
   }
 }
 
@@ -85,20 +87,18 @@ export async function POST(req: Request) {
       return newDriver;
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      data: {
-        id: result.id,
-        name: result.user.name,
+    try { await cacheDel(`admin:drivers:${companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, {
+      id: result.id,
+      name: result.user.name,
         phoneNumber: result.user.phone,
         licenseNumber: result.licenseNo,
         status: result.status,
         experienceYears: result.experienceYears,
         licenseExpiry: result.licenseExpiry ? result.licenseExpiry.toISOString().split('T')[0] : null
-      } 
-    });
+      } , "Driver created successfully", 201);
   } catch (error: any) {
     console.error(error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return formatResponse(false, null, error.message || "Failed to create driver", 500);
   }
 }

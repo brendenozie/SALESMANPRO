@@ -33,6 +33,7 @@ const getAssignments = async (request: Request) => {
     orderBy: { createdAt: 'desc' }
   });
 
+  try{ await cacheSet(`admin:assignments:${routeId || 'global'}:all`, assignments, 60); } catch (e) {}
   return formatResponse(true, assignments, "Assignments retrieved", 200);
 };
 
@@ -66,6 +67,7 @@ const postAssignment = async (request: Request) => {
     }
   });
 
+  try{ await cacheSet(`admin:assignments:${routeId || 'global'}:all`, assignments, 60); } catch (e) {}
   return formatResponse(true, assignment, "User assigned to route", 201);
 };
 

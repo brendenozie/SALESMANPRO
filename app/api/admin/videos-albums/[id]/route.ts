@@ -21,16 +21,13 @@ export const GET = withApiHandler(async (request: Request, { params }: { params:
     include: { videos: true },
   });
 
-  try {
-    if (videoAlbum) {
-      await cacheSet(cacheKey, videoAlbum, 60);
-    }
-  } catch (e) {}
-
   if (!videoAlbum) {
     return formatResponse(false, null, 'Video album not found', 404);
   }
 
+  try{ await cacheDel(`admin:videos-albums:${'global' || 'global'}:*`); } catch (e) {
+    console.error("Error deleting cached video albums:", e);
+  }
   return formatResponse(true, videoAlbum, 'Video album fetched successfully', 200);
 });
 
@@ -65,5 +62,6 @@ export const DELETE = withApiHandler(async (request: Request, { params }: { para
     prisma.videoAlbum.delete({ where: { id } }),
   ]);
 
+    try { await cacheDel(`admin:videos-albums:${'global' || 'global'}:*`); } catch (e) {}
   return new NextResponse(null, { status: 204 });
 });

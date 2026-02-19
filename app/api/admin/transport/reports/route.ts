@@ -30,11 +30,6 @@ export async function GET(req: Request) {
     }
   });
 
-  try {
-    if (fuelLogs) {
-      await cacheSet(cacheKey, fuelLogs, 60);
-    }
-  } catch (e) {}
 
   const totalFuelCost = fuelLogs.reduce((acc, log) => acc + log.cost, 0);
   const totalLiters = fuelLogs.reduce((acc, log) => acc + log.quantity, 0);
@@ -82,6 +77,21 @@ export async function GET(req: Request) {
       kml: fuelUsed > 0 ? (distance / fuelUsed).toFixed(2) : 0
     };
   });
+
+  
+  try {
+      await cacheSet(cacheKey, {
+        summary: {
+          totalSpending: totalFuelCost + (maintenance._sum.cost || 0),
+          fuelCost: totalFuelCost,
+          maintenanceCost: maintenance._sum.cost || 0,
+          maintenanceCount: maintenance._count.id
+        },
+        shifts: shiftStats,
+        efficiency: formattedEfficiency
+      }, 60);
+    
+  } catch (e) {}
 
   return formatResponse(true, {
     summary: {

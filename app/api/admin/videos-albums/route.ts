@@ -18,6 +18,7 @@ export const GET = withApiHandler(async (request: Request) => {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const videoAlbums = await prisma.videoAlbum.findMany({
     where: companyId ? { companyId } : {},
     include: { videos: true },
