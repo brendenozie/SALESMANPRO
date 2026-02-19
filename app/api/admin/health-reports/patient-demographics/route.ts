@@ -2,7 +2,7 @@ import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { ROLE } from "@prisma/client";
+import { ROLES } from "@prisma/client";
 
 
 async function getPatientDemographicsReport(
@@ -17,22 +17,17 @@ async function getPatientDemographicsReport(
 
   // 1. Find Company
   
-    const cacheKey = `admin:patient-demographics:${companyId || 'global'}:all`;
+  const cacheKey = `admin:patient-demographics:${adminSlug || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const company = await prisma.company.findUnique({
     where: { slug: adminSlug },
     select: { id: true }
   });
-
-  try {
-    if (company) {
-      await cacheSet(cacheKey, company, 60);
-    }
-  } catch (e) {}
 
   if (!company) {
     return formatResponse(false, null, "Company not found", 404);
@@ -47,7 +42,7 @@ async function getPatientDemographicsReport(
   if (endDateParam) {
     dateFilter.lte = new Date(endDateParam);
   }
-  const patientRoles: ROLE[] = [ROLE.CLIENT, ROLE.CONSUMER, ROLE.STUDENT, ROLE.PARENT];
+  const patientRoles: ROLES[] = [ROLES.CLIENT, ROLES.CONSUMER, ROLES.STUDENT, ROLES.PARENT];
 
   // 2. Fetch all relevant patient data
   const patients = await prisma.user.findMany({
@@ -109,6 +104,23 @@ async function getPatientDemographicsReport(
       },
     },
   });
+
+    try{
+      if (company) {
+        await cacheSet(cacheKey, {
+          reportName: "Patient Demographics",
+          period: startDateParam && endDateParam ? `${startDateParam} to ${endDateParam}` : "All Time",
+          data: {
+            totalPatients,
+            genderDistribution,
+            ageGroups,
+            newPatientsLastMonth,
+          },
+        }, 60);
+      }
+    } catch (e) {
+      console.error("Error caching patient demographics report:", e);
+    }
 
   // 5. Return formatted success response
   return formatResponse(true, {

@@ -1,6 +1,7 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -14,13 +15,13 @@ export async function GET(req: Request, { params }: RouteParams) {
       return NextResponse.json({ error: "Missing Room ID" }, { status: 400 });
     }
 
-    
-    const cacheKey = `admin:rooms:${'global' || 'global'}:all`;
+    const cacheKey = `admin:rooms:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const room = await prisma.hostelRoom.findUnique({
       where: { id },
       include: {
@@ -44,12 +45,6 @@ export async function GET(req: Request, { params }: RouteParams) {
         }
       }
     });
-
-  try {
-    if (room) {
-      await cacheSet(cacheKey, room, 60);
-    }
-  } catch (e) {}
 
     if (!room) {
       return NextResponse.json({ error: "Room not found" }, { status: 404 });
@@ -88,11 +83,17 @@ export async function GET(req: Request, { params }: RouteParams) {
       // Static amenities for now, or fetch from a model if added later
       amenities: ["High-speed Wi-Fi", "Daily Cleaning", "Climate Control"],
     };
+    
+    try {
+      await cacheSet(cacheKey, transformedRoom, 60);
+    } catch (e) {
+      console.error("Error caching room data:", e);
+    }
 
-    return NextResponse.json({ data: transformedRoom });
+    return formatResponse(true, transformedRoom, "Room details fetched successfully", 200);
 
   } catch (error) {
     console.error("[ROOM_GET_BY_ID]", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return formatResponse(false, null, "Failed to fetch room details", 500);
   }
 }

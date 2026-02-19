@@ -10,8 +10,7 @@ async function getLeads(req: Request) {
     return formatResponse(false, null, "Company ID is required", 400);
   }
     
-  
-    const cacheKey = `admin:leads:${companyId || 'global'}:all`;
+  const cacheKey = `admin:leads:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);

@@ -85,7 +85,9 @@ async function handlePostCategory(request: Request, { params }: RouteParams) {
     // Explicitly return success with status 201
     
     try { await cacheDel(`admin:menu-categories:${companyId || 'global'}:*`); } catch (e) {}
+
     return formatResponse(true, newCategory, null, 201);
+    
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       // Handle unique constraint violation for slug (P2002)

@@ -45,22 +45,17 @@ const getSettingsLogic = async (request: Request, { params }: RouteContext) => {
 
     // 1. Find the company ID based on the adminSlug
     
-    const cacheKey = `admin:fitness-settings:${companyId || 'global'}:all`;
+    const cacheKey = `admin:fitness-settings:${adminSlug || 'global'}:all`;
 
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
+    try {
+        const cached = await cacheGet(cacheKey);
+        if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+    } catch (e) {}
+
   const company = await prisma.company.findUnique({
         where: { slug: adminSlug },
         select: { id: true, name: true, slug: true },
     });
-
-  try {
-    if (company) {
-      await cacheSet(cacheKey, company, 60);
-    }
-  } catch (e) {}
 
     if (!company) {
         return formatResponse(false, null, 'Company not found for the given slug.', 404);
@@ -75,6 +70,12 @@ const getSettingsLogic = async (request: Request, { params }: RouteContext) => {
     if (!settings) {
         settings = await initializeSettings(company.id, company.slug, company.name);
     }
+
+        try {
+            if (settings) {
+                await cacheSet(cacheKey, settings, 60);
+            }
+        } catch (e) {}
 
     return formatResponse(true, settings, 'Settings fetched successfully', 200);
 };
@@ -149,7 +150,7 @@ const putSettingsLogic = async (request: Request, { params }: RouteContext) => {
     });
 
     
-    try { await cacheDel(`admin:fitness-settings:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:fitness-settings:${adminSlug || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedSettings, 'Settings updated successfully', 200);
 };
 

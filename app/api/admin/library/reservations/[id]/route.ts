@@ -40,5 +40,10 @@ export const PATCH = withApiHandler(async (request: Request, { params }: any) =>
     return res;
   });
 
+  // Invalidate cache for reservations list
+  try {
+    await cacheDel(`admin:libraryReservations:${reservation.companyId || 'global'}:*`);
+  } catch (e) {}
+
   return formatResponse(true, updated, `Reservation marked as ${status}`, 200);
 }, { requireAuth: true });

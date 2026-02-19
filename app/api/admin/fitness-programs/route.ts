@@ -42,12 +42,6 @@ const getProgramsLogic = async (request: Request, context: RouteContext) => {
         select: { id: true },
     });
 
-  try {
-    if (company) {
-      await cacheSet(cacheKey, company, 60);
-    }
-  } catch (e) {}
-
     if (!company) {
         return formatResponse(false, null, 'Company not found.', 404);
     }
@@ -95,6 +89,11 @@ const getProgramsLogic = async (request: Request, context: RouteContext) => {
             price: course.price || 0,
         };
     });
+
+    // Cache the programs for 60 seconds
+    try {
+        await cacheSet(cacheKey, programs, 60);
+    } catch (e) {}
 
     // Use formatResponse for success
     return formatResponse(true, programs, 'Programs retrieved successfully', 200);
@@ -189,6 +188,14 @@ const postProgramsLogic = async (request: Request, context: RouteContext) => {
         duration: newCourse.createdCourse.duration || 'N/A',
         price: newCourse.createdCourse.price || 0,
     };
+
+    const cacheKey = `admin:fitness-programs:${companyId || 'global'}:all`;
+
+    // Clear cache for the list of programs for this company
+
+    try {
+        await cacheDel(cacheKey);
+    } catch (e) {}
 
     // Use formatResponse for success
     return formatResponse(true, createdProgram, 'Program created successfully', 201);

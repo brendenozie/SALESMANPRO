@@ -9,18 +9,16 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 // 
 const getHandler = async (request: Request) => {
   
-
-
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
-  
-    const cacheKey = `admin:photos-albums:${companyId || 'global'}:all`;
+  const cacheKey = `admin:photos-albums:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const photoAlbums = await prisma.photoAlbum.findMany({
     where: companyId ? { companyId } : {},
     include: {
@@ -41,8 +39,6 @@ const getHandler = async (request: Request) => {
 // 
 const postHandler = async (request: Request) => {
   
-
-
   const body = await request.json();
   const { title, description, tags, photoUrls, companyId, userId } = body;
 
@@ -72,7 +68,6 @@ const postHandler = async (request: Request) => {
     },
   });
 
-  
     try { await cacheDel(`admin:photos-albums:${companyId || 'global'}:*`); } catch (e) {}
     return NextResponse.json(newPhotoAlbum, { status: 201 });
 };

@@ -59,6 +59,15 @@ const searchProfilesLogic = async (request: Request) => {
     }));
   }
 
+  // Cache the results for future requests
+  const cacheKey = `admin:searchProfiles:${companyId || 'global'}:${type}:${query}`;
+
+  try {
+    if (results.length > 0) {
+      await cacheSet(cacheKey, results, 300); // Cache for 5 minutes
+    }
+  } catch (e) {}
+  
   return formatResponse(true, results, "Profiles found", 200);
 };
 

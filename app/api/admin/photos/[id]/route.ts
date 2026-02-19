@@ -9,13 +9,13 @@ export const GET = withApiHandler(
   async (request: Request, { params }: { params: { id: string } }) => {
     const { id } = params;
 
-    
-    const cacheKey = `admin:photos:${'global' || 'global'}:all`;
+    const cacheKey = `admin:photos:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const photo = await prisma.photo.findUnique({ where: { id } });
 
   try {
@@ -50,8 +50,7 @@ export const PUT = withApiHandler(
         },
       });
 
-      
-    try { await cacheDel(`admin:photos:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:photos:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedPhoto, null, 200);
     } catch (err: any) {
       if (err.code === "P2025") {
@@ -70,7 +69,7 @@ export const DELETE = withApiHandler(
     try {
       await prisma.photo.delete({ where: { id } });
       
-    try { await cacheDel(`admin:photos:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:photos:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, null, 204);
     } catch (err: any) {
       if (err.code === "P2025") {

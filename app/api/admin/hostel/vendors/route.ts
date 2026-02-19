@@ -1,6 +1,7 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -8,12 +9,13 @@ export async function GET(req: Request) {
 
   try {
     
-    const cacheKey = `admin:vendors:${companyId || 'global'}:all`;
+  const cacheKey = `admin:vendors:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const vendors = await prisma.hostelVendor.findMany({
       where: { companyId },
       include: {
@@ -26,8 +28,9 @@ export async function GET(req: Request) {
       await cacheSet(cacheKey, vendors, 60);
     }
   } catch (e) {}
-    return NextResponse.json({ data: vendors });
+
+    return formatResponse(true, vendors, "Vendors fetched successfully", 200);
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch vendors" }, { status: 500 });
+    return formatResponse(false, null, "Failed to fetch vendors", 500);
   }
 }

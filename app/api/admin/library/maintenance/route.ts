@@ -11,6 +11,13 @@ const getMaintenanceList = async (request: Request) => {
 
   if (!companyId) return formatResponse(false, null, "Company ID required", 400);
 
+  const cacheKey = `admin:maintenance:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   const damagedBooks = await prisma.libraryBook.findMany({
     where: { 
       companyId,
@@ -28,6 +35,12 @@ const getMaintenanceList = async (request: Request) => {
     orderBy: { updatedAt: 'desc' }
   });
 
+  try {
+    if (damagedBooks) {
+      await cacheSet(cacheKey, damagedBooks, 60);
+    }
+  } catch (e) {}
+
   return formatResponse(true, damagedBooks, "Maintenance list retrieved", 200);
 };
 
@@ -40,6 +53,10 @@ const repairBook = async (request: Request) => {
     where: { id: bookId },
     data: { status: "AVAILABLE" }
   });
+
+  // Invalidate cache for maintenance list
+  const cacheKey = `admin:maintenance:${updatedBook.companyId || 'global'}:all`;
+  try { await cacheDel(cacheKey); } catch (e) {}
 
   return formatResponse(true, updatedBook, "Volume restored to circulation", 200);
 };

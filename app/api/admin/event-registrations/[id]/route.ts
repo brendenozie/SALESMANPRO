@@ -19,12 +19,9 @@ interface Params {
 // =======================================================================
 async function getRegistration(request: Request, { params }: Params) {
   
-
-
   const { id } = params;
 
-  
-    const cacheKey = `admin:event-registrations:${companyId || 'global'}:all`;
+  const cacheKey = `admin:event-registrations:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -77,11 +74,11 @@ async function getRegistration(request: Request, { params }: Params) {
 // =======================================================================
 async function updateRegistration(request: Request, { params }: Params) {
   
-
-
   const { id } = params;
   const body = await request.json();
   const { status, studentId, ...rest } = body;
+
+  const cacheKey = `admin:event-registrations:${id || 'global'}:all`;
 
   const existingRegistration = await prisma.eventRegistration.findUnique({
     where: { id },
@@ -150,7 +147,7 @@ async function updateRegistration(request: Request, { params }: Params) {
   };
 
   
-    try { await cacheDel(`admin:event-registrations:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(cacheKey); } catch (e) {}
     return formatResponse(true, { data: responseData }, null, 200);
 }
 
@@ -160,9 +157,9 @@ async function updateRegistration(request: Request, { params }: Params) {
 // =======================================================================
 async function deleteRegistration(request: Request, { params }: Params) {
   
-
-
   const { id } = params;
+
+  const cacheKey = `admin:event-registrations:${id || 'global'}:all`;
 
   const existingRegistration = await prisma.eventRegistration.findUnique({
     where: { id },
@@ -177,7 +174,7 @@ async function deleteRegistration(request: Request, { params }: Params) {
   });
 
   
-    try { await cacheDel(`admin:event-registrations:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(cacheKey); } catch (e) {}
     return formatResponse(true, { message: "Event registration deleted successfully", deletedId: deletedRegistration.id }, null, 200);
 }
 

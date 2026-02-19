@@ -26,6 +26,7 @@ async function fetchProductsByCompany(req: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const products = await prisma.product.findMany({
     where: { companyId },
     include: {

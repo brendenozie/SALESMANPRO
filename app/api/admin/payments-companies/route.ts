@@ -13,6 +13,7 @@ async function handleGET(request: Request) {
     // Pagination
     const page = parseInt(searchParams.get('page') || '1', 10);
     const perPage = parseInt(searchParams.get('perPage') || '10', 10);
+    const companyId = searchParams.get('companyId');
     const skip = (page - 1) * perPage;
 
     // Filters
@@ -27,20 +28,13 @@ async function handleGET(request: Request) {
     if (type) where.type = type;
     if (gateway) where.gateway = gateway;
 
-    
-    const cacheKey = `admin:payments-companies:${'global' || 'global'}:all`;
+    const cacheKey = `admin:payments-companies:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
   const totalItems = await prisma.subscriptionPayment.count({ where });
-
-  try {
-    if (totalItems) {
-      await cacheSet(cacheKey, totalItems, 60);
-    }
-  } catch (e) {}
 
     const payments = await prisma.subscriptionPayment.findMany({
       skip,
@@ -59,6 +53,18 @@ async function handleGET(request: Request) {
     });
 
     const totalPages = Math.ceil(totalItems / perPage);
+
+    try {
+      if (payments) {
+        await cacheSet(cacheKey, {
+          payments,
+          totalItems,
+          totalPages,
+          currentPage: page,
+          perPage
+        }, 60);
+      }
+    } catch (e) {}
 
     return formatResponse(true, {
       payments,

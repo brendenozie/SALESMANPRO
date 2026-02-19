@@ -25,6 +25,14 @@ const getHandler = async (request: Request) => {
   const where: any = {};
   if (companyId) where.companyId = companyId;
 
+  // Caching
+  const cacheKey = `admin:plan:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return NextResponse.json(cached, { status: 200 });
+  } catch (e) {}
+
   const totalItems = await prisma.plan.count({ where });
   const plans = await prisma.plan.findMany({
     skip,
@@ -35,6 +43,12 @@ const getHandler = async (request: Request) => {
 
   const totalPages = Math.ceil(totalItems / perPage);
 
+  try {
+    if (plans) {
+      await cacheSet(cacheKey, { plans, totalItems, totalPages, currentPage: page, perPage }, 60);
+    }
+  } catch (e) {}
+  
   return NextResponse.json(
     {
       plans,

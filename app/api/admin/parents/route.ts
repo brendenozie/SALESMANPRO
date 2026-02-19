@@ -26,20 +26,19 @@ async function generateUniqueLoginCode(): Promise<string> {
 // --- GET /api/parents ---
 async function handleGetParents(request: Request) { 
 
-
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
   const whereClause: any = {};
   if (companyId) whereClause.companyId = companyId;
 
-  
-    const cacheKey = `admin:parents:${companyId || 'global'}:all`;
+  const cacheKey = `admin:parents:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const parents = await prisma.parent.findMany({
     where: whereClause,
     include: {
@@ -50,12 +49,6 @@ async function handleGetParents(request: Request) {
     },
     orderBy: { user: { name: "asc" } },
   });
-
-  try {
-    if (parents) {
-      await cacheSet(cacheKey, parents, 60);
-    }
-  } catch (e) {}
 
   const response = parents.map((parent) => ({
     id: parent.id,
@@ -73,14 +66,18 @@ async function handleGetParents(request: Request) {
     updatedAt: parent.updatedAt,
   }));
 
+  try {
+    if (response) {
+      await cacheSet(cacheKey, response, 60);
+    }
+  } catch (e) {}
+
   return formatResponse(true, response, "Parents fetched successfully", 200);
 }
 
 // --- POST /api/parents ---
 async function handlePostParent(request: Request) {
   
-
-
   const body = await request.json();
   const { email, name, companyId, phone, bio, address, profilePicture } = body;
 
@@ -136,7 +133,7 @@ async function handlePostParent(request: Request) {
   };
 
   
-    try { await cacheDel(`admin:parents:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheSet(`admin:parents:${companyId || 'global'}:all`, responseData, 60); } catch (e) {}
     return formatResponse(true, responseData, "Parent created successfully", 201);
 }
 

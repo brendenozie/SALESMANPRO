@@ -25,6 +25,7 @@ const getAgentsLogic = async (req: Request) => {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const agents = await prisma.salesAgent.findMany({
         where: { companyId },
         include: { user: {
@@ -32,11 +33,11 @@ const getAgentsLogic = async (req: Request) => {
         } } // Include related user data
     });
 
-  try {
-    if (agents) {
-      await cacheSet(cacheKey, agents, 60);
-    }
-  } catch (e) {}
+    try {
+      if (agents) {
+        await cacheSet(cacheKey, agents, 60);
+      }
+    } catch (e) {}
 
     // 3. Return the successful response
     return formatResponse(true, agents, 'Sales agents fetched successfully', 200);

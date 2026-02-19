@@ -1,6 +1,7 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function POST(req: Request) {
   try {
@@ -19,9 +20,10 @@ export async function POST(req: Request) {
       include: { student: { select: { firstName: true } }, educator: { include: { user: { select: { name: true } } } } }
     });
     
-    try { await cacheDel(`admin:checkin:${companyId || 'global'}:*`); } catch (e) {}
-    return NextResponse.json({ data: visitor }, { status: 201 });
+    try { await cacheDel(`admin:checkin:${body.companyId || 'global'}:*`); } catch (e) {}
+    
+    return formatResponse(true, visitor, "Visitor checked in successfully", 201);
   } catch (err) {
-    return NextResponse.json({ error: "Check-in failed" }, { status: 500 });
+    return formatResponse(false, null, "Check-in failed", 500);
   }
 }

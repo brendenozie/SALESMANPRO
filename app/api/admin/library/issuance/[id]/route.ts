@@ -22,6 +22,8 @@ const updateCategoryLogic = async (request: Request, { params }: RouteParams) =>
     data: { name },
   });
 
+  // Invalidate relevant caches
+  try { await cacheDel(`admin:libraryCategories:${companyId || 'global'}:*`); } catch (e) {}
   return formatResponse(true, updatedCategory, "Category updated successfully", 200);
 };
 
@@ -39,6 +41,8 @@ const deleteCategoryLogic = async (request: Request, { params }: RouteParams) =>
     where: { id, companyId },
   });
 
+  // Invalidate relevant caches
+  try { await cacheDel(`admin:libraryCategories:${companyId || 'global'}:*`); } catch (e) {}
   return formatResponse(true, null, "Category removed from archive", 200);
 };
 

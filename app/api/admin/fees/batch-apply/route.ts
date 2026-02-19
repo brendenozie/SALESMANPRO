@@ -5,7 +5,9 @@ import { formatResponse } from '@/lib/formatResponse';
 import { getStudentsByTarget, batchApplySpecificFees } from '@/lib/data';
 
 export async function POST(request: Request) {
+
   const body = await request.json();
+
   const { 
     feeItemIds,     // Array of IDs from the checkboxes
     targetType,     // "ALL" | "ACADEMIC_LEVEL" | "CLASS"
@@ -32,6 +34,10 @@ export async function POST(request: Request) {
     term
   });
 
+  try {
+    await cacheDel(`admin:fees:${schoolId || 'global'}:*`);
+  } catch (e) {}
+  
   return formatResponse(true, report, "Batch processing complete.", 201);
 }
 

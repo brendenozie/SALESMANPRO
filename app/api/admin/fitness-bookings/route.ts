@@ -1,6 +1,5 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
-
 import prisma from '@/server/db/prismadb';
 // Incorporate the new utilities
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -35,19 +34,15 @@ const getBookingsLogic = async (req: Request, context: RouteContext) => {
     const cacheKey = `admin:fitness-bookings:${companyId || 'global'}:all`;
 
   try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
-  const company = await prisma.company.findUnique({
-        where: { id: companyId },
-        select: { id: true },
-    });
 
-  try {
-    if (company) {
-      await cacheSet(cacheKey, company, 60);
-    }
-  } catch (e) {}
+    const cached = await cacheGet(cacheKey);
+
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);  } catch (e) {}
+
+    const company = await prisma.company.findUnique({
+            where: { id: companyId },
+            select: { id: true },
+        });
 
     if (!company) {
         return formatResponse(false, null, 'Company not found.', 404);
@@ -95,6 +90,8 @@ const getBookingsLogic = async (req: Request, context: RouteContext) => {
     }));
 
     // Use formatResponse for success
+    try { await cacheSet(cacheKey, formattedBookings, 60); } catch (e) {}
+
     return formatResponse(true, formattedBookings, 'Bookings retrieved successfully', 200);
 };
 
@@ -193,6 +190,7 @@ const postBookingLogic = async (req: Request, context: RouteContext) => {
     // Use formatResponse for success
     
     try { await cacheDel(`admin:fitness-bookings:${companyId || 'global'}:*`); } catch (e) {}
+    
     return formatResponse(true, formattedNewBooking, 'Booking created successfully', 201);
 };
 

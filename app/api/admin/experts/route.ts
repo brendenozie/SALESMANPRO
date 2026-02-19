@@ -75,11 +75,6 @@ async function getExperts(request: Request) {
     select: { id: true },
   });
 
-  try {
-    if (company) {
-      await cacheSet(cacheKey, company, 60);
-    }
-  } catch (e) {}
 
   if (!company) {
     return formatResponse(false, null, 'Company not found.', 404);
@@ -101,7 +96,14 @@ async function getExperts(request: Request) {
 
   const formattedExperts = experts.map(formatExpertData);
 
-  return formatResponse(true, { data: formattedExperts }, null, 200);
+  
+  try {
+    if (company) {
+      await cacheSet(cacheKey, formattedExperts, 60);
+    }
+  } catch (e) {}
+
+  return formatResponse(true, formattedExperts, null, 200);
 }
 
 
@@ -196,7 +198,9 @@ async function createExpert(request: Request) {
 
   const formattedNewExpert = formatExpertData(newExpertData);
 
-  return formatResponse(true, { data: formattedNewExpert }, null, 201);
+  try { await cacheDel(`admin:experts:${companyId || 'global'}:*`); } catch (e) {}
+  
+  return formatResponse(true, formattedNewExpert, null, 201);
 }
 
 // Export the refactored handlers wrapped in withApiHandler

@@ -1,6 +1,5 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
-
 import prisma from "@/server/db/prismadb"; // Make sure this path is correct
 // New Imports
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
@@ -30,27 +29,21 @@ const slugify = (text: string) => {
 const getTourPackageLogic = async (request: Request, { params }: RouteContext) => {
     const { id } = params;
 
-    
-    const cacheKey = `admin:fitness-programs:${'global' || 'global'}:all`;
+    const cacheKey = `admin:fitness-programs:${id || 'global'}:all`;
 
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
-  const tourPackage = await prisma.tourPackage.findUnique({
-        where: { id },
-        include: {
-            destinations: {
-                select: { id: true, name: true }, // Adjust fields as necessary
+    try {
+        const cached = await cacheGet(cacheKey);
+        if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+    } catch (e) {}
+
+    const tourPackage = await prisma.tourPackage.findUnique({
+            where: { id },
+            include: {
+                destinations: {
+                    select: { id: true, name: true }, // Adjust fields as necessary
+                },
             },
-        },
-    });
-
-  try {
-    if (tourPackage) {
-      await cacheSet(cacheKey, tourPackage, 60);
-    }
-  } catch (e) {}
+        });
 
     if (!tourPackage) {
         // Return 404 response using formatResponse utility
@@ -66,6 +59,10 @@ const getTourPackageLogic = async (request: Request, { params }: RouteContext) =
         }),
 
     };
+
+    try {
+        await cacheSet(cacheKey, transformedPackage, 60); // Cache for 60 seconds
+    } catch (e) {}
 
     // Return 200 success response using formatResponse utility
     return formatResponse(true, transformedPackage, 'Tour package retrieved successfully', 200);
@@ -90,6 +87,8 @@ const putTourPackageLogic = async (request: Request, { params }: RouteContext) =
         destinationIds, // Array of IDs to associate
     } = body;
 
+    const cacheKey = `admin:fitness-programs:${id || 'global'}:all`;
+    
     const updatedTourPackage = await prisma.$transaction(async (tx) => {
         // 1. First, unlink all destinations currently associated with this package.
         await tx.destination.updateMany({
@@ -124,6 +123,11 @@ const putTourPackageLogic = async (request: Request, { params }: RouteContext) =
         return updatedPackage;
     });
 
+    // Clear cache for this specific tour package ID
+    try {
+        await cacheDel(cacheKey);
+    } catch (e) {}
+
     // Return 200 success response using formatResponse utility
     return formatResponse(true, updatedTourPackage, 'Tour package updated successfully', 200);
 };
@@ -147,6 +151,11 @@ const deleteTourPackageLogic = async (request: Request, { params }: RouteContext
         });
     });
 
+        // Clear cache for this specific tour package ID
+    try {
+        await cacheDel(`admin:fitness-programs:${id || 'global'}:all`);
+    } catch (e) {}
+    
     // Return 200 success response using formatResponse utility
     return formatResponse(true, null, 'Tour package deleted successfully', 200);
 };

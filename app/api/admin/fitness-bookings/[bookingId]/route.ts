@@ -111,7 +111,7 @@ const putBookingLogic = async (request: Request, context: any) => {
 
   // Use formatResponse for success
   
-    try { await cacheDel(`admin:fitness-bookings:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:fitness-bookings:${company.id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, formattedUpdatedBooking, 'Booking updated successfully', 200);
 };
 
@@ -151,7 +151,7 @@ const deleteBookingLogic = async (request: Request, context: any) => {
 
   // Use formatResponse for success
   
-    try { await cacheDel(`admin:fitness-bookings:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:fitness-bookings:${company.id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, 'Booking deleted successfully.', 200);
 };
 

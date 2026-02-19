@@ -34,6 +34,9 @@ const bulkWaiverLogic = async (request: Request) => {
     return updateResult;
   });
 
+  // Invalidate relevant caches if needed (e.g., member's fines)
+    try { await cacheDel(`admin:libraryFines:${companyId || 'global'}:member:${memberId}`); } catch (e) {}
+
   return formatResponse(
     true, 
     { count: result.count }, 

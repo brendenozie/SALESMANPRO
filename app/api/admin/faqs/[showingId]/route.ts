@@ -26,7 +26,7 @@ async function getFaq(req: Request, { params }: Params) {
   }
 
   
-    const cacheKey = `admin:faqs:${'global' || 'global'}:all`;
+    const cacheKey = `admin:faqs:${faqId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -36,17 +36,17 @@ async function getFaq(req: Request, { params }: Params) {
     where: { id: faqId },
   });
 
+  if (!faq) {
+    return formatResponse(false, null, 'FAQ not found.', 404);
+  }
+
   try {
     if (faq) {
       await cacheSet(cacheKey, faq, 60);
     }
   } catch (e) {}
 
-  if (!faq) {
-    return formatResponse(false, null, 'FAQ not found.', 404);
-  }
-
-  return formatResponse(true, { data: faq }, null, 200);
+  return formatResponse(true, faq, null, 200);
 }
 
 // =======================================================================
@@ -72,8 +72,8 @@ async function updateFaq(req: Request, { params }: Params) {
   });
 
   
-    try { await cacheDel(`admin:faqs:${'global' || 'global'}:*`); } catch (e) {}
-    return formatResponse(true, { data: updatedFaq }, null, 200);
+    try { await cacheDel(`admin:faqs:${faqId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, updatedFaq, null, 200);
 }
 
 // =======================================================================
@@ -93,7 +93,7 @@ async function deleteFaq(req: Request, { params }: Params) {
   });
 
   
-    try { await cacheDel(`admin:faqs:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:faqs:${faqId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { message: 'FAQ deleted successfully' }, null, 200);
 }
 

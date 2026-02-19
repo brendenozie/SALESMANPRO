@@ -8,8 +8,7 @@ import { formatResponse } from "@/lib/formatResponse";
 export const GET = withApiHandler(async (_request: Request, { params }: { params: { id: string } }) => {
   const { id } = params;
 
-  
-    const cacheKey = `admin:photos-albums:${'global' || 'global'}:all`;
+  const cacheKey = `admin:photos-albums:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -51,7 +50,7 @@ export const PUT = withApiHandler(async (request: Request, { params }: { params:
   });
 
   
-    try { await cacheDel(`admin:photos-albums:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:photos-albums:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedPhotoAlbum, null, 200);
 });
 
@@ -63,8 +62,7 @@ export const DELETE = withApiHandler(async (_request: Request, { params }: { par
     prisma.photo.deleteMany({ where: { albumId: id } }),
     prisma.photoAlbum.delete({ where: { id } }),
   ]);
-
   
-    try { await cacheDel(`admin:photos-albums:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:photos-albums:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Photo album deleted successfully", 204);
 });

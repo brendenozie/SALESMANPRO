@@ -15,6 +15,13 @@ const getLibraryStats = async (request: Request) => {
   const currentMonthStart = startOfMonth(now);
   const lastMonthStart = startOfMonth(subMonths(now, 1));
 
+  const cacheKey = `admin:libraryReports:${companyId || 'global'}:stats`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Analytics fetched (Cached)", 200);
+  } catch (e) {}
+
   const [
     totalBooks,
     activeLoans,
@@ -49,6 +56,10 @@ const getLibraryStats = async (request: Request) => {
     })).sort((a, b) => b.count - a.count).slice(0, 5)
   };
 
+  try {
+    await cacheSet(cacheKey, reportData, 300); // Cache for 5 minutes
+  } catch (e) {}
+  
   return formatResponse(true, reportData, "Analytics generated", 200);
 };
 

@@ -11,6 +11,13 @@ const getReservationsLogic = async (request: Request) => {
 
   if (!companyId) return formatResponse(false, null, "Company ID required", 400);
 
+  const cacheKey = `admin:libraryReservations:${companyId || 'global'}:*`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Reservations retrieved (Cached)", 200);
+  } catch (e) {}
+
   const reservations = await prisma.libraryReservation.findMany({
     where: {
       book: { companyId }
@@ -26,6 +33,11 @@ const getReservationsLogic = async (request: Request) => {
     },
     orderBy: { createdAt: 'asc' } // First come, first served
   });
+
+  // Cache the results for future requests
+  try {
+    await cacheSet(cacheKey, reservations, 300); // Cache for 5 minutes
+  } catch (e) {}
 
   return formatResponse(true, reservations, "Reservation queue retrieved", 200);
 };
@@ -61,6 +73,11 @@ const postReservationLogic = async (request: Request) => {
     return res;
   });
 
+  // Invalidate cache for reservations list
+  try {
+    await cacheDel(`admin:libraryReservations:${companyId || 'global'}:*`);
+  } catch (e) {}
+
   return formatResponse(true, reservation, "Hold placed on volume", 201);
 };
 
@@ -80,6 +97,11 @@ const postReservation = async (request: Request) => {
       libraryMember: { include: { student: true, educator: { include: { user: true } } } }
     }
   });
+
+  // Invalidate cache for reservations list
+  try {
+    await cacheDel(`admin:libraryReservations:${companyId || 'global'}:*`);
+  } catch (e) {}
 
   return formatResponse(true, newReservation, "Reservation created", 201);
 };

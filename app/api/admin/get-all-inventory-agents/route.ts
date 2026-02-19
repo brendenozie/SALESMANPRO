@@ -5,18 +5,29 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
 
-async function fetchAllAgents() {
+async function fetchAllAgents(request: Request) {
+
+    // 1. Get companyId from search
+    const { searchParams } = new URL(request.url);
+    const companyId = searchParams.get('companyId');
+
+    if (!companyId) {
+        // Use formatResponse to return a 400 error
+        return formatResponse(false, null, 'Missing companyId query parameter', 400);
+    }
+
   // NOTE: Authentication and `try/catch` are handled by `withApiHandler`.
 
   // --- Data Fetching ---
   // Fetch all agents and their AgentInventory entries (with product details)
   
-    const cacheKey = `admin:get-all-inventory-agents:${'global' || 'global'}:all`;
+    const cacheKey = `admin:get-all-inventory-agents:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const agents = await prisma.salesAgent.findMany({
     where: {
       AgentInventory: {
@@ -52,13 +63,6 @@ async function fetchAllAgents() {
     },
   });
 
-  try {
-    if (agents) {
-      await cacheSet(cacheKey, agents, 60);
-    }
-  } catch (e) {}
-
-
   // --- Data Transformation ---
   // Format the data for the client
 
@@ -84,6 +88,12 @@ async function fetchAllAgents() {
       inventory,
     };
   });
+
+  try {
+    if (formatted) {
+      await cacheSet(cacheKey, formatted, 60);
+    }
+  } catch (e) {}
 
   // --- Success Response ---
   // Return the raw data structure. `withApiHandler` will wrap this in a 200 OK NextResponse.

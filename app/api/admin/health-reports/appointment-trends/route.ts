@@ -17,22 +17,17 @@ async function getAppointmentTrends(
 
   // 1. Find Company
   
-    const cacheKey = `admin:appointment-trends:${companyId || 'global'}:all`;
+  const cacheKey = `admin:appointment-trends:${adminSlug || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const company = await prisma.company.findUnique({
     where: { slug: adminSlug },
     select: { id: true }
   });
-
-  try {
-    if (company) {
-      await cacheSet(cacheKey, company, 60);
-    }
-  } catch (e) {}
 
   if (!company) {
     // Use formatResponse for expected domain-specific errors (like 404)
@@ -132,6 +127,17 @@ async function getAppointmentTrends(
     ...trendsData[key],
   }));
 
+  try{
+    await cacheSet(cacheKey, {
+      reportName: "Appointment Trends",
+      period: `${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}`,
+      data: formattedData,
+    }, 60);
+  }
+  catch (e) {
+    console.error("Error caching appointment trends:", e);
+  }
+  
   // 6. Return formatted success response
   return formatResponse(true, {
     reportName: "Appointment Trends",

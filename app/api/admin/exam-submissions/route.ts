@@ -47,8 +47,6 @@ function transformSubmissionResponse(submission: any) {
 // =======================================================================
 async function getExamSubmissions(request: Request) {
   
-
-
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
   const examId = searchParams.get('examId');
@@ -78,13 +76,13 @@ async function getExamSubmissions(request: Request) {
     whereClause.exam.createdByEducatorId = createdByEducatorId;
   }
 
-  
-    const cacheKey = `admin:exam-submissions:${companyId || 'global'}:all`;
+  const cacheKey = `admin:exam-submissions:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const submissions = await prisma.examSubmission.findMany({
     where: whereClause,
     include: {
@@ -136,13 +134,14 @@ async function getExamSubmissions(request: Request) {
     },
   });
 
+  const responseData = submissions.map(transformSubmissionResponse);
+
   try {
     if (submissions) {
-      await cacheSet(cacheKey, submissions, 60);
+      await cacheSet(cacheKey, responseData, 60);
     }
   } catch (e) {}
 
-  const responseData = submissions.map(transformSubmissionResponse);
   return formatResponse(true, { data: responseData }, null, 200);
 }
 

@@ -13,6 +13,13 @@ const getBooksLogic = async (request: Request) => {
     return formatResponse(false, null, "Company ID is required.", 400);
   }
 
+  const cacheKey = `admin:libraryBooks:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   const books = await prisma.libraryBook.findMany({
     where: { companyId },
     include: {
@@ -22,6 +29,12 @@ const getBooksLogic = async (request: Request) => {
     },
     orderBy: { createdAt: "desc" },
   });
+
+  try {
+    if (books) {
+      await cacheSet(cacheKey, books, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, books, "Archive retrieved successfully", 200);
 };
@@ -69,6 +82,9 @@ const postBookLogic = async (request: Request) => {
     },
     include: { category: true } // Return with category for UI update
   });
+  
+  // Invalidate relevant caches
+  try { await cacheDel(`admin:libraryBooks:${companyId || 'global'}:*`); } catch (e) {}
 
   return formatResponse(true, newBook, "Volume acquired successfully", 201);
 };

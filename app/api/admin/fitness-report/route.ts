@@ -47,24 +47,19 @@ const getReportsLogic = async (request: Request, { params }: RouteContext) => {
     const period = searchParams.get('period') || 'last30days';
 
     // const companyId = searchParams.get('id');
-
     
-    const cacheKey = `admin:fitness-report:${companyId || 'global'}:all`;
+    const cacheKey = `admin:fitness-report:${adminSlug || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const company = await prisma.company.findUnique({
         where: { slug: adminSlug },
         select: { id: true },
     });
 
-  try {
-    if (company) {
-      await cacheSet(cacheKey, company, 60);
-    }
-  } catch (e) {}
 
     if (!company) {
         // Use formatResponse for 404
@@ -229,6 +224,13 @@ const getReportsLogic = async (request: Request, { params }: RouteContext) => {
         bookingTypeChartData: formattedBookingTypes,
         revenueTrendChartData: trendData,
     };
+
+    
+    try {
+        if (company) {
+        await cacheSet(cacheKey, reportSummary, 60);
+        }
+    } catch (e) {}
 
     // Use formatResponse for success
     return formatResponse(true, reportSummary, 'Reports fetched successfully', 200);

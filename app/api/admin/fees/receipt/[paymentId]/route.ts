@@ -6,6 +6,7 @@ import jsPDF from "jspdf";
 import { authOptions } from "@/lib/auth";
 import fs from "fs";
 import path from "path";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function GET(
   req: Request,
@@ -16,16 +17,18 @@ export async function GET(
     const paymentId = searchParams.get("paymentId"); // Optional: get specific payment
 
     const session = await getServerSession(authOptions);
-    if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    if (!session?.user) return formatResponse(false, null, "Unauthorized", 401);
 
     // 1. Find by ID - This is lightning fast because it's indexed
     
-    const cacheKey = `admin:receipt:${'global' || 'global'}:all`;
+    const cacheKey = `admin:receipt:${params.recordId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const feeRecord = await prisma.studentFeeRecord.findUnique({
       where: { id: params.recordId },
       include: {
@@ -35,13 +38,7 @@ export async function GET(
       },
     });
 
-  try {
-    if (feeRecord) {
-      await cacheSet(cacheKey, feeRecord, 60);
-    }
-  } catch (e) {}
-
-    if (!feeRecord) return NextResponse.json({ error: "Record not found" }, { status: 404 });
+    if (!feeRecord) return formatResponse(false, null, "Record not found", 404);
 
     // 2. Find the specific payment in the JSON array
     const payments = feeRecord.payments as any[];
@@ -51,7 +48,7 @@ export async function GET(
       ? payments.find((p) => p.paymentId === paymentId)
       : payments[payments.length - 1]; 
 
-    if (!payment) return NextResponse.json({ error: "No payment found" }, { status: 404 });
+    if (!payment) return formatResponse(false, null, "No payment found", 404);
 
     
     const appliedFeeItems = feeRecord.appliedFeeItems as {

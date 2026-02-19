@@ -46,12 +46,6 @@ async function handleGetLocations(req: Request, { params }: RouteParams) {
     orderBy: { sortOrder: "asc" },
   });
 
-  try {
-    if (companyLocations) {
-      await cacheSet(cacheKey, companyLocations, 60);
-    }
-  } catch (e) {}
-
   // Identify and fetch parent location details for locations that are not explicitly
   // listed as CompanyLocations themselves (for tree structure display)
   const missingParentIds = companyLocations
@@ -111,6 +105,10 @@ async function handleGetLocations(req: Request, { params }: RouteParams) {
     isParent: true, // mark fallback parents
     ...loc, // Spread the rest of the fields
   }));
+
+  try {
+      await cacheSet(cacheKey, { data: [...formattedCompanyLocs, ...formattedParents] }, 60);
+  } catch (e) {}
 
   // withApiHandler will wrap this result in formatResponse(true, { data: combined_list }) with status 200
   return formatResponse(true, { data: [...formattedCompanyLocs, ...formattedParents] }, "Locations fetched successfully", 200);

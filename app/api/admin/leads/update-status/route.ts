@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     });
 
     
-    try { await cacheDel(`admin:update-status:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:update-status:${updatedLead.companyId || 'global'}:*`); } catch (e) {}
     return NextResponse.json({ success: true, lead: updatedLead });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

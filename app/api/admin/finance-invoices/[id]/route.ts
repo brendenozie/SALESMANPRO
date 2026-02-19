@@ -1,18 +1,11 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/invoices/[id]/route.ts
-import { PrismaClient } from '@prisma/client';
 
 // Incorporate the new imports
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse'; 
 
-// Removed old imports:
-// import { NextApiRequest, NextApiResponse } from 'next';
-// import { formatResponse } from "@/lib/formatResponse";
-
-// import { request } from 'http';
-
-const prisma = new PrismaClient();
+import prisma from "@/server/db/prismadb";
 
 // Type definition for the context object, which includes dynamic parameters
 type RouteContext = {
@@ -29,8 +22,7 @@ const getInvoiceId = (context: RouteContext) => context.params.id;
 const getInvoiceLogic = async (req: Request, context: RouteContext) => {
     const invoiceId = getInvoiceId(context);
 
-    
-    const cacheKey = `admin:finance-invoices:${'global' || 'global'}:all`;
+    const cacheKey = `admin:finance-invoices:${invoiceId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -85,6 +77,8 @@ const putInvoiceLogic = async (req: Request, context: RouteContext) => {
         data.dueDate = new Date(dueDate);
     }
     
+    const cacheKey = `admin:finance-invoices:${invoiceId || 'global'}:all`;
+
     const updatedInvoice = await prisma.invoice.update({
         where: { id: invoiceId },
         data: data,
@@ -92,7 +86,7 @@ const putInvoiceLogic = async (req: Request, context: RouteContext) => {
 
     // Use formatResponse for success
     
-    try { await cacheDel(`admin:finance-invoices:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(cacheKey); } catch (e) {}
     return formatResponse(true, updatedInvoice, 'Invoice updated successfully', 200);
 };
 
@@ -114,7 +108,8 @@ const deleteInvoiceLogic = async (req: Request, context: RouteContext) => {
     
     // Use formatResponse for success (no data returned)
     
-    try { await cacheDel(`admin:finance-invoices:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:finance-invoices:${invoiceId || 'global'}:all`); } catch (e) {}
+    
     return formatResponse(true, null, 'Invoice deleted successfully', 200);
 };
 

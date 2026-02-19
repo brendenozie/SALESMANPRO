@@ -75,12 +75,9 @@ function transformExamResponse(exam: any) {
 // =======================================================================
 async function getExam(request: Request, { params }: Params) {
   
-
-
   const { id } = params;
 
-  
-    const cacheKey = `admin:exams:${'global' || 'global'}:all`;
+  const cacheKey = `admin:exams:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -108,17 +105,19 @@ async function getExam(request: Request, { params }: Params) {
     },
   });
 
-  try {
-    if (exam) {
-      await cacheSet(cacheKey, exam, 60);
-    }
-  } catch (e) {}
 
   if (!exam) {
     return formatResponse(false, null, "Exam not found", 404);
   }
 
   const responseData = transformExamResponse(exam);
+  
+  try {
+    if (exam) {
+      await cacheSet(cacheKey, responseData, 60);
+    }
+  } catch (e) {}
+
   return formatResponse(true, { data: responseData }, null, 200);
 }
 
@@ -128,8 +127,6 @@ async function getExam(request: Request, { params }: Params) {
 // =======================================================================
 async function updateExam(request: Request, { params }: Params) {
   
-
-
   const { id } = params;
   const body = await request.json();
   const {
@@ -254,8 +251,6 @@ async function updateExam(request: Request, { params }: Params) {
 // =======================================================================
 async function deleteExam(request: Request, { params }: Params) {
   
-
-
   const { id } = params;
 
   const existingExam = await prisma.exam.findUnique({ where: { id } });
@@ -268,7 +263,7 @@ async function deleteExam(request: Request, { params }: Params) {
       where: { id },
     });
     
-    try { await cacheDel(`admin:exams:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:exams:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { message: "Exam deleted successfully", deletedId: deletedExam.id }, null, 200);
   } catch (error: any) {
     if (error.code === 'P2003') {

@@ -30,8 +30,6 @@ async function getFees(request: Request) {
 // =======================================================================
 async function createFeeRecord(request: Request) {
   
-
-
   const body = await request.json();
   const { studentName, studentClass, term, academicYear, totalFeesDue, amountPaid, dueDate, schoolId } = body;
 
@@ -43,13 +41,17 @@ async function createFeeRecord(request: Request) {
   // NOTE: This logic assumes addFeeRecord is a mock or non-Prisma function.
   const newRecord = createFeeItem({
     name: studentName, // or another appropriate value
-    description: null, // or provide a description if available
+    description: `Fee record for student ${studentName} in class ${studentClass}`, // or provide a description if available
     defaultAmount: totalFeesDue ?? 0,
     applicableTo: studentClass, // or another appropriate value
-    applicableValue: null, // or provide if available
+
+    // applicableValue: , // or provide if available
     academicYear,
     term,
     isMandatory: true // or set based on your logic
+    ,
+    currency: `KES`,
+    companyId: schoolId
   });
 
   return formatResponse(true, newRecord, null, 201);

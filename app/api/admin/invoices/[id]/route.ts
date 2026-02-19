@@ -13,8 +13,7 @@ type RouteParams = { params: { adminSlug: string; id: string } };
 async function handleGetInvoice(request: Request, { params }: RouteParams) {
   const { adminSlug, id } = params;
 
-  
-    const cacheKey = `admin:invoices:${companyId || 'global'}:all`;
+  const cacheKey = `admin:invoices:${adminSlug || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -83,6 +82,10 @@ async function handleGetInvoice(request: Request, { params }: RouteParams) {
       subtotal: item.quantity * item.price,
     })),
   };
+
+  try {
+    await cacheSet(cacheKey, formattedInvoice, 60);
+  } catch (e) {}
 
   // withApiHandler will wrap this result in formatResponse(true, ...) with status 200
   return formatResponse(true, formattedInvoice, "Invoice fetched successfully", 200);
@@ -153,7 +156,7 @@ async function handlePutInvoice(request: Request, { params }: RouteParams) {
 
   // withApiHandler will wrap this result in formatResponse(true, ...) with status 200
   
-    try { await cacheDel(`admin:invoices:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:invoices:${adminSlug || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedInvoice, "Invoice updated successfully", 200);
 }
 

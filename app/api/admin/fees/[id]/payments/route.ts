@@ -8,8 +8,6 @@ interface Context {
   params: { id: string }; 
 }
 
-
-
 async function handlePostPayment(request: Request, context: Context) {
   const { id } = context.params;
   const body = await request.json();
@@ -28,6 +26,10 @@ async function handlePostPayment(request: Request, context: Context) {
     });
 
     if (!updatedRecord) throw new Error("Record not found");
+
+    try {
+      await cacheDel(`admin:fees:${id || 'global'}:*`);
+    } catch (e) {}
 
     return formatResponse(true, updatedRecord, "Payment logged successfully", 200);
   } catch (error) {

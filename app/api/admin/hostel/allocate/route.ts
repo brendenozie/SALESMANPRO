@@ -1,6 +1,7 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 // 1. GET: Search for Students or Educators who are NOT yet allocated
 export async function GET(req: Request) {
@@ -20,6 +21,7 @@ export async function GET(req: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const students = await prisma.student.findMany({
       where: {
         companyId,
@@ -50,9 +52,11 @@ export async function GET(req: Request) {
     if (students) {
       await cacheSet(cacheKey, students, 60);
     }
-  } catch (e) {}
+  } catch (e) {
+    console.error("Error caching students data:", e);
+  }
 
-    return NextResponse.json({ data: students });
+    return formatResponse(true, students, "Students fetched successfully", 200);
   } catch (error) {
     return NextResponse.json({ error: "Search failed" }, { status: 500 });
   }
@@ -114,9 +118,11 @@ export async function POST(req: Request) {
       return allocation;
     });
 
-    return NextResponse.json({ success: true, data: result });
+    try { await cacheDel(`admin:allocate:${companyId || 'global'}:*`); } catch (e) {}
+
+    return formatResponse(true, result, "Allocation created successfully", 200);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+    return formatResponse(false, null, error.message || "Internal Server Error", 500);
   }
 }
 
@@ -126,7 +132,7 @@ export async function PATCH(req: Request) {
     const { allocationId, status, notes } = body;
 
     if (!allocationId) {
-      return NextResponse.json({ error: "Allocation ID is required" }, { status: 400 });
+      return formatResponse(false, null, "Allocation ID is required", 400);
     }
 
     // Process the checkout in a transaction to maintain data integrity
@@ -163,17 +169,10 @@ export async function PATCH(req: Request) {
       return allocation;
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      message: "Resident checked out successfully",
-      data: updatedAllocation 
-    });
+    return formatResponse(true, updatedAllocation, "Resident checked out successfully", 200);
 
   } catch (error: any) {
     console.error("[CHECKOUT_PATCH_ERROR]", error);
-    return NextResponse.json(
-      { error: error.message || "Internal Server Error" }, 
-      { status: 500 }
-    );
+    return formatResponse(false, null, error.message || "Internal Server Error", 500);
   }
 }

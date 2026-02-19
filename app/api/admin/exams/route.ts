@@ -70,8 +70,6 @@ function transformExamResponse(exam: any) {
 // =======================================================================
 async function getExams(request: Request) {
   
-
-
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
   const courseId = searchParams.get('courseId');
@@ -103,8 +101,7 @@ async function getExams(request: Request) {
     whereClause.isPublished = isPublished === 'true';
   }
 
-  
-    const cacheKey = `admin:exams:${companyId || 'global'}:all`;
+  const cacheKey = `admin:exams:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -139,14 +136,15 @@ async function getExams(request: Request) {
     },
   });
 
+  const responseData = exams.map(transformExamResponse);  
+
   try {
     if (exams) {
-      await cacheSet(cacheKey, exams, 60);
+      await cacheSet(cacheKey, responseData, 60);
     }
   } catch (e) {}
 
-  const responseData = exams.map(transformExamResponse);
-  return formatResponse(true, { data: responseData }, null, 200);
+  return formatResponse(true, responseData , null, 200);
 }
 
 // =======================================================================

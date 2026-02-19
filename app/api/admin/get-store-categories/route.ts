@@ -43,6 +43,8 @@ async function fetchStoreCategories(req: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
+
   const [totalCount, categories] = await prisma.$transaction([
     prisma.storeCategory.count({ where: whereFilter }),
     prisma.storeCategory.findMany({
@@ -67,16 +69,23 @@ async function fetchStoreCategories(req: Request) {
     }),
   ]);
 
-  try {
-    if (totalCount) {
-      await cacheSet(cacheKey, totalCount, 60);
-    }
-  } catch (e) {}
-
   // --- Calculate Metadata ---
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
   const nextPage = currentPage + 1 < totalPages ? currentPage + 1 : null;
   const prevPage = currentPage > 0 ? currentPage - 1 : null;
+
+  
+  try {
+      await cacheSet(cacheKey, {
+      InfoResponse: {
+        count: totalCount,
+        next: nextPage,
+        prev: prevPage,
+        pages: totalPages,
+      },
+      results: categories,
+    }, 60);
+  } catch (e) {}
 
   // --- Success Response ---
   // Return the data structure. `withApiHandler` will wrap this in a 200 OK NextResponse.

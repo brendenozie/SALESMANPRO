@@ -21,6 +21,13 @@ async function handleGetFeeItems(request: Request) {
   }
 
   const feeItems = await getFeeItemsByCompany(companyId);
+
+  try {
+    if (feeItems) {
+      await cacheSet(`admin:fee-items:${companyId || 'global'}:all`, feeItems, 60);
+    }
+  } catch (e) {}
+
   return formatResponse(true, feeItems, null, 200);
 }
 
@@ -74,6 +81,8 @@ async function handlePostFeeItem(request: Request) {
       term,
     });
 
+    try { await cacheDel(`admin:fee-items:${companyId || 'global'}:*`); } catch (e) {}
+    
     return formatResponse(true, item, null, 201);
   } catch (error: any) {
     if (error.code === "P2002") {

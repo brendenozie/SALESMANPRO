@@ -1,11 +1,14 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
   const status = searchParams.get("status");
+
+  if (!companyId) return formatResponse(false, null, "Company ID is required", 400);
 
   try {
     
@@ -15,10 +18,11 @@ export async function GET(request: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const requests = await prisma.leaveRequest.findMany({
       where: {
         companyId,
-        ...(status !== 'All' && { status: status.toUpperCase() })
+        ...(status && status !== 'All' && { status: status.toUpperCase() as any })
       },
       include: {
         user: { select: { name: true } },
@@ -33,9 +37,9 @@ export async function GET(request: Request) {
     }
   } catch (e) {}
 
-    return NextResponse.json({ data: requests });
+    return formatResponse(true, { data: requests }, "Leave requests fetched", 200);
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch leave" }, { status: 500 });
+    return formatResponse(false, null, "Failed to fetch leave", 500);
   }
 }
 
@@ -54,9 +58,9 @@ export async function PATCH(request: Request) {
     }
 
     
-    try { await cacheDel(`admin:leave:${'global' || 'global'}:*`); } catch (e) {}
-    return NextResponse.json({ success: true, data: updated });
+    try { await cacheDel(`admin:leave:${updated.companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, updated, "Leave request updated", 200);
   } catch (error) {
-    return NextResponse.json({ error: "Update failed" }, { status: 500 });
+    return formatResponse(false, null, "Update failed", 500);
   }
 }

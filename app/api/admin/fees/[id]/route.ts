@@ -33,6 +33,10 @@ async function handlePostPayment(request: Request, context: Context) {
   // 3. Business Logic
   const updatedRecord = addPaymentToStudentFeeRecord(id, { amount, date, method, receiptNumber });
 
+  try {
+    await cacheDel(`admin:fees:${id || 'global'}:*`);
+  } catch (e) {}
+
   if (updatedRecord) {
     // 4. Success Response
     return formatResponse(true, updatedRecord, null, 200);

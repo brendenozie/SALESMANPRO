@@ -13,8 +13,11 @@ async function handleGetLocations(request: Request) {
   // is often needed inside the handler logic (e.g., filtering based on user role/permissions).
   // We'll proceed with fetching all, as the original code did.
 
+  const { searchParams } = new URL(request.url);
+  const slug = searchParams.get("slug");
+  const adminSlug = searchParams.get("adminSlug");
   
-    const cacheKey = `admin:locations:${slug || adminSlug || 'global' || 'global'}:all`;
+  const cacheKey = `admin:locations:${slug || adminSlug || 'global' || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -146,7 +149,7 @@ async function handlePostLocation(request: Request) {
 
   // Return success response with status 201 via formatResponse wrapped by withApiHandler
   
-    try { await cacheDel(`admin:locations:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:locations:${slug || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newLocation, null, 201);
 }
 

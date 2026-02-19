@@ -39,8 +39,6 @@ function transformSubmissionResponse(submission: any) {
 // =======================================================================
 async function updateSubmission(request: Request, { params }: Params) {
   
-
-
   const { id } = params;
   const body = await request.json();
   const { score, feedback, ...rest } = body;
@@ -71,7 +69,7 @@ async function updateSubmission(request: Request, { params }: Params) {
 
     const responseData = transformSubmissionResponse(updatedSubmission);
     
-    try { await cacheDel(`admin:exam-submissions:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:exam-submissions:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { data: responseData }, null, 200);
   } catch (error: any) {
     if (error.code === 'P2025') { // Record not found
@@ -88,8 +86,6 @@ async function updateSubmission(request: Request, { params }: Params) {
 // =======================================================================
 async function deleteSubmission(request: Request, { params }: Params) {
   
-
-
   const { id } = params;
 
   try {
@@ -97,7 +93,7 @@ async function deleteSubmission(request: Request, { params }: Params) {
       where: { id },
     });
     
-    try { await cacheDel(`admin:exam-submissions:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:exam-submissions:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { message: "Exam submission deleted successfully", deletedId: deletedSubmission.id }, null, 200);
   } catch (error: any) {
     if (error.code === 'P2025') {

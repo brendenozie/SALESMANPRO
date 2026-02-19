@@ -15,8 +15,6 @@ const VALID_REGISTRATION_STATUSES = ["REGISTERED", "ATTENDED", "CANCELLED", "WAI
 async function getRegistrations(request: Request) {
   // Authentication check
   
-
-
   const { searchParams } = new URL(request.url);
   const eventId = searchParams.get('eventId');
   const userId = searchParams.get('userId');
@@ -48,12 +46,13 @@ async function getRegistrations(request: Request) {
   }
 
   
-    const cacheKey = `admin:event-registrations:${companyId || 'global'}:all`;
+    const cacheKey = `admin:event-registrations:${eventId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const registrations = await prisma.eventRegistration.findMany({
     where: whereClause,
     include: {
@@ -88,12 +87,6 @@ async function getRegistrations(request: Request) {
     },
   });
 
-  try {
-    if (registrations) {
-      await cacheSet(cacheKey, registrations, 60);
-    }
-  } catch (e) {}
-
   // Transform the data to flatten relations
   const response = registrations.map((registration) => ({
     id: registration.id,
@@ -113,6 +106,12 @@ async function getRegistrations(request: Request) {
     status: registration.status,
   }));
 
+  try {
+    if (response) {
+      await cacheSet(cacheKey, response, 60);
+    }
+  } catch (e) {}
+
   return formatResponse(true, { data: response }, null, 200);
 }
 
@@ -122,9 +121,7 @@ async function getRegistrations(request: Request) {
 // =======================================================================
 async function createRegistration(request: Request) {
   // Authentication check
-  
-
-
+ 
   const body = await request.json();
   const {
     eventId,
@@ -216,7 +213,7 @@ async function createRegistration(request: Request) {
   };
 
   
-    try { await cacheDel(`admin:event-registrations:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:event-registrations:${newRegistration.eventId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { data: responseData }, null, 201);
 }
 

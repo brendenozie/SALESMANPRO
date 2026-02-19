@@ -17,15 +17,16 @@ type RouteContext = {
 
 // --- GET Handler Logic (Fetch a single property by ID) ---
 const getPropertyLogic = async (request: Request, { params }: RouteContext) => {
+
     const { id } = params;
 
-    
-    const cacheKey = `admin:fitness-report:${'global' || 'global'}:all`;
+    const cacheKey = `admin:fitness-report:${id || 'global'}:all`;    
 
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
+    try {
+        const cached = await cacheGet(cacheKey);
+        if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+    } catch (e) {}
+
   const property = await prisma.property.findUnique({
         where: { id },
         include: {
@@ -105,7 +106,7 @@ const putPropertyLogic = async (request: Request, { params }: RouteContext) => {
 
         // Return 200 success response
         
-    try { await cacheDel(`admin:fitness-report:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:fitness-report:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedProperty, 'Property updated successfully', 200);
     } catch (error: any) {
         if (error.code === 'P2025') { // Prisma error code for record not found
@@ -128,7 +129,7 @@ const deletePropertyLogic = async (request: Request, { params }: RouteContext) =
         });
         // Return 200 success response
         
-    try { await cacheDel(`admin:fitness-report:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:fitness-report:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, 'Property deleted successfully', 200);
     } catch (error: any) {
         if (error.code === 'P2025') { // Prisma error code for record not found

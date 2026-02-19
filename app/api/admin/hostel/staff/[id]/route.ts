@@ -1,6 +1,7 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   try {
@@ -19,9 +20,9 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       }
     });
 
-    return NextResponse.json(updatedStaff);
+    return formatResponse(true, updatedStaff, "Staff updated successfully", 200);
   } catch (error) {
-    return NextResponse.json({ error: "Update failed" }, { status: 500 });
+    return formatResponse(false, null, "Update failed", 500);
   }
 }
 
@@ -33,8 +34,8 @@ export async function DELETE( req: Request, { params }: { params: { id: string }
       where: { id }
     });
 
-    return NextResponse.json({ message: "Staff deleted successfully" });
+    return formatResponse(true, null, "Staff deleted successfully", 200);
   } catch (error) {
-    return NextResponse.json({ error: "Delete failed" }, { status: 500 });
+    return formatResponse(false, null, "Delete failed", 500);
   }
 }

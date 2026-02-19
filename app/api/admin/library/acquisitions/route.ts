@@ -9,10 +9,24 @@ const getOrders = async (request: Request) => {
   const companyId = searchParams.get("companyId");
   if (!companyId) return formatResponse(false, null, "Company ID required", 400);
 
+  const cacheKey = `admin:libraryAcquisitions:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   const orders = await prisma.libraryAcquisition.findMany({
     where: { companyId },
     orderBy: { createdAt: 'desc' }
   });
+
+  try {
+    if (orders) {
+      await cacheSet(cacheKey, orders, 60);
+    }
+  } catch (e) {}
+
   return formatResponse(true, orders, "Orders synced", 200);
 };
 
@@ -39,6 +53,9 @@ const updateStatus = async (request: Request) => {
     }
     return order;
   });
+
+  // Invalidate relevant caches
+  try { await cacheDel(`admin:libraryAcquisitions:${companyId || 'global'}:*`); } catch (e) {}
 
   return formatResponse(true, result, "Inventory updated", 200);
 };

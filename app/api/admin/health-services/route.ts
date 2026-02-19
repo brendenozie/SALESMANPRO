@@ -20,7 +20,6 @@ async function formatServiceData(service: any) {
   };
 }
 
-
 async function handleGetServices(request: Request, { params }: RouteParams) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
@@ -48,27 +47,29 @@ async function handleGetServices(request: Request, { params }: RouteParams) {
     ];
   }
 
-  
-    const cacheKey = `admin:health-services:${companyId || 'global'}:all`;
+  const cacheKey = `admin:health-services:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const services = await prisma.service.findMany({
     where: whereClause,
     orderBy: { name: 'asc' }, // Order by service name
   });
 
-  try {
-    if (services) {
-      await cacheSet(cacheKey, services, 60);
-    }
-  } catch (e) {}
-
   const formattedServices = await Promise.all(
     services.map(async (service) => formatServiceData(service))
   );
+
+  try {
+    if (formattedServices) {
+      await cacheSet(cacheKey, formattedServices, 60);
+    }
+  } catch (e) {
+    console.error("Error caching health services data:", e);
+  }
 
   // Return the data; withApiHandler will wrap it in success: true and status 200
   return formatResponse(true, formattedServices, "Services fetched successfully", 200);

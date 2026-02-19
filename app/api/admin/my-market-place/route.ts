@@ -47,15 +47,10 @@ async function handleGetListings(req: Request, { params }: RouteParams) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const total = await prisma.marketplaceListings.count({
     where: whereClause,
   });
-
-  try {
-    if (total) {
-      await cacheSet(cacheKey, total, 60);
-    }
-  } catch (e) {}
 
   // 3. Fetch the paginated slice
   const listings = await prisma.marketplaceListings.findMany({
@@ -71,6 +66,12 @@ async function handleGetListings(req: Request, { params }: RouteParams) {
 
   // 4. Build pagination meta
   const totalPages = Math.ceil(total / limit);
+
+  try {
+    if (listings) {
+      await cacheSet(cacheKey, { results: listings, meta: { total, page, limit, totalPages } }, 60);
+    }
+  } catch (e) {}
 
   // 5. Return the full data structure
   // withApiHandler wraps this result in formatResponse(true, data, null, 200)

@@ -1,20 +1,21 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const companyId = searchParams.get("companyId");
 
-  if (!companyId) return NextResponse.json({ error: "Missing companyId" }, { status: 400 });
-
+  if (!companyId) return formatResponse(false, null, "Missing companyId", 400);
   
-    const cacheKey = `admin:blocks:${companyId || 'global'}:all`;
+  const cacheKey = `admin:blocks:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const blocks = await prisma.hostelBlock.findMany({
     where: { companyId },
     include: {
@@ -28,12 +29,6 @@ export async function GET(req: Request) {
     }
   });
 
-  try {
-    if (blocks) {
-      await cacheSet(cacheKey, blocks, 60);
-    }
-  } catch (e) {}
-
   // Transform data to include aggregated stats the UI expects
   const formattedBlocks = blocks.map(block => ({
     ...block,
@@ -42,7 +37,15 @@ export async function GET(req: Request) {
     totalOccupancy: block.rooms.reduce((acc, room) => acc + room.allocations.length, 0),
   }));
 
-  return NextResponse.json({ data: formattedBlocks });
+  try {
+    if (formattedBlocks) {
+      await cacheSet(cacheKey, formattedBlocks, 60);
+    }
+  } catch (e) {
+    console.error("Error caching blocks data:", e);
+  }
+
+  return formatResponse(true, formattedBlocks, "Blocks fetched successfully", 200);
 }
 
 export async function POST(req: Request) {
@@ -53,21 +56,22 @@ export async function POST(req: Request) {
     data: { name, type, companyId }
   });
 
-  return NextResponse.json({ data: block });
+  return formatResponse(true, block, "Block created successfully", 201);
 }
 
 export async function DELETE(req: Request) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
 
-  if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
+  if (!id) return formatResponse(false, null, "ID required", 400);
 
   try {
     await prisma.hostelBlock.delete({ where: { id } });
     
-    try { await cacheDel(`admin:blocks:${'global' || 'global'}:*`); } catch (e) {}
-    return NextResponse.json({ success: true });
+    try { await cacheDel(`admin:blocks:${id || 'global'}:*`); } catch (e) {}
+
+    return formatResponse(true, null, "Block deleted successfully", 200);
   } catch (error) {
-    return NextResponse.json({ error: "Cannot delete block with active rooms" }, { status: 400 });
+    return formatResponse(false, null, "Cannot delete block with active rooms", 400);
   }
 }

@@ -52,6 +52,7 @@ async function getAppointmentReport(request: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const appointments = await prisma.appointment.findMany({
     where: whereClause,
     include: {
@@ -68,12 +69,6 @@ async function getAppointmentReport(request: Request) {
     },
     orderBy: { date: 'desc' },
   });
-
-  try {
-    if (appointments) {
-      await cacheSet(cacheKey, appointments, 60);
-    }
-  } catch (e) {}
 
   // 2. Format Appointment Summary
   const appointmentSummary = appointments.map(appt => {
@@ -101,6 +96,18 @@ async function getAppointmentReport(request: Request) {
     acc[appt.status] = (acc[appt.status] || 0) + 1;
     return acc;
   }, {} as { [key: string]: number });
+
+    try{
+      if (appointmentSummary) {
+        await cacheSet(cacheKey, {
+          summary: appointmentSummary,
+          statusCounts,
+          totalAppointments: appointments.length,
+        }, 60);
+      }
+    } catch (e) {
+      console.error("Error caching appointment report:", e);
+    }
 
   // 4. Return formatted success response
   return formatResponse(true, {

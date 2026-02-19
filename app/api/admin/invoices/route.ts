@@ -32,23 +32,17 @@ async function handleGetInvoices(request: Request, { params }: RouteParams) {
     return formatResponse(false, null, "Invalid sortOrder parameter", 400);
   }
 
-  
-    const cacheKey = `admin:invoices:${companyId || 'global'}:all`;
+  const cacheKey = `admin:invoices:${adminSlug || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const company = await prisma.company.findUnique({
     where: { slug: adminSlug },
     select: { id: true }
   });
-
-  try {
-    if (company) {
-      await cacheSet(cacheKey, company, 60);
-    }
-  } catch (e) {}
 
   if (!company) {
     return formatResponse(false, null, "Company not found", 404);
@@ -120,6 +114,16 @@ async function handleGetInvoices(request: Request, { params }: RouteParams) {
 
   // withApiHandler will wrap this result in formatResponse(true, ...) with status 200
   
+  try {
+    await cacheSet(cacheKey, {
+      invoices: formattedInvoices,
+      pagination: {
+        totalItems,
+        totalPages: Math.ceil(totalItems / limit),
+      },
+    }, 60);
+  } catch (e) {}
+
   return formatResponse(true, {
     invoices: formattedInvoices,
     pagination: {
@@ -211,7 +215,7 @@ async function handlePostInvoice(request: Request, { params }: RouteParams) {
 
   // Return success response with status 201
   
-    try { await cacheDel(`admin:invoices:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:invoices:${adminSlug || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { message: "Invoice generated successfully", invoice: newInvoice }, null, 201);
 }
 

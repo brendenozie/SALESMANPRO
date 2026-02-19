@@ -29,6 +29,7 @@ async function handleGetOffers(request: Request, { params }: RouteParams) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const offers = await prisma.offerContract.findMany({
     where: {
       companyId: companyId,
@@ -49,12 +50,6 @@ async function handleGetOffers(request: Request, { params }: RouteParams) {
     },
   });
 
-  try {
-    if (offers) {
-      await cacheSet(cacheKey, offers, 60);
-    }
-  } catch (e) {}
-
   // Format the response to match the frontend's expected OfferContract type
   const formattedOffers = offers.map(offer => ({
     id: offer.id,
@@ -73,6 +68,12 @@ async function handleGetOffers(request: Request, { params }: RouteParams) {
     createdAt: offer.createdAt.toISOString(),
     updatedAt: offer.updatedAt.toISOString(),
   }));
+
+  try {
+    if (formattedOffers) {
+      await cacheSet(cacheKey, { results: formattedOffers }, 60);
+    }
+  } catch (e) {}
 
   // withApiHandler handles wrapping this result in a success formatResponse with status 200
   return formatResponse(true, { results: formattedOffers }, "Offers fetched successfully", 200);
@@ -154,7 +155,9 @@ async function handlePostOffer(request: Request, { params }: RouteParams) {
     // Explicitly return success with status 201
     
     try { await cacheDel(`admin:offers:${companyId || 'global'}:*`); } catch (e) {}
+
     return formatResponse(true, newOffer, null, 201);
+    
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
       // Prisma error for record not found (e.g., if foreign key relations fail)

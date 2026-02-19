@@ -15,13 +15,13 @@ async function handleGetInquiries(request: Request) {
     throw new Error("Company ID is required to fetch inquiries.");
   }
 
-  
-    const cacheKey = `admin:inquiries:${companyId || 'global'}:all`;
+  const cacheKey = `admin:inquiries:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const inquiries = await prisma.inquiry.findMany({
     where: {
       companyId: companyId,
@@ -33,7 +33,7 @@ async function handleGetInquiries(request: Request) {
 
   try {
     if (inquiries) {
-      await cacheSet(cacheKey, inquiries, 60);
+      await cacheSet(cacheKey, { results: inquiries }, 60);
     }
   } catch (e) {}
 

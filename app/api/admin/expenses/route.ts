@@ -1,11 +1,14 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function GET(req: Request) {
   try {
     
-    const cacheKey = `admin:expenses:${'global' || 'global'}:all`;
+    const { searchParams } = new URL(req.url);
+    const companyId = searchParams.get('companyId');
+    const cacheKey = `admin:expenses:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -20,9 +23,9 @@ export async function GET(req: Request) {
       await cacheSet(cacheKey, expenses, 60);
     }
   } catch (e) {}
-    return NextResponse.json(expenses);
+    return formatResponse(true, expenses, null, 200);
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });
+    return formatResponse(false, null, "Failed to fetch expenses", 500);
   }
 }
 
@@ -41,5 +44,7 @@ export async function POST(req: Request) {
     }
   });
 
-  return NextResponse.json(expense);
+  try { await cacheDel(`admin:expenses:${schoolId || 'global'}:all`); } catch (e) {}
+
+  return formatResponse(true, expense, null, 200);
 }

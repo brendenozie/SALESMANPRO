@@ -53,7 +53,7 @@ async function handlePutOrderItem(req: Request, { params }: RouteParams) {
 
     // withApiHandler wraps this result in a success formatResponse with status 200
     
-    try { await cacheDel(`admin:orders:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:orders:${orderItemId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Order item and associated order status updated successfully.", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

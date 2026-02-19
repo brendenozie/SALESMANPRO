@@ -34,7 +34,7 @@ async function getInvoice(
 
   // --- Data Fetching ---
   
-    const cacheKey = `admin:health-billing:${'global' || 'global'}:all`;
+    const cacheKey = `admin:health-billing:${params.adminSlug || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -95,7 +95,7 @@ async function updateInvoice(
   // --- Success Response ---
   const formattedUpdatedInvoice = await formatInvoiceData(updatedInvoice);
   
-    try { await cacheDel(`admin:health-billing:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:health-billing:${params.adminSlug || 'global'}:*`); } catch (e) {}
     return formatResponse(true, formattedUpdatedInvoice, "Invoice updated successfully.", 200);
 }
 
@@ -119,7 +119,7 @@ async function deleteInvoice(
 
   // --- Success Response ---
   
-    try { await cacheDel(`admin:health-billing:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:health-billing:${params.adminSlug || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { message: "Invoice deleted successfully" }, "Invoice deleted successfully.", 200);
 }
 

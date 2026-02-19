@@ -21,6 +21,7 @@ async function fetchBlogs(req: Request) {
     // Return a standardized 400 response via formatResponse
     return formatResponse(false, null, "Missing required query parameter: companyId.", 400);
   }
+
   if (isNaN(limit) || limit <= 0 || isNaN(page) || page <= 0) {
     // Return a standardized 400 response via formatResponse
     return formatResponse(false, null, "'limit' and 'page' must be positive integers.", 400);
@@ -28,21 +29,16 @@ async function fetchBlogs(req: Request) {
 
   // --- Data Fetching ---
   
-    const cacheKey = `admin:get-all-blogs:${companyId || 'global'}:all`;
+  const cacheKey = `admin:get-all-blogs:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const totalItems = await prisma.blog.count({
     where: { companyId }
   });
-
-  try {
-    if (totalItems) {
-      await cacheSet(cacheKey, totalItems, 60);
-    }
-  } catch (e) {}
 
   const results = await prisma.blog.findMany({
     where: { companyId },
@@ -62,8 +58,11 @@ async function fetchBlogs(req: Request) {
 
   // --- Success Response ---
   // Return the raw data. `withApiHandler` will wrap this in a 200 OK NextResponse.
+
   
-      return formatResponse(true, {
+  try {
+    if (totalItems) {
+      await cacheSet(cacheKey, {
               meta: {
                 companyId,
                 totalItems,
@@ -72,7 +71,20 @@ async function fetchBlogs(req: Request) {
                 perPage: limit,
               },
               results,
-            }, 'Sales agents fetched successfully', 200);
+            }, 60);
+    }
+  } catch (e) {}
+  
+  return formatResponse(true, {
+              meta: {
+                companyId,
+                totalItems,
+                totalPages,
+                currentPage: page,
+                perPage: limit,
+              },
+              results,
+            }, 'Blogs fetched successfully', 200);
   
 }
 

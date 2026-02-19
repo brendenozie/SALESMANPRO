@@ -13,6 +13,13 @@ const getMembersLogic = async (request: Request) => {
     return formatResponse(false, null, "Company ID is required.", 400);
   }
 
+  const cacheKey = `admin:libraryMembers:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   const members = await prisma.libraryMember.findMany({
     where: { companyId },
     include: {
@@ -44,6 +51,12 @@ const getMembersLogic = async (request: Request) => {
     orderBy: { createdAt: "desc" },
   });
 
+  try {
+    if (members) {
+      await cacheSet(cacheKey, members, 60);
+    }
+  } catch (e) {}
+
   return formatResponse(true, members, "Library directory retrieved", 200);
 };
 
@@ -55,6 +68,8 @@ const postMemberLogic = async (request: Request) => {
   if (!profileId || !type || !memberId || !companyId) {
     return formatResponse(false, null, "Missing required fields", 400);
   }
+
+  const cacheKey = `admin:libraryMembers:${companyId || 'global'}:all`;
 
   // Check if this profile is already onboarded to prevent duplicates
   const existingMember = await prisma.libraryMember.findFirst({
@@ -99,6 +114,9 @@ const postMemberLogic = async (request: Request) => {
       libraryIssuances: { include: { fines: true } } // Return empty arrays to match frontend structure
     },
   });
+
+  // Invalidate cache for members list
+  try { await cacheDel(cacheKey); } catch (e) {}
 
   return formatResponse(true, newMember, "Member successfully onboarded", 201);
 };

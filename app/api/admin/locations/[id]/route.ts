@@ -14,8 +14,11 @@ type RouteParams = { params: { id: string } };
 async function handleGetLocation(request: Request, { params }: RouteParams) {
   const { id } = params;
 
-  
-    const cacheKey = `admin:locations:${slug || adminSlug || 'global' || 'global'}:all`;
+  const { searchParams } = new URL(request.url);
+  const slug = searchParams.get("slug");
+  const adminSlug = searchParams.get("adminSlug");
+
+  const cacheKey = `admin:locations:${slug || adminSlug || 'global' || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -29,16 +32,17 @@ async function handleGetLocation(request: Request, { params }: RouteParams) {
     },
   });
 
+  if (!location) {
+    // Return explicit failure response for 404
+    return formatResponse(false, null, 'Location not found.', 404);
+  }
+
   try {
     if (location) {
       await cacheSet(cacheKey, location, 60);
     }
   } catch (e) {}
 
-  if (!location) {
-    // Return explicit failure response for 404
-    return formatResponse(false, null, 'Location not found.', 404);
-  }
 
   // withApiHandler wraps this successful result in formatResponse(true, location) with status 200
   return formatResponse(true, location, "Location fetched successfully", 200);
@@ -68,7 +72,7 @@ async function handlePatchLocation(request: Request, { params }: RouteParams) {
       },
     });
     
-    try { await cacheDel(`admin:locations:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:locations:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedLocation, "Location updated successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -150,7 +154,7 @@ async function handlePutLocation(request: Request, { params }: RouteParams) {
   });
 
   
-    try { await cacheDel(`admin:locations:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:locations:${locationId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedLocation, "Location updated successfully", 200);
 }
 
@@ -189,7 +193,7 @@ async function handleDeleteLocation(request: Request, { params }: RouteParams) {
 
   // Return success response with 204 No Content (standard for DELETE)
   
-    try { await cacheDel(`admin:locations:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:locations:${locationId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Location deleted successfully", 204);
 }
 

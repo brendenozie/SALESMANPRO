@@ -40,12 +40,9 @@ function transformQuestionResponse(question: any) {
 // =======================================================================
 async function getQuestion(request: Request, { params }: Params) {
   
-
-
   const { id } = params;
 
-  
-    const cacheKey = `admin:exam-questions:${'global' || 'global'}:all`;
+  const cacheKey = `admin:exam-questions:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -85,8 +82,6 @@ async function getQuestion(request: Request, { params }: Params) {
 // =======================================================================
 async function updateQuestion(request: Request, { params }: Params) {
   
-
-
   const { id } = params;
   const body = await request.json();
   const {
@@ -156,7 +151,7 @@ async function updateQuestion(request: Request, { params }: Params) {
 
     const responseData = transformQuestionResponse(updatedQuestion);
     
-    try { await cacheDel(`admin:exam-questions:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:exam-questions:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { data: responseData }, null, 200);
   } catch (error: any) {
     if (error.code === 'P2025') { // Record not found
@@ -172,8 +167,6 @@ async function updateQuestion(request: Request, { params }: Params) {
 // Deletes an ExamQuestion by ID.
 // =======================================================================
 async function deleteQuestion(request: Request, { params }: Params) {
-  
-
 
   const { id } = params;
 
@@ -191,7 +184,7 @@ async function deleteQuestion(request: Request, { params }: Params) {
     });
 
     
-    try { await cacheDel(`admin:exam-questions:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:exam-questions:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { message: "Exam question deleted successfully", deletedId: deletedQuestion.id }, null, 200);
   } catch (error: any) {
     if (error.code === 'P2003') { // Foreign key constraint failed

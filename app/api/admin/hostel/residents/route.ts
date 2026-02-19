@@ -1,6 +1,7 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -31,6 +32,7 @@ export async function GET(req: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const residents = await prisma.hostelAllocation.findMany({
       where: whereClause,
       include: {
@@ -52,7 +54,9 @@ export async function GET(req: Request) {
     if (residents) {
       await cacheSet(cacheKey, residents, 60);
     }
-  } catch (e) {}
+  } catch (e) {
+    console.error("Error caching residents data:", e);
+  }
 
     const data = residents.map((res) => {
       // Safety check: ensure hostelMember exists before processing
@@ -72,10 +76,18 @@ export async function GET(req: Request) {
       };
     }).filter(Boolean); // Remove any null entries
 
-    return NextResponse.json({ data });
+    try {
+      if (data) {
+        await cacheSet(cacheKey, data, 60); // Cache for 60 seconds
+      }
+    } catch (e) {
+      console.error("Error caching formatted residents data:", e);
+    }
+
+    return formatResponse(true, data, "Residents fetched successfully", 200);
   } catch (error) {
     console.error("[RESIDENTS_GET_ERROR]", error);
-    return NextResponse.json({ error: "Failed to fetch residents" }, { status: 500 });
+    return formatResponse(false, null, "Failed to fetch residents", 500);
   }
 }
 

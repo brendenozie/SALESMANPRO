@@ -14,6 +14,13 @@ const searchProfilesLogic = async (request: Request) => {
 
   let results = [];
 
+  const cacheKey = `admin:hostel:residents:search:${type}:${query}:${companyId}`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   if (type === "STUDENT") {
     const students = await prisma.student.findMany({
       where: {
@@ -57,6 +64,14 @@ const searchProfilesLogic = async (request: Request) => {
       subtext: e.specialty || "Staff",
       type: "EDUCATOR"
     }));
+  }
+
+  try {
+    if (results) {
+      await cacheSet(cacheKey, results, 60); // Cache for 60 seconds
+    }
+  } catch (e) {
+    console.error("Error caching search results:", e);
   }
 
   return formatResponse(true, results, "Profiles found", 200);

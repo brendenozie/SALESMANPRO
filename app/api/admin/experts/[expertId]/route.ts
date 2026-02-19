@@ -119,6 +119,9 @@ async function updateExpert(request: Request, { params }: Params) {
     });
 
     const formattedUpdatedExpert = formatExpertData(updatedExpertData);
+
+    try { await cacheDel(`admin:experts:${company.id || 'global'}:*`); } catch (e) {}
+
     return formatResponse(true, { data: formattedUpdatedExpert }, null, 200);
 
   } catch (error: any) {
@@ -166,10 +169,11 @@ async function deleteExpert(request: Request, { params }: Params) {
     await prisma.expert.delete({
       where: { id: expertId },
     });
-
     
-    try { await cacheDel(`admin:experts:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:experts:${company.id || 'global'}:*`); } catch (e) {}
+    
     return formatResponse(true, { message: 'Expert deleted successfully.' }, null, 200);
+
   } catch (error : any) {
     console.error(`Error deleting expert ${expertId}:`, error);
     if (error.code === 'P2025') {

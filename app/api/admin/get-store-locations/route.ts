@@ -25,6 +25,12 @@ async function fetchCompanyLocations(
     return formatResponse(false, null, "Missing required route parameter: id (companyId)", 400);
   }
 
+  const cacheKey = `admin:get-store-locations:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
 
   // 2. Authorization (Verify that the requested company belongs to the current user)
   const company = await prisma.company.findUnique({
@@ -107,6 +113,12 @@ async function fetchCompanyLocations(
     // Include the companyLocationId for reference
     companyLocationId: cl.id,
   }));
+
+  try {
+    if (locationsWithOverrides) {
+      await cacheSet(cacheKey, locationsWithOverrides, 60);
+    }
+  } catch (e) {}
 
   // 5. Success Response
   // formatResponse will return the 200 OK structure.

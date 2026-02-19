@@ -30,6 +30,15 @@ const updateBookLogic = async (request: Request, { params }: RouteParams) => {
     },
     include: { category: true }
   });
+  
+  try {
+    if (updatedBook) {
+      const cacheKey = `admin:library:book:${id || 'global'}:all`;
+      await cacheSet(cacheKey, updatedBook, 60);
+    }
+  } catch (e) {
+    console.error("Error caching updated book:", e);
+  }
 
   return formatResponse(true, updatedBook, "Archive record updated", 200);
 };
@@ -47,6 +56,13 @@ const deleteBookLogic = async (request: Request, { params }: RouteParams) => {
   await prisma.libraryBook.delete({
     where: { id, companyId },
   });
+
+  try {
+    const cacheKey = `admin:library:book:${id || 'global'}:all`;
+    await cacheDel(cacheKey);
+  } catch (e) {
+    console.error("Error deleting book from cache:", e);
+  }
 
   return formatResponse(true, null, "Volume removed from archive", 200);
 };

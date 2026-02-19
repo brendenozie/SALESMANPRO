@@ -27,6 +27,8 @@ export async function POST(req: Request) {
     const currentMonth = new Date().getMonth() + 1;
     const currentYear = new Date().getFullYear();
 
+    
+
     // 3. Transaction (atomic & auditable)
     const result = await prisma.$transaction(async (tx) => {
       // Get existing salary
@@ -73,6 +75,11 @@ export async function POST(req: Request) {
 
       return updatedProfile;
     });
+
+      // 4. Cache Invalidation
+      try {
+        await cacheDel(`admin:payroll:${staffId || 'global'}:*`);
+      } catch (e) {}
 
     return NextResponse.json({ success: true, data: result });
   } catch (error: any) {

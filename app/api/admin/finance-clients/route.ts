@@ -1,16 +1,11 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/clients/route.ts
-import { PrismaClient } from '@prisma/client';
+
 // 1. Incorporate the new imports
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse'; 
 
-// Removed old imports:
-// import { NextApiRequest, NextApiResponse } from 'next'; // Not standard for App Router
-// import { formatResponse } from "@/lib/formatResponse";
-
-
-const prisma = new PrismaClient();
+import prisma from "@/server/db/prismadb";
 
 // --- GET Handler Logic ---
 // Note: We use the function wrapper to apply the HOF
@@ -29,6 +24,7 @@ const getClientsLogic = async (req: Request) => {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const clients = await prisma.client.findMany({
     where: { companyId: companyId || undefined },
     include: {
@@ -92,6 +88,7 @@ const postClientLogic = async (req: Request) => {
   // Use formatResponse for success
   
     try { await cacheDel(`admin:finance-clients:${companyId || 'global'}:*`); } catch (e) {}
+    
     return formatResponse(true, newClient, 'Client created successfully', 201);
 };
 

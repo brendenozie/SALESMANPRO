@@ -94,6 +94,10 @@ const putClientLogic = async (request: Request, context: RouteContext) => {
         photoUrl: updatedClientData.photoUrl || 'https://placehold.co/128x128/E0E7FF/4338CA?text=No+Photo',
     };
 
+    try {
+        await cacheSet(`admin:fitness-clients:${company.id || 'global'}:all`, formattedUpdatedClient, 60);
+    } catch (e) {}
+
     // Use formatResponse for success
     return formatResponse(true, formattedUpdatedClient, 'Client updated successfully', 200);
 };
@@ -135,7 +139,7 @@ const deleteClientLogic = async (request: Request, context: RouteContext) => {
 
     // Use formatResponse for success
     
-    try { await cacheDel(`admin:fitness-clients:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:fitness-clients:${company.id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, 'Client deleted successfully.', 200);
 };
 

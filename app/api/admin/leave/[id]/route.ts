@@ -2,6 +2,7 @@ import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
 // ✅ PUT handler (update campaign)
 const updateCampaign = async (request: Request, context: { params: { id: string }; user?: any }) => {
@@ -19,7 +20,8 @@ const updateCampaign = async (request: Request, context: { params: { id: string 
     data: updateData,
   });
 
-  return NextResponse.json(updatedCampaign, { status: 200 });
+  try { await cacheDel(`admin:campaigns:${id || 'global'}:*`); } catch (e) {}
+  return formatResponse(true, updatedCampaign, "Campaign updated", 200);
 };
 
 // ✅ DELETE handler (delete campaign)
@@ -31,7 +33,8 @@ const deleteCampaign = async (_request: Request, context: { params: { id: string
     where: { id },
   });
 
-  return new NextResponse(null, { status: 204 }); // No Content
+  try { await cacheDel(`admin:campaigns:${id || 'global'}:*`); } catch (e) {}
+  return formatResponse(true, null, "Campaign deleted", 200);
 };
 
 // ✅ Wrap both handlers with API handler

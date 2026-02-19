@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { formatResponse } from "@/lib/formatResponse";
 
 
 export async function GET(
@@ -12,12 +13,13 @@ export async function GET(
   try {
     // 1️⃣ Fetch fee record with required relations
     
-    const cacheKey = `admin:invoice:${'global' || 'global'}:all`;
+    const cacheKey = `admin:invoice:${params.recordId || 'global'}:all`;
 
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
+  // try {
+  //   const cached = await cacheGet(cacheKey);
+  //   if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  // } catch (e) {}
+
   const record = await prisma.studentFeeRecord.findUnique({
       where: { id: params.recordId },
       include: {
@@ -36,12 +38,6 @@ export async function GET(
         },
       },
     });
-
-  try {
-    if (record) {
-      await cacheSet(cacheKey, record, 60);
-    }
-  } catch (e) {}
 
     if (!record) {
       return NextResponse.json({ error: "Invoice not found" }, { status: 404 });

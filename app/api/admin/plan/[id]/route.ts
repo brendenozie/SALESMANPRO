@@ -42,8 +42,6 @@ const putHandler = async (
   { params }: { params: { id: string } }
 ) => {
   
-
-
   const { id } = params;
   const {
     name,
@@ -70,6 +68,8 @@ const putHandler = async (
     },
   });
 
+  try { await cacheDel(`admin:plans:${id || 'global'}:*`); } catch (e) {}
+
   return NextResponse.json(updatedPlan, { status: 200 });
 };
 
@@ -79,8 +79,6 @@ const deleteHandler = async (
   { params }: { params: { id: string } }
 ) => {
   
-
-
   const { id } = params;
 
   // Ensure plan is not tied to active subscriptions

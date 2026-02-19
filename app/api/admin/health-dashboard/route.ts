@@ -2,7 +2,7 @@ import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { ROLE } from "@prisma/client";
+import { ROLES } from "@prisma/client";
 
 
 async function getDashboardSummary(
@@ -14,22 +14,17 @@ async function getDashboardSummary(
 
   // 1. Find Company and Get Company ID
   
-    const cacheKey = `admin:health-dashboard:${companyId || 'global'}:all`;
+  const cacheKey = `admin:health-dashboard:${adminSlug || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const company = await prisma.company.findUnique({
     where: { slug: adminSlug },
     select: { id: true }
   });
-
-  try {
-    if (company) {
-      await cacheSet(cacheKey, company, 60);
-    }
-  } catch (e) {}
 
   if (!company) {
     return formatResponse(false, null, "Company not found.", 404);
@@ -42,7 +37,7 @@ async function getDashboardSummary(
   today.setHours(0, 0, 0, 0); // Start of today (UTC or local, depending on environment)
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1); // Start of tomorrow
-  const rolesFilter: ROLE[] = [ROLE.CLIENT, ROLE.CONSUMER, ROLE.STUDENT, ROLE.PARENT];
+  const rolesFilter: ROLES[] = [ROLES.CLIENT, ROLES.CONSUMER, ROLES.STUDENT, ROLES.PARENT];
   // const rolesFilter = ["CLIENT", "CONSUMER", "STUDENT", "PARENT"];
 
   // Pre-fetch all relevant patient/client User IDs for query filtering
@@ -131,6 +126,11 @@ async function getDashboardSummary(
   // Sort activity to ensure the mock item is in the correct order
   recentActivity.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
+  try{
+    if (recentActivity) {
+      await cacheSet(cacheKey, recentActivity, 60);
+    }
+  } catch (e) {}
 
   // 5. Success Response
   return formatResponse(true, {

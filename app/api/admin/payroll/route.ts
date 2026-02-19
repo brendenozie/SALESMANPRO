@@ -19,6 +19,7 @@ export async function GET(req: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const staffMembers = await prisma.staffProfile.findMany({
       where: { companyId: companyId as string },
       include: { user: { select: { name: true } } }
@@ -51,6 +52,13 @@ export async function GET(req: Request) {
       totalLiability: payrollRows.reduce((acc, curr) => acc + curr.net, 0),
       totalTax: payrollRows.reduce((acc, curr) => acc + curr.tax, 0),
     };
+
+    //cache
+
+    // const cacheKey = `admin:payroll:${companyId || 'global'}:${month}-${year}`;
+    try {
+      await cacheSet(cacheKey, { data: payrollRows, summary }, 60);
+    } catch (e) {}
 
     return NextResponse.json({ data: payrollRows, summary });
   } catch (error) {

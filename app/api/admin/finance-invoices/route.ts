@@ -1,16 +1,11 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/invoices/route.ts
-import { PrismaClient } from '@prisma/client';
+
 // Incorporate the new imports
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse'; 
 
-// Removed old imports:
-// import { NextApiRequest, NextApiResponse } from 'next';
-// import { verifyAuth } from '@/lib/verifyAuth';
-// import { NextResponse } from 'next/server'; // Will be handled by formatResponse
-
-const prisma = new PrismaClient();
+import prisma from "@/server/db/prismadb";
 
 // --- GET Handler Logic ---
 const getInvoicesLogic = async (req: Request) => {

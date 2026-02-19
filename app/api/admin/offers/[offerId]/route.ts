@@ -17,12 +17,13 @@ async function handleGetOffer(request: Request, { params }: RouteParams) {
   const { offerId } = params;
 
   
-    const cacheKey = `admin:offers:${'global' || 'global'}:all`;
+    const cacheKey = `admin:offers:${offerId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const offer = await prisma.offerContract.findUnique({
     where: { id: offerId },
     include: {
@@ -38,11 +39,6 @@ async function handleGetOffer(request: Request, { params }: RouteParams) {
     },
   });
 
-  try {
-    if (offer) {
-      await cacheSet(cacheKey, offer, 60);
-    }
-  } catch (e) {}
 
   if (!offer) {
     // Manually format a 404 response
@@ -67,6 +63,10 @@ async function handleGetOffer(request: Request, { params }: RouteParams) {
     createdAt: offer.createdAt.toISOString(),
     updatedAt: offer.updatedAt.toISOString(),
   };
+
+  try {
+    await cacheSet(cacheKey, formattedOffer, 60);
+  } catch (e) {}
 
   // withApiHandler wraps this result in a success formatResponse with status 200
   return formatResponse(true, formattedOffer, "Offer fetched successfully", 200);
@@ -148,8 +148,9 @@ async function handlePatchOffer(request: Request, { params }: RouteParams) {
       data: updateData,
     });
 
-    
-    try { await cacheDel(`admin:offers:${'global' || 'global'}:*`); } catch (e) {}
+    // Clear cache for this specific offer
+    try { await cacheDel(`admin:offers:${offerId || 'global'}:*`); } catch (e) {}
+
     return formatResponse(true, updatedOffer, "Offer updated successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -171,7 +172,7 @@ async function handleDeleteOffer(request: Request, { params }: RouteParams) {
     });
 
     
-    try { await cacheDel(`admin:offers:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:offers:${offerId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, 'Offer deleted successfully.', 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

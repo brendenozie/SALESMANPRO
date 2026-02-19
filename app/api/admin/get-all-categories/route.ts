@@ -25,12 +25,14 @@ async function fetchCategories(req: Request) {
 
   // --- Data Fetching ---
   
-    const cacheKey = `admin:get-all-categories:${'global' || 'global'}:all`;
+  const cacheKey = `admin:get-all-categories:${'global'}:all`;
+  // adminSlug || 
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const [totalCount, results] = await prisma.$transaction([
     // 1. Get total count
     prisma.productCategory.count(),
@@ -43,17 +45,27 @@ async function fetchCategories(req: Request) {
     }),
   ]);
 
-  try {
-    if (totalCount) {
-      await cacheSet(cacheKey, totalCount, 60);
-    }
-  } catch (e) {}
 
   // Calculate pagination metadata
   const totalPages = Math.ceil(totalCount / limit);
   // Using 0 to denote no next/previous page, consistent with original logic structure
   const nextPage = page < totalPages ? page + 1 : 0;
   const prevPage = page > 1 ? page - 1 : 0;
+
+  
+  try {
+    if (totalCount) {
+      await cacheSet(cacheKey, {
+          InfoResponse: {
+            count: totalCount,
+            next: nextPage,
+            pages: totalPages,
+            prev: prevPage
+          },
+          results: results,
+        }, 60);
+    }
+  } catch (e) {}
 
   // --- Success Response ---
   // Return the raw data structure. `withApiHandler` will wrap this in a 200 OK NextResponse.

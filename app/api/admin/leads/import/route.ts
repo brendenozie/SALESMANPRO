@@ -1,4 +1,5 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { formatResponse } from "@/lib/formatResponse";
 import prisma from "@/server/db/prismadb";
 import { NextResponse } from "next/server";
 
@@ -57,12 +58,9 @@ export async function POST(req: Request) {
     }
   }
 
-  return NextResponse.json({
-    success: true,
-    total: users.length,
-    created,
-    skipped,
-  });
+  try { await cacheDel(`admin:leads:${companyId || 'global'}:*`); } catch (e) {}  
+  
+  return formatResponse(true, { total: users.length, created, skipped }, "Import completed", 200);
 }
 
 // --- Helpers ---

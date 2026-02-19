@@ -1,6 +1,7 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -10,12 +11,13 @@ export async function GET(req: Request) {
 
   try {
     
-    const cacheKey = `admin:rooms:${'global' || 'global'}:all`;
+    const cacheKey = `admin:rooms:${blockId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const rooms = await prisma.hostelRoom.findMany({
       where: {
         block: { id: blockId }
@@ -30,12 +32,6 @@ export async function GET(req: Request) {
         }
       }
     });
-
-  try {
-    if (rooms) {
-      await cacheSet(cacheKey, rooms, 60);
-    }
-  } catch (e) {}
 
     // Transform data for the UI
     const transformedRooms = rooms.map(room => ({
@@ -53,9 +49,17 @@ export async function GET(req: Request) {
       hasMaintenance: room.maintenanceRequests.length > 0
     }));
 
-    return NextResponse.json({ data: transformedRooms });
+    try {
+      if (transformedRooms) {
+        await cacheSet(cacheKey, transformedRooms, 60); // Cache for 60 seconds
+      }
+    } catch (e) {
+      console.error("Error caching rooms data:", e);
+    }
+
+    return formatResponse(true, transformedRooms, "Rooms retrieved successfully", 200);
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch rooms" }, { status: 500 });
+    return formatResponse(false, null, "Failed to fetch rooms", 500);
   }
 }
 
@@ -66,7 +70,7 @@ export async function POST(req: Request) {
 
     // 1. Basic Validation
     if (!blockId || !roomNumber || !capacity || !type) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return formatResponse(false, null, "Missing required fields", 400);
     }
 
     // 2. Create the room in MongoDB
@@ -81,14 +85,14 @@ export async function POST(req: Request) {
     });
 
     
-    try { await cacheDel(`admin:rooms:${'global' || 'global'}:*`); } catch (e) {}
-    return NextResponse.json({ data: newRoom, message: "Room created successfully" }, { status: 201 });
+    try { await cacheDel(`admin:rooms:${blockId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, newRoom, "Room created successfully", 201);
   } catch (error: any) {
     // Handle Prisma unique constraint error (P2002) for [blockId, roomNumber]
     if (error.code === 'P2002') {
-      return NextResponse.json({ error: "Room number already exists in this block" }, { status: 409 });
+      return formatResponse(false, null, "Room number already exists in this block", 409);
     }
-    return NextResponse.json({ error: "Failed to create room" }, { status: 500 });
+    return formatResponse(false, null, "Failed to create room", 500);
   }
 }
 

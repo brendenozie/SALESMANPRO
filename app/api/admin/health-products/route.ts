@@ -16,22 +16,17 @@ async function getPosProducts(
 
   // 1. Find Company
   
-    const cacheKey = `admin:health-products:${companyId || 'global'}:all`;
+  const cacheKey = `admin:health-products:${adminSlug || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const company = await prisma.company.findUnique({
     where: { slug: adminSlug },
     select: { id: true }
   });
-
-  try {
-    if (company) {
-      await cacheSet(cacheKey, company, 60);
-    }
-  } catch (e) {}
 
   if (!company) {
     return formatResponse(false, null, "Company not found", 404);
@@ -77,6 +72,16 @@ async function getPosProducts(
     category: product.category || 'Uncategorized',
     stock: product.quantity || 0, // Ensure stock defaults to 0 if null
   }));
+
+  try{
+    if (formattedProducts) {
+      await cacheSet(cacheKey, {
+        products: formattedProducts,
+      }, 60);
+    }
+  } catch (e) {
+    console.error("Error caching products:", e);
+  }
 
   return formatResponse(true, formattedProducts, "POS products fetched successfully", 200);
 }

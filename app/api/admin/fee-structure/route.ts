@@ -14,6 +14,13 @@ const getFeeStructuresLogic = async (request: Request) => {
     return formatResponse(false, null, "Company ID is required to fetch fee structures.", 400);
   }
 
+  const cacheKey = `admin:fee-structure:${companyId || 'global'}:all`;
+  
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   const feeStructures = await prisma.feeStructure.findMany({
     where: { companyId },
     include: {
@@ -21,6 +28,12 @@ const getFeeStructuresLogic = async (request: Request) => {
     },
     orderBy: { createdAt: "desc" },
   });
+
+    try {
+    if (feeStructures) {
+      await cacheSet(`admin:fee-structure:${companyId || 'global'}:all`, feeStructures, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, feeStructures, "Fee structures retrieved successfully", 200);
 };
@@ -41,7 +54,7 @@ const postFeeStructureLogic = async (request: Request) => {
       400
     );
   }
-
+  
   // Check for unique constraint (companyId, name, year, term)
   const existingStructure = await prisma.feeStructure.findFirst({
     where: {
@@ -82,6 +95,10 @@ const postFeeStructureLogic = async (request: Request) => {
       items: true,
     },
   });
+
+  try {
+    await cacheDel(`admin:fee-structure:${companyId || 'global'}:*`);
+  } catch (e) {}
 
   return formatResponse(true, newFeeStructure, "Fee structure created successfully", 201);
 };

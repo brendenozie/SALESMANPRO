@@ -40,22 +40,16 @@ async function handleGetListings(req: Request, { params }: RouteParams) {
     );
   }
 
-  
     const cacheKey = `admin:bulk-create:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const total = await prisma.marketplaceListings.count({
     where: whereClause,
   });
-
-  try {
-    if (total) {
-      await cacheSet(cacheKey, total, 60);
-    }
-  } catch (e) {}
 
   const listings = await prisma.marketplaceListings.findMany({
     where: whereClause,
@@ -68,6 +62,12 @@ async function handleGetListings(req: Request, { params }: RouteParams) {
   });
 
   const totalPages = Math.ceil(total / limit);
+
+  try {
+    if (listings) {
+      await cacheSet(cacheKey, { results: listings, meta: { total, page, limit, totalPages } }, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(
     true,

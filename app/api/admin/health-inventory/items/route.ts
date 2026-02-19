@@ -32,22 +32,17 @@ async function getInventoryItems(
 
   // 1. Find Company
   
-    const cacheKey = `admin:items:${companyId || 'global'}:all`;
+  const cacheKey = `admin:items:${adminSlug || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const company = await prisma.company.findUnique({
     where: { slug: adminSlug },
     select: { id: true }
   });
-
-  try {
-    if (company) {
-      await cacheSet(cacheKey, company, 60);
-    }
-  } catch (e) {}
 
   if (!company) {
     return formatResponse(false, null, "Company not found", 404);
@@ -128,6 +123,19 @@ async function getInventoryItems(
     minStock: item.reorderThreshold || 0,
     lastUpdated: new Date(item.updatedAt || '').toISOString().split('T')[0],
   }));
+
+  try{
+    if (formattedInventory) {
+      await cacheSet(cacheKey, {
+        inventory: formattedInventory,
+        totalItems,
+        totalPages: Math.ceil(totalItems / limit),
+        currentPage: page,
+      }, 60);
+    }
+  } catch (e) {
+    console.error("Error caching inventory items:", e);
+  }
 
   return formatResponse(true, {
     inventory: formattedInventory,
@@ -235,6 +243,8 @@ async function createOrRestockItem(
     logEntry = transactionResult.log;
     responseMessage = "New inventory item added successfully";
   }
+
+  try { await cacheDel(`admin:items:${adminSlug || 'global'}:*`); } catch (e) {}
 
   return formatResponse(true, {
     item: inventoryItem,

@@ -43,12 +43,13 @@ async function getSalesReport(request: Request) {
 
   // 2. Fetch OrderItems with required related data
   
-    const cacheKey = `admin:sales:${companyId || 'global'}:all`;
+  const cacheKey = `admin:sales:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const orderItems = await prisma.orderItem.findMany({
     where: whereClause,
     include: {
@@ -82,12 +83,6 @@ async function getSalesReport(request: Request) {
     },
     orderBy: { createdAt: 'desc' },
   });
-
-  try {
-    if (orderItems) {
-      await cacheSet(cacheKey, orderItems, 60);
-    }
-  } catch (e) {}
 
   // 3. Perform Aggregation
   let totalSales = 0;
@@ -147,6 +142,21 @@ async function getSalesReport(request: Request) {
   const sortedDailySales = Object.keys(dailySales)
     .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
     .map(date => ({ date, revenue: dailySales[date] }));
+
+    try {
+      if (orderItems) {
+        await cacheSet(cacheKey, {
+          totalSales, 
+          totalProfit,
+          salesByProduct: Object.values(salesByProduct),
+          salesByDoctor: Object.values(salesByDoctor),
+          salesByPatient: Object.values(salesByPatient),
+          dailySales: sortedDailySales,
+        }, 60);
+      }
+    } catch (e) {
+      console.error("Error caching sales report:", e);
+    }
 
   // 5. Return formatted success response
   return formatResponse(true, {

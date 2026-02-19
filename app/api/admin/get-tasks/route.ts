@@ -6,7 +6,6 @@ import { formatResponse } from "@/lib/formatResponse";
 
 const PAGE_SIZE = 20;
 
-
 async function fetchPaginatedUsers(req: Request) {
   // NOTE: Authentication and method check are handled externally.
 
@@ -16,6 +15,11 @@ async function fetchPaginatedUsers(req: Request) {
   // The 'limit' and 'offset' parameters are ignored to enforce a consistent PAGE_SIZE,
   // but we read 'page' to calculate the skip value.
   const page = parseInt(searchParams.get("page") || "0", 10);
+  const limit = parseInt(searchParams.get("limit") || PAGE_SIZE.toString(), 10);
+  const offset = parseInt(searchParams.get("offset") || "0", 10);
+  const companyId = searchParams.get("companyId");
+
+  // --- Validation ---
   
   // You can still validate other parameters if necessary, but we focus on 'page' for skip calculation.
   if (isNaN(page) || page < 0) {
@@ -33,12 +37,13 @@ async function fetchPaginatedUsers(req: Request) {
   // --- Data Fetching ---
   // Use transaction for atomic count and fetch operations.
   
-    const cacheKey = `admin:get-tasks:${'global' || 'global'}:all`;
+    const cacheKey = `admin:get-tasks:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const [totalCount, results] = await prisma.$transaction([
     // 1. Get total count of all users (DO NOT use skip/take here)
     prisma.user.count(),
@@ -51,17 +56,25 @@ async function fetchPaginatedUsers(req: Request) {
     }),
   ]);
 
-  try {
-    if (totalCount) {
-      await cacheSet(cacheKey, totalCount, 60);
-    }
-  } catch (e) {}
-
   // --- Calculate Pagination Metadata ---
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
   // Using 0 to denote no next/previous page, consistent with original logic structure.
   const nextPage = page + 1 < totalPages ? page + 1 : 0;
   const prevPage = page > 0 ? page - 1 : 0;
+
+  try {
+    if (totalCount) {
+      await cacheSet(cacheKey,  {
+    InfoResponse: {
+      count: totalCount,
+      next: nextPage,
+      pages: totalPages,
+      prev: prevPage,
+    },
+    results: results,
+  } , 60);
+    }
+  } catch (e) {}
 
   // --- Success Response ---
   // Return the raw data structure. `withApiHandler` will wrap this in a 200 OK NextResponse.
@@ -73,7 +86,7 @@ async function fetchPaginatedUsers(req: Request) {
       prev: prevPage,
     },
     results: results,
-  }, 'Paginated users fetched successfully', 200);
+  }, 'Paginated tasks fetched successfully', 200);
 }
 
 // Wrap the core logic with the API handler for robust behavior.

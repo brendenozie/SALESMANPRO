@@ -12,10 +12,23 @@ const getSuppliers = async (request: Request) => {
 
   if (!companyId) return formatResponse(false, null, "Company ID required", 400);
 
+  // Check cache first
+  const cacheKey = `admin:librarySuppliers:${companyId}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Suppliers retrieved (Cached)", 200);
+  } catch (e) {}
+
   const suppliers = await prisma.librarySupplier.findMany({
     where: { companyId },
     orderBy: { name: 'asc' }
   });
+
+  // Cache the results for future requests
+  try {
+    await cacheSet(cacheKey, suppliers, 300); // Cache for 5 minutes
+  } catch (e) {}
 
   return formatResponse(true, suppliers, "Suppliers retrieved", 200);
 };
@@ -74,6 +87,19 @@ const postSupplier = async (request: Request) => {
 
     return { supplier, tempPassword };
   });
+
+    // Optional: Send welcome email with temp password (not implemented here)
+    // try { 
+      // await sendEmail(contactEmail, "Welcome to the Library System", `Your account has been created. Your temporary password is: ${result.tempPassword}`);
+    // } catch (e) {
+    //   // Log email failure but don't block supplier creation
+    //   console.error("Failed to send welcome email:", e);
+    // }
+
+    try {
+      // Invalidate suppliers list cache for this company
+      await cacheDel(`admin:librarySuppliers:${companyId}:all`);
+    } catch (e) {}
 
   return formatResponse(true, result, "Supplier onboarded with login access", 201);
 };

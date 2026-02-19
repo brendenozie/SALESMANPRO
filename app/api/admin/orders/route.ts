@@ -49,6 +49,7 @@ async function handleGetSellerOrders(req: Request, { params }: RouteParams) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const [orderItems, totalOrderItems] = await prisma.$transaction([
     prisma.orderItem.findMany({
       where: whereFilter,
@@ -69,12 +70,6 @@ async function handleGetSellerOrders(req: Request, { params }: RouteParams) {
     }),
     prisma.orderItem.count({ where: whereFilter }),
   ]);
-
-  try {
-    if (orderItems) {
-      await cacheSet(cacheKey, orderItems, 60);
-    }
-  } catch (e) {}
 
   // 3. Calculate Revenue Aggregates
   const [totalRevenueAgg, pendingRevenueAgg, completedRevenueAgg, orderItemsForMonthly] = await prisma.$transaction([
@@ -115,6 +110,27 @@ async function handleGetSellerOrders(req: Request, { params }: RouteParams) {
     monthlyRevenue[month] += item.price;
   });
 
+  //cache
+
+  try {
+      if (orderItems) {
+        await cacheSet(cacheKey, {
+          orderItems,
+          pagination: {
+            totalItems: totalOrderItems,
+            totalPages: Math.ceil(totalOrderItems / itemsPerPage),
+            currentPage: currentPage,
+            itemsPerPage: itemsPerPage,
+          },
+          revenue: {
+            total: totalRevenueAgg._sum.price || 0,
+            pending: pendingRevenueAgg._sum.price || 0,
+            completed: completedRevenueAgg._sum.price || 0,
+            monthly: monthlyRevenue,
+          },
+        }, 60);
+      }
+    } catch (e) {}  
 
   // 5. Return aggregated response
   return formatResponse(true, {

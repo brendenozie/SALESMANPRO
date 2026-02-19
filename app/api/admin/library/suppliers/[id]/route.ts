@@ -18,6 +18,14 @@ const getSupplierById = async (
     );
   }
 
+  // Optional: Check cache first
+  const cacheKey = `admin:librarySupplier:${companyId}:${id}`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return NextResponse.json({ success: true, data: cached, message: "Fetched (Cached)" });
+  } catch (e) {}
+
   const supplier = await prisma.librarySupplier.findFirst({
     where: {
       id,
@@ -30,6 +38,7 @@ const getSupplierById = async (
     //   },
     // },
   });
+  
 
   if (!supplier) {
     return NextResponse.json(
@@ -37,6 +46,11 @@ const getSupplierById = async (
       { status: 404 }
     );
   }
+
+  // Cache the supplier data
+  try {
+    await cacheSet(cacheKey, supplier, 60); // Cache for 60 seconds
+  } catch (e) {}
 
   return NextResponse.json({ success: true, data: supplier });
 };

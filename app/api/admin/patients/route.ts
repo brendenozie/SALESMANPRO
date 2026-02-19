@@ -52,14 +52,14 @@ export const GET = withApiHandler(async (request: Request) => {
   if (!companyId) {
     return formatResponse(false, null, "Missing companyId", 400);
   }
-
   
-    const cacheKey = `admin:patients:${companyId || 'global'}:all`;
+  const cacheKey = `admin:patients:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   let patients = await prisma.patient.findMany({
     where: { user: { companyId } }, // filter by company via user
     include: {
@@ -78,14 +78,6 @@ export const GET = withApiHandler(async (request: Request) => {
     orderBy: { createdAt: "desc" },
   });
 
-  try {
-    if (patients) {
-      await cacheSet(cacheKey, patients, 60);
-    }
-  } catch (e) {}
-
-  console.log(`Fetched ${patients.length} patients for companyId ${companyId}`);
-
   // Apply search filtering if searchTerm is provided
   if (searchTerm) {
     const lower = searchTerm.toLowerCase();
@@ -99,6 +91,11 @@ export const GET = withApiHandler(async (request: Request) => {
   }
 
   const enriched = await Promise.all(patients.map(formatPatientData));
+
+    try {
+      await cacheSet(cacheKey, enriched, 60);
+    } catch (e) {}
+    
   return formatResponse(true, enriched, null, 200);
 });
 

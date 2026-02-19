@@ -1,12 +1,10 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/clients/[id]/route.ts
-import { PrismaClient } from '@prisma/client';
-
 // Incorporate the new imports
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse'; 
 
-const prisma = new PrismaClient();
+import prisma from "@/server/db/prismadb";
 
 // Helper to extract ID and ensure it's a string, as required by Prisma where clause
 const getClientId = (req: Request, context: { params: { id: string } }) => {
@@ -18,12 +16,13 @@ const getClientLogic = async (req: Request, context: { params: { id: string } })
     const clientId = getClientId(req, context);
 
     
-    const cacheKey = `admin:finance-clients:${'global' || 'global'}:all`;
+    const cacheKey = `admin:finance-clients:${clientId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const client = await prisma.client.findUnique({
         where: { id: clientId },
         include: {
@@ -55,6 +54,8 @@ const putClientLogic = async (req: Request, context: { params: { id: string } })
     const clientId = getClientId(req, context);
     const body = await req.json();
     const { name, email, phone, status, ...clientData } = body;
+    
+    const cacheKey = `admin:finance-clients:${clientId || 'global'}:all`;
 
     const existingClient = await prisma.client.findUnique({
         where: { id: clientId },
@@ -84,8 +85,9 @@ const putClientLogic = async (req: Request, context: { params: { id: string } })
         },
     });
 
-    
-    try { await cacheDel(`admin:finance-clients:${'global' || 'global'}:*`); } catch (e) {}
+    // Clear cache for this specific client
+    try { await cacheDel(cacheKey); } catch (e) {}
+
     return formatResponse(true, updatedClient, 'Client updated successfully', 200);
 };
 
@@ -95,7 +97,10 @@ export const PUT = withApiHandler(putClientLogic);
 
 // --- DELETE Handler Logic ---
 const deleteClientLogic = async (req: Request, context: { params: { id: string } }) => {
+    
     const clientId = getClientId(req, context);
+
+    const cacheKey = `admin:finance-clients:${clientId || 'global'}:all`;
 
     const existingClient = await prisma.client.findUnique({
         where: { id: clientId },
@@ -113,8 +118,9 @@ const deleteClientLogic = async (req: Request, context: { params: { id: string }
         where: { id: existingClient.userId },
     });
 
+    // Clear cache for this specific client and any related lists
+    try { await cacheDel(cacheKey); } catch (e) {}
     
-    try { await cacheDel(`admin:finance-clients:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, 'Client and user deleted successfully', 200);
 };
 

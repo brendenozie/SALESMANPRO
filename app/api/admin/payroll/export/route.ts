@@ -1,6 +1,7 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -13,10 +14,11 @@ export async function GET(request: Request) {
     
     const cacheKey = `admin:export:${companyId || 'global'}:all`;
 
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
+  // try {
+  //   const cached = await cacheGet(cacheKey);
+  //   if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  // } catch (e) {}
+
   const staff = await prisma.staffProfile.findMany({
       where: { companyId },
       include: { 
@@ -24,11 +26,11 @@ export async function GET(request: Request) {
       }
     });
 
-  try {
-    if (staff) {
-      await cacheSet(cacheKey, staff, 60);
-    }
-  } catch (e) {}
+  // try {
+  //   if (staff) {
+  //     await cacheSet(cacheKey, staff, 60);
+  //   }
+  // } catch (e) {}
 
     // 2. Construct CSV Header
     let csvContent = "Beneficiary Name,Account Number,Bank Code,Amount,Currency,Payment Reference\n";

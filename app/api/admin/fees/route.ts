@@ -4,12 +4,8 @@ import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse';
 import { getStudentFeeRecords, createStudentFeeRecord, StudentFeeRecord } from '@/lib/data'; // Adjust path as needed
-import { verifyAuth } from '@/lib/verifyAuth';
 
-
-import { PrismaClient } from '@prisma/client';
-// Initialize Prisma Client (Note: In a typical setup, this should be a singleton import)
-const prisma = new PrismaClient();
+import prisma from "@/server/db/prismadb";
 
 // =======================================================================
 // GET /api/admin/fees
@@ -138,16 +134,16 @@ async function handlePostFeeRecord(request: Request) {
   });
 
   
-    try { await cacheDel(`admin:fees:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:fees:${schoolId || 'global'}:*`); } catch (e) {}
     return formatResponse(
-    true,
-    {
-      created: eligibleStudentIds.length,
-      skipped: targetStudentIds.length - eligibleStudentIds.length,
-    },
-    "Fee records created successfully",
-    201
-  );
+      true,
+      {
+        created: eligibleStudentIds.length,
+        skipped: targetStudentIds.length - eligibleStudentIds.length,
+      },
+      "Fee records created successfully",
+      201
+    );
 }
 
 

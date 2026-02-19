@@ -22,7 +22,7 @@ async function fetchCompanySettings(adminSlug: string) {
       openingHours: true, // JSON field
       themeSettings: true, // JSON field
       AnalyticsConfig: { select: { isActive: true, googleTag: true, facebookTag: true, hotjarSiteId: true } },
-      PaymentSettings: { select: { stripeKey: true, paypalKey: true, mpesaShortcode: true } },
+      // PaymentSettings: { select: { stripeKey: true, paypalKey: true, mpesaShortcode: true } },
       // SocialLink: { select: { channel: true, url: true } },
     }
   });
@@ -39,19 +39,26 @@ function formatSettings(company: Awaited<ReturnType<typeof fetchCompanySettings>
     contactPhone: company.contactPhone,
     openingHours: company.openingHours,
     // Mocking notificationsEnabled from AnalyticsConfig.isActive
-    notificationsEnabled: company.AnalyticsConfig?.isActive || false,
-    themeSettings: company.themeSettings,
-    paymentSettings: {
-      stripeKey: company.PaymentSettings?.stripeKey,
-      paypalKey: company.PaymentSettings?.paypalKey,
-      mpesaShortcode: company.PaymentSettings?.mpesaShortcode,
-    },
+    // notificationsEnabled: company.AnalyticsConfig?.isActive || false,
+    // themeSettings: company.themeSettings,
+    // paymentSettings: {
+    //   stripeKey: company.PaymentSettings?.stripeKey,
+    //   paypalKey: company.PaymentSettings?.paypalKey,
+    //   mpesaShortcode: company.PaymentSettings?.mpesaShortcode,
+    // },
     // socialLinks: company.SocialLink,
   };
 }
 
-
 async function handleGetSettings(request: Request, { params }: SettingsParams) {
+
+  const cacheKey = `admin:health-settings:${params.adminSlug || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   const company = await fetchCompanySettings(params.adminSlug);
 
   if (!company) {
@@ -59,6 +66,14 @@ async function handleGetSettings(request: Request, { params }: SettingsParams) {
   }
 
   const settings = formatSettings(company);
+
+  try {
+    if (settings) {
+      await cacheSet(cacheKey, settings, 60);
+    }
+  } catch (e) {
+    console.error("Error caching settings data:", e);
+  }
 
   // withApiHandler will wrap this in success: true and status 200
   return formatResponse(true, settings, "Settings fetched successfully", 200);

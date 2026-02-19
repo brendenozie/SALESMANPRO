@@ -1,6 +1,7 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function PATCH(
   req: Request,
@@ -13,10 +14,7 @@ export async function PATCH(
 
     // Validate that isOnDuty is a boolean
     if (typeof isOnDuty !== "boolean") {
-      return NextResponse.json(
-        { error: "Invalid status value" },
-        { status: 400 }
-      );
+      return formatResponse(false, null, "Invalid status value", 400);
     }
 
     const updatedStaff = await prisma.hostelStaff.update({
@@ -29,12 +27,9 @@ export async function PATCH(
       },
     });
 
-    return NextResponse.json(updatedStaff);
+    return formatResponse(true, updatedStaff, "Staff status updated successfully", 200);
   } catch (error: any) {
     console.error("[STAFF_STATUS_PATCH]", error);
-    return NextResponse.json(
-      { error: "Failed to update status" },
-      { status: 500 }
-    );
+    return formatResponse(false, null, "Failed to update status", 500);
   }
 }

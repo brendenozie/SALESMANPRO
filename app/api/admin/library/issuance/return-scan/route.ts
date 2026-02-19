@@ -12,14 +12,13 @@ export const GET = withApiHandler(async (request: Request) => {
   
   // Calculate date 24 hours ago
   const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
-
-  
-    const cacheKey = `admin:return-scan:${companyId || 'global'}:all`;
+  const cacheKey = `admin:return-scan:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const history = await prisma.libraryIssuance.findMany({
     where: {
       // companyId,
@@ -67,6 +66,8 @@ const returnScanLogic = async (request: Request) => {
     return formatResponse(false, null, "Missing required parameters", 400);
   }
 
+  const cacheKey = `admin:issuance:${companyId || 'global'}:all`;
+  
   // 1. Find an active issuance by either Book Identifier (ISBN/Code) OR Member ID
   const activeIssuance = await prisma.libraryIssuance.findFirst({
     where: {
@@ -142,6 +143,9 @@ const returnScanLogic = async (request: Request) => {
 
     return issuance;
   });
+  
+  // Invalidate relevant caches
+  try { await cacheDel(cacheKey); } catch (e) {}
 
   // 3. Construct response for the 'Live Feed'
   const memberName = activeIssuance.libraryMember?.student 

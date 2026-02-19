@@ -120,7 +120,7 @@ async function handlePutLocation(request: Request, { params }: RouteParams) {
 
     // withApiHandler will wrap this in formatResponse(true, formattedUpdatedLocation, null, 200)
     
-    try { await cacheDel(`admin:locationsv2:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:locationsv2:${locationId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, formattedUpdatedLocation, "Location updated successfully", 200);
 
   } catch (error) {
@@ -165,7 +165,7 @@ async function handleDeleteLocation(request: Request, { params }: RouteParams) {
 
     // Return success response with status 200
     
-    try { await cacheDel(`admin:locationsv2:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:locationsv2:${locationId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, 'Location deleted successfully.', 200);
 
   } catch (error) {

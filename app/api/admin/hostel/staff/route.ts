@@ -2,6 +2,7 @@ import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import bcrypt from "bcryptjs"; // Recommended for passwords
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -17,6 +18,7 @@ export async function GET(req: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const staff = await prisma.hostelStaff.findMany({
       where: { companyId },
       include: {
@@ -36,9 +38,9 @@ export async function GET(req: Request) {
     }
   } catch (e) {}
 
-    return NextResponse.json({ data: staff });
+    return formatResponse(true, staff, "Staff retrieved successfully", 200);
   } catch (error) {
-    return NextResponse.json({ error: "Fetch failed" }, { status: 500 });
+    return formatResponse(false, null, "Failed to fetch staff", 500);
   }
 }
 
@@ -61,7 +63,7 @@ export async function POST(req: Request) {
 
     // Basic Validation
     if (!companyId || !staffId || !name) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return formatResponse(false, null, "Missing required fields", 400);
     }
 
     const result = await prisma.$transaction(async (tx) => {
@@ -114,21 +116,24 @@ export async function POST(req: Request) {
       return staff;
     });
 
-    return NextResponse.json(result);
+    
+    try { await cacheDel(`admin:staff:${companyId || 'global'}:*`); } catch (e) {}
+    
+    return formatResponse(true, result, "Staff created successfully", 201);
   } catch (error: any) {
     console.error("STAFF_POST_ERROR", error);
 
     // Handle specific errors
     if (error.message === "EMAIL_REQUIRED") {
-      return NextResponse.json({ error: "Email is required to create a new user account" }, { status: 400 });
+      return formatResponse(false, null, "Email is required to create a new user account", 400);
     }
 
     if (error.code === 'P2002') {
       const target = error.meta?.target || "";
-      if (target.includes('email')) return NextResponse.json({ error: "This email is already registered to another user" }, { status: 400 });
-      if (target.includes('staffId')) return NextResponse.json({ error: "This Staff ID (Badge Number) is already assigned" }, { status: 400 });
+      if (target.includes('email')) return formatResponse(false, null, "This email is already registered to another user", 400);
+      if (target.includes('staffId')) return formatResponse(false, null, "This Staff ID (Badge Number) is already assigned", 400);
     }
 
-    return NextResponse.json({ error: "Failed to set up staff profile" }, { status: 500 });
+    return formatResponse(false, null, "Failed to set up staff profile", 500);
   }
 }

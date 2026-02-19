@@ -31,22 +31,17 @@ async function handleGetService(
 
   // 1. Find Company
   
-    const cacheKey = `admin:health-reports:${companyId || 'global'}:all`;
+  const cacheKey = `admin:health-reports:${adminSlug || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const company = await prisma.company.findUnique({
     where: { slug: adminSlug },
     select: { id: true }
   });
-
-  try {
-    if (company) {
-      await cacheSet(cacheKey, company, 60);
-    }
-  } catch (e) {}
 
   if (!company) {
     return formatResponse(false, null, "Company not found", 404);
@@ -100,6 +95,14 @@ async function handleGetService(
     status: service.status,
     category: service.category || 'Uncategorized',
   }));
+
+  try {
+    if (formattedServices) {
+      await cacheSet(cacheKey, formattedServices, 60);
+    }
+  } catch (e) {
+    console.error("Error caching health reports data:", e);
+  }
 
   // 5. Return Success Response
   return formatResponse(true, {
@@ -176,7 +179,7 @@ async function handleCreateService(
 
   // 5. Return Success Response
   
-    try { await cacheDel(`admin:health-reports:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:health-reports:${adminSlug || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { service: newService }, "Service created successfully", 201);
 }
 

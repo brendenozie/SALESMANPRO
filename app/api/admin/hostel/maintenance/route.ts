@@ -2,6 +2,7 @@ import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatDistanceToNow } from "date-fns";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -15,6 +16,7 @@ export async function GET(req: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const tickets = await prisma.hostelMaintenanceRequest.findMany({
       where: { room: { block: { companyId: companyId || undefined } } },
       include: { 
@@ -35,12 +37,6 @@ export async function GET(req: Request) {
       orderBy: { createdAt: 'desc' }
     });
 
-  try {
-    if (tickets) {
-      await cacheSet(cacheKey, tickets, 60);
-    }
-  } catch (e) {}
-
     const data = tickets.map((t) => ({
       id: `MNT-${t.id.slice(-5).toUpperCase()}`,
       dbId: t.id,
@@ -59,9 +55,17 @@ export async function GET(req: Request) {
       timeAgo: formatDistanceToNow(new Date(t.createdAt)) // Use date-fns for "2 hours ago"
     }));
 
-    return NextResponse.json({ data });
+    try {
+      if (data) {
+        await cacheSet(cacheKey, data, 60); // Cache for 60 seconds
+      }
+    } catch (e) {
+      console.error("Error caching maintenance data:", e);
+    }
+    
+    return formatResponse(true, data, "Maintenance tickets fetched successfully", 200);
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch tickets" }, { status: 500 });
+    return formatResponse(false, null, "Failed to fetch tickets", 500);
   }
 }
 

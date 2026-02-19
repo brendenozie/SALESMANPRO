@@ -4,9 +4,8 @@ import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { PrismaClient } from '@prisma/client';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse';
-import { verifyAuth } from '@/lib/verifyAuth';
 
-const prisma = new PrismaClient();
+import prisma from "@/server/db/prismadb";
 
 // =======================================================================
 // GET /api/appointments
@@ -14,8 +13,6 @@ const prisma = new PrismaClient();
 // =======================================================================
 async function handleGetAppointments(request: Request) {
   // Authentication is handled by withApiHandler, but we check success here
-  
-
 
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
@@ -24,13 +21,13 @@ async function handleGetAppointments(request: Request) {
     return formatResponse(false, null, 'companyId search parameter is required.', 400);
   }
 
-  
-    const cacheKey = `admin:finance-appointments:${companyId || 'global'}:all`;
+  const cacheKey = `admin:finance-appointments:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const appointments = await prisma.financeAppointment.findMany({
     where: { companyId: companyId },
     include: {
@@ -64,8 +61,6 @@ async function handleGetAppointments(request: Request) {
 async function handlePostAppointment(request: Request) {
   // Authentication is handled by withApiHandler, but we check success here
   
-
-
   const body = await request.json();
   const { clientId, expertId, date, notes, companyId } = body;
 
@@ -73,6 +68,8 @@ async function handlePostAppointment(request: Request) {
   if (!clientId || !expertId || !date || !companyId) {
     return formatResponse(false, null, 'Missing required fields: clientId, expertId, date, companyId.', 400);
   }
+
+  const cacheKey = `admin:finance-appointments:${companyId || 'global'}:all`;
 
   const newAppointment = await prisma.financeAppointment.create({
     data: {
@@ -85,7 +82,7 @@ async function handlePostAppointment(request: Request) {
   });
 
   
-    try { await cacheDel(`admin:finance-appointments:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(cacheKey); } catch (e) {}
     return formatResponse(true, newAppointment, null, 201);
 }
 

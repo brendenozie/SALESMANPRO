@@ -2,12 +2,20 @@ import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { startOfDay, subDays } from "date-fns";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const companyId = searchParams.get("companyId");
 
-  if (!companyId) return NextResponse.json({ error: "Company ID required" }, { status: 400 });
+  if (!companyId) return formatResponse(false, null, "Company ID required", 400);
+
+  const cacheKey = `admin:analytics:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
 
   try {
     // 1. Calculate Occupancy Rate
@@ -18,25 +26,13 @@ export async function GET(req: Request) {
     });
 
     // Count currently active allocations
-    
-    const cacheKey = `admin:analytics:${companyId || 'global'}:all`;
-
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
+   
   const activeAllocations = await prisma.hostelAllocation.count({
       where: { 
         status: "ACTIVE",
         room: { block: { companyId } }
       }
     });
-
-  try {
-    if (activeAllocations) {
-      await cacheSet(cacheKey, activeAllocations, 60);
-    }
-  } catch (e) {}
 
     const totalCapacity = totalBeds._sum.capacity || 0;
     const occupancyRate = totalCapacity > 0 
@@ -100,17 +96,30 @@ export async function GET(req: Request) {
         where: { companyId, isOnDuty: true }
     });
 
-    return NextResponse.json({
-      data: {
+    try {
+      const analyticsData = {
+        occupancy: `${occupancyRate}%`,
+        mttr: `${mttr} hrs`,
+        visitors: visitorCount,
+        activeStaff: onDutyStaff,
+        wingData
+      };
+
+      await cacheSet(cacheKey, analyticsData, 60);
+    } catch (e) {
+      console.error("Error caching analytics data:", e);
+    }
+
+    return formatResponse(true, {
         occupancy: `${occupancyRate}%`,
         mttr: `${mttr} hrs`,
         visitors: visitorCount.toString(),
         activeStaff: onDutyStaff,
         wingData
-      }
-    });
+    }, "Analytics fetched successfully", 200);
+    
   } catch (error) {
     console.error("REPORTS_API_ERROR", error);
-    return NextResponse.json({ error: "Analytics failed" }, { status: 500 });
+    return formatResponse(false, null, "Analytics failed", 500);
   }
 }

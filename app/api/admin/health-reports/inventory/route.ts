@@ -3,7 +3,6 @@ import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-
 async function getInventoryReport(request: Request) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
@@ -30,12 +29,13 @@ async function getInventoryReport(request: Request) {
 
   // 2. Fetch Inventory Items
   
-    const cacheKey = `admin:inventory:${companyId || 'global'}:all`;
+  const cacheKey = `admin:inventory:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const inventoryItems = await prisma.inventoryItem.findMany({
     where: whereClause,
     select: {
@@ -55,12 +55,6 @@ async function getInventoryReport(request: Request) {
     },
     orderBy: { product: { name: 'asc' } },
   });
-
-  try {
-    if (inventoryItems) {
-      await cacheSet(cacheKey, inventoryItems, 60);
-    }
-  } catch (e) {}
 
   // 3. Process and Filter Report Data in memory (after fetching relevant items)
   const inventoryReport = inventoryItems
@@ -89,6 +83,14 @@ async function getInventoryReport(request: Request) {
       if (stockStatus === 'IN_STOCK') return item.status === 'IN_STOCK';
       return true; // 'ALL' or no filter
     });
+  
+    try{
+      if (inventoryReport) {
+        await cacheSet(cacheKey, inventoryReport, 60);
+      }
+    } catch (e) {
+      console.error("Error caching inventory report:", e);
+    }
 
   // 4. Return formatted success response
   return formatResponse(true, inventoryReport, "Inventory report generated successfully", 200);

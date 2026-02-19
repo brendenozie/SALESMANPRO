@@ -1,6 +1,7 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { formatResponse } from "@/lib/formatResponse";
 
 const prisma = new PrismaClient();
 
@@ -14,13 +15,13 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Company ID is required" }, { status: 400 });
     }
 
-    
-    const cacheKey = `admin:suppliers-categories:${companyId || 'global'}:all`;
+  const cacheKey = `admin:suppliers-categories:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const categories = await prisma.librarySupplierCategory.findMany({
       where: { companyId },
       orderBy: { name: "asc" },
@@ -32,9 +33,9 @@ export async function GET(req: Request) {
     }
   } catch (e) {}
 
-    return NextResponse.json({ data: categories });
+    return formatResponse(true, categories, "Categories fetched", 200);
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 });
+    return formatResponse(false, null, "Failed to fetch categories", 500);
   }
 }
 
@@ -45,7 +46,7 @@ export async function POST(req: Request) {
     const { name, companyId } = body;
 
     if (!name || !companyId) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return formatResponse(false, null, "Missing required fields", 400);
     }
 
     const category = await prisma.librarySupplierCategory.create({
@@ -54,12 +55,12 @@ export async function POST(req: Request) {
 
     
     try { await cacheDel(`admin:suppliers-categories:${companyId || 'global'}:*`); } catch (e) {}
-    return NextResponse.json({ data: category }, { status: 201 });
+    return formatResponse(true, category, "Category created", 201);
   } catch (error: any) {
     if (error.code === 'P2002') {
-      return NextResponse.json({ error: "Category name already exists" }, { status: 409 });
+      return formatResponse(false, null, "Category name already exists", 409);
     }
-    return NextResponse.json({ error: "Failed to create category" }, { status: 500 });
+    return formatResponse(false, null, "Failed to create category", 500);
   }
 }
 
@@ -73,16 +74,17 @@ export async function PATCH(
     const body = await req.json();
     const { name } = body;
 
-    if (!categoryId) return NextResponse.json({ error: "ID required" }, { status: 400 });
+    if (!categoryId) return formatResponse(false, null, "ID required", 400);
 
     const updated = await prisma.librarySupplierCategory.update({
       where: { id: categoryId },
       data: { name },
     });
 
-    return NextResponse.json({ data: updated });
+    try { await cacheDel(`admin:suppliers-categories:${updated.companyId || 'global'}:*`); } catch (e) {}
+    return formatResponse(true, updated, "Category updated", 200);
   } catch (error) {
-    return NextResponse.json({ error: "Update failed" }, { status: 500 });
+    return formatResponse(false, null, "Update failed", 500);
   }
 }
 
@@ -94,14 +96,15 @@ export async function DELETE(
   try {
     const categoryId = params.id?.[0];
 
-    if (!categoryId) return NextResponse.json({ error: "ID required" }, { status: 400 });
+    if (!categoryId) return formatResponse(false, null, "ID required", 400);
 
     await prisma.librarySupplierCategory.delete({
       where: { id: categoryId },
     });
 
-    return NextResponse.json({ message: "Category deleted" });
+    try { await cacheDel(`admin:suppliers-categories:${categoryId}`); } catch (e) {}
+    return formatResponse(true, null, "Category deleted", 200);
   } catch (error) {
-    return NextResponse.json({ error: "Delete failed" }, { status: 500 });
+    return formatResponse(false, null, "Delete failed", 500);
   }
 }

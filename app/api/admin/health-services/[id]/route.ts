@@ -20,28 +20,20 @@ async function formatServiceData(service: any) {
   };
 }
 
-
 async function handleGetService(request: Request, { params }: ServiceParams) {
   const { id } = params;
 
   // We can skip the try/catch and 401 check, as withApiHandler handles it.
-
-  
-    const cacheKey = `admin:health-services:${'global' || 'global'}:all`;
+  const cacheKey = `admin:health-services:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const service = await prisma.service.findUnique({
     where: { id },
   });
-
-  try {
-    if (service) {
-      await cacheSet(cacheKey, service, 60);
-    }
-  } catch (e) {}
 
   if (!service) {
     // Explicitly return an error response for known business logic failures
@@ -50,6 +42,14 @@ async function handleGetService(request: Request, { params }: ServiceParams) {
 
   const formattedService = await formatServiceData(service);
   
+  try{
+    if (formattedService) {
+      await cacheSet(cacheKey, formattedService, 60);
+    }
+  } catch (e) {
+    console.error("Error caching service data:", e);
+  }
+
   // Return the data; withApiHandler will wrap it in success: true and status 200
   return formatResponse(true, formattedService, "Service fetched successfully", 200);
 }
@@ -74,7 +74,7 @@ async function handleUpdateService(request: Request, { params }: ServiceParams) 
 
     const formattedUpdatedService = await formatServiceData(updatedService);
     
-    try { await cacheDel(`admin:health-services:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:health-services:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, formattedUpdatedService, "Service updated successfully", 200);
 
   } catch (err: any) {
@@ -97,7 +97,7 @@ async function handleDeleteService(request: Request, { params }: ServiceParams) 
 
   // Return a success message with 200/204 status
   
-    try { await cacheDel(`admin:health-services:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:health-services:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Service deleted successfully", 200);
 }
 

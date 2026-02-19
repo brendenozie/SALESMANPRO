@@ -1,6 +1,7 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -14,18 +15,13 @@ export async function GET(req: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const items = await prisma.hostelInventory.findMany({
       where: { companyId },
       orderBy: { itemName: 'asc' }
     });
 
-  try {
-    if (items) {
-      await cacheSet(cacheKey, items, 60);
-    }
-  } catch (e) {}
-
-    const data = items.map(item => {
+    const data = items.map((item:any) => {
       let status = "Healthy";
       if (item.currentStock <= item.minThreshold) status = "Low Stock";
       if (item.needsRepair) status = "Repair Needed";
@@ -43,8 +39,16 @@ export async function GET(req: Request) {
       };
     });
 
-    return NextResponse.json({ data });
+    try {
+      if (data) {
+        await cacheSet(cacheKey, data, 60);
+      }
+    } catch (e) {
+      console.error("Error caching inventory data:", e);
+    }
+    
+    return formatResponse(true, data, "Inventory fetched successfully", 200);
   } catch (error) {
-    return NextResponse.json({ error: "Failed to load inventory" }, { status: 500 });
+    return formatResponse(false, null, "Failed to load inventory", 500);
   }
 }

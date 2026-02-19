@@ -22,12 +22,13 @@ async function getInventory(req: Request) {
 
   // Fetch all products for this company, including any inventory and nested relations
   
-    const cacheKey = `admin:get-all-inventory:${companyId || 'global'}:all`;
+  const cacheKey = `admin:get-all-inventory:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const products = await prisma.product.findMany({
     where: { companyId },
     include: {
@@ -39,12 +40,6 @@ async function getInventory(req: Request) {
     take: limit,
     orderBy: { createdAt: 'desc' },
   });
-
-  try {
-    if (products) {
-      await cacheSet(cacheKey, products, 60);
-    }
-  } catch (e) {}
 
   const items = products.map((p) => {
     // find override category if exists
@@ -191,6 +186,13 @@ async function getInventory(req: Request) {
   });
 
   // Return the raw data structure. `withApiHandler` handles wrapping this in a NextResponse.json.
+  
+  try {
+      await cacheSet(cacheKey, {
+              results:items,
+              paging: { page, limit, total: items.length }, // Note: `total` here is the count of items in the *current page*
+            }, 60);
+  } catch (e) {}
   
     return formatResponse(true, {
               results:items,

@@ -18,6 +18,10 @@ async function handlePutFeeItem(
     return formatResponse(false, null, "Fee item not found", 404);
   }
 
+  try {
+    await cacheDel(`admin:fee-items:${params.id || 'global'}:*`);
+  } catch (e) {}
+
   return formatResponse(true, updated, null, 200);
 }
 
@@ -33,6 +37,9 @@ async function handleDeleteFeeItem(
   if (!success) {
     return formatResponse(false, null, "Failed to delete fee item", 400);
   }
+  
+  try {    await cacheDel(`admin:fee-items:${params.id || 'global'}:*`);
+  } catch (e) {}
 
   return formatResponse(true, true, null, 200);
 }

@@ -2,6 +2,7 @@ import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { NextResponse } from "next/server";
+import { formatResponse } from "@/lib/formatResponse";
 
 
 export async function DELETE(
@@ -15,8 +16,10 @@ export async function DELETE(
       where: { id },
     });
 
-    return NextResponse.json({ message: "Expense deleted successfully" });
+    try { await cacheDel(`admin:expenses:${id || 'global'}:*`); } catch (e) {}
+
+    return formatResponse(true, null, "Expense deleted successfully", 200);
   } catch (error) {
-    return NextResponse.json({ error: "Failed to delete expense" }, { status: 500 });
+    return formatResponse(false, null, "Failed to delete expense", 500);
   }
 }

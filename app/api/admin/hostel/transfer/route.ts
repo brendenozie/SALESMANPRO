@@ -1,6 +1,7 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function PATCH(req: Request) {
   try {
@@ -34,8 +35,11 @@ export async function PATCH(req: Request) {
       });
     });
 
-    return NextResponse.json({ success: true, data: result });
+    try { await cacheDel(`admin:rooms:*:all`); } catch (e) {}
+    try { await cacheDel(`admin:residents:*:all`); } catch (e) {}
+    
+    return formatResponse(true, result, "Transfer completed successfully", 200);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return formatResponse(false, null, error.message, 500);
   }
 }

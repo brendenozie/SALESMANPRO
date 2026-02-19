@@ -17,6 +17,8 @@ async function getStaffPerformanceReport(request: Request) {
     return formatResponse(false, null, "Missing companyId", 400);
   }
 
+  const cacheKey = `admin:staff-performance:${companyId || 'global'}:all`;
+
   const dateFilter = {
     gte: startDateParam ? new Date(startDateParam) : undefined,
     lte: endDateParam ? new Date(endDateParam) : undefined,
@@ -29,15 +31,14 @@ async function getStaffPerformanceReport(request: Request) {
     const doctorWhereClause: any = {
       companyId: companyId,
     };
-    if (staffId) doctorWhereClause.id = staffId;
-
     
-    const cacheKey = `admin:staff-performance:${companyId || 'global'}:all`;
+    if (staffId) doctorWhereClause.id = staffId;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const doctors = await prisma.doctor.findMany({
       where: doctorWhereClause,
       include: {
@@ -57,12 +58,6 @@ async function getStaffPerformanceReport(request: Request) {
         },
       },
     });
-
-  try {
-    if (doctors) {
-      await cacheSet(cacheKey, doctors, 60);
-    }
-  } catch (e) {}
 
     doctors.forEach(doctor => {
       let totalAppointments = 0;
@@ -128,6 +123,14 @@ async function getStaffPerformanceReport(request: Request) {
         // revenueProcessed: revenueProcessed,
       });
     });
+  }
+
+  try{
+    if (staffPerformanceData) {
+      await cacheSet(cacheKey, staffPerformanceData, 60);
+    }
+  } catch (e) {
+    console.error("Error caching staff performance data:", e);
   }
 
   // 6. Return formatted success response

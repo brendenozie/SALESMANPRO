@@ -1,6 +1,7 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function POST(request: Request) {
   try {
@@ -13,12 +14,17 @@ export async function POST(request: Request) {
       data: { payrollLocked: isLocked } 
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      locked: isLocked,
-      message: isLocked ? "Payroll locked for disbursement." : "Payroll unlocked for editing."
-    });
+    return formatResponse(
+      true,
+      { 
+        success: true, 
+        locked: isLocked,
+        message: isLocked ? "Payroll locked for disbursement." : "Payroll unlocked for editing."
+      },
+        `Payroll period for Jan 2026 has been ${isLocked ? 'locked' : 'unlocked'}.`,
+        200
+      );
   } catch (error) {
-    return NextResponse.json({ error: "Failed to update approval status" }, { status: 500 });
+    return formatResponse(false, null, "Failed to update approval status", 500);
   }
 }

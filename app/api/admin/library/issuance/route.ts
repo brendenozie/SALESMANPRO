@@ -1,4 +1,5 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { formatResponse } from "@/lib/formatResponse";
 import prisma from "@/server/db/prismadb";
 import { NextResponse } from "next/server";
 
@@ -6,15 +7,15 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const companyId = searchParams.get("companyId");
 
-  if (!companyId) return NextResponse.json({ error: "Missing Company ID" }, { status: 400 });
+  if (!companyId) return formatResponse(false, null, "Missing Company ID", 400);
 
-  
-    const cacheKey = `admin:issuance:${companyId || 'global'}:all`;
+  const cacheKey = `admin:issuance:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const records = await prisma.libraryIssuance.findMany({
     where: { companyId },
     include: {
@@ -35,7 +36,7 @@ export async function GET(req: Request) {
     }
   } catch (e) {}
 
-  return NextResponse.json({ data: records });
+  return formatResponse(true, records, "Issuance records retrieved", 200);
 }
 
 export async function POST(req: Request) {
@@ -65,8 +66,11 @@ export async function POST(req: Request) {
       return issuance;
     });
 
-    return NextResponse.json({ data: transaction });
+    // Invalidate relevant caches
+    try { await cacheDel(`admin:issuance:${companyId || 'global'}:*`); } catch (e) {}
+
+    return formatResponse(true, transaction, "Issuance created successfully", 201);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return formatResponse(false, null, error.message, 500);
   }
 }

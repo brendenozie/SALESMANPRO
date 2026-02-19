@@ -55,8 +55,6 @@ function transformEventResponse(event: any) {
 async function getEvents(request: Request) {
   // Authentication check
   
-
-
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
   const eventType = searchParams.get('eventType');
@@ -140,9 +138,7 @@ async function getEvents(request: Request) {
   if (isPaid !== undefined) {
     whereClause.isPaid = isPaid === 'true';
   }
-
-  
-    const cacheKey = `admin:events:${companyId || 'global'}:all`;
+  const cacheKey = `admin:events:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -163,15 +159,15 @@ async function getEvents(request: Request) {
     },
   });
 
+  const response = events.map(transformEventResponse);
+
   try {
     if (events) {
-      await cacheSet(cacheKey, events, 60);
+      await cacheSet(cacheKey, response, 60);
     }
   } catch (e) {}
 
-  const response = events.map(transformEventResponse);
-
-  return formatResponse(true, { data: response }, null, 200);
+  return formatResponse(true, response, null, 200);
 }
 
 // =======================================================================
@@ -180,8 +176,10 @@ async function getEvents(request: Request) {
 // =======================================================================
 async function createEvent(request: Request) {
   // Authentication check
-  
-
+  // const authResult = await verifyAuth(request);
+  // if (!authResult.success) {
+  //   return formatResponse(false, null, authResult.message, 401);
+  // }
 
   const body = await request.json();
   const {

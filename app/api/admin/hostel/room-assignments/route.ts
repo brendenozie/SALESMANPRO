@@ -1,6 +1,7 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -19,6 +20,7 @@ export async function GET(req: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const unassignedStudents = await prisma.student.findMany({
       where: {
         companyId,
@@ -34,12 +36,6 @@ export async function GET(req: Request) {
         admissionNumber: true,
       }
     });
-
-  try {
-    if (unassignedStudents) {
-      await cacheSet(cacheKey, unassignedStudents, 60);
-    }
-  } catch (e) {}
 
     // 2. Fetch Unassigned Educators
     const unassignedEducators = await prisma.educator.findMany({
@@ -108,16 +104,19 @@ export async function GET(req: Request) {
         joinedAt: alloc.startDate
       }))
     }));
-    
-    return NextResponse.json({ 
-      data: { 
-        unassigned: normalizedUnassigned, 
-        rooms: transformedRooms 
-      } 
-    });
 
+    //cache the combined result for 60 seconds
+    try {
+      const combinedData = { unassigned: normalizedUnassigned, rooms: transformedRooms };
+      await cacheSet(cacheKey, combinedData, 60);
+    } catch (e) {
+      console.error("Error caching room assignments data:", e);
+    }
+
+    return formatResponse(true, { unassigned: normalizedUnassigned, rooms: transformedRooms }, "Room assignments fetched successfully", 200);
+    
   } catch (error) {
     console.error("[ALLOCATION_DATA_GET]", error);
-    return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });
+    return formatResponse(false, null, "Failed to fetch data", 500);
   }
 }

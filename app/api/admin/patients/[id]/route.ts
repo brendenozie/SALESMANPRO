@@ -46,14 +46,14 @@ async function formatPatientData(patient: any) {
 // --- GET /api/admin/patients/[id] ---
 async function handleGetPatient(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
-
   
-    const cacheKey = `admin:patients:${'global' || 'global'}:all`;
+  const cacheKey = `admin:patients:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const patient = await prisma.patient.findUnique({
     where: { id },
     include: {
@@ -71,15 +71,16 @@ async function handleGetPatient(request: Request, { params }: { params: { id: st
     },
   });
 
-  try {
-    if (patient) {
-      await cacheSet(cacheKey, patient, 60);
-    }
-  } catch (e) {}
-
   if (!patient) return formatResponse(false, null, "Patient not found", 404);
 
   const formatted = await formatPatientData(patient);
+
+  try {
+    if (patient) {
+      await cacheSet(cacheKey, formatted, 60);
+    }
+  } catch (e) {}
+
   return formatResponse(true, formatted, "Patient fetched successfully", 200);
 }
 
@@ -126,7 +127,8 @@ async function handlePutPatient(request: Request, { params }: { params: { id: st
 
     const formatted = await formatPatientData(updatedPatient);
     
-    try { await cacheDel(`admin:patients:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:patients:${id || 'global'}:*`); } catch (e) {}
+    try { await cacheSet(`admin:patients:${id || 'global'}:all`, formatted, 60); } catch (e) {}
     return formatResponse(true, formatted, "Patient updated successfully", 200);
   } catch (err: any) {
     if (err.code === "P2002" && err.meta?.target?.includes("email")) {
@@ -152,7 +154,7 @@ async function handleDeletePatient(request: Request, { params }: { params: { id:
   await prisma.user.delete({ where: { id: patient.userId } });
 
   
-    try { await cacheDel(`admin:patients:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:patients:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { deletedId: id }, "Patient deleted successfully", 200);
 }
 

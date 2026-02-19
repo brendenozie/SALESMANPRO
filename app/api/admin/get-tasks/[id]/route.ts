@@ -32,6 +32,13 @@ async function getTaskById(
     return formatResponse(false, null, 'Missing required route parameter: id (taskId)', 400);
   }
 
+  const cacheKey = `admin:get-task:${amaId || 'global'}`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   // --- Data Fetching ---
   const task = await prisma.task.findFirst({
     where: {
@@ -42,6 +49,12 @@ async function getTaskById(
   if (!task) {
       return formatResponse(false, null, `Task with ID ${amaId} not found.`, 404);
   }
+
+  try {
+    if (task) {
+      await cacheSet(cacheKey, task, 60);
+    }
+  } catch (e) {}
 
   // --- Success Response ---
   // formatResponse will return the 200 OK structure.

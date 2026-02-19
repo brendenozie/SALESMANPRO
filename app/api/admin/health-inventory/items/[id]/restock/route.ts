@@ -76,7 +76,7 @@ async function restockInventory(
 
   // --- Success Response ---
   
-    try { await cacheDel(`admin:restock:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:restock:${adminSlug || 'global'}:*`); } catch (e) {}
     return formatResponse(true, {
     message: `Successfully restocked ${parsedQuantity} units.`,
     newStock: updatedItem.quantity,

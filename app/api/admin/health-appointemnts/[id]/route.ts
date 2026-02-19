@@ -58,6 +58,7 @@ async function getAppointment(
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const appointment = await prisma.appointment.findUnique({
     where: { id: id },
     select: {
@@ -74,12 +75,6 @@ async function getAppointment(
       }
     },
   });
-
-  try {
-    if (appointment) {
-      await cacheSet(cacheKey, appointment, 60);
-    }
-  } catch (e) {}
 
   if (!appointment) {
       // Should ideally not happen due to the authCheck, but kept as a safeguard
@@ -99,6 +94,14 @@ async function getAppointment(
     date: new Date(appointment.date).toISOString().split('T')[0],
     time: new Date(appointment.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
   };
+
+  
+
+  try {
+    if (appointment) {
+      await cacheSet(cacheKey, formattedAppointment, 60);
+    }
+  } catch (e) {}
 
   // --- Success Response ---
   return formatResponse(true, formattedAppointment, "Appointment details fetched successfully", 200);
@@ -139,7 +142,7 @@ async function updateAppointment(request: Request, context: { params: { adminSlu
 
   // --- Success Response ---
   
-    try { await cacheDel(`admin:health-appointemnts:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:health-appointemnts:${adminSlug || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { message: "Appointment updated successfully", appointment: updatedAppointment }, "Appointment updated successfully", 200);
 }
 
@@ -169,7 +172,8 @@ async function deleteAppointment(
   // --- Success Response ---
   // Use 200 OK or 204 No Content for successful deletion. Using 200 with a message.
   
-    try { await cacheDel(`admin:health-appointemnts:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:health-appointemnts:${adminSlug || 'global'}:*`); } catch (e) {}
+    
     return formatResponse(true, { message: "Appointment deleted successfully" }, "Appointment deleted successfully", 200);
 }
 

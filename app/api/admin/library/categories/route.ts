@@ -14,6 +14,13 @@ const getCategoriesLogic = async (request: Request) => {
     return formatResponse(false, null, "Company ID is required.", 400);
   }
 
+  const cacheKey = `admin:libraryCategories:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   const categories = await prisma.libraryCategory.findMany({
     where: { companyId },
     include: {
@@ -23,6 +30,12 @@ const getCategoriesLogic = async (request: Request) => {
     },
     orderBy: { name: "asc" },
   });
+
+  try {
+    if (categories) {
+      await cacheSet(cacheKey, categories, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, categories, "Categories retrieved successfully", 200);
 };
@@ -57,6 +70,9 @@ const postCategoryLogic = async (request: Request) => {
       companyId,
     },
   });
+  
+  // Invalidate relevant caches
+  try { await cacheDel(`admin:libraryCategories:${companyId || 'global'}:*`); } catch (e) {}
 
   return formatResponse(true, newCategory, "Category created successfully", 201);
 };

@@ -14,6 +14,13 @@ const getFinesLogic = async (request: Request) => {
     return formatResponse(false, null, "Company ID is required.", 400);
   }
 
+  const cacheKey = `admin:libraryFines:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   const fines = await prisma.libraryFine.findMany({
     where: {
       issuance: { companyId },
@@ -35,6 +42,12 @@ const getFinesLogic = async (request: Request) => {
     orderBy: { createdAt: "desc" },
   });
 
+  try {
+    if (fines) {
+      await cacheSet(cacheKey, fines, 60);
+    }
+  } catch (e) {}
+
   return formatResponse(true, fines, "Fine ledger retrieved", 200);
 };
 
@@ -54,6 +67,9 @@ const patchFineLogic = async (request: Request) => {
       paidDate: new Date(),
     },
   });
+
+  // Invalidate relevant caches
+  try { await cacheDel(`admin:libraryFines:${updatedFine.companyId || 'global'}:all`); } catch (e) {}
 
   return formatResponse(true, updatedFine, "Fine settled successfully", 200);
 };

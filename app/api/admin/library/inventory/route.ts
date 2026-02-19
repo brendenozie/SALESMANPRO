@@ -11,6 +11,13 @@ const getInventory = async (request: Request) => {
 
   if (!companyId) return formatResponse(false, null, "Company ID required", 400);
 
+    const cacheKey = `admin:inventory:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   const books = await prisma.libraryBook.findMany({
     where: { companyId },
     select: {
@@ -24,6 +31,12 @@ const getInventory = async (request: Request) => {
       status: true,
     }
   });
+
+  try {
+    if (books) {
+      await cacheSet(cacheKey, books, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, books, "Inventory data synced", 200);
 };
@@ -41,9 +54,10 @@ export const PATCH = withApiHandler(async (request: Request) => {
     }
   });
 
+  // Invalidate relevant caches
+  try { await cacheDel(`admin:inventory:${updatedBook.companyId || 'global'}:*`); } catch (e) {}
   
-    try { await cacheDel(`admin:inventory:${'global' || 'global'}:*`); } catch (e) {}
-    return formatResponse(true, updatedBook, "Audit log updated", 200);
+  return formatResponse(true, updatedBook, "Audit log updated", 200);
 }, { requireAuth: true });
 
 export const GET = withApiHandler(getInventory, { requireAuth: true });

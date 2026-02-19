@@ -50,12 +50,13 @@ async function getInvoices(request: Request) {
   // --- Data Fetching ---
   // Fetching all relevant data first, as the search filter logic is client-side/in-memory
   
-    const cacheKey = `admin:health-billing:${companyId || 'global'}:all`;
+  const cacheKey = `admin:health-billing:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   let invoices = await prisma.patientInvoices.findMany({
     where: whereClause,
     include: {
@@ -63,12 +64,6 @@ async function getInvoices(request: Request) {
     },
     orderBy: { invoiceDate: 'desc' },
   });
-
-  try {
-    if (invoices) {
-      await cacheSet(cacheKey, invoices, 60);
-    }
-  } catch (e) {}
 
   // --- In-Memory Search Filtering ---
   if (searchTerm) {
@@ -96,6 +91,10 @@ async function getInvoices(request: Request) {
   const enrichedInvoices = await Promise.all(
     invoices.map(async (invoice) => formatInvoiceData(invoice))
   );
+
+  try {
+    await cacheSet(cacheKey, enrichedInvoices, 60);
+  } catch (e) {}
 
   // --- Success Response ---
   return formatResponse(true, enrichedInvoices, "Invoices list fetched successfully", 200);

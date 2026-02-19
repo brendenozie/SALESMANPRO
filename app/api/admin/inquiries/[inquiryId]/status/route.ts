@@ -20,6 +20,7 @@ async function handlePatchInquiryStatus(request: Request, { params }: PatchParam
   // NOTE: Using the Prisma enum type for validation (safer than hardcoded array)
   // Assuming InquiryStatus is imported and available from @prisma/client
   const validStatuses: InquiryStatus[] = ['New', 'Read', 'Responded', 'Archived'] as InquiryStatus[];
+
   if (!validStatuses.includes(status)) {
     return formatResponse(false, null, `Invalid status. Must be one of: ${validStatuses.join(', ')}`, 400);
   }
@@ -36,8 +37,10 @@ async function handlePatchInquiryStatus(request: Request, { params }: PatchParam
 
     // withApiHandler will wrap this result in formatResponse(true, ...) with status 200
     
-    try { await cacheDel(`admin:status:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:status:${updatedInquiry.companyId || 'global'}:*`); } catch (e) {}
+
     return formatResponse(true, updatedInquiry, 'Inquiry status updated successfully.', 200);
+    
   } catch (error: any) {
     // Handle Prisma error for record not found
     if (error.code === 'P2025') {

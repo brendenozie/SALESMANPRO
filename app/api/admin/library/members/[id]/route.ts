@@ -31,6 +31,9 @@ const updateBookLogic = async (request: Request, { params }: RouteParams) => {
     include: { category: true }
   });
 
+    // Invalidate relevant caches
+    try { await cacheDel(`admin:libraryBooks:${companyId || 'global'}:*`); } catch (e) {}
+
   return formatResponse(true, updatedBook, "Archive record updated", 200);
 };
 
@@ -48,6 +51,9 @@ const deleteBookLogic = async (request: Request, { params }: RouteParams) => {
     where: { id, companyId },
   });
 
+    // Invalidate relevant caches
+    try { await cacheDel(`admin:libraryBooks:${companyId || 'global'}:*`); } catch (e) {}
+    
   return formatResponse(true, null, "Volume removed from archive", 200);
 };
 

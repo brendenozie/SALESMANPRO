@@ -31,6 +31,10 @@ export async function POST(request: Request) {
     term
   });
 
+  try {
+    await cacheDel(`admin:fees:${schoolId || 'global'}:*`);
+  } catch (e) {}
+
   return formatResponse(true, report, "Batch processing complete.", 201);
 }
 

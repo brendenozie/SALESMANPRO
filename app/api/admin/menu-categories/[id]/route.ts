@@ -32,7 +32,7 @@ async function handlePutCategory(request: Request, { params }: RouteParams) {
 
     // withApiHandler will wrap this result in a success formatResponse with status 200
     
-    try { await cacheDel(`admin:menu-categories:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:menu-categories:${updatedCategory.slug || updatedCategory.id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedCategory, "Product category updated successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -62,7 +62,7 @@ async function handleDeleteCategory(request: Request, { params }: RouteParams) {
 
     // withApiHandler will wrap this result in a success formatResponse with status 200
     
-    try { await cacheDel(`admin:menu-categories:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:menu-categories:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, 'Product category deleted successfully', 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

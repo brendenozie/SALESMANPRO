@@ -36,8 +36,6 @@ function transformQuestionResponse(question: any) {
 async function getExamQuestions(request: Request) {
   // Authentication is handled by withApiHandler, but we verify here for internal response logic
   
-
-
   const { searchParams } = new URL(request.url);
   const examId = searchParams.get('examId');
 
@@ -48,8 +46,7 @@ async function getExamQuestions(request: Request) {
   }
   whereClause.examId = examId;
 
-  
-    const cacheKey = `admin:exam-questions:${'global' || 'global'}:all`;
+  const cacheKey = `admin:exam-questions:${examId}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -72,13 +69,14 @@ async function getExamQuestions(request: Request) {
     },
   });
 
+  const responseData = examQuestions.map(transformQuestionResponse);
+
   try {
     if (examQuestions) {
-      await cacheSet(cacheKey, examQuestions, 60);
+      await cacheSet(cacheKey, responseData, 60);
     }
   } catch (e) {}
 
-  const responseData = examQuestions.map(transformQuestionResponse);
   return formatResponse(true, { data: responseData }, null, 200);
 }
 
@@ -157,7 +155,7 @@ async function createExamQuestion(request: Request) {
 
   const responseData = transformQuestionResponse(newQuestion);
   
-    try { await cacheDel(`admin:exam-questions:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:exam-questions:${examId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { data: responseData }, null, 201);
 }
 

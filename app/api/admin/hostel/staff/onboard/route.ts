@@ -1,6 +1,7 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function POST(req: Request) {
   try {
@@ -9,7 +10,7 @@ export async function POST(req: Request) {
 
     // 1. Validation
     if (!name || !staffId || !companyId) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return formatResponse(false, null, "Missing required fields", 400);
     }
 
     // 2. Check for duplicate Staff ID
@@ -17,7 +18,7 @@ export async function POST(req: Request) {
       where: { staffId }
     });
     if (existing) {
-      return NextResponse.json({ error: "Staff ID already exists" }, { status: 400 });
+      return formatResponse(false, null, "Staff ID already exists", 400);
     }
 
     // 3. Create Record
@@ -40,9 +41,9 @@ export async function POST(req: Request) {
 
     
     try { await cacheDel(`admin:onboard:${companyId || 'global'}:*`); } catch (e) {}
-    return NextResponse.json({ data: newStaff }, { status: 201 });
+    return formatResponse(true, newStaff, "Staff onboarded successfully", 201);
   } catch (error: any) {
     console.error("ONBOARD_ERROR", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return formatResponse(false, null, error.message, 500);
   }
 }

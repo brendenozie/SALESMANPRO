@@ -32,6 +32,11 @@ async function getAppointments(
   const { adminSlug } = params;
   const { searchParams } = new URL(request.url);
 
+  try {
+    const cached = await cacheGet(`admin:health-appointemnts:${adminSlug || 'global'}:all`);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   // --- Authorization & Pre-Check ---
   const authResult = await getCompanyAndUserIds(adminSlug);
   if (!('company' in authResult)) return authResult; // Returns 404 if company not found
@@ -95,13 +100,6 @@ async function getAppointments(
   // --- Data Fetching ---
   const skip = (page - 1) * limit;
 
-  
-    const cacheKey = `admin:health-appointemnts:${adminSlug || 'global'}:all`;
-
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
   const [totalItems, appointments] = await prisma.$transaction([
     prisma.appointment.count({ where: whereClause }),
     prisma.appointment.findMany({
@@ -123,11 +121,6 @@ async function getAppointments(
     }),
   ]);
 
-  try {
-    if (totalItems) {
-      await cacheSet(cacheKey, totalItems, 60);
-    }
-  } catch (e) {}
 
   // --- Data Formatting ---
   const formattedAppointments = appointments.map(appt => ({
@@ -140,6 +133,18 @@ async function getAppointments(
     service: appt.OrderItem[0]?.marketplaceListing?.name || 'N/A Service',
   }));
 
+  
+  try {
+    if (totalItems) {
+      await cacheSet(`admin:health-appointemnts:${adminSlug || 'global'}:all`, {
+        appointments: formattedAppointments,
+        totalItems,
+        totalPages: Math.ceil(totalItems / limit),
+        currentPage: page,
+      }, 60);
+    }
+  } catch (e) {}
+
   // --- Success Response ---
   return formatResponse(true, {
     appointments: formattedAppointments,
@@ -148,8 +153,6 @@ async function getAppointments(
     currentPage: page,
   }, 'Appointments list fetched successfully', 200);
 }
-
-
 
 async function createAppointment(
   request: Request,
@@ -225,7 +228,7 @@ async function createAppointment(
 
   // --- Success Response ---
   
-    try { await cacheDel(`admin:health-appointemnts:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:health-appointemnts:${adminSlug || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { message: "Appointment created successfully", appointment: newAppointment }, "Appointment created successfully", 201);
 }
 

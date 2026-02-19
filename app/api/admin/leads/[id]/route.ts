@@ -12,7 +12,7 @@ async function updateLead(req: Request, { params }: { params: { id: string } }) 
   });
 
   
-    try { await cacheDel(`admin:leads:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:leads:${lead.companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, lead, "Updated", 200);
 }
 

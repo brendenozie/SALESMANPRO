@@ -9,13 +9,13 @@ export const GET = withApiHandler(async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
-  
-    const cacheKey = `admin:photos:${companyId || 'global'}:all`;
+  const cacheKey = `admin:photos:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const photos = await prisma.photo.findMany({
     where: companyId ? { companyId } : {},
     orderBy: { createdAt: "desc" },
@@ -39,8 +39,6 @@ export const POST = withApiHandler(async (request: Request) => {
     return formatResponse(false, null, "Title and imageUrl are required", 400);
   }
 
-
-
   if (body.albumId) {
     const album = await prisma.photoAlbum.findUnique({ where: { id: body.albumId } });
     if (!album) {
@@ -52,7 +50,6 @@ export const POST = withApiHandler(async (request: Request) => {
   } else {
     return formatResponse(false, null, "albumId is required", 400);
   }
-
 
   const newPhoto = await prisma.photo.create({
     data: {
@@ -66,7 +63,6 @@ export const POST = withApiHandler(async (request: Request) => {
     },
   });
 
-  
     try { await cacheDel(`admin:photos:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newPhoto, null, 201);
 });

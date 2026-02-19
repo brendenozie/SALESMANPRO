@@ -1,3 +1,5 @@
+import { cacheDel } from "@/lib/cache";
+import { formatResponse } from "@/lib/formatResponse";
 import prisma from "@/server/db/prismadb";
 import { NextResponse } from "next/server";
 
@@ -51,8 +53,11 @@ export async function PATCH(
       return updatedIssuance;
     });
 
-    return NextResponse.json({ data: result });
+    // Invalidate relevant caches
+    try { await cacheDel(`admin:issuance:${result.companyId || 'global'}:*`); } catch (e) {}
+
+    return formatResponse(true, result, "Book returned successfully", 200);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return formatResponse(false, null, error.message, 500);
   }
 }
