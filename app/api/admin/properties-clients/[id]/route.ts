@@ -85,6 +85,10 @@ const updateClient = async (req: Request, { params }: { params: { id: string } }
     budgetRange: updatedClient.budgetRange || "",
   };
 
+  try {
+    await cacheDel(`admin:properties-clients:${updatedClient.companyId || 'global'}:*`);
+  } catch (e) {}
+
   return formatResponse(true, clientProfile, "Client updated successfully", 200);
 };
 
@@ -112,6 +116,10 @@ const deleteClient = async (req: Request, { params }: { params: { id: string } }
 
   // 3. Delete the associated User record
   await prisma.user.delete({ where: { id: client.userId } });
+
+  try {
+    await cacheDel(`admin:properties-clients:${client.companyId || 'global'}:*`);
+  } catch (e) {}
 
   return formatResponse(true, null, "Client deleted successfully", 200);
 };

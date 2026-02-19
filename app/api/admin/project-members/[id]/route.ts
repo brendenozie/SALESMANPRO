@@ -13,14 +13,11 @@ interface ProjectMemberUpdateData {
 
 // GET: Retrieve a single project member by ID
 export const GET = withApiHandler(async (request: Request, { params }: { params: { id: string } }) => {
-  
-
 
   const { id } = params;
   if (!id) return formatResponse(false, null, "Project member ID is required.", 400);
 
-  
-    const cacheKey = `admin:project-members:${'global' || 'global'}:all`;
+    const cacheKey = `admin:project-members:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -31,13 +28,13 @@ export const GET = withApiHandler(async (request: Request, { params }: { params:
     include: { project: true, user: true },
   });
 
+  if (!projectMember) return formatResponse(false, null, "Project member not found.", 404);
+
   try {
     if (projectMember) {
       await cacheSet(cacheKey, projectMember, 60);
     }
   } catch (e) {}
-
-  if (!projectMember) return formatResponse(false, null, "Project member not found.", 404);
 
   return formatResponse(true, projectMember, "Project member fetched successfully", 200);
 });
@@ -58,8 +55,7 @@ export const PUT = withApiHandler(async (request: Request, { params }: { params:
     data: { role },
   });
 
-  
-    try { await cacheDel(`admin:project-members:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:project-members:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedProjectMember, "Project member updated successfully", 200);
 });
 
@@ -70,9 +66,8 @@ export const DELETE = withApiHandler(async (request: Request, { params }: { para
   if (!id) return formatResponse(false, null, "Project member ID is required for deletion.", 400);
 
   await prisma.projectMember.delete({ where: { id } });
-
   
-    try { await cacheDel(`admin:project-members:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:project-members:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Project member deleted successfully", 200);
 });
 

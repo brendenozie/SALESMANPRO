@@ -20,6 +20,15 @@ type SubcategoryJson = {
 async function getStoreCategories(req: Request) {
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  const { searchParams } = new URL(req.url);
+  const companyId = searchParams.get("companyId");
+
+  const cacheKey = `admin:school-reports:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
 
   try {
     const { searchParams } = new URL(req.url);
@@ -27,13 +36,6 @@ async function getStoreCategories(req: Request) {
 
     const whereClause = companyId ? { companyId } : {};
 
-    
-    const cacheKey = `admin:school-reports:${companyId || 'global'}:all`;
-
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
   const storeCategories = await prisma.storeCategory.findMany({
       where: whereClause,
       include: {
@@ -70,6 +72,10 @@ async function getStoreCategories(req: Request) {
       categoryName: sc.category?.name,
       categorySlug: sc.category?.slug,
     }));
+
+    try {
+      await cacheSet(cacheKey, response, 60);
+    } catch (e) {}
 
     return formatResponse(true, response, "Store categories fetched successfully", 200);
   } catch (error: any) {
@@ -131,7 +137,6 @@ async function createStoreCategory(req: Request) {
       categorySlug: newStoreCategory.category?.slug,
     };
 
-    
     try { await cacheDel(`admin:school-reports:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, responseData, "Store category created successfully", 201);
   } catch (error: any) {

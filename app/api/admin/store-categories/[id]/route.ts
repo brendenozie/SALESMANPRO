@@ -28,6 +28,7 @@ async function getStoreCategories(req: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const storeCategories = await prisma.storeCategory.findMany({
       where: whereClause,
       include: {

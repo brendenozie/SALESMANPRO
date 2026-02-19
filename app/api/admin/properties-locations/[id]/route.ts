@@ -10,12 +10,13 @@ const getLocation = async (req: Request, { params }: { params: { id: string } })
   
   const { id } = params;
   
-    const cacheKey = `admin:properties-locations:${'global' || 'global'}:all`;
+    const cacheKey = `admin:properties-locations:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const location = await prisma.location.findUnique({
     where: { id },
     include: {
@@ -57,7 +58,7 @@ const updateLocation = async (req: Request, { params }: { params: { id: string }
   });
 
   
-    try { await cacheDel(`admin:properties-locations:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:properties-locations:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedLocation, "Location updated successfully", 200);
 };
 
@@ -75,7 +76,7 @@ const deleteLocation = async (req: Request, { params }: { params: { id: string }
 
   await prisma.location.delete({ where: { id } });
   
-    try { await cacheDel(`admin:properties-locations:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:properties-locations:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Location deleted successfully", 200);
 };
 

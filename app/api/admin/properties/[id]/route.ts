@@ -9,13 +9,13 @@ import { formatResponse } from "@/lib/formatResponse";
 export const GET = withApiHandler(async (_req: Request, { params }: { params: { id: string } }) => {
   const { id } = params;
 
-  
-    const cacheKey = `admin:properties:${'global' || 'global'}:all`;
+   const cacheKey = `admin:properties:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const property = await prisma.property.findUnique({
     where: { id },
     include: {
@@ -27,15 +27,15 @@ export const GET = withApiHandler(async (_req: Request, { params }: { params: { 
     },
   });
 
+  if (!property) {
+    return formatResponse(false, null, "Property not found", 404);
+  }
+
   try {
     if (property) {
       await cacheSet(cacheKey, property, 60);
     }
   } catch (e) {}
-
-  if (!property) {
-    return formatResponse(false, null, "Property not found", 404);
-  }
 
   return formatResponse(true, property, "Property fetched successfully");
 });
@@ -44,6 +44,8 @@ export const GET = withApiHandler(async (_req: Request, { params }: { params: { 
 export const PUT = withApiHandler(async (request: Request, { params }: { params: { id: string } }) => {
   const { id } = params;
   const body = await request.json();
+
+    const cacheKey = `admin:properties:${id || 'global'}:all`;
 
   const {
     title,
@@ -89,7 +91,7 @@ export const PUT = withApiHandler(async (request: Request, { params }: { params:
   });
 
   
-    try { await cacheDel(`admin:properties:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(cacheKey); } catch (e) {}
     return formatResponse(true, updatedProperty, "Property updated successfully");
 });
 
@@ -101,7 +103,6 @@ export const DELETE = withApiHandler(async (_req: Request, { params }: { params:
     where: { id },
   });
 
-  
-    try { await cacheDel(`admin:properties:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:properties:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Property deleted successfully");
 });

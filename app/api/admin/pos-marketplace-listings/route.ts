@@ -31,13 +31,8 @@ const getMarketplaceListings = async (req: Request) => {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
-  const total = await prisma.marketplaceListings.count({ where: { companyId } });
 
-  try {
-    if (total) {
-      await cacheSet(cacheKey, total, 60);
-    }
-  } catch (e) {}
+  const total = await prisma.marketplaceListings.count({ where: { companyId } });
 
   // 2. Fetch paginated slice
   const listings = await prisma.marketplaceListings.findMany({
@@ -52,6 +47,22 @@ const getMarketplaceListings = async (req: Request) => {
 
   // 3. Pagination meta
   const totalPages = Math.ceil(total / limit);
+
+  // 4. Cache the full result for this company (optional, depending on how often this data changes)
+    try {
+    if (listings) {
+      await cacheSet(cacheKey, {
+        meta: {
+          companyId,
+          totalItems: total,
+          totalPages,
+          currentPage: page,
+          perPage: limit,
+        },
+        results: listings,
+      }, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, {
     meta: {

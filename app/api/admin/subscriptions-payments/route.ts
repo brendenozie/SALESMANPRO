@@ -7,14 +7,19 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
+    const companyId = searchParams.get('companyId');
 
-    
-    const cacheKey = `admin:subscriptions-payments:${'global' || 'global'}:all`;
+    const where: any = {};
+    if (status) where.status = status;
+    if (companyId) where.companyId = companyId;
+
+    const cacheKey = `admin:subscriptions-payments:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+    if (cached) return NextResponse.json({ success: true, data: cached, cached: true });
   } catch (e) {}
+
   const subscriptions = await prisma.subscriptionCompany.findMany({
       where: status ? { status: status as any } : {},
       include: {
@@ -41,13 +46,15 @@ export async function GET(request: Request) {
       orderBy: { createdAt: 'desc' },
     });
 
-  try {
-    if (subscriptions) {
-      await cacheSet(cacheKey, subscriptions, 60);
-    }
-  } catch (e) {}
+  // try {
+  //   if (subscriptions) {
+  //     await cacheSet(cacheKey, subscriptions, 60);
+  //   }
+  // } catch (e) {}
 
-    return NextResponse.json({ success: true, data: subscriptions });
+    try{ await cacheSet(cacheKey, subscriptions, 60); } catch (e) {}
+
+    return NextResponse.json({ success: true, data: subscriptions, cached: false });
   } catch (error: any) {
     console.error("Prisma Fetch Error:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

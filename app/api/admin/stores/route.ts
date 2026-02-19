@@ -52,7 +52,6 @@ async function getStaff(req: Request) {
     if (filterStatus && filterStatus !== "All") {
       whereClause.employmentStatus = filterStatus;
     }
-
     
     const cacheKey = `admin:stores:${companyId || 'global'}:all`;
 
@@ -60,6 +59,7 @@ async function getStaff(req: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   let staffMembers = await prisma.staffProfile.findMany({
       where: whereClause,
       include: {
@@ -67,12 +67,6 @@ async function getStaff(req: Request) {
       },
       orderBy: { createdAt: "asc" },
     });
-
-  try {
-    if (staffMembers) {
-      await cacheSet(cacheKey, staffMembers, 60);
-    }
-  } catch (e) {}
 
     if (searchTerm) {
       const lowerCaseSearchTerm = searchTerm.toLowerCase();
@@ -89,6 +83,12 @@ async function getStaff(req: Request) {
     const enrichedStaff = await Promise.all(
       staffMembers.map((staffMember) => formatStaffData(staffMember))
     );
+
+    try {
+      await cacheSet(cacheKey, enrichedStaff, 60);
+    } catch (e) {
+      console.error("Error caching staff data:", e);
+    }
 
     return formatResponse(true, enrichedStaff, "Staff fetched successfully");
   } catch (err: any) {

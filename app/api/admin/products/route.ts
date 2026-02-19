@@ -12,8 +12,7 @@ export const GET = withApiHandler(async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
-  
-    const cacheKey = `admin:products:${companyId || 'global'}:all`;
+  const cacheKey = `admin:products:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -27,17 +26,15 @@ export const GET = withApiHandler(async (request: Request) => {
     orderBy: { createdAt: "desc" },
   });
 
-  try {
-    if (products) {
-      await cacheSet(cacheKey, products, 60);
-    }
-  } catch (e) {}
-
   const formattedProducts = products.map((product) => ({
     ...product,
     category: product.productCategory ? { name: product.productCategory.name } : null,
     images: product.images as unknown as { url: string }[], // ensure correct type
   }));
+
+  try {
+      await cacheSet(cacheKey, formattedProducts, 60);
+  } catch (e) {}
 
   return formatResponse(true, formattedProducts, "Products fetched successfully", 200);
 });
@@ -46,8 +43,6 @@ export const GET = withApiHandler(async (request: Request) => {
 // Creates a new product
 export const POST = withApiHandler(async (request: Request) => {
   
-
-
   const body = await request.json();
   const {
     name,

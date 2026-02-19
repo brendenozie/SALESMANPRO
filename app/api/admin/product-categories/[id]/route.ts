@@ -7,7 +7,7 @@ import { formatResponse } from "@/lib/formatResponse";
 
 export const GET = withApiHandler(async (_req, { params }: { params: { id: string } }) => {
   
-    const cacheKey = `admin:product-categories:${'global' || 'global'}:all`;
+  const cacheKey = `admin:product-categories:${params.id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -17,15 +17,15 @@ export const GET = withApiHandler(async (_req, { params }: { params: { id: strin
     where: { id: params.id },
   });
 
+  if (!category) {
+    return formatResponse(false, null, "Category not found", 404);
+  }
+
   try {
     if (category) {
       await cacheSet(cacheKey, category, 60);
     }
   } catch (e) {}
-
-  if (!category) {
-    return formatResponse(false, null, "Category not found", 404);
-  }
 
   return formatResponse(true, category, "Category fetched successfully");
 });
@@ -40,8 +40,7 @@ export const PUT = withApiHandler(async (req, { params }: { params: { id: string
     data: rest,
   });
 
-  
-    try { await cacheDel(`admin:product-categories:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:product-categories:${params.id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, category, "Category updated successfully");
 });
 
@@ -51,7 +50,6 @@ export const DELETE = withApiHandler(async (_req, { params }: { params: { id: st
     where: { id: params.id },
   });
 
-  
-    try { await cacheDel(`admin:product-categories:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:product-categories:${params.id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, deleted, "Category deleted successfully");
 });

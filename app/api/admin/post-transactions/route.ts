@@ -63,6 +63,6 @@ export const POST = withApiHandler(async (req: Request) => {
   const transaction = await prisma.transaction.create({ data: transactionData });
 
   
-    try { await cacheDel(`admin:post-transactions:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:post-transactions:${subscriptionPlanId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { transaction }, "Transaction created successfully", 201);
 });

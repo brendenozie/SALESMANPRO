@@ -1,20 +1,27 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
-  try {
-    // 1. Fetch Basic Metrics
-    
+  if (!companyId) {
+    return formatResponse(false, null, "Company ID is required", 400);
+  }   
     const cacheKey = `admin:reports:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
+
+
+  try {
+    // 1. Fetch Basic Metrics
+
   const totalStaff = await prisma.staffProfile.count({ where: { companyId } });
 
   try {
@@ -22,6 +29,7 @@ export async function GET(request: Request) {
       await cacheSet(cacheKey, totalStaff, 60);
     }
   } catch (e) {}
+
     const payrollAgg = await prisma.staffProfile.aggregate({
       where: { companyId },
       _sum: { salary: true }
@@ -42,7 +50,31 @@ export async function GET(request: Request) {
       _count: { id: true }
     });
 
-    return NextResponse.json({
+    try {
+        await cacheSet(cacheKey, {
+          metrics: {
+            totalStaff,
+            monthlyPayroll: payrollAgg._sum.salary || 0,
+            retentionRate: 94.2, // Derived from history table if exists
+            attendanceAvg: 96.8
+          },
+          departments: deptCosts.map(d => ({
+            dept: d.department,
+            val: (d._sum.salary || 0) / 1000, // Normalized for bar chart
+            raw: d._sum.salary
+          })),
+          diversity: {
+            gender: genderDist,
+            contract: [
+              { label: 'Permanent', val: 78 },
+              { label: 'Contractual', val: 15 },
+              { label: 'Visiting', val: 7 }
+            ]
+          }
+        }, 60);
+    } catch (e) {}  
+
+    return formatResponse(true, {
       metrics: {
         totalStaff,
         monthlyPayroll: payrollAgg._sum.salary || 0,
@@ -64,6 +96,6 @@ export async function GET(request: Request) {
       }
     });
   } catch (error) {
-    return NextResponse.json({ error: "Analytics aggregation failed" }, { status: 500 });
+    return formatResponse(false, null, "Analytics aggregation failed", 500);
   }
 }

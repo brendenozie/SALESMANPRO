@@ -12,7 +12,7 @@ const getLocations = async (req: Request) => {
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
   
-    const cacheKey = `admin:properties-locations:${'global' || 'global'}:all`;
+    const cacheKey = `admin:properties-locations:${'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -37,6 +37,11 @@ const getLocations = async (req: Request) => {
     propertyCount: loc._count.marketplaceListings,
     _count: undefined,
   }));
+
+  try {
+    if (formattedLocations) {
+      await cacheSet(cacheKey, formattedLocations, 60);
+    }  } catch (e) {}
 
   return formatResponse(true, formattedLocations, "Locations fetched successfully", 200);
 };
@@ -71,8 +76,8 @@ const createLocation = async (req: Request) => {
     },
   });
 
-  
-    try { await cacheDel(`admin:properties-locations:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
+  // slug || adminSlug || 
+    try { await cacheDel(`admin:properties-locations:${'global'}:*`); } catch (e) {}
     return formatResponse(true, newLocation, "Location created successfully", 201);
 };
 

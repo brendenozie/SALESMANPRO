@@ -11,13 +11,13 @@ async function getStore(req: Request, { params }: { params: { id: string } }) {
   try {
     const storeId = params.id;
 
-    
-    const cacheKey = `admin:stores:${'global' || 'global'}:all`;
+    const cacheKey = `admin:stores:${storeId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const store = await prisma.company.findUnique({
       where: { id: storeId },
       include: {
@@ -28,15 +28,15 @@ async function getStore(req: Request, { params }: { params: { id: string } }) {
       },
     });
 
+    if (!store) {
+      return formatResponse(false, null, "Store not found", 404);
+    }
+
   try {
     if (store) {
       await cacheSet(cacheKey, store, 60);
     }
   } catch (e) {}
-
-    if (!store) {
-      return formatResponse(false, null, "Store not found", 404);
-    }
 
     return formatResponse(true, store, "Store fetched successfully");
   } catch (error: any) {

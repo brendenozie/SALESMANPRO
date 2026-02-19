@@ -34,6 +34,13 @@ async function getTotalRevenue(req: Request) {
       whereClause.companyId = companyId;
     }
 
+    const cacheKey = `admin:total-revenue:${companyId || 'global'}:all`;
+
+    try {
+      const cached = await cacheGet(cacheKey);
+      if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+    } catch (e) {}
+
     const totalRevenueResult = await prisma.customerOrder.aggregate({
       _sum: {
         totalPrice: true,
@@ -42,6 +49,10 @@ async function getTotalRevenue(req: Request) {
     });
 
     const totalRevenue = totalRevenueResult._sum.totalPrice || 0;
+
+    try {
+      await cacheSet(cacheKey, { totalRevenue }, 60);
+    } catch (e) {}
 
     return formatResponse(true, { totalRevenue }, "Total revenue fetched successfully");
   } catch (error) {

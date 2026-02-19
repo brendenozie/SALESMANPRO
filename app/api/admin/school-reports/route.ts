@@ -113,15 +113,15 @@ async function getReports(req: Request) {
     const endOfCurrentMonth = getEndOfMonth();
 
     const upcomingEventsSummary: { type: string; count: number; nextDate: string | null }[] = [];
+      
+    const cacheKey = `admin:school-reports:${companyId || 'global'}:*`;
 
     try {
-      
-    const cacheKey = `admin:school-reports:${companyId || 'global'}:all`;
+      const cached = await cacheGet(cacheKey);
+      if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+    } catch (e) {}
 
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
+    try {
   const events = await prisma.event.findMany({
         where: {
           companyId,
@@ -136,12 +136,6 @@ async function getReports(req: Request) {
         orderBy: { startDateTime: "asc" },
         select: { eventType: true, startDateTime: true },
       });
-
-  try {
-    if (events) {
-      await cacheSet(cacheKey, events, 60);
-    }
-  } catch (e) {}
 
       const eventTypeCounts: Record<string, { count: number; nextDate: Date | null }> = {};
 
@@ -174,6 +168,11 @@ async function getReports(req: Request) {
         { type: "MEETING", count: 5, nextDate: "July 28" }
       );
     }
+
+    
+  try {
+      await cacheSet(cacheKey, { overallStats, studentPerformanceData, staffReportsData, academicReportsData, upcomingEventsSummary }, 60);
+  } catch (e) {}
 
     return formatResponse(true, { overallStats, studentPerformanceData, staffReportsData, academicReportsData, upcomingEventsSummary }, "Reports fetched successfully", 200);
 

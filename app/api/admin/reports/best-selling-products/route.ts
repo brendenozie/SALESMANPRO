@@ -37,6 +37,13 @@ const getBestSellingProducts = async (req: Request) => {
     whereClause.order = { companyId };
   }
 
+  const cacheKey = `admin:best-selling-products:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   // Aggregate by marketplaceListingId
   const bestSellingProducts = await prisma.orderItem.groupBy({
     by: ["marketplaceListingId"],
@@ -50,23 +57,10 @@ const getBestSellingProducts = async (req: Request) => {
     .map((item) => item.marketplaceListingId)
     .filter((id): id is string => typeof id === "string" && id !== null);
 
-  
-    const cacheKey = `admin:best-selling-products:${companyId || 'global'}:all`;
-
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
   const listings = await prisma.marketplaceListings.findMany({
     where: { id: { in: listingIds } },
     select: { id: true, name: true },
   });
-
-  try {
-    if (listings) {
-      await cacheSet(cacheKey, listings, 60);
-    }
-  } catch (e) {}
 
   const listingMap = new Map(listings.map((l) => [l.id, l.name || "Unknown Product"]));
 
@@ -74,6 +68,11 @@ const getBestSellingProducts = async (req: Request) => {
     name: listingMap.get(item?.marketplaceListingId || "") || "Unknown Product",
     totalSold: item._sum.quantity || 0,
   }));
+
+  try {
+    if (formattedProducts) {
+      await cacheSet(cacheKey, formattedProducts, 60);
+    }  } catch (e) {}
 
   return formatResponse(true, formattedProducts, "Best-selling products fetched successfully", 200);
 };

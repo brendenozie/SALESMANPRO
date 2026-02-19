@@ -2,6 +2,7 @@ import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { subMonths, startOfMonth, endOfMonth, format, isWithinInterval } from "date-fns";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function GET(req: Request) {
   try {
@@ -17,14 +18,9 @@ export async function GET(req: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const trendData = await Promise.all(months.map(async (date) => {
       const start = startOfMonth(date);
-
-  try {
-    if (trendData) {
-      await cacheSet(cacheKey, trendData, 60);
-    }
-  } catch (e) {}
       const end = endOfMonth(date);
 
       // 1. Sum Expenses for this specific month
@@ -66,9 +62,16 @@ export async function GET(req: Request) {
       };
     }));
 
-    return NextResponse.json(trendData);
+    
+  try {
+    if (trendData) {
+      await cacheSet(cacheKey, trendData, 60);
+    }
+  } catch (e) {}
+
+    return formatResponse(true, trendData, "Trend data fetched successfully", 200);
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Trend calculation failed" }, { status: 500 });
+    return formatResponse(false, null, "Trend calculation failed", 500);
   }
 }

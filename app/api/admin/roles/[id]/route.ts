@@ -14,11 +14,18 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     where: { id: params.id },
     data: { name, permissions },
   });
+  
+  try {
+    await cacheDel(`admin:roles:${params.id}`);
+  } catch (e) {}
   return NextResponse.json(updatedRole);
 }
 
 // DELETE: Remove a role
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {
   await prisma.role.delete({ where: { id: params.id } });
+  try {
+    await cacheDel(`admin:roles:${params.id}`);
+  } catch (e) {}
   return NextResponse.json({ message: "Role deleted" });
 }

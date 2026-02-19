@@ -23,6 +23,7 @@ export const GET = withApiHandler(async (request, context) => {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const salesAgents = await prisma.salesAgent.findMany({
     where: { 
       companyId,
@@ -34,12 +35,6 @@ export const GET = withApiHandler(async (request, context) => {
       commissions: { orderBy: { createdAt: "desc" } },
     },
   });
-
-  try {
-    if (salesAgents) {
-      await cacheSet(cacheKey, salesAgents, 60);
-    }
-  } catch (e) {}
 
   const formattedAgents = salesAgents.map((agent) => {
     const totalSales = agent.transactions.reduce(
@@ -72,6 +67,10 @@ export const GET = withApiHandler(async (request, context) => {
       },
     };
   });
+
+  try {
+    await cacheSet(cacheKey, formattedAgents, 60);
+  } catch (e) {}
 
   return formatResponse(true, formattedAgents, "Fetched agents successfully", 200);
 });

@@ -34,6 +34,13 @@ async function getSalesAgentRevenue(req: Request) {
     whereClause.companyId = companyId;
   }
 
+  const cacheKey = `admin:sales-agent-revenue:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   // Aggregate commissions by sales agent
   const salesAgentRevenue = await prisma.commission.groupBy({
     by: ["salesAgentId"],
@@ -46,12 +53,6 @@ async function getSalesAgentRevenue(req: Request) {
   // Fetch sales agent names
   const agentIds = salesAgentRevenue.map((item) => item.salesAgentId);
   
-    const cacheKey = `admin:sales-agent-revenue:${companyId || 'global'}:all`;
-
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
   const agents = await prisma.salesAgent.findMany({
     where: {
       id: { in: agentIds },
@@ -64,12 +65,6 @@ async function getSalesAgentRevenue(req: Request) {
     },
   });
 
-  try {
-    if (agents) {
-      await cacheSet(cacheKey, agents, 60);
-    }
-  } catch (e) {}
-
   const agentMap = new Map(
     agents.map((agent) => [agent.id, agent.user?.name || "Unknown Agent"])
   );
@@ -78,6 +73,12 @@ async function getSalesAgentRevenue(req: Request) {
     name: agentMap.get(item.salesAgentId) || "Unknown Agent",
     totalRevenue: item._sum.commissionEarned || 0,
   }));
+
+  try {
+    if (formattedRevenue) {
+      await cacheSet(cacheKey, formattedRevenue, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, formattedRevenue, "Sales agent revenue fetched successfully");
 }

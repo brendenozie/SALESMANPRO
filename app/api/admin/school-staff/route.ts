@@ -1,23 +1,24 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
   if (!companyId) {
-    return NextResponse.json({ error: "Company ID is required" }, { status: 400 });
+    return formatResponse(false, null, "Company ID is required", 400);
   }
 
-  try {
-    
-    const cacheKey = `admin:school-staff:${companyId || 'global'}:all`;
+  const cacheKey = `admin:school-staff:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
+  try {
   const staffMembers = await prisma.user.findMany({
       where: {
         companyId: companyId,
@@ -35,8 +36,8 @@ export async function GET(request: Request) {
     }
   } catch (e) {}
 
-    return NextResponse.json({ data: staffMembers });
+    return formatResponse(true, staffMembers, "Staff fetched successfully", 200);
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch staff" }, { status: 500 });
+    return formatResponse(false, null, "Failed to fetch staff", 500);
   }
 }

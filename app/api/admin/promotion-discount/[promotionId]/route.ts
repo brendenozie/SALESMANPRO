@@ -103,7 +103,7 @@ export const PUT = withApiHandler(async (request, { params }) => {
   };
 
   
-    try { await cacheDel(`admin:promotion-discount:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:promotion-discount:${existingPromotion.companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, formattedUpdatedPromotion, "Promotion updated.");
 });
 
@@ -139,6 +139,6 @@ export const DELETE = withApiHandler(async (_request, { params }) => {
   });
 
   
-    try { await cacheDel(`admin:promotion-discount:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:promotion-discount:${promoToDelete.companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Promotion deleted successfully.");
 });

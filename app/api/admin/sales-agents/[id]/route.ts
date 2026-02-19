@@ -98,7 +98,7 @@ async function updateAgent(req: Request, { params }: { params: { id: string } })
     };
 
     
-    try { await cacheDel(`admin:sales-agents:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:sales-agents:${updatedSalesAgent.companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, agentProfile, "Agent updated successfully", 200);
   } catch (error: any) {
     console.error("Error updating agent:", error);
@@ -132,7 +132,7 @@ async function deleteAgent(req: Request, { params }: { params: { id: string } })
     if (!salesAgent.userId) {
       await prisma.salesAgent.delete({ where: { id: agentId } });
       
-    try { await cacheDel(`admin:sales-agents:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:sales-agents:${salesAgent.companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Agent deleted (no associated user)", 200);
     }
 

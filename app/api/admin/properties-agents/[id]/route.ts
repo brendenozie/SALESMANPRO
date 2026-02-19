@@ -91,7 +91,7 @@ async function putHandler(req: Request, { params }: { params: { id: string } }) 
   };
 
   
-    try { await cacheDel(`admin:properties-agents:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:properties-agents:${updatedSalesAgent.companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, agentProfile, "Agent updated successfully", 200);
 }
 
@@ -109,7 +109,7 @@ async function deleteHandler(req: Request, { params }: { params: { id: string } 
 
   const salesAgent = await prisma.salesAgent.findUnique({
     where: { id: agentId },
-    select: { userId: true },
+    select: { userId: true, companyId: true },
   });
 
   if (!salesAgent) {
@@ -120,7 +120,7 @@ async function deleteHandler(req: Request, { params }: { params: { id: string } 
   await prisma.user.delete({ where: { id: salesAgent.userId || "" } });
 
   
-    try { await cacheDel(`admin:properties-agents:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:properties-agents:${salesAgent.companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Agent deleted successfully", 200);
 }
 

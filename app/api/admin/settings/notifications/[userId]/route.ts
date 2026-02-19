@@ -13,14 +13,16 @@ async function getUserSettings(req: Request, { params }: { params: { userId: str
   const { userId } = params;
   if (!userId) return formatResponse(false, null, "User ID is required", 400);
 
-  try {
-    
-    const cacheKey = `admin:notifications:${'global' || 'global'}:all`;
+  
+    const cacheKey = `admin:notifications:${userId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
+  try {
+    
   const userSettings = await prisma.settings.findUnique({
       where: { userId },
     });
@@ -56,7 +58,7 @@ async function updateUserSettings(req: Request, { params }: { params: { userId: 
     });
 
     
-    try { await cacheDel(`admin:notifications:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:notifications:${userId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedSettings, "User settings updated successfully", 200);
   } catch (error: any) {
     console.error("Failed to update user settings:", error);

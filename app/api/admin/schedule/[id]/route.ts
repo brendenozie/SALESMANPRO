@@ -12,15 +12,17 @@ async function getSubject(req: Request, { params }: { params: { id: string } }) 
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
   const { id } = params;
-
-  try {
-    // 
-    const cacheKey = `admin:schedule:${'global' || 'global'}:all`;
+  
+  // 
+  const cacheKey = `admin:schedule:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
+  try {
+
   const subject = await prisma.subject.findUnique({
     //   where: { id },
     //   include: {

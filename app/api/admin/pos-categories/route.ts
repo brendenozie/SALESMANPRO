@@ -47,12 +47,6 @@ const getStoreCategories = async (request: Request) => {
     },
   });
 
-  try {
-    if (storeCategories) {
-      await cacheSet(cacheKey, storeCategories, 60);
-    }
-  } catch (e) {}
-
   const response = storeCategories.map((sc) => ({
     id: sc.id,
     companyId: sc.companyId,
@@ -66,6 +60,12 @@ const getStoreCategories = async (request: Request) => {
     categoryName: sc.category?.name,
     categorySlug: sc.category?.slug,
   }));
+
+  try {
+    if (storeCategories) {
+      await cacheSet(cacheKey, { categories: response }, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, { categories: response }, null, 200);
 };

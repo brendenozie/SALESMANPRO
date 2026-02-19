@@ -51,7 +51,7 @@ async function postSubcategory(req: Request, { params }: { params: { id: string 
     });
 
     
-    try { await cacheDel(`admin:subcategories:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:subcategories:${slug || 'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newSubcategory, "Subcategory added successfully", 201);
   } catch (err: any) {
     console.error(`Error adding subcategory to store category ${id}:`, err);

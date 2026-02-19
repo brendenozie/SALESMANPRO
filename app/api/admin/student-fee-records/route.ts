@@ -23,8 +23,16 @@ async function getAllStudentFees(req: Request, context: Context) {
     return formatResponse(false, null, 'Company slug is required.', 400);
   }
 
+  const cacheKey = `admin:studentFeeRecords:${companyId}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   try {
     const records = await getStudentFeeRecords(companyId);
+    try { await cacheSet(cacheKey, records, 60); } catch (e) {}
     return formatResponse(true, records, 'Fetched student fee records successfully.');
   } catch (error: any) {
     console.error('Error fetching student fee records:', error);
@@ -49,6 +57,7 @@ async function createStudentFee(req: Request) {
       return formatResponse(false, null, 'Failed to create student fee record. Student not found or other issue.', 404);
     }
 
+    try { await cacheDel(`admin:studentFeeRecords:${newRecord.studentId}:*`); } catch (e) {}
     return formatResponse(true, newRecord, 'Student fee record created successfully.', 201);
   } catch (error: any) {
     console.error('Error creating student fee record:', error);

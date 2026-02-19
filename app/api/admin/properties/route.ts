@@ -18,6 +18,7 @@ export const GET = withApiHandler(async (request: Request) => {
   const minPrice = searchParams.get("minPrice");
   const maxPrice = searchParams.get("maxPrice");
   const searchTerm = searchParams.get("searchTerm");
+  const companyId = searchParams.get("companyId");
 
   const where: any = {};
 
@@ -28,6 +29,8 @@ export const GET = withApiHandler(async (request: Request) => {
   if (type) where.type = type;
   if (minPrice) where.price = { ...where.price, gte: parseFloat(minPrice) };
   if (maxPrice) where.price = { ...where.price, lte: parseFloat(maxPrice) };
+  if (companyId) where.companyId = companyId;
+
   if (searchTerm) {
     where.OR = [
       { title: { contains: searchTerm, mode: "insensitive" } },
@@ -36,8 +39,7 @@ export const GET = withApiHandler(async (request: Request) => {
     ];
   }
 
-  
-    const cacheKey = `admin:properties:${'global' || 'global'}:all`;
+  const cacheKey = `admin:properties:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -87,9 +89,10 @@ export const POST = withApiHandler(async (request: Request) => {
     address,
     photos,
     features,
+    companyId,
   } = body;
 
-  if (!title || !price || !type || !status || !categoryId || !locationId) {
+  if (!title || !price || !type || !status || !categoryId || !locationId || !companyId) {
     return formatResponse(false, null, "Missing required fields", 400);
   }
 
@@ -112,10 +115,11 @@ export const POST = withApiHandler(async (request: Request) => {
       address,
       photos: photos || [],
       features: features || [],
+      companyId,
     },
   });
 
   
-    try { await cacheDel(`admin:properties:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:properties:${newProperty.companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newProperty, "Property created successfully", 201);
 });

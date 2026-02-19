@@ -36,6 +36,13 @@ async function getTopCustomers(req: Request) {
     whereClause.companyId = companyId;
   }
 
+  const cacheKey = `admin:top-customers:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   try {
     // 2. Aggregate orders to find total spending per customer (consumerId)
     const topSpenders = await prisma.customerOrder.groupBy({
@@ -56,13 +63,7 @@ async function getTopCustomers(req: Request) {
     const userIds = topSpenders.map(spender => spender.consumerId);
 
     // 4. Fetch the user details (name) for those top spenders
-    
-    const cacheKey = `admin:top-customers:${companyId || 'global'}:all`;
 
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
   const users = await prisma.user.findMany({
       where: {
         id: { in: userIds },
@@ -93,6 +94,10 @@ async function getTopCustomers(req: Request) {
         totalRevenue: spender._sum.totalFinalPrice || 0,
       };
     });
+
+    try {
+      await cacheSet(cacheKey, customerData, 60);
+    } catch (e) {}
 
     return formatResponse(true, customerData, "Top customers fetched successfully");
   } catch (error) {

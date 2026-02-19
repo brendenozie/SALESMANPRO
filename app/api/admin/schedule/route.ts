@@ -13,25 +13,19 @@ async function getSchedule(req: Request, { params }: { params: { adminSlug: stri
 
   const isAdmin = true; // TODO: Replace with real authentication logic
   if (!isAdmin) return formatResponse(false, null, "Unauthorized", 401);
-
-  try {
     
-    const cacheKey = `admin:schedule:${'global' || 'global'}:all`;
+  const cacheKey = `admin:schedule:${params.adminSlug || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
+  try {
   const articles = await prisma.content.findMany({
       where: { status: { in: ["Scheduled", "Draft"] } },
       select: { id: true, title: true, type: true, status: true, publishDate: true },
     });
-
-  try {
-    if (articles) {
-      await cacheSet(cacheKey, articles, 60);
-    }
-  } catch (e) {}
 
     const videos = await prisma.video.findMany({
       where: { status: { in: ["PUBLISHED", "PROCESSING", "DRAFT"] } },
@@ -53,6 +47,10 @@ async function getSchedule(req: Request, { params }: { params: { adminSlug: stri
 
     const mergedContent = [...formattedArticles, ...formattedVideos];
     mergedContent.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    try {
+      await cacheSet(cacheKey, mergedContent, 60);
+    } catch (e) {}
 
     return formatResponse(true, mergedContent, "Schedule fetched successfully", 200);
   } catch (error) {
@@ -107,7 +105,7 @@ async function createSchedule(req: Request, { params }: { params: { adminSlug: s
     }
 
     
-    try { await cacheDel(`admin:schedule:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:schedule:${params.adminSlug || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newItem, "Content created successfully", 201);
   } catch (error) {
     console.error("Failed to create content:", error);
@@ -146,7 +144,7 @@ async function updateSchedule(req: Request, { params }: { params: { adminSlug: s
     }
 
     
-    try { await cacheDel(`admin:schedule:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:schedule:${params.adminSlug || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedItem, "Content updated successfully", 200);
   } catch (error) {
     console.error("Failed to update item:", error);

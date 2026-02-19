@@ -56,6 +56,7 @@ async function repeatStudent(
       });
     });
 
+    try { await cacheDel(`admin:students:${result.studentId}:*`); } catch (e) {}
     return formatResponse(true, result, "Student retained successfully", 201);
   } catch (error: any) {
     return formatResponse(false, null, error.message, 500);

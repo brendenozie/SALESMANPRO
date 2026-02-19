@@ -7,17 +7,17 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 // GET /api/showings/[showingId]
 async function getShowing(req: Request, { params }: { params: { showingId: string } }) {
  
-
   const { showingId } = params;
-
-  try {
-    
-    const cacheKey = `admin:showings:${'global' || 'global'}:all`;
+  
+  const cacheKey = `admin:showings:${showingId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
+  try {
+    
   const showing = await prisma.showing.findUnique({
       where: { id: showingId },
       // include related data if needed
@@ -82,13 +82,18 @@ async function updateShowing(req: Request, { params }: { params: { showingId: st
       return formatResponse(false, null, "No fields provided for update", 400);
     }
 
+    const cacheKey = `admin:showings:${showingId || 'global'}:all`;
+
     const updatedShowing = await prisma.showing.update({
       where: { id: showingId },
       data: updateData,
     });
 
-    
-    try { await cacheDel(`admin:showings:${'global' || 'global'}:*`); } catch (e) {}
+    try {
+      await cacheSet(cacheKey, updatedShowing, 60);
+    } catch (e) {}
+
+    try { await cacheDel(`admin:showings:${showingId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedShowing, "Showing updated successfully", 200);
   } catch (error: any) {
     console.error(`Error updating showing with ID ${showingId}:`, error);
@@ -107,7 +112,7 @@ async function deleteShowing(req: Request, { params }: { params: { showingId: st
   try {
     await prisma.showing.delete({ where: { id: showingId } });
     
-    try { await cacheDel(`admin:showings:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:showings:${showingId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Showing deleted successfully", 200);
   } catch (error: any) {
     console.error(`Error deleting showing with ID ${showingId}:`, error);

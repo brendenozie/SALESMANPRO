@@ -81,6 +81,8 @@ async function promoteStudent(req: Request, { params }: { params: { id: string }
       return promotion;
     });
 
+    try { await cacheDel(`admin:students:${student.companyId || 'global'}:all`); } catch (e) {}
+    
     return formatResponse(true, result, "Student promoted successfully", 201);
   } catch (error: any) {
     return formatResponse(false, null, error.message, 500);

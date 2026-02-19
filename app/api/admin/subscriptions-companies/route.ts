@@ -136,6 +136,20 @@ async function handleGET(request: Request) {
 
     const totalPages = Math.ceil(totalItems / perPage);
 
+    try{
+      if (subscriptions) {
+        await cacheSet(cacheKey, {
+        subscriptions,
+        totalItems,
+        totalPages,
+        currentPage: page,
+        perPage,
+      }, 60);
+      }
+    } catch (e) {
+      console.error("Error caching subscriptions data:", e);
+    }
+
     return formatResponse(true, {
       subscriptions,
       totalItems,

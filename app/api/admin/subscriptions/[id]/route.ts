@@ -7,8 +7,6 @@ import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
 // PUT /api/subscriptions/[id] - Update subscription
 async function handlePUT(request: Request, { params }: { params: { id: string } }) {
-  
-
 
   const { id } = params;
 
@@ -28,7 +26,7 @@ async function handlePUT(request: Request, { params }: { params: { id: string } 
     });
 
     
-    try { await cacheDel(`admin:subscriptions:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:subscriptions:${updatedSubscription.companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedSubscription, 'Subscription updated successfully.');
   } catch (error: any) {
     console.error('Error updating subscription:', error);
@@ -52,7 +50,7 @@ async function handleDELETE(request: Request, { params }: { params: { id: string
     await prisma.subscription.delete({ where: { id } });
 
     
-    try { await cacheDel(`admin:subscriptions:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:subscriptions:${updatedSubscription.companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, `Subscription with id ${id} deleted successfully.`);
   } catch (error: any) {
     console.error('Error deleting subscription:', error);

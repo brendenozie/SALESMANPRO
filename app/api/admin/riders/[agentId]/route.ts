@@ -40,7 +40,7 @@ export const PUT = withAuthAndRateLimit(async (request, { params }) => {
   });
 
   
-    try { await cacheDel(`admin:riders:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:riders:${existingAgent.companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedAgent, "Agent updated successfully", 200);
 });
 
@@ -67,6 +67,6 @@ export const DELETE = withAuthAndRateLimit(async (_request, { params }) => {
   ]);
 
   
-    try { await cacheDel(`admin:riders:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:riders:${agentToDelete.companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { deletedId: agentId }, "Agent deleted successfully", 200);
 });

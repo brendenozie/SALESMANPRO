@@ -14,14 +14,14 @@ async function getShowings(req: Request) {
     if (!companyId) {
       return formatResponse(false, null, "Company ID is required to fetch showings", 400);
     }
-
     
     const cacheKey = `admin:showings:${companyId || 'global'}:all`;
 
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
+    try {
+      const cached = await cacheGet(cacheKey);
+      if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+    } catch (e) {}
+
   const showings = await prisma.showing.findMany({
       where: { companyId },
       orderBy: { dateTime: "asc" },

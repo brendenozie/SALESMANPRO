@@ -35,26 +35,27 @@ async function getStaff(req: Request, { params }: { params: { id: string } }) {
   const { id } = params;
   try {
     
-    const cacheKey = `admin:staff:${'global' || 'global'}:all`;
+    const cacheKey = `admin:staff:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const staffMember = await prisma.staffProfile.findUnique({
       where: { id },
       include: { user: { select: { id: true, name: true, email: true, phone: true, profilePicture: true } } },
     });
 
-  try {
-    if (staffMember) {
-      await cacheSet(cacheKey, staffMember, 60);
-    }
-  } catch (e) {}
 
     if (!staffMember) return formatResponse(false, null, "Staff member not found", 404);
 
     const formattedStaff = await formatStaffData(staffMember);
+
+    try {
+      await cacheSet(cacheKey, formattedStaff, 60);
+    } catch (e) {}
+
     return formatResponse(true, formattedStaff, "Staff fetched successfully", 200);
   } catch (err: any) {
     console.error(`GET staff/${id} error:`, err);
@@ -90,7 +91,7 @@ async function updateStaff(req: Request, { params }: { params: { id: string } })
 
     const formattedUpdatedStaff = await formatStaffData(updatedStaff);
     
-    try { await cacheDel(`admin:staff:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:staff:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, formattedUpdatedStaff, "Staff updated successfully", 200);
   } catch (err: any) {
     console.error(`PUT staff/${id} error:`, err);
@@ -108,7 +109,8 @@ async function deleteStaff(req: Request, { params }: { params: { id: string } })
 
     await prisma.staffProfile.delete({ where: { id } });
     
-    try { await cacheDel(`admin:staff:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:staff:${id || 'global'}:*`); } catch (e) {}
+    
     return formatResponse(true, null, "Staff member deleted successfully", 200);
   } catch (err: any) {
     console.error(`DELETE staff/${id} error:`, err);

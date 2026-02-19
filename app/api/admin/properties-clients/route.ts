@@ -18,6 +18,13 @@ const getClients = async (req: Request) => {
   const { searchParams } = new URL(req.url);
   const companyId = searchParams.get("companyId");
 
+  const cacheKey = `admin:properties-clients:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   const clients = await prisma.client.findMany({
     where: companyId ? { companyId } : {},
     include: { user: {
@@ -41,6 +48,10 @@ const getClients = async (req: Request) => {
     preferredPropertyTypes: c.preferredPropertyTypes || [],
     budgetRange: c.budgetRange || "",
   }));
+
+  try {
+    await cacheSet(cacheKey, clientProfiles, 60);
+  } catch (e) {}
 
   return formatResponse(true, clientProfiles, "Clients fetched successfully", 200);
 };

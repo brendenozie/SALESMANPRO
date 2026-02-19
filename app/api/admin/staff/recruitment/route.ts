@@ -2,20 +2,26 @@ import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 
 import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
   const stage = searchParams.get("stage");
 
-  try {
-    
-    const cacheKey = `admin:recruitment:${companyId || 'global'}:all`;
+  if(!companyId) {
+    return formatResponse(false, null, "Company ID is required", 400);
+  }
+   
+  const cacheKey = `admin:recruitment:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
+  try {
+   
   const candidates = await prisma.candidate.findMany({
       where: { 
         companyId,
@@ -39,9 +45,9 @@ export async function GET(request: Request) {
       }),
     };
 
-    return NextResponse.json({ data: candidates, stats });
+    return formatResponse(true, { data: candidates, stats }, "Recruitment pipeline fetched successfully", 200);
   } catch (error) {
-    return NextResponse.json({ error: "Pipeline fetch failed" }, { status: 500 });
+    return formatResponse(false, null, "Pipeline fetch failed", 500);
   }
 }
 
@@ -53,9 +59,10 @@ export async function PATCH(request: Request) {
       data: { stage: nextStage }
     });
     
-    try { await cacheDel(`admin:recruitment:${'global' || 'global'}:*`); } catch (e) {}
-    return NextResponse.json({ success: true, data: updated });
+    try { await cacheDel(`admin:recruitment:${updated.companyId || 'global'}:*`); } catch (e) {}
+    
+    return formatResponse(true, updated, "Stage transitioned successfully", 200);
   } catch (error) {
-    return NextResponse.json({ error: "Stage transition failed" }, { status: 500 });
+    return formatResponse(false, null, "Stage transition failed", 500);
   }
 }

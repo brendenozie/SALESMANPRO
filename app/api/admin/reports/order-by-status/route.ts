@@ -23,6 +23,13 @@ const getOrdersByStatus = async (req: Request) => {
   const endDateTime = new Date(endDate);
   endDateTime.setHours(23, 59, 59, 999); // include the entire end day
 
+  const cacheKey = `admin:orders-by-status:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   const whereClause: any = {
     createdAt: {
       gte: startDateTime,
@@ -41,6 +48,10 @@ const getOrdersByStatus = async (req: Request) => {
   });
 
   const responseData = { orders: ordersByStatus };
+
+  try {
+    await cacheSet(cacheKey, responseData, 60);
+  } catch (e) {}
 
   return formatResponse(true, responseData, "Orders by status fetched successfully", 200);
 };

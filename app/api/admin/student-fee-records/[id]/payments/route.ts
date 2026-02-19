@@ -32,6 +32,8 @@ async function postPayment(req:Request, context: Context) {
       return formatResponse(false, null, 'Student fee record not found or failed to add payment.', 404);
     }
 
+    try { await cacheDel(`admin:studentFeeRecords:${id}:*`); } catch (e) {}
+    
     return formatResponse(true, updatedRecord, 'Payment added successfully');
   } catch (error: any) {
     console.error('Error adding payment to student fee record:', error);

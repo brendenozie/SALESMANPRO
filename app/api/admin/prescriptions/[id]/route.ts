@@ -37,7 +37,7 @@ export const GET = withApiHandler(async (_req, { params }) => {
   const { id } = params;
 
   
-    const cacheKey = `admin:prescriptions:${'global' || 'global'}:all`;
+    const cacheKey = `admin:prescriptions:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -105,7 +105,7 @@ export const PUT = withApiHandler(async (req, { params }) => {
 
   const formatted = await formatPrescriptionData(updatedPrescription);
   
-    try { await cacheDel(`admin:prescriptions:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:prescriptions:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, formatted, "Prescription updated successfully", 200);
 });
 
@@ -114,7 +114,7 @@ export const DELETE = withApiHandler(async (_req, { params }) => {
   const { id } = params;
   await prisma.prescription.delete({ where: { id } });
   
-    try { await cacheDel(`admin:prescriptions:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:prescriptions:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Prescription deleted successfully", 204);
 });
 

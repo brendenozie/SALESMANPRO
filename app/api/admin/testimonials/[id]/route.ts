@@ -12,7 +12,7 @@ async function handleGET(request: Request, { params }: { params: { id: string } 
 
   try {
     
-    const cacheKey = `admin:testimonials:${'global' || 'global'}:all`;
+    const cacheKey = `admin:testimonials:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -45,8 +45,6 @@ async function handleGET(request: Request, { params }: { params: { id: string } 
 // PUT /api/testimonials/[id]
 async function handlePUT(request: Request, { params }: { params: { id: string } }) {
   
-
-
   const { id } = params;
 
   try {
@@ -59,7 +57,7 @@ async function handlePUT(request: Request, { params }: { params: { id: string } 
     });
 
     
-    try { await cacheDel(`admin:testimonials:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:testimonials:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedTestimonial);
   } catch (error: any) {
     console.error('Failed to update testimonial:', error);
@@ -77,7 +75,7 @@ async function handleDELETE(request: Request, { params }: { params: { id: string
   try {
     await prisma.testimonial.delete({ where: { id } });
     
-    try { await cacheDel(`admin:testimonials:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:testimonials:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { message: 'Testimonial deleted successfully' });
   } catch (error: any) {
     console.error('Failed to delete testimonial:', error);

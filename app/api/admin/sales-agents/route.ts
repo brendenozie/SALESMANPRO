@@ -31,15 +31,16 @@ async function getAgents(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const companyId = searchParams.get("companyId");
-
-  try {
-    
-    const cacheKey = `admin:sales-agents:${companyId || 'global'}:all`;
+  
+  const cacheKey = `admin:sales-agents:${companyId || 'global'}:*`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
+  try {
+    
   const salesAgents = await prisma.salesAgent.findMany({
       where: { companyId },
       include: { user: {
@@ -47,12 +48,6 @@ async function getAgents(req: Request) {
       } },
       orderBy: { createdAt: "desc" },
     });
-
-  try {
-    if (salesAgents) {
-      await cacheSet(cacheKey, salesAgents, 60);
-    }
-  } catch (e) {}
 
     const agents: AgentProfile[] = salesAgents.map((sa) => ({
       id: sa.id,
@@ -68,6 +63,10 @@ async function getAgents(req: Request) {
       closedDeals: 0,
       joinedAt: sa.createdAt?.toISOString() || new Date().toISOString(),
     }));
+
+    try {
+      await cacheSet(cacheKey, agents, 60);
+    } catch (e) {}
 
     return formatResponse(true, agents, "Agents fetched successfully", 200);
   } catch (error) {
@@ -143,7 +142,7 @@ async function createAgent(req: Request) {
         specialties,
         regions,
       },
-      include: { user: true,  },
+      include: { user: true, },
     });
 
     const agentProfile: AgentProfile = {

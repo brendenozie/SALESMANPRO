@@ -11,13 +11,13 @@ async function getSponsors(req: Request) {
     const { searchParams } = new URL(req.url);
     const companyId = searchParams.get('companyId');
 
-    
     const cacheKey = `admin:sponsors:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const sponsors = await prisma.sponsor.findMany({
       where: companyId ? { companyId } : undefined,
       orderBy: { createdAt: 'desc' },

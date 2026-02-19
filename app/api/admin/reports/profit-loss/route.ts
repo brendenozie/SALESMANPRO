@@ -2,6 +2,7 @@ import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { isWithinInterval } from "date-fns";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -11,6 +12,13 @@ export async function GET(req: Request) {
 
   const startDate = new Date(start);
   const endDate = new Date(end);
+
+  const cacheKey = `admin:profit-loss:${companyId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
 
   try {
     // 1. Fetch Expenses grouped by Category
@@ -25,13 +33,8 @@ export async function GET(req: Request) {
     });
 
     // 2. Fetch Fee Records with relevant payments
-    
-    const cacheKey = `admin:profit-loss:${companyId || 'global'}:all`;
 
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
+
   const feeRecords = await prisma.studentFeeRecord.findMany({
       where: { 
         student: { companyId: companyId || undefined },
@@ -39,12 +42,6 @@ export async function GET(req: Request) {
         lastPaymentDate: { gte: start.split('T')[0] } 
       }
     });
-
-  try {
-    if (feeRecords) {
-      await cacheSet(cacheKey, feeRecords, 60);
-    }
-  } catch (e) {}
 
     let totalIncome = 0;
     // You can later expand this logic to check p.feeType if you add it to the payment JSON
@@ -63,7 +60,7 @@ export async function GET(req: Request) {
 
     const totalExpenses = expensesByCategory.reduce((acc, curr) => acc + (curr._sum.amount || 0), 0);
 
-    return NextResponse.json({
+    const responseData = {
       netSurplus: totalIncome - totalExpenses,
       totalIncome,
       totalExpenses,
@@ -79,9 +76,16 @@ export async function GET(req: Request) {
         value: exp._sum.amount || 0,
         percent: totalExpenses > 0 ? ((exp._sum.amount || 0) / totalExpenses) * 100 : 0
       }))
-    });
+    };
+
+    try {
+      await cacheSet(cacheKey, responseData, 60);
+    } catch (e) {}
+
+    return formatResponse(true, responseData, "Profit/Loss data fetched successfully", 200);
+
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Aggregation failed" }, { status: 500 });
+    return formatResponse(false, null, "Aggregation failed", 500);
   }
 }

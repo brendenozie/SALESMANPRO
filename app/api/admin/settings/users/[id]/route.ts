@@ -22,7 +22,7 @@ async function updateUser(req: Request, { params }: { params: { id: string } }) 
     });
 
     
-    try { await cacheDel(`admin:users:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:users:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedUser, "User updated successfully", 200);
   } catch (error: any) {
     console.error("Failed to update user:", error);
@@ -42,7 +42,7 @@ async function deleteUser(req: Request, { params }: { params: { id: string } }) 
     });
 
     
-    try { await cacheDel(`admin:users:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:users:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "User deleted successfully", 200);
   } catch (error: any) {
     console.error("Failed to delete user:", error);

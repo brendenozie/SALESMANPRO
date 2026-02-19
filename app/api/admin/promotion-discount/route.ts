@@ -23,23 +23,17 @@ export const GET = withApiHandler(async (request: Request) => {
     return formatResponse(false, null, "companyId is required", 400);
   }
 
-  
-    const cacheKey = `admin:promotion-discount:${companyId || 'global'}:all`;
+  const cacheKey = `admin:promotion-discount:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const company = await prisma.company.findUnique({
     where: { id: companyId },
     select: { id: true },
   });
-
-  try {
-    if (company) {
-      await cacheSet(cacheKey, company, 60);
-    }
-  } catch (e) {}
 
   if (!company) {
     return formatResponse(false, null, "Company not found for the given slug.", 404);
@@ -64,6 +58,12 @@ export const GET = withApiHandler(async (request: Request) => {
     imageUrl: promo.imageUrl || "",
   }));
 
+  try {
+    if (promotions) {
+      await cacheSet(cacheKey, formattedPromotions, 60);
+    }
+  } catch (e) {}
+  
   return formatResponse(true, formattedPromotions, "Promotions fetched successfully.");
 });
 

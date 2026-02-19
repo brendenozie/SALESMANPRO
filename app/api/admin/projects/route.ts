@@ -28,16 +28,18 @@ interface ProjectCreateData {
 
 export const GET = withApiHandler(async (request: Request) => {
   
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId");
 
-
-  
-    const cacheKey = `admin:projects:${'global' || 'global'}:all`;
+  const cacheKey = `admin:projects:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const projects = await prisma.project.findMany({
+    where: companyId ? { companyId } : {},
     include: {
       tasks: true,
       events: true,
@@ -62,8 +64,6 @@ export const GET = withApiHandler(async (request: Request) => {
 
 export const POST = withApiHandler(async (request: Request) => {
   
-
-
   const {
     name,
     description,
@@ -91,8 +91,8 @@ export const POST = withApiHandler(async (request: Request) => {
       },
     });
 
-    
     try { await cacheDel(`admin:projects:${companyId || 'global'}:*`); } catch (e) {}
+    
     return formatResponse(true, newProject, "Project created successfully", 201);
   } catch (error: any) {
     if (error.code === "P2002") {

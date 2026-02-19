@@ -62,7 +62,7 @@ const putHandler = async (
     });
 
     
-    try { await cacheDel(`admin:podcasts:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:podcasts:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedPodcast, null, 200);
   } catch (error: any) {
     console.error("Error updating podcast:", error);
@@ -92,7 +92,7 @@ const deleteHandler = async (
     });
 
     
-    try { await cacheDel(`admin:podcasts:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:podcasts:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, null, 204);
   } catch (error: any) {
     console.error("Error deleting podcast:", error);

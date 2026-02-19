@@ -3,6 +3,7 @@ import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
 // GET: List all categories for a company
 export const GET = withApiHandler(async (request: Request, context: any) => {
@@ -11,16 +12,16 @@ export const GET = withApiHandler(async (request: Request, context: any) => {
   const companyId = searchParams.get("companyId");
 
   if (!companyId) {
-    return NextResponse.json({ message: "companyId is required" }, { status: 400 });
+    return formatResponse(false, null, "companyId is required", 400);
   }
 
-  
-    const cacheKey = `admin:product-categories:${companyId || 'global'}:all`;
+  const cacheKey = `admin:product-categories:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const categories = await prisma.productCategory.findMany({
     where: { companyId },
     orderBy: { sortOrder: "asc" },
@@ -32,7 +33,7 @@ export const GET = withApiHandler(async (request: Request, context: any) => {
     }
   } catch (e) {}
 
-  return NextResponse.json(categories);
+  return formatResponse(true, categories, "Categories fetched successfully");
 });
 
 // POST: Create a new product category
@@ -70,7 +71,7 @@ export const POST = withApiHandler(async (request: Request) => {
   } = data;
 
   if (!name || !slug) {
-    return NextResponse.json({ message: "Name and slug are required" }, { status: 400 });
+    return formatResponse(false, null, "Name and slug are required", 400);
   }
 
   const category = await prisma.productCategory.create({
@@ -104,7 +105,6 @@ export const POST = withApiHandler(async (request: Request) => {
     },
   });
 
-  
     try { await cacheDel(`admin:product-categories:${companyId || 'global'}:*`); } catch (e) {}
-    return NextResponse.json(category, { status: 201 });
+    return formatResponse(true, category, "Category created successfully", 201);
 });

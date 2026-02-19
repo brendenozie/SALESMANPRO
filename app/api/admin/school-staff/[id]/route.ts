@@ -33,14 +33,16 @@ async function formatStaffData(staffMember: any) {
 async function getStaff(req: Request, { params }: { params: { id: string } }) {
   
   const { id } = params;
-  try {
     
-    const cacheKey = `admin:school-staff:${'global' || 'global'}:all`;
+    const cacheKey = `admin:school-staff:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
+  try {
+
   const staffMember = await prisma.staffProfile.findUnique({
       where: { id },
       include: { user: { select: { id: true, name: true, email: true, phone: true, profilePicture: true } } },
@@ -90,7 +92,7 @@ async function updateStaff(req: Request, { params }: { params: { id: string } })
 
     const formattedUpdatedStaff = await formatStaffData(updatedStaff);
     
-    try { await cacheDel(`admin:school-staff:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:school-staff:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, formattedUpdatedStaff, "Staff updated successfully", 200);
   } catch (err: any) {
     console.error(`PUT staff/${id} error:`, err);
@@ -108,7 +110,7 @@ async function deleteStaff(req: Request, { params }: { params: { id: string } })
 
     await prisma.staffProfile.delete({ where: { id } });
     
-    try { await cacheDel(`admin:school-staff:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:school-staff:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Staff member deleted successfully", 200);
   } catch (err: any) {
     console.error(`DELETE staff/${id} error:`, err);

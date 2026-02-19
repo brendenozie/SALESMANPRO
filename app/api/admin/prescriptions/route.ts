@@ -49,13 +49,13 @@ export const GET = withApiHandler(async (req) => {
     whereClause.status = filterStatus;
   }
 
-  
     const cacheKey = `admin:prescriptions:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   let prescriptions = await prisma.prescription.findMany({
     where: whereClause,
     include: {
@@ -64,12 +64,6 @@ export const GET = withApiHandler(async (req) => {
     },
     orderBy: { issuedDate: "desc" },
   });
-
-  try {
-    if (prescriptions) {
-      await cacheSet(cacheKey, prescriptions, 60);
-    }
-  } catch (e) {}
 
   if (searchTerm) {
     const lower = searchTerm.toLowerCase();
@@ -84,6 +78,12 @@ export const GET = withApiHandler(async (req) => {
   const enriched = await Promise.all(
     prescriptions.map((rx) => formatPrescriptionData(rx))
   );
+
+    try {
+    if (enriched) {
+      await cacheSet(cacheKey, enriched, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, enriched, "Prescriptions fetched successfully");
 });

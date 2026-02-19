@@ -44,12 +44,6 @@ async function getHandler(req: Request) {
     orderBy: { createdAt: "desc" },
   });
 
-  try {
-    if (salesAgents) {
-      await cacheSet(cacheKey, salesAgents, 60);
-    }
-  } catch (e) {}
-
   const agents: AgentProfile[] = salesAgents.map((sa) => ({
     id: sa.id,
     name: sa.user?.name || "",
@@ -65,6 +59,12 @@ async function getHandler(req: Request) {
     joinedAt: sa.createdAt?.toISOString() || new Date().toISOString(),
   }));
 
+  try {
+    if (agents) {
+      await cacheSet(cacheKey, agents, 60);
+    }
+  } catch (e) {}
+  
   return formatResponse(true, agents, "Agents fetched successfully", 200);
 }
 

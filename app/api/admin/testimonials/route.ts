@@ -23,6 +23,7 @@ async function handleGET(request: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const testimonials = await prisma.testimonial.findMany({
       where,
       // orderBy: { createdAt: 'desc' },
@@ -34,7 +35,7 @@ async function handleGET(request: Request) {
     }
   } catch (e) {}
 
-    return formatResponse(true, { testimonials });
+    return formatResponse(true, { testimonials, cached: false });
   } catch (error: any) {
     console.error('Failed to fetch testimonials:', error);
     return formatResponse(false, null, 'Failed to fetch testimonials', 500);

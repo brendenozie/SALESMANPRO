@@ -67,21 +67,19 @@ export const PUT = withApiHandler(async (request: Request, { params }: { params:
     },
   });
 
-  
-    try { await cacheDel(`admin:products:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:products:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedProduct, "Product updated successfully", 200);
 });
 
 // DELETE /api/products/:id
 export const DELETE = withApiHandler(async (request: Request, { params }: { params: { id: string } }) => {
   
-  const { id } = params;
+    const { id } = params;
 
-  await prisma.product.delete({
-    where: { id },
-  });
+    await prisma.product.delete({
+      where: { id },
+    });
 
-  
-    try { await cacheDel(`admin:products:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:products:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Product deleted successfully", 200);
 });

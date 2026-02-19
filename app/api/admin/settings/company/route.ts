@@ -9,32 +9,31 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 // GET company settings
 async function getCompanySettings(req: Request) {
   
-
   const url = new URL(req.url);
   const companyId = url.searchParams.get("companyId");
 
   if (!companyId) return formatResponse(false, null, "Company ID is required", 400);
 
-  try {
-    
-    const cacheKey = `admin:company:${companyId || 'global'}:all`;
+  const cacheKey = `admin:company:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
+  try {
   const companySettings = await prisma.company.findUnique({
       where: { id: companyId },
       select: { name: true, contactEmail: true, contactPhone: true, address: true, logoUrl: true },
     });
+
+    if (!companySettings) return formatResponse(false, null, "Company not found", 404);
 
   try {
     if (companySettings) {
       await cacheSet(cacheKey, companySettings, 60);
     }
   } catch (e) {}
-
-    if (!companySettings) return formatResponse(false, null, "Company not found", 404);
 
     return formatResponse(true, companySettings, "Company settings fetched successfully", 200);
   } catch (error: any) {

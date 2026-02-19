@@ -61,7 +61,9 @@ async function handleGET(request: Request) {
       status: trainer.status,
     }));
 
-    return formatResponse(true, formatted);
+    try{ await cacheSet(cacheKey, formatted, 60); } catch (e) {}
+
+    return formatResponse(true, formatted, "Fetched (Cached)", 200);
   } catch (error: any) {
     console.error('Error fetching trainers:', error);
     return formatResponse(false, null, error.message || 'Failed to fetch trainers', 500);
@@ -143,7 +145,8 @@ async function handlePOST(request: Request) {
       status: newTrainer.status,
     };
 
-    return formatResponse(true, formatted, null, 201);
+    try{ await cacheSet(`admin:trainers:${companyId || 'global'}:*`, formatted, 60); } catch (e) {}
+    return formatResponse(true, formatted, "Trainer created successfully", 201);
   } catch (error: any) {
     console.error('Error creating trainer:', error);
     return formatResponse(false, null, error.message || 'Failed to create trainer', 500);

@@ -18,8 +18,7 @@ export const GET = withApiHandler(async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const projectId = searchParams.get("projectId");
 
-  
-    const cacheKey = `admin:project-members:${'global' || 'global'}:all`;
+  const cacheKey = `admin:project-members:${projectId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -45,8 +44,6 @@ export const GET = withApiHandler(async (request: Request) => {
 
 export const POST = withApiHandler(async (request: Request) => {
   
-
-
   const { projectId, userId, role }: ProjectMemberCreateData = await request.json();
 
   if (!projectId || !userId || !role) {
@@ -63,7 +60,7 @@ export const POST = withApiHandler(async (request: Request) => {
     });
 
     
-    try { await cacheDel(`admin:project-members:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:project-members:${projectId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newProjectMember, "Project member created successfully", 201);
   } catch (error: any) {
     if (error.code === "P2002") {

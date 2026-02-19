@@ -28,12 +28,13 @@ export const GET = withApiHandler(async (request: Request, { params }: { params:
   if (!id) return formatResponse(false, null, "Project ID is required.", 400);
 
   
-    const cacheKey = `admin:projects:${'global' || 'global'}:all`;
+    const cacheKey = `admin:projects:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const project = await prisma.project.findUnique({
     where: { id },
     include: {
@@ -48,13 +49,13 @@ export const GET = withApiHandler(async (request: Request, { params }: { params:
     },
   });
 
+  if (!project) return formatResponse(false, null, "Project not found", 404);  
+
   try {
     if (project) {
       await cacheSet(cacheKey, project, 60);
     }
   } catch (e) {}
-
-  if (!project) return formatResponse(false, null, "Project not found", 404);
 
   return formatResponse(true, project, "Project fetched successfully", 200);
 });
@@ -83,7 +84,8 @@ export const PUT = withApiHandler(async (request: Request, { params }: { params:
     });
 
     
-    try { await cacheDel(`admin:projects:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:projects:${id || 'global'}:*`); } catch (e) {}
+    
     return formatResponse(true, updatedProject, "Project updated successfully", 200);
   } catch (error: any) {
     if (error.code === "P2025") {
@@ -108,7 +110,7 @@ export const DELETE = withApiHandler(async (request: Request, { params }: { para
     });
 
     
-    try { await cacheDel(`admin:projects:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:projects:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Project deleted successfully", 200);
   } catch (error: any) {
     if (error.code === "P2025") {

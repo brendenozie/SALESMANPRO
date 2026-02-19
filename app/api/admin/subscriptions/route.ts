@@ -1,8 +1,6 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from '@/server/db/prismadb';
-import { PlanStatus, SubscriptionStatus, BillingCycle } from '@prisma/client';
 import { formatResponse } from "@/lib/formatResponse";
-
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
 // GET /api/subscriptions - List subscriptions with pagination and filters
@@ -34,13 +32,8 @@ async function handleGET(request: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
-  const totalItems = await prisma.subscription.count({ where });
 
-  try {
-    if (totalItems) {
-      await cacheSet(cacheKey, totalItems, 60);
-    }
-  } catch (e) {}
+  const totalItems = await prisma.subscription.count({ where });
 
     const subscriptions = await prisma.subscription.findMany({
       skip,
@@ -54,6 +47,14 @@ async function handleGET(request: Request) {
     });
 
     const totalPages = Math.ceil(totalItems / perPage);
+
+    try {
+      if (subscriptions) {
+        await cacheSet(cacheKey, { subscriptions, totalItems, totalPages, currentPage: page, perPage }, 60);
+      }
+    } catch (e) {
+      console.error("Error caching subscriptions data:", e);
+    }
 
     return formatResponse(true, {
       subscriptions,
@@ -106,7 +107,7 @@ async function handlePOST(request: Request) {
     });
 
     
-    try { await cacheDel(`admin:subscriptions:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:subscriptions:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, newSubscription, 'Subscription created successfully.');
 
   } catch (error: any) {

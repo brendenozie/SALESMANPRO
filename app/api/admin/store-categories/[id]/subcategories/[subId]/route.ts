@@ -46,7 +46,7 @@ async function patchSubcategory(req: Request, { params }: { params: { id: string
     await prisma.storeCategory.update({ where: { id }, data: { subcategories: currentItems } });
 
     
-    try { await cacheDel(`admin:subcategories:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:subcategories:${slug || 'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedSub, "Subcategory updated successfully", 200);
   } catch (err: any) {
     console.error(`Error updating subcategory ${subId} in store category ${id}:`, err);

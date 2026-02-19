@@ -11,15 +11,16 @@ import { first } from "lodash";
 async function getStudent(req: Request, { params }: { params: { id: string } }) {
 
   const { id } = params;
-
-  try {
-    
-    const cacheKey = `admin:students:${companyId || 'global'}:all`;
+  
+  const cacheKey = `admin:students:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
+  try {
+    
   const student = await prisma.student.findUnique({
       where: { id },
       include: {
@@ -49,12 +50,6 @@ async function getStudent(req: Request, { params }: { params: { id: string } }) 
         },
       },
     });
-
-  try {
-    if (student) {
-      await cacheSet(cacheKey, student, 60);
-    }
-  } catch (e) {}
 
     if (!student) return formatResponse(false, null, "Student not found", 404);
 
@@ -98,6 +93,7 @@ async function getStudent(req: Request, { params }: { params: { id: string } }) 
       updatedAt: student.updatedAt,
     };
 
+    try { await cacheSet(cacheKey, responseData, 60); } catch (e) {}
     return formatResponse(true, responseData, "Student fetched successfully");
   } catch (error: any) {
     console.error(`Error fetching student with ID ${id}:`, error);
@@ -150,6 +146,7 @@ async function updateStudent(req: Request, { params }: { params: { id: string } 
     return student;
   });
 
+  try { await cacheDel(`admin:students:${studentId}:*`); } catch (e) {}
   return formatResponse(true, updated, "Updated successfully");
 }
 

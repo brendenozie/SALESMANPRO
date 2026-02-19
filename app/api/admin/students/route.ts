@@ -37,6 +37,7 @@ async function handleGET(request: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const students = await prisma.student.findMany({
     where: companyId ? { companyId } : {},
     include: {
@@ -57,12 +58,6 @@ async function handleGET(request: Request) {
       _count: { select: { enrolledCourses: true, assignmentSubmission: true, AttendanceRecord: true, ExamSubmission: true  } },
     },
   });
-
-  try {
-    if (students) {
-      await cacheSet(cacheKey, students, 60);
-    }
-  } catch (e) {}
 
   const response = students.map((student) => ({
     id: student.id,
@@ -102,6 +97,11 @@ async function handleGET(request: Request) {
     // createdAt: student.createdAt,
   }));
 
+  try {    
+    await cacheSet(cacheKey, response, 60);
+  } catch (e) {
+    console.error("Error caching student data:", e);
+  }
   return formatResponse(true, response);
 }
 
@@ -148,6 +148,7 @@ async function handlePOST(request: Request) {
     return newStudent;
   });
 
+  try { await cacheDel(`admin:students:${companyId || 'global'}:all`); } catch (e) {}
   return formatResponse(true, result, "Student created", 201);
 }
 

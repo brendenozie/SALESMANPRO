@@ -45,12 +45,6 @@ async function getStoreCategories(req: Request) {
       orderBy: { sortOrder: "asc" },
     });
 
-  try {
-    if (storeCategories) {
-      await cacheSet(cacheKey, storeCategories, 60);
-    }
-  } catch (e) {}
-
     const response = storeCategories.map(sc => ({
       id: sc.id,
       companyId: sc.companyId,
@@ -64,6 +58,12 @@ async function getStoreCategories(req: Request) {
       categoryName: sc.category?.name,
       categorySlug: sc.category?.slug,
     }));
+
+  try {
+    if (response) {
+      await cacheSet(cacheKey, response, 60);
+    }
+  } catch (e) {}
 
     return formatResponse(true, response, "Store categories fetched successfully");
   } catch (err: any) {

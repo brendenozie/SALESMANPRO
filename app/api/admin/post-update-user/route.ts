@@ -74,6 +74,6 @@ export const PUT = withApiHandler(async (req: Request) => {
   });
 
   
-    try { await cacheDel(`admin:post-update-user:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:post-update-user:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedUser, "User updated successfully", 200);
 });

@@ -1,21 +1,22 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
 // GET: Fetch all roles for a specific company
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const companyId = searchParams.get('companyId');
 
-  if (!companyId) return NextResponse.json({ error: "Missing Company ID" }, { status: 400 });
+  if (!companyId) return formatResponse(false, null, "Missing Company ID", 400);
 
-  
-    const cacheKey = `admin:roles:${companyId || 'global'}:all`;
+  const cacheKey = `admin:roles:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const roles = await prisma.role.findMany({
     where: { companyId },
     orderBy: { createdAt: 'desc' }
@@ -26,7 +27,7 @@ export async function GET(req: Request) {
       await cacheSet(cacheKey, roles, 60);
     }
   } catch (e) {}
-  return NextResponse.json(roles);
+  return formatResponse(true, roles, "Fetched roles successfully", 200);
 }
 
 // POST: Create a new role
@@ -42,8 +43,13 @@ export async function POST(req: Request) {
         permissions: permissions || [],
       },
     });
-    return NextResponse.json(role);
+
+    try {
+      await cacheDel(`admin:roles:${companyId || 'global'}:*`);
+    } catch (e) {}
+    
+    return formatResponse(true, role, "Role created successfully", 201);
   } catch (error) {
-    return NextResponse.json({ error: "Role name must be unique within the company" }, { status: 400 });
+    return formatResponse(false, null, "Role name must be unique within the company", 400);
   }
 }

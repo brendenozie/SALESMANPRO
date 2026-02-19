@@ -46,6 +46,7 @@ async function handlePUT(request: Request, { params }: { params: { adminSlug: st
       return updatedEducator;
     });
 
+    try { await cacheDel(`admin:trainers:${company.id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, {
       id: updatedTrainerData.id,
       userId: updatedTrainerData.userId,

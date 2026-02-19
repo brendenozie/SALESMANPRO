@@ -4,6 +4,7 @@ import prisma from "@/server/db/prismadb";
 import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { cacheGet, cacheSet } from "@/lib/cache";
 
 async function getSales(req: Request) {
   const auth = await verifyAuth(req);
@@ -21,6 +22,13 @@ async function getSales(req: Request) {
       return formatResponse(false, null, "Invalid pagination parameters.", 400);
     }
 
+    const cacheKey = `admin:sales:${agentId || 'all'}:${startDate || 'start'}:${endDate || 'end'}:limit${limit}:offset${offset}`;
+
+    try {
+      const cached = await cacheGet(cacheKey);
+      if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+    } catch (e) {}
+    
     // Example placeholder — adjust your relations accordingly
     const sales = await prisma.customerOrder.findMany({
       where: {
@@ -51,6 +59,10 @@ async function getSales(req: Request) {
         date: sale.createdAt?.toISOString() || null,
       };
     });
+
+    try {
+      await cacheSet(cacheKey, formattedSales, 60);
+    } catch (e) {}
 
     return formatResponse(true, formattedSales, "Sales data fetched successfully");
   } catch (error) {
