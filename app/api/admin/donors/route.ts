@@ -9,11 +9,11 @@ import { verifyAuth } from "@/lib/verifyAuth";
 // GET all Donor profiles
 // =======================================================================
 async function getDonors(request: Request) {
-  
 
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId");
 
-  
-    const cacheKey = `admin:donors:${'global' || 'global'}:all`;
+  const cacheKey = `admin:donors:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -57,8 +57,6 @@ async function getDonors(request: Request) {
 // =======================================================================
 async function createDonor(request: Request) {
   
-
-
   const body = await request.json();
   const { userId, phoneNumber, companyId } = body;
 

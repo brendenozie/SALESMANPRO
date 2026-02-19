@@ -1,13 +1,9 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
-// // // app/api/conversations/route.ts
-// app/api/conversations/route.ts
+
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-
-
-
-
+import { formatResponse } from "@/lib/formatResponse";
 
 const serializeConversation = (entry: any) => {
   const conv = entry.conversation;
@@ -37,10 +33,6 @@ const serializeConversation = (entry: any) => {
   };
 };
 
-
-
-
-
 async function handleGet(request: Request) {
   const { searchParams } = new URL(request.url);
   const userId = searchParams.get("userId");
@@ -54,8 +46,7 @@ async function handleGet(request: Request) {
     );
   }
 
-  
-    const cacheKey = `admin:conversations:${companyId || 'global'}:all`;
+  const cacheKey = `admin:conversations:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -112,16 +103,10 @@ async function handleGet(request: Request) {
     }
   } catch (e) {}
 
-  return NextResponse.json(
-    participantEntries.map(serializeConversation),
-    { status: 200 }
-  );
+  return formatResponse(true, participantEntries.map(serializeConversation), "Fetched", 200);
 }
 
 export const GET = withApiHandler(handleGet);
-
-
-
 
 
 async function handlePost(request: Request) {
@@ -129,13 +114,7 @@ async function handlePost(request: Request) {
   const { companyId, participantIds, title = null } = body;
 
   if (!companyId || !Array.isArray(participantIds) || !participantIds.length) {
-    return NextResponse.json(
-      {
-        message:
-          "Company ID and at least one participant ID are required.",
-      },
-      { status: 400 }
-    );
+    return formatResponse(false, null, "Company ID and at least one participant ID are required.", 400);
   }
 
   // Remove duplicates safely
@@ -148,13 +127,9 @@ async function handlePost(request: Request) {
   });
 
   if (validUsers.length !== uniqueParticipantIds.length) {
-    return NextResponse.json(
-      { message: "One or more participant IDs are invalid." },
-      { status: 400 }
-    );
+    return formatResponse(false, null, "One or more participant IDs are invalid.", 400);
   }
 
-  
   if (uniqueParticipantIds.length === 2 && !title) {
     const [user1, user2] = [...uniqueParticipantIds].sort();
 
@@ -170,18 +145,10 @@ async function handlePost(request: Request) {
     });
 
     if (existing) {
-      return NextResponse.json(
-        {
-          message: "Direct conversation already exists.",
-          conversationId: existing.id,
-        },
-        { status: 409 }
-      );
+      return formatResponse(false, null, "Direct conversation already exists.", 409);
     }
   }
-
   
-
   const conversation = await prisma.conversation.create({
     data: {
       companyId,
@@ -210,22 +177,10 @@ async function handlePost(request: Request) {
     },
   });
 
-  return NextResponse.json(
-    {
-      id: conversation.id,
-      title: conversation.title,
-      companyId: conversation.companyId,
-      createdAt: conversation.createdAt?.toISOString(),
-      updatedAt: conversation.updatedAt?.toISOString(),
-      lastMessageAt: conversation.lastMessageAt?.toISOString() ?? null,
-      participants: conversation.participants.map((p) => ({
-        id: p.user.id,
-        name: p.user.name,
-        email: p.user.email,
-      })),
-    },
-    { status: 201 }
-  );
+  try { await cacheDel(`admin:conversations:${companyId || 'global'}:*`); } catch (e) {}
+
+  return formatResponse(true, conversation, "Conversation created", 201);
+  
 }
 
 export const POST = withApiHandler(handlePost);

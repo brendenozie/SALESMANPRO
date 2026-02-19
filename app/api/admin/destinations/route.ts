@@ -12,13 +12,10 @@ import { formatResponse } from "@/lib/formatResponse";
 // =======================================================================
 async function getDestinations(request: Request) {
   
-
-
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
 
-  
-    const cacheKey = `admin:destinations:${companyId || 'global'}:all`;
+  const cacheKey = `admin:destinations:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);

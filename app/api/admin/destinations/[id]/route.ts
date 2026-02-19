@@ -21,7 +21,7 @@ async function getDestination(req: Request, { params }: Params) {
   const { id } = params;
 
   
-    const cacheKey = `admin:destinations:${'global' || 'global'}:all`;
+    const cacheKey = `admin:destinations:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -60,7 +60,7 @@ async function updateDestination(req: Request, { params }: Params) {
   });
 
   
-    try { await cacheDel(`admin:destinations:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:destinations:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { data: updatedDestination }, null, 200);
 }
 
@@ -78,7 +78,7 @@ async function deleteDestination(req: Request, { params }: Params) {
   });
 
   
-    try { await cacheDel(`admin:destinations:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:destinations:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { message: "Destination deleted successfully" }, null, 200);
 }
 

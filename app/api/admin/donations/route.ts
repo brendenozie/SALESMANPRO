@@ -9,11 +9,11 @@ import { verifyAuth } from "@/lib/verifyAuth";
 // GET all donations
 // =======================================================================
 async function getDonations(request: Request) {
-  
 
+  const { searchParams } = new URL(request.url);
+  const campaignId = searchParams.get("campaignId");
 
-  
-    const cacheKey = `admin:donations:${'global' || 'global'}:all`;
+  const cacheKey = `admin:donations:${campaignId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -44,7 +44,6 @@ async function getDonations(request: Request) {
 // =======================================================================
 async function createDonation(request: Request) {
   
-
 
   const body = await request.json();
   const { donorId, amount, currency, paymentMethod, notes, status, projectId, campaignId, transactionId } = body;
@@ -85,7 +84,8 @@ async function createDonation(request: Request) {
   }
 
   
-    try { await cacheDel(`admin:donations:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:donations:${campaignId || 'global'}:*`); } catch (e) {}
+
     return formatResponse(true, { data: newDonation }, null, 201);
 }
 

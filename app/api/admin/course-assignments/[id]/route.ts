@@ -8,7 +8,7 @@ import { Prisma } from "@prisma/client";
 
 export const GET = withApiHandler(async (_req, { params }) => {
   
-    const cacheKey = `admin:course-assignments:${'global' || 'global'}:all`;
+    const cacheKey = `admin:course-assignments:${params.id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -81,7 +81,7 @@ export const PATCH = withApiHandler(async (req: Request, { params }) => {
     });
 
     
-    try { await cacheDel(`admin:course-assignments:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:course-assignments:${params.id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updated, "Updated successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -96,7 +96,7 @@ export const DELETE = withApiHandler(async (_req, { params }) => {
   try {
     await prisma.courseAssignment.delete({ where: { id: params.id } });
     
-    try { await cacheDel(`admin:course-assignments:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:course-assignments:${params.id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Deleted successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -106,7 +106,7 @@ export const DELETE = withApiHandler(async (_req, { params }) => {
     throw error;
   }
 });
- => {
+//  => {
 //   const assignment = await prisma.courseAssignment.findUnique({
 //     where: { id: params.id },
 //     include: {

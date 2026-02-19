@@ -14,14 +14,16 @@ export const GET = withApiHandler(async (request: Request) => {
   const limit = Math.min(50, parseInt(searchParams.get("limit") || "10"));
   const skip = (page - 1) * limit;
   const type = searchParams.get("type");
+  const companyID = searchParams.get("companyID");
 
   const where = {
     ...(type && { type }),
+    ...(companyID && { companyId: companyID }),
   };
 
   // 2. Fetch data and count in parallel
   
-    const cacheKey = `admin:content:${'global' || 'global'}:all`;
+  const cacheKey = `admin:content:${companyID || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -80,7 +82,9 @@ export const POST = withApiHandler(async (request: Request, context: any) => {
   const body = await request.json();
   const { title, type, publishDate, authorId, photoAlbumId, videoAlbumId, status } = body;
   const { adminSlug } = context.params;
+  const cacheKey = `admin:content:${adminSlug || 'global'}:all`;
 
+  // Validation
   // 1. Fast Validation
   if (!title || !type) {
     return formatResponse(false, null, "Title and type are required", 400);
@@ -106,8 +110,8 @@ export const POST = withApiHandler(async (request: Request, context: any) => {
       },
     });
 
-    
-    try { await cacheDel(`admin:content:${slug || adminSlug || 'global' || 'global'}:*`); } catch (e) {}
+    // Clear cache for all content of this type
+    try { await cacheDel(cacheKey); } catch (e) {}
     return formatResponse(true, newContent, "Content created successfully", 201);
   } catch (error: any) {
     // P2025: Record to connect not found (Slug or Author)

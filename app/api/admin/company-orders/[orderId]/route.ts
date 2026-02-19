@@ -195,7 +195,7 @@ export const GET = withApiHandler(handleGet);
 export const PUT = withApiHandler(handlePut);
 
 // import { NextResponse } from "next/server";
- {
+//  {
 //   const { adminSlug, orderId } = context.params;
 
 //   const order = await prisma.customerOrder.findFirst({

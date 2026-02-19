@@ -48,11 +48,7 @@ export const GET = withApiHandler(
             // invoiceDate: { gte: monthStart } 
           };
 
-  try {
-    if (totalProperties) {
-      await cacheSet(cacheKey, totalProperties, 60);
-    }
-  } catch (e) {}
+  
           return prisma.invoice.aggregate({
             _sum: { amount: true },
             where: invoiceWhere,
@@ -95,6 +91,12 @@ export const GET = withApiHandler(
           dueTime: task.dueTime || 'Any time',
         })),
       };
+
+      try {
+        await cacheSet(cacheKey, responseData, 60); // Cache for 60 seconds
+      } catch (e) {
+        console.error("Cache Set Error:", e);
+      }
 
       return formatResponse(true, responseData);
     } catch (error) {

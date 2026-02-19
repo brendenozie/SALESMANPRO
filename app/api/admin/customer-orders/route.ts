@@ -4,10 +4,6 @@ import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse';
 import { z } from 'zod';
 
-
-
-
-
 const createOrderSchema = z.object({
   companyId: z.string().min(1),
   customerId: z.string().min(1),
@@ -19,9 +15,6 @@ const createOrderSchema = z.object({
     })
   ).min(1),
 });
-
-
-
 
 
 export const GET = withApiHandler(async (request) => {
@@ -47,6 +40,7 @@ export const GET = withApiHandler(async (request) => {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const [totalCount, orders] = await Promise.all([
     prisma.customerOrder.count({ where }),
     prisma.customerOrder.findMany({
@@ -81,7 +75,7 @@ export const GET = withApiHandler(async (request) => {
 
   try {
     if (totalCount) {
-      await cacheSet(cacheKey, totalCount, 60);
+      await cacheSet(cacheKey, { totalCount, orders }, 60);
     }
   } catch (e) {}
 
@@ -107,10 +101,6 @@ export const GET = withApiHandler(async (request) => {
     },
   });
 });
-
-
-
-
 
 export const POST = withApiHandler(async (request) => {
   const body = await request.json();
@@ -185,6 +175,10 @@ export const POST = withApiHandler(async (request) => {
     });
   });
 
+  try {
+    await cacheDel(`admin:customer-orders:${companyId || 'global'}:all`);
+  } catch (e) {}
+
   return formatResponse(
     true,
     {
@@ -196,7 +190,7 @@ export const POST = withApiHandler(async (request) => {
   );
 });
 
-,
+
 //     ...(delivery !== null && { delivery: delivery === 'true' }),
 //   };
 

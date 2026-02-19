@@ -183,7 +183,7 @@ async function handleGet(
 export const GET = withApiHandler(handleGet);
 
 // import { NextResponse } from "next/server";
- {
+//  {
 //   const { adminSlug } = context.params;
 //   const { searchParams } = new URL(request.url);
 

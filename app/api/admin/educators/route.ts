@@ -25,8 +25,7 @@ async function getEducators(request: Request) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
-  
-    const cacheKey = `admin:educators:${companyId || 'global'}:all`;
+  const cacheKey = `admin:educators:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -62,12 +61,6 @@ async function getEducators(request: Request) {
     },
     orderBy: { user: { name: "asc" } },
   });
-
-  try {
-    if (educators) {
-      await cacheSet(cacheKey, educators, 60);
-    }
-  } catch (e) {}
 
   const data = educators.map((educator) => ({
     id: educator.id,
@@ -106,6 +99,12 @@ async function getEducators(request: Request) {
     createdAt: educator.createdAt,
     updatedAt: educator.updatedAt,
   }));
+
+  try {
+    if (data) {
+      await cacheSet(cacheKey, data, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, { data }, null, 200);
 }

@@ -1,4 +1,5 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
+import { formatResponse } from "@/lib/formatResponse";
 import prisma from "@/server/db/prismadb";
 import { NextResponse } from "next/server";
 
@@ -14,7 +15,7 @@ export async function GET(
   try {
     // 1. Fetch the Educator AND their associated companyId
     
-    const cacheKey = `admin:educator:${companyId || 'global'}:all`;
+    const cacheKey = `admin:educator:${userId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -43,11 +44,11 @@ export async function GET(
     }
   } catch (e) {}
 
-    if (!educator) return NextResponse.json({ error: "Educator not found" }, { status: 404 });
+    if (!educator) return formatResponse(false, null, "Educator not found", 404);
 
     const effectiveCompanyId = educator.Company?.id;
 
-    if (!effectiveCompanyId) return NextResponse.json({ error: "Company ID is required" }, { status: 400 });
+    if (!effectiveCompanyId) return formatResponse(false, null, "Company ID is required", 400);
 
     // 2. Fetch Classes/Timetable using the discovered companyId
     const classesScheduled = await prisma.classSchedule.findMany({
@@ -116,10 +117,10 @@ export async function GET(
       }))
     };
 
-    return NextResponse.json({ data: responseData });
+    return formatResponse(true, responseData, "Educator dashboard data fetched successfully", 200);
 
   } catch (error) {
     console.error("Educator Fetch Error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return formatResponse(false, null, "Internal Server Error", 500);
   }
 }

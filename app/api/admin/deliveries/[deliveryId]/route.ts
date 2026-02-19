@@ -6,7 +6,6 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 import { DeliveryStatus, Prisma } from "@prisma/client";
 
-
 export const PUT = withApiHandler(async (request, context) => {
   const deliveryId = context.params.deliveryId;
   const userCompanyId = context.user?.companyId;
@@ -49,8 +48,8 @@ export const PUT = withApiHandler(async (request, context) => {
     riderName: updatedDelivery.rider?.name || 'Unassigned',
   };
 
-  
-    try { await cacheDel(`admin:deliveries:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:deliveries:${deliveryId || 'global'}:*`); } catch (e) {}
+
     return formatResponse(true, formattedDelivery, "Delivery updated successfully.", 200);
 });
 
@@ -74,6 +73,7 @@ export const DELETE = withApiHandler(async (request, context) => {
   });
 
   
-    try { await cacheDel(`admin:deliveries:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:deliveries:${deliveryId || 'global'}:*`); } catch (e) {}
+
     return formatResponse(true, null, "Delivery deleted successfully.", 200);
 });

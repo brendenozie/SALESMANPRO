@@ -12,10 +12,24 @@ import { formatResponse } from "@/lib/formatResponse";
 // --------------------
 
 async function getCompanyId(adminSlug: string): Promise<string | null> {
+
+  const cacheKey = `companyId:${adminSlug}`;
+
+  const cachedCompanyId = await cacheGet(cacheKey);
+
+  if (cachedCompanyId) {
+    return cachedCompanyId as string;
+  }
+
   const company = await prisma.company.findUnique({
     where: { slug: adminSlug },
     select: { id: true },
   });
+
+  if (company) {
+    await cacheSet(cacheKey, company.id);
+  }
+
   return company?.id ?? null;
 }
 
@@ -35,6 +49,14 @@ export const GET = withApiHandler(async (_, { params }) => {
   const companyId = await getCompanyId(adminSlug);
   if (!companyId) {
     return formatResponse(false, null, "Company not found", 404);
+  }
+
+  const cacheKey = `admin:company-tickets:${companyId}:${ticketProductId}`;
+
+  const cached = await cacheGet(cacheKey);
+
+  if (cached) {
+    return formatResponse(true, JSON.parse(cached as string));
   }
 
   const ticket = await prisma.marketplaceListings.findFirst({
@@ -61,7 +83,7 @@ export const GET = withApiHandler(async (_, { params }) => {
   // TODO: Replace with real aggregation once event linkage exists
   const sold = Math.floor(ticket.quantity * 0.6);
 
-  return formatResponse(true, {
+  await cacheSet(cacheKey, JSON.stringify({
     id: ticket.id,
     eventName: "Associated Event Name (Needs lookup)",
     type: ticket.name,
@@ -73,7 +95,13 @@ export const GET = withApiHandler(async (_, { params }) => {
     isAvailable: ticket.isAvailable,
     createdAt: ticket.createdAt,
     updatedAt: ticket.updatedAt,
+  }));
+
+  return formatResponse(true, {
+    eventName: "Associated Event Name (Needs lookup)",
+    ...ticket,
   });
+
 });
 
 // --------------------
@@ -146,11 +174,13 @@ export const DELETE = withApiHandler(async (_, { params }) => {
     return formatResponse(false, null, "Ticket type not found", 404);
   }
 
+    try { await cacheDel(`admin:company-tickets:${companyId || 'global'}:*`); } catch (e) {}
+
   return new NextResponse(null, { status: 204 });
 });
 
 // import { NextResponse } from "next/server";
- => {
+//  => {
 //   const { adminSlug, ticketProductId } = params;
 
 //   const ticketProduct = await prisma.marketplaceListings.findFirst({
@@ -246,7 +276,7 @@ export const DELETE = withApiHandler(async (_, { params }) => {
 //   }
 // });
 // import { NextResponse } from "next/server";
- => {
+//  => {
 //     const { adminSlug, ticketProductId } = params;
 
 //     const company = await prisma.company.findUnique({

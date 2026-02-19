@@ -3,10 +3,6 @@ import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-
-
-
-
 export const GET = withApiHandler(
   async (_req: Request, { params }: { params: { id: string } }) => {
     const assignmentId = params.id;
@@ -15,13 +11,13 @@ export const GET = withApiHandler(
       return formatResponse(false, null, "Assignment ID is required", 400);
     }
 
-    
-    const cacheKey = `admin:submissions:${'global' || 'global'}:all`;
+    const cacheKey = `admin:submissions:${assignmentId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const submissions = await prisma.assignmentSubmission.findMany({
       where: { assignmentId },
       orderBy: { submittedAt: "desc" },
@@ -83,10 +79,6 @@ export const GET = withApiHandler(
   }
 );
 
-
-
-
-
 export const PATCH = withApiHandler(async (req: Request) => {
   const body = await req.json();
   const { submissionId, grade, comments, reviewedById } = body;
@@ -113,6 +105,8 @@ export const PATCH = withApiHandler(async (req: Request) => {
   if (comments !== undefined) updateData.comments = comments;
   if (reviewedById !== undefined) updateData.reviewedById = reviewedById;
 
+  const cacheKey = `admin:submissions:${submissionId || 'global'}:all`;
+
   try {
     const updated = await prisma.assignmentSubmission.update({
       where: { id: submissionId },
@@ -128,7 +122,7 @@ export const PATCH = withApiHandler(async (req: Request) => {
     });
 
     
-    try { await cacheDel(`admin:submissions:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(cacheKey); } catch (e) {}
     return formatResponse(
       true,
       {
@@ -144,7 +138,7 @@ export const PATCH = withApiHandler(async (req: Request) => {
   }
 });
 
- => {
+//  => {
 //   const assignmentId = params.id;
 //   const { searchParams } = new URL(req.url);
 
@@ -217,7 +211,7 @@ export const PATCH = withApiHandler(async (req: Request) => {
 //     throw error;
 //   }
 // });
- => {
+//  => {
 //   const assignmentId = params.id;
 
 //   const submissions = await prisma.assignmentSubmission.findMany({

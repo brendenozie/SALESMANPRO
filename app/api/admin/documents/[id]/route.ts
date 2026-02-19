@@ -17,11 +17,9 @@ interface Params {
 // =======================================================================
 async function getDocument(request: Request, { params }: Params) {
   
-
-
   const { id } = params;
   
-    const cacheKey = `admin:documents:${'global' || 'global'}:all`;
+    const cacheKey = `admin:documents:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -60,7 +58,7 @@ async function updateDocument(request: Request, { params }: Params) {
   });
 
   
-    try { await cacheDel(`admin:documents:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:documents:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { data: updatedDocument }, null, 200);
 }
 
@@ -78,7 +76,7 @@ async function deleteDocument(request: Request, { params }: Params) {
   });
 
   
-    try { await cacheDel(`admin:documents:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:documents:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { message: 'Document deleted successfully' }, null, 200);
 }
 

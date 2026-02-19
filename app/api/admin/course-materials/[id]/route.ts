@@ -33,7 +33,7 @@ const flattenMaterial = (m: any) => ({
 
 export const GET = withApiHandler(async (req, { params }) => {
   
-    const cacheKey = `admin:course-materials:${'global' || 'global'}:all`;
+    const cacheKey = `admin:course-materials:${params.id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -79,7 +79,7 @@ export const PATCH = withApiHandler(async (req, { params }) => {
     });
 
     
-    try { await cacheDel(`admin:course-materials:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:course-materials:${params.id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, flattenMaterial(updated));
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
@@ -94,7 +94,7 @@ export const DELETE = withApiHandler(async (req, { params }) => {
   try {
     await prisma.courseMaterial.delete({ where: { id: params.id } });
     
-    try { await cacheDel(`admin:course-materials:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:course-materials:${params.id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { deletedId: params.id }, "Deleted successfully");
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {

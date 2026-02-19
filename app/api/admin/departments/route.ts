@@ -22,8 +22,7 @@ async function getDepartments(request: Request) {
     return formatResponse(false, null, "companyId is required", 400);
   }
 
-  
-    const cacheKey = `admin:departments:${companyId || 'global'}:all`;
+  const cacheKey = `admin:departments:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -80,7 +79,7 @@ async function createDepartment(request: Request) {
     });
 
     
-    try { await cacheDel(`admin:departments:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:departments:${parsed.data.companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { data: newDepartment }, null, 201);
   } catch (error: any) {
     if (error.code === "P2002" && error.meta?.target?.includes("name")) {

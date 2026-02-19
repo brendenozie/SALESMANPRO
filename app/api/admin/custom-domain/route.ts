@@ -9,14 +9,7 @@ import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
 import { z } from "zod";
 
-
-
-
-
 const EXPECTED_TARGET = "app.your-production-domain.com";
-
-
-
 
 
 const DomainSchema = z.object({
@@ -31,12 +24,8 @@ const DomainSchema = z.object({
 });
 
 
-
-
-
 export async function POST(req: NextRequest) {
   
-
   const auth = await verifyAuth(req);
   if (!auth.success) {
     return formatResponse(false, null, auth.error, 401);
@@ -46,8 +35,6 @@ export async function POST(req: NextRequest) {
   if (!user) {
     return formatResponse(false, null, "User not found", 404);
   }
-
-  
 
   const body = await req.json();
   const parsed = DomainSchema.safeParse(body);
@@ -64,8 +51,6 @@ export async function POST(req: NextRequest) {
   // Normalize domain
   const domain = parsed.data.domain.toLowerCase().trim();
 
-  
-
   const existingDomain = await prisma.company.findFirst({
     where: { domain },
     select: { id: true },
@@ -79,8 +64,6 @@ export async function POST(req: NextRequest) {
       409
     );
   }
-
-  
 
   let cnameRecords: string[] = [];
   let txtRecords: string[] = [];
@@ -132,8 +115,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  
-
   const company = await prisma.company.findFirst({
     where: { userId: user.id },
     select: { id: true },
@@ -148,8 +129,7 @@ export async function POST(req: NextRequest) {
     data: { domain },
   });
 
-  
-    try { await cacheDel(`admin:custom-domain:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:custom-domain:${user.id || 'global'}:*`); } catch (e) {}
     return formatResponse(
     true,
     { domain },

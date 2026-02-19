@@ -30,6 +30,7 @@ export const GET = withApiHandler(
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const [
         totalDestinations,
         totalBookings,
@@ -74,12 +75,6 @@ export const GET = withApiHandler(
         })
       ]);
 
-  try {
-    if (totalDestinations) {
-      await cacheSet(cacheKey, totalDestinations, 60);
-    }
-  } catch (e) {}
-
       const monthlyRevenue = revenueData._sum.totalPrice || 0;
 
       const responseData = {
@@ -97,6 +92,13 @@ export const GET = withApiHandler(
           location: tour.destination?.name || 'Multiple Locations',
         })),
       };
+
+      // --- CACHE THE RESPONSE ---
+      try {
+        await cacheSet(cacheKey, responseData, 60); // Cache for 60 seconds
+      } catch (e) {
+        console.error("Cache Set Error:", e);
+      }
 
       return formatResponse(true, responseData);
     } catch (error) {

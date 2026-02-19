@@ -10,12 +10,12 @@ const prisma = new PrismaClient();
 // =======================================================================
 // GET: Fetch all documents
 // =======================================================================
-async function getDocuments(request: Request) {
-  
+async function getDocuments(request: Request,) {
+    
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId");
 
-
-  
-    const cacheKey = `admin:documents:${'global' || 'global'}:all`;
+  const cacheKey = `admin:documents:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -46,8 +46,6 @@ async function getDocuments(request: Request) {
 // =======================================================================
 async function createDocument(request: Request) {
   
-
-
   const { name, fileUrl, mimeType, fileSize, uploaderId, companyId } = await request.json();
 
   if (!name || !fileUrl || !mimeType || !fileSize || !uploaderId || !companyId) {

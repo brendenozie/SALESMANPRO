@@ -19,7 +19,7 @@ export const GET = withApiHandler(async (request, { params }) => {
 
   // 1. Fetch messages and check membership in parallel
   
-    const cacheKey = `admin:messages:${'global' || 'global'}:all`;
+  const cacheKey = `admin:messages:${conversationId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -71,6 +71,8 @@ export const POST = withApiHandler(async (request, { params }) => {
   if (!senderId || !content) return formatResponse(false, null, "Missing content", 400);
   if (!VALID_MESSAGE_TYPES.includes(messageType)) return formatResponse(false, null, "Invalid type", 400);
 
+  const cacheKey = `admin:messages:${conversationId || 'global'}:all`;
+
   try {
     const result = await prisma.$transaction(async (tx) => {
       // 1. Check membership
@@ -99,14 +101,17 @@ export const POST = withApiHandler(async (request, { params }) => {
 
       return message;
     });
-
+    
+    try {
+      await cacheDel(cacheKey);
+    } catch (e) {}
     return formatResponse(true, result, null, 201);
   } catch (error: any) {
     const status = error.message === "NOT_PARTICIPANT" ? 403 : 500;
     return formatResponse(false, null, error.message, status);
   }
 });
- => {
+//  => {
 //   const { conversationId } = params;
 //   const { searchParams } = new URL(request.url);
 

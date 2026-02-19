@@ -38,8 +38,7 @@ export const GET = withApiHandler(async (request, context) => {
     ];
   }
 
-  
-    const cacheKey = `admin:deliveries:${companyId || 'global'}:all`;
+  const cacheKey = `admin:deliveries:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -92,8 +91,6 @@ export const GET = withApiHandler(async (request, context) => {
 
   return formatResponse(true, formattedDeliveries, "Deliveries fetched successfully.", 200);
 });
-
-
 
 export const POST = withApiHandler(async (request, context) => {
   const body = await request.json();

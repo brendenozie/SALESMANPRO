@@ -63,14 +63,14 @@ export const POST = withApiHandler(async (req: Request, { params }) => {
   });
 
   
-    try { await cacheDel(`admin:submit:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:submit:${params.id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { submissionId: submission.id, score: submission.grade }, "Submitted", 201);
 });
 
 
 export const GET = withApiHandler(async (_req: Request, { params }) => {
   
-    const cacheKey = `admin:submit:${'global' || 'global'}:all`;
+    const cacheKey = `admin:submit:${params.id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -122,7 +122,7 @@ export const DELETE = withApiHandler(async (_req, { params }) => {
   try {
     await prisma.courseAssignment.delete({ where: { id: params.id } });
     
-    try { await cacheDel(`admin:submit:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:submit:${params.id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Deleted", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
@@ -131,7 +131,7 @@ export const DELETE = withApiHandler(async (_req, { params }) => {
     return formatResponse(false, null, "Error deleting", 500);
   }
 });
- => {
+//  => {
 //   const assignmentId = params.id;
 //   const body = await req.json();
 //   const { studentId, courseId, companyId, responses } = body; 
@@ -348,8 +348,8 @@ export const DELETE = withApiHandler(async (_req, { params }) => {
 // //   };
 
 // //   
-    try { await cacheDel(`admin:submit:${'global' || 'global'}:*`); } catch (e) {}
-    return formatResponse(true, responseData, null, 200);
+    // try { await cacheDel(`admin:submit:${'global' || 'global'}:*`); } catch (e) {}
+    // return formatResponse(true, responseData, null, 200);
 // // };
 // // export const PATCH = withApiHandler(patchHandler);
 

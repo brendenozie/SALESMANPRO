@@ -40,7 +40,7 @@ async function getDoctor(_req: Request, { params }: { params: { id: string } }) 
   const { id } = params;
 
   
-    const cacheKey = `admin:doctors:${'global' || 'global'}:all`;
+    const cacheKey = `admin:doctors:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -113,7 +113,7 @@ async function updateDoctor(req: Request, { params }: { params: { id: string } }
 
     const formatted = await formatDoctorData(updatedDoctor);
     
-    try { await cacheDel(`admin:doctors:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:doctors:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, formatted, "Doctor updated successfully", 200);
   } catch (err: any) {
     if (err.code === "P2002" && err.meta?.target?.includes("email")) {
@@ -157,7 +157,7 @@ async function deleteDoctor(_req: Request, { params }: { params: { id: string } 
   }
 
   
-    try { await cacheDel(`admin:doctors:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:doctors:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { deletedId: id }, "Doctor deleted successfully", 200);
 }
 

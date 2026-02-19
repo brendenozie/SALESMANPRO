@@ -30,8 +30,6 @@ const mapStatusToPrisma = (status: VehicleData['status']): ListingStatus => {
   }
 };
 
-
-
 export const PUT = withApiHandler(async (request, context) => {
   const vehicleId = context.params.vehicleId;
   const userCompanyId = context.user?.companyId;
@@ -68,7 +66,7 @@ export const PUT = withApiHandler(async (request, context) => {
   });
 
   
-    try { await cacheDel(`admin:delivery-vehicles:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:delivery-vehicles:${userCompanyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedProduct, "Vehicle updated successfully.", 200);
 });
 
@@ -92,6 +90,6 @@ export const DELETE = withApiHandler(async (request, context) => {
   });
 
   
-    try { await cacheDel(`admin:delivery-vehicles:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:delivery-vehicles:${userCompanyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Vehicle deleted successfully.", 200);
 });

@@ -18,7 +18,7 @@ async function getDepartment(request: Request, { params }: { params: { id: strin
   const { id } = params;
 
   
-    const cacheKey = `admin:departments:${'global' || 'global'}:all`;
+    const cacheKey = `admin:departments:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -91,8 +91,7 @@ async function updateDepartment(request: Request, { params }: { params: { id: st
       data: parsed.data,
     });
 
-    
-    try { await cacheDel(`admin:departments:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:departments:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, {data: updatedDepartment  },null,200 );
     
   } catch (error: any) {
@@ -111,7 +110,7 @@ async function deleteDepartment(request: Request, { params }: { params: { id: st
   try {
     const deleted = await prisma.department.delete({ where: { id } });
     
-    try { await cacheDel(`admin:departments:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:departments:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, {data: { deletedDepartmentId: deleted.id, message: "Department deleted successfully" }  },null,200 );
     
     

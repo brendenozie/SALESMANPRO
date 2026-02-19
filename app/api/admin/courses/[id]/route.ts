@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { Prisma } from "@prisma/client";
+import { formatResponse } from "@/lib/formatResponse";
 
 type HandlerContext = { params: { id: string }; user?: any };
 
@@ -57,12 +58,13 @@ const mapCourseResponse = (course: any) => ({
 
 export const GET = withApiHandler(async (_req, { params }) => {
   
-    const cacheKey = `admin:courses:${'global' || 'global'}:all`;
+    const cacheKey = `admin:courses:${ params.id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const course = await prisma.course.findUnique({
     where: { id: params.id },
     select: COURSE_SELECT,
@@ -74,8 +76,8 @@ export const GET = withApiHandler(async (_req, { params }) => {
     }
   } catch (e) {}
 
-  if (!course) return NextResponse.json({ error: "Course not found" }, { status: 404 });
-  return NextResponse.json(mapCourseResponse(course), { status: 200 });
+  if (!course) return formatResponse(false, null, "Course not found", 404);
+  return formatResponse(true, mapCourseResponse(course), null, 200);
 });
 
 
@@ -101,6 +103,10 @@ export const PATCH = withApiHandler(async (req, { params }) => {
         });
       }
 
+      try {
+        await cacheDel(`admin:courses:${id || 'global'}:*`);
+      } catch (e) {}
+
       // 2. Update Main Course Data & Return Final Shape in one go
       return await tx.course.update({
         where: { id },
@@ -109,11 +115,11 @@ export const PATCH = withApiHandler(async (req, { params }) => {
       });
     });
 
-    return NextResponse.json(mapCourseResponse(updatedCourse), { status: 200 });
+    return formatResponse(true, mapCourseResponse(updatedCourse), null, 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2002') return NextResponse.json({ error: "Course code must be unique" }, { status: 400 });
-      if (error.code === 'P2025') return NextResponse.json({ error: "Course not found" }, { status: 404 });
+      if (error.code === 'P2002') return formatResponse(false, null, "Course code must be unique", 400);
+      if (error.code === 'P2025') return formatResponse(false, null, "Course not found", 404);
     }
     throw error;
   }
@@ -124,10 +130,11 @@ export const DELETE = withApiHandler(async (_, { params }) => {
   try {
     await prisma.course.delete({ where: { id: params.id } });
     
-    try { await cacheDel(`admin:courses:${'global' || 'global'}:*`); } catch (e) {}
-    return NextResponse.json({ message: "Course deleted", deletedId: params.id }, { status: 200 });
+    try { await cacheDel(`admin:courses:${params.id || 'global'}:*`); } catch (e) {}
+    
+    return formatResponse(true, null, "Course deleted", 200);
   } catch (error) {
-    return NextResponse.json({ error: "Course not found or has active dependencies" }, { status: 404 });
+    return formatResponse(false, null, "Course not found or has active dependencies", 404);
   }
 });
 

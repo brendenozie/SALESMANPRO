@@ -17,8 +17,7 @@ async function getEducator(request: Request, { params }: Params) {
   
   const { id } = params;
 
-  
-    const cacheKey = `admin:educators:${companyId || 'global'}:all`;
+  const cacheKey = `admin:educators:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -229,6 +228,8 @@ async function updateEducator(request: Request, { params }: Params) {
     }
   });
 
+  try { await cacheDel(`admin:educators:${id || 'global'}:*`); } catch (e) {}
+
   return formatResponse(true, { data: final }, "Teacher updated successfully", 200);
 }
 
@@ -237,8 +238,6 @@ async function updateEducator(request: Request, { params }: Params) {
 // =======================================================================
 async function deleteEducator(request: Request, { params }: Params) {
   
-
-
   const { id } = params;
 
   const existingEducator = await prisma.educator.findUnique({
@@ -262,7 +261,7 @@ async function deleteEducator(request: Request, { params }: Params) {
   });
 
   
-    try { await cacheDel(`admin:educators:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:educators:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { message: "Educator deleted successfully", deletedId: deletedEducator.id }, null, 200);
 }
 

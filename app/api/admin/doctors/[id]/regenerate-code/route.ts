@@ -41,7 +41,7 @@ async function regenerateLoginCode(req: Request, { params }: { params: { id: str
   }
 
   
-    try { await cacheDel(`admin:regenerate-code:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:regenerate-code:${doctorId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { data: { ...updatedDoctor, loginCode } }, null, 200);
 }
 

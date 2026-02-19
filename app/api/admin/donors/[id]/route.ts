@@ -15,12 +15,9 @@ interface Params {
 // =======================================================================
 async function getDonor(request: Request, { params }: Params) {
   
-
-
   const { id } = params;
 
-  
-    const cacheKey = `admin:donors:${'global' || 'global'}:all`;
+  const cacheKey = `admin:donors:${id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -62,8 +59,6 @@ async function getDonor(request: Request, { params }: Params) {
 // =======================================================================
 async function updateDonor(request: Request, { params }: Params) {
   
-
-
   const { id } = params;
   const body = await request.json();
   const { phoneNumber, companyId } = body;
@@ -78,7 +73,7 @@ async function updateDonor(request: Request, { params }: Params) {
   });
 
   
-    try { await cacheDel(`admin:donors:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:donors:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { data: updatedDonor }, null, 200);
 }
 
@@ -87,17 +82,15 @@ async function updateDonor(request: Request, { params }: Params) {
 // =======================================================================
 async function deleteDonor(request: Request, { params }: Params) {
   
-
-
   const { id } = params;
 
   await prisma.donor.delete({
     where: { id },
   });
 
+  try { await cacheDel(`admin:donors:${id || 'global'}:*`); } catch (e) {}
   
-    try { await cacheDel(`admin:donors:${'global' || 'global'}:*`); } catch (e) {}
-    return formatResponse(true, { message: "Donor profile deleted successfully" }, null, 200);
+  return formatResponse(true, { message: "Donor profile deleted successfully" }, null, 200);
 }
 
 // Export handlers with standardized wrapper

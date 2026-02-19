@@ -12,7 +12,7 @@ const getHandler = async (request: Request) => {
   try {
     // 1. Find Parent and their children with their active Classroom
     
-    const cacheKey = `admin:parent:${'global' || 'global'}:all`;
+    const cacheKey = `admin:parent:${parentUserId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);

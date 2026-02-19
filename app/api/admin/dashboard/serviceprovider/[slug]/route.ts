@@ -23,16 +23,11 @@ export const GET = withApiHandler(
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const company = await prisma.company.findUnique({
         where: { id: companyId },
         select: { id: true },
       });
-
-  try {
-    if (company) {
-      await cacheSet(cacheKey, company, 60);
-    }
-  } catch (e) {}
 
       if (!company) {
         return formatResponse(false, { message: "Company not found" });
@@ -181,6 +176,13 @@ export const GET = withApiHandler(
             clientEngagement,
         }
       };
+
+      // --- CACHE THE RESPONSE ---
+      try {
+        await cacheSet(cacheKey, responseData, 60); // Cache for 60 seconds
+      } catch (e) {
+        console.error("Cache Set Error:", e);
+      }
 
       return formatResponse(true, responseData);
     } catch (error) {

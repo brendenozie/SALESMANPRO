@@ -67,11 +67,6 @@ async function getDoctors(request: Request) {
     orderBy: { createdAt: "asc" },
   });
 
-  try {
-    if (doctors) {
-      await cacheSet(cacheKey, doctors, 60);
-    }
-  } catch (e) {}
 
   if (searchTerm) {
     const lower = searchTerm.toLowerCase();
@@ -85,6 +80,13 @@ async function getDoctors(request: Request) {
   }
 
   const enriched = await Promise.all(doctors.map(formatDoctorData));
+
+  try {
+    if (enriched) {
+      await cacheSet(cacheKey, enriched, 60);
+    }
+  } catch (e) {}
+
   return formatResponse(true, { data: enriched }, null, 200);
 }
 

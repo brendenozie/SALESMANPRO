@@ -31,8 +31,8 @@ async function handlePatch(request: Request, context: { params: { conversationId
       }
     });
 
-    
-    try { await cacheDel(`admin:conversations:${companyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:conversations:${conversationId || 'global'}:*`); } catch (e) {}
+
     return NextResponse.json(updated, { status: 200 });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -51,6 +51,8 @@ async function handleDelete(_request: Request, context: { params: { conversation
       where: { id: conversationId },
     });
 
+    try { await cacheDel(`admin:conversations:${conversationId || 'global'}:*`); } catch (e) {}
+    
     return NextResponse.json({
       message: "Conversation deleted successfully",
       deletedId: conversationId,

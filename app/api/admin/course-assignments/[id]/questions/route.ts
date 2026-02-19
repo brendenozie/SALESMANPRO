@@ -48,6 +48,9 @@ export const POST = withApiHandler(
       }
     });
 
+    const cacheKey = `admin:questions:${assignmentId || 'global'}:all`;
+    try { await cacheDel(cacheKey); } catch (e) {}
+
     return formatResponse(
       true,
       null,
@@ -57,7 +60,7 @@ export const POST = withApiHandler(
   }
 );
 
- => {
+//  => {
 //   const { questions } = await req.json(); // Expecting an array of questions
 
 //   // Example: Delete old questions and replace with new ones (Syncing)
@@ -74,7 +77,7 @@ export const POST = withApiHandler(
 //   return formatResponse(true, null, "Questions synced successfully", 200);
 // });
 
- => {
+//  => {
 //   const { id } = params;
 
 //   const assignment = await prisma.courseAssignment.findUnique({
@@ -207,8 +210,8 @@ export const POST = withApiHandler(
 //   };
 
 //   
-    try { await cacheDel(`admin:questions:${'global' || 'global'}:*`); } catch (e) {}
-    return formatResponse(true, responseData, null, 200);
+    // try { await cacheDel(`admin:questions:${'global' || 'global'}:*`); } catch (e) {}
+    // return formatResponse(true, responseData, null, 200);
 // };
 // export const PATCH = withApiHandler(patchHandler);
 
@@ -225,8 +228,8 @@ export const POST = withApiHandler(
 //   try {
 //     const deletedAssignment = await prisma.courseAssignment.delete({ where: { id } });
 //     
-    try { await cacheDel(`admin:questions:${'global' || 'global'}:*`); } catch (e) {}
-    return formatResponse(true, { deletedId: deletedAssignment.id }, "Course assignment deleted successfully", 200);
+    // try { await cacheDel(`admin:questions:${'global' || 'global'}:*`); } catch (e) {}
+    // return formatResponse(true, { deletedId: deletedAssignment.id }, "Course assignment deleted successfully", 200);
 //   } catch (error: any) {
 //     if (error.code === "P2003") {
 //       return formatResponse(false, null, "Cannot delete assignment: It has associated submissions.", 409);

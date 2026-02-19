@@ -21,8 +21,7 @@ export const GET = withApiHandler(async (req: Request) => {
 
   const whereClause = courseId ? { courseId } : { companyId };
 
-  
-    const cacheKey = `admin:course-assignments:${companyId || 'global'}:all`;
+  const cacheKey = `admin:course-assignments:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -128,7 +127,7 @@ export const POST = withApiHandler(async (req: Request) => {
   }
 });
 
-) || [],
+// ) || [],
   
 //   date: assignment.date || null,
 //   startTime: assignment.startTime || null,

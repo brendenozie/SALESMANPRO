@@ -5,8 +5,6 @@ import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-
-
 const mapParticipant = (p: any) => ({
   id: p.id,
   conversationId: p.conversationId,
@@ -19,8 +17,6 @@ const mapParticipant = (p: any) => ({
   createdAt: p.createdAt?.toISOString(),
   updatedAt: p.updatedAt?.toISOString(),
 });
-
-
 
 export const PATCH = withApiHandler(async (request, { params }) => {
   const { conversationId } = params;
@@ -47,7 +43,7 @@ export const PATCH = withApiHandler(async (request, { params }) => {
       400
     );
   }
-
+  const cacheKey = `admin:participants:${conversationId || 'global'}:all`;
   try {
     const updated = await prisma.conversationParticipant.update({
       where: {
@@ -60,13 +56,12 @@ export const PATCH = withApiHandler(async (request, { params }) => {
     });
 
     
-    try { await cacheDel(`admin:participants:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(cacheKey); } catch (e) {}
     return formatResponse(true, mapParticipant(updated), null, 200);
-  } catch {
+  } catch (error) {
     return formatResponse(false, null, "Participant not found", 404);
   }
 });
-
 
 
 export const POST = withApiHandler(async (request, { params }) => {
@@ -82,6 +77,8 @@ export const POST = withApiHandler(async (request, { params }) => {
     );
   }
 
+  const cacheKey = `admin:participants:${conversationId || 'global'}:all`;
+    
   // Validate users exist (single query)
   const validUsers = await prisma.user.findMany({
     where: { id: { in: newParticipantIds } },
@@ -120,9 +117,11 @@ export const POST = withApiHandler(async (request, { params }) => {
     },
   });
 
-  
-    try { await cacheDel(`admin:participants:${'global' || 'global'}:*`); } catch (e) {}
-    return formatResponse(
+  try {
+    await cacheDel(cacheKey);
+  } catch (e) {}
+
+  return formatResponse(
     true,
     { addedParticipants: participants.map(mapParticipant) },
     null,
@@ -141,6 +140,7 @@ export const DELETE = withApiHandler(async (request, { params }) => {
     return formatResponse(false, null, "User ID is required", 400);
   }
 
+  const cacheKey = `admin:participants:${conversationId || 'global'}:all`;
   try {
     const updated = await prisma.conversationParticipant.update({
       where: {
@@ -157,7 +157,8 @@ export const DELETE = withApiHandler(async (request, { params }) => {
     });
 
     
-    try { await cacheDel(`admin:participants:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(cacheKey); } catch (e) {}
+    
     return formatResponse(
       true,
       {
@@ -167,12 +168,12 @@ export const DELETE = withApiHandler(async (request, { params }) => {
       null,
       200
     );
-  } catch {
+  } catch (error) {
     return formatResponse(false, null, "Participant not found", 404);
   }
 });
 
- => {
+//  => {
 //   const { conversationId } = params;
 //   const { userId, isArchived, isDeleted, unreadCount } = await request.json();
 
@@ -252,7 +253,7 @@ export const DELETE = withApiHandler(async (request, { params }) => {
 //     throw error;
 //   }
 // });
- => {
+//  => {
 //   const { conversationId } = params;
 //   const body = await request.json();
 //   const { userId, isArchived, isDeleted, unreadCount, ...rest } = body;

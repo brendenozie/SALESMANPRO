@@ -24,10 +24,25 @@ const toFloat = (v: unknown, fallback?: number) => {
 };
 
 async function getCompanyId(slug: string): Promise<string | null> {
+
+  const cacheKey = `companyId:${slug}`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return cached as string;
+  } catch (e) {}
+
   const company = await prisma.company.findUnique({
     where: { slug },
     select: { id: true },
   });
+
+    try {
+      if (company?.id) {
+        await cacheSet(cacheKey, company.id, 300); // cache for 5 minutes
+      }
+    } catch (e) {}
+
   return company?.id ?? null;
 }
 
@@ -69,7 +84,6 @@ export const GET = withApiHandler(async (request, { params }) => {
       { description: { contains: search, mode: "insensitive" } },
     ];
   }
-
   
     const cacheKey = `admin:company-tickets:${companyId || 'global'}:all`;
 
@@ -211,6 +225,8 @@ export const POST = withApiHandler(async (request, { params }) => {
       data: { productCount: { increment: 1 } },
     });
 
+    try { await cacheDel(`admin:company-tickets:${companyId || 'global'}:*`); } catch (e) {}
+
     return product;
   });
 
@@ -218,7 +234,7 @@ export const POST = withApiHandler(async (request, { params }) => {
 });
 
 // import { NextResponse } from "next/server";
- => {
+//  => {
 //   const { adminSlug } = params;
 //   const { searchParams } = new URL(request.url);
 
@@ -333,7 +349,7 @@ export const POST = withApiHandler(async (request, { params }) => {
 //   return formatResponse(true, result, "Ticket created successfully", 201);
 // });
 // import { NextResponse } from "next/server";
- => {
+//  => {
 //     const { adminSlug } = params;
 //     const { searchParams } = new URL(request.url);
 

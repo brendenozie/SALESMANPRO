@@ -27,18 +27,13 @@ export const GET = withApiHandler(
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const totalOrders = await prisma.customerOrder.count({
         where: { 
           companyId: companyId,
           createdAt: { gte: todayStart, lte: todayEnd }
         },
       });
-
-  try {
-    if (totalOrders) {
-      await cacheSet(cacheKey, totalOrders, 60);
-    }
-  } catch (e) {}
 
       // 2. Active Deliveries
       const activeDeliveries = await prisma.delivery.count({
@@ -105,6 +100,13 @@ export const GET = withApiHandler(
             revenueTrends
         }
       };
+
+      // --- CACHE THE RESPONSE ---
+      try {
+        await cacheSet(cacheKey, responseData, 60); // Cache for 60 seconds
+      } catch (e) {
+        console.error("Cache Set Error:", e);
+      }
 
       return formatResponse(true, responseData);
     } catch (error) {

@@ -5,10 +5,6 @@ import { verifyAuth } from "@/lib/verifyAuth";
 import prisma from "@/server/db/prismadb";
 import { z } from "zod";
 
-
-
-
-
 enum CourseMaterialType {
   DOCUMENT = "DOCUMENT",
   VIDEO = "VIDEO",
@@ -17,10 +13,6 @@ enum CourseMaterialType {
   AUDIO = "AUDIO",
   OTHER = "OTHER",
 }
-
-
-
-
 
 const CourseMaterialSchema = z
   .object({
@@ -36,10 +28,6 @@ const CourseMaterialSchema = z
     message: "Provide either fileUrl or linkUrl, not both.",
   });
 
-
-
-
-
 export const GET = withApiHandler(async (req: Request) => {
   const { searchParams } = new URL(req.url);
   const courseId = searchParams.get("courseId");
@@ -54,8 +42,7 @@ export const GET = withApiHandler(async (req: Request) => {
     );
   }
 
-  
-    const cacheKey = `admin:course-materials:${companyId || 'global'}:all`;
+  const cacheKey = `admin:course-materials:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -114,10 +101,6 @@ export const GET = withApiHandler(async (req: Request) => {
   return formatResponse(true, response, null, 200);
 });
 
-
-
-
-
 export const POST = withApiHandler(async (req: Request) => {
   const auth = await verifyAuth(req);
   if (!auth.success)
@@ -135,10 +118,8 @@ export const POST = withApiHandler(async (req: Request) => {
     );
   }
 
-  const { courseId, title, description, fileUrl, linkUrl, type, uploadedById } =
-    parsed.data;
+  const { courseId, title, description, fileUrl, linkUrl, type, uploadedById } = parsed.data;
 
-  
   const [course, educator] = await Promise.all([
     prisma.course.findUnique({ where: { id: courseId }, select: { id: true } }),
     prisma.educator.findUnique({ where: { id: uploadedById }, select: { id: true } }),
@@ -150,59 +131,60 @@ export const POST = withApiHandler(async (req: Request) => {
   if (!educator)
     return formatResponse(false, null, "Invalid uploadedById.", 400);
 
-  const created = await prisma.courseMaterial.create({
-    data: {
-      courseId,
-      title,
-      description,
-      fileUrl,
-      linkUrl,
-      type,
-      uploadedById,
-    },
-    select: {
-      id: true,
-      courseId: true,
-      title: true,
-      description: true,
-      fileUrl: true,
-      linkUrl: true,
-      type: true,
-      createdAt: true,
-      updatedAt: true,
-      course: { select: { title: true } },
-      uploadedById: true,
-      uploadedBy: {
-        select: {
-          user: { select: { name: true, email: true } },
+    const created = await prisma.courseMaterial.create({
+      data: {
+        courseId,
+        title,
+        description,
+        fileUrl,
+        linkUrl,
+        type,
+        uploadedById,
+      },
+      select: {
+        id: true,
+        courseId: true,
+        title: true,
+        description: true,
+        fileUrl: true,
+        linkUrl: true,
+        type: true,
+        createdAt: true,
+        updatedAt: true,
+        course: { select: { title: true } },
+        uploadedById: true,
+        uploadedBy: {
+          select: {
+            user: { select: { name: true, email: true } },
+          },
         },
       },
-    },
-  });
+    });
 
-  
-    try { await cacheDel(`admin:course-materials:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:course-materials:${created.id || 'global'}:*`); } catch (e) {}
+
     return formatResponse(
-    true,
-    {
-      id: created.id,
-      courseId: created.courseId,
-      courseTitle: created.course?.title ?? "N/A",
-      title: created.title,
-      description: created.description,
-      fileUrl: created.fileUrl,
-      linkUrl: created.linkUrl,
-      type: created.type,
-      uploadedById: created.uploadedById,
-      uploadedByName: created.uploadedBy?.user?.name ?? "N/A",
-      uploadedByEmail: created.uploadedBy?.user?.email ?? "N/A",
-      createdAt: created.createdAt?.toISOString(),
-      updatedAt: created.updatedAt?.toISOString(),
-    },
-    "Course material created successfully",
-    201
-  );
-});
+      true,
+      {
+        id: created.id,
+        courseId: created.courseId,
+        courseTitle: created.course?.title ?? "N/A",
+        title: created.title,
+        description: created.description,
+        fileUrl: created.fileUrl,
+        linkUrl: created.linkUrl,
+        type: created.type,
+        uploadedById: created.uploadedById,
+        uploadedByName: created.uploadedBy?.user?.name ?? "N/A",
+        uploadedByEmail: created.uploadedBy?.user?.email ?? "N/A",
+        createdAt: created.createdAt?.toISOString(),
+        updatedAt: created.updatedAt?.toISOString(),
+      },
+      "Course material created successfully",
+      201
+    );
+
+  });
 
 // import { formatResponse } from "@/lib/formatResponse";
 // import { withApiHandler } from "@/lib/hooks/withApiHandler";

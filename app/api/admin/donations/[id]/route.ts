@@ -15,8 +15,6 @@ interface Params {
 // =======================================================================
 async function updateDonation(request: Request, { params }: Params) {
   
-
-
   const { id } = params;
   const body = await request.json();
   const { amount, status, ...rest } = body;
@@ -30,9 +28,8 @@ async function updateDonation(request: Request, { params }: Params) {
     },
   });
 
-  
-    try { await cacheDel(`admin:donations:${'global' || 'global'}:*`); } catch (e) {}
-    return formatResponse(true, { data: updatedDonation }, null, 200);
+  try { await cacheDel(`admin:donations:${id || 'global'}:*`); } catch (e) {}
+  return formatResponse(true, { data: updatedDonation }, null, 200);
 }
 
 // =======================================================================
@@ -48,7 +45,7 @@ async function deleteDonation(request: Request, { params }: Params) {
   });
 
   
-    try { await cacheDel(`admin:donations:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:donations:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { message: "Donation deleted successfully" }, null, 200);
 }
 
