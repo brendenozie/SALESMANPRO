@@ -7,6 +7,7 @@ import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { revalidateCompanyCache } from "@/lib/company-fetcher";
 import { encrypt } from "@/lib/crypto/aes";
+import { cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,17 @@ async function getCompany(req: Request, { params }: { params: { id: string } }) 
   const session = await getAuthSession();
   if (!session?.user) {
     return formatResponse(false, null, "Unauthorized", 401);
+  }
+
+  const cacheKey = `company:${params.id}`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) {
+      return formatResponse(true, cached, "Company retrieved from cache");
+    }
+  } catch (e) {
+    console.error("Failed to retrieve company from cache:", e);
   }
 
   const company = await prisma.company.findFirst({
@@ -41,6 +53,12 @@ async function getCompany(req: Request, { params }: { params: { id: string } }) 
 
   if (!company) {
     return formatResponse(false, null, "Company not found", 404);
+  }
+
+  try {
+    await cacheSet(cacheKey, company, 300); // Cache for 5 minutes
+  } catch (e) {
+    console.error("Failed to cache company data:", e);
   }
 
   return formatResponse(true, company, "Company fetched successfully");
@@ -90,8 +108,9 @@ async function updateCompany(req: Request, { params }: { params: { id: string } 
   if (!companyToUpdate) {
     return formatResponse(false, null, "Company not found or unauthorized", 404);
   }
-
   
+  const cacheKey = `company:${id}`;
+
   const existingPaymentSettingsId = companyToUpdate.paymentSettingsId;
   // Remove `id` from the nested PaymentSettings payload because Prisma's update/create inputs do not accept the related record's id field.
   const paymentSettingsData = paymentSettings ? (({ id, ...rest }: any) => rest)(paymentSettings) : undefined;
@@ -273,6 +292,12 @@ if (paymentSettingsData) {
 
   revalidateCompanyCache(updatedCompany.slug || "");
 
+  try {
+    await cacheDel(cacheKey);
+  } catch (e) {
+    console.error("Failed to invalidate company cache:", e);
+  }
+
   return formatResponse(true, updatedCompany, "Company updated successfully");
 }
 
@@ -285,6 +310,7 @@ async function deleteCompany(req: Request, { params }: { params: { companyId: st
     return formatResponse(false, null, "Unauthorized", 401);
   }
 
+  
   const companyToDelete = await prisma.company.findFirst({
     where: { id: params.companyId, userId: session.user.id },
     select: {

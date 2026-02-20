@@ -1,6 +1,7 @@
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { cacheSet, cacheGet, cacheDel } from "@/lib/cache";
 
 // ✅ GET student assignments based on Classroom & Academic Level
 const getAssignments = async (req: Request) => {
@@ -10,6 +11,15 @@ const getAssignments = async (req: Request) => {
 
   if (!userId) {
     return formatResponse(false, null, "Missing studentId", 400);
+  }
+
+  const cacheKey = `student:${userId}:assignments`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Assignments retrieved from cache", 200);
+  } catch (e) {
+    console.error("Failed to retrieve assignments from cache:", e);
   }
 
   try {
@@ -124,6 +134,16 @@ const getAssignments = async (req: Request) => {
       });
     });
 
+    try {
+      await cacheSet(cacheKey, {
+      studentName: student.user.name || student.user.email,
+      studentGradeLevel: activeLevel.academicLevel.name,
+      assignments,
+    }, 300); // Cache for 5 minutes
+    } catch (e) {
+      console.error("Failed to cache assignments data:", e);
+    }
+
     return formatResponse(true, {
       studentName: student.user.name || student.user.email,
       studentGradeLevel: activeLevel.academicLevel.name,
@@ -176,6 +196,12 @@ const submitAssignment = async (req: Request) => {
       },
     });
 
+    //clear cache for this student's assignments to reflect the new submission status on next GET
+    try {
+      await cacheDel(`student:${studentId}:assignments`);
+    }                                                     catch (e) {
+      console.error("Failed to invalidate assignments cache after submission:", e);
+    }
     return formatResponse(true, { message: "Assignment submitted successfully", submission });
   } catch (error) {
     console.error("POST Submission Error:", error);

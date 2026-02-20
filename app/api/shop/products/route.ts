@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import type { Prisma } from "@prisma/client";
-
+import { cacheGet, cacheSet } from "@/lib/cache";
 import { formatResponse } from "@/lib/formatResponse";
 import { request } from "http";
 
@@ -87,6 +87,14 @@ export async function GET(req: Request) {
         orderBy = { [field]: direction };
       }
     }
+    
+
+    const cacheKey = `shop:products:agent:${agentId || 'all'}:search:${search || 'all'}:brand:${brand.join(',') || 'all'}:category:${category.join(',') || 'all'}:subCategory:${subCategory.join(',') || 'all'}:minPrice:${minPrice || '0'}:maxPrice:${maxPrice || '999999999'}:availability:${availabilityParam || 'all'}:sort:${sortParam || 'createdAt:desc'}:page:${page}:limit:${limit}`;
+
+    try {
+      const cached = await cacheGet(cacheKey);
+      if (cached) return withCors(cached, 200);
+    } catch (e) {}
 
     const [listings, total] = await Promise.all([
       prisma.marketplaceListings.findMany({
@@ -99,6 +107,13 @@ export async function GET(req: Request) {
     ]);
 
     const totalPages = Math.ceil(total / limit);
+
+    try {
+      await cacheSet(cacheKey, { data: listings, meta: { total, perPage: limit, page, totalPages, orderBy } }, 60); // Cache for 1 minute
+    } catch (e) {
+      console.error("Failed to cache marketplace listings data:", e);
+    }
+
     return withCors(
       { data: listings, meta: { total, perPage: limit, page, totalPages, orderBy } },
       200

@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { cacheGet, cacheSet } from "@/lib/cache";
 
 // =================================================================================================
 // PLANS API ROUTES
@@ -26,6 +27,13 @@ const getHandler = async (request: Request) => {
   const where: any = {};
   if (companyId) where.companyId = companyId;
 
+    const cacheKey = `plans:company:${companyId || 'all'}:page:${page}:perPage:${perPage}`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return NextResponse.json(cached, { status: 200 });
+  } catch (e) {}
+
   const totalItems = await prisma.plan.count({ where });
   const plans = await prisma.plan.findMany({
     skip,
@@ -35,6 +43,12 @@ const getHandler = async (request: Request) => {
   });
 
   const totalPages = Math.ceil(totalItems / perPage);
+
+  try {
+    await cacheSet(cacheKey, { plans, totalItems, totalPages, currentPage: page, perPage }, 60); // Cache for 1 minute
+  } catch (e) {
+    console.error("Failed to cache plans data:", e);
+  }
 
   return NextResponse.json(
     {

@@ -1,6 +1,7 @@
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { cacheGet, cacheSet } from "@/lib/cache";
 
 const getHandler = async (request: Request) => {
   const { searchParams } = new URL(request.url);
@@ -9,6 +10,13 @@ const getHandler = async (request: Request) => {
   if (!parentUserId) {
     return formatResponse(false, null, "Missing userId", 400);
   }
+
+    const cacheKey = `parent:children:${parentUserId}`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
 
   try {
     // 1. Fetch Parent and all their Children with necessary relations
@@ -117,6 +125,9 @@ const getHandler = async (request: Request) => {
       totalFamilyPending: childrenProfiles.reduce((acc, curr) => acc + curr.pendingAssignments, 0)
     };
 
+    try { await cacheSet(cacheKey, { stats: familyStats, children: childrenProfiles }, 60); }
+    catch (e) {}
+    
     return formatResponse(true, {
       stats: familyStats,
       children: childrenProfiles

@@ -4,6 +4,7 @@ import type { OrderStatus } from "@prisma/client";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { verifyAuth } from "@/lib/verifyAuth";
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 
 async function getOrders(req: Request) {
@@ -35,6 +36,13 @@ async function getOrders(req: Request) {
         name: { contains: search, mode: "insensitive" },
       };
     }
+
+    const cacheKey = `shop:orders:${consumerId || 'all'}:agent:${agentId || 'all'}:status:${statusParam}:search:${search}:page:${page}:limit:${limit}`;
+
+    try {
+      const cached = await cacheGet(cacheKey);
+      if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+    } catch (e) {}
 
     // Fetch paginated orders and count
     const [orders, totalOrders] = await prisma.$transaction([
@@ -79,6 +87,24 @@ async function getOrders(req: Request) {
 
     // Meta
     const totalPages = Math.ceil(totalOrders / limit);
+
+    try {
+      await cacheSet(cacheKey, {
+      data: orders,
+      meta: {
+        totalOrders,
+        perPage: limit,
+        currentPage: page,
+        totalPages,
+        totalRevenue: totalRev._sum.totalPrice ?? 0,
+        pendingRevenue: pendingRev._sum.totalPrice ?? 0,
+        completedRevenue: completedRev._sum.totalPrice ?? 0,
+        monthlyRevenue,
+      },
+    }, 60); // Cache for 1 minute
+    } catch (e) {
+      console.error("Failed to cache orders data:", e);
+    }
 
     return formatResponse(true, {
       data: orders,

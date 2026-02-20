@@ -1,6 +1,7 @@
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { cacheSet, cacheGet } from "@/lib/cache";
 
 const getHandler = async (request: Request) => {
   const { searchParams } = new URL(request.url);
@@ -8,6 +9,15 @@ const getHandler = async (request: Request) => {
 
   if (!userId) {
     return formatResponse(false, null, "Missing studentId", 400);
+  }
+
+  const cacheKey = `student:${userId}:classes`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Classes retrieved from cache", 200);
+  } catch (e) {
+    console.error("Failed to retrieve classes from cache:", e);
   }
 
   try {
@@ -174,6 +184,16 @@ const getHandler = async (request: Request) => {
     //       : "None"
     //   };
     // });
+
+    try {
+      await cacheSet(cacheKey, {
+      studentName: student.user.name,
+      studentGradeLevel: `${activeLevel.classRoom?.name || ""} (${activeLevel.academicLevel?.name})`.trim(),
+      enrolledClasses: studentEnrolledClasses,
+    }, 300); // Cache for 5 minutes
+    } catch (e) {
+      console.error("Failed to cache student classes data:", e);
+    }
 
     return formatResponse(true, {
       studentName: student.user.name,

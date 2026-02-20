@@ -2,6 +2,7 @@
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { cacheDel, cacheGet, cacheSet } from "@/lib/cache"; 
 
 // Helper function to format patient data
 async function formatPatientProfile(user: any) {
@@ -30,6 +31,13 @@ async function getHandler(request: Request) {
     return formatResponse(false, null, "Missing patientId", 400);
   }
 
+  const cacheKey = `patient:profile:${patientId}`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   try {
     const user = await prisma.user.findUnique({
       where: { id: patientId },
@@ -41,6 +49,11 @@ async function getHandler(request: Request) {
     }
 
     const formattedProfile = await formatPatientProfile(user);
+    try {
+      await cacheSet(cacheKey, formattedProfile, 60);
+    } catch (e) {
+      console.error("Failed to cache patient profile data:", e);
+    }
     return formatResponse(true, formattedProfile);
   } catch (err: any) {
     console.error("GET /api/patient/profile error:", err);
@@ -71,6 +84,12 @@ async function putHandler(request: Request) {
     });
 
     const formattedUpdatedProfile = await formatPatientProfile(updatedUser);
+    //invalidate cache
+    try {      await cacheDel(`patient:profile:${patientId}`);
+    } catch (e) {
+      console.error("Failed to invalidate patient profile cache:", e);
+    }
+    
     return formatResponse(true, formattedUpdatedProfile);
   } catch (err: any) {
     console.error("PUT /api/patient/profile error:", err);

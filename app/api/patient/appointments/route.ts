@@ -2,6 +2,7 @@
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { cacheGet, cacheSet } from "@/lib/cache";
 
 async function getHandler(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -13,6 +14,13 @@ async function getHandler(request: Request) {
   if (!patientId) {
     return formatResponse(false, null, "Missing patientId", 400);
   }
+
+  const cacheKey = `patient:appointments:${patientId}`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
 
   try {
     const whereClause: any = {
@@ -53,6 +61,12 @@ async function getHandler(request: Request) {
         ? new Date(appt.createdAt).toLocaleDateString()
         : "N/A",
     }));
+
+      try {
+        await cacheSet(cacheKey, formattedAppointments, 60);
+      } catch (e) {
+        console.error("Failed to cache patient appointments data:", e);
+      }
 
     return formatResponse(true, formattedAppointments);
   } catch (err: any) {

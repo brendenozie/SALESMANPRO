@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/server/db/prismadb'
 import { withApiHandler } from '@/lib/hooks/withApiHandler'
+import { cacheGet, cacheSet } from '@/lib/cache'
 
 // ---------------------------
 // GLOBAL CORS HEADERS
@@ -44,6 +45,13 @@ async function getHandler(request: Request) {
     const skip = (page - 1) * limit
     const take = limit
 
+    const cacheKey = `shop:categories:page:${page}:limit:${limit}`;
+
+    try {
+      const cached = await cacheGet(cacheKey);
+      if (cached) return withCors(cached);
+    } catch (e) {}
+
     // Fetch categories sorted by featured status first, then by name
     const [categories, total] = await Promise.all([
       prisma.productCategory.findMany({
@@ -56,6 +64,15 @@ async function getHandler(request: Request) {
       }),
       prisma.productCategory.count(),
     ])
+
+    try {
+      await cacheSet(cacheKey, {
+        categories,
+        totalPages: Math.ceil(total / take),
+      }, 60); // Cache for 1 minute
+    } catch (error) {
+      console.error('Failed to cache product categories data:', error);
+    }
 
     return withCors({
       categories,

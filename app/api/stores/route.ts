@@ -6,6 +6,7 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { VerifiedUser } from "@/lib/verifyAuth"; 
 import { sl } from "date-fns/locale";
 import { encrypt } from "@/lib/crypto/aes";
+import { cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +44,15 @@ async function getCompanies(req: Request, context: HandlerContext) {
       if (!user) {
         return formatResponse(false, null, "Unauthorized", 401);
       }
+
+    const cacheKey = `user:${user.id}:companies`;
+
+    try {
+      const cached = await cacheGet(cacheKey);
+      if (cached) return formatResponse(true, cached, "Companies retrieved from cache", 200);
+    } catch (e) {
+      console.error("Failed to retrieve companies from cache:", e);
+    }
 
     // Fetch all companies (stores) + active subscription status
     const companies = await prisma.company.findMany({
@@ -83,6 +93,12 @@ async function getCompanies(req: Request, context: HandlerContext) {
       // If array contains at least 1 ACTIVE subscription → mark store as ACTIVE
       subscriptionStatus: c.subscriptionCompanies.length > 0 && c.subscriptionCompanies[0]?.renewalDate && c.subscriptionCompanies[0].renewalDate > new Date()  ? "ACTIVE" : "INACTIVE",
     }));
+
+    try {
+      await cacheSet(cacheKey, formattedStores, 300); // Cache for 5 minutes
+    } catch (e) {
+      console.error("Failed to cache companies data:", e);
+    }
 
     return formatResponse(true, formattedStores, "Companies fetched successfully");
   } catch (error) {
@@ -261,6 +277,12 @@ if (paymentSettingsData) {
 
       },
     });
+
+    try {
+      await cacheDel(`company:${newCompany.id}`); // Cache the new company for 5 minutes
+    } catch (e) {
+      console.error("Failed to invalidate new company cache:", e);
+    }
 
     return formatResponse(true, newCompany, "Company created successfully", 201);
   } catch (error) {

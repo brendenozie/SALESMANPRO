@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb";
 import { unstable_cache } from 'next/cache';
+import { cacheGet, cacheSet } from "@/lib/cache";
 
 // ---------------------------
 // 1. REMOVED force-dynamic
@@ -110,7 +111,20 @@ export async function GET(request: Request) {
     const limit = Math.min(parseInt(searchParams.get("limit") || "8", 10), 50); // Cap limit for safety
     const page = Math.max(parseInt(searchParams.get("page") || "1", 10), 1);
 
+    const cacheKey = `shop:productsByFlag:agent:${companyId}:flag:${flag}:page:${page}:limit:${limit}`;
+
+    try {
+      const cached = await cacheGet(cacheKey);
+      if (cached) return withCors(cached, 200);
+    } catch (e) {}
+
     const result = await getProductsByFlag(companyId, flag, limit, page);
+
+    try {
+      await cacheSet(cacheKey, result, 300); // Cache for 5 minutes
+    } catch (e) {
+      console.error("Failed to cache products by flag:", e);
+    }
 
     // 4. BROWSER & CDN CACHING
     // s-maxage: Shared cache (Vercel Edge) stores this for 120s
@@ -119,9 +133,9 @@ export async function GET(request: Request) {
       "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600",
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching products:", error);
-    return withCors({ error: "Failed to load products" }, 500);
+    return withCors({ error: "Failed to load products", detail: error.message }, 500);
   }
 }
 // import { NextResponse } from 'next/server';

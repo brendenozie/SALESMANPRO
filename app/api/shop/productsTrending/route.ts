@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { cacheGet, cacheSet } from "@/lib/cache";
 
 // ---------------------------
 // GLOBAL CORS HEADERS
@@ -53,6 +54,13 @@ export async function GET(req: Request) {
     const whereFilter: any = {};
     if (agentId) whereFilter.companyId = agentId;
 
+      const cacheKey = `shop:trending:agent:${agentId || 'all'}:limit:${limit}:days:${days}:weights:${weightViews}-${weightPurchases}-${weightFavorites}`;
+
+    try {
+      const cached = await cacheGet(cacheKey);
+      if (cached) return withCors(cached, 200);
+    } catch (e) {}
+
     // Fetch metrics (optionally could filter by recent metrics if timestamped)
     const metrics = await prisma.productMetrics.findMany({
       where: whereFilter,
@@ -79,6 +87,12 @@ export async function GET(req: Request) {
 
     // Return top N
     const top = trending.slice(0, limit);
+
+    try {
+      await cacheSet(cacheKey, { data: top, meta: { limit, weights: { views: weightViews, purchases: weightPurchases, favorites: weightFavorites } } }, 300); // Cache for 5 minutes
+    } catch (e) {
+      console.error("Failed to cache trending products data:", e);
+    }
 
     return withCors(
       { data: top, meta: { limit, weights: { views: weightViews, purchases: weightPurchases, favorites: weightFavorites } } },

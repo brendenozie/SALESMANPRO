@@ -2,6 +2,7 @@
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { cacheGet, cacheSet } from "@/lib/cache";
 
 async function getHandler(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -12,6 +13,12 @@ async function getHandler(request: Request) {
   if (!patientId) {
     return formatResponse(false, null, "Missing patientId", 400);
   }
+  const cacheKey = `patient:invoices:${patientId}`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
 
   try {
     const whereClause: any = {
@@ -69,6 +76,11 @@ async function getHandler(request: Request) {
         : "N/A",
     }));
 
+    try {
+      await cacheSet(cacheKey, formattedInvoices, 60);
+    } catch (e) {
+      console.error("Failed to cache patient invoices data:", e);
+    }
     return formatResponse(true, formattedInvoices);
   } catch (err: any) {
     console.error("GET /api/patient/invoices error:", err);

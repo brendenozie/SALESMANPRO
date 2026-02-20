@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { cacheGet, cacheSet } from "@/lib/cache";
 
 import { formatResponse } from "@/lib/formatResponse";
 
@@ -52,6 +53,13 @@ export async function GET(req: Request) {
       return withCors({ error: "Invalid pagination parameters." }, 400);
     }
 
+    const cacheKey = `shop:recommendations:user:${userId}:agent:${agentId || 'all'}:limit:${limit}:offset:${offset}`;
+
+    try {
+      const cached = await cacheGet(cacheKey);
+      if (cached) return withCors(cached, 200);
+    } catch (e) {}
+
     // Fetch recent interactions
     const recent = await prisma.userActivity.findMany({
       where: { userId },
@@ -78,6 +86,12 @@ export async function GET(req: Request) {
       take: limit,
       skip: 0,
     });
+
+    try {
+      await cacheSet(cacheKey, { data: recommendations, meta: { interactedCount: recent.length, recommendationCount: recommendations.length } }, 300); // Cache for 5 minutes
+    } catch (e) {
+      console.error("Failed to cache recommendations:", e);
+    }
 
     return withCors(
       { data: recommendations, meta: { interactedCount: recent.length, recommendationCount: recommendations.length } },

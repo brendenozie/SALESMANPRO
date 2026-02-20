@@ -3,6 +3,7 @@ import { getAuthSession } from "@/lib/auth";
 import { formatResponse } from "@/lib/formatResponse";
 import { verifyAuth } from "@/lib/verifyAuth";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
 // GET: Retrieve all CompanyLocation records for a specific store
 async function getHandler(
@@ -18,6 +19,16 @@ async function getHandler(
   }
 
   const { storeId } = params;
+
+    const cacheKey = `store:${storeId}:companyLocations`;
+
+    try {
+      const cached = await cacheGet(cacheKey);
+      if (cached) return formatResponse(true, cached, "Company locations retrieved from cache", 200);
+    } catch (e) {
+      console.error("Failed to retrieve company locations from cache:", e);
+    }
+
 
   const company = await prisma.company.findUnique({
     where: { id: storeId, userId: session.user.id },
@@ -64,6 +75,12 @@ async function getHandler(
       },
       orderBy: { sortOrder: "asc" },
     });
+
+    try {
+      await cacheSet(cacheKey, companyLocations, 300); // Cache for 5 minutes
+    } catch (e) {
+      console.error("Failed to cache company locations:", e);
+    }
 
     return formatResponse(true, companyLocations, "Company locations retrieved", 200);
   } catch (error: any) {
@@ -124,6 +141,8 @@ async function postHandler(
     return formatResponse(false, null, "Provided locationId does not exist", 400);
   }
 
+  const cacheKey = `store:${storeId}:companyLocations`;
+
   try {
     const newCompanyLocation = await prisma.companyLocation.create({
       data: {
@@ -144,12 +163,20 @@ async function postHandler(
       include: { location: true },
     });
 
+    // try {
+    //   await cacheSet(cacheKey, newCompanyLocation, 300); // Cache for 5 minutes
+    // } catch (e) {
+    //   console.error("Failed to cache new company location:", e);
+    // }
+    // console.error("Error creating company location:", e);?
+    //invalidate cache after creation
+    try {
+      await cacheDel(cacheKey);
+    } catch (e) {
+      console.error("Failed to invalidate company locations cache:", e);
+    }
     return formatResponse(true, newCompanyLocation, "Company location created", 201);
   } catch (error: any) {
-    if (error.code === "P2002" && error.meta?.target?.includes("companyId_locationId")) {
-      return formatResponse(false, null, "This location is already associated with the store.", 409);
-    }
-    console.error("Error creating company location:", error);
     return formatResponse(false, null, error.message || "Internal Server Error", 500);
   }
 }

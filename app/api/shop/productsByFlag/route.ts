@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
-
+import{ cacheGet, cacheSet } from "@/lib/cache";
 import { formatResponse } from "@/lib/formatResponse";
 import { request } from "http";
 
@@ -64,6 +64,13 @@ export async function GET(req: Request) {
     if (flag) whereFilter[flag] = true;
     if (agentId) whereFilter.companyId = agentId;
 
+    const cacheKey = `shop:productsByFlag:agent:${agentId || 'all'}:flag:${flag}:page:${pageParam}:limit:${limitParam}`;
+
+    try {
+      const cached = await cacheGet(cacheKey);
+      if (cached) return withCors(cached, 200);
+    } catch (e) {}
+
     // Fetch data and count in parallel
     const [total, listings] = await Promise.all([
       prisma.marketplaceListings.count({ where: whereFilter }),
@@ -80,6 +87,22 @@ export async function GET(req: Request) {
     ]);
 
     const totalPages = Math.ceil(total / take);
+
+    try {
+      await cacheSet(cacheKey, {
+        data: listings,
+        meta: {
+          total,
+          perPage: take,
+          currentPage: pageParam,
+          totalPages,
+          sortBy,
+          order,
+        },
+      }, 60); // Cache for 1 minute
+    } catch (e) {
+      console.error("Failed to cache marketplace listings by flag data:", e);
+    }
 
     return withCors(
       {

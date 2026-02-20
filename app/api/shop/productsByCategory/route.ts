@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
-
+import {cacheGet, cacheSet} from "@/lib/cache";
 import { formatResponse } from "@/lib/formatResponse";
 import { request } from "http";
 
@@ -61,6 +61,13 @@ export async function GET(req: Request) {
     if (agentId) whereFilter.companyId = agentId;
     if (categoryId) whereFilter.product = { productCategoryId: categoryId };
 
+    const cacheKey = `shop:productsByCategory:agent:${agentId || 'all'}:category:${categoryId || 'all'}:page:${pageParam}:limit:${limitParam}`;
+
+    try {
+      const cached = await cacheGet(cacheKey);
+      if (cached) return withCors(cached, 200);
+    } catch (e) {}
+
     // Fetch listings and total count
     const [total, listings] = await Promise.all([
       prisma.marketplaceListings.count({ where: whereFilter }),
@@ -75,13 +82,18 @@ export async function GET(req: Request) {
 
     const totalPages = Math.ceil(total / take);
 
-    return withCors(
-      {
-        data: listings,
-        meta: { total, perPage: take, currentPage: pageParam, totalPages }
-      },
-      200
-    );
+    const response = {
+      data: listings,
+      meta: { total, perPage: take, currentPage: pageParam, totalPages }
+    };
+
+    try {
+      await cacheSet(cacheKey, response, 60); // Cache for 1 minute
+    } catch (e) {
+      console.error("Failed to cache marketplace listings by category data:", e);
+    }
+
+    return withCors(response, 200);
   } catch (error: any) {
     console.error("Error fetching marketplace listings by category:", error);
     return withCors(
