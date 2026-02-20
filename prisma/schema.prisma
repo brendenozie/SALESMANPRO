@@ -436,6 +436,7 @@ model Company {
   expenses                  Expense[]
   domainVerified            Boolean                   @default(false)
   candidates                candidate[]
+  examCategories            ExamCategory[]
 
   @@index([userId])
 }
@@ -3590,12 +3591,30 @@ model AttendanceRecord {
   @@index([status]) // NEW INDEX
 }
 
+model ExamCategory {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+
+  company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId // Academic levels are specific to a company/school
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  exams Exam[] // Relation to Exam model
+
+  @@unique([companyId, name]) // A company cannot have two exam categories with the same name
+  @@index([companyId])
+}
+
 // Exam Model
 // Defines a structured examination or assessment event.
 model Exam {
-  id                  String           @id @default(auto()) @map("_id") @db.ObjectId
-  title               String
-  description         String?
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+
   courseId            String?          @db.ObjectId
   course              Course?          @relation(fields: [courseId], references: [id])
   date                DateTime // Date of the exam (e.g., '2025-07-01T00:00:00.000Z' for the specific day)
@@ -3625,8 +3644,10 @@ model Exam {
 
   grades Grade[] // Grades associated with this exam
 
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
+  createdAt      DateTime?     @default(now())
+  updatedAt      DateTime?     @updatedAt
+  examCategory   ExamCategory? @relation(fields: [examCategoryId], references: [id])
+  examCategoryId String?       @db.ObjectId
 
   // Suggested unique constraint: One exam per course at a specific date and start time within a company
   @@unique([companyId, courseId, date, startTime])

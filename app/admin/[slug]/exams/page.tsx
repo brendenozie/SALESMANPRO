@@ -200,7 +200,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
       }
     });
     if (examsRes.ok) {
-      const data = (await examsRes.json()).data.data;
+      const data = (await examsRes.json()).data;
       initialExams = data as ExamData[];
       console.log(initialExams);  
     } else {

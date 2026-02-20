@@ -386,6 +386,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Exams/Assessments",
       icon: AcademicCapIcon,
       subItems: [
+        { label: "Exam Categories", href: `/admin/${adminSlug}/exams-categories`},
         { label: "Exams", href: `/admin/${adminSlug}/exams` },
         // { label: "Results", href: `/admin/${adminSlug}/results` },
         { label: "Grades & Report Card", href: `/admin/${adminSlug}/grading-report-card` },
