@@ -75,9 +75,9 @@ async function getPosProducts(
 
   try{
     if (formattedProducts) {
-      await cacheSet(cacheKey, {
-        products: formattedProducts,
-      }, 60);
+      await cacheSet(cacheKey, 
+        formattedProducts
+      , 60);
     }
   } catch (e) {
     console.error("Error caching products:", e);

@@ -25,16 +25,17 @@ async function handleGET(request: Request, { params }: { params: { id: string } 
       },
     });
 
+    if (!testimonial) {
+      return formatResponse(false, null, 'Testimonial not found', 404);
+    }
+
   try {
     if (testimonial) {
       await cacheSet(cacheKey, testimonial, 60);
     }
   } catch (e) {}
 
-    if (!testimonial) {
-      return formatResponse(false, null, 'Testimonial not found', 404);
-    }
-
+  
     return formatResponse(true, testimonial);
   } catch (error: any) {
     console.error('Failed to fetch testimonial:', error);

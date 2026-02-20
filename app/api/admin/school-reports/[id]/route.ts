@@ -53,12 +53,6 @@ async function getStoreCategories(req: Request) {
       orderBy: { sortOrder: "asc" },
     });
 
-  try {
-    if (storeCategories) {
-      await cacheSet(cacheKey, storeCategories, 60);
-    }
-  } catch (e) {}
-
     const response = storeCategories.map((sc) => ({
       id: sc.id,
       companyId: sc.companyId,

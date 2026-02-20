@@ -34,6 +34,7 @@ async function handleGET(request: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const tourPackages = await prisma.tourPackage.findMany({
       include: { destinations: true },
       orderBy: { createdAt: "desc" },

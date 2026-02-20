@@ -116,12 +116,13 @@ async function handleGetInvoices(request: Request, { params }: RouteParams) {
   
   try {
     await cacheSet(cacheKey, {
-      invoices: formattedInvoices,
-      pagination: {
-        totalItems,
-        totalPages: Math.ceil(totalItems / limit),
-      },
-    }, 60);
+    invoices: formattedInvoices,
+    pagination: {
+      totalItems,
+      totalPages: Math.ceil(totalItems / limit),
+      currentPage: page,
+    },
+  }, 60);
   } catch (e) {}
 
   return formatResponse(true, {

@@ -20,8 +20,7 @@ const getPodcasts = async (request: Request) => {
     whereClause.creatorId = companyId;
   }
 
-  
-    const cacheKey = `admin:podcasts:${companyId || 'global'}:all`;
+  const cacheKey = `admin:podcasts:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -52,8 +51,6 @@ const getPodcasts = async (request: Request) => {
 // POST /api/admin/podcasts
 const createPodcast = async (request: Request) => {
   
-
-
   const body = await request.json();
   const {
     title,

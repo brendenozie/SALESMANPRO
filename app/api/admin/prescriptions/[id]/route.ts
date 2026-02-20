@@ -43,6 +43,7 @@ export const GET = withApiHandler(async (_req, { params }) => {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const prescription = await prisma.prescription.findUnique({
     where: { id },
     include: {
@@ -53,17 +54,12 @@ export const GET = withApiHandler(async (_req, { params }) => {
     },
   });
 
-  try {
-    if (prescription) {
-      await cacheSet(cacheKey, prescription, 60);
-    }
-  } catch (e) {}
-
   if (!prescription) {
     return formatResponse(false, null, "Prescription not found", 404);
   }
 
   const formatted = await formatPrescriptionData(prescription);
+    try { await cacheSet(cacheKey, formatted, 60); } catch (e) {}
   return formatResponse(true, formatted, "Prescription fetched successfully");
 });
 

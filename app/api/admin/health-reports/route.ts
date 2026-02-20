@@ -98,7 +98,12 @@ async function handleGetService(
 
   try {
     if (formattedServices) {
-      await cacheSet(cacheKey, formattedServices, 60);
+      await cacheSet(cacheKey, {
+        services: formattedServices,
+        totalItems,
+        totalPages: Math.ceil(totalItems / limit),
+        currentPage: page,
+      }, 60);
     }
   } catch (e) {
     console.error("Error caching health reports data:", e);

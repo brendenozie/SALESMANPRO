@@ -56,11 +56,6 @@ async function handleGetLocations(request: Request) {
     },
   });
 
-  try {
-    if (rawLocations) {
-      await cacheSet(cacheKey, rawLocations, 60);
-    }
-  } catch (e) {}
 
    const locations = rawLocations.map((loc) => ({
       ...loc,
@@ -71,7 +66,9 @@ async function handleGetLocations(request: Request) {
     }));
 
     // return formatResponse(true, locations, "Locations fetched successfully", 20);
-
+  try {
+      await cacheSet(cacheKey, { data: locations }, 60);
+  } catch (e) {}
 
   // withApiHandler will wrap this result in formatResponse(true, { data: locations }) with status 200
   return formatResponse(true, { data: locations }, "Locations fetched successfully", 200);

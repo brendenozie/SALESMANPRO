@@ -128,7 +128,7 @@ async function handlePutPatient(request: Request, { params }: { params: { id: st
     const formatted = await formatPatientData(updatedPatient);
     
     try { await cacheDel(`admin:patients:${id || 'global'}:*`); } catch (e) {}
-    try { await cacheSet(`admin:patients:${id || 'global'}:all`, formatted, 60); } catch (e) {}
+    
     return formatResponse(true, formatted, "Patient updated successfully", 200);
   } catch (err: any) {
     if (err.code === "P2002" && err.meta?.target?.includes("email")) {

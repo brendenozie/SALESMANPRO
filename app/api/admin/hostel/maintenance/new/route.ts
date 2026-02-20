@@ -1,16 +1,25 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { getAuthSession } from "@/lib/auth";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { roomId, category, priority, description } = body;
+    const { roomId, category, priority, description, companyId } = body;
 
     // 1. Get the current logged-in user ID (Example via headers or session)
     // Replace this with your actual session retrieval logic
-    const userId = req.headers.get("x-user-id"); 
+    // const userId = req.headers.get("x-user-id"); 
+    const session = await getAuthSession(); // Implement this function based on your auth system
+    const userId = session?.user?.id;
 
+    if (!userId && !companyId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const cacheKey = `admin:maintenance:${companyId || 'global'}:all`;
+    
     const newTicket = await prisma.hostelMaintenanceRequest.create({
       data: {
         roomId,
@@ -18,10 +27,11 @@ export async function POST(req: Request) {
         priority,
         description,
         reportedBy: userId!, // Ensure this is valid
-        status: "PENDING"
+        status: "PENDING",
+        // companyId: companyId
       },
       include: {
-        room: { select: { roomNumber: true } },
+        room: { select: { roomNumber: true,  } },
         reporter: { select: { name: true } }
       }
     });

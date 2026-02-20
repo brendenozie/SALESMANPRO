@@ -74,12 +74,6 @@ async function getTopCustomers(req: Request) {
         email: true,
       },
     });
-
-  try {
-    if (users) {
-      await cacheSet(cacheKey, users, 60);
-    }
-  } catch (e) {}
     
     // Create a map for easy lookup
     const userMap = new Map(users.map(user => [user.id, user]));

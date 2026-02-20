@@ -33,7 +33,7 @@ export async function GET(request: Request) {
 
   try {
     if (requests) {
-      await cacheSet(cacheKey, requests, 60);
+      await cacheSet(cacheKey, { data: requests }, 60);
     }
   } catch (e) {}
 

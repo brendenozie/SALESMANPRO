@@ -33,9 +33,7 @@ export async function GET(request: Request) {
       end: e.endDate,
       type: e.type,
       status: e.status
-    }));
-
-    
+    }));  
 
   try {
     if (events) {

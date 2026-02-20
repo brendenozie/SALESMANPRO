@@ -121,7 +121,7 @@ async function deleteAgent(req: Request, { params }: { params: { id: string } })
   try {
     const salesAgent = await prisma.salesAgent.findUnique({
       where: { id: agentId },
-      select: { userId: true },
+      select: { userId: true, companyId: true },
     });
 
     if (!salesAgent) {
@@ -139,6 +139,7 @@ async function deleteAgent(req: Request, { params }: { params: { id: string } })
     await prisma.salesAgent.delete({ where: { id: agentId } });
     await prisma.user.delete({ where: { id: salesAgent.userId } });
 
+      try { await cacheDel(`admin:sales-agents:${salesAgent.companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Agent deleted successfully", 200);
   } catch (error) {
     console.error("Error deleting agent:", error);

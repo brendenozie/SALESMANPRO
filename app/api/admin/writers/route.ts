@@ -18,6 +18,7 @@ const companyId = searchParams.get('companyId');
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const writers = await prisma.writer.findMany({
 where: companyId ? { companyId } : {},
 include: {

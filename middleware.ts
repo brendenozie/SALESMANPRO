@@ -6,7 +6,7 @@ import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 // Your app’s main host
 const PRIMARY_HOST = "salesmanpro.site";
 const AUTH_DOMAIN = "auth.salesmanpro.site"; // Central auth domain
-const SECONDARY_HOSTS = ["c170-102-135-172-117.ngrok-free.app"]; // Add your custom domains here
+const SECONDARY_HOSTS = ["519c-102-135-172-117.ngrok-free.app"]; // Add your custom domains here
 
 // Protected paths that require authentication
 const protectedPaths = [

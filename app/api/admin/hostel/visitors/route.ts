@@ -27,6 +27,7 @@ export async function GET(req: Request) {
       await cacheSet(cacheKey, visitors, 60);
     }
   } catch (e) {}
+  
     return formatResponse(true, visitors, "Visitors fetched successfully", 200);
   } catch (error) {
     return formatResponse(false, null, "Failed to fetch visitors", 500);

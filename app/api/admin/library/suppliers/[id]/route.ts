@@ -49,7 +49,7 @@ const getSupplierById = async (
 
   // Cache the supplier data
   try {
-    await cacheSet(cacheKey, supplier, 60); // Cache for 60 seconds
+    await cacheSet(cacheKey, {data: supplier}, 60); // Cache for 60 seconds
   } catch (e) {}
 
   return NextResponse.json({ success: true, data: supplier });

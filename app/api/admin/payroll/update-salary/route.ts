@@ -27,8 +27,6 @@ export async function POST(req: Request) {
     const currentMonth = new Date().getMonth() + 1;
     const currentYear = new Date().getFullYear();
 
-    
-
     // 3. Transaction (atomic & auditable)
     const result = await prisma.$transaction(async (tx) => {
       // Get existing salary

@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb";
 import { Prisma } from '@prisma/client';
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
 // GET /api/admin/writers/[id] - Get a single writer by ID
 export const GET = withApiHandler(async (request: Request, { params }: { params: { id: string } }) => {

@@ -30,16 +30,11 @@ async function handleGET(request: Request, { params }: { params: { id: string } 
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const tourPackage = await prisma.tourPackage.findUnique({
       where: { id },
       include: { destinations: true },
     });
-
-  try {
-    if (tourPackage) {
-      await cacheSet(cacheKey, tourPackage, 60);
-    }
-  } catch (e) {}
 
     if (!tourPackage) return formatResponse(false, null, "Tour package not found", 404);
 
@@ -50,6 +45,8 @@ async function handleGET(request: Request, { params }: { params: { id: string } 
         return rest;
       }) || "N/A",
     };
+
+    try { await cacheSet(cacheKey, transformedPackage, 60); } catch (e) {}
 
     return formatResponse(true, transformedPackage);
   } catch (error: any) {

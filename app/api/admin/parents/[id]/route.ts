@@ -61,7 +61,7 @@ async function handleGetParent(request: Request, context: { params: { id: string
 
   try {
     if (parent) {
-      await cacheSet(cacheKey, parent, 60);
+      await cacheSet(cacheKey, formatParentResponse(parent), 60);
     }
   } catch (e) {}
 

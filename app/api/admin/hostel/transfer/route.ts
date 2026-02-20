@@ -35,8 +35,8 @@ export async function PATCH(req: Request) {
       });
     });
 
-    try { await cacheDel(`admin:rooms:*:all`); } catch (e) {}
-    try { await cacheDel(`admin:residents:*:all`); } catch (e) {}
+    try { await cacheDel(`admin:rooms:*`); } catch (e) {}
+    try { await cacheDel(`admin:residents:*`); } catch (e) {}
     
     return formatResponse(true, result, "Transfer completed successfully", 200);
   } catch (error: any) {

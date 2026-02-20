@@ -14,6 +14,7 @@ export const GET = withApiHandler(async (_request: Request, { params }: { params
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const photoAlbum = await prisma.photoAlbum.findUnique({
     where: { id },
     include: { photos: true },
