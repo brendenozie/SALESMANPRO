@@ -21,6 +21,7 @@ export async function GET(request: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const roster = await prisma.staffProfile.findMany({
       where: {
         companyId,
@@ -40,7 +41,7 @@ export async function GET(request: Request) {
 
   try {
     if (roster) {
-      await cacheSet(cacheKey, roster, 60);
+      await cacheSet(cacheKey, { data: roster }, 60);
     }
   } catch (e) {}
 

@@ -24,29 +24,29 @@ const DEFAULT_SELECT = {
   }
 };
 
-
 async function handleGet(_req: Request, context: { params: { id: string } }) {
   
-    const cacheKey = `admin:company-locations:${context.params.id || 'global'}:all`;
+  const cacheKey = `admin:company-locations:${context.params.id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const companyLocation = await prisma.companyLocation.findUnique({
     where: { id: context.params.id },
     select: DEFAULT_SELECT,
   });
 
+  if (!companyLocation) {
+    return NextResponse.json({ message: 'Company location association not found.' }, { status: 404 });
+  }
+  
   try {
     if (companyLocation) {
       await cacheSet(cacheKey, companyLocation, 60);
     }
   } catch (e) {}
-
-  if (!companyLocation) {
-    return NextResponse.json({ message: 'Company location association not found.' }, { status: 404 });
-  }
 
   return NextResponse.json(companyLocation);
 }
@@ -55,9 +55,11 @@ async function handleGet(_req: Request, context: { params: { id: string } }) {
 async function handlePatch(request: Request, context: { params: { id: string } }) {
   const { id } = context.params;
   const body = await request.json();
+  const cacheKey = `admin:company-locations:${id || 'global'}:all`;
 
   // Guard against illegal updates
   const forbidden = ['id', 'companyId', 'locationId'];
+  
   if (forbidden.some(key => key in body)) {
     return NextResponse.json({ message: `Cannot update ${forbidden.join(', ')}.` }, { status: 400 });
   }
@@ -74,6 +76,7 @@ async function handlePatch(request: Request, context: { params: { id: string } }
       select: DEFAULT_SELECT,
     });
 
+    try { await cacheDel(cacheKey); } catch (e) {}
     return NextResponse.json(updated);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -85,8 +88,13 @@ async function handlePatch(request: Request, context: { params: { id: string } }
 
 
 async function handleDelete(_req: Request, context: { params: { id: string } }) {
+  const searchParams = new URL(_req.url).searchParams;
+    const companyId = searchParams.get('companyId');
+  const cacheKey = `admin:company-locations:${companyId || 'global'}:*`;
   try {
     await prisma.companyLocation.delete({ where: { id: context.params.id } });
+    const cacheKey = `admin:company-locations:${context.params.id || 'global'}:all`;
+    try { await cacheDel(cacheKey); } catch (e) {}
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

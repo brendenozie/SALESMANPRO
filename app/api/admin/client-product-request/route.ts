@@ -10,15 +10,17 @@ async function getRequests(req: Request) {
 
   // 1. Unified Filter Construction
   const agentId = searchParams.get("agentId");
+  const companyId = searchParams.get("companyId"); // Optional company filter for multi-tenant support
   const limit = Math.min(parseInt(searchParams.get("limit") || "10", 10), 100); // Cap limit at 100
   const offset = Math.max(parseInt(searchParams.get("offset") || "0", 10), 0);
 
   const whereClause = {
     requestedByType: "CLIENT" as const,
     ...(agentId && { requesterId: agentId }), // Apply agent filter if provided
+    ...(companyId && { companyId }), // Apply company filter if provided
   };
 
-  const cacheKey = `admin:client-product-request:${agentId || 'global'}:limit:${limit}:offset:${offset}`;
+  const cacheKey = `admin:client-product-request:${companyId || 'global'}:limit:${limit}:offset:${offset}`;
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
@@ -59,7 +61,15 @@ async function getRequests(req: Request) {
 
     // 4. Cache the result for 1 minute    
     try {
-      await cacheSet(cacheKey, { requests, totalCount }, 60);
+      await cacheSet(cacheKey, {
+        requests,
+        pagination: {
+          total: totalCount,
+          limit,
+          offset,
+        },
+        companyId,
+      }, 60);
     } catch (e) {}
 
     return formatResponse(true, {
@@ -69,7 +79,7 @@ async function getRequests(req: Request) {
         limit,
         offset,
       },
-      agentId,
+      companyId,
     }, "Requests fetched successfully", 200);
 
   } catch (error: any) {

@@ -44,16 +44,18 @@ const getCases = async (req: Request, context: { user?: any }) => {
 
   const page = Number(searchParams.get("page") ?? 1);
   const limit = Number(searchParams.get("limit") ?? 20);
+  const companyId = searchParams.get("companyId") || context.user?.companyId; // Allow filtering by companyId, default to user's company
   const skip = (page - 1) * limit;
 
     const status = searchParams.get("status");
 
     const where: any = {
-      companyId: context.user?.companyId,
+      companyId: companyId,
       ...(status && { status }),
     };
 
-    const cacheKey = `admin:cases:${status || 'all'}:page:${page}:limit:${limit}`;
+    const cacheKey = `admin:cases:${companyId}:page:${page}:limit:${limit}`;
+
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return NextResponse.json(cached, { status: 200 });
@@ -76,7 +78,7 @@ const getCases = async (req: Request, context: { user?: any }) => {
 
   // Cache the result for 1 minute
   try {
-    await cacheSet(cacheKey, { data: cases, meta: { page, limit, total } }, 60);
+    await cacheSet(cacheKey, { data: cases, meta: { page, limit, total, totalPages: Math.ceil(total / limit), } }, 60);
   } catch (e) {}
 
   return NextResponse.json(
@@ -104,6 +106,7 @@ const createCase = async (req: Request, context: { user?: any }) => {
     assignedToUserId,
     caseType,
     status,
+    companyId,
   } = body;
 
   if (!title || !clientId || !caseType) {
@@ -121,14 +124,14 @@ const createCase = async (req: Request, context: { user?: any }) => {
       assignedToUserId,
       caseType,
       status: status ?? "OPEN",
-      companyId: context.user.companyId, // 🔒 never trust client
+      companyId: companyId, // 🔒 never trust client
       // createdById: context.user.id,
     },
     select: caseSelect,
   });
 
     // Invalidate relevant caches
-  try {    await cacheDel(`admin:cases:*`); // Invalidate all cases list caches
+  try {    await cacheDel(`admin:cases:${companyId}:*`); // Invalidate all cases list caches for this company
   } catch (e) {}
 
   return NextResponse.json(newCase, { status: 201 });

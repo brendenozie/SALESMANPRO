@@ -13,10 +13,10 @@ const getClientId = (req: Request, context: { params: { id: string } }) => {
 
 // --- GET Handler Logic ---
 const getClientLogic = async (req: Request, context: { params: { id: string } }) => {
-    const clientId = getClientId(req, context);
-
     
-    const cacheKey = `admin:finance-clients:${clientId || 'global'}:all`;
+const clientId = getClientId(req, context);
+
+const cacheKey = `admin:finance-clients:${clientId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -30,17 +30,15 @@ const getClientLogic = async (req: Request, context: { params: { id: string } })
         },
     });
 
-  try {
-    if (client) {
-      await cacheSet(cacheKey, client, 60);
-    }
-  } catch (e) {}
-
     if (!client) {
         // Use formatResponse for business-logic failure (404)
         return formatResponse(false, null, 'Client not found', 404);
     }
-    
+
+    try {
+      await cacheSet(cacheKey, client, 60);
+    } catch (e) {}
+
     // Use formatResponse for success
     return formatResponse(true, client, 'Client retrieved successfully', 200);
 };

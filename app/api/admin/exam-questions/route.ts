@@ -52,6 +52,7 @@ async function getExamQuestions(request: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const examQuestions = await prisma.examQuestion.findMany({
     where: whereClause,
     include: {
@@ -73,7 +74,7 @@ async function getExamQuestions(request: Request) {
 
   try {
     if (examQuestions) {
-      await cacheSet(cacheKey, responseData, 60);
+      await cacheSet(cacheKey, { data: responseData }, 60);
     }
   } catch (e) {}
 
@@ -86,8 +87,6 @@ async function getExamQuestions(request: Request) {
 // =======================================================================
 async function createExamQuestion(request: Request) {
   
-
-
   const body = await request.json();
   const {
     examId,

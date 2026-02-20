@@ -66,12 +66,6 @@ export const GET = withApiHandler(async (req: Request) => {
     prisma.courseAssignment.count({ where: whereClause })
   ]);
 
-  try {
-    if (assignments) {
-      await cacheSet(cacheKey, assignments, 60);
-    }
-  } catch (e) {}
-
   // Flatten the response in one pass
   const responseData = assignments.map(a => ({
     ...a,
@@ -83,6 +77,15 @@ export const GET = withApiHandler(async (req: Request) => {
     createdByEmail: a.createdBy?.user?.email,
     course: { id: a.courseId, title: a.course?.title } // Clean object for frontend
   }));
+
+  try {
+    
+      await cacheSet(cacheKey, { 
+        assignments: responseData, 
+        meta: { totalCount, page, limit } 
+      }, 60);
+  
+  } catch (e) {}
 
   return formatResponse(true, { 
     assignments: responseData, 

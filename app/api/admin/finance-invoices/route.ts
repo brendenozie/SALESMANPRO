@@ -22,6 +22,7 @@ const getInvoicesLogic = async (req: Request) => {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const invoices = await prisma.invoice.findMany({
         where: { companyId: companyId || undefined },
         include: {

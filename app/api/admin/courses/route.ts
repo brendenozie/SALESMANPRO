@@ -70,13 +70,13 @@ export const GET = withApiHandler(async (request: Request) => {
 
   if (!companyId) return formatResponse(false, null, "Company ID is required.", 400);
 
-  
-    const cacheKey = `admin:courses:${companyId || 'global'}:all`;
+  const cacheKey = `admin:courses:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const courses = await prisma.course.findMany({
     where: { companyId },
     select: COURSE_SELECT,
@@ -84,9 +84,7 @@ export const GET = withApiHandler(async (request: Request) => {
   });
 
   try {
-    if (courses) {
-      await cacheSet(cacheKey, courses, 60);
-    }
+      await cacheSet(cacheKey, courses.map(mapCourse), 60);
   } catch (e) {}
 
   return formatResponse(true, courses.map(mapCourse), null, 200);

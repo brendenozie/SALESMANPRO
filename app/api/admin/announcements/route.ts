@@ -17,6 +17,7 @@ export const GET = withApiHandler(async (request) => {
   const status = searchParams.get("status");
   const type = searchParams.get("type");
   const audience = searchParams.get("audience");
+
   if (status) where.status = status.toUpperCase();
   if (type) where.type = type.toUpperCase();
   if (audience) where.audience = audience.toUpperCase();
@@ -34,6 +35,7 @@ export const GET = withApiHandler(async (request) => {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const announcements = await prisma.announcement.findMany({
     where,
     orderBy: { publishedAt: "desc" },
@@ -106,151 +108,3 @@ export const POST = withApiHandler(async (request) => {
   }
 });
 
-
-//   const response = announcements.map((a) => ({
-//     id: a.id,
-//     title: a.title,
-//     summary: a.summary,
-//     content: a.content,
-//     publishedAt: a.publishedAt.toISOString(),
-//     expiresAt: a.expiresAt?.toISOString() || null,
-//     authorId: a.authorId,
-//     authorName: a.author?.name || "N/A",
-//     authorEmail: a.author?.email || "N/A",
-//     companyId: a.companyId,
-//     companyName: a.company?.name || "N/A",
-//     status: a.status,
-//     type: a.type,
-//     audience: a.audience,
-//     targetAcademicLevelIds: a.targetAcademicLevelIds,
-//     targetCourseIds: a.targetCourseIds,
-//     targetEducatorIds: a.targetEducatorIds,
-//     targetStudentIds: a.targetStudentIds,
-//     targetDepartmentIds: a.targetDepartmentIds,
-//     targetParentIds: a.targetParentIds,
-//     createdAt: a.createdAt?.toISOString(),
-//     updatedAt: a.updatedAt?.toISOString(),
-//   }));
-
-//   return formatResponse(true, response, "Fetched announcements", 200);
-// });
-
-// 
-// export const POST = withApiHandler(async (request) => {
-//   const body = await request.json();
-//   const {
-//     companyId,
-//     title,
-//     summary,
-//     content,
-//     publishedAt,
-//     expiresAt,
-//     authorId,
-//     status,
-//     type,
-//     audience,
-//     targetAcademicLevelIds = [],
-//     targetCourseIds = [],
-//     targetEducatorIds = [],
-//     targetStudentIds = [],
-//     targetDepartmentIds = [],
-//     targetParentIds = [],
-//   } = body;
-
-//   if (!companyId || !title || !publishedAt || !authorId || !status || !type || !audience) {
-//     return formatResponse(
-//       false,
-//       null,
-//       "Company ID, Title, Published At, Author ID, Status, Type, and Audience are required",
-//       400
-//     );
-//   }
-
-//   if (!VALID_ANNOUNCEMENT_STATUSES.includes(status)) {
-//     return formatResponse(false, null, `Invalid status: ${status}`, 400);
-//   }
-//   if (!VALID_ANNOUNCEMENT_TYPES.includes(type)) {
-//     return formatResponse(false, null, `Invalid type: ${type}`, 400);
-//   }
-//   if (!VALID_ANNOUNCEMENT_AUDIENCES.includes(audience)) {
-//     return formatResponse(false, null, `Invalid audience: ${audience}`, 400);
-//   }
-
-//   const existingAuthor = await prisma.user.findUnique({ where: { id: authorId } });
-//   if (!existingAuthor) {
-//     return formatResponse(false, null, "Invalid authorId", 400);
-//   }
-
-//   const existingCompany = await prisma.company.findUnique({ where: { id: companyId } });
-//   if (!existingCompany) {
-//     return formatResponse(false, null, "Invalid companyId", 400);
-//   }
-
-//   const parsedPublishedAt = new Date(publishedAt);
-//   if (isNaN(parsedPublishedAt.getTime())) {
-//     return formatResponse(false, null, "Invalid publishedAt date", 400);
-//   }
-
-//   let parsedExpiresAt: Date | undefined;
-//   if (expiresAt) {
-//     parsedExpiresAt = new Date(expiresAt);
-//     if (isNaN(parsedExpiresAt.getTime())) {
-//       return formatResponse(false, null, "Invalid expiresAt date", 400);
-//     }
-//     if (parsedExpiresAt <= parsedPublishedAt) {
-//       return formatResponse(false, null, "Expiry must be after publish date", 400);
-//     }
-//   }
-
-//   const newAnnouncement = await prisma.announcement.create({
-//     data: {
-//       companyId,
-//       title,
-//       summary,
-//       content,
-//       publishedAt: parsedPublishedAt,
-//       expiresAt: parsedExpiresAt,
-//       authorId,
-//       status,
-//       type,
-//       audience,
-//       targetAcademicLevelIds: Array.isArray(targetAcademicLevelIds) ? targetAcademicLevelIds : [],
-//       targetCourseIds: Array.isArray(targetCourseIds) ? targetCourseIds : [],
-//       targetEducatorIds: Array.isArray(targetEducatorIds) ? targetEducatorIds : [],
-//       targetStudentIds: Array.isArray(targetStudentIds) ? targetStudentIds : [],
-//       targetDepartmentIds: Array.isArray(targetDepartmentIds) ? targetDepartmentIds : [],
-//       targetParentIds: Array.isArray(targetParentIds) ? targetParentIds : [],
-//     },
-//     include: {
-//       author: { select: { id: true, name: true, email: true } },
-//       company: { select: { id: true, name: true } },
-//     },
-//   });
-
-//   const responseData = {
-//     id: newAnnouncement.id,
-//     title: newAnnouncement.title,
-//     summary: newAnnouncement.summary,
-//     content: newAnnouncement.content,
-//     publishedAt: newAnnouncement.publishedAt.toISOString(),
-//     expiresAt: newAnnouncement.expiresAt?.toISOString() || null,
-//     authorId: newAnnouncement.authorId,
-//     authorName: newAnnouncement.author?.name || "N/A",
-//     authorEmail: newAnnouncement.author?.email || "N/A",
-//     companyId: newAnnouncement.companyId,
-//     companyName: newAnnouncement.company?.name || "N/A",
-//     status: newAnnouncement.status,
-//     type: newAnnouncement.type,
-//     audience: newAnnouncement.audience,
-//     targetAcademicLevelIds: newAnnouncement.targetAcademicLevelIds,
-//     targetCourseIds: newAnnouncement.targetCourseIds,
-//     targetEducatorIds: newAnnouncement.targetEducatorIds,
-//     targetStudentIds: newAnnouncement.targetStudentIds,
-//     targetDepartmentIds: newAnnouncement.targetDepartmentIds,
-//     targetParentIds: newAnnouncement.targetParentIds,
-//     createdAt: newAnnouncement.createdAt?.toISOString(),
-//     updatedAt: newAnnouncement.updatedAt?.toISOString(),
-//   };
-
-//   return formatResponse(true, responseData, "Announcement created", 201);
-// });

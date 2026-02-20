@@ -52,6 +52,7 @@ export const GET = withApiHandler(async (req, context) => {
 export const PATCH = withApiHandler(async (request, context) => {
   const { id } = context.params;
   const body = await request.json();
+
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
   
@@ -59,7 +60,7 @@ export const PATCH = withApiHandler(async (request, context) => {
   if (!body.name) return formatResponse(false, null, "Name is required", 400);
 
   const updated = await prisma.academicLevel.update({
-    where: { id },
+    where: { id, companyId: companyId || undefined },
     data: { 
       name: body.name, 
       description: body.description, 
@@ -72,31 +73,13 @@ export const PATCH = withApiHandler(async (request, context) => {
     return formatResponse(true, updated, "Updated", 200);
 });
 
-//   if (!academicLevel) {
-//     return formatResponse(false, null, "Academic level not found", 404);
-//   }
-
-//   return formatResponse(true, academicLevel, "Fetched successfully", 200);
-// });
-
-// export const PATCH = withApiHandler(async (request, context) => {
-//   const { id } = context.params;
-//   const body = await request.json();
-//   const { name, description, sortOrder } = body;
-
-//   const updatedAcademicLevel = await prisma.academicLevel.update({
-//     where: { id },
-//     data: { name, description, sortOrder },
-//   });
-
-//   return formatResponse(true, updatedAcademicLevel, "Updated successfully", 200);
-// });
-
-// export const DELETE = withApiHandler(async (request, context) => {
-//   const { id } = context.params;
-
-//   const deleted = await prisma.academicLevel.delete({ where: { id } });
-//   
-    // try { await cacheDel(`admin:academic-levels:${companyId || 'global'}:*`); } catch (e) {}
-    // return formatResponse(true, { deletedId: deleted.id }, "Deleted successfully", 200);
-// });
+export const DELETE = withApiHandler(async (request, context) => {
+  const { id } = context.params;
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId");
+  await prisma.academicLevel.delete({
+    where: { id, companyId: companyId || undefined },
+  });
+    try { await cacheDel(`admin:academic-levels:${companyId || 'global'}:*`); } catch (e) {}
+  return formatResponse(true, null, "Deleted", 200);
+});

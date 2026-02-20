@@ -21,6 +21,7 @@ async function getDestinations(request: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const destinations = await prisma.destination.findMany({
     where: { companyId: companyId },
     include: {
@@ -30,7 +31,7 @@ async function getDestinations(request: Request) {
 
   try {
     if (destinations) {
-      await cacheSet(cacheKey, destinations, 60);
+      await cacheSet(cacheKey, { data: destinations }, 60);
     }
   } catch (e) {}
 

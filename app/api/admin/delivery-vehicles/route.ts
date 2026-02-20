@@ -125,18 +125,19 @@ export const GET = withApiHandler(async (request, context) => {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const products = await prisma.product.findMany({
     where,
     orderBy: { createdAt: 'desc' },
   });
 
-  try {
-    if (products) {
-      await cacheSet(cacheKey, products, 60);
-    }
-  } catch (e) {}
-
   const vehicles = products.map(formatProductAsVehicle);
+
+  try {
+      await cacheSet(cacheKey, vehicles, 60);
+  } catch (e) {
+    console.error("Failed to cache delivery vehicles data:", e);
+  }
 
   return formatResponse(true, vehicles, "Vehicles fetched successfully.", 200);
 });

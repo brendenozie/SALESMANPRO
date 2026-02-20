@@ -52,6 +52,7 @@ async function handleGet(request: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const participantEntries =
     await prisma.conversationParticipant.findMany({
       where: {

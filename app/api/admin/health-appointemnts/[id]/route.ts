@@ -45,11 +45,6 @@ async function getAppointment(
 ) {
   const { adminSlug, id } = params;
 
-  // Perform Authorization Check (Business Logic)
-  const authCheck = await authorizeAppointmentAccess(adminSlug, id);
-  
-  if (authCheck.success === false) return formatResponse(false, null, authCheck.error, authCheck.status); // Returns 403/404 error response
-
   // --- Data Fetching ---
   
     const cacheKey = `admin:health-appointemnts:${adminSlug || 'global'}:all`;
@@ -59,6 +54,13 @@ async function getAppointment(
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
 
+  
+  // Perform Authorization Check (Business Logic)
+  const authCheck = await authorizeAppointmentAccess(adminSlug, id);
+  
+  if (authCheck.success === false) return formatResponse(false, null, authCheck.error, authCheck.status); // Returns 403/404 error response
+
+  
   const appointment = await prisma.appointment.findUnique({
     where: { id: id },
     select: {

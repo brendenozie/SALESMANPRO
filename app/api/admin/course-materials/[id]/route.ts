@@ -33,21 +33,20 @@ const flattenMaterial = (m: any) => ({
 
 export const GET = withApiHandler(async (req, { params }) => {
   
-    const cacheKey = `admin:course-materials:${params.id || 'global'}:all`;
+  const cacheKey = `admin:course-materials:${params.id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const material = await prisma.courseMaterial.findUnique({
     where: { id: params.id },
     select: MATERIAL_SELECT,
   });
 
   try {
-    if (material) {
-      await cacheSet(cacheKey, material, 60);
-    }
+      await cacheSet(cacheKey, flattenMaterial(material), 60);
   } catch (e) {}
 
   if (!material) return formatResponse(false, null, "Material not found", 404);

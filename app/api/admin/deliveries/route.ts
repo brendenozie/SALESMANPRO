@@ -44,6 +44,7 @@ export const GET = withApiHandler(async (request, context) => {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const deliveries = await prisma.delivery.findMany({
     where,
     include: {
@@ -78,16 +79,19 @@ export const GET = withApiHandler(async (request, context) => {
     },
   });
 
-  try {
-    if (deliveries) {
-      await cacheSet(cacheKey, deliveries, 60);
-    }
-  } catch (e) {}
 
   const formattedDeliveries = deliveries.map((d) => ({
     ...d,
     riderName: d.rider?.name || 'Unassigned',
   }));
+  
+  try {
+    
+      await cacheSet(cacheKey, formattedDeliveries, 60);
+    
+  } catch (e) {
+    console.error("Failed to cache deliveries data:", e);
+  }
 
   return formatResponse(true, formattedDeliveries, "Deliveries fetched successfully.", 200);
 });

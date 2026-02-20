@@ -27,6 +27,7 @@ async function getRegistration(request: Request, { params }: Params) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const registration = await prisma.eventRegistration.findUnique({
     where: { id },
     include: {
@@ -35,12 +36,6 @@ async function getRegistration(request: Request, { params }: Params) {
       student: { select: { id: true, user: { select: { name: true, email: true } } } },
     },
   });
-
-  try {
-    if (registration) {
-      await cacheSet(cacheKey, registration, 60);
-    }
-  } catch (e) {}
 
   if (!registration) {
     return formatResponse(false, null, "Event registration not found", 404);
@@ -65,6 +60,12 @@ async function getRegistration(request: Request, { params }: Params) {
     status: registration.status,
   };
 
+  try {
+    if (responseData) {
+      await cacheSet(cacheKey, { data: responseData }, 60);
+    }
+  } catch (e) {}
+  
   return formatResponse(true, { data: responseData }, null, 200);
 }
 

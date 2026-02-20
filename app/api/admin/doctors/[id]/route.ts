@@ -46,6 +46,7 @@ async function getDoctor(_req: Request, { params }: { params: { id: string } }) 
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const doctor = await prisma.doctor.findUnique({
     where: { id },
     include: {
@@ -54,15 +55,12 @@ async function getDoctor(_req: Request, { params }: { params: { id: string } }) 
     },
   });
 
-  try {
-    if (doctor) {
-      await cacheSet(cacheKey, doctor, 60);
-    }
-  } catch (e) {}
-
   if (!doctor) return formatResponse(false, null, "Doctor not found", 404);
 
   const formatted = await formatDoctorData(doctor);
+
+  try { await cacheSet(cacheKey, formatted, 60); } catch (e) {}
+
   return formatResponse(true, formatted, "Doctor fetched successfully", 200);
 }
 
@@ -155,7 +153,6 @@ async function deleteDoctor(_req: Request, { params }: { params: { id: string } 
       await prisma.user.delete({ where: { id: doctor.userId } });
     }
   }
-
   
     try { await cacheDel(`admin:doctors:${id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { deletedId: id }, "Doctor deleted successfully", 200);

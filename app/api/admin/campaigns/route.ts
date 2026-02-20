@@ -16,8 +16,10 @@ const getCampaigns = async (request: Request, context: { user?: any }) => {
   const where: any = {};
   if (status) where.status = status;
 
-    const cacheKey = `admin:campaigns:${status || 'all'}:page:${page}:limit:${limit}`;
-  try {    const cached = await cacheGet(cacheKey);
+  const cacheKey = `admin:campaigns:${status || 'all'}:page:${page}:limit:${limit}`;
+
+  try {    
+    const cached = await cacheGet(cacheKey);
     if (cached) return NextResponse.json(cached, { status: 200 });
   } catch (e) {}
 
@@ -49,8 +51,9 @@ const getCampaigns = async (request: Request, context: { user?: any }) => {
   try {
     await cacheSet(`admin:campaigns:total:${status || 'all'}`, total, 60); // Cache for 1 minute
   } catch (e) {}
-  return NextResponse.json(
-    {
+  
+  try {
+    await cacheSet(cacheKey, {
       data: campaigns.map((c) => ({
         ...c,
         donationsCount: c._count.donations,
@@ -59,8 +62,18 @@ const getCampaigns = async (request: Request, context: { user?: any }) => {
       totalPages: Math.ceil(total / limit),
       total,
     },
-    { status: 200 }
-  );
+    60); // Cache for 60 seconds
+  } catch (e) {}
+  
+  return NextResponse.json({
+    data: campaigns.map((c) => ({
+      ...c,
+      donationsCount: c._count.donations,
+    })),
+    page,
+    totalPages: Math.ceil(total / limit),
+    total,
+  });
 };
 
 const createCampaign = async (request: Request, context: { user?: any }) => {

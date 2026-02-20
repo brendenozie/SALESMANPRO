@@ -23,6 +23,7 @@ async function getDonor(request: Request, { params }: Params) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const donor = await prisma.donor.findUnique({
     where: { id },
     include: {
@@ -41,15 +42,15 @@ async function getDonor(request: Request, { params }: Params) {
     },
   });
 
-  try {
-    if (donor) {
-      await cacheSet(cacheKey, donor, 60);
-    }
-  } catch (e) {}
-
   if (!donor) {
     return formatResponse(false, null, 'Donor profile not found.', 404);
   }
+
+  try{
+    if (donor) {
+      await cacheSet(cacheKey, { data: donor }, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, { data: donor }, null, 200);
 }

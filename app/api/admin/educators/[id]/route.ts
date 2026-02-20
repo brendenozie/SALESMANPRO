@@ -69,12 +69,6 @@ async function getEducator(request: Request, { params }: Params) {
     },
   });
 
-  try {
-    if (educator) {
-      await cacheSet(cacheKey, educator, 60);
-    }
-  } catch (e) {}
-
   if (!educator) {
     return formatResponse(false, null, "Educator not found", 404);
   }
@@ -120,6 +114,12 @@ async function getEducator(request: Request, { params }: Params) {
     updatedAt: educator.updatedAt,
   };
 
+  try {
+    if (responseData) {
+      await cacheSet(cacheKey, { data: responseData }, 60);
+    }
+  } catch (e) {}
+  
   return formatResponse(true, { data: responseData }, null, 200);
 }
 

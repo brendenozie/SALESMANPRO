@@ -8,12 +8,13 @@ import { Prisma } from "@prisma/client";
 
 export const GET = withApiHandler(async (_req, { params }) => {
   
-    const cacheKey = `admin:course-assignments:${params.id || 'global'}:all`;
+  const cacheKey = `admin:course-assignments:${params.id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const assignment = await prisma.courseAssignment.findUnique({
     where: { id: params.id },
     select: {
@@ -41,12 +42,6 @@ export const GET = withApiHandler(async (_req, { params }) => {
     }
   });
 
-  try {
-    if (assignment) {
-      await cacheSet(cacheKey, assignment, 60);
-    }
-  } catch (e) {}
-
   if (!assignment) return formatResponse(false, null, "Assignment not found", 404);
 
   // Flatten the response for the frontend
@@ -59,6 +54,12 @@ export const GET = withApiHandler(async (_req, { params }) => {
       .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0)) || [],
     totalSubmissions: assignment._count.submissions,
   };
+
+  try {
+    if (assignment) {
+      await cacheSet(cacheKey, responseData, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, responseData, null, 200);
 });

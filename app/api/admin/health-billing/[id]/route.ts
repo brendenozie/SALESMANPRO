@@ -40,6 +40,7 @@ async function getInvoice(
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const invoice = await prisma.patientInvoices.findUnique({
     where: { id },
     include: {
@@ -47,11 +48,6 @@ async function getInvoice(
     },
   });
 
-  try {
-    if (invoice) {
-      await cacheSet(cacheKey, invoice, 60);
-    }
-  } catch (e) {}
 
   if (!invoice) {
     return formatResponse(false, null, "Invoice not found.", 404);
@@ -59,6 +55,13 @@ async function getInvoice(
 
   // --- Success Response ---
   const formattedInvoice = await formatInvoiceData(invoice);
+
+  try {
+    if (invoice) {
+      await cacheSet(cacheKey, formattedInvoice, 60);
+    }
+  } catch (e) {}
+  
   return formatResponse(true, formattedInvoice, "Invoice retrieved successfully.", 200);
 }
 

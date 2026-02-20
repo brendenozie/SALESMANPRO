@@ -128,7 +128,14 @@ async function getDashboardSummary(
 
   try{
     if (recentActivity) {
-      await cacheSet(cacheKey, recentActivity, 60);
+      await cacheSet(cacheKey, {
+    totalPatients,
+    upcomingAppointments,
+    todayRevenue,
+    activeDoctors,
+    newPrescriptions,
+    recentActivity,
+  }, 60);
     }
   } catch (e) {}
 

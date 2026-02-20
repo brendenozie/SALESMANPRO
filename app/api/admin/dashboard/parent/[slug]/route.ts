@@ -18,6 +18,7 @@ const getHandler = async (request: Request) => {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const parent = await prisma.parent.findUnique({
       where: { userId: parentUserId },
       include: {
@@ -63,12 +64,6 @@ const getHandler = async (request: Request) => {
       }
     });
 
-  try {
-    if (parent) {
-      await cacheSet(cacheKey, parent, 60);
-    }
-  } catch (e) {}
-
     if (!parent) return formatResponse(false, null, "Parent not found", 404);
 
     const now = new Date();
@@ -113,6 +108,12 @@ const getHandler = async (request: Request) => {
       familyPendingTasks: childrenSummaries.reduce((acc, c) => acc + c.totalPendingTasks, 0),
       attendanceAlerts: childrenSummaries.filter(c => c.lastAttendance === "ABSENT").length
     };
+
+    try {
+      await cacheSet(cacheKey, { stats, children: childrenSummaries }, 60); // Cache for 60 seconds
+    } catch (e) {
+      console.error("Failed to cache parent dashboard data:", e);
+    }
 
     return formatResponse(true, { stats, children: childrenSummaries });
   } catch (error) {

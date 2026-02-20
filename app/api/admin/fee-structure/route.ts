@@ -29,7 +29,7 @@ const getFeeStructuresLogic = async (request: Request) => {
     orderBy: { createdAt: "desc" },
   });
 
-    try {
+  try {
     if (feeStructures) {
       await cacheSet(`admin:fee-structure:${companyId || 'global'}:all`, feeStructures, 60);
     }

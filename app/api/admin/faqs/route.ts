@@ -29,6 +29,7 @@ async function getFaqs(request: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const faqs = await prisma.fAQ.findMany({
     where: { companyId },
     orderBy: {
@@ -38,7 +39,7 @@ async function getFaqs(request: Request) {
 
   try {
     if (faqs) {
-      await cacheSet(cacheKey, faqs, 60);
+      await cacheSet(cacheKey, { faqs }, 60);
     }
   } catch (e) {}
 
@@ -52,8 +53,6 @@ async function getFaqs(request: Request) {
 // =======================================================================
 async function createFaq(request: Request) {
   
-
-
   const body = await request.json();
   const { question, answer, companyId } = body;
 

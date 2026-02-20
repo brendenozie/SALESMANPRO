@@ -28,15 +28,10 @@ export const GET = withApiHandler(
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const totalPosts = await prisma.blog.count({
         where: { authorId: userId, companyId: companyId },
       });
-
-  try {
-    if (totalPosts) {
-      await cacheSet(cacheKey, totalPosts, 60);
-    }
-  } catch (e) {}
 
       // 2. Total Categories: All product categories for the company
       const totalCategories = await prisma.productCategory.count({
@@ -113,6 +108,12 @@ export const GET = withApiHandler(
             engagementMetrics
         }
       };
+
+      try {
+        await cacheSet(cacheKey, responseData, 60);
+      } catch (e) {
+        console.error("Failed to cache blog dashboard data:", e);
+      }
 
       return formatResponse(true, responseData);
     } catch (error) {

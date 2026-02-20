@@ -34,7 +34,6 @@ async function handlePost(request: Request) {
       }
     });
 
-    
     try { await cacheDel(`admin:company-locations:${companyId || 'global'}:*`); } catch (e) {}
     return NextResponse.json(newRecord, { status: 201 });
   } catch (error) {
@@ -66,12 +65,13 @@ async function handleGet(request: Request) {
 
   // OPTIMIZATION: Parallelize data fetch and count
   
-    const cacheKey = `admin:company-locations:${companyId || 'global'}:all`;
+  const cacheKey = `admin:company-locations:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const [data, totalItems] = await Promise.all([
     prisma.companyLocation.findMany({
       where,
@@ -93,7 +93,15 @@ async function handleGet(request: Request) {
 
   try {
     if (data) {
-      await cacheSet(cacheKey, data, 60);
+      await cacheSet(cacheKey, {
+        data,
+        pagination: {
+          totalItems,
+          totalPages: Math.ceil(totalItems / limit),
+          currentPage: page,
+          itemsPerPage: limit,
+        },
+      }, 60);
     }
   } catch (e) {}
 

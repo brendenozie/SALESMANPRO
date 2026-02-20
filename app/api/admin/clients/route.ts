@@ -6,7 +6,8 @@ import { formatResponse } from "@/lib/formatResponse";
 
 // GET /api/admin/clients
 async function listClients(request: Request, context: { user?: any }) {
-  const companyId = context.user?.companyId; // Securely get from auth context
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId") || context.user?.companyId; // Securely get from auth context
   if (!companyId) return formatResponse(false, null, "Unauthorized", 401);
 
   const cacheKey = `admin:clients:${companyId}`;
@@ -71,9 +72,9 @@ async function listClients(request: Request, context: { user?: any }) {
 
 // POST /api/admin/clients
 async function createClient(request: Request, context: { user?: any }) {
-  const companyId = context.user?.companyId;
+  // const companyId = context.user?.companyId;
   const body = await request.json();
-  const { name, email, phoneNumber } = body;
+  const { name, email, phoneNumber, companyId } = body;
 
   if (!email || !companyId) {
     return formatResponse(false, null, "Email and Company context required", 400);

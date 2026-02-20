@@ -26,6 +26,7 @@ export const GET = withApiHandler(
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const [
         totalVideos,
         totalArticles,
@@ -68,12 +69,6 @@ export const GET = withApiHandler(
         })
       ]);
 
-  try {
-    if (totalVideos) {
-      await cacheSet(cacheKey, totalVideos, 60);
-    }
-  } catch (e) {}
-
       const revenueThisMonth = revenueData._sum.amount || 0;
 
       // --- FINAL RESPONSE ---
@@ -93,6 +88,12 @@ export const GET = withApiHandler(
         })),
       };
 
+      try {
+        await cacheSet(cacheKey, responseData, 60); // Cache for 60 seconds
+      } catch (e) {
+        console.error("Failed to cache media dashboard data:", e);
+      }
+      
       return formatResponse(true, responseData);
     } catch (error) {
       console.error("Error fetching media dashboard data:", error);

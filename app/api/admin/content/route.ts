@@ -63,7 +63,14 @@ export const GET = withApiHandler(async (request: Request) => {
 
   try {
     if (content) {
-      await cacheSet(cacheKey, content, 60);
+      await cacheSet(cacheKey, {
+        content,
+        pagination: {
+          totalItems,
+          totalPages: Math.ceil(totalItems / limit),
+          currentPage: page,
+        }
+      }, 60);
     }
   } catch (e) {}
 

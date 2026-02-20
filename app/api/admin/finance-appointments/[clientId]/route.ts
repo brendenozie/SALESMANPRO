@@ -25,20 +25,21 @@ async function handleGetAppointment(request: Request, context: Context) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const appointment = await prisma.financeAppointment.findUnique({
     where: { id: String(id) },
     include: { client: { include: { user: true } }, expert: true },
   });
+
+  if (!appointment) {
+    return formatResponse(false, null, 'Appointment not found', 404);
+  }
 
   try {
     if (appointment) {
       await cacheSet(cacheKey, appointment, 60);
     }
   } catch (e) {}
-
-  if (!appointment) {
-    return formatResponse(false, null, 'Appointment not found', 404);
-  }
 
   return formatResponse(true, appointment, null, 200);
 }
@@ -92,6 +93,7 @@ async function handleDeleteAppointment(request: Request, context: Context) {
   try {
     await cacheDel(cacheKey);
   } catch (e) {}
+  
   return formatResponse(true, null, 'Appointment deleted successfully', 204);
 }
 

@@ -38,15 +38,15 @@ export const GET = withApiHandler(async (_req, { params }) => {
     select: CONTENT_SELECT,
   });
 
+  if (!content) {
+    return formatResponse(false, null, 'Content not found', 404);
+  }
+
   try {
     if (content) {
       await cacheSet(cacheKey, content, 60);
     }
   } catch (e) {}
-
-  if (!content) {
-    return formatResponse(false, null, 'Content not found', 404);
-  }
 
   return formatResponse(true, content);
 });

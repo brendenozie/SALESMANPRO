@@ -25,10 +25,6 @@ const getProgramsLogic = async (request: Request, context: RouteContext) => {
         return formatResponse(false, null, 'companyId query parameter is required.', 400);
     }
 
-    if (!companyId) {
-        return formatResponse(false, null, 'The "id" query parameter (company ID) is required.', 400);
-    }
-
     // 1. Find the company ID
     
     const cacheKey = `admin:fitness-programs:${companyId || 'global'}:all`;
@@ -37,6 +33,7 @@ const getProgramsLogic = async (request: Request, context: RouteContext) => {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const company = await prisma.company.findUnique({
         where: { id: companyId },
         select: { id: true },

@@ -62,17 +62,16 @@ async function getQuestion(request: Request, { params }: Params) {
     },
   });
 
-  try {
-    if (question) {
-      await cacheSet(cacheKey, question, 60);
-    }
-  } catch (e) {}
-
   if (!question) {
     return formatResponse(false, null, "Exam question not found", 404);
   }
 
   const responseData = transformQuestionResponse(question);
+
+  try {
+    await cacheSet(cacheKey, { data: responseData }, 60);
+  } catch (e) {}
+
   return formatResponse(true, { data: responseData }, null, 200);
 }
 

@@ -28,13 +28,13 @@ export const GET = withApiHandler(async (request, context) => {
     return formatResponse(false, null, "Unauthorized: No company context found", 401);
   }
 
-  
-    const cacheKey = `admin:classrooms:${companyId || 'global'}:all`;
+  const cacheKey = `admin:classrooms:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const classrooms = await prisma.classroom.findMany({
     where: { companyId },
     select: CLASSROOM_LIST_SELECT,
@@ -53,10 +53,10 @@ export const GET = withApiHandler(async (request, context) => {
 // POST /api/classrooms
 export const POST = withApiHandler(async (request, context) => {
   const body = await request.json();
-  const { name, description, academicLevelId, capacity } = body;
+  const { name, description, academicLevelId, capacity, companyId } = body;
   
   // OPTIMIZATION: Securely inject companyId from auth context
-  const companyId = context.user?.companyId;
+  // const companyId = context.user?.companyId;
 
   if (!name || !companyId) {
     return formatResponse(false, null, "Classroom name is required", 400);

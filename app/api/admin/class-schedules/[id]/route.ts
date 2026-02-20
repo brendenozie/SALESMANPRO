@@ -27,7 +27,7 @@ const getClassSchedule = async (_req: Request, context: { params: { id: string, 
   const { id, companyId } = context.params;
   // const companyId = context.user?.companyId;
 
-  const cacheKey = `admin:classSchedule:${id}`;
+  const cacheKey = `admin:classSchedule:${companyId}`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -70,7 +70,7 @@ const updateClassSchedule = async (req: Request, context: { params: { id: string
   delete updateData.companyId;
   delete updateData.id;
 
-  const cacheKey = `admin:classSchedule:${id}`;
+  const cacheKey = `admin:classSchedule:${companyId}:*`; // Invalidate all schedules for this company on update
     
   try {
     // OPTIMIZATION: Atomic update with companyId scoping
@@ -104,7 +104,7 @@ const deleteClassSchedule = async (_req: Request, context: { params: { id: strin
     await prisma.classSchedule.delete({ where: { id, companyId } });
     // Invalidate cache for this specific schedule
     try {
-      await cacheDel(`admin:classSchedule:${id}`);
+      await cacheDel(`admin:classSchedule:${companyId}:*`);
     } catch (e) {}
     return formatResponse(true, { id }, "Deleted successfully", 200);
   } catch (error) {

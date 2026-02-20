@@ -157,7 +157,7 @@ export default function DepartmentsPage({ initialDepartments, possibleHeads, com
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newDeptData),
+        body: JSON.stringify({...newDeptData, companyId}), // Ensure companyId is included
       });
 
       if (res.ok) {

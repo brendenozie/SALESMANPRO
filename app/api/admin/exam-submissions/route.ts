@@ -138,7 +138,7 @@ async function getExamSubmissions(request: Request) {
 
   try {
     if (submissions) {
-      await cacheSet(cacheKey, responseData, 60);
+      await cacheSet(cacheKey, { data: responseData }, 60);
     }
   } catch (e) {}
 

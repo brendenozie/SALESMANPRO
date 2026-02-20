@@ -17,29 +17,29 @@ const CLASSROOM_SELECT = {
 // GET /api/classrooms/[id]
 export const GET = withApiHandler(async (req, context: { params: { id: string }, user?: any }) => {
   const { id } = context.params;
-  const companyId = context.user?.companyId;
-
+  const searchParams = new URL(req.url).searchParams;
+  const companyId = searchParams.get("companyId") || context.user?.companyId; // Allow companyId override for flexibility, default to user's company
   
-    const cacheKey = `admin:classrooms:${companyId || 'global'}:all`;
+  const cacheKey = `admin:classrooms:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const classroom = await prisma.classroom.findUnique({
     where: { id, companyId }, // Security: Scoped to user company
     select: CLASSROOM_SELECT
   });
 
-  try {
-    if (classroom) {
-      await cacheSet(cacheKey, classroom, 60);
-    }
-  } catch (e) {}
-
   if (!classroom) {
     return formatResponse(false, null, "Classroom not found or unauthorized", 404);
   }
+
+  //invalidate cache for classrooms list since we fetched a single classroom (could be used in list)
+  try {
+    await cacheDel(`admin:classrooms:${companyId || 'global'}:*`);
+  } catch (e) {}  
 
   return formatResponse(true, classroom, "Fetched successfully", 200);
 });
@@ -47,7 +47,9 @@ export const GET = withApiHandler(async (req, context: { params: { id: string },
 // PATCH /api/classrooms/[id]
 export const PATCH = withApiHandler(async (request, context: { params: { id: string }, user?: any }) => {
   const { id } = context.params;
-  const companyId = context.user?.companyId;
+   const searchParams = new URL(request.url).searchParams;
+  const companyId = searchParams.get("companyId") || context.user?.companyId; // Allow companyId override for flexibility, default to user's company
+  
   const body = await request.json();
   const { name, description, academicLevelId, capacity } = body;
 
@@ -77,7 +79,8 @@ export const PATCH = withApiHandler(async (request, context: { params: { id: str
 // DELETE /api/classrooms/[id]
 export const DELETE = withApiHandler(async (request, context: { params: { id: string }, user?: any }) => {
   const { id } = context.params;
-  const companyId = context.user?.companyId;
+  const searchParams = new URL(request.url).searchParams;
+  const companyId = searchParams.get("companyId") || context.user?.companyId;
 
   try {
     const deleted = await prisma.classroom.delete({ 
@@ -98,41 +101,3 @@ export const DELETE = withApiHandler(async (request, context: { params: { id: st
   }
 });
 
-
-//   if (!classroom) {
-//     return formatResponse(false, null, "Classroom not found", 404);
-//   }
-
-//   return formatResponse(true, classroom, "Fetched successfully", 200);
-// });
-
-// // PATCH /api/classrooms/[id]
-// export const PATCH = withApiHandler(async (request, context: HandlerContext) => {
-//   const { id } = context.params;
-//   const body = await request.json();
-//   const { name, description, academicLevelId, capacity } = body;
-
-//   const updatedClassroom = await prisma.classroom.update({
-//     where: { id },
-//     data: { 
-//       name, 
-//       description, 
-//       academicLevelId ,
-//       capacity
-//     },
-//   });
-
-//   return formatResponse(true, updatedClassroom, "Classroom updated successfully", 200);
-// });
-
-// // DELETE /api/classrooms/[id]
-// export const DELETE = withApiHandler(async (request, context: HandlerContext) => {
-//   const { id } = context.params;
-
-//   try {
-//     const deleted = await prisma.classroom.delete({ where: { id } });
-//     return formatResponse(true, { deletedId: deleted.id }, "Classroom deleted successfully", 200);
-//   } catch (error) {
-//     return formatResponse(false, null, "Failed to delete classroom", 500);
-//   }
-// });

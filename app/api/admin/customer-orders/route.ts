@@ -73,12 +73,6 @@ export const GET = withApiHandler(async (request) => {
     }),
   ]);
 
-  try {
-    if (totalCount) {
-      await cacheSet(cacheKey, { totalCount, orders }, 60);
-    }
-  } catch (e) {}
-
   const formatted = orders.map((order) => ({
     ...order,
     createdAt: order.createdAt?.toISOString(),
@@ -90,6 +84,18 @@ export const GET = withApiHandler(async (request) => {
       },
     })),
   }));
+
+  try {
+    await cacheSet(cacheKey, {
+      data: formatted,
+      meta: {
+        page,
+        limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+      },
+    }, 60);
+  } catch (e) {}
 
   return formatResponse(true, {
     data: formatted,

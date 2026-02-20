@@ -48,6 +48,7 @@ export const GET = withApiHandler(async (req: Request) => {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const materials = await prisma.courseMaterial.findMany({
     where: {
       ...(courseId && { courseId }),
@@ -76,12 +77,6 @@ export const GET = withApiHandler(async (req: Request) => {
     },
   });
 
-  try {
-    if (materials) {
-      await cacheSet(cacheKey, materials, 60);
-    }
-  } catch (e) {}
-
   const response = materials.map((m) => ({
     id: m.id,
     courseId: m.courseId,
@@ -97,6 +92,10 @@ export const GET = withApiHandler(async (req: Request) => {
     createdAt: m.createdAt?.toISOString(),
     updatedAt: m.updatedAt?.toISOString(),
   }));
+
+  try {
+      await cacheSet(cacheKey, response, 60);
+  } catch (e) {}
 
   return formatResponse(true, response, null, 200);
 });

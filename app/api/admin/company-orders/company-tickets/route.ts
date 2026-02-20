@@ -91,6 +91,7 @@ export const GET = withApiHandler(async (request, { params }) => {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const [tickets, totalItems] = await prisma.$transaction([
     prisma.marketplaceListings.findMany({
       where,
@@ -107,12 +108,6 @@ export const GET = withApiHandler(async (request, { params }) => {
     prisma.marketplaceListings.count({ where }),
   ]);
 
-  try {
-    if (tickets) {
-      await cacheSet(cacheKey, tickets, 60);
-    }
-  } catch (e) {}
-
   const formatted = tickets.map(t => {
     const sold = Math.floor(t.quantity * 0.6); // placeholder
     return {
@@ -125,6 +120,10 @@ export const GET = withApiHandler(async (request, { params }) => {
       remaining: t.quantity - sold,
     };
   });
+
+  try {
+    await cacheSet(cacheKey, formatted, 60);
+  } catch (e) {}
 
   return formatResponse(true, {
     tickets: formatted,

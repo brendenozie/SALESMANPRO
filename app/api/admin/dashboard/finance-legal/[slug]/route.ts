@@ -26,6 +26,7 @@ export const GET = withApiHandler(
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const [
         totalClients,
         activeContracts,
@@ -77,12 +78,6 @@ export const GET = withApiHandler(
         })
       ]);
 
-  try {
-    if (totalClients) {
-      await cacheSet(cacheKey, totalClients, 60);
-    }
-  } catch (e) {}
-
       const revenueThisMonth = revenueData._sum.amount || 0;
 
       const responseData = {
@@ -105,6 +100,12 @@ export const GET = withApiHandler(
             revenueGrowth: [15000, 22000, 18000, 29000, revenueThisMonth]
         }
       };
+
+      try {
+        await cacheSet(cacheKey, responseData, 60);
+      } catch (e) {
+        console.error("Failed to cache finance/legal dashboard data:", e);
+      }
 
       return formatResponse(true, responseData);
     } catch (error) {

@@ -39,28 +39,27 @@ export const GET = withApiHandler(async (request: Request, context) => {
     ),
   };
 
-  
-    const cacheKey = `admin:class-schedules:${companyId || 'global'}:all`;
+  const cacheKey = `admin:class-schedules:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const schedules = await prisma.classSchedule.findMany({
     where: filters,
     select: SCHEDULE_SELECT,
     orderBy: { startTime: "asc" },
   });
 
-  try {
-    if (schedules) {
-      await cacheSet(cacheKey, schedules, 60);
-    }
-  } catch (e) {}
-
   // Sort by dayOfWeek using the index
   const sorted = schedules.sort((a, b) => DAY_ORDER[a.dayOfWeek] - DAY_ORDER[b.dayOfWeek]);
-
+  
+  // Cache the result for 1 minute
+  try {
+    await cacheSet(cacheKey, sorted, 60);
+  } catch (e) {}
+  
   return formatResponse(true, sorted, "Schedules fetched", 200);
 }, { requireAuth: true });
 

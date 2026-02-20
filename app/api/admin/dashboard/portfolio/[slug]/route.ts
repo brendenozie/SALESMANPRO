@@ -36,6 +36,7 @@ export const GET = withApiHandler(
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const totalProjects = await prisma.project.count({
         where: {
           members: {
@@ -45,12 +46,6 @@ export const GET = withApiHandler(
           },
         },
       });
-
-  try {
-    if (totalProjects) {
-      await cacheSet(cacheKey, totalProjects, 60);
-    }
-  } catch (e) {}
 
       // 2. Core Skills: Count expertise fields from the Expert profile
       const expertProfile = await prisma.expert.findUnique({
@@ -138,6 +133,12 @@ export const GET = withApiHandler(
             inquiriesTrend
         }
       };
+
+      try {
+        await cacheSet(cacheKey, responseData, 60); // Cache for 60 seconds
+      } catch (e) {
+        console.error("Failed to cache portfolio dashboard data:", e);
+      }
 
       return formatResponse(true, responseData);
     } catch (error) {

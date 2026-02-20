@@ -49,6 +49,8 @@ const baseSelect = {
 export const GET = withApiHandler(async (_request, context) => {
   const { id } = context.params;
   const { user } = context;
+  const searchParams = new URL(_request.url).searchParams;
+  const companyId = searchParams.get("companyId");
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -57,7 +59,7 @@ export const GET = withApiHandler(async (_request, context) => {
   const appointment = await prisma.appointment.findFirst({
     where:
       user.role === "ADMIN"
-        ? { id }
+        ? { id, companyId: companyId || undefined }
         : { id, doctorId: user.id },
     select: baseSelect,
   });
@@ -81,12 +83,12 @@ export const PUT = withApiHandler(async (request, context) => {
   }
 
   const body = await request.json();
-  const { userId, doctorId, service, date, time, status } = body;
+  const { userId, doctorId, service, date, time, status, companyId } = body;
 
   const existing = await prisma.appointment.findFirst({
     where:
       user.role === "ADMIN"
-        ? { id }
+        ? { id, companyId: companyId || undefined }
         : { id, doctorId: user.id },
     select: { date: true },
   });
@@ -130,13 +132,15 @@ export const PUT = withApiHandler(async (request, context) => {
 export const DELETE = withApiHandler(async (_request, context) => {
   const { id } = context.params;
   const { user } = context;
+  const searchParams = new URL(_request.url).searchParams;
+  const companyId = searchParams.get("companyId");
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const existing = await prisma.appointment.findFirst({
-    where: { id: id, ...(user.role !== "ADMIN" ? { doctorId: user.id } : {}) },
+    where: { id: id, ...(user.role !== "ADMIN" ? { doctorId: user.id } : {}), companyId: companyId || undefined }, 
     select: { companyId: true }
   });
 
@@ -145,7 +149,7 @@ export const DELETE = withApiHandler(async (_request, context) => {
   }
 
   await prisma.appointment.deleteMany({
-    where: { id: id, ...(user.role !== "ADMIN" ? { doctorId: user.id } : {}) }
+    where: { id: id, ...(user.role !== "ADMIN" ? { doctorId: user.id } : {}), companyId: companyId || undefined }
   });
 
   try { await cacheDel(`admin:appointments:${existing?.companyId || 'global'}:*`); } catch (e) {}

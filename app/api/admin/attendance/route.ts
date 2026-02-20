@@ -14,15 +14,16 @@ export async function GET(req: Request) {
 
   // OPTIMIZATION: Run queries in parallel to reduce waterfall latency
   
-    const cacheKey = `admin:attendance:${companyId || 'global'}:all`;
+  const cacheKey = `admin:attendance:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const [logs, totalUsers] = await Promise.all([
     prisma.staffAttendanceRecord.findMany({
-      where: { date: today },//companyId, 
+      where: { date: today, companyId }, 
       select: {
         id: true,
         checkInTime: true,
@@ -34,13 +35,7 @@ export async function GET(req: Request) {
     }),
     prisma.user.count({ where: { companyId, role: "STAFF" } }), // Ensure we only count relevant users
   ]);
-
-  try {
-    if (logs) {
-      await cacheSet(cacheKey, logs, 60);
-    }
-  } catch (e) {}
-
+  
   // OPTIMIZATION: Calculate stats in a single pass instead of multiple .filter() calls
   let presentCount = 0;
   let lateCount = 0;
@@ -56,6 +51,11 @@ export async function GET(req: Request) {
     late: lateCount,
     absent: Math.max(0, totalUsers - presentCount),
   };
+
+  // Cache the result for future requests (30 seconds)
+  try {
+    await cacheSet(cacheKey, { logs, stats }, 30); // Cache for 30 seconds
+  } catch (e) {}
 
   // Add HTTP Caching for dashboard data (30 seconds)
   const response = NextResponse.json({ logs, stats });

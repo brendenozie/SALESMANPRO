@@ -33,7 +33,6 @@ async function handleGet(req: Request, context: HandlerContext) {
     return NextResponse.json({ message: "Invalid sortOrder parameter" }, { status: 400 });
   }
 
-  
   const where: any = {
     company: { slug: adminSlug },
   };
@@ -50,14 +49,13 @@ async function handleGet(req: Request, context: HandlerContext) {
     ];
   }
 
-  
-  
-    const cacheKey = `admin:company-events:${adminSlug || 'global'}:all`;
+  const cacheKey = `admin:company-events:${adminSlug || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const [events, totalItems] = await Promise.all([
     prisma.event.findMany({
       where,
@@ -76,17 +74,21 @@ async function handleGet(req: Request, context: HandlerContext) {
     prisma.event.count({ where }),
   ]);
 
-  try {
-    if (events) {
-      await cacheSet(cacheKey, events, 60);
-    }
-  } catch (e) {}
-
   const formattedEvents = events.map(event => ({
     ...event,
     date: event.startDateTime.toISOString(),
     ticketsSold: null, // ready for aggregation later
   }));
+
+  
+  try {
+      await cacheSet(cacheKey, {
+      events: formattedEvents,
+      totalItems,
+      totalPages: Math.ceil(totalItems / limit),
+      currentPage: page,
+    }, 60);
+  } catch (e) {}
 
   return NextResponse.json(
     {
@@ -137,7 +139,6 @@ async function handlePost(req: Request, context: HandlerContext) {
     return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
   }
 
-  
   const [organizer, company] = await Promise.all([
     prisma.user.findUnique({
       where: { id: organizerId },
@@ -197,6 +198,10 @@ async function handlePost(req: Request, context: HandlerContext) {
       eventStatus: true,
     },
   });
+
+  const cacheKey = `admin:company-events:${adminSlug || 'global'}:*`;
+  
+  try {  await cacheDel(cacheKey);  } catch (e) {}
 
   return NextResponse.json(
     { message: "Event created successfully", event },

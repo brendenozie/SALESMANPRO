@@ -62,18 +62,20 @@ export const GET = withApiHandler(
       },
     });
 
-  try {
-    if (submissions) {
-      await cacheSet(cacheKey, submissions, 60);
-    }
-  } catch (e) {}
-
     const serialized = submissions.map((s) => ({
       ...s,
       submittedAt: s.submittedAt?.toISOString(),
       gradedAt: s.gradedAt?.toISOString() ?? null,
       reviewedAt: s.reviewedAt?.toISOString() ?? null,
     }));
+
+    
+
+  try {
+    
+      await cacheSet(cacheKey, serialized, 60);
+    
+  } catch (e) {}
 
     return formatResponse(true, serialized, null, 200);
   }

@@ -14,13 +14,13 @@ export const GET = withApiHandler(async (request) => {
   }
 
   // OPTIMIZATION: Selective fetching + Lean query
-  
-    const cacheKey = `admin:academic-levels:${companyId || 'global'}:all`;
+  const cacheKey = `admin:academic-levels:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const academicLevels = await prisma.academicLevel.findMany({
     where: { companyId },
     select: {

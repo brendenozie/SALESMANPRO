@@ -63,18 +63,17 @@ async function getExperts(request: Request) {
     return formatResponse(false, null, 'Missing companyId query parameter.', 400);
   }
 
-  
-    const cacheKey = `admin:experts:${companyId || 'global'}:all`;
+  const cacheKey = `admin:experts:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const company = await prisma.company.findUnique({
     where: { id: companyId },
     select: { id: true },
   });
-
 
   if (!company) {
     return formatResponse(false, null, 'Company not found.', 404);
@@ -96,7 +95,6 @@ async function getExperts(request: Request) {
 
   const formattedExperts = experts.map(formatExpertData);
 
-  
   try {
     if (company) {
       await cacheSet(cacheKey, formattedExperts, 60);

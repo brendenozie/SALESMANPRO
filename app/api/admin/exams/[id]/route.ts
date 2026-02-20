@@ -83,6 +83,7 @@ async function getExam(request: Request, { params }: Params) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const exam = await prisma.exam.findUnique({
     where: { id },
     include: {
@@ -114,7 +115,7 @@ async function getExam(request: Request, { params }: Params) {
   
   try {
     if (exam) {
-      await cacheSet(cacheKey, responseData, 60);
+      await cacheSet(cacheKey, { data: responseData }, 60);
     }
   } catch (e) {}
 

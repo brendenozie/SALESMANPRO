@@ -58,7 +58,7 @@ const mapCourseResponse = (course: any) => ({
 
 export const GET = withApiHandler(async (_req, { params }) => {
   
-    const cacheKey = `admin:courses:${ params.id || 'global'}:all`;
+  const cacheKey = `admin:courses:${ params.id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -70,13 +70,12 @@ export const GET = withApiHandler(async (_req, { params }) => {
     select: COURSE_SELECT,
   });
 
+  if (!course) return formatResponse(false, null, "Course not found", 404);
+
   try {
-    if (course) {
-      await cacheSet(cacheKey, course, 60);
-    }
+      await cacheSet(cacheKey, mapCourseResponse(course), 60);
   } catch (e) {}
 
-  if (!course) return formatResponse(false, null, "Course not found", 404);
   return formatResponse(true, mapCourseResponse(course), null, 200);
 });
 
@@ -103,10 +102,6 @@ export const PATCH = withApiHandler(async (req, { params }) => {
         });
       }
 
-      try {
-        await cacheDel(`admin:courses:${id || 'global'}:*`);
-      } catch (e) {}
-
       // 2. Update Main Course Data & Return Final Shape in one go
       return await tx.course.update({
         where: { id },
@@ -114,6 +109,10 @@ export const PATCH = withApiHandler(async (req, { params }) => {
         select: COURSE_SELECT,
       });
     });
+
+      try {
+        await cacheDel(`admin:courses:${id || 'global'}:*`);
+      } catch (e) {}
 
     return formatResponse(true, mapCourseResponse(updatedCourse), null, 200);
   } catch (error) {

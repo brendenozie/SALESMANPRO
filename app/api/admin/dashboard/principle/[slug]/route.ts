@@ -36,6 +36,7 @@ export const GET = withApiHandler(async (request) => {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const [studentCount, teacherCount, classCount, upcomingEvents] = await Promise.all([
     prisma.student.count({ where: { companyId } }),
     prisma.educator.count({ where: { companyId } }),
@@ -44,12 +45,6 @@ export const GET = withApiHandler(async (request) => {
       where: { companyId, startDateTime: { gte: now }, eventStatus: "SCHEDULED" } 
     }),
   ]);
-
-  try {
-    if (studentCount) {
-      await cacheSet(cacheKey, studentCount, 60);
-    }
-  } catch (e) {}
 
   // --- 2. Spotlight: Student & Teacher of the Week ---
   const [topWeeklyGrade, topWeeklyReview] = await Promise.all([
@@ -121,6 +116,32 @@ export const GET = withApiHandler(async (request) => {
       keyExam: impactMap[id].keyExam || "Unit Assessment"
     };
   }).sort((a, b) => Math.abs(b.change) - Math.abs(a.change)).slice(0, 4);
+
+  
+  try {
+    if (studentCount) {
+      await cacheSet(cacheKey, {
+    principalStats: [
+      { title: "Total Students", value: studentCount.toLocaleString(), description: "Active Enrollment", color: "text-blue-600" },
+      { title: "Total Teachers", value: teacherCount.toLocaleString(), description: "Staff Reliability: 94%", color: "text-emerald-600" },
+      { title: "Total Classes", value: classCount.toLocaleString(), description: "Active Sessions", color: "text-violet-600" },
+      { title: "Upcoming Events", value: upcomingEvents.toString(), description: "Scheduled this week", color: "text-amber-600" },
+    ],
+    spotlight: {
+      student: topWeeklyGrade ? `${topWeeklyGrade.student.firstName} ${topWeeklyGrade.student.lastName}` : "TBD",
+      teacher: topWeeklyReview?.employee.name || "TBD"
+    },
+    trendData: {
+      series: [
+        { name: "Academic Excellence (Avg %)", data: trendSeries.academic },
+        { name: "Teacher Effectiveness (Weighted %)", data: trendSeries.teacher }
+      ],
+      categories: last6Months.map(m => m.name)
+    },
+    impactReport
+  }, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, {
     principalStats: [

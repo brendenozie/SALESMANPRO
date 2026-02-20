@@ -25,6 +25,7 @@ export const GET = withApiHandler(
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const [
         totalVehicles,
         vehiclesSold,
@@ -94,12 +95,6 @@ export const GET = withApiHandler(
         })
       ]);
 
-  try {
-    if (totalVehicles) {
-      await cacheSet(cacheKey, totalVehicles, 60);
-    }
-  } catch (e) {}
-
       const revenueThisMonth = revenueData._sum.totalFinalPrice || 0;
       
       const responseData = {
@@ -127,6 +122,10 @@ export const GET = withApiHandler(
             salesTrend: [12, 18, 15, 22, vehiclesSold]
         }
       };
+
+      try {
+          await cacheSet(cacheKey, responseData, 60);
+      } catch (e) {}
 
       return formatResponse(true, responseData);
     } catch (error) {

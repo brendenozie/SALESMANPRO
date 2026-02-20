@@ -16,20 +16,15 @@ export const GET = withApiHandler(
       
     const cacheKey = `admin:healthcare:${companyId || 'global'}:all`;
 
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
+    try {
+      const cached = await cacheGet(cacheKey);
+      if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+    } catch (e) {}
+
   const company = await prisma.company.findUnique({
         where: { id: companyId },
         select: { id: true },
       });
-
-  try {
-    if (company) {
-      await cacheSet(cacheKey, company, 60);
-    }
-  } catch (e) {}
 
       if (!company) {
         return formatResponse(false, { message: "Company not found" });
@@ -117,6 +112,12 @@ export const GET = withApiHandler(
         criticalAlerts,
         recentActivities
       };
+
+      try {
+        await cacheSet(cacheKey, responseData, 60); // Cache for 60 seconds
+      } catch (e) {
+        console.error("Failed to cache healthcare dashboard data:", e);
+      }
 
       return formatResponse(true, responseData);
     } catch (error) {

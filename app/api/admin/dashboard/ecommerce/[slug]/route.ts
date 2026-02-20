@@ -24,16 +24,11 @@ export const GET = withApiHandler(
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const company = await prisma.company.findUnique({
         where: { id : companyId },
         select: { id: true, currency: true, name: true },
       });
-
-  try {
-    if (company) {
-      await cacheSet(cacheKey, company, 60);
-    }
-  } catch (e) {}
 
       if (!company) {
         return formatResponse(false, { message: "Company not found" });
@@ -256,6 +251,11 @@ export const GET = withApiHandler(
         activePromotions,
         salesLast7Days: salesLast7DaysArr,
       };
+
+      try {        await cacheSet(cacheKey, response, 60); // Cache for 60 seconds
+      } catch (e) {
+        console.error("Failed to cache ecommerce dashboard data:", e);
+      }
 
       return formatResponse(true, response);
     } catch (error) {

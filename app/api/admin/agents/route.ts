@@ -17,14 +17,14 @@ export const GET = withApiHandler(async (request, context) => {
   if (!companyId) {
     return formatResponse(false, null, "Company ID is required", 400);
   }
-
   
-    const cacheKey = `admin:agents:${companyId || 'global'}:all`;
+  const cacheKey = `admin:agents:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const agents = await prisma.salesAgent.findMany({
     where: { companyId },
     select: {
@@ -51,12 +51,6 @@ export const GET = withApiHandler(async (request, context) => {
       },
     },
   });
-
-  try {
-    if (agents) {
-      await cacheSet(cacheKey, agents, 60);
-    }
-  } catch (e) {}
 
   const totals = await prisma.salesAgent.findMany({
     where: { companyId },
@@ -102,6 +96,10 @@ export const GET = withApiHandler(async (request, context) => {
         : null,
     };
   });
+
+    try {
+      await cacheSet(cacheKey, formatted, 60); // Cache for 60 seconds
+    } catch (e) {}
 
   return formatResponse(true, formatted, "Fetched agents successfully", 200);
 });
@@ -159,6 +157,7 @@ export const POST = withAuthAndRateLimit(async (request) => {
     });
   });
 
+  try { await cacheDel(`admin:agents:${companyId || 'global'}:*`); } catch (e) {}
   return formatResponse(true, agent, "Agent created successfully", 201);
 });
 

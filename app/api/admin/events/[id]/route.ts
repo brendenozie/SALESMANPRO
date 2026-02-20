@@ -77,17 +77,18 @@ async function getEvent(request: Request, { params }: Params) {
     },
   });
 
-  try {
-    if (event) {
-      await cacheSet(cacheKey, event, 60);
-    }
-  } catch (e) {}
-
   if (!event) {
     return formatResponse(false, null, "Event not found", 404);
   }
 
   const responseData = transformEventResponse(event);
+
+  try {
+    if (responseData) {
+      await cacheSet(cacheKey, { data: responseData }, 60);
+    }
+  } catch (e) {}
+  
   return formatResponse(true, { data: responseData }, null, 200);
 }
 

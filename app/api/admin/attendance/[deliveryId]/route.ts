@@ -8,13 +8,14 @@ import { DeliveryStatus, Prisma } from "@prisma/client";
 
 export const PUT = withApiHandler(async (request, context) => {
   const { deliveryId } = context.params;
-  const userCompanyId = context.user?.companyId;
+  // const userCompanyId = context.user?.companyId;
   const body = await request.json();
 
-  if (!userCompanyId) return formatResponse(false, null, "Unauthorized", 401);
+  // if (!userCompanyId) return formatResponse(false, null, "Unauthorized", 401);
 
   // OPTIMIZATION: Construct update payload leanly
   const data: Prisma.DeliveryUpdateInput = {
+    ...(body.companyId && { companyId: body.companyId }),
     ...(body.status && { status: body.status as DeliveryStatus }),
     ...(body.pickupAddress && { pickupAddress: body.pickupAddress }),
     ...(body.deliveryAddress && { deliveryAddress: body.deliveryAddress }),
@@ -32,7 +33,7 @@ export const PUT = withApiHandler(async (request, context) => {
     const updated = await prisma.delivery.update({
       where: { 
         id: deliveryId,
-        companyId: userCompanyId // Security constraint
+        companyId: body.companyId // Security constraint
       },
       data,
       select: {
@@ -60,18 +61,22 @@ export const PUT = withApiHandler(async (request, context) => {
 
 export const DELETE = withApiHandler(async (request, context) => {
   const { deliveryId } = context.params;
-  const userCompanyId = context.user?.companyId;
+  // const userCompanyId = context.user?.companyId;/
+  const searchParams = new URL(request.url).searchParams;
+  const companyId = searchParams.get('companyId');
+
+  if (!companyId) return formatResponse(false, null, "Unauthorized", 401);
 
   try {
     // OPTIMIZATION: Atomic Delete prevents 2x round-trip
     await prisma.delivery.delete({
       where: { 
         id: deliveryId,
-        companyId: userCompanyId 
+        companyId: companyId 
       },
     });
     
-    try { await cacheDel(`admin:attendance:${userCompanyId || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:attendance:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, null, "Delivery deleted successfully.", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -80,62 +85,3 @@ export const DELETE = withApiHandler(async (request, context) => {
     throw error;
   }
 });
-
-
-//   // Security check: ensure the delivery belongs to the user's company
-//   if (!deliveryToUpdate || deliveryToUpdate.companyId !== userCompanyId) {
-//     return formatResponse(false, null, "Delivery not found or access denied.", 404);
-//   }
-  
-//   // Prepare data for the update payload
-//   const dataToUpdate: Prisma.DeliveryUpdateInput = {};
-//   if (body.status) dataToUpdate.status = body.status as DeliveryStatus;
-//   if (body.riderId !== undefined) {
-//     dataToUpdate.rider = body.riderId
-//       ? { connect: { id: body.riderId } }
-//       : { disconnect: true };
-//   }
-//   if (body.pickupAddress) dataToUpdate.pickupAddress = body.pickupAddress;
-//   if (body.deliveryAddress) dataToUpdate.deliveryAddress = body.deliveryAddress;
-//   if (body.packageDescription) dataToUpdate.packageDescription = body.packageDescription;
-//   if (body.weightKg) dataToUpdate.weightKg = parseFloat(body.weightKg);
-//   if (body.deliveryFee) dataToUpdate.deliveryFee = parseFloat(body.deliveryFee);
-//   if (body.scheduledFor) dataToUpdate.scheduledFor = new Date(body.scheduledFor);
-  
-//   const updatedDelivery = await prisma.delivery.update({
-//     where: { id: deliveryId },
-//     data: dataToUpdate,
-//     include: {
-//         rider: { select: { name: true } }
-//     }
-//   });
-
-//   const formattedDelivery = {
-//     ...updatedDelivery,
-//     riderName: updatedDelivery.rider?.name || 'Unassigned',
-//   };
-
-//   return formatResponse(true, formattedDelivery, "Delivery updated successfully.", 200);
-// });
-
-
-// 
-// export const DELETE = withApiHandler(async (request, context) => {
-//   const deliveryId = context.params.deliveryId;
-//   const userCompanyId = context.user?.companyId;
-
-//   const deliveryToDelete = await prisma.delivery.findUnique({
-//     where: { id: deliveryId },
-//   });
-
-//   // Security check
-//   if (!deliveryToDelete || deliveryToDelete.companyId !== userCompanyId) {
-//     return formatResponse(false, null, "Delivery not found or access denied.", 404);
-//   }
-
-//   await prisma.delivery.delete({
-//     where: { id: deliveryId },
-//   });
-
-//   return formatResponse(true, null, "Delivery deleted successfully.", 200);
-// });

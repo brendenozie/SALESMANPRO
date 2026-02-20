@@ -19,14 +19,12 @@ interface Params {
 // =======================================================================
 async function getFaq(req: Request, { params }: Params) {
   
-
   const faqId = params.id;
   if (!faqId) {
     return formatResponse(false, null, "Missing FAQ ID.", 400);
   }
-
   
-    const cacheKey = `admin:faqs:${faqId || 'global'}:all`;
+  const cacheKey = `admin:faqs:${faqId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -55,7 +53,6 @@ async function getFaq(req: Request, { params }: Params) {
 // =======================================================================
 async function updateFaq(req: Request, { params }: Params) {
   
-
   const faqId = params.id;
   if (!faqId) {
     return formatResponse(false, null, "Missing FAQ ID.", 400);
@@ -70,7 +67,6 @@ async function updateFaq(req: Request, { params }: Params) {
       answer,
     },
   });
-
   
     try { await cacheDel(`admin:faqs:${faqId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, updatedFaq, null, 200);
@@ -82,7 +78,6 @@ async function updateFaq(req: Request, { params }: Params) {
 // =======================================================================
 async function deleteFaq(req: Request, { params }: Params) {
   
-
   const faqId = params.id;
   if (!faqId) {
     return formatResponse(false, null, "Missing FAQ ID.", 400);
@@ -92,7 +87,6 @@ async function deleteFaq(req: Request, { params }: Params) {
     where: { id: faqId },
   });
 
-  
     try { await cacheDel(`admin:faqs:${faqId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { message: 'FAQ deleted successfully' }, null, 200);
 }

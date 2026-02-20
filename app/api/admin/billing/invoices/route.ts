@@ -14,6 +14,7 @@ export const GET = withApiHandler(async (req, { user }) => {
   const { searchParams } = new URL(req.url);
 
   const companyId = searchParams.get("companyId");
+
   if (!companyId) {
     return formatResponse(false, "Missing companyId", "error", 400);
   }
@@ -34,12 +35,13 @@ export const GET = withApiHandler(async (req, { user }) => {
 
   // ✅ Run in parallel
   
-    const cacheKey = `admin:invoices:${companyId || 'global'}:all`;
+  const cacheKey = `admin:invoices:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const [totalInvoiceItems, invoices] = await prisma.$transaction([
     prisma.patientInvoices.count({ where: whereClause }),
     prisma.patientInvoices.findMany({
@@ -65,12 +67,6 @@ export const GET = withApiHandler(async (req, { user }) => {
       },
     }),
   ]);
-
-  try {
-    if (totalInvoiceItems) {
-      await cacheSet(cacheKey, totalInvoiceItems, 60);
-    }
-  } catch (e) {}
 
   const invoicesData = invoices.map((inv) => {
     const issued = inv.invoiceDate;
@@ -101,6 +97,16 @@ export const GET = withApiHandler(async (req, { user }) => {
   });
 
   const totalInvoicePages = Math.ceil(totalInvoiceItems / limit);
+
+  // Cache the result for future requests (60 seconds)
+  try {    await cacheSet(cacheKey, {
+      invoicesData,
+      totalInvoiceItems,
+      totalInvoicePages,
+      page,
+      limit,
+    }, 60); // Cache for 60 seconds
+  } catch (e) {}
 
   return formatResponse(
     true,
@@ -159,6 +165,10 @@ export const POST = withApiHandler(async (req, { user }) => {
       },
     });
   });
+
+  try {
+    await cacheDel(`admin:invoices:${companyId || 'global'}:all`);
+  } catch (e) {}
 
   return formatResponse(true, newInvoice, "Invoice created successfully", 201);
 });

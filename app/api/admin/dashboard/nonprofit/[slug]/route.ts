@@ -37,20 +37,15 @@ export const GET = withApiHandler(
       
     const cacheKey = `admin:nonprofit:${companyId || 'global'}:all`;
 
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
+      try {
+        const cached = await cacheGet(cacheKey);
+        if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+      } catch (e) {}
+
   const activeCampaigns = await prisma.campaign.count({
         where: { status: 'ACTIVE' },
         // Note: Campaign model isn't directly linked to Company in schema, so this is a global count.
       });
-
-  try {
-    if (activeCampaigns) {
-      await cacheSet(cacheKey, activeCampaigns, 60);
-    }
-  } catch (e) {}
 
       // 3. Total Volunteers (assumed to be distinct users who are project members)
       const volunteerMembers = await prisma.projectMember.findMany({
@@ -110,6 +105,12 @@ export const GET = withApiHandler(
             volunteerGrowth
         }
       };
+
+      try {
+        await cacheSet(cacheKey, responseData, 60); // Cache for 60 seconds
+      } catch (e) {
+        console.error("Failed to cache non-profit dashboard data:", e);
+      }
 
       return formatResponse(true, responseData);
     } catch (error) {

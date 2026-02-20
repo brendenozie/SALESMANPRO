@@ -26,12 +26,13 @@ const getTransactions = async (request: Request, context: { params: any; user?: 
 
   // ✅ OPTIMIZATION: Parallel execution to eliminate Query Waterfall
   
-    const cacheKey = `admin:transactions:${companyId || 'global'}:all`;
+  const cacheKey = `admin:transactions:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const [totalItems, transactions] = await Promise.all([
     prisma.billingTransaction.count({ where: whereClause }),
     prisma.billingTransaction.findMany({
@@ -55,12 +56,6 @@ const getTransactions = async (request: Request, context: { params: any; user?: 
     }),
   ]);
 
-  try {
-    if (totalItems) {
-      await cacheSet(cacheKey, totalItems, 60);
-    }
-  } catch (e) {}
-
   // ✅ OPTIMIZATION: Leaner Mapping
   const transactionsData = transactions.map((t) => ({
     ...t,
@@ -71,6 +66,14 @@ const getTransactions = async (request: Request, context: { params: any; user?: 
     status: t.status.charAt(0) + t.status.slice(1).toLowerCase(),
     transactionDate: t.transactionDate.toISOString(),
   }));
+
+  try {
+    await cacheSet(cacheKey, {
+      transactionsData,
+      totalTransactionItems: totalItems,
+      totalTransactionPages: Math.ceil(totalItems / limit),
+    }, 60); // Cache for 60 seconds
+  } catch (e) {}
 
   return formatResponse(
     true,

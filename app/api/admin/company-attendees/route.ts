@@ -65,12 +65,6 @@ async function handleGet(request: Request, context: { params: { adminSlug: strin
       prisma.eventRegistration.count({ where }),
     ]);
 
-  try {
-    if (attendees) {
-      await cacheSet(cacheKey, attendees, 60);
-    }
-  } catch (e) {}
-
     const formatted = attendees.map(reg => ({
       id: reg.id,
       name: reg.user?.name || 'N/A',
@@ -96,6 +90,16 @@ async function handleGet(request: Request, context: { params: { adminSlug: strin
       });
     }
 
+    // Cache the result for 1 minute
+    try {
+      await cacheSet(cacheKey, {
+        attendees: formatted,
+        totalItems,
+        totalPages: Math.ceil(totalItems / limit),
+        currentPage: page,
+      }, 60);
+    } catch (e) {}
+    
     return NextResponse.json({
       attendees: formatted,
       totalItems,

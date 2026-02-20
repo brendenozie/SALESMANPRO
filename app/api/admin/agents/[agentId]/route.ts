@@ -8,13 +8,13 @@ import { Prisma } from "@prisma/client";
 export const PUT = withAuthAndRateLimit(async (request, { params }) => {
   const { agentId } = params;
   const body = await request.json();
-  const { name, email, phoneNumber, } = body;
+  const { name, email, phoneNumber, companyId } = body;
 
   try {
     // OPTIMIZATION: Update directly. Prisma handles the join internally.
     // This reduces 2 DB calls down to 1.
     const updatedAgent = await prisma.salesAgent.update({
-      where: { id: agentId },
+      where: { id: agentId, companyId: companyId || undefined },
       data: {
         phoneNumber,
         user: {
@@ -31,6 +31,7 @@ export const PUT = withAuthAndRateLimit(async (request, { params }) => {
 
     
     try { await cacheDel(`admin:agents:${updatedAgent.companyId || 'global'}:*`); } catch (e) {}
+    
     return formatResponse(true, updatedAgent, "Updated", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -58,7 +59,6 @@ export const DELETE = withAuthAndRateLimit(async (_request, { params }) => {
       await prisma.user.delete({ where: { id: deletedAgent.userId } });
     }
 
-    
     try { await cacheDel(`admin:agents:${deletedAgent.companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { deletedId: agentId }, "Deleted", 200);
   } catch (error) {

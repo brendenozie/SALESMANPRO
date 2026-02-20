@@ -34,7 +34,7 @@ async function getDocuments(request: Request,) {
 
   try {
     if (documents) {
-      await cacheSet(cacheKey, documents, 60);
+      await cacheSet(cacheKey, { data: documents }, 60);
     }
   } catch (e) {}
 
@@ -63,7 +63,7 @@ async function createDocument(request: Request) {
     },
   });
 
-  
+  // Clear cache for documents in this company
     try { await cacheDel(`admin:documents:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { data: newDocument }, null, 201);
 }

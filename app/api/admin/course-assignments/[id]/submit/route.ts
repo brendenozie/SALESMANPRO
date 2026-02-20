@@ -101,13 +101,17 @@ export const GET = withApiHandler(async (_req: Request, { params }) => {
     }
   });
 
-  try {
-    if (assignment) {
-      await cacheSet(cacheKey, assignment, 60);
-    }
-  } catch (e) {}
-
   if (!assignment) return formatResponse(false, null, "Not found", 404);
+
+  
+  try {      
+    await cacheSet(cacheKey, {
+      ...assignment,
+      courseInstructorName: assignment.course?.CourseEducatorAssignment?.[0]?.educator?.user?.name || "N/A",
+      totalSubmissions: assignment._count.submissions
+    }, 60);
+  
+  } catch (e) {}
 
   // Formatting logic remains but is faster due to smaller DB payload
   return formatResponse(true, {

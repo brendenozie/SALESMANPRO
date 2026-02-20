@@ -28,22 +28,23 @@ const getInvoiceLogic = async (req: Request, context: RouteContext) => {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const invoice = await prisma.invoice.findUnique({
         where: { id: invoiceId },
         include: { client: { include: { user: true } } }
     });
-
-  try {
-    if (invoice) {
-      await cacheSet(cacheKey, invoice, 60);
-    }
-  } catch (e) {}
 
     if (!invoice) {
         // Use formatResponse for business-logic failure (404 Not Found)
         return formatResponse(false, null, 'Invoice not found', 404);
     }
     
+    try {
+        if (invoice) {
+        await cacheSet(cacheKey, invoice, 60);
+        }
+    } catch (e) {}
+
     // Use formatResponse for success
     return formatResponse(true, invoice, 'Invoice retrieved successfully', 200);
 };

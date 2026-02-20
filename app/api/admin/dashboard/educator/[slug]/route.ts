@@ -21,6 +21,7 @@ export async function GET(
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const educator = await prisma.educator.findUnique({
       where: { userId: userId },
       include: {
@@ -37,12 +38,6 @@ export async function GET(
         },
       }
     });
-
-  try {
-    if (educator) {
-      await cacheSet(cacheKey, educator, 60);
-    }
-  } catch (e) {}
 
     if (!educator) return formatResponse(false, null, "Educator not found", 404);
 
@@ -116,6 +111,12 @@ export async function GET(
         schedule: cea.roleInCourse || "Instructor"
       }))
     };
+
+    try {
+      await cacheSet(cacheKey, responseData, 60);
+    } catch (e) {
+      console.error("Failed to cache educator dashboard data:", e);
+    }
 
     return formatResponse(true, responseData, "Educator dashboard data fetched successfully", 200);
 

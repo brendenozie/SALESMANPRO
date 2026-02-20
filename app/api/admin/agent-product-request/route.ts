@@ -22,13 +22,13 @@ export const GET = withApiHandler(async (request, context) => {
   }
 
   // OPTIMIZATION: Use 'select' to avoid over-fetching and eliminate the .map() overhead
-  
-    const cacheKey = `admin:agent-product-request:${user.id || 'global'}:all`;
+  const cacheKey = `admin:agent-product-request:${user.id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const productRequests = await prisma.request.findMany({
     where: {
       requestedByType: "SALES_AGENT",
@@ -52,12 +52,6 @@ export const GET = withApiHandler(async (request, context) => {
     }
   });
 
-  try {
-    if (productRequests) {
-      await cacheSet(cacheKey, productRequests, 60);
-    }
-  } catch (e) {}
-
   // OPTIMIZATION: Transform data minimally. 
   // Since we used 'select', the object structure is already nearly perfect.
   const formattedRequests = productRequests.map((req) => ({
@@ -71,11 +65,22 @@ export const GET = withApiHandler(async (request, context) => {
     requestedAt: req.createdAt,
   }));
 
+  try {
+    if (formattedRequests) {
+      await cacheSet(cacheKey, { 
+        userId: user.id, 
+        requests: formattedRequests,
+        count: formattedRequests.length // Consider adding a total count query if UI needs it
+      }, 60); // Cache for 60 seconds
+    }
+  } catch (e) {}
+
   return formatResponse(true, { 
     userId: user.id, 
     requests: formattedRequests,
     count: formattedRequests.length // Consider adding a total count query if UI needs it
   }, "Fetched", 200);
+  
 });
 
 

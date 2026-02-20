@@ -25,12 +25,14 @@ const getClient = async (
   context: { params: { id: string }; user?: any }
 ) => {
   const clientId = context.params.id;
+  const searchParams = new URL(_req.url).searchParams;
+  const companyId = context.user?.companyId;
 
   if (!clientId) {
     return formatResponse(false, null, "Missing client id", 400);
   }
 
-  const cacheKey = `admin:client:${clientId}`;
+  const cacheKey = `admin:client:${companyId || 'global'}:${clientId}`;
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
@@ -74,12 +76,12 @@ const updateClient = async (
     return formatResponse(false, null, "Missing client id", 400);
   }
 
-  const { name, email, phoneNumber } = await req.json();
+  const { name, email, phoneNumber, companyId } = await req.json();
 
   const client = await prisma.client.findFirst({
     where: {
       id: clientId,
-      companyId: context.user.companyId,
+      companyId: companyId,
     },
     select: { userId: true },
   });
@@ -98,7 +100,7 @@ const updateClient = async (
   });
 
   // Invalidate cache for this specific client
-  const cacheKey = `admin:client:${clientId}`;
+  const cacheKey = `admin:client:${companyId || 'global'}:*`;
   try {
     await cacheDel(cacheKey);
   } catch (e) {}
@@ -120,6 +122,9 @@ const deleteClient = async (
   context: { params: { id: string }; user?: any }
 ) => {
   const clientId = context.params.id;
+  const searchParams = new URL(_req.url).searchParams;
+  const companyId = searchParams.get("companyId") || context.user?.companyId;
+
   if (!clientId) {
     return formatResponse(false, null, "Missing client id", 400);
   }
@@ -127,12 +132,12 @@ const deleteClient = async (
   await prisma.client.delete({
     where: {
       id: clientId,
-      companyId: context.user.companyId,
+      companyId: companyId,
     },
   });
 
   // Invalidate cache for this specific client
-  const cacheKey = `admin:client:${clientId}`;
+  const cacheKey = `admin:client:${companyId || 'global'}:*`;
   try {
     await cacheDel(cacheKey);
   } catch (e) {}

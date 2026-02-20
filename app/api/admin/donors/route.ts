@@ -45,7 +45,7 @@ async function getDonors(request: Request) {
 
   try {
     if (donors) {
-      await cacheSet(cacheKey, donors, 60);
+      await cacheSet(cacheKey, { data: donors }, 60);
     }
   } catch (e) {}
 

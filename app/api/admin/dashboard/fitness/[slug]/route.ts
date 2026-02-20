@@ -25,10 +25,11 @@ export const GET = withApiHandler(
       
     const cacheKey = `admin:fitness:${companyId || 'global'}:all`;
 
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
+    try {
+      const cached = await cacheGet(cacheKey);
+      if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+    } catch (e) {}
+
   const [
         totalMembers,
         totalTrainers,
@@ -110,6 +111,12 @@ export const GET = withApiHandler(
             classAttendance
         }
       };
+
+      try {
+        await cacheSet(cacheKey, responseData, 60);
+      } catch (e) {
+        console.error("Failed to cache fitness dashboard data:", e);
+      }
 
       return formatResponse(true, responseData);
     } catch (error) {

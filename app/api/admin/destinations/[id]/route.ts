@@ -27,20 +27,23 @@ async function getDestination(req: Request, { params }: Params) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const destination = await prisma.destination.findUnique({
     where: { id },
   });
 
-  try {
-    if (destination) {
-      await cacheSet(cacheKey, destination, 60);
-    }
-  } catch (e) {}
 
   if (!destination) {
     return formatResponse(false, null, 'Destination not found', 404);
   }
 
+  
+  try {
+    if (destination) {
+      await cacheSet(cacheKey, { data: destination }, 60);
+    }
+  } catch (e) {}
+  
   return formatResponse(true, { data: destination }, null, 200);
 }
 

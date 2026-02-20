@@ -51,13 +51,13 @@ async function getDoctors(request: Request) {
     whereClause.status = filterStatus;
   }
 
-  
-    const cacheKey = `admin:doctors:${companyId || 'global'}:all`;
+  const cacheKey = `admin:doctors:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   let doctors = await prisma.doctor.findMany({
     where: whereClause,
     include: {
@@ -83,7 +83,7 @@ async function getDoctors(request: Request) {
 
   try {
     if (enriched) {
-      await cacheSet(cacheKey, enriched, 60);
+      await cacheSet(cacheKey, { data: enriched }, 60);
     }
   } catch (e) {}
 

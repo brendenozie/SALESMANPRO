@@ -28,6 +28,7 @@ async function getDepartments(request: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const departments = await prisma.department.findMany({
     where: { companyId },
     include: {
@@ -41,12 +42,6 @@ async function getDepartments(request: Request) {
     orderBy: { name: "asc" },
   });
 
-  try {
-    if (departments) {
-      await cacheSet(cacheKey, departments, 60);
-    }
-  } catch (e) {}
-
   const response = departments.map((d) => ({
     id: d.id,
     name: d.name,
@@ -59,6 +54,8 @@ async function getDepartments(request: Request) {
     updatedAt: d.updatedAt,
   }));
 
+  try { await cacheSet(cacheKey, { data: response }, 300); } catch (e) {}
+  
   return formatResponse(true, { data: response }, null, 200);
 }
 

@@ -20,6 +20,13 @@ async function handleGetFeeItems(request: Request) {
     return formatResponse(false, null, "Missing companyId", 400);
   }
 
+    const cacheKey = `admin:fee-items:${companyId || 'global'}:all`;
+
+    try {
+      const cached = await cacheGet(cacheKey);
+      if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+    } catch (e) {}
+
   const feeItems = await getFeeItemsByCompany(companyId);
 
   try {

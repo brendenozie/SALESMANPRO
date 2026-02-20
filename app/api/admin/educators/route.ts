@@ -31,6 +31,7 @@ async function getEducators(request: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const educators = await prisma.educator.findMany({
     where: companyId ? { companyId } : undefined,
     include: {
@@ -102,7 +103,7 @@ async function getEducators(request: Request) {
 
   try {
     if (data) {
-      await cacheSet(cacheKey, data, 60);
+      await cacheSet(cacheKey, { data }, 60);
     }
   } catch (e) {}
 

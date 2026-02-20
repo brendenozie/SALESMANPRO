@@ -17,19 +17,17 @@ async function handleGet(_req: Request, context: HandlerContext) {
 
   const now = new Date();
 
-  
   const companyFilter = {
     company: { slug: adminSlug },
   };
 
-  
-  
-    const cacheKey = `admin:company-admin-dashboard-summary:${adminSlug || 'global'}:all`;
+  const cacheKey = `admin:company-admin-dashboard-summary:${adminSlug || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+  
   const [
     totalEvents,
     upcomingEvents,

@@ -38,16 +38,16 @@ const getPropertyLogic = async (request: Request, { params }: RouteContext) => {
         },
     });
 
-  try {
-    if (property) {
-      await cacheSet(cacheKey, property, 60);
-    }
-  } catch (e) {}
-
     if (!property) {
         // Return 404 response
         return formatResponse(false, null, 'Property not found', 404);
     }
+
+    try {
+        if (property) {
+        await cacheSet(cacheKey, property, 60);
+        }
+    } catch (e) {}
 
     // Return 200 success response
     return formatResponse(true, property, 'Property retrieved successfully', 200);

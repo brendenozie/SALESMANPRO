@@ -21,7 +21,20 @@ async function handleGetFeeRecords(request: Request) {
     return formatResponse(false, null, 'schoolId is required for fetching fee records.', 400);
   }
 
+  const cacheKey = `admin:fees:${schoolId || 'global'}:all`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
   const records = getStudentFeeRecords(schoolId);
+
+  try {
+    if (records) {
+      await cacheSet(cacheKey, { data: records }, 60);
+    }  } catch (e) {}
+    
   return formatResponse(true, records, null, 200);
 }
 

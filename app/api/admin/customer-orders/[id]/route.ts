@@ -39,24 +39,23 @@ const updateOrderSchema = z.object({
 
 export const GET = withApiHandler(async (_req, { params }) => {
   
-    const cacheKey = `admin:customer-orders:${params.id || 'global'}:all`;
+  const cacheKey = `admin:customer-orders:${params.id || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const order = await prisma.customerOrder.findUnique({
     where: { id: params.id },
     select: ORDER_SELECT,
   });
 
-  try {
-    if (order) {
-      await cacheSet(cacheKey, order, 60);
-    }
-  } catch (e) {}
 
   if (!order) return formatResponse(false, null, 'Order not found', 404);
+  try {
+    await cacheSet(cacheKey, order, 60);
+  } catch (e) {}
   return formatResponse(true, order, 'Order fetched successfully');
 });
 

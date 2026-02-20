@@ -16,16 +16,17 @@ const updateDepartmentSchema = z.object({
 // Fetch a single department
 async function getDepartment(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId");
 
-  
-    const cacheKey = `admin:departments:${id || 'global'}:all`;
+  const cacheKey = `admin:departments:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
   const department = await prisma.department.findUnique({
-    where: { id },
+    where: { id, companyId: companyId || undefined },
     include: {
       _count: {
         select: { educators: true, courses: true },
@@ -41,15 +42,21 @@ async function getDepartment(request: Request, { params }: { params: { id: strin
     },
   });
 
-  try {
-    if (department) {
-      await cacheSet(cacheKey, department, 60);
-    }
-  } catch (e) {}
-
   if (!department) {
     return formatResponse(false, null, "Department not found", 404);
   }
+
+  try { await cacheSet(cacheKey, {data: {
+        id: department.id,
+        name: department.name,
+        description: department.description,
+        head: department.head,
+        educatorCount: department._count.educators,
+        courseCount: department._count.courses,
+        createdAt: department.createdAt,
+        updatedAt: department.updatedAt,
+      }
+    }, 300); } catch (e) {}
 
   // --- Final Response ---
     return formatResponse(true, 
@@ -72,6 +79,9 @@ async function getDepartment(request: Request, { params }: { params: { id: strin
 // Update department
 async function updateDepartment(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId");
+
   const body = await request.json();
 
   const parsed = updateDepartmentSchema.safeParse(body);
@@ -80,18 +90,18 @@ async function updateDepartment(request: Request, { params }: { params: { id: st
   }
 
   // Ensure department exists
-  const existing = await prisma.department.findUnique({ where: { id } });
+  const existing = await prisma.department.findUnique({ where: { id, companyId: companyId || undefined   } });
   if (!existing) {
     return formatResponse(false, null, "Department not found", 404);
   }
 
   try {
     const updatedDepartment = await prisma.department.update({
-      where: { id },
+      where: { id, companyId: companyId || undefined },
       data: parsed.data,
     });
 
-    try { await cacheDel(`admin:departments:${id || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:departments:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, {data: updatedDepartment  },null,200 );
     
   } catch (error: any) {
@@ -106,11 +116,13 @@ async function updateDepartment(request: Request, { params }: { params: { id: st
 // Delete department
 async function deleteDepartment(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId");
 
   try {
-    const deleted = await prisma.department.delete({ where: { id } });
+    const deleted = await prisma.department.delete({ where: { id, companyId: companyId || undefined } });
     
-    try { await cacheDel(`admin:departments:${id || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:departments:${companyId || 'global'}:*`); } catch (e) {}
     return formatResponse(true, {data: { deletedDepartmentId: deleted.id, message: "Department deleted successfully" }  },null,200 );
     
     

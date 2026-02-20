@@ -45,8 +45,7 @@ async function getRegistrations(request: Request) {
     whereClause.status = upperStatus;
   }
 
-  
-    const cacheKey = `admin:event-registrations:${eventId || 'global'}:all`;
+  const cacheKey = `admin:event-registrations:${eventId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -108,7 +107,7 @@ async function getRegistrations(request: Request) {
 
   try {
     if (response) {
-      await cacheSet(cacheKey, response, 60);
+      await cacheSet(cacheKey, { data: response }, 60);
     }
   } catch (e) {}
 

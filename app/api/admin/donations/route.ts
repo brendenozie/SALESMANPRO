@@ -19,6 +19,7 @@ async function getDonations(request: Request) {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const donations = await prisma.donation.findMany({
     include: {
       donor: true,
@@ -32,7 +33,7 @@ async function getDonations(request: Request) {
 
   try {
     if (donations) {
-      await cacheSet(cacheKey, donations, 60);
+      await cacheSet(cacheKey, { data: donations }, 60);
     }
   } catch (e) {}
 
