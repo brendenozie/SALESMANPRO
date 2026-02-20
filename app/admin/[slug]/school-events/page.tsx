@@ -238,7 +238,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
       headers: { cookie: cookieHeaders }
     });
     if (eventsRes.ok) {
-      const data = (await eventsRes.json()).data.data;
+      const data = (await eventsRes.json()).data;
       console.log("[EventsManagerPage] Fetched events data:", data);
       initialEvents = data as EventData[];
     } else {
