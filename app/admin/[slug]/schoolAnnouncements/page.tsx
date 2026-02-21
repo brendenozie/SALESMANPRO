@@ -211,7 +211,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
 
   try {
     // Fetch announcements
-    const announcementsRes = await fetch(`${apiBaseUrl}/announcements?companyId=${encodeURIComponent(companyId)}`, {
+    const announcementsRes = await fetch(`${apiBaseUrl}/admin/announcements?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
     });
     if (announcementsRes.ok) {
@@ -222,7 +222,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all academic levels
-    const academicLevelsRes = await fetch(`${apiBaseUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`, {
+    const academicLevelsRes = await fetch(`${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
     });
     if (academicLevelsRes.ok) {
@@ -233,7 +233,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all courses
-    const coursesRes = await fetch(`${apiBaseUrl}/courses?companyId=${encodeURIComponent(companyId)}`, {
+    const coursesRes = await fetch(`${apiBaseUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
     });
     if (coursesRes.ok) {
@@ -244,7 +244,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all educators
-    const educatorsRes = await fetch(`${apiBaseUrl}/educators?companyId=${encodeURIComponent(companyId)}`, {
+    const educatorsRes = await fetch(`${apiBaseUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
     });
     if (educatorsRes.ok) {
@@ -268,7 +268,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all departments (assuming a /api/departments endpoint exists)
-    const departmentsRes = await fetch(`${apiBaseUrl}/departments?companyId=${encodeURIComponent(companyId)}`, {
+    const departmentsRes = await fetch(`${apiBaseUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
     });
     if (departmentsRes.ok) {
@@ -279,7 +279,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all parents (assuming a /api/parents endpoint exists)
-    const parentsRes = await fetch(`${apiBaseUrl}/parents?companyId=${encodeURIComponent(companyId)}`, {
+    const parentsRes = await fetch(`${apiBaseUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
     });
     if (parentsRes.ok) {
@@ -293,7 +293,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
     // Fetch all users who can be authors (e.g., Admins and Educators)
     // This might be a combined endpoint or separate calls depending on your User roles.
     // For simplicity, we'll fetch all users and assume some can be authors.
-    const authorsRes = await fetch(`${apiBaseUrl}/users?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
+    const authorsRes = await fetch(`${apiBaseUrl}/admin/users?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
       next: { revalidate: 60 },
     });
     if (authorsRes.ok) {
