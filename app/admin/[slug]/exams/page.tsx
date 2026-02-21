@@ -17,6 +17,7 @@ const generateSampleExamData = (companyId: string): {
   sampleEducators: EducatorOption[];
   sampleAcademicLevels: AcademicLevelOption[];
   sampleClassRooms: ClassRoomOption[];
+  sampleExamCategories: { id: string; name: string; description: string; companyId: string }[];
 } => {
   const academicLevels: AcademicLevelOption[] = [
     { id: 'AL001', name: 'Grade 7', sortOrder: 7 },
@@ -58,6 +59,7 @@ const generateSampleExamData = (companyId: string): {
       title: 'Mathematics Midterm Exam',
       description: 'Covers Chapters 1-5.',
       course:{ id: 'CRS003', title: 'Algebra', academicLevels: [{ id: 'AL003', name: 'Grade 9' }] },
+      examCategoryId: 'CAT001',
       courseId: 'CRS003',
       courseTitle: 'Algebra',
       courseAcademicLevels: [{ id: 'AL003', name: 'Grade 9' }],
@@ -87,6 +89,7 @@ const generateSampleExamData = (companyId: string): {
       id: 'EXM002',
       title: 'English Essay Final Draft',
       description: 'Submission deadline via LMS.',
+      examCategoryId: 'CAT005',
       course:{ id: 'CRS002', title: 'English Language', academicLevels: [{ id: 'AL002', name: 'Grade 8' }] },
       courseId: 'CRS002',
       courseTitle: 'English Language',
@@ -117,6 +120,7 @@ const generateSampleExamData = (companyId: string): {
       id: 'EXM003',
       title: 'Science Unit 2 Test',
       description: 'Covering cell biology and photosynthesis.',
+      examCategoryId: 'CAT003',
       course:{ id: 'CRS005', title: 'Science', academicLevels: [{ id: 'AL002', name: 'Grade 8' }] },
       courseId: 'CRS005',
       courseTitle: 'Science',
@@ -147,6 +151,7 @@ const generateSampleExamData = (companyId: string): {
       id: 'EXM004',
       title: 'Physics Final Exam',
       description: 'Comprehensive exam covering all topics.',
+      examCategoryId: 'CAT002',
       course:{ id: 'CRS006', title: 'Physics', academicLevels: [{ id: 'AL005', name: 'Grade 11' }] },
       courseId: 'CRS006',
       courseTitle: 'Physics',
@@ -175,7 +180,15 @@ const generateSampleExamData = (companyId: string): {
     },
   ];
 
-  return { sampleExams: exams, sampleCourses: courses, sampleEducators: educators, sampleAcademicLevels: academicLevels, sampleClassRooms: classRooms };
+  const initialExamCategories = [
+    { id: 'CAT001', name: 'Midterm Exams', description: 'Exams that occur in the middle of the term.', companyId: companyId },
+    { id: 'CAT002', name: 'Final Exams', description: 'Comprehensive exams at the end of the term.', companyId: companyId },
+    { id: 'CAT003', name: 'Unit Tests', description: 'Shorter exams covering specific units or chapters.', companyId: companyId },
+    { id: 'CAT004', name: 'Quizzes', description: 'Brief assessments to check understanding of recent material.', companyId: companyId },
+    { id: 'CAT005', name: 'Assignment-Based Assessments', description: 'Assessments based on assignments or projects.', companyId: companyId },
+  ];
+
+  return { sampleExams: exams, sampleCourses: courses, sampleEducators: educators, sampleAcademicLevels: academicLevels, sampleClassRooms: classRooms, sampleExamCategories: initialExamCategories };
 };
 
 
@@ -184,6 +197,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
   const cookieHeader = (await cookies()).toString();
   const { slug : companyId } = await params;
 
+  let initialExamCategories = [];
   let initialExams: ExamData[] = [];
   let allCourses: CourseOption[] = [];
   let allEducators: EducatorOption[] = [];
@@ -192,6 +206,16 @@ export default async function ExamsManagerPage({ params }: PageProps) {
   let fetchError: boolean = false;
 
   try {
+    
+    const resExamCategories = await fetch(`${apiBaseUrl}/admin/exam-categories?schoolId=${encodeURIComponent(companyId)}`, {
+      headers: { cookie: cookieHeader },
+      next: { revalidate: 60 }, // Categorization often needs fresh data
+    });
+
+    if (resExamCategories.ok) {
+      initialExamCategories = await resExamCategories.json();
+    }
+    
     // Fetch exams
     const examsRes = await fetch(`${apiBaseUrl}/admin/exams?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
@@ -287,6 +311,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
 
   return (
     <AdminExamsOverviewPage
+      initialExamCategories={initialExamCategories}
       initialExams={initialExams}
       allCourses={allCourses}
       allEducators={allEducators}

@@ -32,6 +32,7 @@ export type ExamData = {
   description: string | null;
   courseId: string;
   courseTitle: string;
+  examCategoryId: string | null;
   course:{ id: string; title: string; academicLevels: { id: string; name: string; sortOrder?: number }[] };
   courseAcademicLevels: { id: string; name: string; sortOrder?: number }[];
   classroomId: string | null;
@@ -76,6 +77,7 @@ export type AcademicLevelOption = {
 };
 
 interface AdminExamsOverviewPageProps {
+  initialExamCategories: { id: string; name: string; description: string; companyId: string }[];
   initialExams: ExamData[];
   allCourses: CourseOption[];
   allEducators: EducatorOption[];
@@ -89,6 +91,7 @@ type ExamFormModalProps = {
   examData: ExamData | null; // Null for new exam
   onClose: () => void;
   onSave: (data: Omit<ExamData, 'courseTitle' | 'courseAcademicLevels' | 'createdByEducatorName' | 'createdByEducatorEmail' | 'totalQuestions' | 'totalSubmissions' | 'createdAt' | 'updatedAt'>) => void;
+  allExamCategories: { id: string; name: string; description: string; companyId: string }[];
   allCourses: CourseOption[];
   allEducators: EducatorOption[];
   allClassRooms: ClassRoomOption[];
@@ -98,10 +101,11 @@ type ExamFormModalProps = {
   resetError: () => void;
 };
 
-const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave, allCourses, allEducators, allClassRooms, companyId, isLoading, error, resetError }) => {
+const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave, allExamCategories, allCourses, allEducators, allClassRooms, companyId, isLoading, error, resetError }) => {
   const [formData, setFormData] = useState<Omit<ExamData, 'courseTitle' | 'courseAcademicLevels' | 'createdByEducatorName' | 'createdByEducatorEmail' | 'totalQuestions' | 'totalSubmissions' | 'createdAt' | 'updatedAt'>>(
     examData ? {
       ...examData,
+      examCategoryId: examData.examCategoryId || null,
       courseId: examData.courseId || examData.course.id,
       classroomId: examData.classroomId || (examData.classroom ? examData.classroom.id : null),
     } : {
@@ -109,6 +113,7 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave
       title: '',
       description: null,
       courseId: '',
+      examCategoryId: null,
       date: new Date().toISOString().split('T')[0], // YYYY-MM-DD
       course:{ id: '', title: '', academicLevels: [] },
       classroomId: null,
@@ -211,6 +216,18 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
               <textarea name="description" id="description" value={formData.description || ''} onChange={handleChange} rows={2}
                 className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base"></textarea>
+            </div>
+
+            <div>
+              <label htmlFor="examCategoryId" className="block text-sm font-medium text-gray-700 mb-1">Exam Category</label>
+              <select name="examCategoryId" id="examCategoryId" value={formData.examCategoryId || ''} onChange={handleChange}
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white"
+              >
+                <option value="">-- Select Exam Category --</option>
+                {allExamCategories.map(category => (
+                  <option key={category.id} value={category.id}>{category.name}</option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -371,9 +388,10 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave
 
 
 // --- Main AdminExamsOverviewPage Component ---
-export default function AdminExamsOverviewPage({ initialExams, allCourses, allEducators, allClassRooms, companyId }: AdminExamsOverviewPageProps) {
+export default function AdminExamsOverviewPage({ initialExamCategories, initialExams, allCourses, allEducators, allClassRooms, companyId }: AdminExamsOverviewPageProps) {
   const [exams, setExams] = useState<ExamData[]>(initialExams);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterExamCategory, setFilterExamCategory] = useState('All');
   const [filterCourse, setFilterCourse] = useState('All'); // Changed from filterClass
   const [filterClass, setFilterClass] = useState('All');
   const [filterEducator, setFilterEducator] = useState('All'); // Changed from filterTeacher
@@ -452,6 +470,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
       const matchesClass = filterClass === 'All' || exam.classroomId === filterClass;
       const matchesEducator = filterEducator === 'All' || exam.createdByEducatorId === filterEducator;
       const matchesType = filterType === 'All' || exam.type === filterType;
+      const matchesCategory = filterExamCategory === 'All' || exam.examCategoryId === filterExamCategory;
 
       // Determine dynamic status for filtering
       const examDate = new Date(exam.date);
@@ -460,7 +479,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
       const currentExamStatus = examDate.getTime() < now.getTime() ? 'Completed' : 'Upcoming';
       const matchesStatus = filterStatus === 'All' || currentExamStatus === filterStatus;
 
-      return matchesSearch && matchesCourse && matchesClass && matchesEducator && matchesType && matchesStatus;
+      return matchesSearch && matchesCourse && matchesClass && matchesEducator && matchesType && matchesCategory && matchesStatus;
     }).sort((a, b) => {
       // Sort upcoming exams first by date (ascending), then completed exams by date (descending)
       const dateA = new Date(a.date).getTime();
@@ -483,7 +502,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
       }
       return 0; // Should not reach here if logic is sound
     }) : [];
-  }, [exams, searchTerm, filterCourse, filterClass, filterEducator, filterType, filterStatus]);
+  }, [exams, searchTerm, filterCourse, filterClass, filterEducator, filterType, filterExamCategory, filterStatus]);
 
 
   // Calculate overview stats
@@ -733,6 +752,18 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
           </div>
           <div className="flex-shrink-0">
             <select
+              value={filterExamCategory}
+              onChange={(e) => setFilterExamCategory(e.target.value)}
+              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            >
+              <option value="All">All Categories</option>
+              {initialExamCategories.map(category => (
+                <option key={category.id} value={category.id}>{category.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex-shrink-0">
+            <select
               value={filterCourse}
               onChange={(e) => setFilterCourse(e.target.value)}
               className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -908,6 +939,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
           examData={editingExam}
           onClose={() => { setShowFormModal(false); setEditingExam(null); setError(null); }}
           onSave={handleSaveExam}
+          allExamCategories={initialExamCategories}
           allCourses={allCourses}
           allClassRooms={allClassRooms}
           allEducators={allEducators}

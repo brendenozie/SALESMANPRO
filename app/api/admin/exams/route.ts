@@ -126,6 +126,9 @@ async function getExams(request: Request) {
       classroom: {
         select: { id: true, name: true, academicLevelId: true }
       },
+      examCategory: {
+        select: { id: true, name: true }
+      },
       createdByEducator: {
         select: { id: true, user: { select: { name: true, email: true } } },
       },
@@ -157,12 +160,12 @@ async function createExam(request: Request) {
   const {
     companyId, title, description, courseId, date, startTime, endTime, location,
     notes, type, totalPoints, isPublished, createdByEducatorId, isOnline,
-    durationMinutes, autoGrade, classroomId,
+    durationMinutes, autoGrade, classroomId,examCategoryId
   } = body;
 
   // Basic validation
-  if (!companyId || !title || !courseId || !date || !createdByEducatorId || !type) {
-    return formatResponse(false, null, "Company ID, Title, Course ID, Date, Created By Educator ID, and Type are required to create an exam.", 400);
+  if (!companyId || !title || !courseId || !date || !createdByEducatorId || !type || !examCategoryId) {
+    return formatResponse(false, null, "Company ID, Title, Course ID, Date, Created By Educator ID, Exam Category ID and Type are required to create an exam.", 400);
   }
 
   // Validate ExamType
@@ -220,10 +223,12 @@ async function createExam(request: Request) {
         isOnline: isOnline !== undefined ? isOnline : false,
         durationMinutes: durationMinutesNumber,
         autoGrade: autoGrade !== undefined ? autoGrade : false,
+        examCategoryId,
       },
       include: {
         course: { select: { id: true, title: true, academicLevels: { include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } } } } },
         createdByEducator: { select: { id: true, user: { select: { name: true, email: true } } } },
+        examCategory: { select: { id: true, name: true } },
         _count: { select: { questions: true, submissions: true } },
       },
     });

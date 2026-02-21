@@ -48,7 +48,7 @@ const updateExamCategory = async (request: Request, { params }: { params: { id: 
     });
 
     // Invalidate caches
-    try { await cacheDel(`admin:exam-categories:*`); } catch (e) {}
+    try { await cacheDel(`admin:exam-categories:school:${updatedCategory.companyId}`); } catch (e) {}
 
     return NextResponse.json(updatedCategory, { status: 200 });
   } catch (error: any) {
@@ -84,7 +84,7 @@ const deleteExamCategory = async (_request: Request, { params }: { params: { id:
     });
 
     // Invalidate caches
-    try { await cacheDel(`admin:exam-categories:*`); } catch (e) {}
+    try { await cacheDel(`admin:exam-categories:school:${categoryWithExams.companyId}`); } catch (e) {}
 
     return NextResponse.json({ message: "Category deleted successfully." }, { status: 200 });
   } catch (error: any) {

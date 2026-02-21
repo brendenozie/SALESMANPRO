@@ -42,6 +42,8 @@ function transformExamResponse(exam: any) {
     id: exam.id,
     title: exam.title,
     description: exam.description,
+    examCategoryId: exam.examCategoryId,
+    examCategory: exam.examCategory ? { id: exam.examCategory.id, name: exam.examCategory.name } : null,
     courseId: exam.courseId,
     courseTitle: exam.course?.title || 'N/A',
     courseAcademicLevels: courseAcademicLevels || [],
@@ -102,6 +104,9 @@ async function getExam(request: Request, { params }: Params) {
       createdByEducator: {
         select: { id: true, user: { select: { name: true, email: true } } },
       },
+      examCategory: {
+        select: { id: true, name: true }
+      },
       _count: { select: { questions: true, submissions: true } },
     },
   });
@@ -132,7 +137,7 @@ async function updateExam(request: Request, { params }: Params) {
   const body = await request.json();
   const {
     title, description, courseId, date, startTime, endTime, location, notes, type,
-    totalPoints, isPublished, createdByEducatorId, isOnline, durationMinutes, autoGrade, classroomId,
+    totalPoints, isPublished, createdByEducatorId, isOnline, durationMinutes, autoGrade, classroomId, examCategoryId,
     companyId, // Ignored
     ...rest
   } = body;
@@ -161,7 +166,8 @@ async function updateExam(request: Request, { params }: Params) {
   if (isOnline !== undefined) updateData.isOnline = isOnline;
   if (durationMinutes !== undefined) updateData.durationMinutes = durationMinutes;
   if (autoGrade !== undefined) updateData.autoGrade = autoGrade;
-
+  if (examCategoryId !== undefined) updateData.examCategoryId = examCategoryId;
+  
   // Validate and update type
   if (type !== undefined) {
     if (!VALID_EXAM_TYPES.includes(type)) {
@@ -229,6 +235,7 @@ async function updateExam(request: Request, { params }: Params) {
         course: { select: { id: true, title: true, academicLevels: { include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } } } } },
         createdByEducator: { select: { id: true, user: { select: { name: true, email: true } } } },
         classroom: { select: { id: true, name: true, academicLevelId: true } },
+        examCategory: { select: { id: true, name: true } },
         _count: { select: { questions: true, submissions: true } },
       },
     });

@@ -50,7 +50,7 @@ const ExamCategoriesClient = ({ initialData, schoolId }: Props) => {
     e.preventDefault();
     setLoading(true);
 
-    const url = editingId ? `/api/exam-categories/${editingId}` : `/api/exam-categories`;
+    const url = editingId ? `/api/admin/exam-categories/${editingId}` : `/api/admin/exam-categories`;
     const method = editingId ? "PUT" : "POST";
 
     try {
@@ -84,7 +84,7 @@ const ExamCategoriesClient = ({ initialData, schoolId }: Props) => {
     if (!confirm("Are you sure? This cannot be undone.")) return;
 
     try {
-      const res = await fetch(`/api/exam-categories/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/exam-categories/${id}`, { method: "DELETE" });
       if (res.ok) {
         setCategories(prev => prev.filter(c => c.id !== id));
       } else {

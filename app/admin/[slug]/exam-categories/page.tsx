@@ -9,7 +9,7 @@ export default async function ExamCategoriesPage({ params }: { params: Promise<{
 
   let initialCategories = [];
   try {
-    const res = await fetch(`${apiBaseUrl}/exam-categories`, {
+    const res = await fetch(`${apiBaseUrl}/admin/exam-categories?schoolId=${encodeURIComponent(schoolId)}`, {
       headers: { cookie: cookieHeader },
       next: { revalidate: 0 }, // Categorization often needs fresh data
     });

@@ -5,7 +5,17 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // ✅ GET all Exam Categories
 const getExamCategories = async (_request: Request, _context: { user?: any }) => {
-  const cacheKey = `admin:exam-categories:all`;
+  const  searchParams = new URL(_request.url).searchParams;
+  const schoolId = searchParams.get("schoolId");
+
+  if (!schoolId) {
+    return NextResponse.json(
+      { message: "Missing required query parameter: schoolId" },
+      { status: 400 }
+    );
+  }
+
+  const cacheKey = `admin:exam-categories:school:${schoolId}`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -15,6 +25,9 @@ const getExamCategories = async (_request: Request, _context: { user?: any }) =>
   }
 
   const categories = await prisma.examCategory.findMany({
+    where: {
+      companyId: schoolId,
+    },
     include: {
       company: true, // Includes company details
       _count: {
@@ -74,7 +87,7 @@ const createExamCategory = async (request: Request, _context: { user?: any }) =>
 
     // Invalidate relevant caches
     try {
-      await cacheDel(`admin:exam-categories:*`);
+      await cacheDel(`admin:exam-categories:school:${companyId}`);
     } catch (e) {}
 
     return NextResponse.json(newCategory, { status: 201 });
