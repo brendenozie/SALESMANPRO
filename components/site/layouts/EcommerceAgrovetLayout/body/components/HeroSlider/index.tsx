@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { AnimatePresence, motion, PanInfo } from 'framer-motion';
-import { ChevronLeftIcon, ChevronRightIcon, BeakerIcon, BugAntIcon, ShoppingBagIcon } from '@heroicons/react/24/solid';
+import React, { useState, useEffect, useCallback } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowRightIcon, BeakerIcon, SparklesIcon, GlobeAmericasIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import Link from 'next/link';
 import { HeroSlide } from '@/types/typings';
@@ -10,195 +10,206 @@ import { HeroSlide } from '@/types/typings';
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-const autoAdvanceDelay = 6000;
-
 const defaultSlides: HeroSlide[] = [
   {
-    imageUrl: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&w=1200&q=80',
-    subline: 'Planting Season 2026',
-    headline: 'PREMIUM HYBRID\nCERTIFIED SEEDS',
-    badgeText: 'Boost your yield with our drought-resistant corn and high-yield vegetable varieties.',
-    ctaText: 'Shop Seeds',
-    ctaLink: '/category/seeds',
-    id: '1', companyId: '', productImageUrl: null, price: null, endsAt: null, order: 0, iconKey: 'seed', backgroundColor: null, textColor: null, videoLink: null, type: null,
+    imageUrl: 'https://images.unsplash.com/photo-1595113316349-9fa4ee24f884?auto=format&fit=crop&w=2000&q=90',
+    subline: 'VET-APPROVED CARE',
+    headline: 'Nourishing Your \n Livestock $ Better',
+    badgeText: 'Maximize productivity with our scientifically formulated supplements and trusted veterinary solutions.',
+    ctaText: 'Shop Animal Health',
+    ctaLink: '/livestock',
+    id: '1', companyId: '', productImageUrl: null, price: null, endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: null,
   },
   {
-    imageUrl: 'https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&w=1200&q=80',
-    subline: 'Livestock Care',
-    headline: 'VETERINARY\nSOLUTIONS',
-    badgeText: 'Expert-grade vaccines and nutrition supplements to keep your herd healthy and productive.',
-    ctaText: 'View Pharma',
-    ctaLink: '/category/animal-health',
-    id: '2', companyId: '', productImageUrl: null, price: null, endsAt: null, order: 0, iconKey: 'med', backgroundColor: null, textColor: null, videoLink: null, type: null,
+    imageUrl: 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=2000&q=90',
+    subline: 'MAXIMUM YIELD',
+    headline: 'Quality Seeds $ For \n Every Season',
+    badgeText: 'Certified hybrid seeds engineered for drought resistance and higher harvest weight.',
+    ctaText: 'Explore Seeds',
+    ctaLink: '/seeds',
+    id: '2', companyId: '', productImageUrl: null, price: null, endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: null,
   },
 ];
 
-export default function AgrovetHeroSlider({ heroSlides, themeSettings }: { heroSlides: HeroSlide[] | null; themeSettings: any }) {
-  const primary = themeSettings?.primaryColor || '#15803d'; // Forest Green
-  const secondary = themeSettings?.secondaryColor || '#eab308'; // Amber
+export default function StunningAgrovetHero({ heroSlides, themeSettings }: { heroSlides: HeroSlide[] | null; themeSettings: any }) {
+  const primary = themeSettings?.primaryColor || '#064e3b'; // Deep Emerald
+  const accent = '#fbbf24'; // Amber Glow
+  const slides = heroSlides?.length ? heroSlides : defaultSlides;
 
-  const slides = (heroSlides && heroSlides.length > 0 ? heroSlides : defaultSlides);
   const [current, setCurrent] = useState(0);
-  const [direction, setDirection] = useState(0);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const [isHovered, setIsHovered] = useState(false);
 
-  const resetTimer = useCallback(() => {
-    clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      setDirection(1);
-      setCurrent((prev) => (prev + 1) % slides.length);
-    }, autoAdvanceDelay);
+  const nextSlide = useCallback(() => {
+    setCurrent((prev) => (prev + 1) % slides.length);
   }, [slides.length]);
 
   useEffect(() => {
-    resetTimer();
-    return () => clearTimeout(timeoutRef.current);
-  }, [current, resetTimer]);
-
-  const goTo = (idx: number, dir = 0) => {
-    setDirection(dir);
-    setCurrent(idx);
-  };
+    if (isHovered) return;
+    const interval = setInterval(nextSlide, 7000);
+    return () => clearInterval(interval);
+  }, [nextSlide, isHovered]);
 
   return (
-    <section className="relative w-full bg-slate-50 pt-24 pb-12 overflow-hidden min-h-[600px] lg:min-h-[750px]">
-      {/* BACKGROUND DECORATION */}
-      <div className="absolute inset-0 z-0 opacity-[0.05]" 
-           style={{ backgroundImage: `radial-gradient(${primary} 1px, transparent 1px)`, backgroundSize: '32px 32px' }} />
+    <section className="relative w-full h-[90vh] min-h-[700px] bg-[#f8fafc] overflow-hidden flex items-center">
       
-      <div className="container mx-auto px-4 md:px-8 relative z-10 h-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center h-full">
+      {/* 1. BACKGROUND LAYER: SOFT GRADIENTS & GLASS ORBS */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0] }}
+          transition={{ duration: 20, repeat: Infinity }}
+          className="absolute -top-[20%] -right-[10%] w-[60%] h-[80%] rounded-full opacity-20 blur-[120px]"
+          style={{ background: primary }}
+        />
+        <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-white to-transparent" />
+      </div>
+
+      <div className="container mx-auto px-6 lg:px-12 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           
-          {/* LEFT: CONTENT PANEL (40%) */}
-          <div className="lg:col-span-5 order-2 lg:order-1 flex flex-col justify-center space-y-8">
-            <AnimatePresence mode="wait" custom={direction}>
+          {/* 2. TEXT CONTENT: ELEGANT & BOLD */}
+          <div className="order-2 lg:order-1 relative">
+            <AnimatePresence mode="wait">
               <motion.div
                 key={current}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5 }}
-                className="space-y-6"
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 50 }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               >
-                <div className="flex items-center space-x-2">
-                  <span className="h-[2px] w-12 rounded-full" style={{ background: secondary }} />
-                  <span className="text-sm font-bold uppercase tracking-widest text-slate-500">
+                <div className="flex items-center space-x-3 mb-6">
+                  <span className="px-3 py-1 rounded-full text-[10px] font-black tracking-[0.2em] bg-white border border-slate-200 shadow-sm text-slate-500 uppercase">
                     {slides[current].subline}
                   </span>
+                  <div className="h-[1px] w-12 bg-slate-200" />
                 </div>
 
-                <h1 className="text-5xl md:text-7xl font-black text-slate-900 leading-[0.95] tracking-tight whitespace-pre-line">
-                  {slides[current].headline}
+                <h1 className="text-6xl md:text-8xl font-extrabold text-slate-900 leading-[0.9] tracking-tighter mb-8">
+                  {(slides[current].headline || '').split('\n').map((line, i) => (
+                    <span key={i} className="block">
+                      {line.includes('$') ? (
+                        <>
+                          {line.split('$')[0]}
+                          <span className="italic font-serif font-light text-slate-400">
+                            {line.split('$')[1]}
+                          </span>
+                        </>
+                      ) : line}
+                    </span>
+                  ))}
                 </h1>
 
-                <p className="text-slate-600 text-lg md:text-xl max-w-md leading-relaxed">
+                <p className="text-slate-500 text-lg md:text-xl max-w-md leading-relaxed mb-10">
                   {slides[current].badgeText}
                 </p>
 
-                <div className="flex items-center space-x-4 pt-4">
+                <div className="flex flex-col sm:flex-row items-center gap-6">
                   <Link
                     href={slides[current].ctaLink || '#'}
-                    className="flex items-center justify-center space-x-2 px-10 py-5 rounded-full text-white font-bold text-lg shadow-xl transition-all hover:scale-105 active:scale-95"
-                    style={{ background: primary }}
+                    className="group relative px-10 py-5 bg-slate-900 rounded-full overflow-hidden transition-all hover:pr-14 active:scale-95 shadow-2xl"
                   >
-                    <ShoppingBagIcon className="h-5 w-5" />
-                    <span>{slides[current].ctaText}</span>
+                    <span className="relative z-10 text-white font-bold tracking-tight">
+                      {slides[current].ctaText}
+                    </span>
+                    <ArrowRightIcon className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-white opacity-0 transition-all group-hover:opacity-100 group-hover:right-4" />
+                    <motion.div 
+                      className="absolute inset-0 z-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      style={{ background: primary }}
+                    />
                   </Link>
-                  
-                  {/* NAV CONTROLS */}
-                  <div className="flex space-x-2 pl-4">
-                    <button onClick={() => goTo((current - 1 + slides.length) % slides.length, -1)} 
-                            className="p-3 rounded-full border border-slate-200 bg-white hover:bg-slate-50 transition-colors shadow-sm">
-                      <ChevronLeftIcon className="h-6 w-6 text-slate-600" />
-                    </button>
-                    <button onClick={() => goTo((current + 1) % slides.length, 1)}
-                            className="p-3 rounded-full border border-slate-200 bg-white hover:bg-slate-50 transition-colors shadow-sm">
-                      <ChevronRightIcon className="h-6 w-6 text-slate-600" />
-                    </button>
+
+                  <div className="flex -space-x-3">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 overflow-hidden shadow-sm">
+                        <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="user" />
+                      </div>
+                    ))}
+                    <div className="flex items-center justify-center pl-6 text-xs font-bold text-slate-400">
+                      Trusted by 4,000+ Farmers
+                    </div>
                   </div>
                 </div>
               </motion.div>
             </AnimatePresence>
-
-            {/* QUICK CATEGORY ACCESS */}
-            <div className="grid grid-cols-3 gap-4 pt-10">
-              {[
-                { label: 'Crop Care', icon: <BugAntIcon className="w-5 h-5" />, link: '/crop-care' },
-                { label: 'Animal Health', icon: <BeakerIcon className="w-5 h-5" />, link: '/livestock' },
-                { label: 'Tools', icon: <ShoppingBagIcon className="w-5 h-5" />, link: '/equipment' }
-              ].map((cat, i) => (
-                <Link key={i} href={cat.link} className="flex flex-col items-center p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
-                  <div className="p-2 rounded-full mb-2" style={{ backgroundColor: `${primary}15`, color: primary }}>{cat.icon}</div>
-                  <span className="text-[10px] font-black uppercase tracking-tighter text-slate-700">{cat.label}</span>
-                </Link>
-              ))}
-            </div>
           </div>
 
-          {/* RIGHT: IMAGE PANEL (60%) */}
-          <div className="lg:col-span-7 order-1 lg:order-2 relative h-[400px] lg:h-[650px]">
-            <AnimatePresence mode="wait" custom={direction}>
+          {/* 3. VISUAL LAYER: THE "ORGANIC STACK" */}
+          <div className="order-1 lg:order-2 relative h-[450px] lg:h-[600px] flex items-center justify-center">
+            <AnimatePresence mode="wait">
               <motion.div
                 key={current}
-                initial={{ opacity: 0, scale: 0.95, x: 50 }}
-                animate={{ opacity: 1, scale: 1, x: 0 }}
-                exit={{ opacity: 0, scale: 1.05, x: -50 }}
-                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                className="relative h-full w-full"
+                className="relative w-full h-full flex items-center justify-center"
+                onHoverStart={() => setIsHovered(true)}
+                onHoverEnd={() => setIsHovered(false)}
               >
-                {/* DECORATIVE "SOIL" FRAME */}
-                <div className="absolute inset-0 translate-x-4 translate-y-4 rounded-[40px] opacity-10" style={{ backgroundColor: primary }} />
-                
-                <div className="relative h-full w-full rounded-[40px] overflow-hidden border-[12px] border-white shadow-2xl">
+                {/* Main Abstract Shape Background */}
+                <motion.div 
+                  initial={{ rotate: 0, scale: 0.8, opacity: 0 }}
+                  animate={{ rotate: 5, scale: 1, opacity: 1 }}
+                  transition={{ duration: 1.2 }}
+                  className="absolute inset-0 bg-slate-100 rounded-[60px] md:rounded-[100px] -z-10"
+                  style={{ borderRadius: '63% 37% 30% 70% / 50% 45% 55% 50%' }}
+                />
+
+                {/* The Stunning Image Card */}
+                <motion.div 
+                  initial={{ y: 40, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.3, duration: 0.8 }}
+                  className="relative w-[85%] h-[90%] rounded-[40px] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.25)] border-[8px] border-white"
+                >
                   <Image
                     src={slides[current].imageUrl || ''}
-                    alt="Agrovet Hero"
+                    alt="Agrovet Visual"
                     fill
-                    className="object-cover transition-transform duration-[8000ms] ease-linear scale-110 group-hover:scale-100"
+                    className="object-cover transition-transform duration-[10s] ease-linear hover:scale-110"
                     loader={loader}
                     priority
                   />
-                  {/* SOFT OVERLAY */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent" />
-                </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+                </motion.div>
 
-                {/* FLOATING STAT BADGE */}
+                {/* Floating "Smart" Indicators */}
                 <motion.div 
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.5 }}
-                  className="absolute -bottom-6 -left-6 bg-white p-6 rounded-3xl shadow-2xl border border-slate-100 z-20 hidden md:block"
+                  animate={{ y: [0, -15, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                  className="absolute -top-4 -right-4 bg-white/80 backdrop-blur-md p-5 rounded-3xl shadow-xl border border-white flex items-center gap-4 z-20"
                 >
-                  <div className="flex items-center space-x-4">
-                    <div className="p-3 rounded-xl" style={{ background: secondary }}>
-                      <BeakerIcon className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black uppercase text-slate-400">Quality Tested</p>
-                      <p className="text-xl font-black text-slate-800 tracking-tight">100% Certified</p>
-                    </div>
+                  <div className="p-3 bg-emerald-100 rounded-2xl text-emerald-600"><SparklesIcon className="w-6 h-6" /></div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase text-slate-400">Pure Grade</p>
+                    <p className="text-lg font-black text-slate-800 tracking-tighter">Premium Quality</p>
+                  </div>
+                </motion.div>
+
+                <motion.div 
+                  animate={{ y: [0, 15, 0] }}
+                  transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+                  className="absolute -bottom-8 -left-4 bg-white p-5 rounded-3xl shadow-xl border border-white flex items-center gap-4 z-20"
+                >
+                  <div className="p-3 bg-blue-100 rounded-2xl text-blue-600"><GlobeAmericasIcon className="w-6 h-6" /></div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase text-slate-400">Certified</p>
+                    <p className="text-lg font-black text-slate-800 tracking-tighter">Eco-Friendly</p>
                   </div>
                 </motion.div>
               </motion.div>
             </AnimatePresence>
-
-            {/* PROGRESS BAR */}
-            <div className="absolute bottom-10 right-10 flex space-x-3 z-30">
-              {slides.map((_, idx) => (
-                <div key={idx} className="h-1.5 rounded-full bg-white/30 overflow-hidden w-12">
-                  {idx === current && (
-                    <motion.div 
-                      initial={{ width: 0 }} 
-                      animate={{ width: '100%' }} 
-                      transition={{ duration: autoAdvanceDelay / 1000, ease: 'linear' }}
-                      className="h-full bg-white" 
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
           </div>
 
+        </div>
+      </div>
+
+      {/* 4. SLIDE INDICATOR: THE "DNA" STRIP */}
+      <div className="absolute bottom-12 right-12 flex items-center space-x-4 z-30">
+        <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">Next Slide</span>
+        <div className="flex space-x-2">
+          {slides.map((_, i) => (
+            <button 
+              key={i} 
+              onClick={() => setCurrent(i)}
+              className={`h-1.5 rounded-full transition-all duration-500 ${current === i ? 'w-12 bg-slate-900' : 'w-4 bg-slate-200 hover:bg-slate-300'}`}
+            />
+          ))}
         </div>
       </div>
     </section>

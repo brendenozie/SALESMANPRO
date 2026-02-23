@@ -42,7 +42,7 @@ const SITE_CATEGORIES: Category[] = [
       { name: "Modern Fashion Store", link: "https://fashion.salesmanpro.site", description: "Trendy and stylish clothing designs.", tag: 'Standard' },
       { name: "Business Directory", link: "https://directory-listings.salesmanpro.site", description: "List businesses and services.", tag: 'Standard' },
       { name: "Food Delivery", link: "https://restaurant-food-delivery.salesmanpro.site", description: "Showcase restaurant menus and delivery options.", tag: 'Standard' },
-      { name: "Product Marketplace", link: "https://marketplace.salesmanpro.site", description: "Create a marketplace for products.", tag: 'Standard' }
+      { name: "Product Marketplace", link: "https://marketplace.salesmanpro.site", description: "Create a marketplace for products.", tag: 'Standard' },
       { name: "Agrovet Store", link: "https://agrovet.salesmanpro.site", description: "Optimized for agricultural products and supplies.", tag: 'New' },
       // { name: "Digital Goods Store (v2)", link: "https://digital-shop.salesmanpro.site", description: "Optimized for selling software and courses.", tag: 'New' },
       // { name: "Artisan Marketplace (v3)", link: "https://artisan-shop.salesmanpro.site", description: "Focuses on handcrafted and unique items.", tag: 'Standard' },

@@ -33,6 +33,7 @@ import Security2Site from './layouts/Security2Layout/body/Security2Site';
 import FurnitureSite from './layouts/FurnitureLayout/body/FurnitureSite';
 import FashionSite from './layouts/FashionLayout/body/FashionSite';
 import { PublicPaymentMethod } from '@/utils/payment-utils';
+import EcommerceAgrovetSite from './layouts/EcommerceAgrovetLayout/body/EcommerceAgrovetSite';
 
 // A single, clean map from component name to the component itself.
 export const BodyComponentMap: Record<string, React.ComponentType<{ pageData: StoreForm; companyId: string; paymentMethods: PublicPaymentMethod[] }>> = {

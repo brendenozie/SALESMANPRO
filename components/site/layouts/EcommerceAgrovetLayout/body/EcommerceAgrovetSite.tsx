@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import useSWR from 'swr';
-import HeroSlider from '@/components/site/layouts/EcommerceLayout/body/components/HeroSlider';
+import HeroSlider from '@/components/site/layouts/EcommerceAgrovetLayout/body/components/HeroSlider';
 import { StoreForm, MarketListingForm } from '@/types/typings';
 
 // Above-the-fold components - statically imported
