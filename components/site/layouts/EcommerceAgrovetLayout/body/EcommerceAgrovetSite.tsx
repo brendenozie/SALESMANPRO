@@ -31,10 +31,10 @@ const DynamicTrending = dynamic(() => import('./components/Trending'), {
 const PromoSection = dynamic(() => import('./components/PromoSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const SecondPromoSection = dynamic(() => import('./components/SecondPromoSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const AllProducts = dynamic(() => import('./components/AllProducts'), { loading: () => <SectionSkeleton />, ssr: false });
-const MetricsSection = dynamic(() => import('@/components/site/MetricsSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const AwardsSection = dynamic(() => import('@/components/site/AwardsSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const TestimonialsSection = dynamic(() => import('@/components/site/TestimonialsSection/TestimonialsSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const NewsletterSection = dynamic(() => import('@/components/site/NewsletterSection/NewsletterSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const MetricsSection = dynamic(() => import('./components/MetricsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const AwardsSection = dynamic(() => import('./components/AwardsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const TestimonialsSection = dynamic(() => import('./components/TestimonialsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const AgroCTA = dynamic(() => import('./components/AgroCTA/FinalAgroCTA'), { loading: () => <SectionSkeleton />, ssr: false });
 
 type EcommerceSiteProps = {
   pageData: StoreForm;
@@ -72,7 +72,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
   return (
     <div className="space-y-12">
       <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
-      <CategorySection StoreCategory={StoreCategory} themeSettings={themeSettings} />
+      <CategorySection store={pageData} />
       <DynamicPopularProducts id={id} />
       <PromoSection promotions={promotions} />
       <DynamicTrending id={id} />
@@ -81,8 +81,9 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       <AllProducts id={id} marketplaceListings={featured} themeSettings={themeSettings} />
       <MetricsSection coreValues={CoreValues} />
       <AwardsSection awards={awards} />
-      {testimonialsData?.data && <TestimonialsSection testimonials={testimonialsData.data} />}
-      <NewsletterSection />
+      {testimonialsData?.data && <TestimonialsSection />}
+      {/*  testimonials={testimonialsData.data} */}
+      <AgroCTA />
     </div>
   );
 }

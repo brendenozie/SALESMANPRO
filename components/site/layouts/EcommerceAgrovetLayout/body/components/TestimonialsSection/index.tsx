@@ -1,188 +1,141 @@
-import React from "react";
-import Slider from "react-slick";
-import { motion } from "framer-motion";
+'use client';
+
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  ChatBubbleLeftRightIcon, 
+  ChevronDownIcon, 
+  StarIcon, 
+} from '@heroicons/react/24/solid';
 
 const testimonials = [
   {
-    name: "Sarah L.",
-    text: "Booking my massage through Ducun Vijed is a breeze! I can easily find the perfect therapist and schedule my appointment whenever it suits me. It’s so convenient!",
+    name: "Samuel K.",
+    role: "Maize Farmer, Narok",
+    text: "The hybrid seeds from this store changed my season. I saw a 40% increase in harvest weight compared to last year. Truly a partner in my growth.",
     rating: 5,
-    image: "/avatars/sarah.png",
-    bgColor: "bg-orange-100",
-    rotate: "-rotate-1",
+    image: "https://i.pravatar.cc/150?u=sam",
   },
   {
-    name: "Sarah L.",
-    text: "Booking my massage through Ducun Vijed is a breeze! I can easily find the perfect therapist and schedule my appointment whenever it suits me. It’s so convenient!",
+    name: "Dr. Jane M.",
+    role: "Veterinary Specialist",
+    text: "As a vet, I only recommend certified inputs. Their vaccine storage and supply chain are the most reliable in the region. Highly professional.",
     rating: 5,
-    image: "/avatars/sarah.png",
-    bgColor: "bg-green-100",
-    rotate: "rotate-2",
+    image: "https://i.pravatar.cc/150?u=jane",
   },
   {
-    name: "Sarah L.",
-    text: "Booking my massage through Ducun Vijed is a breeze! I can easily find the perfect therapist and schedule my appointment whenever it suits me. It’s so convenient!",
+    name: "Peter O.",
+    role: "Dairy Farm Manager",
+    text: "The nutritional supplements are top-tier. Our milk production stabilized within two weeks of switching. The bulk delivery saved us a fortune.",
     rating: 5,
-    image: "/avatars/sarah.png",
-    bgColor: "bg-orange-100",
-    rotate: "-rotate-2",
+    image: "https://i.pravatar.cc/150?u=peter",
   },
 ];
 
-const settings = {
-  dots: true,
-  infinite: true,
-  speed: 600,
-  slidesToShow: 1,
-  slidesToScroll: 1,
-  arrows: false,
-  autoplay: true,
-  autoplaySpeed: 5000,
-  adaptiveHeight: true,
-  responsive: [
-    {
-      breakpoint: 768,
-      settings: {
-        slidesToShow: 1,
-      },
-    },
-    {
-      breakpoint: 1024,
-      settings: "unslick" as const, // Destroys slick on larger screens (grid layout instead)
-    },
-  ],
-};
+const faqs = [
+  {
+    question: "Do you offer doorstep delivery for bulk fertilizers?",
+    answer: "Yes, we provide climate-controlled logistics for bulk orders over 500kg directly to your farm gate within 48 hours."
+  },
+  {
+    question: "Are your seeds KEPHIS certified?",
+    answer: "Every seed variety in our catalog is 100% KEPHIS certified and tracked for quality assurance and high germination rates."
+  },
+  {
+    question: "Can I get a consultation for my livestock?",
+    answer: "Absolutely. We have on-call veterinary specialists available for digital consultations and on-site farm visits."
+  }
+];
 
-const TestimonialsSection = () => {
+export default function VoicesOfGrowth() {
   return (
-    <section className="bg-[#f8f1eb] py-20 px-6 lg:px-20">
-      <div className="max-w-7xl mx-auto text-center">
-        <motion.span
-          className="inline-block bg-green-100 text-green-600 text-sm font-medium px-3 py-1 rounded-full mb-4"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          Testimonials
-        </motion.span>
+    <section className="bg-white py-32 px-6 overflow-hidden">
+      <div className="max-w-7xl mx-auto">
+        
+        {/* --- TESTIMONIALS HEADER --- */}
+        <div className="flex flex-col items-center text-center mb-20">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 mb-6"
+          >
+            <ChatBubbleLeftRightIcon className="w-4 h-4 text-emerald-600" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700">Voices of Growth</span>
+          </motion.div>
 
-        <motion.h2
-          className="text-3xl md:text-4xl font-semibold text-gray-900 mb-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          Hear From Our Happy Clients <br /> and Therapists
-        </motion.h2>
-
-        <motion.p
-          className="text-gray-600 max-w-2xl mx-auto mb-10"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          Discover how Ducun Vijed is making massage booking and therapy sessions
-          easier, more secure, and more rewarding for everyone.
-        </motion.p>
-
-        {/* Carousel on mobile, grid on desktop */}
-        <div className="block md:hidden">
-          <Slider {...settings}>
-            {testimonials.map((t, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4 }}
-              >
-                <div className={`relative p-6 shadow-md rounded-2xl ${t.bgColor} ${t.rotate} mx-4`}>
-                  <p className="text-md font-medium text-gray-900 mb-6">“{t.text}”</p>
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={t.image}
-                      alt={t.name}
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-gray-900">{t.name}</p>
-                      <div className="flex text-yellow-500">
-                        {"★".repeat(t.rating)}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </Slider>
+          <h2 className="text-5xl md:text-7xl font-black text-slate-900 leading-[0.9] tracking-tighter mb-8">
+            The Result of <br /> 
+            <span className="italic font-serif font-light text-emerald-600">Proper Inputs.</span>
+          </h2>
         </div>
 
-        {/* Desktop Grid */}
-        <div className="hidden md:flex gap-6 justify-center mt-8">
-          {testimonials.map((t, index) => (
+        {/* --- TESTIMONIAL GRID --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-40">
+          {testimonials.map((t, i) => (
             <motion.div
-              key={index}
-              className={`w-80 p-6 shadow-md rounded-2xl ${t.bgColor} ${t.rotate}`}
-              initial={{ opacity: 0, y: 20 }}
+              key={i}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.2 }}
+              className="group relative p-10 bg-slate-50 rounded-[2.5rem] border border-transparent hover:border-emerald-200 hover:bg-white hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.05)] transition-all duration-500"
             >
-              <p className="text-md font-medium text-gray-900 mb-6">“{t.text}”</p>
-              <div className="flex items-center gap-3">
-                <img
-                  src={t.image}
-                  alt={t.name}
-                  className="w-8 h-8 rounded-full object-cover"
-                />
+              <div className="flex gap-1 text-emerald-500 mb-6">
+                {[...Array(t.rating)].map((_, star) => (
+                  <StarIcon key={star} className="w-4 h-4" />
+                ))}
+              </div>
+
+              <p className="text-xl font-medium text-slate-700 leading-relaxed mb-10 italic">
+                "{t.text}"
+              </p>
+
+              <div className="flex items-center gap-4 border-t border-slate-200 pt-8">
+                <img src={t.image} alt={t.name} className="w-12 h-12 rounded-full grayscale group-hover:grayscale-0 transition-all" />
                 <div className="text-left">
-                  <p className="text-sm font-semibold text-gray-900">{t.name}</p>
-                  <div className="flex text-yellow-500">
-                    {"★".repeat(t.rating)}
-                  </div>
+                  <p className="font-black text-slate-900 uppercase tracking-tighter">{t.name}</p>
+                  <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest">{t.role}</p>
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
+
+        {/* --- FAQS SECTION --- */}
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-16">
+            <h3 className="text-3xl font-black text-slate-900 tracking-tight">Technical Support & FAQs</h3>
+            <div className="h-1 w-12 bg-emerald-500 mx-auto mt-4 rounded-full" />
+          </div>
+
+          <div className="space-y-4">
+            {faqs.map((faq, i) => (
+              <motion.details
+                key={i}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                className="group bg-white border border-slate-100 rounded-[2rem] overflow-hidden transition-all hover:border-emerald-200"
+              >
+                <summary className="flex items-center justify-between p-8 cursor-pointer list-none">
+                  <span className="text-lg font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
+                    {faq.question}
+                  </span>
+                  <div className="p-2 rounded-full bg-slate-50 text-slate-400 group-open:rotate-180 transition-transform">
+                    <ChevronDownIcon className="w-5 h-5" />
+                  </div>
+                </summary>
+                <div className="px-8 pb-8">
+                  <p className="text-slate-500 leading-relaxed font-medium border-t border-slate-50 pt-6">
+                    {faq.answer}
+                  </p>
+                </div>
+              </motion.details>
+            ))}
+          </div>
+        </div>
+
       </div>
     </section>
   );
-};
-
-export default TestimonialsSection;
-
-
-{/* FAQs */}
-{/* <section id="faq" className="py-32 bg-gradient-to-b from-white via-slate-50 to-white">
-<div className="container mx-auto px-6 max-w-4xl">
-  <h2 className="text-4xl md:text-5xl font-extrabold text-center text-slate-800 mb-16">
-    Frequently Asked Questions
-  </h2>
-
-  <div className="space-y-6">
-    {faqs.map((q, i) => (
-      <Reveal key={i}>
-        <motion.details
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 + i * 0.1 }}
-          className="group bg-white/60 backdrop-blur-lg border border-slate-200 p-6 rounded-2xl shadow-md hover:shadow-xl transition-all"
-        >
-          <summary className="flex items-center justify-between cursor-pointer text-lg font-semibold text-slate-800">
-            {q.question}
-            <svg
-              className="w-5 h-5 ml-2 text-slate-500 group-open:rotate-180 transition-transform"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </summary>
-          <p className="mt-4 text-slate-600 leading-relaxed">{q.answer}</p>
-        </motion.details>
-      </Reveal>
-    ))}
-  </div>
-</div>
-</section> */}
+}

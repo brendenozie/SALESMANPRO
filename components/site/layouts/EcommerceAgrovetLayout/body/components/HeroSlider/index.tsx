@@ -1,216 +1,165 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRightIcon, BeakerIcon, SparklesIcon, GlobeAmericasIcon } from '@heroicons/react/24/solid';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  PlusIcon, 
+  MapPinIcon, 
+  SunIcon, 
+  ArrowUpRightIcon,
+  CheckBadgeIcon
+} from '@heroicons/react/24/solid';
 import Image from 'next/image';
-import Link from 'next/link';
-import { HeroSlide } from '@/types/typings';
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
-
-const defaultSlides: HeroSlide[] = [
+const slides = [
   {
-    imageUrl: 'https://images.unsplash.com/photo-1595113316349-9fa4ee24f884?auto=format&fit=crop&w=2000&q=90',
-    subline: 'VET-APPROVED CARE',
-    headline: 'Nourishing Your \n Livestock $ Better',
-    badgeText: 'Maximize productivity with our scientifically formulated supplements and trusted veterinary solutions.',
-    ctaText: 'Shop Animal Health',
-    ctaLink: '/livestock',
-    id: '1', companyId: '', productImageUrl: null, price: null, endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: null,
+    category: "Crop Science",
+    title: "High-Yield $ Hybrids",
+    desc: "Engineered for drought resistance and 30% higher harvest weight in diverse climates.",
+    img: "https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&w=1500&q=80",
+    stats: { yield: "+32%", water: "-15%" }
   },
   {
-    imageUrl: 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=2000&q=90',
-    subline: 'MAXIMUM YIELD',
-    headline: 'Quality Seeds $ For \n Every Season',
-    badgeText: 'Certified hybrid seeds engineered for drought resistance and higher harvest weight.',
-    ctaText: 'Explore Seeds',
-    ctaLink: '/seeds',
-    id: '2', companyId: '', productImageUrl: null, price: null, endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: null,
-  },
+    category: "Animal Health",
+    title: "Elite $ Nutrition",
+    desc: "Vet-formulated supplements to boost immunity and milk production in dairy herds.",
+    img: "https://images.unsplash.com/photo-1547496502-affa22d38842?auto=format&fit=crop&w=1500&q=80",
+    stats: { growth: "+20%", health: "100%" }
+  }
 ];
 
-export default function StunningAgrovetHero({ heroSlides, themeSettings }: { heroSlides: HeroSlide[] | null; themeSettings: any }) {
-  const primary = themeSettings?.primaryColor || '#064e3b'; // Deep Emerald
-  const accent = '#fbbf24'; // Amber Glow
-  const slides = heroSlides?.length ? heroSlides : defaultSlides;
-
-  const [current, setCurrent] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-
-  const nextSlide = useCallback(() => {
-    setCurrent((prev) => (prev + 1) % slides.length);
-  }, [slides.length]);
+export default function RethoughtAgrovetHero({heroSlides, themeSettings }: { heroSlides:any; themeSettings:any }) {
+  const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    if (isHovered) return;
-    const interval = setInterval(nextSlide, 7000);
-    return () => clearInterval(interval);
-  }, [nextSlide, isHovered]);
+    const timer = setInterval(() => setIndex((prev) => (prev + 1) % slides.length), 10000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
-    <section className="relative w-full h-[90vh] min-h-[700px] bg-[#f8fafc] overflow-hidden flex items-center">
+    <section className="relative h-screen min-h-[750px] bg-[#0a0a0a] text-white overflow-hidden font-sans">
       
-      {/* 1. BACKGROUND LAYER: SOFT GRADIENTS & GLASS ORBS */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        <motion.div 
-          animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0] }}
-          transition={{ duration: 20, repeat: Infinity }}
-          className="absolute -top-[20%] -right-[10%] w-[60%] h-[80%] rounded-full opacity-20 blur-[120px]"
-          style={{ background: primary }}
-        />
-        <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-white to-transparent" />
-      </div>
+      {/* 1. THE DYNAMIC BACKGROUND DUALITY */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={index}
+          initial={{ opacity: 0, scale: 1.1 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.5 }}
+          className="absolute inset-0 z-0"
+        >
+          <Image 
+            src={slides[index].img} 
+            alt="Agrovet" 
+            fill 
+            className="object-cover opacity-60 grayscale-[20%]"
+            loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent" />
+        </motion.div>
+      </AnimatePresence>
 
-      <div className="container mx-auto px-6 lg:px-12 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          
-          {/* 2. TEXT CONTENT: ELEGANT & BOLD */}
-          <div className="order-2 lg:order-1 relative">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={current}
-                initial={{ opacity: 0, x: -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 50 }}
-                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              >
-                <div className="flex items-center space-x-3 mb-6">
-                  <span className="px-3 py-1 rounded-full text-[10px] font-black tracking-[0.2em] bg-white border border-slate-200 shadow-sm text-slate-500 uppercase">
-                    {slides[current].subline}
-                  </span>
-                  <div className="h-[1px] w-12 bg-slate-200" />
-                </div>
-
-                <h1 className="text-6xl md:text-8xl font-extrabold text-slate-900 leading-[0.9] tracking-tighter mb-8">
-                  {(slides[current].headline || '').split('\n').map((line, i) => (
-                    <span key={i} className="block">
-                      {line.includes('$') ? (
-                        <>
-                          {line.split('$')[0]}
-                          <span className="italic font-serif font-light text-slate-400">
-                            {line.split('$')[1]}
-                          </span>
-                        </>
-                      ) : line}
-                    </span>
-                  ))}
-                </h1>
-
-                <p className="text-slate-500 text-lg md:text-xl max-w-md leading-relaxed mb-10">
-                  {slides[current].badgeText}
-                </p>
-
-                <div className="flex flex-col sm:flex-row items-center gap-6">
-                  <Link
-                    href={slides[current].ctaLink || '#'}
-                    className="group relative px-10 py-5 bg-slate-900 rounded-full overflow-hidden transition-all hover:pr-14 active:scale-95 shadow-2xl"
-                  >
-                    <span className="relative z-10 text-white font-bold tracking-tight">
-                      {slides[current].ctaText}
-                    </span>
-                    <ArrowRightIcon className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-white opacity-0 transition-all group-hover:opacity-100 group-hover:right-4" />
-                    <motion.div 
-                      className="absolute inset-0 z-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{ background: primary }}
-                    />
-                  </Link>
-
-                  <div className="flex -space-x-3">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 overflow-hidden shadow-sm">
-                        <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="user" />
-                      </div>
-                    ))}
-                    <div className="flex items-center justify-center pl-6 text-xs font-bold text-slate-400">
-                      Trusted by 4,000+ Farmers
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
+      {/* 2. THE UTILITY SIDEBAR (Market & Weather) */}
+      <div className="absolute top-32 right-8 z-20 hidden xl:flex flex-col gap-4 w-64">
+        <div className="bg-white/10 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-2xl">
+          <div className="flex items-center justify-between mb-4">
+            <SunIcon className="w-6 h-6 text-yellow-400" />
+            <span className="text-xs font-bold uppercase tracking-widest opacity-60">Local Forecast</span>
           </div>
-
-          {/* 3. VISUAL LAYER: THE "ORGANIC STACK" */}
-          <div className="order-1 lg:order-2 relative h-[450px] lg:h-[600px] flex items-center justify-center">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={current}
-                className="relative w-full h-full flex items-center justify-center"
-                onHoverStart={() => setIsHovered(true)}
-                onHoverEnd={() => setIsHovered(false)}
-              >
-                {/* Main Abstract Shape Background */}
-                <motion.div 
-                  initial={{ rotate: 0, scale: 0.8, opacity: 0 }}
-                  animate={{ rotate: 5, scale: 1, opacity: 1 }}
-                  transition={{ duration: 1.2 }}
-                  className="absolute inset-0 bg-slate-100 rounded-[60px] md:rounded-[100px] -z-10"
-                  style={{ borderRadius: '63% 37% 30% 70% / 50% 45% 55% 50%' }}
-                />
-
-                {/* The Stunning Image Card */}
-                <motion.div 
-                  initial={{ y: 40, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.3, duration: 0.8 }}
-                  className="relative w-[85%] h-[90%] rounded-[40px] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.25)] border-[8px] border-white"
-                >
-                  <Image
-                    src={slides[current].imageUrl || ''}
-                    alt="Agrovet Visual"
-                    fill
-                    className="object-cover transition-transform duration-[10s] ease-linear hover:scale-110"
-                    loader={loader}
-                    priority
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
-                </motion.div>
-
-                {/* Floating "Smart" Indicators */}
-                <motion.div 
-                  animate={{ y: [0, -15, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                  className="absolute -top-4 -right-4 bg-white/80 backdrop-blur-md p-5 rounded-3xl shadow-xl border border-white flex items-center gap-4 z-20"
-                >
-                  <div className="p-3 bg-emerald-100 rounded-2xl text-emerald-600"><SparklesIcon className="w-6 h-6" /></div>
-                  <div>
-                    <p className="text-[10px] font-black uppercase text-slate-400">Pure Grade</p>
-                    <p className="text-lg font-black text-slate-800 tracking-tighter">Premium Quality</p>
-                  </div>
-                </motion.div>
-
-                <motion.div 
-                  animate={{ y: [0, 15, 0] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-                  className="absolute -bottom-8 -left-4 bg-white p-5 rounded-3xl shadow-xl border border-white flex items-center gap-4 z-20"
-                >
-                  <div className="p-3 bg-blue-100 rounded-2xl text-blue-600"><GlobeAmericasIcon className="w-6 h-6" /></div>
-                  <div>
-                    <p className="text-[10px] font-black uppercase text-slate-400">Certified</p>
-                    <p className="text-lg font-black text-slate-800 tracking-tighter">Eco-Friendly</p>
-                  </div>
-                </motion.div>
-              </motion.div>
-            </AnimatePresence>
+          <p className="text-3xl font-black mb-1">28°C</p>
+          <p className="text-sm opacity-80">Optimal for planting Maize</p>
+        </div>
+        
+        <div className="bg-emerald-500 p-6 rounded-3xl text-emerald-950 shadow-2xl">
+          <p className="text-[10px] font-black uppercase mb-4 tracking-widest">Market Price Index</p>
+          <div className="flex justify-between items-end">
+            <div>
+              <p className="text-xs font-bold">Fertilizer Grade A</p>
+              <p className="text-xl font-black">KSH 2,400</p>
+            </div>
+            <ArrowUpRightIcon className="w-6 h-6" />
           </div>
-
         </div>
       </div>
 
-      {/* 4. SLIDE INDICATOR: THE "DNA" STRIP */}
-      <div className="absolute bottom-12 right-12 flex items-center space-x-4 z-30">
-        <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">Next Slide</span>
-        <div className="flex space-x-2">
-          {slides.map((_, i) => (
-            <button 
-              key={i} 
-              onClick={() => setCurrent(i)}
-              className={`h-1.5 rounded-full transition-all duration-500 ${current === i ? 'w-12 bg-slate-900' : 'w-4 bg-slate-200 hover:bg-slate-300'}`}
-            />
+      {/* 3. MAIN CONTENT CARDS */}
+      <div className="relative z-10 container mx-auto px-6 h-full flex flex-col justify-center">
+        <div className="max-w-3xl">
+          <motion.div
+            key={`content-${index}`}
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            <div className="flex items-center gap-4 mb-6">
+              <span className="h-[2px] w-12 bg-emerald-500" />
+              <span className="text-emerald-500 font-black text-sm uppercase tracking-[0.4em]">
+                {slides[index].category}
+              </span>
+            </div>
+
+            <h1 className="text-7xl md:text-[6.5rem] font-black leading-[0.85] tracking-tighter mb-8">
+              {slides[index].title.split('$').map((word, i) => (
+                <span key={i} className={i === 1 ? "text-transparent stroke-white" : ""}>
+                  {word}
+                  {i === 1 && <style jsx>{`.stroke-white { -webkit-text-stroke: 1px white; }`}</style>}
+                </span>
+              ))}
+            </h1>
+
+            <p className="text-xl text-white/70 max-w-lg mb-12 font-medium leading-relaxed">
+              {slides[index].desc}
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-6 items-center">
+              <button className="group relative bg-emerald-500 hover:bg-white text-emerald-950 px-10 py-5 rounded-full font-black transition-all flex items-center gap-4 overflow-hidden">
+                <span className="relative z-10 uppercase tracking-tighter">Enter Store</span>
+                <PlusIcon className="w-5 h-5 relative z-10 group-hover:rotate-90 transition-transform" />
+                <div className="absolute inset-0 bg-white scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500" />
+              </button>
+
+              <div className="flex gap-8 border-l border-white/20 pl-8">
+                <div>
+                  <p className="text-2xl font-black text-emerald-400">{Object.values(slides[index].stats)[0]}</p>
+                  <p className="text-[10px] uppercase font-bold opacity-40 tracking-widest">{Object.keys(slides[index].stats)[0]} Rate</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-black text-emerald-400">{Object.values(slides[index].stats)[1]}</p>
+                  <p className="text-[10px] uppercase font-bold opacity-40 tracking-widest">{Object.keys(slides[index].stats)[1]} Optimization</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* 4. THE AUTHENTICITY BADGE (Floating Footer) */}
+      <div className="absolute bottom-12 left-12 z-20 flex items-center gap-4">
+        <div className="flex -space-x-3">
+          {[1,2,3].map(i => (
+            <div key={i} className="w-12 h-12 rounded-full border-4 border-[#0a0a0a] bg-slate-800 overflow-hidden">
+              <img src={`https://i.pravatar.cc/100?u=${i}`} alt="Farmer" />
+            </div>
           ))}
         </div>
+        <div>
+          <div className="flex items-center gap-1 text-emerald-500">
+            <CheckBadgeIcon className="w-4 h-4" />
+            <span className="text-[10px] font-black uppercase">Government Certified</span>
+          </div>
+          <p className="text-xs font-bold text-white/50">Joined by 12,000+ Kenyan Farmers</p>
+        </div>
+      </div>
+
+      {/* Navigation Progress */}
+      <div className="absolute bottom-12 right-12 flex items-center gap-4">
+        {slides.map((_, i) => (
+          <div 
+            key={i} 
+            className={`h-1 transition-all duration-700 rounded-full ${index === i ? 'w-24 bg-emerald-500' : 'w-4 bg-white/20'}`} 
+          />
+        ))}
       </div>
     </section>
   );

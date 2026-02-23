@@ -4,236 +4,126 @@ import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
-import { FaceFrownIcon } from '@heroicons/react/24/outline';
+import { 
+  EnvelopeIcon, 
+  PhoneIcon, 
+  MapPinIcon,
+  GlobeAltIcon
+} from '@heroicons/react/24/outline';
 
-export default function Footer() {
+const iconMapper: Record<string, React.ReactNode> = {
+  facebook: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.522-4.477-10-10-10S2 6.478 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54v-2.89h2.54V9.845c0-2.507 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562v1.875h2.773l-.443 2.89h-2.33v6.987C18.343 21.128 22 16.991 22 12z"/></svg>,
+  instagram: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849s-.011 3.585-.069 4.85c-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07s-3.584-.012-4.849-.07c-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849s.012-3.584.07-4.849c.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>,
+};
+
+export default function RootFooter() {
   const { storeFormData } = useStoreContext();
   const {
-    slug,
     name,
     description,
     contactEmail,
     contactPhone,
     socialLinks = [],
-    themeSettings = {},
   } = storeFormData || {};
 
-  const primary = themeSettings?.primaryColor || '#10B981';
-  const secondary = themeSettings?.secondaryColor || '#3B82F6';
-
-  // Map common social channels to icons (placeholder icons here)
-  const iconMapper: Record<string, React.ReactNode> = {
-    facebook: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.522-4.477-10-10-10S2 6.478 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54v-2.89h2.54V9.845c0-2.507 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562v1.875h2.773l-.443 2.89h-2.33v6.987C18.343 21.128 22 16.991 22 12z"/></svg>,
-    instagram: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M7.75 2h8.5A5.75 5.75 0 0122 7.75v8.5A5.75 5.75 0 0116.25 22h-8.5A5.75 5.75 0 012 16.25v-8.5A5.75 5.75 0 017.75 2zm0 1.5A4.25 4.25 0 003.5 7.75v8.5A4.25 4.25 0 007.75 20.5h8.5a4.25 4.25 0 004.25-4.25v-8.5A4.25 4.25 0 0016.25 3.5h-8.5zM12 7a5 5 0 110 10 5 5 0 010-10zm0 1.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7zm4.75-.88a1.12 1.12 0 11-2.24 0 1.12 1.12 0 012.24 0z"/></svg>,
-    twitter: <svg className='w-5 h-5' fill='currentColor' viewBox="0 0 24 24"><path d="M23.954 4.569c-.885.389-1.83.654-2.825.775 1.014-.611 1.794-1.574 2.163-2.723-.951.555-2.005.959-3.127 1.184-.897-.959-2.178-1.559-3.594-1.559-2.717 0-4.92 2.203-4.92 4.917 0 .39.045.765.127 1.124C7.691 8.094 4.066 6.13 1.64 3.161c-.427.722-.666 1.561-.666 2.475 0 1.71.87 3.213 2.188 4.096-.807-.026-1.566-.248-2.228-.616v.061c0 2.385 1.693 4.374 3.946 4.827-.413.111-.849.171-1.296.171-.314 0-.615-.03-.916-.086.631 1.953 2.445 3.377 4.604 3.417-1.68 1.319-3.809 2.105-6.102 2.105-.39 0-.779-.023-1.17-.067C2.179 19.29 4.768 20 7.548 20c9.142 0 14.307-7.721 13.995-14.646a9.936 9.936 0 002.411-2.659z"/></svg>,
-    linkedin: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.761 0 5-2.239 5-5v-14c0-2.761-2.239-5-5-5zm-11.75 20h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.784-1.75-1.75s.784-1.75 1.75-1.75 1.75.784 1.75 1.75-.784 1.75-1.75 1.75zm13.25 12.268h-3v-5.604c0-1.337-.026-3.059-1.865-3.059-1.865 0-2.151 1.459-2.151 2.967v5.696h-3v-11h2.881v1.507h.041c.401-.761 1.381-1.562 2.841-1.562 3.039 0 3.602 2.001 3.602 4.601v6.454z"/></svg>,
-  };
-
   return (
-    <footer className="relative bg-gray-900 text-gray-300 pt-12 overflow-hidden">
-      {/* Subtle Radial Accent */}
-      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-16 w-80 h-80 bg-gradient-to-br from-[rgba(255,255,255,0.05)] to-transparent rounded-full blur-3xl pointer-events-none" />
-
-      {/* Gradient Accent Bar */}
-      <div
-        className="h-1 w-full mb-8"
-        style={{
-          background: `linear-gradient(90deg, ${primary}, ${secondary})`,
-        }}
-      />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-        {/* About Us */}
-        <div className="relative">
-          <h3
-            className="text-xl font-extrabold mb-4"
-            style={{
-              background: `linear-gradient(90deg, ${primary}, ${secondary})`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            About Us
-          </h3>
-          <p className="text-sm leading-relaxed text-gray-400  h-12 overflow-clip">
-            {description ||
-              'Discover everything you need from our trusted marketplace. Fast delivery, great deals, and top-notch service—trusted by thousands every day.'}
-          </p>
-          {contactEmail && (
-            <p className="mt-4 text-sm hover:text-white transition-colors">
-              <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
+    <footer className="bg-slate-950 text-slate-400 pt-24 pb-12">
+      <div className="max-w-7xl mx-auto px-6">
+        
+        {/* --- TOP: Newsletter & Brand --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-20">
+          <div className="lg:col-span-5">
+            <h2 className="text-3xl font-black text-white tracking-tighter mb-6">
+              Subscribe to <span className="text-emerald-500 italic font-serif font-light">Yield Updates.</span>
+            </h2>
+            <p className="text-slate-500 mb-8 max-w-sm font-medium">
+              Get seasonal planting guides, livestock health tips, and exclusive pricing directly in your inbox.
             </p>
-          )}
-          {contactPhone && (
-            <p className="mt-1 text-sm hover:text-white transition-colors">
-              <a href={`tel:${contactPhone}`}>{contactPhone}</a>
-            </p>
-          )}
-        </div>
+            <form className="relative max-w-md">
+              <input 
+                type="email" 
+                placeholder="farmer@example.com"
+                className="w-full bg-slate-900 border border-slate-800 rounded-2xl py-5 px-6 text-white focus:outline-none focus:border-emerald-500 transition-colors"
+              />
+              <button className="absolute right-2 top-2 bottom-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 rounded-xl font-bold transition-all">
+                Join
+              </button>
+            </form>
+          </div>
 
-        {/* Quick Links */}
-        <div>
-          <h3
-            className="text-xl font-extrabold mb-4"
-            style={{
-              background: `linear-gradient(90deg, ${primary}, ${secondary})`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            Quick Links
-          </h3>
-          <ul className="space-y-3 text-sm">
-            <li>
-              <Link
-                href={`/ecommerce/about`}
-                className="hover:text-white transition-colors"
-              >
-                About
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={`/ecommerce/contact`}
-                className="hover:text-white transition-colors"
-              >
-                Contact
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={`/ecommerce/privacy`}
-                className="hover:text-white transition-colors"
-              >
-                Privacy Policy
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={`/ecommerce/terms`}
-                className="hover:text-white transition-colors"
-              >
-                Terms of Service
-              </Link>
-            </li>
-          </ul>
-        </div>
-
-        {/* Customer Care */}
-        <div>
-          <h3
-            className="text-xl font-extrabold mb-4"
-            style={{
-              background: `linear-gradient(90deg, ${primary}, ${secondary})`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            Customer Care
-          </h3>
-          <ul className="space-y-3 text-sm">
-            <li>
-              <Link
-                href={`/ecommerce/help`}
-                className="hover:text-white transition-colors"
-              >
-                Help Center
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={`/ecommerce/returns`}
-                className="hover:text-white transition-colors"
-              >
-                Returns
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={`/ecommerce/shipping`}
-                className="hover:text-white transition-colors"
-              >
-                Shipping
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={`/ecommerce/track`}
-                className="hover:text-white transition-colors"
-              >
-                Track Order
-              </Link>
-            </li>
-          </ul>
-        </div>
-
-        {/* Follow Us */}
-        <div>
-          <h3
-            className="text-xl font-extrabold mb-4"
-            style={{
-              background: `linear-gradient(90deg, ${primary}, ${secondary})`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            Follow Us
-          </h3>
-          <div className="flex space-x-4">
-            {socialLinks.map((s, idx) => {
-              const channel = String(s.channel).toLowerCase();
-              const icon = iconMapper[channel] || <FaceFrownIcon className="w-5 h-5" />;
-              return (
-                <motion.a
-                  key={idx}
-                  whileHover={{ scale: 1.1 }}
-                  href={`${s.url}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="
-                    flex items-center justify-center 
-                    w-10 h-10 
-                    text-gray-300 hover:text-white 
-                    rounded-full 
-                    transition-colors
-                  "
-                  style={{
-                    background: `linear-gradient(135deg, ${primary}33, ${secondary}33)`,
-                  }}
-                >
-                  {icon}
-                </motion.a>
-              );
-            })}
+          <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-8">
+            <div className="space-y-6">
+              <h3 className="text-white font-black uppercase text-[10px] tracking-[0.3em]">Supply Chain</h3>
+              <ul className="space-y-4 text-sm font-bold">
+                <li><Link href="/ecommerce/shop" className="hover:text-emerald-400 transition-colors">Agrochemicals</Link></li>
+                <li><Link href="/ecommerce/shop" className="hover:text-emerald-400 transition-colors">Certified Seeds</Link></li>
+                <li><Link href="/ecommerce/shop" className="hover:text-emerald-400 transition-colors">Animal Health</Link></li>
+                <li><Link href="/ecommerce/shop" className="hover:text-emerald-400 transition-colors">Bulk Equipment</Link></li>
+              </ul>
+            </div>
+            <div className="space-y-6">
+              <h3 className="text-white font-black uppercase text-[10px] tracking-[0.3em]">Partnership</h3>
+              <ul className="space-y-4 text-sm font-bold">
+                <li><Link href="/ecommerce/about" className="hover:text-emerald-400 transition-colors">Our Story</Link></li>
+                <li><Link href="/ecommerce/contact" className="hover:text-emerald-400 transition-colors">Vet Consultation</Link></li>
+                <li><Link href="/ecommerce/shipping" className="hover:text-emerald-400 transition-colors">Logistics</Link></li>
+                <li><Link href="/ecommerce/faq" className="hover:text-emerald-400 transition-colors">Help Desk</Link></li>
+              </ul>
+            </div>
+            <div className="col-span-2 md:col-span-1 space-y-6 border-t border-slate-900 md:border-none pt-8 md:pt-0">
+              <h3 className="text-white font-black uppercase text-[10px] tracking-[0.3em]">Direct Contact</h3>
+              <div className="space-y-4 text-sm">
+                <a href={`mailto:${contactEmail}`} className="flex items-center gap-3 hover:text-white transition-colors">
+                  <EnvelopeIcon className="w-4 h-4 text-emerald-500" />
+                  {contactEmail || 'office@agrovet.com'}
+                </a>
+                <a href={`tel:${contactPhone}`} className="flex items-center gap-3 hover:text-white transition-colors font-mono">
+                  <PhoneIcon className="w-4 h-4 text-emerald-500" />
+                  {contactPhone || '+254 700 000 000'}
+                </a>
+                <div className="flex items-center gap-3 italic">
+                  <MapPinIcon className="w-4 h-4 text-emerald-500" />
+                  Headquarters, Nairobi
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Bottom Bar */}
-      <div className="mt-12 border-t border-gray-700 pt-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm text-gray-500">
-            &copy; {new Date().getFullYear()} {name}. All rights reserved.
+        {/* --- MIDDLE: Brand Banner --- */}
+        <div className="py-12 border-y border-slate-900 flex flex-col md:flex-row items-center justify-between gap-8">
+           <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center text-white text-2xl font-black">
+                {name?.charAt(0) || 'A'}
+              </div>
+              <h2 className="text-2xl font-black text-white tracking-tighter uppercase italic">
+                {name || 'Agrovet'}
+              </h2>
+           </div>
+
+           <div className="flex gap-4">
+              {socialLinks.map((s, idx) => (
+                <motion.a
+                  key={idx}
+                  whileHover={{ y: -3, color: '#10b981' }}
+                  href={s.url}
+                  className="w-12 h-12 rounded-full border border-slate-800 flex items-center justify-center transition-colors"
+                >
+                  {iconMapper[String(s.channel).toLowerCase()] || <GlobeAltIcon className="w-5 h-5" />}
+                </motion.a>
+              ))}
+           </div>
+        </div>
+
+        {/* --- BOTTOM: Copyright & Legal --- */}
+        <div className="pt-12 flex flex-col md:flex-row justify-between items-center gap-6">
+          <p className="text-xs font-medium text-slate-600 tracking-wider">
+            &copy; {new Date().getFullYear()} {name}. Built for the Modern Farmer.
           </p>
-          <div className="mt-4 md:mt-0 flex space-x-6">
-            <Link
-              href={`/ecommerce/sitemap.xml`}
-              className="text-sm hover:text-white transition-colors"
-            >
-              Sitemap
-            </Link>
-            <Link
-              href={`/ecommerce/faq`}
-              className="text-sm hover:text-white transition-colors"
-            >
-              FAQ
-            </Link>
-            <Link
-              href={`/ecommerce/support`}
-              className="text-sm hover:text-white transition-colors"
-            >
-              Support
-            </Link>
+          <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest">
+            <Link href="/ecommerce/privacy" className="hover:text-emerald-500 transition-colors">Privacy</Link>
+            <Link href="/ecommerce/terms" className="hover:text-emerald-500 transition-colors">Terms</Link>
+            <Link href="/ecommerce/sitemap.xml" className="hover:text-emerald-500 transition-colors">Sitemap</Link>
           </div>
         </div>
       </div>

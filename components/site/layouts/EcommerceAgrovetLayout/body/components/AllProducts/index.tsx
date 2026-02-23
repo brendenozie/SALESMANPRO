@@ -1,44 +1,54 @@
 'use client';
 
-import { useStateContext } from '@/contexts/ContextProvider';
-import { useStoreContext } from '@/contexts/StoreContext';
-import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
 import React from 'react';
+import { motion } from 'framer-motion';
+import { ArrowRightIcon, BeakerIcon } from '@heroicons/react/24/outline';
 import ProductCard from '../ProductCard';
 
 interface AllProductsProps {
-  // Define any props if needed
   id: string;
   marketplaceListings: any[];
   themeSettings: Record<string, any> | null;
 }
 
-export default function AllProducts( { id, marketplaceListings, themeSettings }: AllProductsProps) {
-
-  const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
-  // const { storeFormData } = useStoreContext();
-  // const { id, marketplaceListings = [], themeSettings = {} } = storeFormData || {};
-  const primary = themeSettings?.primaryColor || '#f97316';
-  const secondary = themeSettings?.secondaryColor || '#3b82f6';
-
-  const getQuantity = (id: string) => cart.find((item: any) => item.id === id)?.quantity || 0;
-
+export default function AllProducts({ marketplaceListings }: AllProductsProps) {
   return (
-    <section className="py-12 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4">
+    <section className="py-24 bg-white relative overflow-hidden">
+      {/* Subtle Grid Pattern Overlay */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
+
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        
         {/* Section Header */}
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">AllProducts</h2>
-          <button 
-          onClick={() => window.location.href = `/ecommerce/products`}
-          className="flex items-center text-green-600 font-semibold hover:underline">
-            See All <ArrowRightCircleIcon className="w-6 h-6 ml-2" />
-          </button>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16 border-b border-slate-100 pb-12">
+          <div className="max-w-2xl">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-2 text-emerald-600 mb-4"
+            >
+              <BeakerIcon className="w-5 h-5" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em]">Scientific Grade Inputs</span>
+            </motion.div>
+            <h2 className="text-4xl md:text-6xl font-black text-slate-900 leading-none tracking-tighter">
+              The <span className="italic font-serif font-light text-emerald-600">Premium</span> Inventory.
+            </h2>
+          </div>
+
+          <motion.button 
+            whileHover={{ x: 5 }}
+            onClick={() => window.location.href = `/ecommerce/products`}
+            className="group flex items-center gap-3 text-slate-900 font-black uppercase text-xs tracking-widest border-b-2 border-emerald-500 pb-1 transition-all"
+          >
+            Explore Full Catalog 
+            <ArrowRightIcon className="w-4 h-4 group-hover:text-emerald-600" />
+          </motion.button>
         </div>
+
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {marketplaceListings.map((product) => (
-              <ProductCard key={product.id} product={product} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
+          {marketplaceListings.map((product, i) => (
+            <ProductCard key={product.id} product={product} index={i} />
           ))}
         </div>
       </div>
