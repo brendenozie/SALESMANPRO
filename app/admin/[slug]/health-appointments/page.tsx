@@ -28,7 +28,7 @@ async function fetchAppointments(companyId: string, cookieHeader: string) {
       throw new Error(`Failed to fetch appointments: ${res.statusText}`);
     }
 
-    const json = await res.json();
+    const json = (await res.json()).data;
     console.log("Fetched appointments:", json);
     return json.data || [];
   } catch (err) {

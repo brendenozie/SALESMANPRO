@@ -1158,6 +1158,17 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
     { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
   ],
+
+  "Social Media Manager" : [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
+    { label: "Clients & Accounts", href: `/admin/${adminSlug}/social-clients`, icon: UsersIcon },
+    { label: "Content Calendar", href: `/admin/${adminSlug}/social-calendar`, icon: CalendarDaysIcon },
+    { label: "Post Management", href: `/admin/${adminSlug}/social-posts`, icon: PencilSquareIcon },
+    { label: "Analytics & Reports", href: `/admin/${adminSlug}/social-analytics`, icon: ChartBarIcon },
+    { label: "Messages & Engagement", href: `/admin/${adminSlug}/social-messages`, icon: ChatBubbleBottomCenterTextIcon },
+    { label: "Settings", href: `/admin/${adminSlug}/social-settings`, icon: Cog6ToothIcon },
+  ]
   
   //Old PAths
   // "Marketplace": [
