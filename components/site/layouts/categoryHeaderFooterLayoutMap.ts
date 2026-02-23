@@ -3,6 +3,7 @@ import dynamic from 'next/dynamic';
 
 const GhubaLayout = dynamic(() => import('@/components/site/layouts/GhubaLayout/GhubaLayout'));
 const EcommerceLayout = dynamic(() => import('@/components/site/layouts/EcommerceLayout/EcommerceLayout'));
+const EcommerceAgrovetLayout = dynamic(() => import('@/components/site/layouts/EcommerceAgrovetLayout/EcommerceAgrovetLayout'));
 const EcommerceShoesLayout = dynamic(() => import('@/components/site/layouts/EcommerceShoesLayout/EcommerceShoesLayout'));
 const ServicesLayout = dynamic(() =>  import('@/components/site/layouts/ServicesLayout/ServicesLayout'));
 const BookingsLayout = dynamic(() => import( '@/components/site/layouts/BookingsLayout/BookingsLayout'));
@@ -48,6 +49,8 @@ const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterComponent>
     'public-speaking': PublicSpeakingLayout,
     'shoes-store': EcommerceShoesLayout,
     'shoes store': EcommerceShoesLayout,
+    'agrovet store': EcommerceAgrovetLayout,
+    'agrovet-store': EcommerceAgrovetLayout,
     'e-commerce': EcommerceLayout,
     'services': ServicesLayout,
     'service provider': ServicesLayout,

@@ -41,6 +41,7 @@ export const BodyComponentMap: Record<string, React.ComponentType<{ pageData: St
   'AutomotiveSite': AutomotiveSite,
   'EcommerceSite': EcommerceSite,
   'EcommerceShoesSite': EcommerceShoesSite,
+  'EcommerceAgrovetSite': EcommerceAgrovetSite,
   'ConsultancySite': ConsultancyLayout,
   'RealEstateSite': RealEstateSite,
   'BlogSite': BlogSite,

@@ -28,6 +28,8 @@ export function normalizeCategory(value?: string): string {
 export const folderMap: Record<string, string> = {
   'ecommerce': 'EcommerceLayout',
   'e-commerce': 'EcommerceLayout',
+  'agrovet-store': 'EcommerceAgrovetLayout',
+  'agrovet store': 'EcommerceAgrovetLayout',
   'digital-goods-store-v2': 'EcommerceLayout',
   'modern-shop-v1': 'EcommerceLayout',
   'marketplace': 'MarketplaceLayout',
@@ -106,6 +108,7 @@ export const folderMap: Record<string, string> = {
 // ✅ Reverse Map (auto-aligned)
 export const siteComponentNameMap: Record<string, string> = {
   'EcommerceLayout': 'EcommerceSite',
+  'EcommerceAgrovetLayout': 'EcommerceAgrovetSite',
   'EcommerceShoesLayout': 'EcommerceShoesSite',
   'PublicSpeakingLayout': 'PublicSpeakingSite',
   'ConsultancyLayout': 'ConsultancySite',
