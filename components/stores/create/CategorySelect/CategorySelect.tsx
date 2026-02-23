@@ -156,7 +156,9 @@ const SITE_CATEGORIES: Category[] = [
     { name: "Educational & Online Courses",
       icon: "📚",
       variants: [
-        { name: "Online Learning", link: "https://educational-online-courses.salesmanpro.site", description: "Promote online courses and resources.", tag: 'Standard' }
+        { name: "Online Learning", link: "https://educational-online-courses.salesmanpro.site", description: "Promote online courses and resources.", tag: 'Standard' },
+        { name: "Courses Layout 2", link: "https://courses-layout-2.salesmanpro.site", description: "Alternate design for online courses.", tag: 'Standard' },
+        { name: "Courses Layout 3", link: "https://courses-layout-3.salesmanpro.site", description: "Another design for online courses.", tag: 'Standard' },
       ]
     },
     { name: "Restaurant & Food Delivery",

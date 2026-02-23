@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
-import { PlayCircleIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
-import { AcademicCapIcon, BanknotesIcon, HeartIcon } from '@heroicons/react/24/outline';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { PlayCircleIcon } from '@heroicons/react/24/solid';
+import { AcademicCapIcon, BanknotesIcon, RocketLaunchIcon } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
-import clsx from 'clsx';
 import Image from 'next/image';
+import clsx from 'clsx';
 import { HeroSlide } from '@/types/typings';
 
 // Define types based on your transformCompanyToStoreForm and Prisma schema
@@ -232,534 +232,174 @@ const scrollItemVariants = {
   },
 };
 
-// NOTE: Assuming customLoader, handleImageError, scrollItemVariants, 
-// and dynamic colors (primaryColor, accentColor) are available in the scope.
-// Using default placeholders for accentColor in this isolated example.
+// --- Sub-component for the Floating Doodles ---
+const FloatingDoodle = ({ src, className, delay = 0, duration = 4, yOffset = 20 }: any) => (
+  <motion.img
+    initial={{ opacity: 0, scale: 0.8 }}
+    animate={{ 
+      opacity: 0.6, 
+      scale: 1,
+      y: [0, -yOffset, 0],
+    }}
+    transition={{
+      opacity: { duration: 1, delay },
+      y: { duration, repeat: Infinity, ease: "easeInOut", delay }
+    }}
+    src={src}
+    alt="doodle"
+    className={`${className} pointer-events-none z-20`}
+  />
+);
 
-// Placeholder colors for demonstration (replace with actual dynamic colors from scope)
-const PRIMARY_COLOR_DEMO = '#06B6D4'; // Cyan
-const ACCENT_COLOR_DEMO = '#FBBF24'; // Amber
+// --- Refined InfoCard (Sketch Style) ---
+const InfoCard = ({ stat, index, primaryColor }: any) => {
+  // Cycle through icons based on index
+  const Icons = [AcademicCapIcon, BanknotesIcon, RocketLaunchIcon];
+  const Icon = Icons[index % Icons.length];
 
-// --- Reusable InfoCard Component (Transformed) ---
-const InfoCard = ({ card }: any) => {
-  const isIconCard = card.iconComponent;
-  
-  // Assume dynamic colors are available here:
-  // const primaryColor = ...; 
-  // const accentColor = ...;
-  const primaryColor = PRIMARY_COLOR_DEMO; 
-  const accentColor = ACCENT_COLOR_DEMO;
-
-  // Custom border style for the gradient effect
-  const gradientBorderStyles: React.CSSProperties = {
-    position: 'relative',
-    overflow: 'hidden',
-    border: '1px solid transparent',
-    background: `linear-gradient(white, white) padding-box, 
-                 linear-gradient(to right, ${primaryColor}, ${accentColor}) border-box`,
-  };
-  
-  // Custom styles for the icon card background/icon color
-  const iconCardIconStyle: React.CSSProperties = { color: primaryColor };
-  const iconCardBgStyle: React.CSSProperties = { backgroundColor: `${primaryColor}1A` }; // Primary color with 10% opacity
-  
   return (
     <motion.div
-      className={clsx(
-        `flex-shrink-0 w-80 md:w-96 snap-center my-2 
-         bg-white dark:bg-gray-800 rounded-2xl shadow-lg 
-         transition-all duration-300 group focus-within:ring-4 focus-within:ring-offset-2`,
-        'hover:shadow-2xl' // Stronger base hover shadow
-      )}
-      style={{ 
-        ...gradientBorderStyles, // Apply the gradient border style
-        boxShadow: `0 10px 20px rgba(0,0,0,0.05)`,
-        '--tw-ring-color': `${primaryColor} !important` 
-      } as React.CSSProperties}
-      variants={scrollItemVariants}
-      whileHover={{ y: -8, boxShadow: `0 15px 30px ${primaryColor}40` }} // Stronger lift and color shadow
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      whileHover={{ y: -10 }}
+      className="flex-shrink-0 w-72 md:w-80 bg-white border-2 border-slate-900 p-6 shadow-[8px_8px_0px_#0f172a] snap-center"
     >
-      {isIconCard ? (
-        // {/* --- ICON CARD DESIGN --- */}
-        <div className="flex flex-col h-full p-8">
-          <div 
-            className="flex items-center justify-center w-16 h-16 rounded-xl mb-4 transition-all duration-300"
-            style={iconCardBgStyle}
-          >
-            <card.iconComponent className="w-8 h-8" style={iconCardIconStyle} />
-          </div>
-          <h3 className="text-2xl font-extrabold mb-3 text-gray-900 dark:text-white transition-colors duration-300">
-            {card.title}
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400 flex-grow text-base mb-4">{card.description}</p>
-          <a
-            href={card.link || '#'}
-            className={`inline-flex items-center font-bold transition-colors duration-300 group-hover:underline`}
-            style={{ color: accentColor }}
-          >
-            Explore Now
-            <ArrowRightIcon className="ml-2 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-          </a>
+      <div className="flex items-center gap-4 mb-4">
+        <div className="p-2 border-2 border-slate-900 rounded-sm" style={{ color: primaryColor }}>
+          <Icon className="w-8 h-8" />
         </div>
-      ) : (
-        // {/* --- IMAGE CARD DESIGN --- */}
-        <div className="relative flex flex-col h-full">
-          <div className="relative w-full h-48 sm:h-56 overflow-hidden">
-            <Image
-              src={card.image}
-              alt={card.title}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
-              loader={customLoader}
-              onError={handleImageError}
-            />
-            {/* Gradient overlay for visual pop and title contrast */}
-            <div className="absolute inset-0 bg-gradient-to-t from-gray-900/70 to-transparent"></div>
-            <h3 className="absolute bottom-4 left-6 text-xl md:text-2xl font-extrabold text-white z-10">
-              {card.title}
-            </h3>
-          </div>
-          <div className="p-6 flex flex-col flex-grow">
-            <p className="text-gray-600 dark:text-gray-400 flex-grow text-sm mb-4">{card.description}</p>
-            <a
-              href={card.link || '#'}
-              className={`inline-flex items-center font-bold transition-colors duration-300 mt-auto group-hover:underline`}
-              style={{ color: accentColor }}
-            >
-              View Details
-              <ArrowRightIcon className="ml-2 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-            </a>
-          </div>
-        </div>
-      )}
+        <div className="text-3xl font-black text-slate-900 tracking-tighter">{stat.value}</div>
+      </div>
+      <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">{stat.label}</h3>
     </motion.div>
   );
 };
 
-// --- Main Section Component (Horizontal Scroll Gallery) ---
-// (No structural changes to InfoCardsSection needed, only CSS is inherited)
-function InfoCardsSection({ storeFormData }: any) { 
-    
-    const fallbackInfoCardsData = [
-        { title: 'Global Education Programs', description: 'Explore our wide array of international study programs.', image: 'https://images.unsplash.com/photo-1541339907198-e087566d3f00?q=80&w=2670&auto=format&fit=crop', iconComponent: null, link: '#global-programs' },
-        { title: 'Innovative Research Hubs', description: 'Engage with cutting-edge research projects across disciplines.', image: null, iconComponent: AcademicCapIcon, link: '#research' },
-        { title: 'Student Wellness Services', description: 'Comprehensive support for mental health and well-being.', image: 'https://images.unsplash.com/photo-1534017366050-6a0b16f31623?q=80&w=2670&auto=format&fit=crop', iconComponent: null, link: '#wellness' },
-    ];
-    const dynamicInfoCardsData = storeFormData?.stats && storeFormData.stats.length > 0 ?
-        storeFormData.stats.map((stat: any, index: number) => ({
-            title: stat.label || `Dynamic Insight ${index + 1}`,
-            description: stat.value ? `Value: ${stat.value}` : 'No description provided.',
-            image: stat.iconUrl || null,
-            iconComponent: index % 2 === 0 ? BanknotesIcon : AcademicCapIcon,
-            link: '#'
-        }))
-        : fallbackInfoCardsData;
-
-  return (
-    <motion.section
-      className="relative z-20 -mt-24 px-4 sm:px-6 lg:px-8"
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.1 }}
-    >
-      <div
-        className="flex overflow-x-auto snap-x snap-mandatory py-8 gap-6
-                   scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100
-                   -mx-4 sm:mx-0 px-4 sm:px-0"
-      >
-        {dynamicInfoCardsData.map((card: any, i: number) => (
-          <InfoCard key={i} card={card} />
-        ))}
-      </div>
-    </motion.section>
-  );
-}
-
 export default function HeroSection() {
   const { storeFormData } = useStoreContext();
+  const { scrollY } = useScroll();
 
-  const activeHeroSlide = storeFormData?.heroSlides?.[0];
+  // Parallax effects for doodles
+  const y1 = useTransform(scrollY, [0, 500], [0, -80]);
+  const y2 = useTransform(scrollY, [0, 500], [0, -150]);
 
-  const defaultHeadline = "Your Journey to Knowledge Begins Here";
-  const defaultSubline = "Explore a world of learning opportunities and unlock your full potential with our diverse courses and expert instructors.";
-  const defaultCtaText = "Discover Courses";
-  const defaultCtaLink = "#courses";
-  const defaultVideoLink = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-  const defaultBannerUrl = "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
-  const defaultTagline = "Empowering Minds, Shaping Futures";
+  // Data mapping with fallbacks
+  const activeSlide = storeFormData?.heroSlides?.[0];
+  const stats = storeFormData?.stats || [];
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#2563eb';
 
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#fd2121';
-  const accentColor = "#FFC107";
+  const headline = activeSlide?.headline || "Your Journey to Knowledge Begins Here";
+  const subline = activeSlide?.subline || "Explore a world of learning opportunities with expert instructors.";
+  const bannerImg = activeSlide?.imageUrl || "/assets/fallback-campus.jpg";
 
   return (
-    <div className="font-sans">
-      {/* Hero Section */}
-      <div
-        className="relative h-[95vh] bg-cover bg-center flex items-center justify-center overflow-hidden"
-        style={{
-          backgroundImage: `url("${activeHeroSlide?.imageUrl || defaultBannerUrl}")`,
-          backgroundAttachment: 'fixed',
-        }}
-      >
-        {/* ENHANCED: Overlay with a richer gradient and subtle texture */}
-        <div className="absolute inset-0 bg-gray-900/40 from-gray-900/60 to-transparent flex flex-col items-center justify-center text-center px-4">
+    <section className="relative w-full bg-white overflow-hidden font-sans">
+      {/* 1. Blueprint Grid Background */}
+      <div 
+        className="absolute inset-0 z-0 opacity-10" 
+        style={{ 
+          backgroundImage: `linear-gradient(${primaryColor} 1px, transparent 1px), linear-gradient(90deg, ${primaryColor} 1px, transparent 1px)`, 
+          backgroundSize: '40px 40px' 
+        }} 
+      />
+
+      {/* 2. Parallax Doodles */}
+      <motion.div style={{ y: y1 }} className="absolute inset-0 hidden md:block">
+        <FloatingDoodle src="/assets/doodles/rocket.png" className="absolute left-[5%] top-[15%] w-32 rotate-[-15deg]" delay={0.2} />
+        <FloatingDoodle src="/assets/doodles/pencil.png" className="absolute right-[10%] top-[20%] w-20 rotate-[15deg]" delay={0.5} />
+      </motion.div>
+      <motion.div style={{ y: y2 }} className="absolute inset-0 hidden md:block">
+        <FloatingDoodle src="/assets/doodles/backpack.png" className="absolute right-[5%] bottom-[30%] w-36 rotate-[-10deg]" delay={0.8} />
+      </motion.div>
+
+      {/* 3. Hero Content */}
+      <div className="relative z-10 pt-20 pb-32 px-6 flex flex-col items-center text-center max-w-6xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <span className="inline-block px-4 py-1 border-2 border-slate-900 font-bold text-xs uppercase tracking-[0.3em] mb-6 bg-white">
+            {storeFormData?.tagline || "Private Excellence"}
+          </span>
           
-          {/* Abstract geometric shapes or patterns */}
-          <div className="absolute top-0 left-0 w-48 h-48 rounded-full mix-blend-screen filter blur-3xl opacity-50 animate-blob" style={{ backgroundColor: primaryColor }}></div>
-          <div className="absolute top-0 right-0 w-48 h-48 rounded-full mix-blend-screen filter blur-3xl opacity-50 animate-blob animation-delay-2000" style={{ backgroundColor: accentColor }}></div>
-          <div className="absolute bottom-0 left-1/4 w-48 h-48 bg-blue-300 rounded-full mix-blend-screen filter blur-3xl opacity-50 animate-blob animation-delay-4000"></div>
+          <h1 className="text-5xl md:text-8xl font-black text-slate-900 mb-6 tracking-tighter leading-[0.9] uppercase">
+             {headline.split(' ').map((word, i) => (
+               <span key={i} className={i % 3 === 0 ? "" : "block md:inline"}>
+                 {word}{" "}
+               </span>
+             ))}
+          </h1>
+          
+          <p className="text-slate-500 text-lg md:text-xl font-medium max-w-2xl mx-auto mb-10 leading-relaxed">
+            {subline}
+          </p>
 
-          <motion.div
-            className="relative z-10 max-w-4xl mx-auto text-white"
-            initial="hidden"
-            animate="visible"
-            variants={heroVariants}
-          >
-            <motion.p
-              className="text-lg md:text-xl mb-3 uppercase tracking-widest font-semibold drop-shadow-sm"
-              variants={itemVariants}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-16">
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => window.location.href = activeSlide?.ctaLink || '#'}
+              className="px-10 py-4 text-white font-black text-lg uppercase tracking-tight shadow-[8px_8px_0px_#000] hover:shadow-none transition-all"
+              style={{ backgroundColor: primaryColor }}
             >
-              {storeFormData?.tagline || defaultTagline}
-            </motion.p>
-
-            <motion.h1
-              className="text-4xl sm:text-6xl md:text-7xl font-extrabold mb-6 leading-tight drop-shadow-lg text-white"
-              variants={itemVariants}
-            >
-              {activeHeroSlide?.headline || defaultHeadline}
-            </motion.h1>
-
-            <motion.p
-              className="text-lg md:text-xl mb-8 max-w-2xl mx-auto leading-relaxed drop-shadow-sm text-gray-200"
-              variants={itemVariants}
-            >
-              {activeHeroSlide?.subline || defaultSubline}
-            </motion.p>
-
-            <motion.div
-              className="flex flex-col sm:flex-row gap-4 justify-center"
-              variants={itemVariants}
-            >
-              <motion.button
-                whileHover={{ scale: 1.05, boxShadow: `0 10px 20px ${primaryColor}40` }}
-                whileTap={{ scale: 0.95 }}
-                className="inline-flex items-center text-white min-w-[200px] text-center justify-center px-10 py-4 rounded-full text-lg font-bold shadow-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-opacity-75"
-                style={{
-                  background: primaryColor,
-                  '--tw-ring-color': `${primaryColor} !important`
-                } as React.CSSProperties}
-                onClick={() => window.location.href = activeHeroSlide?.ctaLink || defaultCtaLink}
+              {activeSlide?.ctaText || "Enroll Now"}
+            </motion.button>
+            
+            {activeSlide?.videoLink && (
+              <button 
+                onClick={() => window.open(activeSlide.videoLink || '', '_blank')}
+                className="flex items-center gap-2 font-black uppercase text-slate-900 hover:text-blue-600 transition-colors"
               >
-                {activeHeroSlide?.ctaText || defaultCtaText}
-              </motion.button>
+                <PlayCircleIcon className="w-8 h-8" style={{ color: primaryColor }} />
+                Watch Story
+              </button>
+            )}
+          </div>
+        </motion.div>
 
-              {activeHeroSlide?.videoLink && (
-                <motion.button
-                  whileHover={{ scale: 1.05, boxShadow: `0 10px 20px ${accentColor}40` }}
-                  whileTap={{ scale: 0.95 }}
-                  className="inline-flex items-center text-gray-800 min-w-[200px] bg-white hover:bg-gray-100 text-center justify-center px-10 py-4 rounded-full text-lg font-bold shadow-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-opacity-75"
-                  style={{
-                    '--tw-ring-color': `${accentColor} !important`
-                  } as React.CSSProperties}
-                  onClick={() => window.open(activeHeroSlide?.videoLink || '', '_blank')}
-                >
-                  <PlayCircleIcon className="h-6 w-6 mr-2" style={{ color: primaryColor }} /> Watch Video
-                </motion.button>
-              )}
-            </motion.div>
-          </motion.div>
+        {/* 4. Horizontal Stat Gallery (Replacing the old info cards) */}
+        <div className="w-full flex overflow-x-auto snap-x snap-mandatory pb-8 gap-6 scrollbar-hide">
+          {stats.map((stat, i) => (
+            <InfoCard key={i} stat={stat} index={i} primaryColor={primaryColor} />
+          ))}
         </div>
       </div>
 
-      {/* Info Cards Section */}
-      <InfoCardsSection storeFormData={storeFormData} />
+      {/* 5. The "Torn Paper" Transition */}
+      <div className="relative h-40 w-full overflow-hidden leading-[0] z-30">
+        <svg className="absolute bottom-0 w-full h-full" viewBox="0 0 1200 120" preserveAspectRatio="none">
+          <path 
+            d="M0,0 C150,90 400,90 600,40 C800,-10 1050,-10 1200,80 L1200,120 L0,120 Z" 
+            className="fill-slate-900"
+          ></path>
+        </svg>
+      </div>
 
-      {/* Tailwind CSS keyframe animation for the blob effect */}
-      <style jsx>{`
-        @keyframes blob {
-          0% {
-            transform: translate(0, 0) scale(1);
-          }
-          33% {
-            transform: translate(30px, -50px) scale(1.1);
-          }
-          66% {
-            transform: translate(-20px, 20px) scale(0.9);
-          }
-          100% {
-            transform: translate(0, 0) scale(1);
-          }
-        }
-        .animate-blob {
-          animation: blob 7s infinite cubic-bezier(0.68, -0.55, 0.27, 1.55);
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-      `}</style>
-    </div>
+      {/* 6. Contextual Hero Image Section */}
+      <div className="bg-slate-900 w-full px-6 pb-24">
+        <motion.div 
+          initial={{ y: 50, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          viewport={{ once: true }}
+          className="max-w-6xl mx-auto relative group"
+        >
+          {/* Sketchy border around the image */}
+          <div className="absolute -inset-3 border-2 border-dashed border-blue-500/30 rounded-3xl" />
+          <div className="relative h-[400px] md:h-[600px] w-full overflow-hidden rounded-2xl grayscale hover:grayscale-0 transition-all duration-1000">
+             <Image 
+               src={bannerImg} 
+               alt="Campus life" 
+               fill 
+               className="object-cover"
+               priority
+              loader={customLoader}
+              onError={handleImageError}
+             />
+          </div>
+        </motion.div>
+      </div>
+    </section>
   );
 }
-
-
-//new more appealing design 
-// "use client";
-
-// import React from 'react';
-// import { motion } from 'framer-motion';
-// import { PlayCircleIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
-// import { AcademicCapIcon, BanknotesIcon, HeartIcon } from '@heroicons/react/24/outline';
-// import { useStoreContext } from '@/contexts/StoreContext';
-// import clsx from 'clsx';
-// import Image from 'next/image';
-// import { HeroSlide, Stat } from '@/types/typings'; // Assuming types are imported
-
-// // Reusable loader and error handler (kept from original)
-// const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-//   return `${src}?w=${width}&q=${quality || 75}`;
-// };
-
-// const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-//   e.currentTarget.onerror = null;
-//   e.currentTarget.src = "https://placehold.co/400x250/CCCCCC/000000?text=Image+Error";
-// };
-
-// // Animation variants (re-defined for a staggered, left-aligned entrance)
-// const heroVariants = {
-//   hidden: { opacity: 0 },
-//   visible: {
-//     opacity: 1,
-//     transition: {
-//       when: "beforeChildren",
-//       staggerChildren: 0.15,
-//     },
-//   },
-// };
-
-// const itemVariants = {
-//   hidden: { opacity: 0, x: -30 },
-//   visible: {
-//     opacity: 1,
-//     x: 0,
-//     transition: {
-//       type: "spring",
-//       stiffness: 80,
-//       damping: 10,
-//     },
-//   },
-// };
-
-// const statVariants = {
-//   hidden: { opacity: 0, y: 20 },
-//   visible: {
-//     opacity: 1,
-//     y: 0,
-//     transition: {
-//       type: "spring",
-//       stiffness: 100,
-//       damping: 15,
-//       delay: 0.8, // Stats appear after main content
-//     },
-//   },
-// };
-
-
-// // --- Reusable InfoCard Component (Kept for InfoCardsSection) ---
-// // (InfoCard and InfoCardsSection code are omitted here for brevity, 
-// // assuming they remain the same as the previous step and are included 
-// // in the full application code.)
-// // ... InfoCard and InfoCardsSection definitions ...
-
-// // Placeholder for InfoCardsSection component to keep the import structure intact
-// function InfoCardsSection() {
-//     return null; 
-// }
-
-
-// // --- Main Hero Section Component (The New Design) ---
-// export default function HeroSection() {
-//   const { storeFormData } = useStoreContext();
-
-//   const activeHeroSlide = storeFormData?.heroSlides?.[0];
-//   const statsData: Stat[] = storeFormData?.stats || [];
-
-//   const defaultHeadline = "Your Journey to Knowledge Begins Here";
-//   const defaultSubline = "Explore a world of learning opportunities and unlock your full potential with our diverse courses and expert instructors.";
-//   const defaultCtaText = "Discover Courses";
-//   const defaultCtaLink = "#courses";
-//   const defaultVideoLink = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-//   const defaultBannerUrl = "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop";
-//   const defaultProductUrl = "https://images.unsplash.com/photo-1542435503-9d10e527f551?q=80&w=2787&auto=format&fit=crop"; // New default product image
-//   const defaultTagline = "Empowering Minds, Shaping Futures";
-
-//   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#fd2121';
-//   const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FFC107'; // Ensure accent is distinct from primary
-
-//   // Determine the image for the visual showcase
-//   const visualImageUrl = activeHeroSlide?.productImageUrl || defaultProductUrl;
-//   const backgroundImageUrl = activeHeroSlide?.imageUrl || defaultBannerUrl;
-
-
-//   return (
-//     <div className="font-sans">
-//       <motion.section
-//         className="relative bg-gray-900 min-h-[90vh] flex items-center overflow-hidden"
-//         initial="hidden"
-//         animate="visible"
-//         variants={heroVariants}
-//       >
-//         {/* Layer 1: Massive Background Image for Depth */}
-//         <div className="absolute inset-0 opacity-20 filter saturate-150 transition duration-500">
-//             <Image
-//                 src={backgroundImageUrl}
-//                 alt="Background learning scene"
-//                 fill
-//                 className="object-cover object-center"
-//                 loader={customLoader}
-//                 sizes="100vw"
-//                 priority
-//             />
-//         </div>
-        
-//         {/* Layer 2: Gradient Overlay and Geometric Shape */}
-//         <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/80 to-transparent">
-//             {/* Dynamic Geometric Shape (Wedge on the right for visual break) */}
-//             <div 
-//                 className="absolute inset-y-0 right-0 w-full lg:w-3/5"
-//                 style={{ 
-//                     clipPath: 'polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)', 
-//                     backgroundColor: primaryColor,
-//                     opacity: 0.15
-//                 }}
-//             />
-//         </div>
-
-//         {/* Layer 3: Main Content Grid */}
-//         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full py-20 lg:py-0">
-//           <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
-            
-//             {/* Left Column: Text & CTA (60%) */}
-//             <div className="w-full lg:w-7/12 text-center lg:text-left">
-//               <motion.p
-//                 className="text-lg md:text-xl mb-3 uppercase tracking-widest font-semibold drop-shadow-sm"
-//                 style={{ color: accentColor }}
-//                 variants={itemVariants}
-//               >
-//                 {storeFormData?.tagline || defaultTagline}
-//               </motion.p>
-
-//               <motion.h1
-//                 className="text-5xl sm:text-7xl lg:text-8xl font-black mb-6 leading-tight drop-shadow-lg text-white"
-//                 variants={itemVariants}
-//               >
-//                 {/* Visual Highlight on the first part of the headline */}
-//                 <span className="relative">
-//                     {activeHeroSlide?.headline?.split(' ')[0] || "Unlock"}
-//                     <span 
-//                         className="absolute bottom-0 left-0 w-full h-1 bg-white opacity-40 rounded-full"
-//                         style={{ backgroundColor: primaryColor }}
-//                     />
-//                 </span>{' '}
-//                 {activeHeroSlide?.headline?.split(' ').slice(1).join(' ') || "Your Potential"}
-//               </motion.h1>
-
-//               <motion.p
-//                 className="text-xl md:text-2xl mb-10 max-w-2xl lg:max-w-none leading-relaxed drop-shadow-sm text-gray-300"
-//                 variants={itemVariants}
-//               >
-//                 {activeHeroSlide?.subline || defaultSubline}
-//               </motion.p>
-
-//               {/* CTA Buttons */}
-//               <motion.div
-//                 className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12"
-//                 variants={itemVariants}
-//               >
-//                 <motion.a
-//                   href={activeHeroSlide?.ctaLink || defaultCtaLink}
-//                   whileHover={{ scale: 1.05, boxShadow: `0 0 30px ${primaryColor}70` }}
-//                   whileTap={{ scale: 0.95 }}
-//                   className="inline-flex items-center text-white min-w-[200px] text-center justify-center px-10 py-4 rounded-full text-lg font-bold shadow-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-opacity-75"
-//                   style={{
-//                     background: primaryColor,
-//                     '--tw-ring-color': `${primaryColor} !important`
-//                   } as React.CSSProperties}
-//                 >
-//                   {activeHeroSlide?.ctaText || defaultCtaText}
-//                   <ArrowRightIcon className="ml-2 w-5 h-5" />
-//                 </motion.a>
-
-//                 {activeHeroSlide?.videoLink && (
-//                   <motion.a
-//                     href={activeHeroSlide?.videoLink || defaultVideoLink}
-//                     target="_blank"
-//                     rel="noopener noreferrer"
-//                     whileHover={{ scale: 1.05, backgroundColor: accentColor }}
-//                     whileTap={{ scale: 0.95 }}
-//                     className="inline-flex items-center text-gray-900 min-w-[200px] bg-white hover:bg-white/90 text-center justify-center px-10 py-4 rounded-full text-lg font-bold shadow-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-opacity-75"
-//                     style={{
-//                         '--tw-ring-color': `${accentColor} !important`
-//                       } as React.CSSProperties}
-//                   >
-//                     <PlayCircleIcon className="h-6 w-6 mr-2" style={{ color: primaryColor }} /> Watch Video
-//                   </motion.a>
-//                 )}
-//               </motion.div>
-              
-//               {/* Integrated Stats / Social Proof */}
-//               {statsData.length > 0 && (
-//                   <motion.div 
-//                       className="flex justify-center lg:justify-start gap-8 flex-wrap border-t border-gray-700 pt-6"
-//                       variants={statVariants}
-//                   >
-//                       {statsData.slice(0, 3).map((stat, index) => (
-//                           <motion.div key={index} className="text-left" variants={statVariants}>
-//                               <p className="text-3xl font-extrabold text-white" style={{ color: accentColor }}>
-//                                   {stat.value}
-//                               </p>
-//                               <p className="text-sm uppercase tracking-wider text-gray-400 mt-1">
-//                                   {stat.label}
-//                               </p>
-//                           </motion.div>
-//                       ))}
-//                   </motion.div>
-//               )}
-//             </div>
-
-//             {/* Right Column: Visual Showcase (40%) */}
-//             <div className="w-full lg:w-5/12 relative min-h-[350px] lg:min-h-[500px]">
-//                 {/* Floating Product Image with Perspective */}
-//                 <motion.div
-//                     className="absolute inset-0 flex items-center justify-center lg:justify-end"
-//                     initial={{ opacity: 0, scale: 0.8, rotateY: -15 }}
-//                     animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-//                     transition={{ duration: 1, delay: 0.3, type: "spring", stiffness: 50 }}
-//                 >
-//                     <div className="relative w-[85%] h-full rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-//                         <Image
-//                             src={visualImageUrl}
-//                             alt="Product preview"
-//                             fill
-//                             className="object-cover object-center"
-//                             loader={customLoader}
-//                             sizes="(max-width: 1024px) 85vw, 40vw"
-//                             priority
-//                         />
-//                          {/* Subtle product overlay */}
-//                         <div className="absolute inset-0 bg-gradient-to-t from-gray-900/10 to-transparent"></div>
-//                     </div>
-//                 </motion.div>
-//             </div>
-//           </div>
-//         </div>
-//       </motion.section>
-
-//       {/* Info Cards Section (remains below with overlap) */}
-//       <InfoCardsSection />
-//     </div>
-//   );
-// }

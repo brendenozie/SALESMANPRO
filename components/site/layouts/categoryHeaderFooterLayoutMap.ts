@@ -11,6 +11,8 @@ const RealEstateLayout = dynamic(() => import( '@/components/site/layouts/RealEs
 const PortfolioLayout = dynamic(() => import( '@/components/site/layouts/PortfolioLayout/PortfolioLayout'));
 const BlogLayout = dynamic(() => import( '@/components/site/layouts/BlogLayout/BlogLayout'));
 const CoursesLayout = dynamic(() => import( '@/components/site/layouts/CoursesLayout/CoursesLayout'));
+const CoursesLayout2 = dynamic(() => import( '@/components/site/layouts/CoursesLayout2/CoursesLayout2'));
+const CoursesLayout3 = dynamic(() => import( '@/components/site/layouts/CoursesLayout3/CoursesLayout3'));
 const DirectoryLayout = dynamic(() => import( '@/components/site/layouts/DirectoryLayout/DirectoryLayout'));
 const EventsLayout = dynamic(() => import( '@/components/site/layouts/EventsLayout/EventsLayout'));
 const FinanceLayout = dynamic(() => import( '@/components/site/layouts/FinanceLayout/FinanceLayout'));
@@ -64,6 +66,8 @@ const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterComponent>
     'directory & listings':DirectoryLayout,
     'educational':CoursesLayout,
     'educational & online courses':CoursesLayout,
+    'courses layout 2':CoursesLayout2,
+    'courses layout 3':CoursesLayout3,
     'courses':CoursesLayout,
     'nonprofit':NonprofitLayout,
     'nonprofit & community':NonprofitLayout,
