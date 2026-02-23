@@ -1168,7 +1168,8 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     { label: "Analytics & Reports", href: `/admin/${adminSlug}/social-analytics`, icon: ChartBarIcon },
     { label: "Messages & Engagement", href: `/admin/${adminSlug}/social-messages`, icon: ChatBubbleBottomCenterTextIcon },
     { label: "Settings", href: `/admin/${adminSlug}/social-settings`, icon: Cog6ToothIcon },
-  ]
+  ],
+
   
   //Old PAths
   // "Marketplace": [
