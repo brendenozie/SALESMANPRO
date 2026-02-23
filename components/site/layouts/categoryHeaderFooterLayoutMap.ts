@@ -90,7 +90,7 @@ const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterComponent>
     'fitness':FitnessLayout ,
     'fitness & wellness':FitnessLayout ,
     'marketplace':MarketplaceLayout ,
-    
+    'logistics':DeliveryLayout ,   
     // variant-based (optional)
     'modern shop (v1)': EcommerceLayout,
     'digital goods store (v2)': EcommerceLayout,
