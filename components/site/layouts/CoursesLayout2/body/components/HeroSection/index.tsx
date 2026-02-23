@@ -2,276 +2,57 @@
 
 import React from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { PlayCircleIcon } from '@heroicons/react/24/solid';
 import { AcademicCapIcon, BanknotesIcon, RocketLaunchIcon } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Image from 'next/image';
-import clsx from 'clsx';
-import { HeroSlide } from '@/types/typings';
 
-// Define types based on your transformCompanyToStoreForm and Prisma schema
-// export type HeroSlide = {
-//   id: string;
-//   imageUrl: string;
-//   productImageUrl?: string;
-//   headline: string;
-//   subline: string;
-//   ctaText: string;
-//   ctaLink: string;
-//   badgeText?: string | null;
-//   price?: number | null;
-//   endsAt?: string | null;
-//   order: number;
-//   videoLink?: string | null;
-// };
-
-export type Stat = {
-  label: string;
-  value: string;
-  iconUrl?: string;
-};
-
-export type ThemeSettings = {
-  primaryColor?: string;
-  secondaryColor?: string;
-};
-
-export type StoreForm = {
-  id?: string;
-  name?: string;
-  slug?: string;
-  tagline?: string;
-  description?: string;
-  bannerUrl?: string;
-  contactEmail?: string;
-  contactPhone?: string;
-  address?: string;
-  geoLocation?: any;
-  openingHours?: any;
-  domain?: string;
-  currency?: string;
-  locale?: string;
-  pricingTiers?: any[];
-  themeSettings?: ThemeSettings;
-  userId?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  deletedAt?: string | null;
-  seo?: any;
-  analyticsConfig?: any;
-  paymentSettings?: any;
-  shippingSettings?: any;
-  awards?: any[];
-  metrics?: any[];
-  stats?: Stat[];
-  socialLinks?: any[];
-  blogs?: any[];
-  policies?: any[];
-  faqs?: any[];
-  testimonials?: any[];
-  heroSlides?: HeroSlide[];
-  promotions?: any[];
-  marketplaceListings?: any[];
-  StoreCategory?: any[];
-};
-
-// Placeholder for useStoreContext to make the component runnable independently
-// You can uncomment this block to test with mock data if needed
-// const useStoreContext = () => ({
-//   storeFormData: {
-//     id: '683581bba1bdf6ca3624b530',
-//     name: 'Educational & Online Courses',
-//     slug: 'educational-online-courses',
-//     tagline: 'Unlock Your Potential',
-//     description: 'sample description',
-//     hasWebsite: true,
-//     companyCategoryId: null,
-//     category: 'Educational & Online Courses',
-//     logoUrl: 'https://ghubabucket.s3.amazonaws.com/images/c370dc36-17c2-4edd-841a-b033337a73b2.png',
-//     bannerUrl: 'https://ghubabucket.s3.amazonaws.com/images/015fda07-de70-4629-817b-7c735ad4e844.jpeg',
-//     contactEmail: 'brendenodhiambo@gmail.com',
-//     contactPhone: '0732771353',
-//     site: null,
-//     address: 'Redeemed Gospel Church, Mau Mau Road, Mathare 3B, Mlango Kubwa ward, Mathare, Nairobi, Nairobi County, 00611, Kenya',
-//     geoLocation: { lat: -1.261568, lng: 36.8574464 },
-//     openingHours: {
-//       mon: { open: '09:00', close: '17:00' },
-//       tue: { open: '09:00', close: '17:00' },
-//       wed: { open: '09:00', close: '17:00' },
-//       thu: { open: '09:00', close: '17:00' },
-//       fri: { open: '09:00', close: '17:00' },
-//       sat: '',
-//       sun: ''
-//     },
-//     domain: 'https://www.educational-online-courses.salesmanpro.site',
-//     currency: 'KES',
-//     locale: 'en-US',
-//     pricingTiers: [],
-//     themeSettings: { primaryColor: '#fd2121', secondaryColor: '#ffffff' },
-//     userId: '67c5b0182e2372b5f2366dbe',
-//     createdAt: '2025-05-27T09:11:21.971Z',
-//     updatedAt: '2025-06-24T15:15:19.118Z',
-//     deletedAt: null,
-//     sEOId: '683581baa1bdf6ca3624b525',
-//     analyticsConfigId: '6847f49ce97163f3ad22af10',
-//     paymentSettingsId: '6847f49ce97163f3ad22af11',
-//     shippingSettingsId: '6847f49ce97163f3ad22af12',
-//     awards: [],
-//     metrics: [],
-//     stats: [
-//       {
-//         label: 'Students Enrolled',
-//         value: '5000+',
-//         iconUrl: 'https://img.icons8.com/ios-filled/50/ffffff/student-male.png'
-//       },
-//       {
-//         label: 'Courses Offered',
-//         value: '150+',
-//         iconUrl: 'https://img.icons8.com/ios-filled/50/ffffff/book.png'
-//       },
-//       {
-//         label: 'Expert Tutors',
-//         value: '50+',
-//         iconUrl: 'https://img.icons8.com/ios-filled/50/ffffff/teacher.png'
-//       }
-//     ],
-//     socialLinks: [],
-//     blogs: [],
-//     policies: [],
-//     faqs: [],
-//     testimonials: [],
-//     heroSlides: [
-//       {
-//         id: '685ac107c15bfc6a22259017',
-//         imageUrl: 'https://ghubabucket.s3.amazonaws.com/images/55f2153f-da53-4c40-8810-25c6722db88a.jpeg',
-//         productImageUrl: 'https://ghubabucket.s3.amazonaws.com/images/e9736357-c689-4a62-92f1-680a7b23009b.jpeg',
-//         headline: 'Master New Skills Online',
-//         subline: 'Access a vast library of courses taught by industry leaders, designed to accelerate your career.',
-//         ctaText: 'Start Learning',
-//         ctaLink: 'viewlink.com/start-learning',
-//         badgeText: null,
-//         price: null,
-//         endsAt: null,
-//         order: 0,
-//         videoLink: 'https://www.youtube.com/watch?v=your-actual-video-id'
-//       },
-//     ],
-//     promotions: [],
-//     seo: {},
-//     analyticsConfig: {},
-//     paymentSettings: {},
-//     shippingSettings: {},
-//     marketplaceListings: [],
-//     StoreCategory: [],
-//   } as StoreForm,
-// });
-
-// Reusable loader and error handler
+// --- Assets & Utils ---
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
 const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
   e.currentTarget.onerror = null;
-  e.currentTarget.src = "https://placehold.co/400x250/CCCCCC/000000?text=Image+Error";
+  e.currentTarget.src = "https://placehold.co/1200x800/CCCCCC/000000?text=Image+Unavailable";
 };
 
-// Animation variants
-const heroVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: "spring",
-      stiffness: 80,
-      damping: 10,
-      duration: 0.8,
-      when: "beforeChildren",
-      staggerChildren: 0.2,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: "spring",
-      stiffness: 100,
-      damping: 15,
-    },
-  },
-};
-
-// **********************************************
-// NOTE: This assumes the required imports are present,
-// e.g., 'motion' from 'framer-motion', 'clsx', 'Image' from 'next/image',
-// and the Heroicons: ArrowRightIcon, AcademicCapIcon, BanknotesIcon, HeartIcon.
-// This also assumes you have `customLoader` and `handleImageError` functions defined.
-// **********************************************
-
-// Accent Color (kept for consistency)
-const accentColor = 'rgb(59, 130, 246)'; // Tailwind blue-500
-
-// --- Card Variants for Individual Items (Slightly adjusted for scroll context) ---
-const scrollItemVariants = {
-  hidden: { opacity: 0, x: 100, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    scale: 1,
-    transition: {
-      type: 'spring',
-      stiffness: 100,
-      damping: 15,
-      mass: 0.5,
-    },
-  },
-};
-
-// --- Sub-component for the Floating Doodles ---
-const FloatingDoodle = ({ src, className, delay = 0, duration = 4, yOffset = 20 }: any) => (
-  <motion.img
+// --- Doodle Components (Matching the Reference Style) ---
+const FloatingDoodle = ({ children, className, delay = 0, yOffset = 15 }: any) => (
+  <motion.div
     initial={{ opacity: 0, scale: 0.8 }}
-    animate={{ 
-      opacity: 0.6, 
-      scale: 1,
-      y: [0, -yOffset, 0],
-    }}
-    transition={{
-      opacity: { duration: 1, delay },
-      y: { duration, repeat: Infinity, ease: "easeInOut", delay }
-    }}
-    src={src}
-    alt="doodle"
-    className={`${className} pointer-events-none z-20`}
-  />
+    animate={{ opacity: 1, scale: 1, y: [0, -yOffset, 0] }}
+    transition={{ opacity: { duration: 0.8, delay }, y: { duration: 4, repeat: Infinity, ease: "easeInOut", delay } }}
+    className={`${className} pointer-events-none absolute z-0 text-[#003366] opacity-80`}
+  >
+    {children}
+  </motion.div>
 );
 
-// --- Refined InfoCard (Sketch Style) ---
-const InfoCard = ({ stat, index, primaryColor }: any) => {
-  // Cycle through icons based on index
+const WashiTape = () => (
+  <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-16 h-6 bg-yellow-200/60 rotate-[-2deg] border-x border-dashed border-yellow-400/50 z-20" />
+);
+
+const StatCard = ({ stat, index, primaryColor }: any) => {
   const Icons = [AcademicCapIcon, BanknotesIcon, RocketLaunchIcon];
   const Icon = Icons[index % Icons.length];
+  const rotation = index % 2 === 0 ? 'rotate-1' : 'rotate-[-1deg]';
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      whileHover={{ y: -10 }}
-      className="flex-shrink-0 w-72 md:w-80 bg-white border-2 border-slate-900 p-6 shadow-[8px_8px_0px_#0f172a] snap-center"
+      transition={{ delay: index * 0.1 }}
+      className={`relative flex-1 min-w-[180px] bg-white border-2 border-slate-900 p-6 shadow-[6px_6px_0px_#0f172a] ${rotation} z-30`}
     >
-      <div className="flex items-center gap-4 mb-4">
-        <div className="p-2 border-2 border-slate-900 rounded-sm" style={{ color: primaryColor }}>
-          <Icon className="w-8 h-8" />
+      <WashiTape />
+      <div className="flex flex-col items-center text-center">
+        <div className="mb-3 p-2 rounded-full border border-slate-900 bg-white" style={{ color: primaryColor }}>
+          <Icon className="w-6 h-6" />
         </div>
         <div className="text-3xl font-black text-slate-900 tracking-tighter">{stat.value}</div>
+        <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{stat.label}</div>
       </div>
-      <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">{stat.label}</h3>
     </motion.div>
   );
 };
@@ -279,127 +60,136 @@ const InfoCard = ({ stat, index, primaryColor }: any) => {
 export default function HeroSection() {
   const { storeFormData } = useStoreContext();
   const { scrollY } = useScroll();
+  const yParallax = useTransform(scrollY, [0, 500], [0, -50]);
 
-  // Parallax effects for doodles
-  const y1 = useTransform(scrollY, [0, 500], [0, -80]);
-  const y2 = useTransform(scrollY, [0, 500], [0, -150]);
-
-  // Data mapping with fallbacks
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#007bff';
   const activeSlide = storeFormData?.heroSlides?.[0];
-  const stats = storeFormData?.stats || [];
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#2563eb';
+  const headline = activeSlide?.headline || "PRIVATE SCHOOL";
+  const subline = activeSlide?.subline || "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna";
+  const bannerImg = activeSlide?.imageUrl || activeSlide?.productImageUrl || "https://images.unsplash.com/photo-1517694712202-14dd9538aa97";
 
-  const headline = activeSlide?.headline || "Your Journey to Knowledge Begins Here";
-  const subline = activeSlide?.subline || "Explore a world of learning opportunities with expert instructors.";
-  const bannerImg = activeSlide?.imageUrl || "/assets/fallback-campus.jpg";
+  const stats = storeFormData?.stats || [
+    { label: 'Students', value: '5K+' },
+    { label: 'Courses', value: '120+' },
+    { label: 'Awards', value: '25+' }
+  ];
 
   return (
     <section className="relative w-full bg-white overflow-hidden font-sans">
-      {/* 1. Blueprint Grid Background */}
+      
+      {/* 1. Blueprint Grid */}
       <div 
-        className="absolute inset-0 z-0 opacity-10" 
+        className="absolute inset-0 z-0 opacity-[0.1]" 
         style={{ 
-          backgroundImage: `linear-gradient(${primaryColor} 1px, transparent 1px), linear-gradient(90deg, ${primaryColor} 1px, transparent 1px)`, 
-          backgroundSize: '40px 40px' 
+          backgroundImage: `linear-gradient(#003366 1px, transparent 1px), linear-gradient(90deg, #003366 1px, transparent 1px)`, 
+          backgroundSize: '45px 45px',
         }} 
       />
 
-      {/* 2. Parallax Doodles */}
-      <motion.div style={{ y: y1 }} className="absolute inset-0 hidden md:block">
-        <FloatingDoodle src="/assets/doodles/rocket.png" className="absolute left-[5%] top-[15%] w-32 rotate-[-15deg]" delay={0.2} />
-        <FloatingDoodle src="/assets/doodles/pencil.png" className="absolute right-[10%] top-[20%] w-20 rotate-[15deg]" delay={0.5} />
-      </motion.div>
-      <motion.div style={{ y: y2 }} className="absolute inset-0 hidden md:block">
-        <FloatingDoodle src="/assets/doodles/backpack.png" className="absolute right-[5%] bottom-[30%] w-36 rotate-[-10deg]" delay={0.8} />
+      {/* 2. Doodles & Background Accents */}
+      <motion.div style={{ y: yParallax }} className="absolute inset-0 z-0">
+         {/* Top Left Rocket Area */}
+         <div className="absolute top-[-20px] left-[-20px] w-32 h-32 bg-blue-500/20 rounded-full blur-3xl" />
+         
+         <FloatingDoodle className="left-[2%] top-[10%] w-24 md:w-32 rotate-[-10deg]" delay={0.1}>
+            <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="3"><path d="M30 70 L50 20 L70 70 Z M40 70 L40 85 M60 70 L60 85" /></svg>
+         </FloatingDoodle>
+
+         <FloatingDoodle className="right-[10%] top-[8%] w-16" delay={0.4}>
+            <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="4"><path d="M50 10 L60 40 L90 50 L60 60 L50 90 L40 60 L10 50 L40 40 Z" /></svg>
+         </FloatingDoodle>
+
+         <FloatingDoodle className="right-[5%] top-[25%] w-20 rotate-12" delay={0.6}>
+            <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="3"><rect x="30" y="20" width="40" height="60" rx="2" /><path d="M30 40 H70 M30 60 H70" /></svg>
+         </FloatingDoodle>
       </motion.div>
 
-      {/* 3. Hero Content */}
-      <div className="relative z-10 pt-20 pb-32 px-6 flex flex-col items-center text-center max-w-6xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+      {/* 3. Hero Text Content */}
+      <div className="relative z-10 pt-24 pb-16 px-6 flex flex-col items-center text-center max-w-4xl mx-auto">
+        <motion.h1 
+          className="text-6xl md:text-[100px] font-black text-[#002b5c] mb-6 tracking-tighter uppercase leading-[0.85]"
         >
-          <span className="inline-block px-4 py-1 border-2 border-slate-900 font-bold text-xs uppercase tracking-[0.3em] mb-6 bg-white">
-            {storeFormData?.tagline || "Private Excellence"}
-          </span>
-          
-          <h1 className="text-5xl md:text-8xl font-black text-slate-900 mb-6 tracking-tighter leading-[0.9] uppercase">
-             {headline.split(' ').map((word, i) => (
-               <span key={i} className={i % 3 === 0 ? "" : "block md:inline"}>
-                 {word}{" "}
-               </span>
-             ))}
-          </h1>
-          
-          <p className="text-slate-500 text-lg md:text-xl font-medium max-w-2xl mx-auto mb-10 leading-relaxed">
-            {subline}
-          </p>
+          {headline}
+        </motion.h1>
+        
+        <p className="text-slate-500 text-sm md:text-base font-medium max-w-xl mx-auto mb-10 leading-relaxed">
+          {subline}
+        </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-16">
-            <motion.button 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => window.location.href = activeSlide?.ctaLink || '#'}
-              className="px-10 py-4 text-white font-black text-lg uppercase tracking-tight shadow-[8px_8px_0px_#000] hover:shadow-none transition-all"
-              style={{ backgroundColor: primaryColor }}
-            >
-              {activeSlide?.ctaText || "Enroll Now"}
-            </motion.button>
-            
-            {activeSlide?.videoLink && (
-              <button 
-                onClick={() => window.open(activeSlide.videoLink || '', '_blank')}
-                className="flex items-center gap-2 font-black uppercase text-slate-900 hover:text-blue-600 transition-colors"
-              >
-                <PlayCircleIcon className="w-8 h-8" style={{ color: primaryColor }} />
-                Watch Story
-              </button>
-            )}
-          </div>
-        </motion.div>
-
-        {/* 4. Horizontal Stat Gallery (Replacing the old info cards) */}
-        <div className="w-full flex overflow-x-auto snap-x snap-mandatory pb-8 gap-6 scrollbar-hide">
-          {stats.map((stat, i) => (
-            <InfoCard key={i} stat={stat} index={i} primaryColor={primaryColor} />
-          ))}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <button 
+            className="px-8 py-3 bg-[#007bff] text-white font-bold text-sm uppercase rounded-sm shadow-sm hover:brightness-110 transition-all"
+            style={{ backgroundColor: primaryColor }}
+          >
+            Register Now!
+          </button>
+          
+          <button 
+            className="px-8 py-3 border-2 border-[#007bff] text-[#007bff] font-bold text-sm uppercase rounded-sm bg-white hover:bg-blue-50 transition-all"
+            style={{ borderColor: primaryColor, color: primaryColor }}
+          >
+            Read More
+          </button>
         </div>
       </div>
 
-      {/* 5. The "Torn Paper" Transition */}
-      <div className="relative h-40 w-full overflow-hidden leading-[0] z-30">
-        <svg className="absolute bottom-0 w-full h-full" viewBox="0 0 1200 120" preserveAspectRatio="none">
-          <path 
-            d="M0,0 C150,90 400,90 600,40 C800,-10 1050,-10 1200,80 L1200,120 L0,120 Z" 
-            className="fill-slate-900"
-          ></path>
-        </svg>
-      </div>
-
-      {/* 6. Contextual Hero Image Section */}
-      <div className="bg-slate-900 w-full px-6 pb-24">
-        <motion.div 
-          initial={{ y: 50, opacity: 0 }}
-          whileInView={{ y: 0, opacity: 1 }}
-          viewport={{ once: true }}
-          className="max-w-6xl mx-auto relative group"
+      {/* 4. The S-Curve Transition & Image */}
+      <div className="relative w-full mt-10">
+        
+        {/* 1. We use a container with a background color that matches the curve fill.
+            2. We apply a clip-path to the image container.
+        */}
+        <div 
+          className="relative w-full h-[400px] md:h-[650px] overflow-hidden"
+          style={{
+            /* This creates the "mask". 
+              We use the same path data from your SVG to ensure they line up perfectly.
+            */
+            clipPath: "path('M0,160 C320,40 480,200 960,80 C1280,0 1440,120 1440,120 V800 H0 Z')",
+            // Note: I added "V800 H0 Z" to close the shape at the bottom
+          }}
         >
-          {/* Sketchy border around the image */}
-          <div className="absolute -inset-3 border-2 border-dashed border-blue-500/30 rounded-3xl" />
-          <div className="relative h-[400px] md:h-[600px] w-full overflow-hidden rounded-2xl grayscale hover:grayscale-0 transition-all duration-1000">
-             <Image 
-               src={bannerImg} 
-               alt="Campus life" 
-               fill 
-               className="object-cover"
-               priority
-              loader={customLoader}
-              onError={handleImageError}
-             />
+          <Image 
+            src={bannerImg} 
+            alt="Students" 
+            fill 
+            className="object-cover object-center"
+            priority
+            loader={customLoader}
+            onError={handleImageError}
+          />
+        </div>
+
+        {/* Keep the SVG Border on top as well! 
+            This adds the crisp "stroke" or solid color transition 
+            that makes the edge look sharp.
+        */}
+        <div className="absolute top-0 left-0 w-full z-20 -translate-y-[99%] pointer-events-none">
+          <svg 
+            viewBox="0 0 1440 160" 
+            fill="none" 
+            preserveAspectRatio="none" 
+            className="w-full h-[80px] md:h-[160px]"
+          >
+            <path 
+              d="M0,160 C320,40 480,200 960,80 C1280,0 1440,120 1440,120" 
+              stroke="#002b5c" 
+              strokeWidth="8" // This mimics the thick blue line in your reference
+              fill="none"
+            />
+          </svg>
+        </div>
+
+        {/* 5. Stats Overlay */}
+        <div className="absolute left-1/2 -translate-x-1/2 -bottom-10 z-30 w-full max-w-5xl px-6">
+          <div className="flex flex-wrap justify-center gap-6 md:gap-8">
+            {stats.slice(0, 3).map((stat, i) => (
+              <StatCard key={i} stat={stat} index={i} primaryColor={primaryColor} />
+            ))}
           </div>
-        </motion.div>
+        </div>
       </div>
+          
     </section>
   );
 }

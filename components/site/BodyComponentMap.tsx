@@ -9,6 +9,8 @@ import BlogSite from './layouts/BlogLayout/body/BlogSite';
 import BookingsSite from './layouts/BookingsLayout/body/BookingsSite';
 import ConsultancyLayout from './layouts/ConsultancyLayout/body/ConsultancySite';
 import CoursesSite from './layouts/CoursesLayout/body/CoursesSite';
+import CoursesSite2 from './layouts/CoursesLayout2/body/CoursesSite2';
+import CoursesSite3 from './layouts/CoursesLayout3/body/CoursesSite3';
 import DirectorySite from './layouts/DirectoryLayout/body/DirectorySite';
 import EcommerceSite from './layouts/EcommerceLayout/body/EcommerceSite';
 import EcommerceShoesSite from './layouts/EcommerceShoesLayout/body/EcommerceShoesSite';
@@ -43,6 +45,8 @@ export const BodyComponentMap: Record<string, React.ComponentType<{ pageData: St
   'RealEstateSite': RealEstateSite,
   'BlogSite': BlogSite,
   'CoursesSite': CoursesSite,
+  'CoursesSite2': CoursesSite2,
+  'CoursesSite3': CoursesSite3,
   'FitnessSite': FitnessSite,
   'FinanceSite': FinanceSite,
   'ServiceSite': ServiceSite,
