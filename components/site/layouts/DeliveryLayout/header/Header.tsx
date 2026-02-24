@@ -26,7 +26,17 @@ import { useSession, signOut } from 'next-auth/react';
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => 
   `${src}?w=${width}&q=${quality || 75}`;
 
-export default function UpdatedNavbar() {
+const navLinks = [
+    { name: "Home", hasSub: true },
+    { name: "About", hasSub: true },
+    { name: "Services", hasSub: true },
+    { name: "Solutions", hasSub: true },
+    { name: "Network", hasSub: true },
+    { name: "News", hasSub: true },
+    { name: "Contact Us", hasSub: true },
+  ];
+
+export default function Navbar() {
   const { cart } = useStateContext();
   const { storeFormData } = useStoreContext();
   const router = useRouter();
@@ -60,34 +70,35 @@ export default function UpdatedNavbar() {
   }, []);
 
   const dynamicNavLinks = useMemo(() => {
-    if (!storeFormData?.StoreCategory) return [];
-    const rawCategories = [...storeFormData.StoreCategory]
-      .filter((c) => c.visible ?? true)
-      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+    return navLinks.map((link) => ({ id: link.name, label: link.name, href: `/${slug}/${link.name.toLowerCase()}` }));
+    // if (!storeFormData?.StoreCategory) return [];
+    // const rawCategories = [...storeFormData.StoreCategory]
+    //   .filter((c) => c.visible ?? true)
+    //   .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
-    let links = rawCategories.map((cat) => ({
-      id: cat.id,
-      label: cat.displayName || 'Category',
-      href: `/${slug}/category/${cat.categoryId}`,
-    }));
+    // let links = rawCategories.map((cat) => ({
+    //   id: cat.id,
+    //   label: cat.displayName || 'Category',
+    //   href: `/${slug}/category/${cat.categoryId}`,
+    // }));
 
-    if (links.length < 5) {
-      rawCategories.forEach((cat) => {
-        (cat.subcategories || []).filter((s) => s.visible ?? true).slice(0, 2).forEach((sub) => {
-          links.push({ id: sub.id, label: sub.name, href: `/${slug}/subcategory/${sub.slug}` });
-        });
-      });
-    }
+    // if (links.length < 5) {
+    //   rawCategories.forEach((cat) => {
+    //     (cat.subcategories || []).filter((s) => s.visible ?? true).slice(0, 2).forEach((sub) => {
+    //       links.push({ id: sub.id, label: sub.name, href: `/${slug}/subcategory/${sub.slug}` });
+    //     });
+    //   });
+    // }
 
-    const seen = new Set();
-    return links.filter(l => !seen.has(l.label) && seen.add(l.label)).slice(0, 6);
+    // const seen = new Set();
+    // return links.filter(l => !seen.has(l.label) && seen.add(l.label)).slice(0, 6);
   }, [storeFormData, slug]);
 
   return (
     <header className={`w-full font-sans sticky top-0 z-50 transition-all ${scrolled ? 'shadow-lg' : ''}`}>
       {/* 1. TOP BAR (DESKTOP) */}
       <div className="bg-[#111111] text-white text-[12px] py-2.5 px-6 hidden lg:block border-b border-white/5">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
+        <div className=" flex justify-between items-center">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2 group cursor-default">
               <PhoneIcon className="text-orange-500 h-3.5 w-3.5" />
@@ -119,7 +130,7 @@ export default function UpdatedNavbar() {
 
       {/* 2. MAIN NAVIGATION */}
       <nav className="bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto flex items-center justify-between h-20 lg:h-24">
+        <div className="flex items-center justify-between h-20 lg:h-24">
           
           {/* SLANTED BRANDING BOX */}
           <Link

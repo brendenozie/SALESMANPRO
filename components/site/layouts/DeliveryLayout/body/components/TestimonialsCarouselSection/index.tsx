@@ -1,287 +1,212 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
-import { ChevronLeftIcon, ChevronRightIcon, StarIcon, ChatBubbleBottomCenterTextIcon } from "@heroicons/react/24/solid";
+import { 
+  StarIcon, 
+  CubeIcon, 
+  ChatBubbleBottomCenterTextIcon, 
+  ChevronRightIcon, 
+  ChevronLeftIcon 
+} from "@heroicons/react/24/solid";
 import { Testimonial } from "@/types/typings";
-
-// Assuming Testimonial is defined in typings as:
-// export interface Testimonial {
-//   id: string;
-//   quote: string;
-//   authorName: string; // Changed from 'author' to match usage
-//   authorTitle?: string; // Changed from 'role' to match usage
-//   avatarUrl?: string;
-//   rating?: number;
-// }
 
 interface Props {
   testimonials: Testimonial[];
 }
 
 const customLoader = ({ src, width, quality }: any) => {
-  // Ensure placeholder paths are handled gracefully
   if (src.startsWith('/')) return src; 
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
-// --- Sample Data (High-quality fallback) ---
-const sampleTestimonials: Testimonial[] = [
-  {
-    id: "t1",
-    quote: "Working with the team was a breakthrough moment. I gained the clarity and confidence to pitch my business idea, and it was funded! Truly transformative coaching.",
-    authorName: "Alexandria J.",
-    authorTitle: "Founder & CEO, Startup Inc.",
-    avatarUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop",
-    rating: 5,
-  },
-  {
-    id: "t2",
-    quote: "The strategies I learned here fundamentally changed my time management and productivity. I now achieve more with less stress. Highly recommend!",
-    authorName: "Marcus P.",
-    authorTitle: "Senior Product Manager",
-    avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a6dd7228f7d?w=100&h=100&fit=crop",
-    rating: 5,
-  },
-  {
-    id: "t3",
-    quote: "The personalized approach felt deeply intuitive. It wasn't just advice; it was a partnership that helped me overcome my greatest professional hurdle yet.",
-    authorName: "Dr. Elena V.",
-    authorTitle: "Lead Research Scientist",
-    avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29329?w=100&h=100&fit=crop",
-    rating: 4,
-  },
-  {
-    id: "t4",
-    quote: "If you're stuck in a rut, this is the guidance you need. I found my purpose and a clear pathway forward.",
-    authorName: "Chris R.",
-    authorTitle: "Freelance Creative Director",
-    avatarUrl: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop",
-    rating: 5,
-  },
-];
-
-// Animation variants for carousel transitions (unchanged, they are perfect)
+// Animation variants for the slide transition
 const itemVariants = {
   enter: (direction: number) => ({
-    x: direction > 0 ? 300 : -300,
+    x: direction > 0 ? 100 : -100,
     opacity: 0,
-    scale: 0.9, // Slightly less aggressive scale change
   }),
   center: {
     x: 0,
     opacity: 1,
-    scale: 1,
     transition: {
-      type: "spring",
-      stiffness: 120,
-      damping: 15,
-      opacity: { duration: 0.3 },
+      x: { type: "spring", stiffness: 300, damping: 30 },
+      opacity: { duration: 0.2 },
     },
   },
   exit: (direction: number) => ({
-    x: direction < 0 ? 300 : -300,
+    x: direction < 0 ? 100 : -100,
     opacity: 0,
-    scale: 0.9, // Slightly less aggressive scale change
     transition: {
-      type: "spring",
-      stiffness: 100,
-      damping: 20,
+      x: { type: "spring", stiffness: 300, damping: 30 },
       opacity: { duration: 0.2 },
     },
   }),
 };
 
-
-// --- Main Component ---
-export default function TestimonialsCarouselSection({ testimonials }: Props) {
-  // Use provided data or sample data
-  const data = (testimonials && testimonials.length > 0) ? testimonials : sampleTestimonials;
-    
-  // Early return if data is genuinely empty
-  if (data.length === 0) {
-    return (
-      <section className="py-20 text-center bg-gray-50">
-        <p className="text-xl text-gray-600">
-          No client stories to show yet. Be the first to share your **success story**!
-        </p>
-      </section>
-    );
-  }
-
+export default function Testimonials({ testimonials }: Props) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
 
-  // Auto-rotate every 7 seconds
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setDirection(1);
-      setCurrent((prev) => (prev + 1) % data.length);
-    }, 7000);
-    return () => clearInterval(timer);
-  }, [data.length]);
+  // Fallback data if none provided
+  const data = testimonials?.length > 0 ? testimonials : [
+    {
+      id: "1",
+      quote: "The precision in their logistics is unmatched. They don't just deliver packages; they deliver peace of mind.",
+      authorName: "Kimani Ndegwa",
+      authorTitle: "Logistics Coordinator",
+      avatarUrl: "/avatar1.jpeg",
+      rating: 5
+    },
+    {
+      id: "2",
+      quote: "Outstanding service! Their team went above and beyond to ensure our international freight arrived ahead of schedule.",
+      authorName: "Timothy Kimathi",
+      authorTitle: "Supply Manager",
+      avatarUrl: "/avatar2.jpeg",
+      rating: 5
+    }
+  ];
 
   const paginate = (newDirection: number) => {
     setDirection(newDirection);
-    setCurrent((prev) => {
-      // Calculate new index correctly
-      return (prev + newDirection + data.length) % data.length;
-    });
+    setCurrent((prev) => (prev + newDirection + data.length) % data.length);
   };
 
   return (
-    <section 
-      id="testimonials"
-      className="relative py-20 md:py-32 bg-gradient-to-br from-white via-orange-50/50 to-orange-100/30 overflow-hidden"
-    >
-      {/* Background Flourish (Intuitive Visual Appeal) */}
-      <div className="absolute inset-0 pointer-events-none opacity-30">
-        <div className="absolute top-1/4 left-0 w-96 h-96 bg-yellow-200 rounded-full mix-blend-multiply filter blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-orange-300 rounded-full mix-blend-multiply filter blur-3xl animate-pulse-slow" style={{ animationDelay: '4s' }}></div>
-      </div>
+    <section className="relative bg-slate-50 overflow-hidden py-24 lg:py-32">
+      {/* Background Decor */}
+      <div className="absolute top-0 right-0 w-1/3 h-full bg-white skew-x-12 translate-x-1/2 z-0" />
+      <div className="absolute -left-10 top-20 w-64 h-64 bg-orange-100/50 rounded-full blur-3xl" />
 
-      <div className="relative container mx-auto px-6 max-w-7xl">
-        {/* Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <span className="text-lg font-semibold text-orange-700 uppercase tracking-wider mb-3 block flex items-center justify-center gap-2">
-            <ChatBubbleBottomCenterTextIcon className="w-5 h-5" /> Voices of Transformation
-          </span>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
-            Real Clients, <span className="text-orange-600">Real Results</span>
-          </h2>
-          <p className="mt-5 text-xl text-gray-700 max-w-3xl mx-auto">
-            Read inspiring stories from individuals and businesses that have achieved peak performance and clarity.
-          </p>
-        </motion.div>
-
-        {/* Carousel Area */}
-        <div className="relative max-w-3xl mx-auto h-[400px] md:h-[350px] flex items-center justify-center">
-          <AnimatePresence initial={false} custom={direction}>
-            <motion.div
-              key={current}
-              custom={direction}
-              variants={itemVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={1}
-              onDragEnd={(_e: any, { offset, velocity }:any) => {
-                const swipe = offset.x;
-                // Use swipe velocity and distance for intuitive drag
-                if (swipe < -100 || (swipe < -50 && velocity.x < -100)) {
-                  paginate(1);
-                } else if (swipe > 100 || (swipe > 50 && velocity.x > 100)) {
-                  paginate(-1);
-                }
-              }}
-              className="absolute w-full px-4"
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+          
+          {/* Left Side: Impact Visual */}
+          <div className="lg:col-span-5 relative">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              className="relative h-[500px] lg:h-[650px] rounded-3xl overflow-hidden shadow-2xl"
             >
-              <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-orange-200/50 transform transition-transform duration-300 ease-out cursor-grab active:cursor-grabbing hover:scale-[1.01]">
-                <div className="flex flex-col items-center text-center">
-                  {/* Quotation Mark Accent */}
-                  <ChatBubbleBottomCenterTextIcon className="w-10 h-10 text-orange-400 mb-4 opacity-70" />
-
-                  {/* Quote */}
-                  <p className="text-xl md:text-2xl italic text-gray-800 mb-6 font-serif leading-relaxed">
-                    &ldquo;{data[current].quote}&rdquo;
-                  </p>
-
-                  {/* Author Info Container */}
-                  <div className="flex flex-col items-center">
-                    {/* Avatar */}
-                    {data[current].avatarUrl && (
-                      <div
-                        className="w-16 h-16 rounded-full overflow-hidden border-4 border-orange-100 shadow-md mb-3"
-                      >
-                        <Image
-                          src={data[current].avatarUrl || 'https://via.placeholder.com/100?text=Avatar'}
-                          alt={data[current].authorName || 'Client'}
-                          width={64}
-                          height={64}
-                          loader={customLoader}
-                          className="object-cover"
-                        />
-                      </div>
-                    )}
-                    
-                    {/* Author Name and Title */}
-                    <p className="font-bold text-orange-700 text-lg">
-                      {data[current].authorName}
-                    </p>
-                    {data[current].authorTitle && (
-                      <p className="text-sm text-gray-500 mt-0.5">
-                        {data[current].authorTitle}
-                      </p>
-                    )}
-                  </div>
-                  
-                  {/* Rating (Placed below author for better flow) */}
-                  {data[current].rating && (
-                    <div className="flex justify-center mt-4">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <StarIcon
-                          key={i}
-                          className={`w-5 h-5 transition-colors duration-300 ${
-                            i < (data[current].rating ?? 0)
-                              ? "text-yellow-500"
-                              : "text-gray-300"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
+              <Image 
+                src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                alt="Our Clients" 
+                className="w-full h-full object-cover"
+                fill
+                loader={customLoader}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
             </motion.div>
-          </AnimatePresence>
 
-          {/* Navigation Buttons */}
-          <motion.button
-            onClick={() => paginate(-1)}
-            aria-label="Previous testimonial"
-            className="absolute left-0 top-1/2 -translate-y-1/2 bg-white p-3 rounded-full shadow-xl border border-orange-100/50 hover:bg-orange-50 focus:outline-none focus:ring-4 focus:ring-orange-300 transition-all duration-300 z-20 opacity-90 hover:opacity-100 -ml-2 md:-ml-12"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <ChevronLeftIcon className="w-6 h-6 text-orange-600" />
-          </motion.button>
-          <motion.button
-            onClick={() => paginate(1)}
-            aria-label="Next testimonial"
-            className="absolute right-0 top-1/2 -translate-y-1/2 bg-white p-3 rounded-full shadow-xl border border-orange-100/50 hover:bg-orange-50 focus:outline-none focus:ring-4 focus:ring-orange-300 transition-all duration-300 z-20 opacity-90 hover:opacity-100 -mr-2 md:-mr-12"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <ChevronRightIcon className="w-6 h-6 text-orange-600" />
-          </motion.button>
-        </div>
+            {/* Floating Experience Card */}
+            <motion.div 
+              initial={{ x: -50, opacity: 0 }}
+              whileInView={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="absolute -bottom-6 -right-6 md:right-10 bg-[#f7941d] p-8 rounded-2xl text-white shadow-2xl border-4 border-white max-w-[200px] z-20"
+            >
+              <h3 className="text-4xl font-black mb-1">98%</h3>
+              <p className="text-[10px] font-bold uppercase tracking-widest leading-tight">Customer Satisfaction Rate Globally</p>
+            </motion.div>
+          </div>
 
-        {/* Dots Navigation */}
-        <div className="flex justify-center mt-12 gap-3">
-          {data.map((_, idx) => (
-            <motion.button
-              key={idx}
-              onClick={() => {
-                setDirection(idx > current ? 1 : -1);
-                setCurrent(idx);
-              }}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                idx === current ? "bg-orange-600 w-7" : "bg-gray-300 hover:bg-orange-300"
-              }`}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              aria-label={`Go to testimonial ${idx + 1}`}
-            />
-          ))}
+          {/* Right Side: Header & Dynamic Testimonial */}
+          <div className="lg:col-span-7 space-y-12">
+            <div className="space-y-6">
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-orange-100 rounded-full text-[#f7941d]"
+              >
+                <CubeIcon className="w-4 h-4" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Voice of Clients</span>
+              </motion.div>
+              
+              <h2 className="text-4xl md:text-6xl font-black text-slate-950 leading-[1.1] uppercase italic">
+                Trust is Our <br />
+                <span className="text-transparent" style={{ WebkitTextStroke: '1px #0f172a' }}>Global Currency</span>
+              </h2>
+            </div>
+
+            {/* Carousel Container */}
+            <div className="relative min-h-[300px] flex items-center">
+              <ChatBubbleBottomCenterTextIcon className="absolute -top-10 -right-4 w-24 h-24 text-slate-200 -z-10 opacity-50" />
+              
+              <AnimatePresence mode="wait" custom={direction}>
+                <motion.div
+                  key={current}
+                  custom={direction}
+                  variants={itemVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  className="w-full"
+                >
+                  <div className="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                    <div className="space-y-6">
+                      <div className="flex gap-0.5">
+                        {[...Array(5)].map((_, i) => (
+                          <StarIcon 
+                            key={i} 
+                            className={`w-5 h-5 ${i < (data[current].rating || 5) ? "text-[#f7941d]" : "text-slate-200"}`} 
+                          />
+                        ))}
+                      </div>
+
+                      <p className="text-slate-700 text-lg md:text-xl leading-relaxed font-medium italic">
+                        &quot;{data[current].quote}&quot;
+                      </p>
+
+                      <div className="flex items-center gap-4 pt-6 border-t border-slate-50">
+                        <div className="relative w-14 h-14 rounded-full overflow-hidden ring-4 ring-orange-50">
+                          <Image 
+                            src={data[current].avatarUrl || "https://unsplash.com/photos/mEZ3PoFGs_k/download?ixid=MnwxMjA3fDB8MXxzZWFyY2h8Mnx8YXZhdGFyfGVufDB8fDB8fA%3D%3D&force=true&w=640"} 
+                            alt={data[current].authorName || "Client Avatar"} 
+                            fill 
+                            loader={customLoader}
+                            className="object-cover" 
+                          />
+                        </div>
+                        <div>
+                          <h5 className="font-black text-slate-950 text-base tracking-tight">{data[current].authorName}</h5>
+                          <p className="text-xs font-bold text-[#f7941d] uppercase tracking-widest">{data[current].authorTitle}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Navigation Controls */}
+            <div className="flex items-center justify-between border-t border-slate-200 pt-8">
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => paginate(-1)}
+                  className="w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center hover:bg-slate-950 hover:text-white transition-all group"
+                >
+                  <ChevronLeftIcon className="w-5 h-5" />
+                </button>
+                <button 
+                  onClick={() => paginate(1)}
+                  className="w-12 h-12 rounded-full bg-slate-950 text-white flex items-center justify-center hover:bg-[#f7941d] transition-all"
+                >
+                  <ChevronRightIcon className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="flex gap-2">
+                 {data.map((_, idx) => (
+                    <div 
+                      key={idx}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${idx === current ? "w-8 bg-[#f7941d]" : "w-2 bg-slate-200"}`}
+                    />
+                 ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

@@ -59,7 +59,15 @@ import TestimonialsCarouselSection from "./components/TestimonialsCarouselSectio
 import SocialProofSection from "./components/SocialProofSection";
 import AboutSection from "./components/AboutSection";
 import ServicesSection from "./components/ServicesSection";
-import CallToActionSection from "./components/CallToActionSection";
+
+import AbSection from './components/AbSection';
+import TeamSection from './components/TeamSection';
+import { BookingSection } from './components/BookingSection';
+import { WorkShowcase } from './components/WorkShowCase';
+import { ProcessTimeline } from './components/ProcessTimeline';
+import { NetworkMap } from './components/NetworkMap';
+import { BlogSection } from './components/BlogSection';
+import { ContactSection } from './components/CallToActionSection';
 
 type EcommerceSiteProps = {
   pageData: StoreForm;
@@ -95,9 +103,25 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
     <div>
       <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
 
-      <SocialProofSection />
+      <AbSection />  
+
+      <TeamSection />
       
-      <ServicesSection />   
+      <ServicesSection /> 
+
+      <BookingSection />
+
+      <TestimonialsCarouselSection  testimonials={pageData?.testimonials || []} />
+
+      <WorkShowcase />
+
+      <ProcessTimeline/>
+
+      <SocialProofSection />  
+
+      <NetworkMap />
+
+      <BlogSection />
       
       <FeaturedListings listings={Ebookslistings} slug={siteData?.slug || ''} />
 
@@ -115,9 +139,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       {/* If videos are stored under latestVideos */}
       {/* {<VideoShowcaseSection blogs={(pageData?.blogs || []).map(b => ({ ...b, excerpt: b.excerpt ?? "", coverImage: b.coverImage ?? "", videoAlbumId: b.videoAlbumId ?? undefined }))} />} */}
 
-      <TestimonialsCarouselSection  testimonials={pageData?.testimonials || []} />
-
-      <CallToActionSection companyId={siteData?.id || ''} />
+      <ContactSection companyId={siteData?.id || ''} />
 
       {/* <PromotionSection/> */}
 

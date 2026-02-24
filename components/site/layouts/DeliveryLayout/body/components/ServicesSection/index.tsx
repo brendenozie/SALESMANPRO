@@ -2,274 +2,211 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { ArrowRightIcon, SparklesIcon, CalendarIcon, BriefcaseIcon, UsersIcon, LightBulbIcon, AcademicCapIcon, BoltIcon } from "@heroicons/react/24/outline";
-// --- Data Integration Imports ---
+import Image from "next/image";
+import { 
+  CubeIcon, 
+  ShieldCheckIcon, 
+  ArrowRightIcon,
+  TruckIcon,
+  GlobeAmericasIcon,
+  ArrowPathRoundedSquareIcon,
+  AcademicCapIcon,
+  BriefcaseIcon,
+  UserGroupIcon,
+  BoltIcon,
+  LightBulbIcon,
+  SparklesIcon
+} from "@heroicons/react/24/outline";
 import { useStoreContext } from '@/contexts/StoreContext';
-import clsx from "clsx"; 
 
-// --- TYPE DEFINITIONS (Re-defined for completeness) ---
-type StoreForm = {
-    name?: string;
-    description?: string;
-    category?: string;
-    themeSettings?: { primaryColor?: string };
-    StoreCategory?: IStoreCategory[];
-};
-interface ISubcategory { name: string; id: string; }
-interface IStoreCategory { displayName: string; id: string; subcategories?: ISubcategory[]; }
-type Offering = {
-    title: string;
-    desc: string;
-    id?: string;
-    iconComponent: React.ElementType;
-    iconColor: string;
-};
-// ----------------------------------------------------
-
-
-// --- Dynamic Icon Map for Visual Diversity ---
+// --- Dynamic Icon Map for Heroicons ---
 const dynamicHeroIconMap: Record<string, React.ElementType> = {
+    // Logistics / Industrial
+    'Transport': TruckIcon,
+    'Logistics': GlobeAmericasIcon,
+    'Waste Management': ArrowPathRoundedSquareIcon,
+    // Consulting / Coaching
     'Executive Coaching': BriefcaseIcon,
     'Professional Speakers Course': AcademicCapIcon,
-    'Corporate Package': UsersIcon,
+    'Corporate Package': UserGroupIcon,
     'Leadership Development Program': BoltIcon,
     'Foundational Speakers Course': LightBulbIcon,
-    'Career Acceleration': BoltIcon,
-    'Personal Development': LightBulbIcon,
-    'Team Workshops': UsersIcon,
-    'Mindset & Resilience': AcademicCapIcon,
-    'Strategic Planning': CalendarIcon,
     'Service': SparklesIcon,
 };
 
-// Fallback data reflecting the image content structure
-const defaultCoachingSolutions: Offering[] = [
-    { title: "Professional Speaker's Course", desc: "Five weeks of practical training to equip professionals with effective public speaking and communication skills.", iconComponent: dynamicHeroIconMap['Professional Speakers Course'], iconColor: 'text-indigo-600' },
-    { title: "Executive Coaching", desc: "Elevate your leadership, decision-making, and influence with high-impact executive sessions.", iconComponent: dynamicHeroIconMap['Executive Coaching'], iconColor: 'text-green-600' },
-    { title: "Corporate Package", desc: "Comprehensive, tailored training solutions for groups, designed to ignite collaboration and synergy within your team.", iconComponent: dynamicHeroIconMap['Corporate Package'], iconColor: 'text-orange-600' },
-    { title: "Leadership Development Program", desc: "Accelerate growth and build the mental strength to thrive in any season through purpose-driven leadership mastery.", iconComponent: dynamicHeroIconMap['Leadership Development Program'], iconColor: 'text-purple-600' },
-    { title: "The Foundational Speakers Course", desc: "A robust introductory course to build confidence and deliver polished messages to captivate any audience.", iconComponent: dynamicHeroIconMap['Foundational Speakers Course'], iconColor: 'text-sky-600' },
-    { title: "Custom Workshops", desc: "Strategic and customized training delivered on-site or virtually to meet your organization's unique needs.", iconComponent: dynamicHeroIconMap['Strategic Planning'], iconColor: 'text-pink-600' },
+const iconAccents = [
+    'bg-orange-500',
+    'bg-blue-600',
+    'bg-slate-950',
+    'bg-emerald-600',
+    'bg-purple-600',
+    'bg-rose-600',
 ];
 
-// Helper to cycle through colors for variety
-const iconColors = [
-    'text-indigo-600',
-    'text-green-600',
-    'text-orange-600',
-    'text-purple-600',
-    'text-sky-600',
-    'text-pink-600',
+const SERVICE_IMAGES = [
+    "/pexels-aboodi-29584217.jpg",
+    "/pexels-shantumsingh-29057942.jpg",
+    "/pexels-messina-12492225.jpg",
 ];
 
-const ServicesSection: React.FC = () => {
-    
-    // --- Data Integration (Unchanged Logic) ---
-    const { storeFormData } = useStoreContext() as { storeFormData: StoreForm };
-    const primaryColor = storeFormData?.themeSettings?.primaryColor || "#9D3131"; // Use the maroon/red color from the image for consistency
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+    `${src}?w=${width}&q=${quality || 75}`;
 
-    const {
-        StoreCategory = [],
-        category,
-    } = storeFormData;
+export default function ServicesGrid() {
+    const { storeFormData } = useStoreContext();
+    const primaryColor = storeFormData?.themeSettings?.primaryColor || "#f7941d";
 
-    // Normalize category text for consistent matching
-    const categoryText = (category || '').toLowerCase().trim();
+    // --- Data Logic: Filtering Categories/Subcategories ---
+    const { StoreCategory = [], category = "" } = storeFormData || {};
+    const categoryText = category.toLowerCase().trim();
+    const consultingKeywords = ['consultant', 'consulting', 'coach', 'coaching', 'speaker', 'training'];
+    const isConsultingRelated = consultingKeywords.some(kw => categoryText.includes(kw));
 
-    // Define consulting-related keywords
-    const consultingKeywords = [
-        'consultant',
-        'consulting',
-        'coach',
-        'coaching',
-        'speaker',
-        'training',
-    ];
-
-    const isConsultingRelated = consultingKeywords.some(keyword =>
-        categoryText.includes(keyword)
-    );
-
-    let filteredCategories = StoreCategory;
-
-    if (isConsultingRelated) {
-        filteredCategories = StoreCategory.filter(cat => {
-            const name = (cat.displayName || '').toLowerCase();
-            return consultingKeywords.some(keyword => name.includes(keyword));
-        });
-    }
-
-    let offeringsToShow: Offering[] = [];
-
-    if (filteredCategories.length > 0 && filteredCategories.length < 6) {
-        // Use subcategories when there are fewer than 6 categories
-        const enrichedSubcategories = filteredCategories.flatMap(cat =>
-            (cat.subcategories || []).map(subcat => ({
-                ...subcat,
-                parentName: cat.displayName,
+    let offeringsToShow = [];
+    if (StoreCategory.length > 0) {
+        // Dynamic mapping based on context logic provided in original section
+        offeringsToShow = StoreCategory.flatMap(cat => 
+            (cat.subcategories || [{ name: cat.displayName, id: cat.id }]).map(sub => ({
+                title: sub.name,
+                desc: `Specialized ${sub.name} solutions tailored for ${storeFormData?.name || 'your business'}.`,
+                icon: dynamicHeroIconMap[sub.name] || CubeIcon,
+                tag: cat.displayName
             }))
-        );
-
-        const limitedSubcategories = enrichedSubcategories.slice(0, 6);
-
-        offeringsToShow = limitedSubcategories.map((subcat, index) => ({
-            title: subcat.name || 'Service',
-            desc: `Specialized solutions for ${subcat.parentName || 'Coaching'}: ${subcat.name}.`,
-            id: subcat.id,
-            iconComponent:
-                dynamicHeroIconMap[subcat.name] ||
-                dynamicHeroIconMap[subcat.parentName || 'Service'] ||
-                SparklesIcon,
-            iconColor: iconColors[index % iconColors.length],
-        }));
-    } else if (filteredCategories.length > 0) {
-        // Show top-level categories
-        offeringsToShow = filteredCategories.slice(0, 6).map((cat, index) => ({
-            title: cat.displayName || 'Service',
-            desc: `Explore our specialized ${cat.displayName} solutions.`,
-            id: cat.id,
-            iconComponent:
-                dynamicHeroIconMap[cat.displayName || 'Service'] || SparklesIcon,
-            iconColor: iconColors[index % iconColors.length],
-        }));
+        ).slice(0, 6);
     } else {
-        // Fallback if no valid categories found
-        offeringsToShow = defaultCoachingSolutions;
+        // Fallback for Logistics/Default
+        offeringsToShow = [
+            { title: "Transport", desc: "Efficient and reliable urban transport solutions tailored to your needs.", icon: TruckIcon, tag: "Ground" },
+            { title: "Logistics", desc: "Comprehensive logistics services ensuring timely and secure delivery.", icon: GlobeAmericasIcon, tag: "Global" },
+            { title: "Waste Management", desc: "Innovative solutions promoting sustainability and responsibility.", icon: ArrowPathRoundedSquareIcon, tag: "Eco" },
+        ];
     }
-
-
-    const gridOfferings = offeringsToShow.slice(0, 6);
 
     return (
-        <section id="services" className="relative py-28 md:py-36 bg-gray-50 overflow-hidden">
-            {/* Background Accent Grid (Visually richer background) */}
-            <div className="absolute inset-0 z-0 opacity-10">
-                <svg className="h-full w-full" fill="none">
-                    <defs>
-                        <pattern id="grid-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                            <path d="M19 0H0V19" stroke="#E5E7EB" strokeWidth="0.5" />
-                        </pattern>
-                    </defs>
-                    <rect width="100%" height="100%" fill="url(#grid-pattern)" />
-                </svg>
-            </div>
-            {/* Top right gradient blob */}
+        <section id="services" className="py-24 lg:py-40 bg-white relative overflow-hidden">
+            {/* Background Architectural Grid */}
             <div 
-                className="absolute top-0 right-0 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"
-                style={{ backgroundColor: primaryColor }}
-            ></div>
-
-
-            <div className="relative container mx-auto px-6 max-w-7xl z-10">
-                {/* Section Header */}
-                <div className="text-center mb-20">
-                    <span 
-                        className="text-lg font-semibold uppercase tracking-wider mb-3 block"
-                        style={{ color: primaryColor }}
-                    >
-                        Comprehensive Training
-                    </span>
-                    <motion.h2 
-                        className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight"
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                        viewport={{ once: true }}
-                    >
-                        Explore Our <span style={{ color: primaryColor }}>Services</span>
-                    </motion.h2>
-                    <motion.p 
-                        className="mt-5 text-xl text-gray-700 max-w-3xl mx-auto line-clamp-3 text-ellipsis"
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.1 }}
-                        viewport={{ once: true }}
-                    >
-                        {storeFormData.description || 'Experience the synergy of strategy, mindset, and purpose — designed to help you lead with clarity, confidence, and impact.'}
-                    </motion.p>
+                className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+                style={{ backgroundImage: 'linear-gradient(#0f172a 1px, transparent 1px), linear-gradient(90deg, #0f172a 1px, transparent 1px)', backgroundSize: '40px 40px' }} 
+            />
+            
+            <div className="container mx-auto px-6 relative z-10">
+                {/* --- HEADER --- */}
+                <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-24 gap-10">
+                    <div className="space-y-6">
+                        <motion.div 
+                            initial={{ opacity: 0, x: -20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            className="inline-flex items-center gap-3 px-4 py-2 bg-slate-900 text-white rounded-full"
+                        >
+                            <CubeIcon className="w-4 h-4 text-orange-500" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em]">Core Competencies</span>
+                        </motion.div>
+                        
+                        <h2 className="text-6xl md:text-8xl font-black text-slate-950 leading-[0.85] uppercase italic">
+                            Specialist <br />
+                            <span className="text-transparent" style={{ WebkitTextStroke: '2px #0f172a' }}>Solutions</span>
+                        </h2>
+                    </div>
+                    
+                    <div className="max-w-md space-y-4">
+                        <div className="flex items-center gap-2 font-black text-xs uppercase tracking-widest" style={{ color: primaryColor }}>
+                            <ShieldCheckIcon className="w-4 h-4" /> Secure • Fast • Reliable
+                        </div>
+                        <p className="text-slate-500 font-medium leading-relaxed">
+                            {storeFormData?.description || "Tailored infrastructure designed to bypass traditional bottlenecks and deliver your vision on a set budget."}
+                        </p>
+                    </div>
                 </div>
 
-                {/* Services Grid with Visual Enhancements */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {gridOfferings.map((service, i) => {
-                        const Icon = service.iconComponent;
+                {/* --- SERVICE CARDS --- */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-24 gap-x-12">
+                    {offeringsToShow.map((service, idx) => {
+                        const Icon = service.icon;
                         return (
                             <motion.div
-                                key={service.id || i}
+                                key={idx}
                                 initial={{ opacity: 0, y: 50 }}
                                 whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true, amount: 0.3 }}
-                                transition={{ duration: 0.6, delay: i * 0.1 }}
-                                // Card enhancements for premium look
-                                className="group relative p-8 rounded-3xl bg-white shadow-xl border-b-4 border-white transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] flex flex-col items-start overflow-hidden"
-                                style={{ 
-                                    borderBottomColor: primaryColor, // Use border-bottom for a different look
-                                }}
+                                transition={{ delay: idx * 0.15, duration: 0.8 }}
+                                className="group relative"
                             >
-                                {/* Hover Gradient Overlay for Polish */}
-                                <div 
-                                    className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-10 transition-opacity duration-300 pointer-events-none"
-                                    style={{ background: `linear-gradient(to top right, ${primaryColor}1A, transparent 70%)` }}
-                                ></div>
-
-                                <div className="relative z-10 flex-grow">
-                                    {/* --- STYLED ICON CONTAINER: More prominent and colorful --- */}
-                                    <div 
-                                        className={clsx(
-                                            "mb-6 p-4 rounded-full inline-flex items-center justify-center ring-4 ring-offset-2 transition-all duration-500 group-hover:ring-offset-4",
-                                            // Dynamic background/ring colors based on iconColor
-                                            service.iconColor.replace('text', 'bg').replace('-600', '-100'),
-                                            service.iconColor.replace('text', 'ring').replace('-600', '-500'),
-                                        )}
-                                    >
-                                        <Icon className={clsx("w-8 h-8", service.iconColor)} aria-hidden="true" />
+                                {/* Image Frame */}
+                                <div className="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-slate-100 shadow-2xl">
+                                    <Image
+                                        src={SERVICE_IMAGES[idx % SERVICE_IMAGES.length]}
+                                        alt={service.title}
+                                        loader={loader}
+                                        fill
+                                        className="object-cover transition-transform duration-1000 group-hover:scale-110 grayscale group-hover:grayscale-0"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent" />
+                                    
+                                    {/* Floating Service Tag */}
+                                    <div className="absolute top-8 left-8">
+                                        <span className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white text-[10px] font-black uppercase tracking-widest">
+                                            {service.tag}
+                                        </span>
                                     </div>
-                                    {/* -------------------------------------------------------- */}
-
-                                    <h3 className="text-2xl font-bold text-gray-900 mb-3">{service.title}</h3>
-                                    <p className="text-gray-600 leading-relaxed mb-6 line-clamp-3">{service.desc}</p>
                                 </div>
 
-                                <a
-                                    href={`#contact`} 
-                                    className="relative z-10 inline-flex items-center font-semibold transition-all group-hover:translate-x-1"
-                                    style={{ color: primaryColor }}
-                                >
-                                    Learn More
-                                    <ArrowRightIcon className="w-5 h-5 ml-2 transition-transform duration-300" />
-                                </a>
+                                {/* Content Card Overlay */}
+                                <div className="absolute -bottom-12 left-6 right-6 p-8 bg-white rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] border border-slate-50 transition-all duration-500 group-hover:-translate-y-4">
+                                    {/* Dynamic Icon Badge */}
+                                    <div 
+                                        className={`absolute -top-10 right-10 w-20 h-20 rounded-3xl flex items-center justify-center text-white shadow-2xl transform rotate-6 group-hover:rotate-0 transition-all duration-500 ${iconAccents[idx % iconAccents.length]}`}
+                                    >
+                                        <Icon className="w-10 h-10" />
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <h3 className="text-3xl font-black text-slate-950 uppercase italic leading-none">
+                                            {service.title}
+                                        </h3>
+                                        
+                                        <p className="text-slate-500 text-sm leading-relaxed font-medium line-clamp-2">
+                                            {service.desc}
+                                        </p>
+
+                                        <div className="pt-4 flex items-center justify-between group/btn cursor-pointer">
+                                            <span 
+                                                className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 transition-colors"
+                                                style={{ color: primaryColor }}
+                                            >
+                                                Configure Route
+                                            </span>
+                                            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center group-hover/btn:bg-slate-950 group-hover/btn:text-white transition-all">
+                                                <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Ghost Numbering */}
+                                <span className="absolute -top-10 -right-4 text-9xl font-black text-slate-950/[0.03] select-none pointer-events-none uppercase italic">
+                                    0{idx + 1}
+                                </span>
                             </motion.div>
                         );
                     })}
                 </div>
-                
-                {/* Final CTA outside the grid - More assertive button style */}
+
+                {/* --- BOTTOM CTA --- */}
                 <motion.div 
-                    className="mt-20 text-center"
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.4 }}
-                    viewport={{ once: true }}
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    className="mt-40 text-center"
                 >
-                    <p className="text-xl text-gray-700 mb-6 font-medium">
-                        See all our programs or get a custom quote for your organization.
-                    </p>
-                    <a
-                        href="#contact"
-                        className="inline-flex items-center px-10 py-4 font-bold rounded-xl text-lg shadow-2xl transition-all duration-300 transform hover:scale-[1.03] text-white"
-                        style={{
-                            backgroundColor: primaryColor,
-                            // Use a brighter color for the arrow icon to stand out
-                            boxShadow: `0 10px 15px -3px ${primaryColor}40, 0 4px 6px -2px ${primaryColor}1A`
-                        }}
+                    <p className="text-slate-400 font-black text-xs uppercase tracking-[0.5em] mb-6">Need a custom enterprise solution?</p>
+                    <button 
+                        className="px-12 py-6 text-white font-black uppercase text-xs tracking-[0.3em] rounded-2xl hover:bg-slate-950 transition-all shadow-xl"
+                        style={{ backgroundColor: primaryColor }}
                     >
-                        Book a Discovery Call
-                        <ArrowRightIcon className="w-5 h-5 ml-3" />
-                    </a>
+                        Request Custom Quote
+                    </button>
                 </motion.div>
             </div>
         </section>
     );
-};
+}
 
-export default ServicesSection;
