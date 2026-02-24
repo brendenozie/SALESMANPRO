@@ -581,7 +581,7 @@ function PricingSection({ companyId, email, category, onSubscriptionSuccess }: {
                                 className={`w-full  text-white py-2 rounded-lg font-bold ${mpesaPaymentLoading || loading ? "opacity-50 cursor-not-allowed bg-gray-500" : "bg-green-600"}`}
                                 disabled={mpesaPaymentLoading || loading}
                                 >
-                                {mpesaPaymentLoading || loading ? "Confirming Payment..." : "Confirm Payment"}
+                                {mpesaPaymentLoading || loading ? "PROCESSING PAYMENT..." : "Confirm Payment"}
                                 </button>
                             </div>
                             )}
@@ -594,8 +594,8 @@ function PricingSection({ companyId, email, category, onSubscriptionSuccess }: {
                                     Pay with Paystack
                                 </button>
                                 )}
-                                                        </div>
-)}
+                        </div>          
+                    )}
 
                 {
                     // hide when plan is selected show when changed
