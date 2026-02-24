@@ -191,6 +191,7 @@ function PricingSection({ companyId, email, category, onSubscriptionSuccess }: {
 
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(false);
+  const [mpesaPaymentLoading, setMpesaPaymentLoading] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<"MONTHLY" | "ANNUALLY">("ANNUALLY"); // Auto-select Annually
   const [isFeaturesExpanded, setIsFeaturesExpanded] = useState<{ [key: string]: boolean }>({});
   const [subscriptionStatus, setSubscriptionStatus] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
@@ -356,6 +357,8 @@ function PricingSection({ companyId, email, category, onSubscriptionSuccess }: {
     return;
   }
 
+  setMpesaPaymentLoading(true);
+
   try {
     const price = getPlanPrice(plan, billingPeriod);
     const planId = plan.id || plan._id?.$oid;
@@ -376,7 +379,7 @@ function PricingSection({ companyId, email, category, onSubscriptionSuccess }: {
     const data = await res.json();
 
     if (!res.ok){
-        setLoading(false);        
+        setMpesaPaymentLoading(false);        
          throw new Error(data.message);
     }
 
@@ -385,11 +388,13 @@ function PricingSection({ companyId, email, category, onSubscriptionSuccess }: {
     setMpesaRef("");
     setSelectedPlan(null);
     setLoading(false);
+    setMpesaPaymentLoading(false);
     onSubscriptionSuccess();
 
   } catch (err: any) {
     showStatusMessage(err.message);
     setLoading(false);
+    setMpesaPaymentLoading(false);
   }
 };
 
@@ -574,8 +579,9 @@ function PricingSection({ companyId, email, category, onSubscriptionSuccess }: {
                                 <button
                                 onClick={() => handleMpesaSubmit(plan)}
                                 className="w-full bg-green-600 text-white py-2 rounded-lg font-bold"
+                                disabled={mpesaPaymentLoading || loading}
                                 >
-                                Confirm Payment
+                                {mpesaPaymentLoading || loading ? "Confirming Payment..." : "Confirm Payment"}
                                 </button>
                             </div>
                             )}
