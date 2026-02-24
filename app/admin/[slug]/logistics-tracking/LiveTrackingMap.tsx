@@ -107,7 +107,7 @@ export default function LiveTrackingMap() {
   });
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+    <div className="relative rounded-3xl border border-slate-200 bg-white shadow-sm">
       {/* Header */}
       <div className="pointer-events-none absolute top-4 left-4 right-4 z-[1000] flex justify-between">
         <div className="pointer-events-auto flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-900/90 px-4 py-2 text-white backdrop-blur">
@@ -135,7 +135,7 @@ export default function LiveTrackingMap() {
       </div>
 
       {/* Map */}
-      <div className="h-[500px] w-full">
+      <div className="h-[530px] w-full">
         <MapContainer
           center={driverPos}
           zoom={13}

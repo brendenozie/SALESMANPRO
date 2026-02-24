@@ -20,9 +20,9 @@ export default function TrackingClient({ params }: { params: { companyId: string
     a.assetName.toLowerCase().includes(searchQuery.toLowerCase()) || 
     a.driver.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
+// h-[calc(100vh-64px)] bg-slate-50 overflow-hidden
   return (
-    <div className="flex flex-col h-[calc(100vh-64px)] bg-slate-50 overflow-hidden">
+    <div className="flex flex-col ">
       {/* 1. Global Metrics Bar */}
       <div className="bg-white border-b border-slate-200 px-8 py-3 flex items-center justify-between z-10">
         <div className="flex gap-8">
