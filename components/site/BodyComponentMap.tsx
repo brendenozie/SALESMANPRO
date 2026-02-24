@@ -34,6 +34,7 @@ import FurnitureSite from './layouts/FurnitureLayout/body/FurnitureSite';
 import FashionSite from './layouts/FashionLayout/body/FashionSite';
 import { PublicPaymentMethod } from '@/utils/payment-utils';
 import EcommerceAgrovetSite from './layouts/EcommerceAgrovetLayout/body/EcommerceAgrovetSite';
+import DeliverySite from './layouts/DeliveryLayout/body/DeliverySite';
 
 // A single, clean map from component name to the component itself.
 export const BodyComponentMap: Record<string, React.ComponentType<{ pageData: StoreForm; companyId: string; paymentMethods: PublicPaymentMethod[] }>> = {
@@ -49,6 +50,7 @@ export const BodyComponentMap: Record<string, React.ComponentType<{ pageData: St
   'CoursesSite': CoursesSite,
   'CoursesSite2': CoursesSite2,
   'CoursesSite3': CoursesSite3,
+  'DeliverySite': DeliverySite,
   'FitnessSite': FitnessSite,
   'FinanceSite': FinanceSite,
   'ServiceSite': ServiceSite,

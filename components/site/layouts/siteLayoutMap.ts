@@ -135,6 +135,7 @@ export const folderMap: Record<string, string> = {
   'restaurant & food delivery': 'RestaurantLayout',
   'security services': 'SecurityLayout',
   'security consulting': 'Security2Layout',
+  'delivery & logistics': 'DeliveryLayout',
   'default': 'DefaultLayout',
   'other': 'DefaultLayout',
 };
@@ -146,6 +147,7 @@ export const siteComponentNameMap: Record<string, string> = {
   'EcommerceLayout': 'EcommerceSite',
   'EcommerceShoesLayout': 'EcommerceShoesSite',
   'ConsultancyLayout': 'ConsultancySite',
+  'DeliveryLayout': 'DeliverySite',
   'ServicesLayout': 'ServiceSite',
   'BookingsLayout': 'BookingsSite',
   'RealEstateLayout': 'RealEstateSite',
