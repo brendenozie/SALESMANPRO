@@ -1,370 +1,247 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  MagnifyingGlassIcon,
-  ShoppingBagIcon,
-  Bars3BottomLeftIcon,
-  XMarkIcon,
+  ChevronRightIcon,
   UserIcon,
+  PhoneIcon,
+  GlobeAltIcon,
+  TruckIcon,
+  ShoppingBagIcon,
+  ArrowRightOnRectangleIcon,
+  Bars3Icon,
+  XMarkIcon,
+  EnvelopeIcon,
+  MagnifyingGlassIcon,
+  Squares2X2Icon,
 } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
-import { useSession, signIn, signOut } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 
-// Helper for image loader
-const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => 
   `${src}?w=${width}&q=${quality || 75}`;
 
-// Debounce utility function
-function debounce<T extends (...args: any[]) => void>(func: T, delay: number) {
-  let timeout: NodeJS.Timeout;
-  return function(this: ThisParameterType<T>, ...args: Parameters<T>) {
-    const context = this;
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(context, args), delay);
-  };
-}
-
-export default function Header() {
+export default function UpdatedNavbar() {
   const { cart } = useStateContext();
   const { storeFormData } = useStoreContext();
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const user = session?.user as { role?: string; name?: string } | undefined;
 
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const mobileMenuRef = useRef<HTMLDivElement>(null);
-  const mobileMenuToggleButtonRef = useRef<HTMLButtonElement>(null);
-
   const { slug, name, logoUrl, socialLinks = [], themeSettings = {} } = storeFormData || {};
-  const primaryColor = themeSettings?.primaryColor || '#6366F1'; // Fashion Indigo
-  const secondaryColor = themeSettings?.secondaryColor || '#EC4899'; // Fashion Pink
+  const primaryColor = themeSettings?.primaryColor || '#f7941d';
 
-  // --- Auth Handlers ---
-  const handleUserAction = () => {
+  /* =========================
+      AUTH & SCROLL LOGIC
+  ========================== */
+  const handleGoogleSignIn = useCallback(() => {
+    const authUrl = new URL('https://auth.salesmanpro.site/signin');
+    authUrl.searchParams.set('callbackUrl', window.location.origin);
+    window.location.href = authUrl.toString();
+  }, []);
+
+  const handleUserAction = useCallback(() => {
     if (!user) return handleGoogleSignIn();
-    if (user.role?.toLowerCase() === 'admin') router.push('/dashboards');
-    else router.push(`/ecommerce/profile`);
-  };
-  const handleSignOut = () => signOut({ callbackUrl: `/` });
-  const handleGoogleSignIn = () => {
-    const authUrl = new URL("https://auth.salesmanpro.site/signin");
-    authUrl.searchParams.set("callbackUrl", `${window.location.origin}`);
-    window.location.href = authUrl.toString();
-  };
-  const handleGoogleSignUp = () => {
-    const authUrl = new URL("https://auth.salesmanpro.site/signup");
-    authUrl.searchParams.set("callbackUrl", `${window.location.origin}`);
-    window.location.href = authUrl.toString();
-  };
+    user.role?.toLowerCase() === 'admin' ? router.push('/dashboards') : router.push('/ecommerce/profile');
+  }, [user, router, handleGoogleSignIn]);
 
-  // --- Click outside handlers ---
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (searchOpen && searchInputRef.current && !searchInputRef.current.contains(event.target as Node) &&
-          !document.querySelector('.search-toggle-button')?.contains(event.target as Node)) {
-        setSearchOpen(false);
-      }
-      if (mobileMenuOpen && mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node) &&
-          !mobileMenuToggleButtonRef.current?.contains(event.target as Node)) {
-        setMobileMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [searchOpen, mobileMenuOpen]);
-
-  // Focus search input when open
-  useEffect(() => {
-    if (searchOpen) searchInputRef.current?.focus();
-  }, [searchOpen]);
-
-  // Lock scroll when mobile menu is open
-  useEffect(() => {
-    document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [mobileMenuOpen]);
-
-  // Header shadow on scroll
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Navigation links
-  const navLinks = ['New Arrivals', 'Men', 'Women', 'Accessories', 'Sale'];
-
-  // Debounced search
-  const handleSearch = useCallback(debounce((query: string) => {
-    if (query.length > 2) console.log('Search:', query);
-  }, 300), [slug]);
-
-  const onSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-    handleSearch(e.target.value);
-  };
-
-  const handleClearSearch = () => setSearchQuery('');
-  const toggleMobileMenu = () => {
-    const wasOpen = mobileMenuOpen;
-    setMobileMenuOpen((prev) => !prev);
-    if (wasOpen) mobileMenuToggleButtonRef.current?.focus();
-  };
-
-  // Build dynamic nav links from store categories
-  const dynamicNavLinks = React.useMemo(() => {
+  const dynamicNavLinks = useMemo(() => {
     if (!storeFormData?.StoreCategory) return [];
-
-    // 1. Filter visible categories
-    const rawCategories = (storeFormData.StoreCategory || [])
+    const rawCategories = [...storeFormData.StoreCategory]
       .filter((c) => c.visible ?? true)
       .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
-    // 2. Map categories → simplified nav items
     let links = rawCategories.map((cat) => ({
       id: cat.id,
-      label: cat.displayName || "Category",
-      href: `/${storeFormData.slug}/category/${cat.categoryId}`,
+      label: cat.displayName || 'Category',
+      href: `/${slug}/category/${cat.categoryId}`,
     }));
 
-    // 3. If fewer than required, pull subcategories
     if (links.length < 5) {
       rawCategories.forEach((cat) => {
-        const subs = (cat.subcategories || [])
-          .filter((s) => s.visible ?? true)
-          .slice(0, 5); // limit subcategories per cat
-
-        subs.forEach((sub) =>
-          links.push({
-            id: sub.id,
-            label: sub.name,
-            href: `/${storeFormData.slug}/subcategory/${sub.slug}`,
-          })
-        );
+        (cat.subcategories || []).filter((s) => s.visible ?? true).slice(0, 2).forEach((sub) => {
+          links.push({ id: sub.id, label: sub.name, href: `/${slug}/subcategory/${sub.slug}` });
+        });
       });
     }
 
-    // 4. Ensure unique and limit final count
     const seen = new Set();
-    const finalLinks = [];
-
-    for (let link of links) {
-      if (!seen.has(link.label)) {
-        finalLinks.push(link);
-        seen.add(link.label);
-      }
-      if (finalLinks.length >= 6) break; // final limit here
-    }
-
-    return finalLinks;
-  }, [storeFormData]);
-
+    return links.filter(l => !seen.has(l.label) && seen.add(l.label)).slice(0, 6);
+  }, [storeFormData, slug]);
 
   return (
-    <>
-      <header
-        className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-6'}`}
-      >
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          {/* Logo */}
-          <Link href={`/`} className="flex items-center">
-            {logoUrl ? (
-              <Image
-                src={logoUrl}
-                alt={`${name} logo`}
-                width={100}
-                height={48}
-                className="object-contain w-28 h-14"
-                loader={imageLoader}
-              />
-            ) : (
-              <h1 className={`text-2xl font-bold tracking-tighter ${scrolled ? 'text-slate-900' : 'text-slate-900'}`}>
-                {name || 'VOGUE'}<span className="text-indigo-600">.</span>
-              </h1>
-            )}
-          </Link>
-
-          {/* Desktop Nav */}
-          <div className="hidden md:flex gap-8 text-sm font-medium text-slate-700">
-            {/* {navLinks.map((item) => (
-              <a key={item} href="#" className="hover:text-indigo-600 transition-colors">{item}</a>
-            ))} */}
-            {dynamicNavLinks.map((item, idx) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ y: 10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: idx * 0.07, type: 'spring', stiffness: 300, damping: 24 }}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Link href={item.href} className="block text-sm font-semibold text-slate-900 hover:text-indigo-600">
-                    {item.label}
-                  </Link>
-                </motion.div>
-              ))}
-
+    <header className={`w-full font-sans sticky top-0 z-50 transition-all ${scrolled ? 'shadow-lg' : ''}`}>
+      {/* 1. TOP BAR (DESKTOP) */}
+      <div className="bg-[#111111] text-white text-[12px] py-2.5 px-6 hidden lg:block border-b border-white/5">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2 group cursor-default">
+              <PhoneIcon className="text-orange-500 h-3.5 w-3.5" />
+              <span className="font-medium text-gray-400">Call: <span className="text-white group-hover:text-orange-500 transition-colors">Support Center</span></span>
+            </div>
+            <div className="h-3 w-[1px] bg-gray-700" />
+            <div className="flex items-center gap-2 group cursor-default">
+              <EnvelopeIcon className="text-orange-500 h-3.5 w-3.5" />
+              <span className="font-medium text-gray-400">Email: <span className="text-white group-hover:text-orange-500 transition-colors">info@{slug || 'store'}.com</span></span>
+            </div>
           </div>
 
-          {/* Icons + Auth */}
-          <div className="flex gap-4 items-center">
-            <ShoppingBagIcon
-              className="w-6 h-6 text-slate-800 cursor-pointer hover:text-indigo-600 transition-colors"
-              onClick={() => {
-                if (cart.length === 0) return;
-                if (user) router.push(`/ecommerce/checkout`);
-                else handleGoogleSignIn();
-              }}
-            />
-            {status === 'loading' ? null : user ? (
-              <UserIcon
-                className="w-6 h-6 text-slate-800 cursor-pointer hover:text-indigo-600 transition-colors"
-                onClick={handleUserAction}
-              />
-            ) : (
-              <button
-                className="hidden md:block bg-slate-900 text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-indigo-600 transition-colors"
-                onClick={handleGoogleSignIn}
-              >
-                Sign In
-              </button>
-            )}
+          <div className="flex items-center gap-5">
+            <div className="flex items-center gap-1.5 cursor-pointer hover:text-orange-500 transition-colors">
+              <GlobeAltIcon className="h-3.5 w-3.5 text-orange-500" />
+              <span className="font-bold uppercase tracking-wider text-[11px]">English</span>
+            </div>
+            <div className="h-3 w-[1px] bg-gray-700" />
+            <div className="flex items-center gap-3.5">
+              {socialLinks.map((s: any) => (
+                <a key={s.channel} href={s.url} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-orange-500 transition-colors uppercase font-bold text-[10px]">
+                  {s.channel}
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
 
-            {/* Mobile Menu Toggle */}
-            <button
-              className="md:hidden text-slate-900"
-              onClick={toggleMobileMenu}
-              ref={mobileMenuToggleButtonRef}
-            >
-              {mobileMenuOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3BottomLeftIcon className="h-6 w-6" />}
+      {/* 2. MAIN NAVIGATION */}
+      <nav className="bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto flex items-center justify-between h-20 lg:h-24">
+          
+          {/* SLANTED BRANDING BOX */}
+          <Link
+            href="/"
+            className="relative h-full flex items-center bg-[#f7941d] pl-6 pr-12 lg:pl-10 lg:pr-20 text-white shrink-0 group"
+            style={{ clipPath: 'polygon(0 0, 100% 0, 82% 100%, 0% 100%)' }}
+          >
+            <div className="flex items-center gap-3 lg:gap-4 relative z-10">
+              <div className="bg-blue-700 rounded-full p-2 lg:p-2.5 shadow-inner transition-transform group-hover:scale-110">
+                <TruckIcon className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
+              </div>
+              <div className="flex flex-col leading-none">
+                {logoUrl ? (
+                  <Image src={logoUrl} alt={name || 'Logo'} width={90} height={45} loader={imageLoader} className="brightness-0 invert object-contain h-8 lg:h-10 w-auto" />
+                ) : (
+                  <>
+                    <span className="text-2xl lg:text-3xl font-black italic tracking-tighter uppercase">{name || 'IMEVO'}</span>
+                    <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-[0.2em] opacity-90">Logistics</span>
+                  </>
+                )}
+              </div>
+            </div>
+          </Link>
+
+          {/* DESKTOP NAV LINKS */}
+          <div className="hidden lg:flex flex-grow justify-center px-4">
+            <ul className="flex items-center gap-7">
+              {dynamicNavLinks.map((link) => (
+                <li key={link.id}>
+                  <Link href={link.href} className="text-[13px] font-extrabold uppercase tracking-tight text-slate-800 hover:text-orange-500 transition-colors flex items-center gap-0.5">
+                    {link.label}
+                    <span className="text-orange-500 text-[10px] font-light">+</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* ACTION ICONS */}
+          <div className="flex items-center gap-2 sm:gap-5 px-6">
+            <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 cursor-pointer hover:text-orange-500 hidden sm:block" />
+            
+            <div className="h-6 w-[1px] bg-gray-200 hidden sm:block" />
+
+            <div className="relative cursor-pointer group" onClick={() => cart.length > 0 && router.push('/ecommerce/checkout')}>
+              <ShoppingBagIcon className="w-6 h-6 text-gray-800 group-hover:text-orange-500 transition-colors" />
+              {cart.length > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-blue-700 text-white text-[9px] w-4.5 h-4.5 rounded-full flex items-center justify-center font-bold shadow-sm">
+                  {cart.length}
+                </span>
+              )}
+            </div>
+
+            <div className="hidden lg:block">
+              {user ? (
+                <UserIcon onClick={handleUserAction} className="w-6 h-6 cursor-pointer text-gray-800 hover:text-orange-500 transition-colors" />
+              ) : (
+                <button onClick={handleGoogleSignIn} className="text-[11px] font-black uppercase border-2 border-slate-900 px-5 py-2 hover:bg-slate-900 hover:text-white transition-all tracking-widest">
+                  Login
+                </button>
+              )}
+            </div>
+
+            <button onClick={() => setIsMenuOpen(true)} className="lg:hidden p-2 text-slate-900 hover:bg-gray-100 rounded-lg">
+              <Bars3Icon className="w-7 h-7" />
             </button>
           </div>
         </div>
-      </header>
+      </nav>
 
-      {/* Mobile Slide-down Menu */}
+      {/* 3. MOBILE DRAWER */}
       <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            key="mobile-menu"
-            initial={{ clipPath: 'inset(0% 0% 100% 0%)', opacity: 0 }}
-            animate={{ clipPath: 'inset(0% 0% 0% 0%)', opacity: 1 }}
-            exit={{ clipPath: 'inset(0% 0% 100% 0%)', opacity: 0 }}
-            transition={{ duration: 0.45, ease: [0.25, 0.8, 0.25, 1] }}
-            className="fixed top-[72px] left-0 w-full bg-white/90 backdrop-blur-lg rounded-b-3xl overflow-hidden z-50 md:hidden"
-            ref={mobileMenuRef}
-          >
-            <div className="pt-6 pb-8 px-6 space-y-6">
-              {
-                dynamicNavLinks.map((item, idx) => (
-                  <motion.div
-                    key={item.id}
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: idx * 0.07, type: 'spring', stiffness: 300, damping: 24 }}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <a href="#" className="block text-lg font-medium text-slate-900 hover:text-indigo-600">
-                      {item.label}
-                    </a>
-                  </motion.div>
-                ))
-              }
-              {/* {navLinks.map((item, idx) => (
-                <motion.div
-                  key={item}
-                  initial={{ y: 10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: idx * 0.07, type: 'spring', stiffness: 300, damping: 24 }}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <a href="#" className="block text-lg font-medium text-slate-900 hover:text-indigo-600">
-                    {item}
-                  </a>
-                </motion.div>
-              ))} */}
-
-              <div className="border-t border-gray-200" />
-
-              {/* Auth Buttons */}
-              {user ? (
-                <div className="flex flex-col space-y-3">
-                  <button
-                    onClick={() => { setMobileMenuOpen(false); handleUserAction(); }}
-                    className="w-full text-center px-4 py-2 rounded-lg text-white font-medium shadow-md transition-colors hover:brightness-90"
-                    style={{ backgroundColor: primaryColor }}
-                  >
-                    {user.role === 'admin' ? 'Admin Portal' : 'My Account'}
-                  </button>
-                  <button
-                    onClick={() => { setMobileMenuOpen(false); handleSignOut(); }}
-                    className="w-full text-gray-600 underline hover:text-indigo-600 text-base"
-                  >
-                    Sign Out
-                  </button>
+        {isMenuOpen && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsMenuOpen(false)} className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm lg:hidden" />
+            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 28, stiffness: 200 }} className="fixed right-0 top-0 h-full w-[85%] max-w-xs bg-white z-[60] shadow-2xl flex flex-col">
+              
+              <div className="p-6 flex justify-between items-center bg-slate-50 border-b">
+                <div className="flex flex-col">
+                  <span className="text-xl font-black italic text-orange-500 uppercase leading-none">{name}</span>
+                  <span className="text-[9px] font-bold text-slate-400 tracking-widest">MENU</span>
                 </div>
-              ) : (
-                <div className="flex flex-col space-y-3">
-                  <button
-                    onClick={() => { setMobileMenuOpen(false); handleGoogleSignIn(); }}
-                    className="w-full text-center px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 font-medium border border-gray-200 transition-colors"
-                  >
-                    Log In
-                  </button>
-                  <button
-                    onClick={() => { setMobileMenuOpen(false); handleGoogleSignUp(); }}
-                    className="w-full text-center px-4 py-2 rounded-lg text-white font-medium shadow-md transition-colors hover:brightness-90"
-                    style={{ backgroundColor: primaryColor }}
-                  >
-                    Sign Up
-                  </button>
-                </div>
-              )}
+                <button onClick={() => setIsMenuOpen(false)} className="p-2 hover:rotate-90 transition-transform">
+                  <XMarkIcon className="w-6 h-6 text-slate-400" />
+                </button>
+              </div>
 
-              <div className="border-t border-gray-200" />
-
-              {/* Social Links */}
-              <div className="flex space-x-4">
-                {socialLinks.map((s: any) => (
-                  <a
-                    key={s.channel}
-                    href={s.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="capitalize text-gray-900 transition-colors hover:text-indigo-600"
-                  >
-                    {s.channel}
-                  </a>
+              <div className="flex-grow overflow-y-auto py-2">
+                {dynamicNavLinks.map((link, idx) => (
+                  <Link key={link.id} href={link.href} onClick={() => setIsMenuOpen(false)} className="flex items-center justify-between px-8 py-4.5 border-b border-gray-50 active:bg-orange-50 transition-colors">
+                    <motion.span initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.04 }} className="text-sm font-bold uppercase tracking-tight text-slate-700">
+                      {link.label}
+                    </motion.span>
+                    <ChevronRightIcon className="w-4 h-4 text-orange-500" />
+                  </Link>
                 ))}
               </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
-      {/* Mobile Overlay */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-x-0 top-[72px] bottom-0 bg-black/30 z-40 md:hidden"
-            onClick={toggleMobileMenu}
-          />
+              <div className="p-8 bg-[#111111] text-white space-y-5">
+                {user ? (
+                  <div className="space-y-4">
+                    <button onClick={handleUserAction} className="flex items-center gap-3 text-orange-500 text-sm font-black uppercase">
+                      <UserIcon className="w-5 h-5" /> Account Profile
+                    </button>
+                    <button onClick={() => signOut()} className="flex items-center gap-3 text-red-400 text-sm font-black uppercase">
+                      <ArrowRightOnRectangleIcon className="w-5 h-5" /> Sign Out
+                    </button>
+                  </div>
+                ) : (
+                  <button onClick={handleGoogleSignIn} className="w-full bg-orange-500 hover:bg-orange-600 py-4 font-black uppercase text-sm tracking-tighter transition-colors">
+                    Access Portal
+                  </button>
+                )}
+                <div className="pt-6 border-t border-white/10 flex justify-center gap-6">
+                   <Squares2X2Icon className="w-5 h-5 text-gray-500" />
+                   <GlobeAltIcon className="w-5 h-5 text-gray-500" />
+                </div>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
-    </>
+    </header>
   );
 }

@@ -1,99 +1,44 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
-import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { ArrowRightIcon, ArrowLeftIcon, ArchiveBoxIcon, PlayIcon,  } from "@heroicons/react/24/outline";
 import Image from 'next/image';
-import Link from 'next/link';
-// Assuming '@/types/typings' and 'HeroSlide' are correctly defined
-import { HeroSlide } from '@/types/typings'; 
+import { HeroSlide } from '@/types/typings';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-const autoAdvanceDelay = 5000;
+const autoAdvanceDelay = 6000;
 
 export interface HeroSliderProps {
   heroSlides: HeroSlide[] | null;
   themeSettings: any;
 }
 
-const defaultSlides: HeroSlide[] = [
-  {
-    imageUrl: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1000&auto=format&fit=crop',
-    subline: 'Spring Collection 2025',
-    headline: 'Redefine Your\nUnique Style',
-    badgeText: 'Discover the latest trends in street fashion and luxury wear. Curated for the bold, designed for the elegant.',
-    ctaText: 'Shop Now',
-    ctaLink: '/shop',
-    id: '',
-    companyId: '',
-    productImageUrl: null,
-    price: null,
-    endsAt: null,
-    order: 0,
-    iconKey: null,
-    backgroundColor: null,
-    textColor: null,
-    videoLink: null,
-    type: null,
-  },
-  // Add another default slide for testing slider functionality
-  {
-    imageUrl: 'https://images.unsplash.com/photo-1594928038755-6c71c1b18d23?q=80&w=1000&auto=format&fit=crop',
-    subline: 'Limited Edition Drops',
-    headline: 'Experience\n$Luxury$ Comfort',
-    badgeText: 'Explore exclusive items available for a limited time. Don\'t miss out on these rare pieces.',
-    ctaText: 'Explore',
-    ctaLink: '/limited-edition',
-    id: '2',
-    companyId: '',
-    productImageUrl: null,
-    price: null,
-    endsAt: null,
-    order: 1,
-    iconKey: null,
-    backgroundColor: null,
-    textColor: null,
-    videoLink: null,
-    type: null,
-  },
-];
-
 export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProps) {
-  const heroSlidesToShow: HeroSlide[] = (heroSlides && heroSlides.length > 0 ? heroSlides : defaultSlides).map(
-    (slide, index) => ({
-      ...slide,
-      // Fallback logic for data integrity
-      imageUrl: slide.imageUrl || defaultSlides[index % defaultSlides.length]?.imageUrl || defaultSlides[0].imageUrl,
-      subline: slide.subline || defaultSlides[index % defaultSlides.length]?.subline || 'Spring Collection 2025',
-      headline: slide.headline || defaultSlides[index % defaultSlides.length]?.headline || 'Redefine Your Unique Style',
-      badgeText:
-        slide.badgeText ||
-        defaultSlides[index % defaultSlides.length]?.badgeText ||
-        'Discover curated collections and exceptional savings on your favorite products.',
-      ctaText: slide.ctaText || 'Shop Now',
-      ctaLink: slide.ctaLink || '/shop',
-    })
-  );
-
-  // Dynamic Theme Colors
-  const primary = themeSettings?.primaryColor || '#6366F1'; // Default Indigo
-  const secondary = themeSettings?.secondaryColor || '#EC4899'; // Default Pink
+  // 1. Data Handling & Fallbacks
+  const slides = useMemo(() => {
+    if (!heroSlides || heroSlides.length === 0) return [];
+    return heroSlides;
+  }, [heroSlides]);
 
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
   const timeoutRef = useRef<NodeJS.Timeout>();
 
+  const primary = themeSettings?.primaryColor || '#f7941d';
+
+  // 2. Navigation Logic
   const resetTimer = useCallback(() => {
     clearTimeout(timeoutRef.current);
-    if (heroSlidesToShow.length > 1) { // Only auto-advance if more than one slide exists
+    if (slides.length > 1) {
       timeoutRef.current = setTimeout(() => {
         setDirection(1);
-        setCurrent((prev) => (prev + 1) % heroSlidesToShow.length);
+        setCurrent((prev) => (prev + 1) % slides.length);
       }, autoAdvanceDelay);
     }
-  }, [heroSlidesToShow.length]);
+  }, [slides.length]);
 
   useEffect(() => {
     resetTimer();
@@ -101,197 +46,177 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
   }, [current, resetTimer]);
 
   const goTo = (idx: number, dir = 0) => {
-    // Only allow navigation if there's more than one slide
-    if (heroSlidesToShow.length <= 1) return;
+    if (slides.length <= 1) return;
     clearTimeout(timeoutRef.current);
     setDirection(dir);
     setCurrent(idx);
   };
 
-  const prevSlide = () => goTo((current - 1 + heroSlidesToShow.length) % heroSlidesToShow.length, -1);
-  const nextSlide = () => goTo((current + 1) % heroSlidesToShow.length, 1);
+  const prevSlide = () => goTo((current - 1 + slides.length) % slides.length, -1);
+  const nextSlide = () => goTo((current + 1) % slides.length, 1);
 
-  const handleDragEnd = (_: any, info: PanInfo) => {
-    if (heroSlidesToShow.length <= 1) return;
-    const offset = info.offset.x;
-    if (offset < -50) nextSlide();
-    else if (offset > 50) prevSlide();
+  // 3. Animation Variants
+  const fadeUp = {
+    initial: { opacity: 0, y: 40 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
+    exit: { opacity: 0, y: -20, transition: { duration: 0.4 } }
   };
 
-  const slideVariants = {
-    enter: (dir: number) => ({ opacity: 0, x: dir > 0 ? 100 : -100 }),
-    center: { x: 0, opacity: 1, transition: { duration: 0.8, ease: 'easeOut' } },
-    exit: (dir: number) => ({ x: dir < 0 ? 100 : -100, opacity: 0, transition: { duration: 0.8 } }),
-  };
+  if (slides.length === 0) return null;
 
-  const fadeIn = { hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8 } } };
-  const staggerContainer = { hidden: {}, visible: { transition: { staggerChildren: 0.2 } } };
-
-  const currentSlide = heroSlidesToShow[current];
+  const currentSlide = slides[current];
 
   return (
-    <section className="relative w-full min-h-screen flex items-center bg-[#f8f8f8] overflow-hidden mt-10 ">
-      {/* Subtle Background Accent (Replaced the harsh skew) */}
-      <div className="absolute inset-y-0 right-0 w-[50vw] bg-indigo-50/50 [clip-path:polygon(20%_0%,_100%_0%,_100%_100%,_0%_100%)] z-0 hidden md:block" />
-
-      <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative z-10">
-        
-        {/* Content (Ordered first on mobile, second on desktop) */}
-        <motion.div 
-          initial="hidden" 
-          animate="visible" 
-          variants={staggerContainer} 
-          className="space-y-6 md:order-first"
-        >
-          <AnimatePresence initial={false} custom={direction} mode="wait">
-            {/* The slide wrapper key={current} ensures the entire block re-renders and animates */}
-            <motion.div
-              key={current}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              custom={direction}
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              onDragEnd={handleDragEnd}
-              className="space-y-6" // Apply spacing inside this motion div
-            >
-              <motion.div variants={fadeIn} className="flex items-center gap-2">
-                <span 
-                  className="px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full"
-                  style={{ backgroundColor: `${primary}15`, color: primary }} // Themed badge
-                >
-                  {currentSlide.badgeText}
-                </span>
-              </motion.div>
-
-              {/* Responsive Headline Sizing */}
-              <motion.h1 
-                variants={fadeIn} 
-                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-slate-900 leading-[1.1] whitespace-pre-line"
-              >
-                {/* Headline with $highlight$ logic */}
-                {currentSlide.headline?.split('\n').map((line, i) => (
-                  <React.Fragment key={i}>
-                    {line.includes('$') ? (
-                      <>
-                        {line.split('$')[0]}
-                        <span style={{ color: secondary }}>{line.split('$')[1]}</span>
-                      </>
-                    ) : (
-                      line
-                    )}
-                    <br />
-                  </React.Fragment>
-                ))}
-              </motion.h1>
-
-              <motion.p variants={fadeIn} className="text-lg text-slate-600 max-w-lg">
-                {currentSlide.subline}
-              </motion.p>
-              
-              {/* CTAs */}
-              <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Link
-                  href={currentSlide.ctaLink || '#'}
-                  className="bg-slate-900 text-white px-8 py-4 rounded-full font-semibold flex items-center justify-center gap-2 hover:bg-slate-700 transition-all group shadow-lg"
-                >
-                  {currentSlide.ctaText} <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
-                {/* <button 
-                  className="px-8 py-4 rounded-full font-semibold text-slate-700 border border-current hover:bg-slate-50 transition-all justify-center flex items-center"
-                  style={{ borderColor: primary, color: primary }} // Themed secondary button
-                >
-                  View Lookbook
-                </button> */}
-              </motion.div>
-            </motion.div>
-          </AnimatePresence>
-        </motion.div>
-
-        {/* Image Display */}
+    <section id="home" className="relative min-h-[90vh] md:min-h-screen w-full flex items-center overflow-hidden bg-[#111]">
+      {/* BACKGROUND IMAGE WITH SLIDE ANIMATION */}
+      <AnimatePresence initial={false} custom={direction}>
         <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          // Responsive sizing: Fixed height on mobile, aspect ratio on desktop
-          className="relative w-full h-[400px] md:h-auto md:aspect-square md:max-h-[650px] mt-8 md:mt-0"
+          key={`bg-${current}`}
+          initial={{ opacity: 0, scale: 1.1 }}
+          animate={{ opacity: 1, scale: 1.05 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.2 }}
+          className="absolute inset-0 z-0"
         >
-          <div className="absolute inset-0 rounded-3xl overflow-hidden shadow-2xl shadow-slate-400/50">
-            <Image
-              src={currentSlide.imageUrl || 'https://via.placeholder.com/1000/600/C0C0C0?text=No+Image'}
-              alt={currentSlide.headline || 'Hero Image'}
-              loader={loader}
-              fill
-              className="object-cover transition-opacity duration-500"
-              priority
-            />
-            
-            {/* Overlay Card - Simplified Product Teaser */}
-            <motion.div
-              initial={{ y: 50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.8 }}
-              className="absolute bottom-6 left-6 right-6 bg-white/70 backdrop-blur-lg p-5 rounded-2xl shadow-xl border border-white/50" 
-            >
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-sm text-slate-500">Curated Look</p>
-                  <h3 className="text-xl font-bold text-slate-900 line-clamp-1">{currentSlide.headline?.split('\n')[0]}</h3> 
-                </div>
-                <Link 
-                  href={currentSlide.ctaLink || '#'} 
-                  className="w-12 h-12 bg-slate-900 rounded-full flex items-center justify-center text-white hover:bg-slate-700 transition-colors"
-                  aria-label={`View featured look: ${currentSlide.headline?.split('\n')[0]}`}
-                >
-                  <ArrowRightIcon className="w-5 h-5" />
-                </Link>
-              </div>
-            </motion.div>
-          </div>
+          <div className="absolute inset-0 bg-black/50 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent z-10" />
+          <Image
+            src={currentSlide.imageUrl || '/fallback-logistics.jpg'}
+            alt="Logistics Background"
+            loader={loader}
+            fill
+            priority
+            className="object-cover object-right lg:object-center"
+          />
         </motion.div>
+      </AnimatePresence>
+
+      <div className="container mx-auto px-6 lg:px-12 relative z-20">
+        <AnimatePresence mode="wait" custom={direction}>
+          <motion.div 
+            key={`content-${current}`}
+            className="max-w-5xl space-y-6 md:space-y-8"
+          >
+            {/* SUBHEADER / BADGE */}
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-3 text-white"
+            >
+              <div className="p-2 bg-[#f7941d] rounded-sm">
+                <ArchiveBoxIcon className="h-4 w-4 text-white" />
+              </div>
+              <span className="text-xs md:text-sm font-black uppercase tracking-[0.2em] text-[#f7941d]">
+                {currentSlide.badgeText || "Logistics & Transportation"}
+              </span>
+            </motion.div>
+
+            {/* MAIN HEADING - Dynamic with Highlight logic */}
+            <motion.h1 
+              variants={fadeUp}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="text-[12vw] md:text-[7rem] lg:text-[9rem] font-black text-white leading-[0.85] tracking-tighter uppercase"
+            >
+              {currentSlide.headline?.split('\n').map((line, i) => (
+                <React.Fragment key={i}>
+                  {line.includes('$') ? (
+                    <>
+                      <span className="text-transparent stroke-white" style={{ WebkitTextStroke: '1.5px white' }}>
+                        {line.split('$')[1]}
+                      </span>
+                    </>
+                  ) : (
+                    line
+                  )}
+                  <br />
+                </React.Fragment>
+              ))}
+            </motion.h1>
+
+            {/* DESCRIPTION */}
+            <motion.p 
+              variants={fadeUp}
+              initial="initial"
+              animate="animate"
+              className="text-gray-200 text-base md:text-xl max-w-xl leading-relaxed font-light border-l-2 border-[#f7941d] pl-6"
+            >
+              {currentSlide.subline}
+            </motion.p>
+
+            {/* ACTIONS */}
+            <motion.div 
+              variants={fadeUp}
+              initial="initial"
+              animate="animate"
+              className="flex flex-col sm:flex-row items-start sm:items-center gap-6 md:gap-10 pt-4"
+            >
+              <button
+                onClick={() => document.getElementById("contact us")?.scrollIntoView({ behavior: "smooth" })}
+                className="relative group overflow-hidden h-16 px-10 bg-[#f7941d] text-white font-black text-sm uppercase transition-all transform hover:scale-105 skew-x-[-12deg]"
+              >
+                <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
+                <span className="skew-x-[12deg] flex items-center gap-3">
+                  {currentSlide.ctaText} <ArrowRightIcon className="h-4 w-4" />
+                </span>
+              </button>
+              
+              {currentSlide.videoLink && (
+                <div className="flex items-center gap-4 group cursor-pointer">
+                  <div className="h-16 w-16 rounded-full border border-white/30 flex items-center justify-center text-white relative">
+                    <PlayIcon className="h-6 w-6 fill-white ml-1" />
+                    <div className="absolute inset-0 rounded-full border border-white/50 animate-ping opacity-20" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-white font-bold text-xs uppercase tracking-widest">Watch</span>
+                    <span className="text-gray-400 font-bold text-xs uppercase tracking-widest">Showcase</span>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>
       </div>
 
-      {/* Navigation Arrows (Hidden on small screens, rely on swipe) */}
-      {heroSlidesToShow.length > 1 && (
-        <>
-          <button
-            onClick={prevSlide}
-            className="absolute top-1/2 left-8 transform -translate-y-1/2 bg-white/50 hover:bg-white p-3 md:p-4 rounded-full text-gray-800 shadow-xl transition-all duration-200 z-30 backdrop-blur-sm hidden sm:block"
-            aria-label="Previous slide"
-          >
-            <ArrowLeftIcon className="h-5 w-5 md:h-6 md:w-6" />
-          </button>
-          <button
-            onClick={nextSlide}
-            className="absolute top-1/2 right-8 transform -translate-y-1/2 bg-white/50 hover:bg-white p-3 md:p-4 rounded-full text-gray-800 shadow-xl transition-all duration-200 z-30 backdrop-blur-sm hidden sm:block"
-            aria-label="Next slide"
-          >
-            <ArrowRightIcon className="h-5 w-5 md:h-6 md:w-6" />
-          </button>
-        </>
-      )}
+      {/* NAVIGATION CONTROLS */}
+      {slides.length > 1 && (
+        <div className="absolute bottom-10 right-10 md:right-20 flex flex-col md:flex-row items-end md:items-center gap-8 z-30">
+          <div className="flex items-center gap-4 text-white font-black text-2xl tracking-tighter">
+            <span className="text-[#f7941d]">0{current + 1}</span>
+            <div className="w-12 h-[1px] bg-white/30" />
+            <span className="text-white/40 text-sm italic">0{slides.length}</span>
+          </div>
 
-      {/* Pagination Dots (Always visible, theme-aware) */}
-      {heroSlidesToShow.length > 1 && (
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3 z-30">
-          {heroSlidesToShow.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => goTo(idx, idx > current ? 1 : -1)}
-              // Styling applied to the button itself for better a11y and click target
-              className={`relative w-3.5 h-3.5 rounded-full transition-all duration-300 ${
-                idx === current
-                  ? 'scale-125'
-                  : 'bg-gray-400 opacity-50 hover:opacity-100'
-              }`}
-              style={idx === current ? { backgroundColor: primary, boxShadow: `0 0 0 3px ${primary}50` } : {}}
-              aria-label={`Go to slide ${idx + 1}`}
-            />
-          ))}
+          <div className="flex gap-2">
+            <button 
+              onClick={prevSlide}
+              className="h-14 w-14 border border-white/20 text-white flex items-center justify-center hover:bg-[#f7941d] transition-all rounded-sm"
+            >
+              <ArrowLeftIcon className="h-5 w-5" />
+            </button>
+            <button 
+              onClick={nextSlide}
+              className="h-14 w-14 bg-[#f7941d] text-white flex items-center justify-center hover:bg-white hover:text-black transition-all rounded-sm"
+            >
+              <ArrowRightIcon className="h-5 w-5" />
+            </button>
+          </div>
         </div>
       )}
+
+      {/* VERTICAL DECORATION */}
+      <div className="absolute left-6 bottom-12 hidden lg:flex flex-col gap-6 text-white/50 z-30">
+        <span className="vertical-text tracking-widest text-[10px] font-bold uppercase mb-4">Imevo Logistics</span>
+        <div className="w-[1px] h-12 bg-white/20 mx-auto" />
+      </div>
+
+      <style jsx>{`
+        .vertical-text {
+          writing-mode: vertical-rl;
+          transform: rotate(180deg);
+        }
+      `}</style>
     </section>
   );
 }

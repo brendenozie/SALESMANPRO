@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import useSWR from 'swr';
-import HeroSlider from '@/components/site/layouts/FashionLayout/body/components/HeroSlider';
+import HeroSlider from '@/components/site/layouts/DeliveryLayout/body/components/HeroSlider';
 import { StoreForm, MarketListingForm } from '@/types/typings';
 import Image from 'next/image';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
