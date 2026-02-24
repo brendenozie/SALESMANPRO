@@ -1152,7 +1152,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     { label: "Settings", href: `/admin/${adminSlug}/finance-settings`, icon: Cog6ToothIcon }, // General admin settings
   ],
 
-  "Logistics & Delivery": [
+  "Delivery & Logistics": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
     { label: "Drivers & Personnel", href: `/admin/${adminSlug}/logistics-drivers`, icon: UsersIcon },

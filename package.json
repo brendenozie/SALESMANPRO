@@ -93,6 +93,7 @@
     "@dnd-kit/core": "^6.0.0",
     "@types/file-saver": "^2.0.7",
     "@types/formidable": "^3.4.5",
+    "@types/leaflet": "^1.9.21",
     "@types/lodash": "^4.17.15",
     "@types/lodash.debounce": "^4.0.9",
     "@types/micro": "^7.3.7",

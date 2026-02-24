@@ -28,6 +28,7 @@ import PrincipalDashboard from '@/components/admin/PrincipalDashboard';
 import UncategorizedDashboard from '@/components/admin/AdminDashClient';
 import PlaygroupDashboard from '@/components/admin/PlaygroupDashboard';
 import DriverShiftClientDashboard from '@/components/admin/DriverShiftClientDashboard';
+import LogisticsDashboard from '@/components/admin/LogisticsDashboard';
 
 // zod for runtime validation
 import { z } from 'zod';
@@ -80,6 +81,7 @@ const dashboardComponents: Record<string, React.ComponentType<any>> = {
   'marketplace': EcomDashboardClient,
   'fashion shop': EcomDashboardClient,
   'furniture shop': EcomDashboardClient,
+  'delivery & logistics': LogisticsDashboard,
 };
 
 const allowedRoles = [
@@ -208,6 +210,7 @@ function getDashboardapiBaseUrl(categoryKey: string, companyId: string) {
   if (categoryKey === 'saas & web apps' || categoryKey === 'dashboards') return `${apiBaseUrl}/admin/dashboard/saas/${companyId}`;
   if (categoryKey === 'travel & tourism') return `${apiBaseUrl}/admin/dashboard/travel/${companyId}`;
   if (categoryKey === 'portfolio & personal branding') return `${apiBaseUrl}/admin/dashboard/portfolio/${companyId}`;
+  // if (categoryKey === 'delivery & logistics') return `${apiBaseUrl}/admin/dashboard/directory/${companyId}`;
   if (
     [
       'ecommerce', 'e-commerce', 'shoes store', 'directory & listings', 'marketplace',  
