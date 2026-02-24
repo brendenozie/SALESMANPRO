@@ -121,15 +121,15 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
 
       <NetworkMap />
 
-      <BlogSection />
+       <BlogSection />
       
-      <FeaturedListings listings={Ebookslistings} slug={siteData?.slug || ''} />
+      {/*<FeaturedListings listings={Ebookslistings} slug={siteData?.slug || ''} />
 
       <HowItWorks /> 
 
       <BrowseByCategory listings={Programslisting} storeSlug={siteData?.slug || ''} /> 
       
-      <AboutSection />  
+      <AboutSection />   */}
 
       {/* <ProgramModulesSection /> */}
 
