@@ -661,6 +661,9 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         ],
       },
       {
+          label: "Backup And Restore", href: `/admin/${adminSlug}/db-management`, icon: ClipboardDocumentListIcon
+      },
+      {
         label: "Plans & Subscriptions",
         href: `/admin/${adminSlug}/saas-plans`,
         icon: ClipboardDocumentListIcon,
@@ -737,6 +740,9 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       },
       {
           label: "Sample Listings Generator", href: `/admin/${adminSlug}/samplelistingsgenerator`, icon: ClipboardDocumentListIcon
+      },      
+      {
+          label: "Backup And Restore", href: `/admin/${adminSlug}/db-management`, icon: ClipboardDocumentListIcon
       },
       {
         label: "Plans & Subscriptions",
