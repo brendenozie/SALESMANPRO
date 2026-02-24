@@ -176,7 +176,6 @@ export default function LeadsClient({ initialLeads, companyId }: { initialLeads:
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
               <PaperAirplaneIcon className="w-5 h-5 text-white -rotate-12" />
             </div>
-            <span className="text-white font-bold tracking-tight text-lg">PAPA<span className="text-indigo-500">CRM</span></span>
           </div>
           <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-zinc-500">
              <SpeakerWaveIcon className="w-4 h-4 text-emerald-500" />
