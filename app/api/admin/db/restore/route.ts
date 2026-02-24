@@ -1,6 +1,7 @@
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { verifyBackupSecret } from "@/lib/verifyBackupSecret";
+import { setProgress } from "@/lib/restoreProgress";
 
 export const runtime = "nodejs";
 
@@ -19,8 +20,7 @@ export const POST = withApiHandler(async (req) => {
   const errors: Record<string, string> = {};
 
   for (const modelName of Object.keys(body)) {
-    const prismaKey =
-      modelName.charAt(0).toLowerCase() + modelName.slice(1);
+    const prismaKey =  modelName.charAt(0).toLowerCase() + modelName.slice(1);
 
     const modelClient = (prisma as any)[prismaKey];
 
@@ -39,15 +39,30 @@ export const POST = withApiHandler(async (req) => {
 
       const batchSize = 500;
 
+      const restoreId = crypto.randomUUID();
+
       for (let i = 0; i < records.length; i += batchSize) {
         const batch = records.slice(i, i + batchSize);
 
         await modelClient.createMany({
           data: batch,
         });
+
+        setProgress(restoreId, {
+          currentModel: modelName,
+          total: records.length,
+          completed: Math.min(i + batchSize, records.length),
+        });
+
       }
 
       results[modelName] = `${records.length} restored`;
+          
+      return Response.json({
+        success: true,
+        restoreId,
+      });
+
     } catch (err: any) {
       errors[modelName] = err.message;
     }

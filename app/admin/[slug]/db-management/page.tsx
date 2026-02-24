@@ -11,25 +11,31 @@ export default function DatabaseManagement() {
   const [isRestoring, setIsRestoring] = useState(false);
   const [isBackingUp, setIsBackingUp] = useState(false);
   const [progress, setProgress] = useState<any>(null);
-  const [restoreId] = useState(
+  const [restoreId,setRestoreId] = useState(
     `restore-${Date.now()}-${Math.random()}`,
   );
   const [status, setStatus] = useState<
     { type: 'success' | 'error'; msg: string } | null
   >(null);
 
-  const interval = setInterval(async () => {
-    const res = await fetch(
-      `/api/admin/restore/progress?id=${restoreId}`
-    );
-    const progress = await res.json();
+  // const interval = setInterval(async () => {
+  //   const res = await fetch(
+  //     `/api/admin/restore/progress?id=${restoreId}`,
+  //     {
+  //       headers: {
+  //         'x-backup-secret': process.env.NEXT_PUBLIC_BACKUP_SECRET || '',
+  //         credentials: 'include',
+  //       },
+  //     }
+  //   );
+  //   const progress = (await res.json()).progress;
 
-    setProgress(progress);
+  //   setProgress(progress);
 
-    if (progress.done) {
-      clearInterval(interval);
-    }
-  }, 2000);
+  //   if (progress.done) {
+  //     clearInterval(interval);
+  //   }
+  // }, 2000);
 
   // ===============================
   // BACKUP
