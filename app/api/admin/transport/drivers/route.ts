@@ -32,6 +32,7 @@ export async function GET(req: Request) {
       name: d.user.name,
       phoneNumber: d.user.phone,
       licenseNumber: d.licenseNo,
+      loginCode: d.loginCode,
       licenseExpiry: d.licenseExpiry ? d.licenseExpiry.toISOString().split('T')[0] : null,
       experienceYears: d.experienceYears,
       status: d.status, // ACTIVE, SUSPENDED, INACTIVE
@@ -61,7 +62,7 @@ export async function POST(req: Request) {
           name,
           email: email || `${licenseNumber.toLowerCase()}@school.com`, // Fallback email
           phone: phoneNumber,
-          role: "ADMIN", // Or add DRIVER to your ROLE enum
+          role: "SCHOOL_DRIVER", // Or add DRIVER to your ROLE enum
           companyId,
           staffProfile: { create: { 
             companyId,
@@ -72,12 +73,27 @@ export async function POST(req: Request) {
         }
       });
 
+      //create login code for driver app (random 6 digit number as string)
+      let loginCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+      //confirm uniqueness of login code (in case of collision, regenerate)
+      let isUnique = false;
+      while (!isUnique) {
+        const existing = await tx.transportDriver.findUnique({ where: { loginCode } });
+        if (!existing) {
+          isUnique = true;
+        } else {
+          loginCode = Math.floor(100000 + Math.random() * 900000).toString();
+        }
+      }
+
       const newDriver = await tx.transportDriver.create({
         data: {
           userId: newUser.id,
           companyId,
           licenseNo: licenseNumber,
           licenseImgUrl: licenseUrl,
+          loginCode,
           status: "ACTIVE",
           licenseExpiry: licenseExpiry ? new Date(licenseExpiry) : undefined,
         },
@@ -93,6 +109,7 @@ export async function POST(req: Request) {
       name: result.user.name,
         phoneNumber: result.user.phone,
         licenseNumber: result.licenseNo,
+        loginCode: result.loginCode,
         status: result.status,
         experienceYears: result.experienceYears,
         licenseExpiry: result.licenseExpiry ? result.licenseExpiry.toISOString().split('T')[0] : null

@@ -16,6 +16,7 @@ import {
 export interface Driver {
   id: string;
   name: string;
+  loginCode: string;
   licenseNumber: string;
   licenseClass: string;
   rating: number;
@@ -53,6 +54,7 @@ export default function DriversPageClient({ initialDrivers, schoolId }: DriversP
     name: "",
     email: "", // Added because User model requires it
     phoneNumber: "",
+    loginCode: "",
     licenseNumber: "",
     licenseClass: "Class A",
     licenseExpiry: "",
@@ -85,7 +87,7 @@ export default function DriversPageClient({ initialDrivers, schoolId }: DriversP
         setDrivers(prev => [result.data, ...prev]);
         toast.success("Driver successfully onboarded.");
         setIsModalOpen(false);
-        setFormData({ name: "", email: "", phoneNumber: "", licenseNumber: "", licenseClass: "Class A", licenseExpiry: "", experienceYears: "0" });
+        setFormData({ name: "", email: "", phoneNumber: "", loginCode: "", licenseNumber: "", licenseClass: "Class A", licenseExpiry: "", experienceYears: "0" });
       }
     } catch (error) {
       toast.error("Critical error during registration");
@@ -140,6 +142,15 @@ export default function DriversPageClient({ initialDrivers, schoolId }: DriversP
                   'bg-slate-800 border-slate-700 text-slate-500'
                 }`}>
                   {driver.status.replace('_', ' ')}
+                </div>
+              </div>
+
+              {/* Login Code */}
+              <div className="flex items-center gap-2 text-sm text-slate-400 mb-6">
+                <p className="text-[10px] uppercase tracking-widest">Login Code</p>
+                <div className="flex items-center gap-1.5">
+                    <IdentificationIcon className="h-4 w-4 text-slate-600" />
+                    <span className="font-mono">{driver.loginCode}</span>
                 </div>
               </div>
 

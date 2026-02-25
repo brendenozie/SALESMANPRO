@@ -31,7 +31,7 @@ export default async function AdminStoreLayout({
       session.user.role?.toLowerCase() !== 'senior' &&
       session.user.role?.toLowerCase() !== 'student' &&
       session.user.role?.toLowerCase() !== 'educator' &&
-      session.user.role?.toLowerCase() !== 'driver' &&
+      session.user.role?.toLowerCase() !== 'school_driver' &&
       session.user.role?.toLowerCase() !== 'parent' &&
       session.user.role?.toLowerCase() !== 'consumer')) {
       console.log(`Unauthorized access attempt by user ID: ${session?.user?.id} with role: ${session?.user?.role}`);

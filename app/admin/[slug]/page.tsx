@@ -89,7 +89,7 @@ const allowedRoles = [
   'TEACHER', 'LECTURER', 'TUTOR', 'HEAD_TEACHER', 'PRINCIPAL', 'HEAD_OF_SCHOOL',
   'SCHOOL_HEAD', 'EDUCATIONAL_ADMIN', 'EDUCATIONAL_LEADER', 'EDUCATIONAL_MANAGER',
   'EDUCATIONAL_COORDINATOR', 'EDUCATIONAL_DIRECTOR', 'EDUCATIONAL_SUPERVISOR',
-  'EDUCATIONAL_ADMINISTRATOR', 'EDUCATIONAL_OFFICER', 'DRIVER', 'PARENT'
+  'EDUCATIONAL_ADMINISTRATOR', 'EDUCATIONAL_OFFICER', 'SCHOOL_DRIVER', 'PARENT',
 ];
 
 const educatorRoles = [
@@ -325,7 +325,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
     if (!session?.user?.id || !allowedRoles.includes(userRole)) redirect('/');
 
     const companyId =
-      ['STUDENT', 'EDUCATOR', 'JUNIOR', 'SENIOR', 'DRIVER', 'PARENT'].includes(userRole)
+      ['STUDENT', 'EDUCATOR', 'JUNIOR', 'SENIOR', 'SCHOOL_DRIVER', 'PARENT'].includes(userRole)
         ? session.user.id
         : slug;
     const currentUserId = session.user.id;
@@ -341,7 +341,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
     isLoading = false;
 
     if (
-      userRole !== 'STUDENT' && !company && !['EDUCATOR', 'JUNIOR', 'SENIOR', 'DRIVER', 'PARENT'].includes(userRole)
+      userRole !== 'STUDENT' && !company && !['EDUCATOR', 'JUNIOR', 'SENIOR', 'SCHOOL_DRIVER', 'PARENT'].includes(userRole)
     ) {
       redirect('/dashboard');
     }
@@ -526,7 +526,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
     //   );
     // }
 
-    if (userRole === 'DRIVER') {
+    if (userRole === 'SCHOOL_DRIVER') {
       return (
         <DriverShiftClientDashboard
           companyId={companyId}

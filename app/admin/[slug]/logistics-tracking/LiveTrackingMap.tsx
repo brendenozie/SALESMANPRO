@@ -63,6 +63,18 @@ const driverIcon = new L.Icon({
   iconAnchor: [20, 40],
 });
 
+const pickupIcon = new L.Icon({
+  iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+  iconSize: [35, 35],
+  iconAnchor: [17, 35],
+});
+
+const waypointIcon = new L.Icon({
+  iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+  iconSize: [35, 35],
+  iconAnchor: [17, 35],
+});
+
 const destinationIcon = new L.Icon({
   iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
   iconSize: [35, 35],
@@ -72,13 +84,29 @@ const destinationIcon = new L.Icon({
 // ------------------------------
 // Route Data
 // ------------------------------
+// const routeCoordinates: [number, number][] = [
+//   [-1.286389, 36.817223], // Nairobi CBD
+//   [-1.2921, 36.8219],
+//   [-1.3032, 36.8245],
+//   [-1.315, 36.83], // Driver position
+//   [-1.33, 36.85],
+//   [-1.35, 36.89], // Embakasi
+// ];
+// const routeCoordinates: [number, number][] = [
+//   [0.0463, 37.6559],   // Meru Town (CBD)
+//   [0.0500, 37.6605],   // Near Mwendantu
+//   [0.0568, 37.6672],   // Near Meru Level 5 Hospital
+//   [0.0635, 37.6730],   // Driver position (example)
+//   [0.0720, 37.6825],   // Toward Nkubu Road
+//   [0.0825, 37.6950],   // Outskirts toward Nkubu
+// ];
 const routeCoordinates: [number, number][] = [
-  [-1.286389, 36.817223], // Nairobi CBD
-  [-1.2921, 36.8219],
-  [-1.3032, 36.8245],
-  [-1.315, 36.83], // Driver position
-  [-1.33, 36.85],
-  [-1.35, 36.89], // Embakasi
+  [-0.5370, 37.4500],   // Embu Town (CBD)
+  [-0.5355, 37.4525],   // Near Embu Level 5 Hospital
+  [-0.5330, 37.4560],   // Near Embu Stadium
+  [-0.5300, 37.4605],   // Near University of Embu
+  [-0.5265, 37.4680],   // Along Runyenjes Road
+  [-0.5220, 37.4755],   // Outskirts toward Runyenjes
 ];
 
 // ------------------------------
@@ -173,8 +201,8 @@ export default function LiveTrackingMap({ selectedAsset }: { selectedAsset?: any
             dashArray="10 10"
           />
 
-          <Marker position={routeCoordinates[0]} icon={destinationIcon}>
-            <Popup>Pickup: Nairobi CBD</Popup>
+          <Marker position={routeCoordinates[0]} icon={pickupIcon}>
+            <Popup>Pickup: Embu Town</Popup>
           </Marker>
 
           <Marker position={driverPos} icon={driverIcon}>
@@ -191,7 +219,7 @@ export default function LiveTrackingMap({ selectedAsset }: { selectedAsset?: any
             position={routeCoordinates.at(-1)!}
             icon={destinationIcon}
           >
-            <Popup>Destination: Embakasi Hub</Popup>
+            <Popup>Destination: Outskirts toward Runyenjes</Popup>
           </Marker>
 
           <RecenterMap coords={driverPos} />
@@ -208,8 +236,8 @@ export default function LiveTrackingMap({ selectedAsset }: { selectedAsset?: any
             <p className="text-[10px] font-black uppercase text-slate-400">
               Route
             </p>
-            <p className="text-sm font-bold">CBD → Eastgate Industrial</p>
-            <p className="text-xs text-slate-500">Via Mombasa Road</p>
+            <p className="text-sm font-bold">Embu Town → Outskirts toward Runyenjes</p>
+            <p className="text-xs text-slate-500">via Embu Level 5 Hospital</p>
           </div>
         </div>
 
@@ -222,7 +250,7 @@ export default function LiveTrackingMap({ selectedAsset }: { selectedAsset?: any
               Remaining
             </p>
             <p className="text-sm font-bold">{telemetry.distance}</p>
-            <p className="text-xs text-slate-500">85% completed</p>
+            <p className="text-xs text-slate-500">12% completed</p>
           </div>
         </div>
 

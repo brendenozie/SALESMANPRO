@@ -62,7 +62,8 @@ enum ROLES {
   STAFF_MEMBER
   SERVICE_PROVIDER
   RIDER
-  DRIVER
+  SCHOOL_DRIVER
+  STORE_DRIVER
   SUPPLIER
 }
 
@@ -6353,6 +6354,7 @@ model TransportDriver {
   licenseImgUrl   String? // URL to driver's license image
   licenseExpiry   DateTime?
   experienceYears Int       @default(0)
+  loginCode       String?   @unique // For driver app login
 
   companyId String  @db.ObjectId
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
