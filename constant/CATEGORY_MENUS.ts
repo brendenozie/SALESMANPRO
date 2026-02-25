@@ -52,6 +52,13 @@ import {
   TruckIcon,
   BookOpenIcon,
   EyeIcon,
+  ArrowsRightLeftIcon,
+  BoltIcon,
+  CameraIcon,
+  ClockIcon,
+  CubeIcon,
+  ExclamationTriangleIcon,
+  MapIcon,
   // CarIcon,
 } from "@heroicons/react/24/outline";
 import { sub } from "date-fns";
@@ -1177,15 +1184,59 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     { label: "Settings", href: `/admin/${adminSlug}/social-settings`, icon: Cog6ToothIcon },
   ],
 
-  "SCHOOL_DRIVER" : [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    
-  ],
+  "SCHOOL_DRIVER": [
+      { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
 
-  "STORE_DRIVER" : [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-  ],
-  
+      // Trips & Routes
+      { label: "My Routes", href: `/admin/${adminSlug}/routes`, icon: MapIcon },
+      { label: "Today's Trips", href: `/admin/${adminSlug}/trips/today`, icon: ClockIcon },
+      { label: "Trip History", href: `/admin/${adminSlug}/trips/history`, icon: CalendarIcon },
+
+      // Students
+      { label: "Assigned Students", href: `/admin/${adminSlug}/students`, icon: UsersIcon },
+      { label: "Attendance", href: `/admin/${adminSlug}/attendance`, icon: ClipboardDocumentCheckIcon },
+
+      // Vehicle
+      { label: "Vehicle Details", href: `/admin/${adminSlug}/vehicle`, icon: TruckIcon },
+      { label: "Fuel & Mileage", href: `/admin/${adminSlug}/vehicle/fuel`, icon: BoltIcon },
+      { label: "Maintenance Logs", href: `/admin/${adminSlug}/vehicle/maintenance`, icon: WrenchScrewdriverIcon },
+
+      // Safety & Communication
+      { label: "Live Tracking", href: `/admin/${adminSlug}/tracking`, icon: MapPinIcon },
+      { label: "Incidents & Reports", href: `/admin/${adminSlug}/incidents`, icon: ExclamationTriangleIcon },
+      { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleLeftRightIcon },
+
+      // Profile
+      { label: "My Profile", href: `/admin/${adminSlug}/profile`, icon: UserCircleIcon },
+    ],
+
+  "STORE_DRIVER": [
+      { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+
+      // Deliveries
+      { label: "Assigned Deliveries", href: `/admin/${adminSlug}/deliveries`, icon: CubeIcon },
+      { label: "Today's Deliveries", href: `/admin/${adminSlug}/deliveries/today`, icon: ClockIcon },
+      { label: "Delivery History", href: `/admin/${adminSlug}/deliveries/history`, icon: CalendarIcon },
+
+      // Orders
+      { label: "Order Details", href: `/admin/${adminSlug}/orders`, icon: ClipboardDocumentListIcon },
+      { label: "Proof of Delivery", href: `/admin/${adminSlug}/deliveries/proof`, icon: CameraIcon },
+
+      // Navigation
+      { label: "Live Map", href: `/admin/${adminSlug}/map`, icon: MapIcon },
+      { label: "Route Optimization", href: `/admin/${adminSlug}/routes/optimize`, icon: ArrowsRightLeftIcon },
+
+      // Vehicle
+      { label: "Vehicle Status", href: `/admin/${adminSlug}/vehicle`, icon: TruckIcon },
+      { label: "Fuel & Mileage", href: `/admin/${adminSlug}/vehicle/fuel`, icon: BoltIcon },
+
+      // Earnings & Performance
+      { label: "Earnings", href: `/admin/${adminSlug}/earnings`, icon: BanknotesIcon },
+      { label: "Performance", href: `/admin/${adminSlug}/performance`, icon: ChartBarIcon },
+
+      // Profile
+      { label: "My Profile", href: `/admin/${adminSlug}/profile`, icon: UserCircleIcon },
+    ],
   //Old PAths
   // "Marketplace": [
   //   { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
