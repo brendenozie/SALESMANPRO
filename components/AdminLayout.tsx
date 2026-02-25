@@ -16,7 +16,7 @@ interface MenuItem {
   subItems?: MenuItem[];
 }
 
-type Role = 'STUDENT' | 'EDUCATOR' | 'PARENT' | string;
+type Role = 'STUDENT' | 'EDUCATOR' | 'PARENT' | 'SCHOOL_DRIVER' | string;
 type CategoryType = string;
 type MenuMap = Record<string, MenuItem[]>;
 
@@ -37,9 +37,9 @@ function getMenuItemsFor(userRole: Role, categoryType: CategoryType, allCategory
     case 'PARENT':
       return allCategoryMenus.Parent ?? defaultFallbackMenu;
     case 'SCHOOL_DRIVER':
-      return allCategoryMenus.School_Driver ?? defaultFallbackMenu;
+      return allCategoryMenus.SCHOOL_DRIVER ?? defaultFallbackMenu;
     case 'STORE_DRIVER':
-      return allCategoryMenus.Store_Driver ?? defaultFallbackMenu;
+      return allCategoryMenus.STORE_DRIVER ?? defaultFallbackMenu;
     case 'EDUCATOR':
       if (isPrincipalCategory(categoryType)) {
         return allCategoryMenus.Principal ?? allCategoryMenus.Educator ?? defaultFallbackMenu;
