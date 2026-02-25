@@ -1156,6 +1156,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
     { label: "Drivers & Personnel", href: `/admin/${adminSlug}/logistics-drivers`, icon: UsersIcon },
+    { label: "Clients & Customers", href: `/admin/${adminSlug}/logistics-clients`, icon: UserGroupIcon },
     { label: "Vehicles & Fleet", href: `/admin/${adminSlug}/logistics-vehicles`, icon: TruckIcon },
     { label: "Routes & Schedules", href: `/admin/${adminSlug}/logistics-routes`, icon: MapPinIcon },
     { label: "Shipments & Orders", href: `/admin/${adminSlug}/logistics-shipments`, icon: ClipboardDocumentListIcon },

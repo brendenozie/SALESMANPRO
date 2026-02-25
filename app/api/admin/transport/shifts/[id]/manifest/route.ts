@@ -9,8 +9,10 @@ export async function GET(
 ) {
   try {
     // 1. Fetch the shift to get the Route ID
+    const searchParams = new URL(req.url).searchParams;
+    const companyId = searchParams.get("companyId");
     
-    const cacheKey = `admin:manifest:${'global' || 'global'}:all`;
+    const cacheKey = `admin:manifest:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -66,6 +68,10 @@ export async function GET(
       stops: shift.route.stops // Include stops for sequence planning
     }, "Manifest generated", 200);
   } catch (error) {
+    return formatResponse(false, null, "Failed to load manifest", 500);
+  }
+}catch (error) {
+    console.error("Error fetching manifest:", error);
     return formatResponse(false, null, "Failed to load manifest", 500);
   }
 }

@@ -21,38 +21,38 @@ async function getSubject(req: Request, { params }: { params: { id: string } }) 
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
 
-  try {
+  // try {
 
-  const subject = await prisma.subject.findUnique({
+  // const subject = await prisma.subject.findUnique({
     //   where: { id },
     //   include: {
     //     _count: { select: { courses: true } },
     //   },
     // });
 
-  try {
-    if (subject) {
-      await cacheSet(cacheKey, subject, 60);
-    }
-  } catch (e) {}
+  // try {
+  //   if (subject) {
+  //     await cacheSet(cacheKey, subject, 60);
+  //   }
+  // } catch (e) {}
 
-    // if (!subject) return formatResponse(false, null, "Subject not found", 404);
+  //   // if (!subject) return formatResponse(false, null, "Subject not found", 404);
 
-    const response = {
-      id: "subject.id",
-      name: "subject.name",
-      description: "subject.description",
-      type: "subject.type",
-      coursesCount: "subject._count.courses",
-      createdAt: "subject.createdAt",
-      updatedAt: "subject.updatedAt",
-    };
+  //   const response = {
+  //     id: "subject.id",
+  //     name: "subject.name",
+  //     description: "subject.description",
+  //     type: "subject.type",
+  //     coursesCount: "subject._count.courses",
+  //     createdAt: "subject.createdAt",
+  //     updatedAt: "subject.updatedAt",
+  //   };
 
-    return formatResponse(true, response, "Subject fetched successfully", 200);
-  } catch (error: any) {
-    console.error(`Error fetching subject with ID ${id}:`, error);
-    return formatResponse(false, null, "Failed to fetch subject", 500);
-  }
+  //   return formatResponse(true, response, "Subject fetched successfully", 200);
+  // } catch (error: any) {
+  //   console.error(`Error fetching subject with ID ${id}:`, error);
+  //   return formatResponse(false, null, "Failed to fetch subject", 500);
+  // }
 }
 
 // --- PUT: Update a subject by ID ---
@@ -75,7 +75,7 @@ async function updateSubject(req: Request, { params }: { params: { id: string } 
     // });
 
     
-    try { await cacheDel(`admin:schedule:${'global' || 'global'}:*`); } catch (e) {}
+    // try { await cacheDel(`admin:schedule:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, {updatedSubject:"updatedSubject"}, "Subject updated successfully", 200);
   } catch (error: any) {
     console.error(`Error updating subject with ID ${id}:`, error);
@@ -100,7 +100,7 @@ async function deleteSubject(req: Request, { params }: { params: { id: string } 
     // const deletedSubject = await prisma.subject.delete({ where: { id } });
 
     
-    try { await cacheDel(`admin:schedule:${'global' || 'global'}:*`); } catch (e) {}
+    // try { await cacheDel(`admin:schedule:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(
       true,
       { deletedSubjectId: "deletedSubject.id" },
@@ -124,6 +124,6 @@ async function deleteSubject(req: Request, { params }: { params: { id: string } 
 }
 
 // ✅ Export handlers wrapped with withApiHandler
-export const GET = withApiHandler(getSubject);
+// export const GET = withApiHandler(getSubject);
 export const PUT = withApiHandler(updateSubject);
 export const DELETE = withApiHandler(deleteSubject);

@@ -23,6 +23,7 @@ export default async function TransportVehiclesPage({ params }: PageProps) {
 
     if (res.ok) {
       initialVehicles = (await res.json()).data;
+      console.log("[TransportVehiclesPage] Loaded vehicles:", initialVehicles);
     }
   } catch (err) {
     console.error("[TransportVehiclesPage] Failed to load vehicles", err);

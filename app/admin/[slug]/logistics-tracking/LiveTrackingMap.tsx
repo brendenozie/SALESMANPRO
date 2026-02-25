@@ -97,15 +97,33 @@ function RecenterMap({ coords }: { coords: [number, number] }) {
 // ------------------------------
 // Main Component
 // ------------------------------
-export default function LiveTrackingMap() {
+export default function LiveTrackingMap({ selectedAsset }: { selectedAsset?: any }) {
   const [driverPos] = useState<[number, number]>(routeCoordinates[3]);
 
-  const [telemetry] = useState({
+  const [telemetry, setTelemetry] = useState({
     speed: 45,
     eta: '14 mins',
     distance: '8.2 km',
   });
 
+  useEffect(() => {
+    // Simulate real-time updates (for demo purposes)
+    const interval = setInterval(() => {
+      // provide sample fetch real telemetry data and update state
+      setTelemetry((prev) => ({
+        ...prev,
+        speed: prev.speed + (Math.random() * 10 - 5), // Random speed fluctuation
+        eta: `${Math.max(1, parseInt(prev.eta) - 1)} mins`, // Decrease ETA
+        distance: `${Math.max(0, parseFloat(prev.distance) - 0.5).toFixed(1)} km`, // Decrease distance
+      }));
+
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+
+  
   return (
     <div className="relative rounded-3xl border border-slate-200 bg-white shadow-sm">
       {/* Header */}

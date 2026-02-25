@@ -9,28 +9,28 @@ async function handleGET(request: Request) {
   
 
 
-  try {
-    // 
-    const cacheKey = `admin:subjects:${'global' || 'global'}:all`;
+  // try {
+  //   // 
+  //   const cacheKey = `admin:subjects:${'global' || 'global'}:all`;
 
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
-  const subjects = await prisma.subject.findMany({
-    //   include: {
-    //     _count: {
-    //       select: { courses: true }, // Count of courses under this subject
-    //     },
-    //   },
-    //   orderBy: { name: "asc" },
-    // });
+  // try {
+  //   const cached = await cacheGet(cacheKey);
+  //   if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  // } catch (e) {}
+  // const subjects = await prisma.subject.findMany({
+  //   //   include: {
+  //   //     _count: {
+  //   //       select: { courses: true }, // Count of courses under this subject
+  //   //     },
+  //   //   },
+  //   //   orderBy: { name: "asc" },
+  //   // });
 
-  try {
-    if (subjects) {
-      await cacheSet(cacheKey, subjects, 60);
-    }
-  } catch (e) {}
+  // try {
+  //   if (subjects) {
+  //     await cacheSet(cacheKey, subjects, 60);
+  //   }
+  // } catch (e) {}
 
     // const response = subjects.map(subject => ({
     //   id: subject.id,
@@ -42,11 +42,11 @@ async function handleGET(request: Request) {
     //   updatedAt: subject.updatedAt,
     // }));
 
-    return formatResponse(true, {response: "subjects"}, "Subjects fetched successfully.");
-  } catch (error: any) {
-    console.error("Error fetching subjects:", error);
-    return formatResponse(false, null, error.message, 500);
-  }
+  //   return formatResponse(true, {response: "subjects"}, "Subjects fetched successfully.");
+  // } catch (error: any) {
+  //   console.error("Error fetching subjects:", error);
+  //   return formatResponse(false, null, error.message, 500);
+  // }
 }
 
 // POST /api/subjects
@@ -67,7 +67,7 @@ async function handlePOST(request: Request) {
     // });
 
     
-    try { await cacheDel(`admin:subjects:${'global' || 'global'}:*`); } catch (e) {}
+    // try { await cacheDel(`admin:subjects:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, {newSubject:""}, "Subject created successfully.");
   } catch (error: any) {
     console.error("Error creating subject:", error);
@@ -81,5 +81,5 @@ async function handlePOST(request: Request) {
 }
 
 // Export wrapped handlers
-export const GET = withApiHandler(handleGET);
+// export const GET = withApiHandler(handleGET);
 export const POST = withApiHandler(handlePOST);

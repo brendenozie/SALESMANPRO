@@ -9,15 +9,15 @@ async function handleGET(request: Request, { params }: { params: { id: string } 
   
   const { id } = params;
 
-  try {
-    // 
-    const cacheKey = `admin:subjects:${'global' || 'global'}:all`;
+  // try {
+  //   // 
+  //   const cacheKey = `admin:subjects:${'global' || 'global'}:all`;
 
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
-  const subject = await prisma.subject.findUnique({
+  // try {
+  //   const cached = await cacheGet(cacheKey);
+  //   if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  // } catch (e) {}
+  // const subject = await prisma.subject.findUnique({
     //   where: { id },
     //   include: {
     //     _count: {
@@ -26,29 +26,29 @@ async function handleGET(request: Request, { params }: { params: { id: string } 
     //   },
     // });
 
-  try {
-    if (subject) {
-      await cacheSet(cacheKey, subject, 60);
-    }
-  } catch (e) {}
+  // try {
+  //   if (subject) {
+  //     await cacheSet(cacheKey, subject, 60);
+  //   }
+  // } catch (e) {}
 
-    // if (!subject) return formatResponse(false, null, "Subject not found", 404);
+  //   // if (!subject) return formatResponse(false, null, "Subject not found", 404);
 
-    const response = {
-      id: "subject.id",
-      name: "subject.name",
-      description: "subject.description",
-      type: "subject.type",
-      coursesCount: "subject._count.courses",
-      createdAt: "subject.createdAt",
-      updatedAt: "subject.updatedAt",
-    };
+  //   const response = {
+  //     id: "subject.id",
+  //     name: "subject.name",
+  //     description: "subject.description",
+  //     type: "subject.type",
+  //     coursesCount: "subject._count.courses",
+  //     createdAt: "subject.createdAt",
+  //     updatedAt: "subject.updatedAt",
+  //   };
 
-    return formatResponse(true, response);
-  } catch (error: any) {
-    console.error(`Error fetching subject with ID ${id}:`, error);
-    return formatResponse(false, null, error.message, 500);
-  }
+  //   return formatResponse(true, response);
+  // } catch (error: any) {
+  //   console.error(`Error fetching subject with ID ${id}:`, error);
+  //   return formatResponse(false, null, error.message, 500);
+  // }
 }
 
 // PUT /api/subjects/[id]
@@ -71,7 +71,7 @@ async function handlePUT(request: Request, { params }: { params: { id: string } 
     // });
 
     
-    try { await cacheDel(`admin:subjects:${'global' || 'global'}:*`); } catch (e) {}
+    // try { await cacheDel(`admin:subjects:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, {updatedSubject: "updatedSubject"}, "Subject updated successfully");
   } catch (error: any) {
     console.error(`Error updating subject with ID ${id}:`, error);
@@ -95,7 +95,7 @@ async function handleDELETE(request: Request, { params }: { params: { id: string
     // const deletedSubject = await prisma.subject.delete({ where: { id } });
 
     
-    try { await cacheDel(`admin:subjects:${'global' || 'global'}:*`); } catch (e) {}
+    // try { await cacheDel(`admin:subjects:${'global' || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { deletedSubjectId: "deletedSubject.id", message: "Subject deleted successfully" });
   } catch (error: any) {
     console.error(`Error deleting subject with ID ${id}:`, error);
@@ -109,6 +109,6 @@ async function handleDELETE(request: Request, { params }: { params: { id: string
 }
 
 // Export wrapped handlers
-export const GET = withApiHandler(handleGET);
+// export const GET = withApiHandler(handleGET);
 export const PUT = withApiHandler(handlePUT);
 export const DELETE = withApiHandler(handleDELETE);

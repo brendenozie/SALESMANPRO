@@ -83,10 +83,10 @@ export default function TrackingClient({ params }: { params: { companyId: string
 
         {/* 3. Primary Map View */}
         <div className="flex-1 relative bg-slate-200">
-          <LiveTrackingMap /> 
+          <LiveTrackingMap selectedAsset={selectedAsset} /> 
           
           {/* Floating Asset Detail Overlay */}
-          {selectedAsset && (
+          {/* {selectedAsset && (
             <div className="absolute bottom-6 left-6 right-6 lg:left-auto lg:right-6 lg:w-96 bg-slate-900/95 backdrop-blur-md p-6 rounded-3xl text-white shadow-2xl z-[1001] border border-white/10 animate-in slide-in-from-bottom-4 duration-300">
               <div className="flex justify-between items-start mb-6">
                 <div>
@@ -116,7 +116,7 @@ export default function TrackingClient({ params }: { params: { companyId: string
                 </button>
               </div>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </div>
