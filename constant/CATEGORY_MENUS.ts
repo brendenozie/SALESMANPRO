@@ -1177,6 +1177,14 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     { label: "Settings", href: `/admin/${adminSlug}/social-settings`, icon: Cog6ToothIcon },
   ],
 
+  "SCHOOL_DRIVER" : [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    
+  ],
+
+  "STORE_DRIVER" : [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+  ],
   
   //Old PAths
   // "Marketplace": [

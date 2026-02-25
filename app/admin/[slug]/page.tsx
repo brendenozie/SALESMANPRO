@@ -32,6 +32,7 @@ import LogisticsDashboard from '@/components/admin/LogisticsDashboard';
 
 // zod for runtime validation
 import { z } from 'zod';
+import StoreDriverDashboard from '@/components/admin/StoreDriverDashboard';
 
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -529,6 +530,15 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
     if (userRole === 'SCHOOL_DRIVER') {
       return (
         <DriverShiftClientDashboard
+          companyId={companyId}
+          currentUserId={currentUserId}
+        />
+      );
+    }
+
+    if (userRole === 'STORE_DRIVER') {
+      return (
+        <StoreDriverDashboard
           companyId={companyId}
           currentUserId={currentUserId}
         />

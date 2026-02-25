@@ -36,6 +36,10 @@ function getMenuItemsFor(userRole: Role, categoryType: CategoryType, allCategory
       return allCategoryMenus.Student ?? defaultFallbackMenu;
     case 'PARENT':
       return allCategoryMenus.Parent ?? defaultFallbackMenu;
+    case 'SCHOOL_DRIVER':
+      return allCategoryMenus.School_Driver ?? defaultFallbackMenu;
+    case 'STORE_DRIVER':
+      return allCategoryMenus.Store_Driver ?? defaultFallbackMenu;
     case 'EDUCATOR':
       if (isPrincipalCategory(categoryType)) {
         return allCategoryMenus.Principal ?? allCategoryMenus.Educator ?? defaultFallbackMenu;
