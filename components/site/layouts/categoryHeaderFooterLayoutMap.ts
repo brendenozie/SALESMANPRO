@@ -5,8 +5,20 @@ const GhubaLayout = dynamic(() => import('@/components/site/layouts/GhubaLayout/
 const EcommerceLayout = dynamic(() => import('@/components/site/layouts/EcommerceLayout/EcommerceLayout'));
 const EcommerceAgrovetLayout = dynamic(() => import('@/components/site/layouts/EcommerceAgrovetLayout/EcommerceAgrovetLayout'));
 const EcommerceShoesLayout = dynamic(() => import('@/components/site/layouts/EcommerceShoesLayout/EcommerceShoesLayout'));
+const EcommerceGamingLayout = dynamic(() => import('@/components/site/layouts/EcommerceGamingLayout/EcommerceGamingLayout'));
+const EcommerceEarphonesLayout = dynamic(() => import('@/components/site/layouts/EcommerceEarphonesLayout/EcommerceEarphonesLayout'));
+const EcommerceGlassesLayout = dynamic(() => import('@/components/site/layouts/EcommerceGlassesLayout/EcommerceGlassesLayout'));
+const EcommerceFlowersLayout = dynamic(() => import('@/components/site/layouts/EcommerceFlowersLayout/EcommerceFlowersLayout'));
+const EcommerceHoneyLayout = dynamic(() => import('@/components/site/layouts/EcommerceHoneyLayout/EcommerceHoneyLayout'));
+const EcommercePeanutsLayout = dynamic(() => import('@/components/site/layouts/EcommercePeanutsLayout/EcommercePeanutsLayout'));
+const EcommerceWatchLayout = dynamic(() => import('@/components/site/layouts/EcommerceWatchLayout/EcommerceWatchLayout'));
+const EcommerceBabyLayout = dynamic(() => import('@/components/site/layouts/EcommerceBabyLayout/EcommerceBabyLayout'));
+const EcommerceCakeLayout = dynamic(() => import('@/components/site/layouts/EcommerceCakeLayout/EcommerceCakeLayout'));
+const EcommercePetsLayout = dynamic(() => import('@/components/site/layouts/EcommercePetsLayout/EcommercePetsLayout'));
+const EcommerceGroceriesLayout = dynamic(() => import('@/components/site/layouts/EcommerceGroceriesLayout/EcommerceGroceriesLayout'));
 const ServicesLayout = dynamic(() =>  import('@/components/site/layouts/ServicesLayout/ServicesLayout'));
 const BookingsLayout = dynamic(() => import( '@/components/site/layouts/BookingsLayout/BookingsLayout'));
+const BarbershopBookingsLayout = dynamic(() => import( '@/components/site/layouts/BarbershopBookingsLayout/BarbershopBookingsLayout'));
 const DefaultLayout = dynamic(() => import( '@/components/site/layouts/DefaultLayout/DefaultLayout'));
 const RealEstateLayout = dynamic(() => import( '@/components/site/layouts/RealEstateLayout/RealEstateLayout'));
 const PortfolioLayout = dynamic(() => import( '@/components/site/layouts/PortfolioLayout/PortfolioLayout'));
@@ -50,14 +62,26 @@ const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterComponent>
     'shoes-store': EcommerceShoesLayout,
     'shoes store': EcommerceShoesLayout,
     'agrovet store': EcommerceAgrovetLayout,
-    'agrovet-store': EcommerceAgrovetLayout,
+    'agrovet-store': EcommerceAgrovetLayout,    
+    'gaming-store': EcommerceGamingLayout,
+    'earphones-store': EcommerceEarphonesLayout,
+    'glasses-store': EcommerceGlassesLayout,
+    'flowers-store': EcommerceFlowersLayout,
+    'honey-store': EcommerceHoneyLayout,
+    'peanuts-store': EcommercePeanutsLayout,
+    'watch-store': EcommerceWatchLayout,
+    'baby-store': EcommerceBabyLayout,
+    'cake-store': EcommerceCakeLayout,
     'e-commerce': EcommerceLayout,
+    'pets-store': EcommercePetsLayout,
+    'groceries-store': EcommerceGroceriesLayout,
     'services': ServicesLayout,
     'service provider': ServicesLayout,
     'consultancy': ConsultancyLayout,
     'consultant & coach': ConsultancyLayout,
     'bookings':BookingsLayout,
-    'booking & appointments':BookingsLayout,      
+    'booking & appointments':BookingsLayout, 
+    'barbershop':BarbershopBookingsLayout,      
     'real estate': RealEstateLayout,    
     'portfolio':PortfolioLayout,
     'portfolio & personal branding':PortfolioLayout,     
