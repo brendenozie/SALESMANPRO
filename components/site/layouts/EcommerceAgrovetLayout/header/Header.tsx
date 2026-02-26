@@ -81,12 +81,12 @@ export default function AgrovetHeader() {
                     loader={imageLoader}
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center font-black text-white" style={{ background: primaryColor }}>
+                  <div className={`w-full h-full flex items-center justify-center font-black ${scrolled ? 'text-slate-900' : 'text-white'}`} style={{ background: primaryColor }}>
                     {name?.charAt(0)}
                   </div>
                 )}
               </div>
-              <span className={`text-xl font-black tracking-tighter transition-colors ${scrolled ? 'text-slate-900' : 'text-slate-900'}`}>
+              <span className={`text-xl font-black tracking-tighter transition-colors ${scrolled ? 'text-slate-900' : 'text-white'}`}>
                 {name || 'AgroStore'}
               </span>
             </Link>

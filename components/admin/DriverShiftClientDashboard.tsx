@@ -179,14 +179,38 @@ const ComprehensiveDriverDashboard = ({companyId, currentUserId}: { companyId: s
       </section>
 
       {/* 5. FLOATING FOOTER */}
-      <footer className="fixed bottom-8 left-6 right-6 flex gap-4 z-40">
+        <footer className="
+          /* Position and Z-index */
+          fixed bottom-0 z-20 
+          
+          /* Background & Border */
+          bg-[#12161F]/90 backdrop-blur-xl border-t border-white/10 
+          
+          /* Layout */
+          py-5 px-8 flex items-center justify-between gap-4 
+          
+          /* THE FIX: Width & Offsetting */
+          inset-x-0                       /* Full width on mobile */
+          lg:left-64                      /* Offset by sidebar width on desktop (adjust 64 to your sidebar width) */
+          lg:right-0                      /* Align to the right edge of the content area */
+        ">
+          <button className="flex-1 bg-white/5 border border-white/10 py-5 rounded-[2rem] flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest shadow-2xl hover:bg-white/10 transition-colors">
+            <PhoneIcon className="h-5 w-5 text-emerald-500" /> Dispatch
+          </button>
+          <button className="flex-1 bg-rose-600/10 border border-rose-500/20 py-5 rounded-[2rem] flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest text-rose-500 shadow-2xl hover:bg-rose-600/20 transition-colors">
+            <ExclamationTriangleIcon className="h-5 w-5 text-rose-500" /> Emergency
+          </button>
+        </footer>
+
+      {/* 5. FLOATING FOOTER
+      <footer className={"fixed inset-x-0 bottom-0 bg-[#12161F]/90 backdrop-blur-xl border-t border-white/10 py-5 px-8 flex items-center justify-between gap-4 z-20"}>
         <button className="flex-1 bg-[#12161F]/90 backdrop-blur-xl border border-white/10 py-5 rounded-[2rem] flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest shadow-2xl">
           <PhoneIcon className="h-5 w-5 text-emerald-500" /> Dispatch
         </button>
         <button className="flex-1 bg-rose-600/10 backdrop-blur-xl border border-rose-500/20 py-5 rounded-[2rem] flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest text-rose-500 shadow-2xl">
           <ExclamationTriangleIcon className="h-5 w-5 text-rose-500" /> Emergency
         </button>
-      </footer>
+      </footer> */}
 
       {/* --- MODALS --- */}
       
