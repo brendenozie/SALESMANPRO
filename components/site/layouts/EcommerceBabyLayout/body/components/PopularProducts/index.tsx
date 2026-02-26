@@ -1,136 +1,103 @@
 'use client';
 
+import React, { useRef } from 'react';
 import useSWR from 'swr';
 import ProductCard from '../ProductCard';
 import { SkeletonGrid } from '@/components/site/SkeletonGrid/SkeletonGrid';
-import { ArrowRightCircleIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'; // Added Chevron icons
+import { ChevronLeftIcon, ChevronRightIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { createCachedFetcher } from '@/lib/swrCachedFetcher';
-
-// Import Slick components and styles
-import Slider from 'react-slick';
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css'; 
-// Note: You might need to adjust the paths/import for slick.css/slick-theme.css 
-// based on your project's CSS setup if the imports above don't work globally.
+import { useStoreContext } from '@/contexts/StoreContext';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-// --- Custom Arrow Components for Slick ---
-// We'll use these to style the navigation arrows with Heroicons and Tailwind
-const PrevArrow = ({ onClick }: { onClick?: () => void }) => (
-  <button 
-    className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white p-2 rounded-full shadow-lg border border-gray-200 hidden sm:block md:hidden"
-    onClick={onClick}
-    aria-label="Previous"
-  >
-    <ChevronLeftIcon className="w-6 h-6 text-gray-700" />
-  </button>
-);
-
-const NextArrow = ({ onClick }: { onClick?: () => void }) => (
-  <button 
-    className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white p-2 rounded-full shadow-lg border border-gray-200 hidden sm:block md:hidden"
-    onClick={onClick}
-    aria-label="Next"
-  >
-    <ChevronRightIcon className="w-6 h-6 text-gray-700" />
-  </button>
-);
-
-
 export default function DailyBestSells({ id }: { id: string }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { storeFormData } = useStoreContext();
+  
+  // Theme colors from your AxeMart reference
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#F472B6'; // Pink
+  const secondaryColor = storeFormData?.themeSettings?.secondaryColor || '#3B82F6'; // Blue
+
   const url = `${apiBaseUrl}/site/productsByFlag?companyId=${id}&flag=isOnOffer&limit=8`;
   const cacheKey = `products-${id}-isOnOffer`;
-  const fallbackKey = `swr-cache:${cacheKey}:${url}`;
-
   const fetcher = createCachedFetcher(cacheKey);
 
-  const fallbackData =
-    typeof window !== 'undefined'
-      ? (() => {
-          try {
-            return JSON.parse(localStorage.getItem(fallbackKey) || 'null');
-          } catch {
-            return null;
-          }
-        })()
-      : null;
-
   const { data, error, isLoading } = useSWR(url, fetcher, {
-    fallbackData: fallbackData || undefined,
     revalidateOnFocus: true,
     dedupingInterval: 30000,
-    refreshInterval: 120000,
   });
 
-  // --- React Slick Configuration ---
-  const settings = {
-    // Show one card at a time on small screens
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    arrows: true, // Show arrows for navigation
-    dots: true, // Show pagination dots
-    infinite: false, // Don't loop the products
-    // Custom arrows are only shown on small screens (md:hidden)
-    nextArrow: <NextArrow />, 
-    prevArrow: <PrevArrow />,
-    // Responsive settings to switch to grid on desktop
-    responsive: [
-      {
-        breakpoint: 768, // md breakpoint in Tailwind
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-        }
-      },
-      {
-        breakpoint: 640, // sm breakpoint in Tailwind
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-          // Added centerPadding and centerMode for a 'peek' effect on very small screens
-          centerMode: true,
-          centerPadding: '20px', 
-        }
-      }
-    ]
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const { scrollLeft, clientWidth } = scrollRef.current;
+      const scrollTo = direction === 'left' ? scrollLeft - clientWidth / 2 : scrollLeft + clientWidth / 2;
+      scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
+    }
   };
 
-  if (isLoading) return <SkeletonGrid count={8} />;
-  if (error) return <div className="text-center text-gray-500"></div>;
-  if (!data?.data?.length)
-    return <div className="text-center text-gray-500"></div>;
+  if (isLoading) return <div className="max-w-7xl mx-auto px-4 py-12"><SkeletonGrid count={4} /></div>;
+  if (error || !data?.data?.length) return null;
 
   return (
-    <section className="py-8 sm:py-12 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Popular Products</h2>
-          <button 
-          onClick={() => window.location.href = `/ecommerce/products`}
-          className="flex items-center text-green-600 font-semibold text-sm sm:text-base hover:underline transition duration-150 ease-in-out">
-            See All <ArrowRightCircleIcon className="w-5 h-5 ml-1 sm:w-6 sm:h-6 sm:ml-2" />
-          </button>
-        </div>
-
-        {/* --- Responsive Product Display --- */}
+    <section className="py-16 bg-[#F8FBFF]"> {/* Soft blue background from reference */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-10">
         
-        {/* 1. Mobile Carousel (Visible below md) */}
-        <div className="md:hidden relative px-4"> 
-          <Slider {...settings}>
-            {data.data.map((product: any) => (
-              <div key={product.id} className="px-1 outline-none">
-                <ProductCard product={product} />
-              </div>
-            ))}
-          </Slider>
+        {/* AxeMart Style Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+          <div>
+            <div 
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-3"
+              style={{ backgroundColor: `${secondaryColor}15`, color: secondaryColor }}
+            >
+              <SparklesIcon className="w-3 h-3" />
+              Don't Miss Out
+            </div>
+            <h2 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">
+              Daily <span style={{ color: primaryColor }}>Best Sells</span>
+            </h2>
+          </div>
+
+          {/* AxeMart Navigation Arrows */}
+          <div className="flex items-center space-x-3">
+            <button 
+              onClick={() => scroll('left')}
+              className="p-3 rounded-2xl bg-white shadow-sm border border-gray-100 hover:shadow-md transition-all text-gray-400 hover:text-gray-900"
+            >
+              <ChevronLeftIcon className="h-5 w-5" />
+            </button>
+            <button 
+              onClick={() => scroll('right')}
+              className="p-3 rounded-2xl bg-white shadow-sm border border-gray-100 hover:shadow-md transition-all text-gray-400 hover:text-gray-900"
+            >
+              <ChevronRightIcon className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
-        {/* 2. Desktop Grid (Visible at md and above) */}
-        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Scrollable Container */}
+        <div 
+          ref={scrollRef}
+          className="flex overflow-x-auto scrollbar-hide space-x-6 pb-8 -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth"
+        >
           {data.data.map((product: any) => (
-            <ProductCard key={product.id} product={product} />
+            <div 
+              key={product.id} 
+              className="flex-shrink-0 w-[280px] sm:w-[300px]"
+            >
+              <ProductCard product={product} />
+            </div>
           ))}
+          
+          {/* "See All" Final Card */}
+          <button 
+            onClick={() => window.location.href = `/ecommerce/products`}
+            className="flex-shrink-0 w-[200px] rounded-[2.5rem] border-2 border-dashed border-gray-200 flex flex-col items-center justify-center group hover:border-blue-400 transition-colors"
+          >
+            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+              <ChevronRightIcon className="w-6 h-6" />
+            </div>
+            <span className="mt-4 font-bold text-gray-500 group-hover:text-blue-600">View All Deals</span>
+          </button>
         </div>
       </div>
     </section>

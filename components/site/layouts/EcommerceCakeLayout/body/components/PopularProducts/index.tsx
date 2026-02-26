@@ -1,137 +1,140 @@
 'use client';
 
+import React, { useRef } from 'react';
 import useSWR from 'swr';
 import ProductCard from '../ProductCard';
 import { SkeletonGrid } from '@/components/site/SkeletonGrid/SkeletonGrid';
-import { ArrowRightCircleIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'; // Added Chevron icons
+import { ChevronLeftIcon, ChevronRightIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { createCachedFetcher } from '@/lib/swrCachedFetcher';
+import { motion } from 'framer-motion';
 
-// Import Slick components and styles
+// Import Slick components
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css'; 
-// Note: You might need to adjust the paths/import for slick.css/slick-theme.css 
-// based on your project's CSS setup if the imports above don't work globally.
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-// --- Custom Arrow Components for Slick ---
-// We'll use these to style the navigation arrows with Heroicons and Tailwind
-const PrevArrow = ({ onClick }: { onClick?: () => void }) => (
-  <button 
-    className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white p-2 rounded-full shadow-lg border border-gray-200 hidden sm:block md:hidden"
-    onClick={onClick}
-    aria-label="Previous"
-  >
-    <ChevronLeftIcon className="w-6 h-6 text-gray-700" />
-  </button>
-);
-
-const NextArrow = ({ onClick }: { onClick?: () => void }) => (
-  <button 
-    className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white p-2 rounded-full shadow-lg border border-gray-200 hidden sm:block md:hidden"
-    onClick={onClick}
-    aria-label="Next"
-  >
-    <ChevronRightIcon className="w-6 h-6 text-gray-700" />
-  </button>
-);
-
-
 export default function DailyBestSells({ id }: { id: string }) {
+  const sliderRef = useRef<Slider | null>(null);
   const url = `${apiBaseUrl}/site/productsByFlag?companyId=${id}&flag=isOnOffer&limit=8`;
   const cacheKey = `products-${id}-isOnOffer`;
-  const fallbackKey = `swr-cache:${cacheKey}:${url}`;
-
+  
   const fetcher = createCachedFetcher(cacheKey);
 
-  const fallbackData =
-    typeof window !== 'undefined'
-      ? (() => {
-          try {
-            return JSON.parse(localStorage.getItem(fallbackKey) || 'null');
-          } catch {
-            return null;
-          }
-        })()
-      : null;
-
   const { data, error, isLoading } = useSWR(url, fetcher, {
-    fallbackData: fallbackData || undefined,
     revalidateOnFocus: true,
     dedupingInterval: 30000,
-    refreshInterval: 120000,
   });
 
-  // --- React Slick Configuration ---
   const settings = {
-    // Show one card at a time on small screens
     slidesToShow: 1,
     slidesToScroll: 1,
-    arrows: true, // Show arrows for navigation
-    dots: true, // Show pagination dots
-    infinite: false, // Don't loop the products
-    // Custom arrows are only shown on small screens (md:hidden)
-    nextArrow: <NextArrow />, 
-    prevArrow: <PrevArrow />,
-    // Responsive settings to switch to grid on desktop
+    arrows: false,
+    dots: true,
+    infinite: true,
+    speed: 500,
+    centerMode: true,
+    centerPadding: '30px',
     responsive: [
       {
-        breakpoint: 768, // md breakpoint in Tailwind
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-        }
-      },
-      {
-        breakpoint: 640, // sm breakpoint in Tailwind
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-          // Added centerPadding and centerMode for a 'peek' effect on very small screens
-          centerMode: true,
-          centerPadding: '20px', 
-        }
+        breakpoint: 768,
+        settings: { slidesToShow: 1, centerPadding: '40px' }
       }
     ]
   };
 
-  if (isLoading) return <SkeletonGrid count={8} />;
-  if (error) return <div className="text-center text-gray-500"></div>;
-  if (!data?.data?.length)
-    return <div className="text-center text-gray-500"></div>;
+  if (isLoading) return <div className="py-20"><SkeletonGrid count={4} /></div>;
+  if (error || !data?.data?.length) return null;
 
   return (
-    <section className="py-8 sm:py-12 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Popular Products</h2>
-          <button 
-          onClick={() => window.location.href = `/ecommerce/products`}
-          className="flex items-center text-green-600 font-semibold text-sm sm:text-base hover:underline transition duration-150 ease-in-out">
-            See All <ArrowRightCircleIcon className="w-5 h-5 ml-1 sm:w-6 sm:h-6 sm:ml-2" />
-          </button>
+    <section className="py-24 bg-[#FCFAF7] overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12">
+        
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+          <div className="relative">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.5 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              className="absolute -top-8 -left-6 text-amber-500/20"
+            >
+              <SparklesIcon className="w-12 h-12" />
+            </motion.div>
+            
+            <motion.span 
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              className="text-amber-600 font-bold uppercase tracking-[0.3em] text-[10px] md:text-xs mb-3 block"
+            >
+              Fresh From The Oven
+            </motion.span>
+            
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="text-4xl md:text-6xl font-bold tracking-tighter text-gray-900 leading-none"
+            >
+              Daily <span className="italic font-serif font-light text-amber-700">Best Sells</span>
+            </motion.h2>
+          </div>
+
+          {/* Desktop Navigation Arrows */}
+          <div className="hidden md:flex items-center gap-4">
+            <button 
+              onClick={() => (window.location.href = '/ecommerce/products')}
+              className="mr-4 text-xs font-black uppercase tracking-widest border-b-2 border-amber-500 pb-1 hover:text-amber-600 transition-all"
+            >
+              View All
+            </button>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => sliderRef.current?.slickPrev()}
+                className="p-3 rounded-full border border-gray-200 hover:bg-white hover:shadow-lg transition-all"
+              >
+                <ChevronLeftIcon className="w-5 h-5 text-gray-900" />
+              </button>
+              <button 
+                onClick={() => sliderRef.current?.slickNext()}
+                className="p-3 rounded-full border border-gray-200 hover:bg-white hover:shadow-lg transition-all"
+              >
+                <ChevronRightIcon className="w-5 h-5 text-gray-900" />
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* --- Responsive Product Display --- */}
+        {/* --- Product Display --- */}
         
-        {/* 1. Mobile Carousel (Visible below md) */}
-        <div className="md:hidden relative px-4"> 
-          <Slider {...settings}>
+        {/* Mobile/Tablet Slider */}
+        <div className="md:hidden relative pb-12"> 
+          <Slider ref={sliderRef} {...settings}>
             {data.data.map((product: any) => (
-              <div key={product.id} className="px-1 outline-none">
+              <div key={product.id} className="px-2 outline-none">
                 <ProductCard product={product} />
               </div>
             ))}
           </Slider>
         </div>
 
-        {/* 2. Desktop Grid (Visible at md and above) */}
-        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {data.data.map((product: any) => (
-            <ProductCard key={product.id} product={product} />
+        {/* Desktop Grid (Static for cleaner UI) */}
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+          {data.data.map((product: any, idx: number) => (
+            <motion.div
+              key={product.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1 }}
+            >
+              <ProductCard product={product} />
+            </motion.div>
           ))}
         </div>
+      </div>
+
+      {/* Aesthetic Flourish: Background Text */}
+      <div className="absolute left-0 bottom-0 pointer-events-none opacity-[0.03] select-none translate-y-1/2">
+        <h2 className="text-[20vw] font-black uppercase leading-none">Artisan</h2>
       </div>
     </section>
   );

@@ -9,6 +9,9 @@ import { StoreForm, MarketListingForm } from '@/types/typings';
 // Above-the-fold components - statically imported
 import CategorySection from './components/CategorySection';
 import FeaturesBarSection from './components/FeaturesBarSection';
+import PromoBannerGridSection from './components/PromoBannerGridSection';
+import NewsletterPromoGrid from './components/NewsletterPromoGrid';
+import ProductShowcaseGrid from './components/ProductShowcaseGrid';
 
 // Loading skeleton
 const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
@@ -78,6 +81,9 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       <DynamicPopularProducts id={id} />
       <PromoSection promotions={promotions} />
       <DynamicTrending id={id} />
+      <NewsletterPromoGrid/>
+      <ProductShowcaseGrid/>
+      <PromoBannerGridSection/>
       <DynamicDailyBestSells id={id} />
       <SecondPromoSection promotions={promotions} />
       <AllProducts id={id} marketplaceListings={featured} themeSettings={themeSettings} />
