@@ -184,138 +184,138 @@ export default function Header() {
       `}</style>
 
       <header
-  className={`
-    fixed top-0 left-0 w-full z-50
-    transition-all duration-300
-    ${
-      scrolled
-        ? 'bg-white/80 backdrop-blur-xl shadow-md py-3'
-        : 'bg-transparent py-5'
-    }
-  `}
->
-  <div className="container mx-auto px-6 lg:px-20 flex items-center justify-between">
-
-    {/* LOGO */}
-    <Link href={`/`} className="flex items-center">
-      <motion.div whileHover={{ scale: 1.05 }}>
-        {logoUrl ? (
-          <Image
-            src={logoUrl}
-            alt={`${name} logo`}
-            width={100}
-            height={48}
-            className="object-contain w-12 h-12"
-            loader={imageLoader}
-          />
-        ) : (
-          <span
-            className={`text-xl font-black tracking-tight ${
-              scrolled ? 'text-gray-900' : 'text-white'
-            }`}
-          >
-            {name}
-          </span>
-        )}
-      </motion.div>
-    </Link>
-
-    {/* DESKTOP NAV */}
-    <nav className="hidden md:flex items-center space-x-10">
-      {navLinks.map((item) => (
-        <Link
-          key={item.label}
-          href={item.href}
-          className={`
-            relative font-semibold transition-all duration-200
-            ${
-              scrolled
-                ? 'text-gray-800 hover:text-[var(--primary-color)]'
-                : 'text-white hover:opacity-80'
-            }
-          `}
-        >
-          {item.label}
-        </Link>
-      ))}
-    </nav>
-
-    {/* RIGHT SIDE */}
-    <div className="flex items-center space-x-5">
-
-      {/* Profile / Auth */}
-      {status === 'loading' ? null : user ? (
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          onClick={handleUserAction}
-          className={`
-            transition-colors
-            ${scrolled ? 'text-gray-800' : 'text-white'}
-          `}
-        >
-          <UserIcon className="h-6 w-6" />
-        </motion.button>
-      ) : (
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          onClick={handleGoogleSignIn}
-          className="
-            hidden md:block
-            px-6 py-2.5
-            rounded-full
-            font-bold
-            shadow-md
-            transition-all
-          "
-          style={{
-            backgroundColor: scrolled ? primaryColor : 'white',
-            color: scrolled ? 'white' : primaryColor,
-          }}
-        >
-          Login
-        </motion.button>
-      )}
-
-      {/* Cart */}
-      <motion.button
-        whileHover={{ scale: 1.1 }}
-        onClick={() => {
-          if (cart.length === 0) return;
-          if (user) router.push(`/ecommerce/checkout`);
-          else handleGoogleSignIn();
-        }}
         className={`
-          relative transition-colors
-          ${scrolled ? 'text-gray-800' : 'text-white'}
+          fixed top-0 left-0 w-full z-50
+          transition-all duration-300
+          ${
+            scrolled
+              ? 'bg-white/80 backdrop-blur-xl shadow-md py-3'
+              : 'bg-transparent py-5'
+          }
         `}
       >
-        <ShoppingBagIcon className="h-6 w-6" />
-        {cart.length > 0 && (
-          <span
-            className="absolute -top-2 -right-2 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: secondaryColor }}
-          >
-            {cart.length}
-          </span>
-        )}
-      </motion.button>
+        <div className="container mx-auto px-6 lg:px-20 flex items-center justify-between">
 
-      {/* Mobile Toggle */}
-      <button
-        onClick={toggleMobileMenu}
-        className={`md:hidden ${
-          scrolled ? 'text-gray-800' : 'text-white'
-        }`}
-      >
-        {mobileMenuOpen ? (
-          <XMarkIcon className="h-6 w-6" />
-        ) : (
-          <Bars3BottomLeftIcon className="h-6 w-6" />
-        )}
-      </button>
-    </div>
-  </div>
-</header>
+          {/* LOGO */}
+          <Link href={`/`} className="flex items-center">
+            <motion.div whileHover={{ scale: 1.05 }}>
+              {logoUrl ? (
+                <Image
+                  src={logoUrl}
+                  alt={`${name} logo`}
+                  width={100}
+                  height={48}
+                  className="object-contain w-12 h-12"
+                  loader={imageLoader}
+                />
+              ) : (
+                <span
+                  className={`text-xl font-black tracking-tight ${
+                    scrolled ? 'text-gray-900' : 'text-white'
+                  }`}
+                >
+                  {name}
+                </span>
+              )}
+            </motion.div>
+          </Link>
+
+          {/* DESKTOP NAV */}
+          <nav className="hidden md:flex items-center space-x-10">
+            {navLinks.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`
+                  relative font-semibold transition-all duration-200
+                  ${
+                    scrolled
+                      ? 'text-gray-800 hover:text-[var(--primary-color)]'
+                      : 'text-white hover:opacity-80'
+                  }
+                `}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* RIGHT SIDE */}
+          <div className="flex items-center space-x-5">
+
+            {/* Profile / Auth */}
+            {status === 'loading' ? null : user ? (
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                onClick={handleUserAction}
+                className={`
+                  transition-colors
+                  ${scrolled ? 'text-gray-800' : 'text-white'}
+                `}
+              >
+                <UserIcon className="h-6 w-6" />
+              </motion.button>
+            ) : (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                onClick={handleGoogleSignIn}
+                className="
+                  hidden md:block
+                  px-6 py-2.5
+                  rounded-full
+                  font-bold
+                  shadow-md
+                  transition-all
+                "
+                style={{
+                  backgroundColor: scrolled ? primaryColor : 'white',
+                  color: scrolled ? 'white' : primaryColor,
+                }}
+              >
+                Login
+              </motion.button>
+            )}
+
+            {/* Cart */}
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              onClick={() => {
+                if (cart.length === 0) return;
+                if (user) router.push(`/ecommerce/checkout`);
+                else handleGoogleSignIn();
+              }}
+              className={`
+                relative transition-colors
+                ${scrolled ? 'text-gray-800' : 'text-white'}
+              `}
+            >
+              <ShoppingBagIcon className="h-6 w-6" />
+              {cart.length > 0 && (
+                <span
+                  className="absolute -top-2 -right-2 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: secondaryColor }}
+                >
+                  {cart.length}
+                </span>
+              )}
+            </motion.button>
+
+            {/* Mobile Toggle */}
+            <button
+              onClick={toggleMobileMenu}
+              className={`md:hidden ${
+                scrolled ? 'text-gray-800' : 'text-white'
+              }`}
+            >
+              {mobileMenuOpen ? (
+                <XMarkIcon className="h-6 w-6" />
+              ) : (
+                <Bars3BottomLeftIcon className="h-6 w-6" />
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
 
       {/* ===== MOBILE SLIDE-DOWN MENU ===== */}
       <AnimatePresence>
