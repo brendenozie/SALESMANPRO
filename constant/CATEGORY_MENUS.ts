@@ -1188,26 +1188,26 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
 
       // Trips & Routes
-      { label: "My Routes", href: `/admin/${adminSlug}/routes`, icon: MapIcon },
-      { label: "Today's Trips", href: `/admin/${adminSlug}/trips/today`, icon: ClockIcon },
-      { label: "Trip History", href: `/admin/${adminSlug}/trips/history`, icon: CalendarIcon },
+      { label: "My Routes", href: `/admin/${adminSlug}/school-driver-routes`, icon: MapIcon },//today-trips
+      // { label: "Today's Trips", href: `/admin/${adminSlug}/school-driver-trips/today`, icon: ClockIcon },
+      { label: "Trip History", href: `/admin/${adminSlug}/school-driver-trips/history`, icon: CalendarIcon },
 
       // Students
-      { label: "Assigned Students", href: `/admin/${adminSlug}/students`, icon: UsersIcon },
-      { label: "Attendance", href: `/admin/${adminSlug}/attendance`, icon: ClipboardDocumentCheckIcon },
+      // { label: "Assigned Students", href: `/admin/${adminSlug}/school-driver-students`, icon: UsersIcon },
+      // { label: "Attendance", href: `/admin/${adminSlug}/school-driver-attendance`, icon: ClipboardDocumentCheckIcon },
 
       // Vehicle
-      { label: "Vehicle Details", href: `/admin/${adminSlug}/vehicle`, icon: TruckIcon },
-      { label: "Fuel & Mileage", href: `/admin/${adminSlug}/vehicle/fuel`, icon: BoltIcon },
-      { label: "Maintenance Logs", href: `/admin/${adminSlug}/vehicle/maintenance`, icon: WrenchScrewdriverIcon },
+      { label: "Vehicle Details", href: `/admin/${adminSlug}/school-driver-vehicle`, icon: TruckIcon },
+      // { label: "Fuel & Mileage", href: `/admin/${adminSlug}/school-driver-vehicle/fuel`, icon: BoltIcon },
+      // { label: "Maintenance Logs", href: `/admin/${adminSlug}/school-driver-vehicle/maintenance`, icon: WrenchScrewdriverIcon },
 
       // Safety & Communication
-      { label: "Live Tracking", href: `/admin/${adminSlug}/tracking`, icon: MapPinIcon },
-      { label: "Incidents & Reports", href: `/admin/${adminSlug}/incidents`, icon: ExclamationTriangleIcon },
-      { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleLeftRightIcon },
+      // { label: "Live Tracking", href: `/admin/${adminSlug}/school-driver-tracking`, icon: MapPinIcon },
+      { label: "Incidents & Reports", href: `/admin/${adminSlug}/school-driver-incidents`, icon: ExclamationTriangleIcon },
+      { label: "Messages", href: `/admin/${adminSlug}/school-driver-messages`, icon: ChatBubbleLeftRightIcon },
 
       // Profile
-      { label: "My Profile", href: `/admin/${adminSlug}/profile`, icon: UserCircleIcon },
+      { label: "My Profile", href: `/admin/${adminSlug}/school-driver-profile`, icon: UserCircleIcon },
     ],
 
   "STORE_DRIVER": [
