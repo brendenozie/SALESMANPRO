@@ -32,17 +32,17 @@ export const folderMap: Record<string, string> = {
   'agrovet-store': 'EcommerceAgrovetLayout',
   'agrovet store': 'EcommerceAgrovetLayout',
   'digital-goods-store-v2': 'EcommerceLayout',  
-  'gaming-store': 'EcommerceGamingSite',
-  'earphones-store': 'EcommerceEarphonesSite',
-  'glasses-store': 'EcommerceGlassesSite',
-  'flowers-store': 'EcommerceFlowersSite',
-  'honey-store': 'EcommerceHoneySite',
-  'peanuts-store': 'EcommercePeanutsSite',
-  'watch-store': 'EcommerceWatchSite',
-  'baby-store': 'EcommerceBabySite',
-  'cake-store': 'EcommerceCakeSite',
-  'pets-store': 'EcommercePetsSite',
-  'groceries-store': 'EcommerceGroceriesSite',
+  'gaming-store': 'EcommerceGamingLayout',
+  'earphones-store': 'EcommerceEarphonesLayout',
+  'glasses-store': 'EcommerceGlassesLayout',
+  'flowers-store': 'EcommerceFlowersLayout',
+  'honey-store': 'EcommerceHoneyLayout',
+  'peanuts-store': 'EcommercePeanutsLayout',
+  'watch-store': 'EcommerceWatchLayout',
+  'baby-store': 'EcommerceBabyLayout',
+  'cake-store': 'EcommerceCakeLayout',
+  'pets-store': 'EcommercePetsLayout',
+  'groceries-store': 'EcommerceGroceriesLayout',
   'modern-shop-v1': 'EcommerceLayout',
   'marketplace': 'MarketplaceLayout',
   'artisan-marketplace-v3': 'MarketplaceLayout',
@@ -170,7 +170,10 @@ export const siteComponentNameMap: Record<string, string> = {
 
 // ✅ Core Resolver
 export function getComponentNameForCategory(category?: string, variant?: string): string {
+  console.log(`Resolving component for category: "${category}" and variant: "${variant}"`);
   const key = normalizeCategory(variant || category || 'other');
+  console.log(`Normalized key: "${key}"`);
   const folder = folderMap[key] ?? folderMap['default'];
+  console.log(`Mapped to folder: "${folder}"`);
   return siteComponentNameMap[folder] ?? siteComponentNameMap['DefaultLayout'];
 }
