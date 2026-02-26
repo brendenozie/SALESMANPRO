@@ -8,6 +8,8 @@ import { StoreForm, MarketListingForm } from '@/types/typings';
 
 // Above-the-fold components - statically imported
 import CategorySection from './components/CategorySection';
+import MissionNewsSection from './components/MissionNewsSection';
+import ProductCommunitySection from './components/ProductCommunitySection';
 
 // Loading skeleton
 const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
@@ -72,6 +74,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
   return (
     <div className="space-y-12">
       <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
+      <MissionNewsSection/>
       <CategorySection StoreCategory={StoreCategory} themeSettings={themeSettings} />
       <DynamicPopularProducts id={id} />
       <PromoSection promotions={promotions} />
@@ -79,6 +82,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       <DynamicDailyBestSells id={id} />
       <SecondPromoSection promotions={promotions} />
       <AllProducts id={id} marketplaceListings={featured} themeSettings={themeSettings} />
+      <ProductCommunitySection />
       <MetricsSection coreValues={CoreValues} />
       <AwardsSection awards={awards} />
       {testimonialsData?.data && <TestimonialsSection testimonials={testimonialsData.data} />}
