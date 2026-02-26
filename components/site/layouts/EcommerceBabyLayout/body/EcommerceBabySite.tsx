@@ -3,11 +3,12 @@
 import React, { useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import useSWR from 'swr';
-import HeroSlider from '@/components/site/layouts/EcommerceLayout/body/components/HeroSlider';
+import HeroSlider from './components/HeroSlider';
 import { StoreForm, MarketListingForm } from '@/types/typings';
 
 // Above-the-fold components - statically imported
 import CategorySection from './components/CategorySection';
+import FeaturesBarSection from './components/FeaturesBarSection';
 
 // Loading skeleton
 const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
@@ -72,7 +73,8 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
   return (
     <div className="space-y-12">
       <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
-      <CategorySection StoreCategory={StoreCategory} themeSettings={themeSettings} />
+      <FeaturesBarSection/>
+      <CategorySection store={pageData} />
       <DynamicPopularProducts id={id} />
       <PromoSection promotions={promotions} />
       <DynamicTrending id={id} />

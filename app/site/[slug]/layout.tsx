@@ -74,10 +74,11 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
   const storeFormData = transformCompanyToStoreForm(raw);
   const category = normalize(storeFormData.category || 'other');
   const variant = normalize(storeFormData.variant || '');
+
+  console.log('Store layout: Loaded data for', slug, 'Category:', category, 'Variant:', variant);
   
   // --- Layout selection logic (remains the same) ---
-  let LayoutComponent = categoryHeaderFooterLayoutMap[variant]
-    || categoryHeaderFooterLayoutMap[category]
+  let LayoutComponent = categoryHeaderFooterLayoutMap[variant] || categoryHeaderFooterLayoutMap[category]
     || (() => {
       const matchedCategory = SITE_CATEGORIES.find((c) => normalize(c.name) === category);
       if (matchedCategory?.variants?.length) {

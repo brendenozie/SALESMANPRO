@@ -3,26 +3,33 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   MagnifyingGlassIcon,
   ShoppingBagIcon,
-  Bars3BottomLeftIcon,
-  XMarkIcon,
   UserIcon,
+  HeartIcon,
+  Squares2X2Icon,
+  PhoneIcon,
+  EnvelopeIcon,
+  TruckIcon,
+  ChevronDownIcon,
+  FireIcon,
+  Bars3Icon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
-import { useRouter } from 'next/navigation';
-// Assuming these contexts exist and provide the necessary data
+
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
-// Assuming NextAuth is available in this environment
-import { useSession, signIn, signOut } from 'next-auth/react'; 
+import { useSession, signOut } from 'next-auth/react';
+import { IStoreCategory } from '@/types/typings';
 
 // Helper for image loader
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-// Debounce utility function
+// Debounce utility
 function debounce<T extends (...args: any[]) => void>(func: T, delay: number) {
   let timeout: NodeJS.Timeout;
   return function(this: ThisParameterType<T>, ...args: Parameters<T>) {
@@ -34,464 +41,207 @@ function debounce<T extends (...args: any[]) => void>(func: T, delay: number) {
 
 export default function Header() {
   const { cart } = useStateContext();
-  const { storeFormData } = useStoreContext();
+  const { storeFormData,  } = useStoreContext();
   const router = useRouter();
+  const { data: session, status } = useSession();
+  const user = session?.user as { role?: string; name?: string; image?: string } | undefined;
 
-  // --- Auth State & Hooks ---
-  const { data: session, status } = useSession(); // Get session data
-  const user = session?.user as { role?: string; name?: string } | undefined;
-
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const mobileMenuRef = useRef<HTMLDivElement>(null);
-  const mobileMenuToggleButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Destructure relevant fields with default empty objects for safety
+  // Destructure Store Data
   const {
-    slug,
-    name,
+    name = 'Store',
     logoUrl,
-    socialLinks = [],
     themeSettings = {},
+    slug,
+    StoreCategory = []
   } = storeFormData || {};
 
-  // Fallback to emerald/blue if no colors are provided
-  const primaryColor = themeSettings?.primaryColor || '#10B981';    // Emerald
-  const secondaryColor = themeSettings?.secondaryColor || '#3B82F6'; // Blue
+  const primaryColor = themeSettings?.primaryColor || '#F472B6';
+  const secondaryColor = themeSettings?.secondaryColor || '#3B82F6';
 
-  // --- Auth Handlers (copied from the first component) ---
+  // --- Auth Handlers ---
   const handleUserAction = () => {
-    if (!user) return handleGoogleSignIn(); // Fallback in case button logic is missed
+    if (!user) return handleGoogleSignIn();
     if (user.role?.toLowerCase() === 'admin') router.push('/dashboards');
-    else router.push(`/ecommerce/profile`); // Navigate to profile for non-admin
+    else router.push(`/ecommerce/profile`);
+  };
+
+  const handleGoogleSignIn = () => {
+    const authUrl = new URL("https://auth.salesmanpro.site/signin");
+    authUrl.searchParams.set("callbackUrl", window.location.origin);
+    window.location.href = authUrl.toString();
   };
 
   const handleSignOut = () => signOut({ callbackUrl: `/` });
 
-  const handleGoogleSignIn = () => {
-    // Assuming 'salesmanpro.site' is the external auth provider
-    const authUrl = new URL("https://auth.salesmanpro.site/signin");
-    authUrl.searchParams.set("callbackUrl", `${window.location.origin}`); // Adjusted callback
-    window.location.href = authUrl.toString();
-  };
-
-  const handleGoogleSignUp = () => {
-    const authUrl = new URL("https://auth.salesmanpro.site/signup");
-    authUrl.searchParams.set("callbackUrl", `${window.location.origin}`); // Adjusted callback
-    window.location.href = authUrl.toString();
-  };
-
-  // Handle outside clicks for closing search and mobile menu
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      // Close search if clicked outside
-      if (searchOpen && searchInputRef.current && !searchInputRef.current.contains(event.target as Node) &&
-          !document.querySelector('.search-toggle-button')?.contains(event.target as Node)) {
-        setSearchOpen(false);
-      }
-      // Close mobile menu if clicked outside, but not on the toggle button itself
-      if (mobileMenuOpen && mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node) &&
-          !mobileMenuToggleButtonRef.current?.contains(event.target as Node)) {
-        setMobileMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [searchOpen, mobileMenuOpen]);
-
-  // Focus search input when search opens
-  useEffect(() => {
-    if (searchOpen) {
-      searchInputRef.current?.focus();
-    }
-  }, [searchOpen]);
-
-  // Handle body scroll locking when mobile menu is open
-  useEffect(() => {
-    if (mobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [mobileMenuOpen]);
-
-  // Handle scroll for header shadow
-  const [scrolled, setScrolled] = useState(false);
-  useEffect(() => {
-    const onScroll = () => {
-      if (window.scrollY > 20) setScrolled(true);
-      else setScrolled(false);
-    };
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  // Define navigation links as constants
-  const navLinks = [
-    { label: 'Home', href: `/` },
-    { label: 'Shop', href: `/ecommerce/products` },
-    { label: 'Categories', href: `/ecommerce/categories` },
-  ];
-
-  // Debounced search handler (simulate API call)
+  // --- Search Logic ---
   const handleSearch = useCallback(
     debounce((query: string) => {
-      if (query.length > 2) { 
-        console.log('Performing search for:', query);
-      }
+      if (query.length > 2) console.log('Searching for:', query);
     }, 300),
     [slug]
   );
 
-  const onSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    handleSearch(query);
+  const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    handleSearch(e.target.value);
   };
 
-  const handleClearSearch = () => {
-    setSearchQuery('');
-  };
-
-  const toggleMobileMenu = () => {
-    const wasOpen = mobileMenuOpen;
-    setMobileMenuOpen((prev) => !prev);
-    if (wasOpen) {
-      mobileMenuToggleButtonRef.current?.focus();
-    }
-  };
+  // Lock scroll when drawer open
+  useEffect(() => {
+    document.body.style.overflow = isDrawerOpen ? 'hidden' : 'unset';
+  }, [isDrawerOpen]);
 
   return (
-    <>
-      {/* Set CSS variables for dynamic colors and global styles */}
-      <style jsx global>{`
-        :root {
-          --primary-color: ${primaryColor};
-          --secondary-color: ${secondaryColor};
-        }
-        /* Style for the underline on hover for nav links */
-        .nav-link-hover-underline a:hover + span {
-          height: 2px;
-        }
-      `}</style>
-
-      <header
-        className={`
-          fixed top-0 left-1/2 transform -translate-x-1/2 w-full max-w-7xl 
-          px-6 md:px-8 lg:px-16 py-4 
-          bg-white/60 backdrop-blur-lg 
-          ${scrolled ? 'shadow-lg' : 'shadow-none'} 
-          rounded-b-3xl 
-          z-50
-          transition-shadow duration-300
-        `}
+    <header className="w-full bg-white font-sans sticky top-0 z-50 shadow-sm">
+      {/* 1. TOP BAR */}
+      <div 
+        className="hidden md:flex w-full text-white text-[12px] py-2 px-10 justify-between items-center"
+        style={{ backgroundColor: primaryColor }}
       >
-        <div className="flex items-center justify-between">
-          {/* ===== LOGO + NAV ===== */}
-          <div className="flex items-center space-x-8">
-            {/* Logo */}
-            <Link href={`/`} className="flex items-center" aria-label={`${name} home`}>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: 'spring', stiffness: 300 }}
-                className="flex items-center"
-              >
-                {logoUrl ? (
-                  <Image
-                    src={logoUrl}
-                    alt={`${name} logo`}
-                    width={100}
-                    height={48}
-                    className="object-contain w-16 h-16"
-                    loader={imageLoader}
-                  />
-                ) : (
-                  <span className="text-gray-900 text-2xl font-bold">{name}</span>
-                )}
-              </motion.div>
-            </Link>
+        <div className="flex items-center space-x-6 font-medium">
+          <div className="flex items-center space-x-2"><PhoneIcon className="h-4 w-4" /><span>+221 33 66 22</span></div>
+          <div className="flex items-center space-x-2"><EnvelopeIcon className="h-4 w-4" /><span>support@{slug || 'store'}.com</span></div>
+        </div>
+        <div className="flex items-center space-x-6">
+          <Link href="/ecommerce/track-order" className="hover:underline flex items-center space-x-1">
+            <TruckIcon className="h-4 w-4" /><span>Track Your Order</span>
+          </Link>
+          <div className="flex items-center cursor-pointer"><span>$ Dollar (US)</span><ChevronDownIcon className="h-3 w-3 ml-1" /></div>
+        </div>
+      </div>
 
-            {/* Desktop Nav Links */}
-            <nav className="hidden md:flex space-x-10">
-              {navLinks.map((item) => (
-                <motion.div
-                  key={item.label}
-                  whileHover={{ y: -2 }}
-                  transition={{ type: 'spring', stiffness: 300 }}
-                >
-                  <Link
-                    href={item.href}
-                    className="relative font-medium text-base text-gray-900 hover:text-[var(--primary-color)] nav-link-hover-underline"
-                    style={{ transition: 'color 0.2s ease' }}
-                  >
-                    {item.label}
-                    {/* Bottom-border highlight on hover */}
-                    <span
-                      className="absolute left-0 -bottom-1 h-0.5 bg-transparent w-full transition-all"
-                      style={{ backgroundColor: `var(--primary-color)` }}
-                    />
-                  </Link>
-                </motion.div>
-              ))}
-            </nav>
-          </div>
+      {/* 2. MAIN SECTION */}
+      <div className="max-w-7xl mx-auto px-4 md:px-10 py-4 flex items-center justify-between gap-4 md:gap-8">
+        {/* Mobile Toggle */}
+        <button className="md:hidden p-2" onClick={() => setIsDrawerOpen(true)}>
+          <Bars3Icon className="h-7 w-7 text-gray-800" />
+        </button>
 
-          {/* ===== SEARCH + ICONS + MOBILE TOGGLE ===== */}
-          <div className="flex items-center space-x-6">
-            {/* Search */}
-            {/* <div className="relative">
-              <motion.button
-                whileHover={{ scale: 1.1, color: primaryColor }}
-                className="transition-colors text-gray-900 search-toggle-button"
-                onClick={() => setSearchOpen((p) => !p)}
-                aria-label="Toggle search input"
-                aria-expanded={searchOpen}
-              >
-                <MagnifyingGlassIcon className="h-6 w-6" />
-              </motion.button>
+        {/* Logo */}
+        <Link href="/" className="flex-shrink-0">
+          {logoUrl ? (
+            <Image src={logoUrl} alt={name} width={120} height={40} loader={imageLoader} className="object-contain h-10 w-auto" />
+          ) : (
+            <h1 className="text-2xl font-black text-gray-900 uppercase tracking-tighter">
+              <span style={{ color: primaryColor }}>●</span> {name}
+            </h1>
+          )}
+        </Link>
 
-              <AnimatePresence>
-                {searchOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9, y: -10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="
-                      absolute right-0 mt-2 w-64
-                      bg-white rounded-xl shadow-lg
-                      ring-1 ring-gray-200 overflow-hidden z-50
-                      flex items-center
-                    "
-                    ref={searchInputRef}
-                  >
-                    <input
-                      type="search"
-                      autoFocus
-                      placeholder="Search products..."
-                      className="w-full py-2 px-4 text-gray-800 placeholder-gray-400 text-sm focus:outline-none"
-                      value={searchQuery}
-                      onChange={onSearchInputChange}
-                      aria-label="Search products"
-                    />
-                    {searchQuery && (
-                      <button
-                        onClick={handleClearSearch}
-                        className="p-2 text-gray-500 hover:text-gray-700 focus:outline-none"
-                        aria-label="Clear search"
-                      >
-                        <XMarkIcon className="h-4 w-4" />
-                      </button>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div> */}
-
-            {/* Profile / Sign In/Up Button */}
-            {status === 'loading' ? null : user ? ( // User is logged in
-              <motion.button
-                whileHover={{ scale: 1.1, color: primaryColor }}
-                className="transition-colors text-gray-900"
-                onClick={handleUserAction} // Use the combined handler
-                aria-label={"Profile page"}
-              >
-                <UserIcon className="h-6 w-6" />
-              </motion.button>
-            ) : ( 
-              // User is NOT logged in
-              <motion.button
-                whileHover={{ scale: 1.1, color: primaryColor }}
-                className="transition-colors text-gray-900 font-medium"
-                onClick={handleGoogleSignIn}
-                aria-label="Log In or Sign Up"
-              >
-                Login / Signup
-              </motion.button>
-            )}
-
-
-            {/* Cart */}
-
-            <motion.button
-              whileHover={{ scale: 1.1, color: primaryColor }}
-              className="relative transition-colors text-gray-900"
-              onClick={() => {
-                if(cart.length === 0) return;
-                if(user){
-                  router.push(`/ecommerce/checkout`);
-                }else{
-                  handleGoogleSignIn();
-                }
-              }}
-              aria-label={`Shopping cart with ${cart.length} items`}
-            >
-              <ShoppingBagIcon className="h-6 w-6" />
-              {cart.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                  {cart.length}
-                </span>
-              )}
-            </motion.button>
-
-            {/* Mobile Menu Toggle */}
-            <button
-              className="md:hidden transition-colors text-gray-900 mobile-menu-toggle-button"
-              onClick={toggleMobileMenu}
-              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-              aria-controls="mobile-menu"
-              aria-expanded={mobileMenuOpen}
-              ref={mobileMenuToggleButtonRef}
-            >
-              {mobileMenuOpen ? (
-                <XMarkIcon className="h-6 w-6" />
-              ) : (
-                <Bars3BottomLeftIcon className="h-6 w-6" />
-              )}
+        {/* Search Bar */}
+        <div className="hidden md:flex flex-grow max-w-2xl items-center">
+          <div className="flex w-full items-center bg-gray-50 border border-gray-200 rounded-xl overflow-hidden focus-within:ring-1 focus-within:ring-gray-300">
+            <button className="px-4 text-gray-400 border-r border-gray-200 hover:bg-gray-100 transition-colors">
+              <Squares2X2Icon className="h-5 w-5" />
+            </button>
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={onSearchChange}
+              placeholder="Search for products..." 
+              className="flex-grow bg-transparent py-3 px-4 text-sm focus:outline-none" 
+            />
+            <button className="p-3 text-white transition-opacity hover:opacity-90" style={{ backgroundColor: primaryColor }}>
+              <MagnifyingGlassIcon className="h-6 w-6" />
             </button>
           </div>
         </div>
-      </header>
 
-      {/* ===== MOBILE SLIDE-DOWN MENU ===== */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            key="mobile-menu"
-            initial={{ clipPath: 'inset(0% 0% 100% 0%)', opacity: 0 }}
-            animate={{ clipPath: 'inset(0% 0% 0% 0%)', opacity: 1 }}
-            exit={{ clipPath: 'inset(0% 0% 100% 0%)', opacity: 0 }}
-            transition={{
-              duration: 0.45,
-              ease: [0.25, 0.8, 0.25, 1],
-            }}
-            className="
-              fixed top-[72px] left-0 w-full
-              bg-white/90 backdrop-blur-lg
-              ring-1 ring-gray-200
-              rounded-b-3xl
-              overflow-hidden 
-              z-[60]
-              md:hidden
-              origin-top
-              shadow-lg
-            "
-            id="mobile-menu"
-            ref={mobileMenuRef}
+        {/* Actions */}
+        <div className="flex items-center space-x-3 md:space-x-5">
+          <button className="hidden sm:block p-2 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100">
+            <HeartIcon className="h-6 w-6" />
+          </button>
+          
+          <button 
+            onClick={() => cart.length > 0 ? (user ? router.push('/ecommerce/checkout') : handleGoogleSignIn()) : null} 
+            className="flex items-center space-x-3 bg-gray-50 p-1.5 md:p-2 md:pr-4 rounded-xl hover:bg-gray-100 transition-all"
           >
-            <div className="pt-6 pb-8 px-6 space-y-6">
-              {/* Nav Links */}
-              {navLinks.map((item, idx) => (
-                <motion.div
-                  key={item.label}
-                  initial={{ y: 10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: idx * 0.07, type: 'spring', stiffness: 300, damping: 24 }}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Link
-                    href={item.href}
-                    className="block text-lg font-medium text-gray-900 hover:text-[var(--primary-color)]"
-                    style={{ transition: 'color 0.2s ease' }}
-                  >
-                    {item.label}
-                  </Link>
-                </motion.div>
-              ))}
-
-              <div className="border-t border-gray-200" />
-              
-              {/* --- Authentication Buttons for Mobile --- */}
-              {user ? (
-                // User is logged in
-                <motion.div
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: navLinks.length * 0.07, type: 'spring', stiffness: 300, damping: 24 }}
-                >
-                    <button
-                        onClick={() => { setMobileMenuOpen(false); handleUserAction(); }}
-                        className="w-full text-center px-4 py-2 rounded-lg text-white font-medium shadow-md transition-colors hover:brightness-90"
-                        style={{ backgroundColor: `var(--primary-color)` }}
-                    >
-                        {user.role === 'admin' ? 'Admin Portal' : 'My Account'}
-                    </button>
-                    <button
-                        onClick={() => { setMobileMenuOpen(false); handleSignOut(); }}
-                        className="w-full mt-3 text-gray-600 underline hover:text-[var(--primary-color)] text-base"
-                    >
-                        Sign Out
-                    </button>
-                </motion.div>
-              ) : (
-                // User is NOT logged in (Log In & Sign Up)
-                <motion.div
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: navLinks.length * 0.07, type: 'spring', stiffness: 300, damping: 24 }}
-                    className='flex flex-col space-y-3'
-                >
-                    <button
-                        onClick={() => { setMobileMenuOpen(false); handleGoogleSignIn(); }}
-                        className="w-full text-center px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 font-medium border border-gray-200 transition-colors"
-                    >
-                        Log In
-                    </button>
-                    <button
-                        onClick={() => { setMobileMenuOpen(false); handleGoogleSignUp(); }}
-                        className="w-full text-center px-4 py-2 rounded-lg text-white font-medium shadow-md transition-colors hover:brightness-90"
-                        style={{ backgroundColor: `var(--primary-color)` }}
-                    >
-                        Sign Up
-                    </button>
-                </motion.div>
+            <div className="relative bg-gray-900 text-white p-2 rounded-lg">
+              <ShoppingBagIcon className="h-5 w-5 md:h-6 md:w-6" />
+              {cart.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-blue-500 text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-white font-bold">
+                  {cart.length}
+                </span>
               )}
+            </div>
+            <div className="hidden lg:block text-left">
+              <p className="text-[10px] text-gray-400 font-bold leading-none uppercase">Cart</p>
+              <p className="text-sm font-bold text-gray-900">$0.00</p>
+            </div>
+          </button>
 
-              <div className="border-t border-gray-200" />
+          <button onClick={handleUserAction} className="flex-shrink-0">
+            {user?.image ? (
+              <Image src={user.image} alt="User" width={40} height={40} className="rounded-xl border border-gray-200" />
+            ) : (
+              <div className="bg-gray-100 p-2.5 rounded-xl text-gray-600 hover:bg-gray-200 transition-colors">
+                <UserIcon className="h-6 w-6" />
+              </div>
+            )}
+          </button>
+        </div>
+      </div>
 
-              {/* Social Links */}
-              <div className="flex space-x-4">
-                {socialLinks.map((s: any) => (
-                  <a
-                    key={s.channel}
-                    href={s.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="capitalize text-gray-900 transition-colors"
-                    style={{ transition: 'color 0.2s ease' }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = secondaryColor)}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = '#374151')}
-                  >
-                    {s.channel}
-                  </a>
+      {/* 3. DESKTOP NAV */}
+      <div className="hidden md:block border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-10 flex items-center justify-between">
+          <nav className="flex items-center">
+            <Link href="/ecommerce/categories" className="py-4 pr-6 text-sm font-bold text-gray-800 border-r border-gray-100 mr-6 hover:text-gray-600 transition-colors">
+              All Categories
+            </Link>
+            {StoreCategory?.slice(0, 7).map((cat: IStoreCategory) => (
+              <Link 
+                key={cat.id} 
+                href={`/ecommerce/categories/${cat.category?.name?.toLowerCase()}`}
+                className="py-4 px-4 text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                {cat.displayName || cat.category?.name}
+              </Link>
+            ))}
+          </nav>
+          <div className="flex items-center space-x-2 py-4 font-bold text-sm text-gray-900">
+            <FireIcon className="h-5 w-5 text-orange-500" />
+            <Link href="/ecommerce/products?filter=hot-deals" className="hover:text-orange-600">HOT DEALS</Link>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. MOBILE DRAWER */}
+      <AnimatePresence>
+        {isDrawerOpen && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsDrawerOpen(false)} className="fixed inset-0 bg-black/40 z-[60] backdrop-blur-sm md:hidden" />
+            <motion.div initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="fixed top-0 left-0 bottom-0 w-[280px] bg-white z-[70] shadow-2xl flex flex-col md:hidden">
+              <div className="p-5 border-b flex justify-between items-center bg-gray-50">
+                <span className="font-black text-lg">MENU</span>
+                <button onClick={() => setIsDrawerOpen(false)} className="p-2 hover:bg-gray-200 rounded-full transition-colors"><XMarkIcon className="h-6 w-6" /></button>
+              </div>
+              <div className="flex-grow overflow-y-auto p-4">
+                <Link href="/ecommerce/products?filter=hot-deals" onClick={() => setIsDrawerOpen(false)} className="flex items-center space-x-3 p-3 rounded-xl bg-orange-50 text-orange-600 font-bold mb-4">
+                  <FireIcon className="h-6 w-6" /><span>Hot Deals</span>
+                </Link>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-3 mb-2">Shop Categories</p>
+                {StoreCategory?.map((cat: IStoreCategory) => (
+                  <Link key={cat.id} href={`/ecommerce/categories/${cat.category?.name}`} onClick={() => setIsDrawerOpen(false)} className="block p-3 text-base font-semibold text-gray-700 hover:bg-gray-50 rounded-lg">
+                    {cat.displayName || cat.category?.name}
+                  </Link>
                 ))}
               </div>
-            </div>
-          </motion.div>
+              <div className="p-5 border-t bg-gray-50 space-y-3">
+                {user ? (
+                  <button onClick={handleSignOut} className="w-full py-3 rounded-xl font-bold bg-gray-200 text-gray-800">Sign Out</button>
+                ) : (
+                  <button onClick={handleGoogleSignIn} className="w-full py-3 rounded-xl font-bold text-white shadow-lg" style={{ backgroundColor: primaryColor }}>Login / Sign Up</button>
+                )}
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
-
-      {/* Mobile Menu Overlay */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-x-0 top-[72px] bottom-0 bg-black/30 z-30 md:hidden"
-            onClick={toggleMobileMenu}
-          />
-        )}
-      </AnimatePresence>
-    </>
+    </header>
   );
 }
