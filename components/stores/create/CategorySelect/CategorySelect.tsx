@@ -44,6 +44,17 @@ const SITE_CATEGORIES: Category[] = [
       { name: "Food Delivery", link: "https://restaurant-food-delivery.salesmanpro.site", description: "Showcase restaurant menus and delivery options.", tag: 'Standard' },
       { name: "Product Marketplace", link: "https://marketplace.salesmanpro.site", description: "Create a marketplace for products.", tag: 'Standard' },
       { name: "Agrovet Store", link: "https://agrovet.salesmanpro.site", description: "Optimized for agricultural products and supplies.", tag: 'New' },
+      { name: "Gaming Store", link: "https://gaming-store.salesmanpro.site", description: "Designed for gaming products and accessories.", tag: 'New' },
+      { name: "Earphones Store", link: "https://earphones-store.salesmanpro.site", description: "Showcase earphones and audio accessories.", tag: 'New' },
+      { name: "Glasses Store", link: "https://glasses-store.salesmanpro.site", description: "Showcase eyewear and accessories.", tag: 'New' },
+      { name: "Flowers Store", link: "https://flowers-store.salesmanpro.site", description: "Showcase floral arrangements and gifts.", tag: 'New' },
+      { name: "Honey Store", link: "https://honey-store.salesmanpro.site", description: "Showcase honey and related products.", tag: 'New' },
+      { name: "Peanuts Store", link: "https://peanuts-store.salesmanpro.site", description: "Showcase peanuts and related snacks.", tag: 'New' },
+      { name: "Watch Store", link: "https://watch-store.salesmanpro.site", description: "Showcase watches and timepieces.", tag: 'New' },
+      { name: "Baby Store", link: "https://baby-store.salesmanpro.site", description: "Showcase baby products and essentials.", tag: 'New' },
+      { name: "Cake Store", link: "https://cake-store.salesmanpro.site", description: "Showcase cakes and baked goods.", tag: 'New' },
+      { name: "Pets Store", link: "https://pets-store.salesmanpro.site", description: "Showcase pet products and supplies.", tag: 'New' },
+      { name: "Groceries Store", link: "https://groceries-store.salesmanpro.site", description: "Showcase groceries and household items.", tag: 'New' },
       // { name: "Digital Goods Store (v2)", link: "https://digital-shop.salesmanpro.site", description: "Optimized for selling software and courses.", tag: 'New' },
       // { name: "Artisan Marketplace (v3)", link: "https://artisan-shop.salesmanpro.site", description: "Focuses on handcrafted and unique items.", tag: 'Standard' },
     ]
@@ -76,14 +87,84 @@ const SITE_CATEGORIES: Category[] = [
     variants: [
       { name: "Agrovet Store", link: "https://agrovet.salesmanpro.site", description: "Optimized for agricultural products and supplies.", tag: 'New' }
     ]
+  },  
+  {
+    name: "Gaming Store",
+    icon: "🎮",
+    variants: [
+      { name: "Gaming Store", link: "https://gaming-store.salesmanpro.site", description: "Designed for gaming products and accessories.", tag: 'New' }
+    ]
   },
-  { name: "Public Speaking", 
+  {
+    name: "Earphones Store",
+    icon: "🎧",
+    variants: [
+      { name: "Earphones Store", link: "https://earphones-store.salesmanpro.site", description: "Showcase earphones and audio accessories.", tag: 'New' }
+    ]
+  },
+  {
+  name: "Glasses Store",
+  icon: "👓",
+  variants: [   
+        { name: "Glasses Store", link: "https://glasses-store.salesmanpro.site", description: "Showcase eyewear and accessories.", tag: 'New' },
+      ]
+  },
+  { 
+    name: "Flowers Store",
+    icon: "🌸",
+    variants: [
+      { name: "Flowers Store", link: "https://flowers-store.salesmanpro.site", description: "Showcase floral arrangements and gifts.", tag: 'New' }
+    ]
+  },
+  {
+    name: "Honey Store",
+    icon: "🍯",
+    variants: [{ name: "Honey Store", link: "https://honey-store.salesmanpro.site", description: "Showcase honey and related products.", tag: 'New' }]
+  },
+  {
+    name: "Flowers Store",
+    icon: "🌸",
+    variants: [{ name: "Peanuts Store", link: "https://peanuts-store.salesmanpro.site", description: "Showcase peanuts and related snacks.", tag: 'New' }],
+  },
+  { 
+    name: "Watch Store", 
+    icon: "⌚", 
+    variants: [
+      { name: "Watch Store", link: "https://watch-store.salesmanpro.site", description: "Showcase watches and timepieces.", tag: 'New' }
+    ]
+  },
+  {
+    name: "Baby Store",
+    icon: "👶",
+    variants: [{ name: "Baby Store", link: "https://baby-store.salesmanpro.site", description: "Showcase baby products and essentials.", tag: 'New' }],
+  },
+  { 
+    name: "Cake Store",
+    icon: "🎂",
+    variants: [
+      { name: "Cake Store", link: "https://cake-store.salesmanpro.site", description: "Showcase cakes and baked goods.", tag: 'New' }
+    ]
+  },
+  {
+    name: "Pets Store",
+    icon: "🐶",
+    variants: [{ name: "Pets Store", link: "https://pets-store.salesmanpro.site", description: "Showcase pet products and supplies.", tag: 'New' }],
+  },
+  { 
+    name: "Groceries Store",
+    icon: "🛒",
+    variants: [
+      { name: "Groceries Store", link: "https://groceries-store.salesmanpro.site", description: "Showcase groceries and household items.", tag: 'New' }
+    ]
+  },
+ { name: "Public Speaking", 
     icon: "🎙️", 
     variants: [
       { name: "Standard Speaker Site", link: "https://flourishhub-2.salesmanpro.site", description: "Bookings and media focus.", tag: 'Standard' }
     ] 
   },
-  { name: "Shoes Store", icon: "👟", variants: [
+  { 
+    name: "Shoes Store", icon: "👟", variants: [
     { name: "Shoes Store Classic", link: "https://shoes-store.salesmanpro.site", description: "Grid-based product layout.", tag: 'Standard' }
   ] 
 },
@@ -97,8 +178,8 @@ const SITE_CATEGORIES: Category[] = [
   { name: "Booking & Appointments", 
     icon: "📅", 
     variants: [
-      { name: "Scheduler Hub", link: "https://booking.salesmanpro.site", description: "Integrated calendar for easy booking.", tag: 'Standard' }
-    ] 
+      { name: "Scheduler Hub", link: "https://booking.salesmanpro.site", description: "Integrated calendar for easy booking.", tag: 'Standard' },
+      { name: "Barbershop Store", link:"https://barbershop.salesmanpro.site", description: "Booking-focused design for barbershops.", tag: 'New' }   ] 
   },
   { name: "Portfolio & Personal Branding", 
     icon: "👤", 

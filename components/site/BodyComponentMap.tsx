@@ -14,6 +14,18 @@ import CoursesSite3 from './layouts/CoursesLayout3/body/CoursesSite3';
 import DirectorySite from './layouts/DirectoryLayout/body/DirectorySite';
 import EcommerceSite from './layouts/EcommerceLayout/body/EcommerceSite';
 import EcommerceShoesSite from './layouts/EcommerceShoesLayout/body/EcommerceShoesSite';
+import EcommerceGamingSite from './layouts/EcommerceGamingLayout/body/EcommerceGamingSite';
+import EcommerceEarphonesSite from './layouts/EcommerceEarphonesLayout/body/EcommerceEarphonesSite';
+import EcommerceGlassesSite from './layouts/EcommerceGlassesLayout/body/EcommerceGlassesSite';
+import EcommerceFlowersSite from './layouts/EcommerceFlowersLayout/body/EcommerceFlowersSite';
+import EcommerceHoneySite from './layouts/EcommerceHoneyLayout/body/EcommerceHoneySite';
+import EcommercePeanutsSite from './layouts/EcommercePeanutsLayout/body/EcommercePeanutsSite';
+import EcommerceWatchSite from './layouts/EcommerceWatchLayout/body/EcommerceWatchSite';
+import EcommerceBabySite from './layouts/EcommerceBabyLayout/body/EcommerceBabySite';
+import EcommerceCakeSite from './layouts/EcommerceCakeLayout/body/EcommerceCakeSite';
+import EcommercePetsSite from './layouts/EcommercePetsLayout/body/EcommercePetsSite';
+import EcommerceGroceriesSite from './/layouts/EcommerceGroceriesLayout/body/EcommerceGroceriesSite';
+import BarbershopBookingsSite from './layouts/BarbershopBookingsLayout/body/BarbershopBookingsSite';
 import EventsSite from './layouts/EventsLayout/body/EventsSite';
 import FinanceSite from './layouts/FinanceLayout/body/FinanceSite';
 import FitnessSite from './layouts/FitnessLayout/body/FitnessSite';
@@ -44,6 +56,17 @@ export const BodyComponentMap: Record<string, React.ComponentType<{ pageData: St
   'EcommerceSite': EcommerceSite,
   'EcommerceShoesSite': EcommerceShoesSite,
   'EcommerceAgrovetSite': EcommerceAgrovetSite,
+  'EcommerceGamingSite': EcommerceGamingSite,
+  'EcommerceEarphonesSite': EcommerceEarphonesSite,
+  'EcommerceGlassesSite': EcommerceGlassesSite,
+  'EcommerceFlowersSite': EcommerceFlowersSite,
+  'EcommerceHoneySite': EcommerceHoneySite,
+  'EcommercePeanutsSite': EcommercePeanutsSite,
+  'EcommerceWatchSite': EcommerceWatchSite,
+  'EcommerceBabySite': EcommerceBabySite,
+  'EcommerceCakeSite': EcommerceCakeSite,
+  'EcommercePetsSite': EcommercePetsSite,
+  'EcommerceGroceriesSite': EcommerceGroceriesSite,
   'ConsultancySite': ConsultancyLayout,
   'RealEstateSite': RealEstateSite,
   'BlogSite': BlogSite,
@@ -55,6 +78,7 @@ export const BodyComponentMap: Record<string, React.ComponentType<{ pageData: St
   'FinanceSite': FinanceSite,
   'ServiceSite': ServiceSite,
   'BookingsSite': BookingsSite,
+  'BarbershopBookingsSite': BarbershopBookingsSite,
   'PortfolioSite': PortfolioSite,
   'DirectorySite': DirectorySite,
   'NonProfitSite': NonProfitSite,
