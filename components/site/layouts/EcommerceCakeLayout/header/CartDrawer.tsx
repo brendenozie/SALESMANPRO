@@ -7,7 +7,8 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
+
+import { useRouter } from 'next/navigation';
 
 export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: boolean; setIsCartOpen: (open: boolean) => void }) {
   const { cart, addToCart, decreaseQuantity, removeFromCart,  } = useStateContext();
@@ -77,6 +78,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                         alt={item.name} 
                         fill 
                         className="object-cover"
+                        loader={({ src }) => src} // Use the URL directly without modification
                       />
                     </div>
                     
