@@ -8,6 +8,10 @@ import { StoreForm, MarketListingForm } from '@/types/typings';
 
 // Above-the-fold components - statically imported
 import CategorySection from './components/CategorySection';
+import QualityStandards from './components/QualityStandards';
+import LatestUpdates from './components/LatestUpdates';
+import FeatureGrid from './components/FeatureGrid';
+import AppointmentSection from './components/AppointmentSection';
 
 // Loading skeleton
 const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
@@ -73,6 +77,10 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
     <div className="space-y-12">
       <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
       <CategorySection StoreCategory={StoreCategory} themeSettings={themeSettings} />
+      <FeatureGrid />
+      <QualityStandards />
+      <AppointmentSection/>
+      <LatestUpdates/>
       <DynamicPopularProducts id={id} />
       <PromoSection promotions={promotions} />
       <DynamicTrending id={id} />

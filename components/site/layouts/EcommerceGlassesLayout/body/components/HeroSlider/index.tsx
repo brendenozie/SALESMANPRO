@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { AnimatePresence, motion, PanInfo } from 'framer-motion';
-import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowLeftIcon, ArrowRightIcon, CheckBadgeIcon, BeakerIcon } from '@heroicons/react/24/outline'; // Using Hero Icons
 import Image from 'next/image';
 import Link from 'next/link';
 import { HeroSlide } from '@/types/typings';
@@ -18,87 +18,59 @@ export interface HeroSliderProps {
   themeSettings: any;
 }
 
-const defaultSlides: HeroSlide[] = [
+const sampleSlides: HeroSlide[] = [
   {
-    imageUrl: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80',
-    subline: 'Exclusive Offer',
-    headline: 'STEP INTO\nSTYLE & COMFORT',
-    badgeText:
-      'Out too the been like hard off. Improve enquire welcome own beloved matters her. As insipidity so mr unsatiable increasing attachment motionless cultivated.',
-    ctaText: 'Buy Now',
-    ctaLink: '/shop',
-    id: '',
-    companyId: '',
-    productImageUrl: null,
-    price: null,
-    endsAt: null,
-    order: 0,
-    iconKey: null,
-    backgroundColor: null,
-    textColor: null,
-    videoLink: null,
-    type: null,
-  },
-  {
-    imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
-    subline: 'New Collection',
-    headline: 'ELEVATE YOUR\nLOOK TODAY',
-    badgeText: 'Discover fresh drops and timeless classics. Comfort and style perfectly combined.',
+    headline: '100% NATURAL\nPEANUT BUTTER',
+    subline: 'Gourmet Selection',
+    badgeText: 'Created to be a gourmet snack that can easily be enjoyed by the whole family.',
     ctaText: 'Shop Now',
-    ctaLink: '/collection',
+    ctaLink: '/shop',
+    imageUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80',
     id: '',
     companyId: '',
+    type: null,
     productImageUrl: null,
+    videoLink: null,
     price: null,
     endsAt: null,
     order: 0,
     iconKey: null,
     backgroundColor: null,
-    textColor: null,
-    videoLink: null,
-    type: null,
-  },
+    textColor: null
+  }
 ];
 
-export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProps) {
-  const defaultPrimaryColor = '#6B46C1';
-  const defaultSecondaryColor = '#D53F8C';
+// Custom Leaf SVG for "Palm Free"
+const LeafIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10a9.99 9.99 0 009.95-9H20a8 8 0 01-8-8zM11 14h2v2h-2v-2zm0-8h2v6h-2V6z" />
+  </svg>
+);
 
-  const heroSlidesToShow: HeroSlide[] = (heroSlides && heroSlides.length > 0 ? heroSlides : defaultSlides).map(
+export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProps) {
+  const defaultPrimaryColor = '#F3A852'; // Adapted to the peanut butter theme
+  const defaultSecondaryColor = '#2D3748';
+
+  const heroSlidesToShow: HeroSlide[] = (heroSlides && heroSlides.length > 0 ? heroSlides : sampleSlides).map(
     (slide, index) => ({
       ...slide,
-      imageUrl: slide.imageUrl || defaultSlides[index]?.imageUrl || defaultSlides[0].imageUrl,
-      subline: slide.subline || 'Exclusive Offer',
-      headline: slide.headline || defaultSlides[index]?.headline || 'Unlock Amazing Deals Now!',
-      badgeText:
-        slide.badgeText ||
-        defaultSlides[index]?.badgeText ||
-        'Discover curated collections and exceptional savings on your favorite products.',
-      ctaText: slide.ctaText || 'Explore Collections',
+      subline: slide.subline || 'Gourmet Selection',
+      headline: slide.headline || '100% NATURAL\nPEANUT BUTTER',
+      badgeText: slide.badgeText || 'Created to be a gourmet snack that can easily be enjoyed by the whole family.',
+      ctaText: slide.ctaText || 'Shop Now',
       ctaLink: slide.ctaLink || '/shop',
     })
   );
 
   const primary = themeSettings?.primaryColor || defaultPrimaryColor;
-  const secondary = themeSettings?.secondaryColor || defaultSecondaryColor;
-
+  
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
   const timeoutRef = useRef<NodeJS.Timeout>();
-  const progressRef = useRef<HTMLDivElement>(null);
 
   const resetTimer = useCallback(() => {
     clearTimeout(timeoutRef.current);
     if (heroSlidesToShow.length > 0) {
-      if (progressRef.current) {
-        progressRef.current.style.transition = 'none';
-        progressRef.current.style.width = '0%';
-        // force reflow
-        // @ts-ignore
-        progressRef.current.offsetWidth;
-        progressRef.current.style.transition = `width ${autoAdvanceDelay}ms linear`;
-        progressRef.current.style.width = '100%';
-      }
       timeoutRef.current = setTimeout(() => {
         setDirection(1);
         setCurrent((prev) => (prev + 1) % heroSlidesToShow.length);
@@ -117,206 +89,118 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
     setCurrent(idx);
   };
 
-  const prevSlide = () =>
-    goTo((current - 1 + heroSlidesToShow.length) % heroSlidesToShow.length, -1);
   const nextSlide = () => goTo((current + 1) % heroSlidesToShow.length, 1);
-
-  const handleDragEnd = (_: any, info: PanInfo) => {
-    const offset = info.offset.x;
-    if (offset < -50) nextSlide();
-    else if (offset > 50) prevSlide();
-  };
-
-  const slideVariants = {
-    enter: (dir: number) => ({
-      x: dir > 0 ? '100%' : '-100%',
-      opacity: 0,
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-      transition: { duration: transitionDuration, ease: 'easeOut' },
-    },
-    exit: (dir: number) => ({
-      x: dir < 0 ? '100%' : '-100%',
-      opacity: 0,
-      transition: { duration: transitionDuration, ease: 'easeInOut' },
-    }),
-  };
+  const prevSlide = () => goTo((current - 1 + heroSlidesToShow.length) % heroSlidesToShow.length, -1);
 
   return (
-    <section className="relative mt-20 py-16 overflow-hidden min-h-[500px]">
-      <div className="container mx-auto px-4 md:px-8 lg:px-16 relative z-10">
+    <section className="relative mt-20 py-12 md:py-20 overflow-hidden bg-white">
+      <div className="container mx-auto px-4 md:px-8 lg:px-16 relative">
         <AnimatePresence initial={false} custom={direction} mode="wait">
-          {heroSlidesToShow.map(
-            (slide, idx) =>
-              idx === current && (
-                <motion.div
-                  key={idx}
-                  className="relative overflow-hidden rounded-3xl shadow-2xl group flex flex-col md:flex-row h-[500px]"
-                  style={{ willChange: 'transform, opacity' }}
-                  custom={direction}
-                  variants={slideVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  drag="x"
-                  dragConstraints={{ left: 0, right: 0 }}
-                  onDragEnd={handleDragEnd}
+          {heroSlidesToShow.map((slide, idx) => idx === current && (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, x: direction > 0 ? 100 : -100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: direction > 0 ? -100 : 100 }}
+              transition={{ duration: 0.6, ease: "circOut" }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center min-h-[500px]"
+            >
+              {/* LEFT CONTENT */}
+              <div className="order-2 md:order-1 space-y-8 z-20">
+                <motion.div 
+                   initial={{ opacity: 0, y: 20 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   transition={{ delay: 0.2 }}
                 >
-                  {/* IMAGE PANEL */}
-                  {/* IMAGE PANEL */}
-                  <div className="relative w-full md:w-1/2 overflow-hidden will-change-transform h-full"> 
-                    {/* FIX 1: Set inner image wrapper to h-full (no fixed pixel heights for mobile) */}
-                    <div className="relative h-full w-full overflow-hidden">
-                      <Image
-                        src={
-                          slide.imageUrl ||
-                          'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1600&q=80'
-                        }
-                        alt={slide.headline || 'Hero Image'}
-                        fill
-                        sizes="100vw"
-                        className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
-                        loader={loader}
-                        priority
-                      />
-                    </div>
-
-                    {/* FIX 2: Mobile Gradient for Contrast (kept the to-black/70 fix) */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70 z-10 md:hidden" />
-
-                    {/* Mobile Text - Z-INDEX CONFIRMATION */}
-                    <div className="absolute bottom-0 left-0 right-0 p-6 z-30 text-white md:hidden"> 
-                      <h2 className="text-2xl font-bold">{slide.headline}</h2>
-                      {slide.badgeText && (
-                        <p className="text-sm mt-2 line-clamp-3">{slide.badgeText}</p>
-                      )}
-                      {slide.ctaLink && slide.ctaText && (
-                        <Link
-                          href={slide.ctaLink}
-                          className="inline-block mt-3 bg-white text-black font-medium px-4 py-2 rounded-md"
-                        >
-                          {slide.ctaText}
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* TEXT PANEL (Desktop) */}
-                  <div className="hidden md:flex md:w-1/2 px-6 py-20 md:px-12 lg:px-20 flex-col justify-center relative overflow-hidden">
-                    {/* Translucent gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/70 via-white/60 to-white/30 backdrop-blur-[2px]" />
-
-                    <div className="relative z-10 space-y-6 text-gray-900">
-                      {/* Badge */}
-                      <motion.span
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2, duration: 0.5 }}
-                        className="inline-block px-4 py-1.5 rounded-full text-sm sm:text-base font-semibold shadow-md"
-                        style={{ background: primary, color: 'white' }}
-                      >
-                        {slide.subline}
-                      </motion.span>
-
-                      {/* Headline */}
-                      <motion.h2
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4, duration: 0.5 }}
-                        className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight drop-shadow-md"
-                      >
-                        {(slide.headline ?? '').split('\n').map((line, i, arr) => (
-                                            <React.Fragment key={i}>
-                                              {line.includes('$') ? (
-                                                <>
-                                                  {line.split('$')[0]}
-                                                  <span style={{ color: secondary }}>{line.split('$')[1]}</span>
-                                                </>
-                                              ) : (
-                                                line
-                                              )}
-                                              {i < arr.length - 1 && <br />}
-                                            </React.Fragment>
-                                          ))}      
-                      </motion.h2>
-
-                      {/* Description */}
-                      {slide.badgeText && (
-                        <motion.p
-                          initial={{ opacity: 0, y: -20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.6, duration: 0.5 }}
-                          className="text-gray-800 text-base sm:text-lg max-w-md drop-shadow-sm"
-                        >
-                          {slide.badgeText}
-                        </motion.p>
-                      )}
-
-                      {/* CTA Button */}
-                      {slide.ctaLink && slide.ctaText && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.8, duration: 0.5 }}
-                        >
-                          <Link
-                            href={slide.ctaLink}
-                            className="inline-block font-semibold text-sm sm:text-base px-8 py-4 rounded-xl shadow-lg transition transform duration-300 hover:scale-105 hover:shadow-xl relative overflow-hidden"
-                            style={{ background: primary, color: 'white' }}
-                          >
-                            {slide.ctaText}
-                            <span className="absolute inset-0 bg-white opacity-0 transition-opacity duration-300 group-hover:opacity-10" />
-                          </Link>
-                        </motion.div>
-                      )}
-                    </div>
-                  </div>
-
+                  <h1 className="text-5xl md:text-7xl font-black text-gray-900 leading-tight">
+                    {slide.headline?.split('\n').map((line, i) => (
+                      <span key={i} className="block">{line}</span>
+                    ))}
+                  </h1>
+                  <p className="mt-6 text-lg text-gray-600 max-w-sm font-medium">
+                    {slide.badgeText}
+                  </p>
                 </motion.div>
-              )
-          )}
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  <Link
+                    href={slide.ctaLink || '/shop'}
+                    className="inline-block px-10 py-4 rounded-xl text-white font-bold text-lg shadow-xl hover:brightness-110 transition-all"
+                    style={{ backgroundColor: primary }}
+                  >
+                    {slide.ctaText}
+                  </Link>
+                </motion.div>
+
+                {/* USPs - New feature from design */}
+                <div className="flex flex-wrap gap-8 pt-8 border-t border-gray-100">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="p-3 rounded-full bg-gray-50 border border-gray-200">
+                      <LeafIcon className="h-6 w-6 text-gray-600" />
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Palm Free</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="p-3 rounded-full bg-gray-50 border border-gray-200">
+                      <CheckBadgeIcon className="h-6 w-6 text-gray-600" />
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Gluten Free</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="p-3 rounded-full bg-gray-50 border border-gray-200">
+                      <BeakerIcon className="h-6 w-6 text-gray-600" />
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Soy Free</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* RIGHT PRODUCT IMAGE */}
+              <div className="order-1 md:order-2 relative flex justify-center items-center h-[400px] md:h-full">
+                {/* Floating Decoration (Peanuts) */}
+                <motion.div 
+                  animate={{ y: [0, -20, 0], rotate: [0, 10, 0] }}
+                  transition={{ duration: 5, repeat: Infinity }}
+                  className="absolute -top-10 right-10 z-0 opacity-20"
+                >
+                    {/* This would be a peanut image asset */}
+                    <div className="w-16 h-16 bg-amber-200 rounded-full blur-xl" />
+                </motion.div>
+
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0, rotate: -5 }}
+                  animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                  transition={{ type: "spring", stiffness: 100 }}
+                  className="relative w-full h-full"
+                >
+                  <Image
+                    src={slide.imageUrl || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80'}
+                    alt="Product jars"
+                    fill
+                    className="object-contain"
+                    priority
+                    loader={loader}
+                  />
+                </motion.div>
+              </div>
+            </motion.div>
+          ))}
         </AnimatePresence>
 
-        {/* ARROWS */}
-        <button
-          onClick={prevSlide}
-          className="absolute top-1/2 left-8 md:left-10 transform -translate-y-1/2 bg-white/50 hover:bg-white p-3 md:p-4 rounded-full text-gray-800 shadow-xl transition-all duration-200 z-30 backdrop-blur-sm"
-          aria-label="Previous slide"
-        >
-          <ArrowLeftIcon className="h-5 w-5 md:h-6 md:w-6" />
-        </button>
-
-        <button
-          onClick={nextSlide}
-          className="absolute top-1/2 right-8 md:right-10 transform -translate-y-1/2 bg-white/50 hover:bg-white p-3 md:p-4 rounded-full text-gray-800 shadow-xl transition-all duration-200 z-30 backdrop-blur-sm"
-          aria-label="Next slide"
-        >
-          <ArrowRightIcon className="h-5 w-5 md:h-6 md:w-6" />
-        </button>
-
-        {/* PAGINATION DOTS */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3 z-30">
-          {heroSlidesToShow.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => goTo(idx, idx > current ? 1 : -1)}
-              className={`relative w-3.5 h-3.5 rounded-full overflow-hidden transition-all duration-300 border-2 ${
-                idx === current
-                  ? 'border-white scale-125'
-                  : 'border-gray-400 opacity-70 hover:scale-110'
-              }`}
-            >
-              {idx === current && (
-                <div
-                  ref={progressRef}
-                  className="absolute left-0 top-0 h-full rounded-full"
-                  style={{ backgroundColor: 'white', width: '0%' }}
-                />
-              )}
+        {/* NAVIGATION CONTROLS */}
+        <div className="absolute top-1/2 -left-4 md:left-4 z-30 -translate-y-1/2">
+            <button onClick={prevSlide} className="p-3 rounded-full bg-white shadow-lg text-gray-800 hover:bg-gray-50">
+              <ArrowLeftIcon className="h-6 w-6" />
             </button>
-          ))}
+        </div>
+        <div className="absolute top-1/2 -right-4 md:right-4 z-30 -translate-y-1/2">
+            <button onClick={nextSlide} className="p-3 rounded-full bg-white shadow-lg text-gray-800 hover:bg-gray-50">
+              <ArrowRightIcon className="h-6 w-6" />
+            </button>
         </div>
       </div>
     </section>
