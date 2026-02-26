@@ -184,182 +184,138 @@ export default function Header() {
       `}</style>
 
       <header
+  className={`
+    fixed top-0 left-0 w-full z-50
+    transition-all duration-300
+    ${
+      scrolled
+        ? 'bg-white/80 backdrop-blur-xl shadow-md py-3'
+        : 'bg-transparent py-5'
+    }
+  `}
+>
+  <div className="container mx-auto px-6 lg:px-20 flex items-center justify-between">
+
+    {/* LOGO */}
+    <Link href={`/`} className="flex items-center">
+      <motion.div whileHover={{ scale: 1.05 }}>
+        {logoUrl ? (
+          <Image
+            src={logoUrl}
+            alt={`${name} logo`}
+            width={100}
+            height={48}
+            className="object-contain w-12 h-12"
+            loader={imageLoader}
+          />
+        ) : (
+          <span
+            className={`text-xl font-black tracking-tight ${
+              scrolled ? 'text-gray-900' : 'text-white'
+            }`}
+          >
+            {name}
+          </span>
+        )}
+      </motion.div>
+    </Link>
+
+    {/* DESKTOP NAV */}
+    <nav className="hidden md:flex items-center space-x-10">
+      {navLinks.map((item) => (
+        <Link
+          key={item.label}
+          href={item.href}
+          className={`
+            relative font-semibold transition-all duration-200
+            ${
+              scrolled
+                ? 'text-gray-800 hover:text-[var(--primary-color)]'
+                : 'text-white hover:opacity-80'
+            }
+          `}
+        >
+          {item.label}
+        </Link>
+      ))}
+    </nav>
+
+    {/* RIGHT SIDE */}
+    <div className="flex items-center space-x-5">
+
+      {/* Profile / Auth */}
+      {status === 'loading' ? null : user ? (
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          onClick={handleUserAction}
+          className={`
+            transition-colors
+            ${scrolled ? 'text-gray-800' : 'text-white'}
+          `}
+        >
+          <UserIcon className="h-6 w-6" />
+        </motion.button>
+      ) : (
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          onClick={handleGoogleSignIn}
+          className="
+            hidden md:block
+            px-6 py-2.5
+            rounded-full
+            font-bold
+            shadow-md
+            transition-all
+          "
+          style={{
+            backgroundColor: scrolled ? primaryColor : 'white',
+            color: scrolled ? 'white' : primaryColor,
+          }}
+        >
+          Login
+        </motion.button>
+      )}
+
+      {/* Cart */}
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        onClick={() => {
+          if (cart.length === 0) return;
+          if (user) router.push(`/ecommerce/checkout`);
+          else handleGoogleSignIn();
+        }}
         className={`
-          fixed top-0 left-1/2 transform -translate-x-1/2 w-full max-w-7xl 
-          px-6 md:px-8 lg:px-16 py-4 
-          bg-white/60 backdrop-blur-lg 
-          ${scrolled ? 'shadow-lg' : 'shadow-none'} 
-          rounded-b-3xl 
-          z-50
-          transition-shadow duration-300
+          relative transition-colors
+          ${scrolled ? 'text-gray-800' : 'text-white'}
         `}
       >
-        <div className="flex items-center justify-between">
-          {/* ===== LOGO + NAV ===== */}
-          <div className="flex items-center space-x-8">
-            {/* Logo */}
-            <Link href={`/`} className="flex items-center" aria-label={`${name} home`}>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: 'spring', stiffness: 300 }}
-                className="flex items-center"
-              >
-                {logoUrl ? (
-                  <Image
-                    src={logoUrl}
-                    alt={`${name} logo`}
-                    width={100}
-                    height={48}
-                    className="object-contain w-16 h-16"
-                    loader={imageLoader}
-                  />
-                ) : (
-                  <span className="text-gray-900 text-2xl font-bold">{name}</span>
-                )}
-              </motion.div>
-            </Link>
+        <ShoppingBagIcon className="h-6 w-6" />
+        {cart.length > 0 && (
+          <span
+            className="absolute -top-2 -right-2 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: secondaryColor }}
+          >
+            {cart.length}
+          </span>
+        )}
+      </motion.button>
 
-            {/* Desktop Nav Links */}
-            <nav className="hidden md:flex space-x-10">
-              {navLinks.map((item) => (
-                <motion.div
-                  key={item.label}
-                  whileHover={{ y: -2 }}
-                  transition={{ type: 'spring', stiffness: 300 }}
-                >
-                  <Link
-                    href={item.href}
-                    className="relative font-medium text-base text-gray-900 hover:text-[var(--primary-color)] nav-link-hover-underline"
-                    style={{ transition: 'color 0.2s ease' }}
-                  >
-                    {item.label}
-                    {/* Bottom-border highlight on hover */}
-                    <span
-                      className="absolute left-0 -bottom-1 h-0.5 bg-transparent w-full transition-all"
-                      style={{ backgroundColor: `var(--primary-color)` }}
-                    />
-                  </Link>
-                </motion.div>
-              ))}
-            </nav>
-          </div>
-
-          {/* ===== SEARCH + ICONS + MOBILE TOGGLE ===== */}
-          <div className="flex items-center space-x-6">
-            {/* Search */}
-            {/* <div className="relative">
-              <motion.button
-                whileHover={{ scale: 1.1, color: primaryColor }}
-                className="transition-colors text-gray-900 search-toggle-button"
-                onClick={() => setSearchOpen((p) => !p)}
-                aria-label="Toggle search input"
-                aria-expanded={searchOpen}
-              >
-                <MagnifyingGlassIcon className="h-6 w-6" />
-              </motion.button>
-
-              <AnimatePresence>
-                {searchOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9, y: -10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="
-                      absolute right-0 mt-2 w-64
-                      bg-white rounded-xl shadow-lg
-                      ring-1 ring-gray-200 overflow-hidden z-50
-                      flex items-center
-                    "
-                    ref={searchInputRef}
-                  >
-                    <input
-                      type="search"
-                      autoFocus
-                      placeholder="Search products..."
-                      className="w-full py-2 px-4 text-gray-800 placeholder-gray-400 text-sm focus:outline-none"
-                      value={searchQuery}
-                      onChange={onSearchInputChange}
-                      aria-label="Search products"
-                    />
-                    {searchQuery && (
-                      <button
-                        onClick={handleClearSearch}
-                        className="p-2 text-gray-500 hover:text-gray-700 focus:outline-none"
-                        aria-label="Clear search"
-                      >
-                        <XMarkIcon className="h-4 w-4" />
-                      </button>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div> */}
-
-            {/* Profile / Sign In/Up Button */}
-            {status === 'loading' ? null : user ? ( // User is logged in
-              <motion.button
-                whileHover={{ scale: 1.1, color: primaryColor }}
-                className="transition-colors text-gray-900"
-                onClick={handleUserAction} // Use the combined handler
-                aria-label={"Profile page"}
-              >
-                <UserIcon className="h-6 w-6" />
-              </motion.button>
-            ) : ( 
-              // User is NOT logged in
-              <motion.button
-                whileHover={{ scale: 1.1, color: primaryColor }}
-                className="transition-colors text-gray-900 font-medium"
-                onClick={handleGoogleSignIn}
-                aria-label="Log In or Sign Up"
-              >
-                Login / Signup
-              </motion.button>
-            )}
-
-
-            {/* Cart */}
-
-            <motion.button
-              whileHover={{ scale: 1.1, color: primaryColor }}
-              className="relative transition-colors text-gray-900"
-              onClick={() => {
-                if(cart.length === 0) return;
-                if(user){
-                  router.push(`/ecommerce/checkout`);
-                }else{
-                  handleGoogleSignIn();
-                }
-              }}
-              aria-label={`Shopping cart with ${cart.length} items`}
-            >
-              <ShoppingBagIcon className="h-6 w-6" />
-              {cart.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                  {cart.length}
-                </span>
-              )}
-            </motion.button>
-
-            {/* Mobile Menu Toggle */}
-            <button
-              className="md:hidden transition-colors text-gray-900 mobile-menu-toggle-button"
-              onClick={toggleMobileMenu}
-              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-              aria-controls="mobile-menu"
-              aria-expanded={mobileMenuOpen}
-              ref={mobileMenuToggleButtonRef}
-            >
-              {mobileMenuOpen ? (
-                <XMarkIcon className="h-6 w-6" />
-              ) : (
-                <Bars3BottomLeftIcon className="h-6 w-6" />
-              )}
-            </button>
-          </div>
-        </div>
-      </header>
+      {/* Mobile Toggle */}
+      <button
+        onClick={toggleMobileMenu}
+        className={`md:hidden ${
+          scrolled ? 'text-gray-800' : 'text-white'
+        }`}
+      >
+        {mobileMenuOpen ? (
+          <XMarkIcon className="h-6 w-6" />
+        ) : (
+          <Bars3BottomLeftIcon className="h-6 w-6" />
+        )}
+      </button>
+    </div>
+  </div>
+</header>
 
       {/* ===== MOBILE SLIDE-DOWN MENU ===== */}
       <AnimatePresence>
