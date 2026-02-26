@@ -32,7 +32,7 @@ export async function loadStore(slug: string): Promise<LoadedStore> {
     pageData.category,
     pageData.variant || ''
   );
-  console.log(`Determined component name: ${componentName} for category: ${pageData.category} and variant: ${pageData.variant}`);
+  
   const BodyComponent = BodyComponentMap[componentName] || BodyComponentMap['DefaultSite'];
 
   return { raw, pageData, componentName, BodyComponent };

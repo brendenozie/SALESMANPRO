@@ -170,10 +170,7 @@ export const siteComponentNameMap: Record<string, string> = {
 
 // ✅ Core Resolver
 export function getComponentNameForCategory(category?: string, variant?: string): string {
-  console.log(`Resolving component for category: "${category}" and variant: "${variant}"`);
   const key = normalizeCategory(variant || category || 'other');
-  console.log(`Normalized key: "${key}"`);
   const folder = folderMap[key] ?? folderMap['default'];
-  console.log(`Mapped to folder: "${folder}"`);
   return siteComponentNameMap[folder] ?? siteComponentNameMap['DefaultLayout'];
 }
