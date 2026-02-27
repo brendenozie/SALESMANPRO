@@ -77,7 +77,7 @@ export default function TestimonialsSection( { testimonials = sampletestimonials
 
 // import React from 'react';
 // import { motion } from 'framer-motion';
-// import { useStoreContext } from '../../../contexts/StoreContext';
+// import { useStoreContext } from '@/contexts/StoreContext';
 // import Section from '../Section/Section';
 // import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
 // import { Testimonial } from '@/types/typings';
