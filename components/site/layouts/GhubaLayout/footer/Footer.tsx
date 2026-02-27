@@ -3,11 +3,11 @@ import React from "react";
 import { usePathname } from 'next/navigation';
 
 // import CookieConsentBar from "./components/CookieConsentBar";
-import ClientCookieWrapper from "./components/ClientCookieWrapper";
+import ClientCookieWrapper from "../body/components/ClientCookieWrapper";
 
 import LocationModal from "@/components/locationManager";
-import Cart from "./components/layouts/GhubaLayout/body/components/cart";
-import SignInModal from "./components/layouts/GhubaLayout/body/components/SignInModal/SignInModal";
+import Cart from "../body/components/cart";
+import SignInModal from "../body/components/SignInModal/SignInModal";
 
 const Footer = () => {
   const path = usePathname();
