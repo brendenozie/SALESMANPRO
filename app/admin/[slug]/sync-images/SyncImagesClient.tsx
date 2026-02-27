@@ -126,7 +126,7 @@ export default function SyncImagesClient({ companyId, initialProducts }: Props) 
       if (!res.ok) throw new Error("Sync failed");
 
       setStep('success');
-      setTimeout(() => router.push(`/admin/${companyId}/inventory`), 2000);
+      setTimeout(() => router.push(`/admin/${companyId}/mymarketplace`), 2000);
 
     } catch (error) {
       console.error(error);

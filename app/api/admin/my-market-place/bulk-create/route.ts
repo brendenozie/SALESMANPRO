@@ -89,9 +89,62 @@ export const GET = withApiHandler(handleGetListings);
 // ============== POST — BULK CREATE ENDPOINT ==========
 // =====================================================
 
-
+// =====================================================
+// ============== POST — BULK UPSERT ENDPOINT ==========
+// =====================================================
 
 async function handleBulkCreate(req: Request) {
+  const body = await req.json();
+  const { companyId, listings, isUpdate } = body; // Added isUpdate flag
+
+  if (!companyId) return formatResponse(false, null, "companyId is required.", 400);
+  if (!Array.isArray(listings) || listings.length === 0) {
+    return formatResponse(false, null, "listings[] is required.", 400);
+  }
+
+  try {
+    const operations = listings.map((item: any) => {
+      const { id, productCategory, ...data } = item;
+      
+      // If we have an ID, we UPSERT (Update or Create)
+      if (id) {
+        return prisma.marketplaceListings.upsert({
+          where: { id: id },
+          update: { ...data, companyId },
+          create: { ...data, companyId },
+          select: { company: true },
+        });
+      }
+
+      // Otherwise, just create a new one
+      return prisma.marketplaceListings.create({
+        data: { ...data, companyId },
+        select: { company: true },
+      });
+    });
+
+    const results = await prisma.$transaction(operations);
+
+    // Revalidate using the slug from the first successful operation
+    const companySlug = (results[0] as any)?.company?.slug;
+    if (companySlug) await revalidateCompanyCache(companySlug);
+
+    // Clear caches
+    try { await cacheDel(`admin:bulk-create:${companyId || 'global'}:*`); } catch (e) {}
+
+    return formatResponse(
+      true,
+      { count: results.length },
+      isUpdate ? "Listings updated successfully" : "Listings created successfully",
+      201
+    );
+  } catch (error: any) {
+    console.error("Bulk Sync Error:", error);
+    return formatResponse(false, null, error?.message || "Operation failed", 500);
+  }
+}
+
+async function handleBulkCreatev1(req: Request) {
   const body = await req.json();
 
   const { companyId, listings } = body;
