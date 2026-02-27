@@ -5,19 +5,18 @@ import Image from 'next/image';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
 import {
     CheckCircleIcon,
-    ShieldCheckIcon,
     SparklesIcon,
-    ClockIcon,
     StarIcon,
     HandThumbUpIcon,
     TagIcon,
     ArrowRightIcon,
+    ShieldCheckIcon,
+    UserGroupIcon,
+    GlobeAltIcon,
 } from '@heroicons/react/24/solid';
 
-// Utility function for Next.js Image loader
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
-// Define fallback benefits with icons and descriptions
 const defaultBenefits = [
     {
         title: 'Effortless Booking',
@@ -47,30 +46,22 @@ interface AboutAndBenefitsSectionProps {
     promotions?: any[]; 
 }
 
-// Sample data
-const sampleData = {
-    name: 'SwiftServe',
-    description: 'At SwiftServe, we’re committed to connecting you with top-tier professionals for all your needs. From home services to personal care, our platform guarantees a seamless and satisfying experience from start to finish.',
-    bannerUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop',
-    themeSettings: {
-        primaryColor: '#059669', // Emerald 600
-        secondaryColor: '#FBBF24', // Amber 400
-    },
-    promotions: [],
-};
-
-
-export default function AboutAndBenefitsSection({name, description, bannerUrl, themeSettings, promotions}: AboutAndBenefitsSectionProps) {
+export default function AboutAndBenefitsSection({ name, description, bannerUrl, themeSettings, promotions }: AboutAndBenefitsSectionProps) {
+    const primaryColor = themeSettings?.primaryColor || '#059669';
+    const secondaryColor = themeSettings?.secondaryColor || '#FBBF24';
     
-    const primaryColor = themeSettings?.primaryColor || sampleData.themeSettings.primaryColor;
-    const secondaryColor = themeSettings?.secondaryColor || sampleData.themeSettings.secondaryColor;
-    const itemsRef = useRef(null);
-    const { scrollYProgress } = useScroll({ target: itemsRef, offset: ["start end", "end start"] });
+    const sectionRef = useRef(null);
+    const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
+    
+    const { scrollYProgress } = useScroll({
+        target: sectionRef,
+        offset: ["start end", "end start"]
+    });
 
-    // Parallax effect for the central image
-    const yImage = useTransform(scrollYProgress, [0, 1], [-50, 50]);
+    const yLeft = useTransform(scrollYProgress, [0, 1], [0, -100]);
+    const yRight = useTransform(scrollYProgress, [0, 1], [0, 100]);
+    const rotate = useTransform(scrollYProgress, [0, 1], [0, 5]);
 
-    // Logic to determine benefits (limiting to 3 for the new 3-column layout)
     const brandBenefits = (promotions?.[0]?.perks?.length > 0
         ? promotions?.[0].perks.map((perk: any) => ({
               title: perk.label,
@@ -79,181 +70,138 @@ export default function AboutAndBenefitsSection({name, description, bannerUrl, t
           }))
         : defaultBenefits).slice(0, 3);
 
-    // Animation variants
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        show: {
-            opacity: 1,
-            transition: {
-                staggerChildren: 0.1, 
-            },
-        },
-    };
-
-    const itemVariants = {
-        hidden: { opacity: 0, y: 30, scale: 0.95 },
-        show: { 
-            opacity: 1, 
-            y: 0, 
-            scale: 1,
-            transition: { 
-                type: "spring", 
-                stiffness: 80, 
-                damping: 15, 
-                mass: 0.8,
-                duration: 0.6
-            } 
-        },
-    };
-
-    const sectionRef = useRef(null);
-    const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
-
     return (
-        <section className="relative bg-white py-24 lg:py-36 text-gray-900 overflow-hidden" ref={sectionRef}>
-            
-            {/* 🎨 Background: Large Primary Color Shape */}
-            <div className="absolute top-0 w-full h-[50%] bg-gray-50 z-0">
-                {/* Optional: Add a subtle texture or line to the background */}
-                <div className="absolute inset-0 opacity-[0.05] pointer-events-none">
-                    <div className="h-full w-full bg-repeat bg-[size:30px_30px] [background-image:radial-gradient(circle_at_center,_#9ca3af_1px,_transparent_0)]"></div>
-                </div>
-            </div>
+        <section ref={sectionRef} className="relative py-24 lg:py-40 overflow-hidden bg-white">
+            {/* Background Decorations */}
+            <div className="absolute top-0 right-0 -mr-24 mt-24 w-96 h-96 bg-slate-50 rounded-full blur-3xl opacity-50" />
+            <div className="absolute bottom-0 left-0 -ml-24 mb-24 w-72 h-72 rounded-full blur-3xl opacity-30" style={{ backgroundColor: primaryColor + '20' }} />
 
-            <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12">
-
-                {/* --- 1. Top Section: Heading and Description --- */}
-                <motion.div
-                    className="text-center max-w-4xl mx-auto space-y-4 mb-20"
-                    initial="hidden"
-                    animate={isInView ? "show" : "hidden"}
-                    variants={containerVariants}
-                >
-                    <motion.span
-                        className="inline-block text-sm font-bold px-5 py-2 rounded-full shadow-md uppercase tracking-wider"
-                        style={{ backgroundColor: primaryColor, color: 'white' }}
-                        variants={itemVariants}
+            <div className="max-w-7xl mx-auto px-6 relative z-10">
+                
+                {/* --- 1. Header Logic --- */}
+                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-24">
+                    <motion.div 
+                        initial={{ opacity: 0, x: -30 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        className="max-w-2xl"
                     >
-                        Our Core Values
-                    </motion.span>
-                    
-                    <motion.h2
-                        className="text-4xl sm:text-6xl font-extrabold leading-tight text-gray-900"
-                        variants={itemVariants}
-                    >
-                        Why Clients Choose <span style={{ color: primaryColor }}>{name || 'SwiftServe'}</span>
-                    </motion.h2>
-                    
-                    <motion.p
-                        className="text-xl text-gray-600 leading-relaxed pt-2"
-                        variants={itemVariants}
-                    >
-                        {description || sampleData.description}
-                    </motion.p>
-                </motion.div>
-
-                {/* --- 2. Middle Section: Image and Floating Card --- */}
-                <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-10 items-center mb-24" ref={itemsRef}>
-                    
-                    {/* Image Column (Left) */}
-                    <motion.div
-                        style={{ y: yImage }} // Apply Parallax effect
-                        className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl ring-8 ring-white/60 z-10 mx-auto"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={isInView ? { opacity: 1, scale: 1 } : {}}
-                        transition={{ duration: 1.2, delay: 0.3 }}
-                        whileHover={{ 
-                            boxShadow: `0 40px 80px -20px rgba(0, 0, 0, 0.5), 0 0 0 4px ${primaryColor}40`
-                        }}
-                    >
-                        <Image
-                            src={bannerUrl || sampleData.bannerUrl || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop"}
-                            loader={loader}
-                            alt="A happy customer enjoying a service"
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 1024px) 100vw, 50vw"
-                        />
-                         {/* Secondary Color accent box */}
-                        <div className="absolute top-0 left-0 w-24 h-24 rounded-br-3xl flex items-center justify-center text-white shadow-xl" 
-                            style={{ backgroundColor: secondaryColor }}>
-                            <SparklesIcon className="w-12 h-12 text-white/90" />
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="h-px w-8" style={{ backgroundColor: primaryColor }} />
+                            <span className="text-sm font-black uppercase tracking-[0.2em]" style={{ color: primaryColor }}>
+                                Discover Our Essence
+                            </span>
                         </div>
+                        <h2 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tight leading-[0.95]">
+                            The <span className="italic font-serif font-light text-slate-400">new standard</span> in {name || 'SwiftServe'}.
+                        </h2>
+                    </motion.div>
+                    
+                    <motion.div 
+                        initial={{ opacity: 0, x: 30 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        className="lg:max-w-md"
+                    >
+                        <p className="text-lg text-slate-500 font-medium leading-relaxed">
+                            {description || 'We are redefining the intersection of professional excellence and digital convenience.'}
+                        </p>
+                    </motion.div>
+                </div>
+
+                {/* --- 2. Interactive Split Visual --- */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-32">
+                    
+                    {/* Left: Image Canvas */}
+                    <motion.div className="lg:col-span-7 relative" style={{ y: yLeft }}>
+                        <div className="relative rounded-[3rem] overflow-hidden shadow-2xl">
+                            <Image
+                                src={bannerUrl || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop"}
+                                loader={loader}
+                                alt="Redefining Service"
+                                width={1200}
+                                height={1600}
+                                className="object-cover transition-transform duration-700 hover:scale-105"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent" />
+                        </div>
+
+                        {/* Floating Experience Card */}
+                        <motion.div 
+                            style={{ rotate }}
+                            className="absolute -bottom-10 -right-6 md:right-12 bg-white p-6 rounded-3xl shadow-2xl border border-slate-100 hidden md:block"
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className="flex -space-x-3">
+                                    {[1, 2, 3].map(i => (
+                                        <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 overflow-hidden">
+                                            <Image src={`https://i.pravatar.cc/100?img=${i+10}`} alt="user" width={40} height={40} loader={loader}/>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div>
+                                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Join over</p>
+                                    <p className="text-xl font-black text-slate-900">12k+ Members</p>
+                                </div>
+                            </div>
+                        </motion.div>
                     </motion.div>
 
-                    {/* Placeholder/Extra Detail Column (Right) */}
-                    <motion.div
-                        className="lg:pl-10 space-y-6"
-                        initial={{ opacity: 0, x: 30 }}
-                        animate={isInView ? { opacity: 1, x: 0 } : {}}
-                        transition={{ duration: 0.8, delay: 0.5 }}
-                    >
-                        <h3 className="text-3xl font-extrabold text-gray-900 leading-snug">
-                            Dedicated to Building <span style={{ color: primaryColor }}>Trust and Reliability</span> in Every Interaction.
-                        </h3>
-                        <p className="text-lg text-gray-600">
-                            We meticulously vet every professional and streamline every step of the booking process, ensuring your satisfaction is always our top priority. We're more than a service platform; we're your partner in wellness and efficiency.
-                        </p>
+                    {/* Right: Narrative & Trust Indicators */}
+                    <motion.div className="lg:col-span-5 space-y-10" style={{ y: yRight }}>
+                        <div className="space-y-6">
+                            <h3 className="text-3xl font-black text-slate-900">
+                                Built on <span className="underline decoration-4 underline-offset-4" style={{ textDecorationColor: secondaryColor }}>Integrity</span>.
+                            </h3>
+                            <p className="text-slate-600 leading-relaxed">
+                                We meticulously vet every professional and streamline every step of the booking process, ensuring your satisfaction is always our top priority. We're more than a service platform; we're your partner in efficiency.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6">
+                            {[
+                                { icon: ShieldCheckIcon, label: 'Secure Payments' },
+                                { icon: UserGroupIcon, label: 'Top 1% Talent' },
+                                { icon: GlobeAltIcon, label: 'Global Standards' },
+                                { icon: SparklesIcon, label: 'Elite Quality' },
+                            ].map((badge, i) => (
+                                <div key={i} className="flex items-center gap-3">
+                                    <badge.icon className="w-5 h-5" style={{ color: primaryColor }} />
+                                    <span className="text-sm font-bold text-slate-700">{badge.label}</span>
+                                </div>
+                            ))}
+                        </div>
+
                         <motion.button
-                            className="flex items-center space-x-2 text-lg font-semibold py-3 px-6 rounded-full transition-all duration-300 group mt-6 border-2"
-                            style={{ color: primaryColor, borderColor: primaryColor + '40' }}
-                            whileHover={{ backgroundColor: primaryColor, color: 'white' }}
+                            whileHover={{ x: 10 }}
+                            className="flex items-center gap-4 py-4 px-8 rounded-full font-black text-white shadow-xl transition-all"
+                            style={{ backgroundColor: primaryColor }}
                         >
-                            <span>View All Commitments</span>
-                            <ArrowRightIcon className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                            Get Started Now
+                            <ArrowRightIcon className="w-5 h-5" />
                         </motion.button>
                     </motion.div>
-
                 </div>
 
-                {/* --- 3. Bottom Section: Elevated Benefits Grid (3 Columns) --- */}
-                <div className="pt-10 lg:pt-20">
-                    <motion.div
-                        className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10"
-                        initial="hidden"
-                        animate={isInView ? "show" : "hidden"}
-                        variants={containerVariants}
-                    >
-                        {brandBenefits.map(({ title, description, Icon }:{ title: string; description: string; Icon: React.ElementType }, i:number) => (
-                            <motion.div
-                                key={title}
-                                className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 flex flex-col space-y-4 h-full transition-all duration-300 transform group"
-                                style={{ 
-                                    boxShadow: `0 10px 30px ${primaryColor}10`, // Subtle primary color shadow
-                                }}
-                                whileHover={{ 
-                                    scale: 1.05, 
-                                    y: -10,
-                                    boxShadow: `0 20px 40px ${primaryColor}20`,
-                                }}
-                                variants={itemVariants}
-                            >
-                                {/* Icon Container: Theme-aware circle */}
-                                <div className="w-14 h-14 rounded-full flex items-center justify-center bg-white shadow-md ring-4 ring-white transition-all duration-300"
-                                    style={{ 
-                                        backgroundColor: primaryColor,
-                                    }}
-                                >
-                                    <Icon className="w-7 h-7 text-white" />
-                                </div>
-                                
-                                {/* Text Content */}
-                                <div>
-                                    <h3 className="text-2xl font-extrabold text-gray-900 leading-snug">
-                                        {title}
-                                    </h3>
-                                    <p className="text-md text-gray-600 mt-2">{description}</p>
-                                </div>
-                                
-                                {/* Bottom Accent Line on Hover */}
-                                <div className="w-full h-1 mt-auto rounded-full transition-all duration-300" 
-                                    style={{ backgroundColor: primaryColor + '40', width: '25%' }}
-                                />
-                            </motion.div>
-                        ))}
-                    </motion.div>
+                {/* --- 3. Benefits Bento Grid --- */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {brandBenefits.map((benefit: any, i: number) => (
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.1 }}
+                            whileHover={{ y: -5 }}
+                            className="group p-10 rounded-[2.5rem] bg-slate-50 hover:bg-white transition-all duration-500 border border-transparent hover:border-slate-100 hover:shadow-2xl hover:shadow-slate-200/50"
+                        >
+                            <div className="w-14 h-14 rounded-2xl mb-8 flex items-center justify-center transition-transform duration-500 group-hover:rotate-12" style={{ backgroundColor: `${primaryColor}10` }}>
+                                <benefit.Icon className="w-7 h-7" style={{ color: primaryColor }} />
+                            </div>
+                            <h4 className="text-2xl font-black text-slate-900 mb-4">{benefit.title}</h4>
+                            <p className="text-slate-500 font-medium text-sm leading-relaxed">{benefit.description}</p>
+                            
+                            <div className="mt-8 h-1 w-12 rounded-full bg-slate-200 group-hover:w-full transition-all duration-700" style={{ backgroundColor: `${primaryColor}40` }} />
+                        </motion.div>
+                    ))}
                 </div>
-
             </div>
         </section>
     );

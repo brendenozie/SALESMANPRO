@@ -1,316 +1,180 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { StarIcon } from '@heroicons/react/24/solid';
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { motion, AnimatePresence } from 'framer-motion';
+import { StarIcon, SparklesIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
+import { ChevronLeftIcon, ChevronRightIcon,  } from '@heroicons/react/24/outline';
 
-// Mock implementation for the custom hook and context data
-const useStoreContext = () => ({
-    storeFormData: {
-        name: 'The Wellness Hub',
-        testimonials: [], // Use this if provided
-        themeSettings: { primaryColor: '#059669' }, // Emerald 600
-    }
-});
-
-// Fallback static testimonials
+// Mock/Fallback Data
 const staticTestimonials = [
     {
         authorName: 'Sarah L.',
+        role: 'Wellness Enthusiast',
         quote: 'Booking my service through this platform is incredibly smooth and easy. The user interface is intuitive, and I always find exactly what I need. Highly recommend!',
         rating: 5,
-        avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734b319?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734b319?q=80&w=200&auto=format&fit=crop',
     },
     {
         authorName: 'James K.',
+        role: 'Executive Director',
         quote: 'I was impressed by the quality of service providers and the seamless booking process. This platform truly sets a new standard for convenience and excellence.',
         rating: 5,
-        avatarUrl: 'https://images.unsplash.com/photo-1549040846-95ff88301f2f?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        avatarUrl: 'https://images.unsplash.com/photo-1549040846-95ff88301f2f?q=80&w=200&auto=format&fit=crop',
     },
     {
         authorName: 'Amara N.',
+        role: 'Lifestyle Blogger',
         quote: 'The personalized experience I received was outstanding. Every detail was taken care of, making my well-being journey truly special. A fantastic discovery!',
         rating: 5,
-        avatarUrl: 'https://images.unsplash.com/photo-1542345513-8a9d18b6e632?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        avatarUrl: 'https://images.unsplash.com/photo-1542345513-8a9d18b6e632?q=80&w=200&auto=format&fit=crop',
     },
     {
         authorName: 'David R.',
+        role: 'Tech Lead',
         quote: 'Finally, a platform that understands what clients need. Quick, reliable, and with top-tier professionals. My go-to for all my wellness needs now.',
         rating: 4,
-        avatarUrl: 'https://images.unsplash.com/photo-1557088924-d2e825a0b73c?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    },
-    {
-        authorName: 'Fatuma A.',
-        quote: 'The secure payment system gave me great peace of mind. Combined with the easy scheduling, it made the whole process stress-free from start to finish.',
-        rating: 5,
-        avatarUrl: 'https://images.unsplash.com/photo-1596461404986-e88e404b4c73?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        avatarUrl: 'https://images.unsplash.com/photo-1557088924-d2e825a0b73c?q=80&w=200&auto=format&fit=crop',
     },
 ];
 
-// --- Custom Slider Implementation using useReducer (simplified for single file) ---
-
-const TestimonialCard = ({ testimonial, primaryColor }: { testimonial: typeof staticTestimonials[0], primaryColor: string }) => (
-    <div className="h-full">
-        {/* Card Redesign: Stronger Shadow, Primary Color Accent */}
+const TestimonialCard = ({ testimonial, primaryColor, isActive }: { testimonial: any, primaryColor: string, isActive: boolean }) => (
+    <motion.div
+        initial={false}
+        animate={{
+            scale: isActive ? 1 : 0.9,
+            opacity: isActive ? 1 : 0.5,
+            z: isActive ? 10 : 0
+        }}
+        className={`relative bg-white/70 backdrop-blur-xl rounded-[2.5rem] p-8 lg:p-12 border border-white shadow-2xl transition-all duration-500 flex flex-col justify-between h-full group`}
+        style={{
+            boxShadow: isActive ? `0 40px 80px -20px ${primaryColor}30` : '0 10px 30px -10px rgba(0,0,0,0.1)'
+        }}
+    >
+        {/* Floating Quote Icon */}
         <div 
-            className="bg-white rounded-3xl p-8 lg:p-10 border border-gray-100 transition-all duration-500 transform relative overflow-hidden h-full flex flex-col justify-between group"
-            // style={{ 
-            //     boxShadow: `0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 4px ${primaryColor}1A`, // Prominent shadow with primary accent ring
-            // }}
-            // // Hover effect
-            // onMouseEnter={(e: any) => e.currentTarget.style.boxShadow = `0 30px 60px -15px rgba(0, 0, 0, 0.4), 0 0 0 4px ${primaryColor}40`}
-            // onMouseLeave={(e: any) => e.currentTarget.style.boxShadow = `0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 4px ${primaryColor}1A`}
+            className="absolute -top-6 -left-6 w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transform -rotate-12 group-hover:rotate-0 transition-transform duration-500"
+            style={{ backgroundColor: primaryColor }}
         >
+            <ChatBubbleLeftRightIcon className="w-7 h-7 text-white" />
+        </div>
+
+        <div className="relative z-10">
+            <div className="flex text-amber-400 mb-6">
+                {[...Array(5)].map((_, i) => (
+                    <StarIcon key={i} className={`w-5 h-5 ${i < testimonial.rating ? 'fill-current' : 'text-slate-200'}`} />
+                ))}
+            </div>
             
-            {/* Large, styled Quote Icon */}
-            <svg 
-                className="absolute top-4 right-4 w-12 h-12 transition-all duration-300 group-hover:scale-110" 
-                fill="currentColor" 
-                viewBox="0 0 24 24"
-                style={{ color: primaryColor + '30' }} // Light primary color for the icon
-            >
-                <path d="M9.25 6.75A.75.75 0 0110 7.5v3.5a.75.75 0 01-.75.75H6.5a.75.75 0 01-.75-.75v-3.5a.75.75 0 01.75-.75h2.75zm5.75 0a.75.75 0 01.75.75v3.5a.75.75 0 01-.75.75h-3.5a.75.75 0 01-.75-.75v-3.5a.75.75 0 01.75-.75h3.5z" />
-            </svg>
-
-            <p className="text-gray-800 text-lg sm:text-xl font-medium leading-relaxed mb-6 mt-4 relative z-10 italic">
-                “{testimonial.quote}”
+            <p className="text-slate-800 text-xl md:text-2xl font-semibold leading-snug italic mb-10">
+                "{testimonial.quote}"
             </p>
+        </div>
 
-            <div className="flex items-center gap-4 mt-auto pt-6 border-t border-gray-100">
+        <div className="flex items-center gap-5 pt-8 border-t border-slate-100">
+            <div className="relative">
                 <img
-                    src={testimonial.avatarUrl || 'https://placehold.co/64x64/d1d5db/059669?text=A'}
-                    alt={`Avatar of ${testimonial.authorName}`}
-                    width={64}
-                    height={64}
-                    className="rounded-full object-cover border-4 shadow-lg transition-transform duration-300 group-hover:scale-105 w-16 h-16"
-                    style={{ borderColor: primaryColor }}
-                    onError={(e: any) => e.target.src = 'https://placehold.co/64x64/d1d5db/059669?text=A'} // Fallback for image loading error
+                    src={testimonial.avatarUrl}
+                    alt={testimonial.authorName}
+                    className="w-16 h-16 rounded-2xl object-cover shadow-md ring-4 ring-white"
                 />
-                <div className="text-left">
-                    <p className="text-xl font-extrabold text-gray-900">{testimonial.authorName}</p>
-                    <div className="flex text-amber-500 mt-1">
-                        {Array.from({ length: testimonial.rating ?? 0 }).map((_, idx) => (
-                            <StarIcon key={idx} className="w-5 h-5" />
-                        ))}
-                    </div>
+                <div className="absolute -bottom-2 -right-2 bg-emerald-500 w-5 h-5 rounded-full border-2 border-white flex items-center justify-center">
+                    <SparklesIcon className="w-3 h-3 text-white" />
                 </div>
             </div>
+            <div className="text-left">
+                <h4 className="text-lg font-black text-slate-900">{testimonial.authorName}</h4>
+                <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">{testimonial.role || 'Verified User'}</p>
+            </div>
         </div>
-    </div>
+    </motion.div>
 );
 
+export default function TestimonialsSection({ name = 'SwiftServe', themeSettings }: any) {
+    const primaryColor = themeSettings?.primaryColor || '#059669';
+    const [index, setIndex] = useState(0);
+    const containerRef = useRef<HTMLDivElement>(null);
 
-const CustomSlider = ({ items, primaryColor }: { items: typeof staticTestimonials, primaryColor: string }) => {
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [isMobile, setIsMobile] = useState(false);
-    const sliderRef = useRef<HTMLDivElement>(null);
-    const totalItems = items.length;
-    
-    // Determine screen size for responsive behavior
-    useEffect(() => {
-        const checkMobile = () => setIsMobile(window.innerWidth < 1024);
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
-    }, []);
-
-    // Logic to calculate how many cards to show
-    const visibleCards = isMobile ? 1 : Math.min(items.length, 2);
-
-    // Navigation logic
-    const next = useCallback(() => {
-        setCurrentIndex(prev => (prev + 1) % totalItems);
-    }, [totalItems]);
-
-    const prev = useCallback(() => {
-        setCurrentIndex(prev => (prev - 1 + totalItems) % totalItems);
-    }, [totalItems]);
-
-    // Autoplay effect
-    useEffect(() => {
-        const interval = setInterval(next, 6000);
-        return () => clearInterval(interval);
-    }, [next]);
-
-    // Scroll effect to simulate sliding (smooth scrolling must be enabled via CSS)
-    useEffect(() => {
-        if (sliderRef.current) {
-            // Find the width of the card element (including its padding/margin context)
-            const cardElement = sliderRef.current.querySelector('.flex-shrink-0');
-            const cardWidth = cardElement?.clientWidth || 0;
-            
-            // Adjust for gap/padding if necessary
-            // Here, we assume the scroll position is based on the index * card width
-            const scrollPosition = currentIndex * cardWidth;
-            
-            sliderRef.current.scrollTo({
-                left: scrollPosition,
-                behavior: 'smooth'
-            });
-        }
-    }, [currentIndex]);
-    
-    // Custom Arrow Components (Theme-Aware, Integrated Style)
-    const ArrowButton = ({ direction, onClick }: { direction: 'prev' | 'next', onClick: () => void }) => (
-        <motion.div
-            className={`absolute z-20 top-1/2 -translate-y-1/2 cursor-pointer transition-all duration-300 rounded-full p-2 lg:p-3 bg-white shadow-lg ring-2 ring-gray-100 hover:scale-110 active:scale-95 hidden lg:block`}
-            onClick={onClick}
-            whileTap={{ scale: 0.95 }}
-            style={{ 
-                // Position arrows right next to the content area
-                [direction === 'prev' ? 'left' : 'right']: '-2rem', 
-                boxShadow: `0 10px 20px -5px rgba(0, 0, 0, 0.2), 0 0 0 2px ${primaryColor}20`,
-                borderColor: primaryColor + '40', // Light border for definition
-            }}
-        >
-            {direction === 'prev' ? (
-                <ChevronLeftIcon className="w-8 h-8 lg:w-10 lg:h-10 transition-colors duration-300" style={{ color: primaryColor }} />
-            ) : (
-                <ChevronRightIcon className="w-8 h-8 lg:w-10 lg:h-10 transition-colors duration-300" style={{ color: primaryColor }} />
-            )}
-        </motion.div>
-    );
+    const next = useCallback(() => setIndex((i) => (i + 1) % staticTestimonials.length), []);
+    const prev = useCallback(() => setIndex((i) => (i - 1 + staticTestimonials.length) % staticTestimonials.length), []);
 
     return (
-        <div className="relative">
-            {/* Slider Track */}
-            <div 
-                ref={sliderRef}
-                className="flex overflow-x-auto snap-x snap-mandatory scroll-x-hidden scrollbar-hide"
-                style={{ scrollSnapType: isMobile ? 'x mandatory' : 'none' }} // Use snap only on mobile
-            >
-                {items.map((t, i) => (
-                    <motion.div
-                        key={i}
-                        className={`p-2 lg:p-4 flex-shrink-0 snap-center`}
-                        style={{ width: isMobile ? '100%' : `${100 / visibleCards}%` }} // Dynamic width
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: i * 0.1 }}
-                        viewport={{ once: true, amount: 0.5 }}
+        <section className="relative py-24 lg:py-40 bg-slate-50 overflow-hidden">
+            {/* Design Elements: Blurry blobs and grid */}
+            <div className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full blur-[120px] opacity-20 pointer-events-none" style={{ backgroundColor: primaryColor }} />
+            <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full blur-[100px] opacity-10 pointer-events-none bg-indigo-400" />
+            
+            <div className="max-w-7xl mx-auto px-6 relative z-10">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
+                    <motion.div 
+                        initial={{ opacity: 0, x: -30 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        className="max-w-2xl text-left"
                     >
-                        <TestimonialCard testimonial={t} primaryColor={primaryColor} />
+                        <span className="text-sm font-black uppercase tracking-[0.3em] mb-4 block" style={{ color: primaryColor }}>
+                            Wall of Love
+                        </span>
+                        <h2 className="text-5xl md:text-7xl font-black text-slate-900 leading-[0.9] tracking-tighter">
+                            Trusted by those who <br />
+                            <span className="italic font-serif font-light text-slate-400">demand excellence.</span>
+                        </h2>
                     </motion.div>
-                ))}
-            </div>
 
-            {/* Arrows (Desktop Only) */}
-            <ArrowButton direction="prev" onClick={prev} />
-            <ArrowButton direction="next" onClick={next} />
-
-            {/* Dots/Pagination (Mobile & Desktop) */}
-            <div className="flex justify-center mt-12">
-                {items.map((_, i) => (
-                    <div
-                        key={i}
-                        className={`w-3 h-3 rounded-full mx-2 cursor-pointer transition-all duration-300 ${i === currentIndex ? 'scale-150' : 'scale-100 opacity-60'}`}
-                        style={{ backgroundColor: i === currentIndex ? primaryColor : '#9ca3af' }} // Neutral gray for inactive
-                        onClick={() => setCurrentIndex(i)}
-                    ></div>
-                ))}
-            </div>
-        </div>
-    );
-};
-// End Custom Slider Implementation
-
-interface TestimonialsSectionProps {
-    name?: string | undefined | null;
-    testimonials?: typeof staticTestimonials;
-    themeSettings?: {
-        primaryColor?: string;
-    } | null;
-}
-
-// Helper to calculate average rating (for header credibiltiy)
-const calculateAverageRating = (items: typeof staticTestimonials) => {
-    if (!items || items.length === 0) return 0;
-    const totalRating = items.reduce((sum, item) => sum + (item.rating || 0), 0);
-    return (totalRating / items.length).toFixed(1);
-};
-
-
-export default function TestimonialsSection({ name = 'Our Platform', testimonials = [], themeSettings }: TestimonialsSectionProps) {
-    const items = testimonials.length ? testimonials : staticTestimonials;
-    const primaryColor = themeSettings?.primaryColor || '#059669'; // Emerald 600
-    const averageRating = calculateAverageRating(items);
-
-    return (
-        // Use a slightly different background for contrast, like a very light off-white/gray
-        <section id="testimonials" className="relative bg-gray-50 py-24 lg:py-36 px-6 lg:px-12 text-gray-900 overflow-hidden">
-            
-            {/* 🎨 Background Grids & Shapes (Subtle, professional) */}
-            <div className="absolute inset-0 z-0 opacity-10" style={{
-                backgroundImage: `radial-gradient(circle, ${primaryColor}20 1px, transparent 1px)`,
-                backgroundSize: '30px 30px',
-            }} />
-
-            <div className="max-w-7xl mx-auto text-center relative z-10">
-                
-                {/* 1. Credibility Block (New) */}
-                <motion.div
-                    className="flex items-center justify-center space-x-4 mb-4"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5, delay: 0.1 }}
-                    viewport={{ once: true }}
-                >
-                    <div className="flex text-amber-500">
-                        {Array.from({ length: 5 }).map((_, idx) => (
-                            <StarIcon key={idx} className="w-8 h-8" />
-                        ))}
+                    {/* Desktop Navigation */}
+                    <div className="hidden md:flex gap-4 mb-2">
+                        <button onClick={prev} className="w-14 h-14 rounded-full border-2 border-slate-200 flex items-center justify-center hover:bg-white hover:border-white hover:shadow-xl transition-all group">
+                            <ChevronLeftIcon className="w-6 h-6 text-slate-400 group-hover:text-slate-900" />
+                        </button>
+                        <button onClick={next} className="w-14 h-14 rounded-full flex items-center justify-center text-white shadow-xl transition-all hover:scale-110 active:scale-95" style={{ backgroundColor: primaryColor }}>
+                            <ChevronRightIcon className="w-6 h-6" />
+                        </button>
                     </div>
-                    <p className="text-3xl font-extrabold text-gray-900">
-                        {averageRating}
-                    </p>
-                    <p className="text-xl font-medium text-gray-500">
-                        ({items.length} reviews)
-                    </p>
-                </motion.div>
-                
-                <motion.span
-                    className="inline-block bg-white text-emerald-700 text-sm font-bold px-5 py-2 rounded-full  uppercase tracking-wider border-2"
-                    initial={{ opacity: 0, y: -20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    viewport={{ once: true }}
-                    style={{ color: primaryColor, borderColor: primaryColor + '60' }}
-                >
-                    Client Success Stories
-                </motion.span>
-                
-                <motion.h2
-                    className="text-4xl sm:text-6xl font-extrabold mt-6 text-gray-900 leading-tight max-w-4xl mx-auto"
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    viewport={{ once: true }}
-                >
-                    Hear From Our <span style={{ color: primaryColor }}>Happy Clients</span>
-                </motion.h2>
+                </div>
 
-                <motion.p
-                    className="max-w-3xl mx-auto mt-4 text-xl leading-relaxed"
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    viewport={{ once: true }}
-                >
-                    {/* Use a richer color for the text and add strong bolding */}
-                    <span className="text-gray-700">
-                        Stop guessing. See the real impact. Discover why 
-                        <strong style={{ color: primaryColor }} className="font-extrabold mx-1">
-                            {name || 'Our Platform'}
-                        </strong> 
-                        is consistently rated five stars, confirmed by the people who matter most—<span className="font-semibold text-gray-800">our users</span>.
-                    </span>
-                </motion.p>
-            </div>
+                {/* Slider Component */}
+                <div className="relative min-h-[500px]">
+                    <div className="flex gap-8 overflow-visible">
+                        <AnimatePresence mode="popLayout">
+                            <motion.div 
+                                key={index}
+                                initial={{ opacity: 0, x: 100 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -100 }}
+                                transition={{ type: 'spring', damping: 25, stiffness: 120 }}
+                                className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full"
+                            >
+                                {/* We show two cards at once on desktop, with the first being active */}
+                                <div className="w-full">
+                                    <TestimonialCard 
+                                        testimonial={staticTestimonials[index]} 
+                                        primaryColor={primaryColor} 
+                                        isActive={true} 
+                                    />
+                                </div>
+                                <div className="hidden lg:block w-full">
+                                    <TestimonialCard 
+                                        testimonial={staticTestimonials[(index + 1) % staticTestimonials.length]} 
+                                        primaryColor={primaryColor} 
+                                        isActive={false} 
+                                    />
+                                </div>
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
 
-            {/* Main Testimonials Container using the Custom Slider */}
-            <div className="mt-20 max-w-7xl mx-auto relative px-4 lg:px-16">
-                <CustomSlider items={items} primaryColor={primaryColor} />
+                    {/* Custom Progress Bar */}
+                    <div className="mt-16 flex items-center gap-6">
+                        <div className="flex-1 h-[2px] bg-slate-200 relative overflow-hidden">
+                            <motion.div 
+                                className="absolute inset-0 h-full origin-left"
+                                style={{ backgroundColor: primaryColor }}
+                                animate={{ scaleX: (index + 1) / staticTestimonials.length }}
+                            />
+                        </div>
+                        <span className="text-sm font-black text-slate-400 tabular-nums">
+                            0{index + 1} / 0{staticTestimonials.length}
+                        </span>
+                    </div>
+                </div>
             </div>
         </section>
     );

@@ -40,7 +40,7 @@ export default function Hero({ name, description, bannerUrl, heroSlides, marketp
   };
 
   return (
-    <section className="relative h-[90vh] w-full flex flex-col items-center justify-center overflow-hidden bg-[#0a0a0a]">
+    <section className="relative h-[100vh] w-full flex flex-col items-center justify-center overflow-hidden bg-[#0a0a0a]">
       
       {/* 1. BACKGROUND VISUALS */}
       <div className="absolute inset-0 z-0">

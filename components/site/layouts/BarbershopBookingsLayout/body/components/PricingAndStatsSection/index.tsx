@@ -9,20 +9,20 @@ import {
     CalendarDaysIcon, 
     BriefcaseIcon,
     ArrowPathIcon,
+    SparklesIcon,
+    ShieldCheckIcon
 } from '@heroicons/react/24/solid'; 
 import { PricingTier, Stat } from '@/types/typings';
 
-
-// --- Helper Types & Maps (Retained) ---
+// --- Helper Types & Maps ---
 const StatIconMap: { [key: string]: React.ElementType } = {
     "Bookings Completed": CalendarDaysIcon,
     "Verified Professionals": BriefcaseIcon,
     "Happy Customers": UsersIcon,
     "Average Rating": StarIcon,
 };
-// ------------------------------------------------------------------------
 
-// CountUp component (Retained)
+// Enhanced CountUp with easing
 const CountUp = ({ end, duration = 2000, decimals = 0 }: { end: number; duration?: number; decimals?: number }) => {
     const [count, setCount] = useState(0);
     const ref = useRef(null);
@@ -30,24 +30,18 @@ const CountUp = ({ end, duration = 2000, decimals = 0 }: { end: number; duration
 
     useEffect(() => {
         if (!isInView) return;
-
-        const startTimestamp = performance.now();
+        let startTimestamp: number;
         const step = (timestamp: number) => {
+            if (!startTimestamp) startTimestamp = timestamp;
             const progress = Math.min(1, (timestamp - startTimestamp) / duration);
-            const easedProgress = 1 - Math.pow(1 - progress, 3); 
-            const currentValue = easedProgress * end;
-            setCount(currentValue);
-            if (progress < 1) {
-                requestAnimationFrame(step);
-            }
+            const easedProgress = 1 - Math.pow(1 - progress, 4); // Quartic ease-out
+            setCount(easedProgress * end);
+            if (progress < 1) requestAnimationFrame(step);
         };
         requestAnimationFrame(step);
-
     }, [end, duration, isInView]);
 
-    const formattedCount = count.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-
-    return <span ref={ref}>{formattedCount}</span>;
+    return <span ref={ref}>{count.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</span>;
 };
 
 interface PricingAndStatsSectionProps { 
@@ -56,292 +50,174 @@ interface PricingAndStatsSectionProps {
     themeSettings: Record<string, any> | null; 
 }
 
-// --- START: Main Component ---
 export default function PricingAndStatsSection({ stats, pricingTiers, themeSettings }: PricingAndStatsSectionProps) {
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'annually'>('monthly');
-
-    // Sample Data (Retained)
-    const sampleData = {
-        stats: [
-            { label: "Bookings Completed", value: 150.7, icon: "CalendarDaysIcon", suffix: 'K+' }, 
-            { label: "Verified Professionals", value: 12.5, icon: "BriefcaseIcon", suffix: 'K+' },
-            { label: "Happy Customers", value: 98.4, icon: "UsersIcon", suffix: 'K+' },
-            { label: "Average Rating", value: 4.9, icon: "StarIcon" },
-        ] as Stat[],
-        pricingTiers: [
-            { name: "Starter", monthlyPrice: 9, annualPrice: 86.4, description: "Jumpstart your presence with essential booking tools and basic analytics.", features: ["5 client bookings/month limit", "Basic availability calendar", "Email support", "Single user license"], isFeatured: false },
-            { name: "Growth Pro", monthlyPrice: 29, annualPrice: 278.4, description: "Maximize growth with unlimited scheduling, team features, and advanced branding.", features: ["Unlimited client bookings", "Automated SMS reminders", "Priority chat support", "Custom branding & logo upload", "Up to 5 team members"], isFeatured: true },
-            { name: "Enterprise", monthlyPrice: 0, annualPrice: 0, description: "Tailored infrastructure for high-volume operations, large teams, and custom integration.", features: ["Dedicated account manager", "Full CRM integration", "24/7 Phone and emergency support", "Custom team roles & SSO", "Unlimited users"], isFeatured: false },
-        ] as PricingTier[],
-        themeSettings: { primaryColor: '#059669' }, // Emerald 600
-    };
+    const sectionRef = useRef(null);
+    const inView = useInView(sectionRef, { once: false, amount: 0.1 });
 
     const primaryColor = themeSettings?.primaryColor || '#059669'; 
-    const accentColor = '#FACC15'; // Yellow 400 
+    const accentColor = '#FACC15'; 
 
-    const sectionRef = useRef(null);
-    const inView = useInView(sectionRef, { once: true, amount: 0.2 });
-
-    // Animation variants (Retained)
-    const itemVariants = {
-        hidden: { opacity: 0, y: 50, scale: 0.8 },
-        visible: (i: number) => ({
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            transition: {
-                delay: i * 0.1, 
-                duration: 0.7,
-                type: "spring",
-                stiffness: 120,
-                damping: 10,
-            },
-        }),
-    };
+    // Data handling
+    const sampleStats = [
+        { label: "Bookings Completed", value: 150.7, suffix: 'K+', icon: "CalendarDaysIcon" },
+        { label: "Verified Professionals", value: 12.5, suffix: 'K+', icon: "BriefcaseIcon" },
+        { label: "Happy Customers", value: 98.4, suffix: 'K+', icon: "UsersIcon" },
+        { label: "Average Rating", value: 4.9, icon: "StarIcon" },
+    ];
     
-    // Data processing (Retained)
-    const normalizedStats: Stat[] = Array.isArray(stats) && stats.length > 0 ? stats : sampleData.stats;
-    const processedTiers = pricingTiers && pricingTiers.length > 0 ? pricingTiers : sampleData.pricingTiers;
+    const normalizedStats = stats && stats.length > 0 ? stats : sampleStats;
+    const processedTiers = pricingTiers && pricingTiers.length > 0 ? pricingTiers : [];
 
-    // Helper for Price Calculation (Retained)
     const getPriceDetails = (tier: PricingTier) => {
         const isMonthly = billingCycle === 'monthly';
+        const basePrice = tier.monthlyPrice || tier.price || 0;
         
-        if (tier.name.toLowerCase() === 'enterprise' && (tier.monthlyPrice === 0 || tier.monthlyPrice === null)) {
-            return { priceDisplay: 'Custom', cycleLabel: '', isCustom: true, annualNote: 'Contact us for a tailored enterprise solution.', currency: '' };
+        if (tier.name.toLowerCase() === 'enterprise') {
+            return { priceDisplay: 'Custom', cycleLabel: '', isCustom: true, annualNote: 'Tailored for scale', currency: '' };
         }
 
-        const basePrice = tier.monthlyPrice || tier.price || 0; 
-        let priceValue;
-        let annualNote;
-
-        if (isMonthly) {
-            priceValue = basePrice;
-            const discountedAnnualPrice = (basePrice * 12 * 0.8).toFixed(0); 
-            annualNote = `Billed annually at KES ${discountedAnnualPrice} per year (Save 20%)`;
-        } else {
-            priceValue = tier.annualPrice && tier.annualPrice > 0 ? tier.annualPrice : (basePrice * 12 * 0.8);
-            annualNote = `Saving 20% annually compared to the monthly plan.`;
-        }
-        
-        const priceDisplay = typeof priceValue === 'number' ? priceValue.toFixed(priceValue % 1 !== 0 ? 2 : 0) : 'Custom';
-        const cycleLabel = isMonthly ? '/mo' : '/yr';
-        
-        return { priceDisplay, cycleLabel, isCustom: typeof priceValue !== 'number', annualNote, currency: 'KES' };
+        const priceValue = isMonthly ? basePrice : (tier.annualPrice || basePrice * 12 * 0.8);
+        return {
+            priceDisplay: Math.round(Number(priceValue)).toLocaleString(),
+            cycleLabel: isMonthly ? '/mo' : '/yr',
+            isCustom: false,
+            annualNote: isMonthly ? "Save 20% with annual" : "Best value for teams",
+            currency: 'KES'
+        };
     };
 
     return (
-        <section 
-            ref={sectionRef} 
-            className="relative pt-20 pb-32 overflow-hidden min-h-screen"
-            // LIGHT MODE GRADIENT BACKGROUND
-            style={{ background: 'linear-gradient(135deg, #f9fafb 0%, #ffffff 50%, #f3f4f6 100%)' }} 
-        >
-            
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <section ref={sectionRef} className="relative py-24 overflow-hidden bg-slate-50">
+            {/* Background Decorative Elements */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full blur-[120px] opacity-20" style={{ backgroundColor: primaryColor }} />
+                <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] rounded-full blur-[120px] opacity-20" style={{ backgroundColor: accentColor }} />
+            </div>
+
+            <div className="max-w-7xl mx-auto px-4 relative z-10">
                 
-                {/* =========================================================
-                    1. HEADER & DYNAMIC STATS GRID (LIGHT MODE)
-                    =========================================================
-                */}
-                <div className="pt-8 pb-16 text-center">
-                    <motion.h2
-                        className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight mb-4"
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={inView ? { opacity: 1, y: 0 } : {}}
-                        transition={{ duration: 0.6 }}
-                    >
-                        Achieve <span style={{ color: primaryColor }}>Proven Results</span>
-                    </motion.h2>
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-16">
-                        See why thousands of professionals trust us daily.
-                    </p>
+                {/* --- Stats Section: The Bento Grid --- */}
+                <div className="mb-32">
+                    <div className="text-center mb-16">
+                        <motion.div 
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-sm border border-slate-200 mb-6"
+                        >
+                            <SparklesIcon className="w-5 h-5 text-amber-500" />
+                            <span className="text-sm font-bold text-slate-700 uppercase tracking-widest">Market Leader</span>
+                        </motion.div>
+                        <h2 className="text-5xl md:text-6xl font-black text-slate-900 mb-6 tracking-tight">
+                            Numbers that <span className="text-transparent bg-clip-text bg-gradient-to-r" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, #10b981)` }}>Speak Volumes</span>
+                        </h2>
+                    </div>
 
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-                        
-                        {/* Core Stats (Dynamic Grid) */}
-                        {normalizedStats?.map((item, i) => {
-                            const numericValue = parseFloat(item.value as string) || 0;
-                            const IconComponent = StatIconMap[item.label] || UsersIcon;
-                            const isRating = item.label === "Average Rating";
-                            
-                            // Light Mode Stat Card Styling
-                            const statCardClasses = isRating 
-                                ? `bg-yellow-50 border-yellow-300 shadow-lg shadow-yellow-200/50` 
-                                : `bg-white/80 border-gray-200 shadow-md`;
-                            const statTextClasses = isRating ? 'text-yellow-700' : 'text-gray-900';
-                            const statLabelClasses = isRating ? 'text-yellow-600' : 'text-gray-600';
-
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {normalizedStats.map((stat, i) => {
+                            const Icon = StatIconMap[stat.label] || UsersIcon;
                             return (
                                 <motion.div
-                                    key={item.label}
-                                    custom={i}
-                                    variants={itemVariants}
-                                    initial="hidden"
-                                    animate={inView ? "visible" : "hidden"}
-                                    
-                                    className={`relative p-6 rounded-3xl backdrop-blur-md border transition-transform duration-300 transform hover:scale-[1.03] flex flex-col items-center justify-center ${statCardClasses}`}
+                                    key={stat.label}
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    whileInView={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: i * 0.1 }}
+                                    whileHover={{ y: -8 }}
+                                    className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-xl shadow-slate-200/50 flex flex-col items-center text-center"
                                 >
-                                    {IconComponent && (
-                                        <IconComponent 
-                                            className={`w-10 h-10 mb-3`} 
-                                            style={{ color: isRating ? accentColor : primaryColor }}
-                                        />
-                                    )}
-                                    <h5 className={`text-4xl font-extrabold leading-tight ${statTextClasses}`}>
-                                        <CountUp end={numericValue} duration={2000} decimals={isRating ? 1 : 0} />
-                                        {item.suffix || ''}
-                                    </h5>
-                                    <p className={`mt-1 text-sm font-medium uppercase tracking-wider ${statLabelClasses}`}>{item.label}</p>
+                                    <div className="w-16 h-16 rounded-2xl mb-6 flex items-center justify-center shadow-inner" style={{ backgroundColor: `${primaryColor}10` }}>
+                                        <Icon className="w-8 h-8" style={{ color: primaryColor }} />
+                                    </div>
+                                    <h3 className="text-5xl font-black text-slate-900 mb-2">
+                                        <CountUp end={parseFloat(stat.value as string)} decimals={stat.label.includes('Rating') ? 1 : 0} />
+                                        <span className="text-2xl ml-1 text-emerald-500">{stat.suffix || ''}</span>
+                                    </h3>
+                                    <p className="text-slate-500 font-bold uppercase tracking-tighter text-sm">{stat.label}</p>
                                 </motion.div>
                             );
                         })}
                     </div>
                 </div>
 
-                <div className="my-16 flex items-center justify-center">
-                    <ArrowPathIcon className="w-8 h-8 text-gray-500 animate-spin mr-3" />
-                    <span className="text-gray-500 text-lg">Real-time data synchronization.</span>
-                </div>
-                
-                {/* =========================================================
-                    2. PRICING SECTION (GLASS CARDS - LIGHT MODE)
-                    =========================================================
-                */}
-                <div className="py-8 text-center">
-                    <motion.h2
-                        className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight mb-12"
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={inView ? { opacity: 1, y: 0 } : {}}
-                        transition={{ duration: 0.6, delay: 0.8 }}
-                    >
-                        <span style={{ color: primaryColor }}>Simple, Transparent Pricing</span>
-                    </motion.h2>
-
-                    {/* Pricing Toggle (Adjusted for Light BG) */}
-                    <div className="mt-12 flex justify-center items-center space-x-3 mb-16">
-                        <span className={`text-lg font-semibold transition-colors ${billingCycle === 'monthly' ? 'text-gray-900' : 'text-gray-500'}`}>
-                            Monthly
-                        </span>
-                        
-                        <div className="relative inline-block w-16 h-8 rounded-full cursor-pointer p-1 shadow-inner" 
-                            style={{ backgroundColor: billingCycle === 'annually' ? primaryColor : '#E5E7EB' /* gray-200 */ }}
-                            onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'annually' : 'monthly')}
-                        >
-                            <motion.div
-                                className="absolute w-6 h-6 rounded-full bg-white shadow-lg"
-                                initial={false}
-                                animate={{ x: billingCycle === 'annually' ? 'calc(100% + 2px)' : '0px' }}
-                                transition={{ type: "spring", stiffness: 700, damping: 50 }}
-                            />
-                        </div>
-
-                        <span className={`text-lg font-semibold transition-colors ${billingCycle === 'annually' ? 'text-gray-900' : 'text-gray-500'}`}>
-                            Annually 
-                            <span className="ml-3 px-3 py-0.5 text-sm font-bold rounded-full text-gray-900 shadow-md" style={{ backgroundColor: accentColor }}>
-                                Save 20%
-                            </span>
-                        </span>
-                    </div>
-                    {/* End Pricing Toggle */}
+                {/* --- Pricing Section --- */}
+                <div className="text-center">
+                    <h2 className="text-5xl font-black text-slate-900 mb-8">Ready to Scale?</h2>
                     
-                    <div className="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-y-12 lg:gap-x-8 items-stretch">
-                        {processedTiers.map((tier, i) => {
-                            const details = getPriceDetails(tier);
-                            const { priceDisplay, cycleLabel, isCustom, annualNote, currency } = details;
-                            const isFeatured = tier.isFeatured;
+                    {/* Modern Toggle */}
+                    <div className="inline-flex items-center p-1.5 bg-slate-200/50 rounded-2xl mb-20 backdrop-blur-sm border border-slate-200">
+                        <button 
+                            onClick={() => setBillingCycle('monthly')}
+                            className={`px-8 py-3 rounded-xl text-sm font-bold transition-all ${billingCycle === 'monthly' ? 'bg-white shadow-lg text-slate-900' : 'text-slate-500'}`}
+                        >
+                            Monthly
+                        </button>
+                        <button 
+                            onClick={() => setBillingCycle('annually')}
+                            className={`px-8 py-3 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${billingCycle === 'annually' ? 'bg-white shadow-lg text-slate-900' : 'text-slate-500'}`}
+                        >
+                            Annually
+                            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-600 text-[10px] border border-emerald-200">SAVE 20%</span>
+                        </button>
+                    </div>
 
-                            // Light Mode Glassmorphism Card Classes
-                            const glassClasses = `bg-white/90 backdrop-blur-md border border-gray-300 shadow-xl transition-all duration-500 transform hover:translate-y-[-5px] z-10`;
-                            
-                            const buttonStyle = { 
-                                backgroundColor: primaryColor,
-                                color: 'white',
-                                boxShadow: isFeatured ? `0 10px 20px -5px ${primaryColor}40` : 'none',
-                            };
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-end">
+                        {processedTiers.map((tier, i) => {
+                            const { priceDisplay, cycleLabel, isCustom, annualNote, currency } = getPriceDetails(tier);
+                            const featured = tier.isFeatured;
 
                             return (
                                 <motion.div
                                     key={tier.name}
-                                    custom={i + normalizedStats.length} 
-                                    variants={itemVariants}
-                                    initial="hidden"
-                                    animate={inView ? "visible" : "hidden"}
-                                    
-                                    className={`relative rounded-3xl p-8 lg:p-12 flex flex-col justify-between ${glassClasses} ${isFeatured ? 'ring-2 ring-offset-4 ring-offset-gray-50 ring-emerald-300 scale-[1.05] z-20' : ''}`}
+                                    initial={{ opacity: 0, y: 30 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: i * 0.1 }}
+                                    className={`relative p-8 md:p-10 rounded-[3rem] transition-all duration-500 ${
+                                        featured 
+                                        ? 'bg-slate-900 text-white shadow-2xl shadow-emerald-900/20 scale-105 z-20' 
+                                        : 'bg-white text-slate-900 shadow-xl border border-slate-100'
+                                    }`}
                                 >
-                                    {/* Featured Tag */}
-                                    {isFeatured && (
-                                        <motion.div 
-                                            className="absolute inset-0 rounded-3xl pointer-events-none"
-                                            animate={{ opacity: [0.8, 0.4, 0.8] }}
-                                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                                            style={{ boxShadow: `inset 0 0 0 4px ${primaryColor}70` }} // Subtle inner border pulse
-                                        />
+                                    {featured && (
+                                        <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 text-xs font-black px-6 py-2 rounded-full shadow-lg flex items-center gap-2">
+                                            <ShieldCheckIcon className="w-4 h-4" /> MOST POPULAR
+                                        </div>
                                     )}
-                                    <div className="absolute -top-4 right-1/2 translate-x-1/2">
-                                        <span className={`inline-block px-6 py-1 text-sm font-bold text-gray-900 uppercase tracking-wider rounded-full shadow-lg ${isFeatured ? '' : 'hidden'}`} style={{ backgroundColor: accentColor }}>
-                                            Recommended
-                                        </span>
-                                    </div>
-                                    
-                                    <div className="text-center">
-                                        <h3 className="text-3xl font-extrabold mt-4 text-gray-900">
-                                            {tier.name}
-                                        </h3>
-                                        <p className={`mt-3 text-gray-600`}>{tier.description}</p>
-                                        
-                                        <motion.p 
-                                            key={priceDisplay + cycleLabel} 
-                                            className="mt-8 text-7xl font-extrabold leading-none text-gray-900"
-                                            initial={{ scale: 0.95 }}
-                                            animate={{ scale: 1 }}
-                                            transition={{ type: "tween", duration: 0.3 }}
-                                        >
-                                            {isCustom ? (
-                                                <span className="text-4xl font-extrabold">{priceDisplay}</span>
-                                            ) : (
-                                                <>
-                                                    <span className={`text-3xl font-normal align-top mr-1 text-gray-500`}>{currency}</span>
-                                                    <span className="text-gray-900">{priceDisplay}</span>
-                                                    <span className={`text-xl font-normal ml-1 text-gray-500`}>{cycleLabel}</span>
-                                                </>
-                                            )}
-                                        </motion.p>
-                                        
-                                        {/* Annual Billing Note */}
-                                        {(billingCycle === 'annually' || isCustom) && (
-                                            <p className={`mt-2 text-sm italic font-medium`} style={{ color: primaryColor }}>
-                                                {annualNote}
-                                            </p>
-                                        )}
+
+                                    <div className="mb-10 text-left">
+                                        <h4 className={`text-2xl font-black mb-3 ${featured ? 'text-emerald-400' : 'text-slate-900'}`}>{tier.name}</h4>
+                                        <p className={`text-sm leading-relaxed ${featured ? 'text-slate-400' : 'text-slate-500'}`}>{tier.description}</p>
                                     </div>
 
-                                    {/* Feature List */}
-                                    <ul className="mt-10 space-y-4 text-left w-full border-t pt-8 flex-grow border-gray-300">
-                                        {tier.features.map((feature: string, idx: number) => {
-                                            return (
-                                                <motion.li 
-                                                    key={idx} 
-                                                    className="flex items-start text-gray-800"
-                                                    initial={{ opacity: 0, x: -10 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    transition={{ delay: 1 + i * 0.1 + idx * 0.05, duration: 0.4 }}
-                                                >
-                                                    <CheckIcon className={`h-6 w-6 mr-2 flex-shrink-0`} style={{ color: primaryColor }} />
-                                                    <span className="text-base font-medium">{feature}</span>
-                                                </motion.li>
-                                            );
-                                        })}
+                                    <div className="text-left mb-10">
+                                        <div className="flex items-baseline gap-1">
+                                            {!isCustom && <span className="text-2xl font-bold opacity-60">{currency}</span>}
+                                            <span className="text-6xl font-black tracking-tight">{priceDisplay}</span>
+                                            <span className="text-lg font-medium opacity-60">{cycleLabel}</span>
+                                        </div>
+                                        <p className="text-xs font-bold mt-2 uppercase tracking-widest text-emerald-500">{annualNote}</p>
+                                    </div>
+
+                                    <ul className="space-y-4 mb-10 text-left">
+                                        {tier.features.map((f, idx) => (
+                                            <li key={idx} className="flex items-start gap-3 group">
+                                                <div className={`mt-1 p-0.5 rounded-full ${featured ? 'bg-emerald-500/20' : 'bg-emerald-100'}`}>
+                                                    <CheckIcon className="w-4 h-4 text-emerald-500" />
+                                                </div>
+                                                <span className={`text-sm font-medium ${featured ? 'text-slate-300' : 'text-slate-600'}`}>{f}</span>
+                                            </li>
+                                        ))}
                                     </ul>
 
                                     <motion.button
-                                        whileHover={{ scale: 1.05 }}
+                                        whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
-                                        className={`mt-10 w-full px-8 py-4 rounded-full font-bold text-lg flex items-center justify-center transition-all duration-300 group shadow-lg`}
-                                        style={buttonStyle}
+                                        className={`w-full py-5 rounded-2xl font-black text-base transition-all ${
+                                            featured 
+                                            ? 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-500/30' 
+                                            : 'bg-slate-100 hover:bg-slate-200 text-slate-900'
+                                        }`}
                                     >
-                                        {isFeatured ? 'Book Now' : (isCustom ? 'Contact Sales' : 'Start Free Trial')}
+                                        {tier.name.includes('Enterprise') ? 'Contact Sales' : 'Get Started Now'}
                                     </motion.button>
                                 </motion.div>
                             );
@@ -349,6 +225,14 @@ export default function PricingAndStatsSection({ stats, pricingTiers, themeSetti
                     </div>
                 </div>
 
+                {/* Footer Sync */}
+                <div className="mt-20 flex flex-col items-center justify-center opacity-40">
+                    <div className="flex items-center gap-3 mb-2">
+                        <ArrowPathIcon className="w-5 h-5 animate-spin-slow" />
+                        <span className="text-sm font-bold tracking-widest uppercase">Live System Status</span>
+                    </div>
+                    <p className="text-xs">Prices updated for 2026 • Secure SSL Encryption</p>
+                </div>
             </div>
         </section>
     );

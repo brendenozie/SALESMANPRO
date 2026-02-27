@@ -1,225 +1,209 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+    EnvelopeIcon, 
+    ChatBubbleBottomCenterTextIcon, 
+    ClockIcon, 
+    ArrowUpRightIcon,
+    PaperAirplaneIcon,
+    CheckCircleIcon,
+    ExclamationCircleIcon
+} from '@heroicons/react/24/solid';
 import { useStoreContext } from '@/contexts/StoreContext';
 
-// Define the API Base URL
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export default function ContactCTASection() {
-  const { storeFormData } = useStoreContext();
-  
-  // Logic Integration: Get Company ID and Theme
-  const companyId = storeFormData?.id;
-  const { themeSettings } = storeFormData || {};
-  const primaryColor = themeSettings?.primaryColor || '#00A880';
+    const { storeFormData } = useStoreContext();
+    const companyId = storeFormData?.id;
+    const { themeSettings, name } = storeFormData || {};
+    const primaryColor = themeSettings?.primaryColor || '#059669';
 
-  // State Management
-  const [form, setForm] = useState({
-    fullName: '',
-    email: '',
-    message: ''
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [form, setForm] = useState({ fullName: '', email: '', message: '' });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  // Handlers
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.id]: e.target.value });
-    if (submitStatus !== 'idle') setSubmitStatus('idle'); // Clear errors on type
-  };
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setForm({ ...form, [e.target.id]: e.target.value });
+        if (submitStatus !== 'idle') setSubmitStatus('idle');
+    };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Basic Validation
-    if (!form.fullName || !form.email || !form.message) {
-      alert("Please fill out all fields.");
-      return;
-    }
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
 
-    setIsSubmitting(true);
+        const formattedContent = `NEW GENERAL INQUIRY\n\nName: ${form.fullName}\nEmail: ${form.email}\n\nMessage:\n${form.message}`;
 
-    // Format Message for Admin
-    const formattedContent = `
-NEW GENERAL INQUIRY
+        try {
+            const res = await fetch(`${apiBaseUrl}/conversations/send-to-admin`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ companyId, content: formattedContent }),
+            });
+            if (!res.ok) throw new Error("API Error");
+            setSubmitStatus('success');
+            setForm({ fullName: '', email: '', message: '' });
+        } catch (error) {
+            setSubmitStatus('error');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
-Name: ${form.fullName}
-Email: ${form.email}
-
-Message:
-${form.message}
-    `;
-
-    try {
-      const res = await fetch(`${apiBaseUrl}/conversations/send-to-admin`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          companyId: companyId,
-          content: formattedContent,
-        }),
-      });
-
-      if (!res.ok) throw new Error("API Error");
-
-      setSubmitStatus('success');
-      setForm({ fullName: '', email: '', message: '' }); // Reset form
-
-    } catch (error) {
-      console.error(error);
-      setSubmitStatus('error');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <section id="contact" className="relative bg-gray-50 py-24 px-6 lg:px-12 text-gray-900 overflow-hidden">
-      
-      <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center relative z-10">
-        
-        {/* Left - Content + Form */}
-        <div>
-          {/* Badge */}
-          <motion.span
-            className="inline-block bg-emerald-100 text-emerald-700 text-sm font-semibold px-4 py-1.5 rounded-full border border-emerald-200 shadow-sm"
-            initial={{ opacity: 0, y: -10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            viewport={{ once: true }}
-          >
-            Get In Touch
-          </motion.span>
-
-          {/* Title */}
-          <motion.h2
-            className="text-4xl sm:text-5xl font-extrabold tracking-tight mt-6 text-gray-900 leading-tight"
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            viewport={{ once: true }}
-          >
-            We'd Love to <span style={{ color: primaryColor }}>Hear From You</span>
-          </motion.h2>
-
-          {/* Description */}
-          <motion.p
-            className="mt-4 text-lg text-gray-700 max-w-xl leading-relaxed"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            viewport={{ once: true }}
-          >
-            Whether you're curious about our services, need support, or just want to say hello — we're always ready to connect!
-          </motion.p>
-
-          {/* Contact Form */}
-          <form onSubmit={handleSubmit} className="mt-10 space-y-6 max-w-xl bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
-            <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-              <input
-                type="text"
-                id="fullName"
-                value={form.fullName}
-                onChange={handleChange}
-                required
-                placeholder="Your Name"
-                className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
-              />
-            </div>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-              <input
-                type="email"
-                id="email"
-                value={form.email}
-                onChange={handleChange}
-                required
-                placeholder="you@example.com"
-                className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
-              />
-            </div>
-            <div>
-              <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">Message</label>
-              <textarea
-                id="message"
-                value={form.message}
-                onChange={handleChange}
-                required
-                rows={5}
-                placeholder="Type your message..."
-                className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
-              />
+    return (
+        <section id="contact" className="relative py-24 lg:py-40 bg-white overflow-hidden">
+            {/* Background Aesthetic */}
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-[0.03]" style={{ background: `radial-gradient(circle, ${primaryColor} 0%, transparent 70%)` }} />
             </div>
 
-            <motion.button
-              type="submit"
-              disabled={isSubmitting}
-              className={`w-full sm:w-auto inline-flex items-center justify-center text-white font-semibold px-8 py-4 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
-              style={{ backgroundColor: primaryColor }}
-              whileHover={!isSubmitting ? { scale: 1.05, boxShadow: "0 10px 30px rgba(0, 168, 128, 0.4)" } : {}}
-              whileTap={!isSubmitting ? { scale: 0.97 } : {}}
-            >
-              {isSubmitting ? 'Sending...' : 'Send Your Message'}
-              {!isSubmitting && (
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 ml-2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                </svg>
-              )}
-            </motion.button>
+            <div className="max-w-7xl mx-auto px-6 relative z-10">
+                <div className="grid lg:grid-cols-12 gap-16 items-start">
+                    
+                    {/* --- Left Column: Info & Links --- */}
+                    <div className="lg:col-span-5 space-y-12">
+                        <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                        >
+                            <span className="text-xs font-black uppercase tracking-[0.3em] mb-6 block" style={{ color: primaryColor }}>
+                                Get In Touch
+                            </span>
+                            <h2 className="text-5xl md:text-7xl font-black text-slate-900 leading-[0.9] tracking-tighter mb-8">
+                                Let's start <br />
+                                <span className="italic font-serif font-light text-slate-400">the conversation.</span>
+                            </h2>
+                            <p className="text-xl text-slate-500 font-medium leading-relaxed">
+                                Have a question or a project in mind? Our team is here to help you navigate your journey with {name || 'SwiftServe'}.
+                            </p>
+                        </motion.div>
 
-            {/* Status Feedback */}
-            {submitStatus === 'success' && (
-              <p className="text-green-600 font-medium text-center animate-pulse">
-                Message sent successfully! We'll be in touch soon.
-              </p>
-            )}
-            {submitStatus === 'error' && (
-              <p className="text-red-500 font-medium text-center">
-                Something went wrong. Please try again later.
-              </p>
-            )}
-          </form>
+                        <div className="space-y-4">
+                            {[
+                                { label: 'Support Hours', value: 'Mon–Sat, 8AM–8PM', icon: ClockIcon },
+                                { label: 'WhatsApp', value: 'Chat with us live', icon: ChatBubbleBottomCenterTextIcon, link: 'https://wa.me/254712345678' },
+                                { label: 'Email Us', value: 'support@wellness.com', icon: EnvelopeIcon },
+                            ].map((item, i) => (
+                                <motion.a
+                                    key={i}
+                                    href={item.link || '#'}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: i * 0.1 }}
+                                    className="flex items-center justify-between p-6 rounded-3xl bg-slate-50 border border-slate-100 group hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300"
+                                >
+                                    <div className="flex items-center gap-5">
+                                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center transition-colors" style={{ backgroundColor: `${primaryColor}10` }}>
+                                            <item.icon className="w-6 h-6" style={{ color: primaryColor }} />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">{item.label}</p>
+                                            <p className="text-lg font-bold text-slate-900">{item.value}</p>
+                                        </div>
+                                    </div>
+                                    <ArrowUpRightIcon className="w-5 h-5 text-slate-300 group-hover:text-slate-900 transition-colors" />
+                                </motion.a>
+                            ))}
+                        </div>
+                    </div>
 
-          {/* Live Support Hours + WhatsApp */}
-          <div className="mt-12 space-y-4 text-md text-gray-600">
-            <p className="flex items-center gap-2">
-              <span className="text-emerald-500"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></span>
-              <strong className="text-gray-800">Support Hours:</strong> Mon–Sat, 8:00 AM – 8:00 PM EAT
-            </p>
-            <p className="flex items-center gap-2">
-              <span className="text-emerald-500"><svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="w-5 h-5"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.557-3.84-1.557-5.887C.187 5.572 5.882.001 12.164.001c3.181 0 6.167 1.24 8.413 3.488 2.246 2.248 3.481 5.232 3.48 8.416-.001 6.183-5.704 11.87-11.987 11.87-.847 0-1.659-.119-2.433-.357L.057 24zm6.593-4.706c1.037.34 2.144.517 3.256.518 4.673 0 8.473-3.803 8.473-8.475S16.527 3.258 11.854 3.258C7.181 3.258 3.382 7.062 3.382 11.735c0 1.542.487 2.956 1.341 4.195l-.946 3.457 3.142-.997z"/></svg></span>
-              <a href="https://wa.me/254712345678" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-800 hover:underline font-medium">Chat with us on WhatsApp</a>
-            </p>
-            <p className="flex items-center gap-2">
-              <span className="text-emerald-500"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 1.5-3.375 3-7.5 3S6 13.5 6 12s3.375-3 7.5-3 7.5 1.5 7.5 3z" /></svg></span>
-              <a href="#livechat" className="text-emerald-600 hover:text-emerald-800 hover:underline font-medium">Start a Live Chat</a>
-            </p>
-          </div>
-        </div>
+                    {/* --- Right Column: The Form --- */}
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        className="lg:col-span-7 relative"
+                    >
+                        <div className="relative bg-slate-900 rounded-[3rem] p-8 md:p-12 shadow-2xl overflow-hidden">
+                            {/* Decorative Form Background */}
+                            <div className="absolute top-0 right-0 w-64 h-64 opacity-20" style={{ background: `radial-gradient(circle at top right, ${primaryColor}, transparent)` }} />
 
-        {/* Right - Map */}
-        <motion.div
-          className="w-full h-[450px] rounded-3xl overflow-hidden shadow-2xl border border-gray-200"
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-          viewport={{ once: true, amount: 0.2 }}
-        >
-          {/* Note: Ensure this is a valid Google Maps Embed URL for your actual location */}
-          <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.8164801198533!2d36.817223!3d-1.286389!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f1172d84d49a7%3A0xf7cf1f25b2447990!2sNairobi%2C%20Kenya!5e0!3m2!1sen!2ske!4v1700000000000!5m2!1sen!2ske"
-            width="100%"
-            height="100%"
-            loading="lazy"
-            allowFullScreen
-            className="border-none w-full h-full"
-            title="Our Location on Map"
-          />
-        </motion.div>
-      </div>
-    </section>
-  );
+                            <form onSubmit={handleSubmit} className="relative z-10 space-y-8">
+                                <div className="grid md:grid-cols-2 gap-8">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Full Name</label>
+                                        <input
+                                            type="text"
+                                            id="fullName"
+                                            value={form.fullName}
+                                            onChange={handleChange}
+                                            required
+                                            className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-6 py-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 transition-all"
+                                            style={{ '--tw-ring-color': primaryColor } as any}
+                                            placeholder="John Doe"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Email Address</label>
+                                        <input
+                                            type="email"
+                                            id="email"
+                                            value={form.email}
+                                            onChange={handleChange}
+                                            required
+                                            className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-6 py-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 transition-all"
+                                            style={{ '--tw-ring-color': primaryColor } as any}
+                                            placeholder="john@example.com"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Message</label>
+                                    <textarea
+                                        id="message"
+                                        rows={4}
+                                        value={form.message}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-6 py-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 transition-all"
+                                        style={{ '--tw-ring-color': primaryColor } as any}
+                                        placeholder="How can we help?"
+                                    />
+                                </div>
+
+                                <motion.button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="w-full py-5 rounded-2xl font-black text-white flex items-center justify-center gap-3 shadow-xl transition-all disabled:opacity-50"
+                                    style={{ backgroundColor: primaryColor }}
+                                >
+                                    {isSubmitting ? 'Processing...' : 'Send Message'}
+                                    <PaperAirplaneIcon className="w-5 h-5 -rotate-45" />
+                                </motion.button>
+
+                                {/* AnimatePresence for status updates */}
+                                <AnimatePresence>
+                                    {submitStatus === 'success' && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="flex items-center gap-2 justify-center text-emerald-400 font-bold"
+                                        >
+                                            <CheckCircleIcon className="w-5 h-5" />
+                                            Sent successfully!
+                                        </motion.div>
+                                    )}
+                                    {submitStatus === 'error' && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="flex items-center gap-2 justify-center text-rose-400 font-bold"
+                                        >
+                                            <ExclamationCircleIcon className="w-5 h-5" />
+                                            Submission failed.
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </form>
+                        </div>
+                    </motion.div>
+                </div>
+            </div>
+        </section>
+    );
 }
