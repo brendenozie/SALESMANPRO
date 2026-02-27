@@ -1,352 +1,176 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+// Using Heroicons as requested
 import {
   MagnifyingGlassIcon,
   CalendarDaysIcon,
   ClockIcon,
   MapPinIcon,
-  ChevronRightIcon
-} from "@heroicons/react/24/outline";
+  ChevronRightIcon,
+  StarIcon,
+  SparklesIcon
+} from "@heroicons/react/24/solid"; 
 import { useStoreContext } from "@/contexts/StoreContext";
 import { MarketListingForm, HeroSlide } from "@/types/typings";
 import { useRouter } from "next/navigation";
 
-// --- Loader helper ---
-const loader = ({ src, width, quality }: any) =>
-  `${src}?w=${width}&q=${quality || 75}`;
+const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
-// --- Default fallback hero content ---
-const defaultHeroData = {
-  name: "Find Your Service",
-  description: "Book trusted professionals in seconds.",
-  bannerUrl: "https://images.unsplash.com/photo-1517436336340-27a3c3c78897?q=80&w=2940&auto=format&fit=crop",
-  marketplaceListings: [],
-};
-
-export interface HeroProps {
-  name?: string | null;
-  description?: string | null;
-  bannerUrl?: string | null;
-  heroSlides?: HeroSlide[] | null;
-  marketplaceListings?: MarketListingForm[] | null;
-}
-
-export default function Hero({
-  name,
-  description,
-  bannerUrl,
-  heroSlides,
-  marketplaceListings,
-}: HeroProps) {
+export default function Hero({ name, description, bannerUrl, heroSlides, marketplaceListings }: any) {
   const { storeFormData } = useStoreContext();
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#00A880';
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  
-  // --- Booking bar local state ---
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#D4AF37'; // Gold default
   const [searchTerm, setSearchTerm] = useState("");
   const [date, setDate] = useState(new Date());
   const [timeSlot, setTimeSlot] = useState<string>("");
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const dropdownRef = useRef<HTMLUListElement | null>(null);
-  const [activeIndex, setActiveIndex] = useState(-1);
-  const [selectedListing, setSelectedListing] = useState<MarketListingForm | null>(null);
   const [isFocused, setIsFocused] = useState(false);
+  const [selectedListing, setSelectedListing] = useState<any>(null);
   const router = useRouter();
 
-
-  // Helper for dynamic RGB shadows
-  const hexToRgb = (hex: string) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '0, 168, 128';
+  // --- Animation Variants ---
+  const floatingVariant = {
+    animate: {
+      y: [0, -10, 0],
+      transition: { duration: 5, repeat: Infinity, ease: "easeInOut" }
+    }
   };
-  const primaryRgb = hexToRgb(primaryColor);
-
-  // 🧠 Data Logic
-  const heroData = useMemo(() => {
-    let firstSlide: Partial<HeroSlide> = heroSlides?.[0] ?? {};
-    return {
-      name: firstSlide.headline || name || defaultHeroData.name,
-      description: firstSlide.subline || description || defaultHeroData.description,
-      bannerUrl: firstSlide.imageUrl || bannerUrl || defaultHeroData.bannerUrl,
-      marketplaceListings: marketplaceListings?.length ? marketplaceListings : defaultHeroData.marketplaceListings,
-    };
-  }, [name, description, bannerUrl, heroSlides, marketplaceListings]);
-
-
-  // --- Filter listings ---
-  const filteredListings = useMemo(() => {
-    if (!searchTerm) return [];
-    return heroData.marketplaceListings
-      ?.filter((item) => item.name?.toLowerCase().includes(searchTerm.toLowerCase()))
-      ?.slice(0, 5)
-      ?.map((item) => ({
-        id: item.id,
-        name: item.name,
-        imageUrl: item.images?.[0] ?? null,
-        category: item.category || "Service"
-      }));
-  }, [heroData.marketplaceListings, searchTerm]);
-
-  // --- Close dropdown on outside click ---
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node) &&
-        inputRef.current &&
-        !inputRef.current.contains(e.target as Node)
-      ) {
-        setActiveIndex(-1);
-        setIsFocused(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // --- Handle Search / Booking Submission ---
-  const handleSubmit = (service: MarketListingForm) => {
-    
-          setError("");
-  
-          if (!date || !timeSlot) {
-              setError("Please select both a preferred date and time.");
-              return;
-          }
-  
-          setLoading(true);
-  
-          // Build the query string based on your logic
-          const query: Record<string, string> = {
-              listingId: String(service.id),
-              name: service.name ?? "",
-              price: service.finalPrice !== undefined ? String(service.finalPrice) : String(service.sellingPrice ?? 0),
-              date: date.toISOString().split('T')[0],
-              timeSlot,
-          };
-          const params = new URLSearchParams(query);
-  
-          // Navigate to checkout
-          router.push(`/bookings/checkout?${params.toString()}`);
-      };
 
   return (
-    <section className="relative h-[85vh] min-h-screen w-full flex flex-col items-center justify-center overflow-hidden">
+    <section className="relative h-[90vh] w-full flex flex-col items-center justify-center overflow-hidden bg-[#0a0a0a]">
       
       {/* 1. BACKGROUND VISUALS */}
       <div className="absolute inset-0 z-0">
-        {heroData.bannerUrl && (
-          <Image
-            src={heroData.bannerUrl}
-            loader={loader}
-            alt="Hero background"
-            fill
-            priority
-            className="object-cover object-center"
-          />
-        )}
-        {/* Cinematic Gradient Overlay */}
-        <div className="absolute inset-0 bg-gray-900/40" /> 
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-transparent to-gray-900/30" />
+        <Image
+          src={heroSlides?.[0]?.imageUrl || bannerUrl || "/barber-bg.jpg"}
+          loader={loader}
+          alt="Luxury Barber"
+          fill
+          priority
+          className="object-cover object-center opacity-60 scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/20 to-[#0a0a0a]" />
       </div>
 
-      {/* 2. MAIN CONTENT */}
-      <div className="relative z-10 w-full max-w-5xl px-4 flex flex-col items-center text-center">
-        
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="mb-10 space-y-4"
+      {/* 2. FLOATING UI ELEMENTS (The "Pro" Touch) */}
+      <div className="absolute inset-0 z-10 hidden lg:block pointer-events-none">
+        {/* Review Card */}
+        <motion.div 
+          variants={floatingVariant}
+          animate="animate"
+          className="absolute bottom-[20%] left-[10%] p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl w-64 shadow-2xl"
         >
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight drop-shadow-xl">
-            {heroData.name}
-          </h1>
-          <p className="text-lg md:text-2xl text-gray-100 font-medium max-w-2xl mx-auto leading-relaxed opacity-90">
-            {heroData.description}
+          <div className="flex items-center gap-3 mb-2">
+            <div className="h-8 w-8 rounded-full bg-gray-400 border border-white/20" />
+            <div>
+              <p className="text-white text-xs font-bold">John Doe</p>
+              <div className="flex gap-0.5">
+                {[...Array(5)].map((_, i) => <StarIcon key={i} className="h-3 w-3 text-yellow-500" />)}
+              </div>
+            </div>
+          </div>
+          <p className="text-gray-300 text-[11px] leading-relaxed">
+            "The attention to detail here is unmatched. Finally found a barber who knows their business."
           </p>
         </motion.div>
 
-        {/* 3. THE "COMMAND BAR" (Booking Interface) */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2, duration: 0.6 }}
-          className="relative w-full max-w-4xl"
+        {/* Price/Bundle Badge */}
+        <motion.div 
+          initial={{ x: 50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          className="absolute top-[25%] right-[12%] flex items-center gap-3 bg-[#C5A267] p-1 pr-4 rounded-full shadow-xl"
         >
-          {/* Glow Effect behind bar */}
-          <div 
-            className="absolute inset-0 rounded-full blur-2xl opacity-30 transition-opacity duration-500"
-            style={{ backgroundColor: isFocused ? primaryColor : 'transparent' }}
-          />
+          <div className="bg-black/20 p-2 rounded-full">
+            <SparklesIcon className="h-5 w-5 text-white" />
+          </div>
+          <div className="text-black">
+            <p className="text-[10px] font-bold uppercase tracking-tighter leading-none">Monthly Care</p>
+            <p className="text-lg font-black">$95</p>
+          </div>
+        </motion.div>
+      </div>
 
-          {/* The Bar Container */}
+      {/* 3. MAIN CONTENT */}
+      <div className="relative z-20 w-full max-w-6xl px-6 flex flex-col items-center">
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-12"
+        >
+          <h1 className="text-5xl md:text-8xl font-light text-white leading-tight">
+            Getting you <span className="font-serif italic text-[#C5A267]">handsome</span> <br /> 
+            <span className="font-bold tracking-tighter">is our goal</span>
+          </h1>
+          <p className="mt-6 text-gray-400 text-lg md:text-xl max-w-xl mx-auto font-light leading-relaxed">
+            Experience the perfect cut tailored to your dreams at the barbershop that defines modern style.
+          </p>
+        </motion.div>
+
+        {/* 4. THE REFINED BOOKING BAR */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="w-full max-w-4xl"
+        >
           <div className={`
-            relative bg-white/95 backdrop-blur-xl rounded-[2rem] md:rounded-full shadow-2xl 
-            flex flex-col md:flex-row items-stretch p-2 transition-all duration-300
-            ${isFocused ? 'ring-4 ring-opacity-30' : ''}
-          `}
-          style={{ borderColor: isFocused ? primaryColor : 'transparent' }}
-          >
+            grid grid-cols-1 md:grid-cols-12 items-center bg-white rounded-3xl md:rounded-full p-2 shadow-2xl transition-all duration-500
+            ${isFocused ? 'ring-8 ring-white/10' : ''}
+          `}>
             
-            {/* SEARCH INPUT */}
-            <div className="relative flex-grow flex items-center px-6 py-4 md:py-2 border-b md:border-b-0 md:border-r border-gray-200 group">
-              <div className="p-2 bg-gray-100 rounded-full mr-3 text-gray-500 group-focus-within:text-gray-900 group-focus-within:bg-white transition-colors">
-                <MagnifyingGlassIcon className="h-5 w-5" />
-              </div>
-              <div className="flex flex-col w-full">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1 mb-0.5">Service</label>
-                <input
-                  ref={inputRef}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+            {/* Service Search */}
+            <div className="md:col-span-5 flex items-center px-6 py-3 border-b md:border-b-0 md:border-r border-gray-100">
+              <MagnifyingGlassIcon className="h-5 w-5 text-[#C5A267] mr-3" />
+              <div className="flex flex-col flex-grow">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Service</span>
+                <input 
+                  type="text"
+                  placeholder="Haircut, Beard Trim..."
                   onFocus={() => setIsFocused(true)}
-                  placeholder="What do you need?"
-                  className="w-full bg-transparent border-none p-0 text-gray-900 placeholder-gray-400 focus:ring-0 font-semibold text-lg truncate"
+                  onBlur={() => setIsFocused(false)}
+                  className="bg-transparent border-none p-0 text-gray-900 focus:ring-0 font-semibold placeholder:text-gray-300"
                 />
               </div>
-
-              {/* Dropdown Results */}
-              <AnimatePresence>
-                {searchTerm && filteredListings?.length > 0 && isFocused && (
-                  <motion.ul
-                    ref={dropdownRef}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-[110%] left-0 w-full md:w-[120%] bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50 p-2"
-                  >
-                    {filteredListings.map((item, i) => (
-                      <li
-                        key={item.id}
-                        onClick={() => {
-                          setSelectedListing(heroData.marketplaceListings?.find(listing => listing.id === item.id) || null);
-                          setSearchTerm(item.name);
-                          setActiveIndex(-1);
-                          setIsFocused(false);
-                        }}
-                        className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors group/item"
-                      >
-                        <div className="relative w-10 h-10 flex-shrink-0">
-                          {item.imageUrl ? (
-                            <Image
-                              src={item.imageUrl}
-                              loader={loader}
-                              alt={item.name}
-                              fill
-                              className="rounded-lg object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
-                              <MapPinIcon className="h-5 w-5 text-gray-400" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-grow text-left">
-                          <p className="text-gray-900 font-bold text-sm group-hover/item:text-[var(--primary)]" style={{ '--primary': primaryColor } as React.CSSProperties}>
-                            {item.name}
-                          </p>
-                          <p className="text-xs text-gray-500">{item.category}</p>
-                        </div>
-                        <ChevronRightIcon className="h-4 w-4 text-gray-300" />
-                      </li>
-                    ))}
-                  </motion.ul>
-                )}
-              </AnimatePresence>
             </div>
 
-            {/* DATE PICKER */}
-            <div className="relative md:w-[28%] flex items-center px-6 py-4 md:py-2 border-b md:border-b-0 md:border-r border-gray-200 group cursor-pointer">
-              <div className="p-2 bg-gray-100 rounded-full mr-3 text-gray-500 group-hover:bg-white transition-colors">
-                <CalendarDaysIcon className="h-5 w-5" />
-              </div>
-              <div className="flex flex-col w-full">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1 mb-0.5">Date</label>
-                <div className="w-full">
-                  <DatePicker
-                    selected={date}
-                    onChange={(d) => d && setDate(d)}
-                    dateFormat="EEE, MMM d"
-                    className="w-full bg-transparent border-none p-0 text-gray-900 focus:ring-0 font-semibold text-lg cursor-pointer caret-transparent"
-                    onFocus={() => setIsFocused(true)}
-                  />
-                </div>
+            {/* Date Selection */}
+            <div className="md:col-span-3 flex items-center px-6 py-3 border-b md:border-b-0 md:border-r border-gray-100">
+              <CalendarDaysIcon className="h-5 w-5 text-[#C5A267] mr-3" />
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">When</span>
+                <DatePicker
+                  selected={date}
+                  onChange={(d) => d && setDate(d)}
+                  className="bg-transparent border-none p-0 text-gray-900 focus:ring-0 font-semibold w-full cursor-pointer"
+                  dateFormat="MMM dd, yyyy"
+                />
               </div>
             </div>
 
-            {/* TIME PICKER */}
-            <div className="relative md:w-[22%] flex items-center px-6 py-4 md:py-2 group cursor-pointer">
-              <div className="p-2 bg-gray-100 rounded-full mr-3 text-gray-500 group-hover:bg-white transition-colors">
-                <ClockIcon className="h-5 w-5" />
-              </div>
-              <div className="flex flex-col w-full">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1 mb-0.5">Time</label>
-                <div className="w-full">
-                  <DatePicker
-                    selected={timeSlot ? new Date(`1970-01-01T${timeSlot}:00`) : null}
-                    onChange={(t) => t && setTimeSlot(t.toTimeString().slice(0,5))}
-                    showTimeSelect
-                    showTimeSelectOnly
-                    timeIntervals={30}
-                    dateFormat="h:mm aa"
-                    className="w-full bg-transparent border-none p-0 text-gray-900 focus:ring-0 font-semibold text-lg cursor-pointer caret-transparent"
-                    onFocus={() => setIsFocused(true)}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* ACTION BUTTON */}
-            <div className="p-2 md:pl-0">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  if (selectedListing) {
-                    handleSubmit(selectedListing);
-                  } else {
-                    setError("Please select a valid service from the list.");
-                  }
-                }}
-                className="w-full md:w-auto h-full min-h-[60px] md:min-h-0 px-8 rounded-[1.5rem] md:rounded-full text-white font-bold text-lg shadow-lg flex items-center justify-center gap-2 transition-all"
-                style={{ 
-                  background: `linear-gradient(135deg, ${primaryColor}, #10B981)`,
-                  boxShadow: `0 8px 20px -4px rgba(${primaryRgb}, 0.5)`
-                }}
+            {/* Action Button */}
+            <div className="md:col-span-4 p-1">
+              <button 
+                className="w-full h-14 md:h-16 rounded-2xl md:rounded-full bg-black text-[#C5A267] font-bold uppercase tracking-widest text-sm hover:bg-[#111] transition-all flex items-center justify-center gap-3 active:scale-95"
               >
-                <MagnifyingGlassIcon className="h-6 w-6 md:h-5 md:w-5" />
-                <span className="md:hidden">Search Now</span>
-              </motion.button>
+                Book Appointment
+                <ChevronRightIcon className="h-4 w-4" />
+              </button>
             </div>
-
           </div>
         </motion.div>
 
-        {/* 4. Quick Tags / Footer of Hero */}
-        <motion.div 
-          initial={{ opacity: 0 }} 
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="mt-8 flex flex-wrap justify-center gap-3 text-sm text-white/80"
-        >
-          <span className="font-medium">Popular:</span>
-          {['House Cleaning', 'Plumbing', 'Massage', 'Tutors'].map((tag) => (
-            <button 
-              key={tag} 
-              onClick={() => setSearchTerm(tag)}
-              className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 transition-all cursor-pointer"
-            >
-              {tag}
-            </button>
-          ))}
-        </motion.div>
+        {/* Quick Links */}
+        <div className="mt-8 flex gap-6 text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
+          <span className="hover:text-[#C5A267] cursor-pointer transition-colors">Our Services</span>
+          <span className="text-white/10">|</span>
+          <span className="hover:text-[#C5A267] cursor-pointer transition-colors">View Gallery</span>
+          <span className="text-white/10">|</span>
+          <span className="hover:text-[#C5A267] cursor-pointer transition-colors">Contact Us</span>
+        </div>
 
       </div>
     </section>
