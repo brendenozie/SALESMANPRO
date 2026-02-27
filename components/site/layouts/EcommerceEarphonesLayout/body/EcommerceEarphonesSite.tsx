@@ -79,7 +79,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       </section>
 
       {/* 02. DISCOVERY LAYER: Overlapping the Hero slightly */}
-      <div className="relative z-40 -mt-10 md:-mt-20">
+      <div className="relative z-40 mt-10 md:mt-20">
         <CategorySection store={pageData} />
       </div>
 

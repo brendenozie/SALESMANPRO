@@ -35,7 +35,7 @@ const MetricsSection = dynamic(() => import('./components/MetricsSection'), { lo
 const AwardsSection = dynamic(() => import('./components/AwardsSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const TestimonialsSection = dynamic(() => import('./components/TestimonialsSection/TestimonialsSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const NewsletterSection = dynamic(() => import('./components/NewsletterSection/NewsletterSection'), { loading: () => <SectionSkeleton />, ssr: false });
-
+const FAQSection = dynamic(() => import('./components/FAQSection/FAQSection'), { loading: () => <SectionSkeleton />, ssr: false });
 type EcommerceSiteProps = {
   pageData: StoreForm;
   companyId: string;
@@ -72,7 +72,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
   return (
     <div className="space-y-12">
       <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
-      <CategorySection StoreCategory={StoreCategory} themeSettings={themeSettings} />
+      <CategorySection store={pageData} />
       <DynamicPopularProducts id={id} />
       <PromoSection promotions={promotions} />
       <DynamicTrending id={id} />
@@ -82,6 +82,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       <MetricsSection coreValues={CoreValues} />
       <AwardsSection awards={awards} />
       {testimonialsData?.data && <TestimonialsSection testimonials={testimonialsData.data} />}
+      <FAQSection />
       <NewsletterSection />
     </div>
   );
