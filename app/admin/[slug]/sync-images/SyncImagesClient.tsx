@@ -109,7 +109,9 @@ export default function SyncImagesClient({ companyId, initialProducts }: Props) 
       // 2. Map existing products to new image set
       const updatedPayload = initialProducts.map(product => ({
         ...product,
-        images: newUrls, 
+        //mixup the image order a bit for fun, or you can just assign the same set to all
+        images: newUrls.sort(() => Math.random() - 0.5), // Shuffle the new URLs for each product
+        // images: newUrls, 
       }));
 
       // 3. Fire bulk update
