@@ -2,7 +2,7 @@
 
 import useSWR from 'swr';
 import ProductCard from '../ProductCard';
-import { SkeletonGrid } from '@/components/site/SkeletonGrid/SkeletonGrid';
+import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { createCachedFetcher } from '@/lib/swrCachedFetcher';
 

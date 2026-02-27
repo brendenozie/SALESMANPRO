@@ -1,23 +1,8 @@
 'use client';
 
-import React, { useMemo } from 'react';
-import dynamic from 'next/dynamic';
-import useSWR from 'swr';
-import HeroSlider from '@/components/site/layouts/DeliveryLayout/body/components/HeroSlider';
-import { StoreForm, MarketListingForm } from '@/types/typings';
-import Image from 'next/image';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { 
-  ShoppingBagIcon, 
-  StarIcon, 
-  ArrowRightIcon, 
-  HeartIcon, 
-  FireIcon,
-  TruckIcon,
-  ShieldCheckIcon,
-  TagIcon
-} from '@heroicons/react/24/outline';
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+import React from 'react';
+import HeroSlider from './components/HeroSlider';
+import { StoreForm } from '@/types/typings';
 
 // Above-the-fold components - statically imported
 // import CategorySection from './components/CategorySection';
@@ -48,16 +33,12 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 // const PromoSection = dynamic(() => import('./components/PromoSection'), { loading: () => <SectionSkeleton />, ssr: false });
 // const SecondPromoSection = dynamic(() => import('./components/SecondPromoSection'), { loading: () => <SectionSkeleton />, ssr: false });
 // const AllProducts = dynamic(() => import('./components/AllProducts'), { loading: () => <SectionSkeleton />, ssr: false });
-// const MetricsSection = dynamic(() => import('@/components/site/MetricsSection'), { loading: () => <SectionSkeleton />, ssr: false });
-// const AwardsSection = dynamic(() => import('@/components/site/AwardsSection'), { loading: () => <SectionSkeleton />, ssr: false });
-// const TestimonialsSection = dynamic(() => import('@/components/site/TestimonialsSection/TestimonialsSection'), { loading: () => <SectionSkeleton />, ssr: false });
-// const NewsletterSection = dynamic(() => import('@/components/site/NewsletterSection/NewsletterSection'), { loading: () => <SectionSkeleton />, ssr: false });
-import BrowseByCategory from "./components/BrowseByCategorySection";
-import FeaturedListings from "./components/FeaturedListingsSection";
-import HowItWorks from "./components/HowItWorksSection";
+// const MetricsSection = dynamic(() => import('./components/MetricsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+// const AwardsSection = dynamic(() => import('./components/AwardsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+// const TestimonialsSection = dynamic(() => import('./components/TestimonialsSection/TestimonialsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+// const NewsletterSection = dynamic(() => import('./components/NewsletterSection/NewsletterSection'), { loading: () => <SectionSkeleton />, ssr: false });
 import TestimonialsCarouselSection from "./components/TestimonialsCarouselSection";
 import SocialProofSection from "./components/SocialProofSection";
-import AboutSection from "./components/AboutSection";
 import ServicesSection from "./components/ServicesSection";
 
 import AbSection from './components/AbSection';

@@ -20,7 +20,7 @@ import {
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
 import { useStateContext } from "@/contexts/ContextProvider";
 import { createCachedFetcher } from "@/lib/swrCachedFetcher";
-import { SkeletonGrid } from "@/components/site/SkeletonGrid/SkeletonGrid";
+import { SkeletonGrid } from "./components/SkeletonGrid/SkeletonGrid";
 
 // ---------------------------
 // IMAGE LOADER

@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { EnvelopeIcon, PhoneIcon, MapPinIcon } from "@heroicons/react/24/outline";
 import { FaceSmileIcon } from "@heroicons/react/24/solid";
 import { StoreForm } from "../../../../../types/typings";
-import ClientCookieWrapper from "@/components/site/ClientCookieWrapper";
+import ClientCookieWrapper from "../body/components/ClientCookieWrapper";
 import SignInModal from "../../GhubaLayout/body/components/SignInModal/SignInModal";
 
 interface FooterProps {

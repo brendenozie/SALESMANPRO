@@ -9,7 +9,7 @@ import Discount from "./components/discount/Discount";
 import Annocument from "./components/annocument/Annocument";
 import Wrapper from "./components/wrapper/Wrapper";
 import { useStateContext } from '@/contexts/ContextProvider';
-import Shop from "@/components/site/layouts/GhubaLayout/body/components/shops/Shop";
+import Shop from "./components/layouts/GhubaLayout/body/components/shops/Shop";
 import { StoreForm } from '@/types/typings';
 // import PricingTable from "@/components/pricingTable";
 

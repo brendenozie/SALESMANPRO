@@ -10,7 +10,7 @@ import { MarketListingForm } from '@/types/typings';
 // --- New Imports for Data Fetching ---
 import useSWR from 'swr';
 import { createCachedFetcher } from '@/lib/swrCachedFetcher';
-import { SkeletonGrid } from '@/components/site/SkeletonGrid/SkeletonGrid';
+import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
