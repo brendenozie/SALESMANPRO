@@ -75,7 +75,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
   <section className="relative">
     <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
     {/* Visual bridge to next section */}
-    <div className="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-black to-transparent z-10" />
+    {/* <div className="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-black to-transparent z-10" /> */}
   </section>
 
   {/* --- 02. NAVIGATION NODES (Categories) --- */}
