@@ -49,6 +49,7 @@ export const folderMap: Record<string, string> = {
   'product-marketplace': 'MarketplaceLayout',
   'consultant-coach': 'ConsultancyLayout',
   'consultant-coach-v1': 'ConsultancyLayout',
+  'executive-coach-v1': 'ConsultancyLayout',
   'wellness-retreat-v2': 'ConsultancyLayout',
   'consultancy': 'ConsultancyLayout',
   'public-speaking': 'PublicSpeakingLayout',

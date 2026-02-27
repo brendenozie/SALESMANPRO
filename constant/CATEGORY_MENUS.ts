@@ -749,7 +749,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           label: "Sample Listings Generator", href: `/admin/${adminSlug}/samplelistingsgenerator`, icon: ClipboardDocumentListIcon
       }, 
       {
-        label: "Sample Image Upload For listings", href: `/admin/${adminSlug}/sampleimageupload`, icon: ClipboardDocumentListIcon
+        label: "Sample Image Upload For listings", href: `/admin/${adminSlug}/sync-images`, icon: ClipboardDocumentListIcon
       } ,    
       {
           label: "Backup And Restore", href: `/admin/${adminSlug}/db-management`, icon: ClipboardDocumentListIcon

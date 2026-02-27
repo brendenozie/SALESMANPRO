@@ -4,135 +4,106 @@ import React from 'react';
 import Image from 'next/image';
 import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import Section from '../Section/Section';
 import { Award } from '@/types/typings';
-import { TrophyIcon } from '@heroicons/react/24/solid';
+
+// Sample Data to demonstrate the component
+const sampleAwards:any = [
+  { iconUrl: 'https://images.unsplash.com/photo-1542838686-37a5027588b3?w=800&q=80', name: 'Digital Innovator Award', url: '#' },
+  { iconUrl: 'https://images.unsplash.com/photo-1629910419355-6b2257321598?w=800&q=80', name: 'Excellence in E-commerce', url: '#' },
+  { iconUrl: 'https://images.unsplash.com/photo-1579201529431-a4773221b033?w=800&q=80', name: 'Best New Product 2023', url: '#' },
+  { iconUrl: 'https://images.unsplash.com/photo-1563729571343-98282367c00e?w=800&q=80', name: 'Industry Leader of the Year', url: '#' },
+  { iconUrl: 'https://images.unsplash.com/photo-1621376823337-3715c97f4c02?w=800&q=80', name: 'Consumer Choice Winner', url: '#' },
+  { name: 'Recognized by Forbes', url: '#' }, // Example with no image
+  { name: 'Top 10 Startup', url: '#' }, // Example with no image
+];
 
 const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: { 
-    opacity: 1, 
-    transition: { staggerChildren: 0.15 } 
-  },
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1 } },
 };
 
 const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 30, skewX: -5 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    skewX: 0,
-    transition: { duration: 0.6, ease: "easeOut" } 
-  },
+  hidden: { opacity: 0, scale: 0.95, y: 20 },
+  visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.6, ease: [0.2, 0.65, 0.3, 0.9] } },
 };
 
-const loader = ({ src, width }: { src: string; width: number }) => `${src}?w=${width}&q=75`;
+// Loader remains the same for Next.js image optimization
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+  `${src}?w=${width}&q=${quality || 75}`;
 
-export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
+
+export default function AwardsSection({ awards = sampleAwards }: { awards?: Award[] | null }) {
   const { storeFormData } = useStoreContext();
-  const accent = '#FF003C'; // Empire Red
+  const { themeSettings = {} } = storeFormData || {};
+  const primary = themeSettings?.primaryColor || '#10B981';
+  const secondary = themeSettings?.secondaryColor || '#3B82F6';
 
-  // Gaming-themed fallback data
-  const defaultAwards = [
-    { iconUrl: 'https://images.unsplash.com/photo-1542838686-37a5027588b3', name: 'Digital Innovator 2026' },
-    { iconUrl: 'https://images.unsplash.com/photo-1629910419355-6b2257321598', name: 'E-commerce Excellence' },
-    { iconUrl: 'https://images.unsplash.com/photo-1579201529431-a4773221b033', name: 'Elite Choice Award' },
-    { iconUrl: 'https://images.unsplash.com/photo-1563729571343-98282367c00e', name: 'Industry Vanguard' },
-  ];
-
-  const awardsToDisplay = awards && awards.length > 0 ? awards : defaultAwards;
+  if (!awards || awards.length === 0) return null;
 
   return (
-    <section className="relative py-24 bg-zinc-950 overflow-hidden">
-      {/* Background HUD Graphics */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-red-600/50 to-transparent" />
-      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-red-600/10 rounded-full blur-[120px] pointer-events-none" />
-
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">
-          <div className="max-w-2xl">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="w-8 h-[2px] bg-red-600" />
-              <span className="font-mono text-xs tracking-[0.5em] text-red-500 uppercase font-black">
-                Achievements_Unlocked
-              </span>
-            </div>
-            <h2 className="text-4xl md:text-6xl font-black italic text-white uppercase tracking-tighter leading-none">
-              RECOGNIZED FOR <span className="text-red-600">DOMINANCE</span>
-            </h2>
-          </div>
-          <p className="text-zinc-500 font-mono text-[10px] uppercase max-w-[200px] text-right hidden md:block">
-            Verified by global industry leaders // High performance standards met.
+    <Section>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        {/* New Title & Subtitle */}
+        <div className="text-center mb-12">
+          <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-900 leading-tight">
+            Recognized for Excellence
+          </h2>
+          <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+            Our commitment to quality has earned us recognition from leading organizations. We're honored to be celebrated for our innovation and impact.
           </p>
         </div>
         
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8"
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: true, amount: 0.3 }}
           variants={containerVariants}
         >
-          {awardsToDisplay.map((award: any, idx) => {
-            const src = award?.imageUrl ?? award?.iconUrl ?? '';
+          {awards.map((award:any, idx) => {
+            const src = award?.imageUrl ?? award?.url ?? award?.iconUrl ?? '';
+            const altText = award?.name ?? `Award ${idx + 1}`;
             const label = award?.name;
 
             return (
               <motion.div
                 key={idx}
                 variants={cardVariants}
-                className="group relative bg-zinc-900/50 border border-white/5 hover:border-red-600/50 transition-all duration-500 p-8 flex flex-col items-center justify-center min-h-[220px] overflow-hidden"
+                className="
+                  relative
+                  bg-white rounded-2xl overflow-hidden
+                  shadow-md hover:shadow-xl
+                  transition-all duration-300
+                  group cursor-pointer
+                "
               >
-                {/* Tactical Card Decorations */}
-                <div className="absolute top-0 right-0 w-2 h-2 bg-red-600/20" />
-                <div className="absolute bottom-2 left-2 font-mono text-[8px] text-white/5 tracking-widest">
-                  SECTOR_{idx + 101}
+                {/* Image Container */}
+                <div className="relative w-full aspect-video bg-gray-100 flex items-center justify-center">
+                  {src ? (
+                    <Image
+                      src={src || 'https://via.placeholder.com/300x200?text=No+Image'}
+                      alt={altText}
+                      loader={loader}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="p-4">
+                        <span className="text-xl sm:text-2xl font-semibold text-gray-800 text-center">
+                            {label}
+                        </span>
+                    </div>
+                  )}
+                  {/* Overlay on hover */}
+                  <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
-
-                {/* Main Content */}
-                <div className="relative z-10 w-full h-full flex flex-col items-center">
-                  <div className="relative w-20 h-20 mb-6">
-                    {src ? (
-                      <Image
-                        src={src}
-                        alt={label}
-                        loader={loader}
-                        fill
-                        className="object-contain grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500"
-                      />
-                    ) : (
-                      <TrophyIcon className="w-full h-full text-zinc-800 group-hover:text-red-600 transition-colors" />
-                    )}
-                  </div>
-                  
-                  <div className="text-center">
-                    <h3 className="text-sm font-black italic text-zinc-400 group-hover:text-white uppercase tracking-widest transition-colors leading-tight">
-                      {label}
-                    </h3>
-                  </div>
-                </div>
-
-                {/* Hover Glow Effect */}
-                <div className="absolute inset-0 bg-gradient-to-br from-red-600/0 via-transparent to-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute bottom-0 left-0 w-full h-[1px] bg-white/5 group-hover:bg-red-600 transition-all duration-500" />
               </motion.div>
             );
           })}
         </motion.div>
-
-        {/* Bottom Ticker/Status Line */}
-        <div className="mt-12 flex items-center justify-center gap-4 py-4 border-y border-white/5">
-          <div className="flex gap-2">
-            {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 bg-red-600" />)}
-          </div>
-          <span className="font-mono text-[10px] text-zinc-600 uppercase tracking-[0.3em]">
-            Elite Tier Certification Active
-          </span>
-          <div className="flex gap-2">
-            {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 bg-red-600" />)}
-          </div>
-        </div>
       </div>
-    </section>
+    </Section>
   );
 }
