@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
-import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
 import { HeroSlide } from '@/types/typings';
@@ -10,8 +10,8 @@ import { HeroSlide } from '@/types/typings';
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-const transitionDuration = 0.8;
-const autoAdvanceDelay = 5000;
+const transitionDuration = 0.6;
+const autoAdvanceDelay = 6000;
 
 export interface HeroSliderProps {
   heroSlides: HeroSlide[] | null;
@@ -20,33 +20,13 @@ export interface HeroSliderProps {
 
 const defaultSlides: HeroSlide[] = [
   {
-    imageUrl: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80',
-    subline: 'Exclusive Offer',
-    headline: 'STEP INTO\nSTYLE & COMFORT',
-    badgeText:
-      'Out too the been like hard off. Improve enquire welcome own beloved matters her. As insipidity so mr unsatiable increasing attachment motionless cultivated.',
-    ctaText: 'Buy Now',
+    imageUrl: 'https://images.unsplash.com/photo-1605898930773-734733052153?q=80&w=1600&auto=format&fit=crop',
+    subline: 'NEW ARRIVAL',
+    headline: 'EMPIRE $ GEMS',
+    badgeText: 'Upgrade your battle station with professional-grade peripherals. Precision engineering for the elite gamer.',
+    ctaText: 'FIND THE PERFECT GEAR',
     ctaLink: '/shop',
-    id: '',
-    companyId: '',
-    productImageUrl: null,
-    price: null,
-    endsAt: null,
-    order: 0,
-    iconKey: null,
-    backgroundColor: null,
-    textColor: null,
-    videoLink: null,
-    type: null,
-  },
-  {
-    imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
-    subline: 'New Collection',
-    headline: 'ELEVATE YOUR\nLOOK TODAY',
-    badgeText: 'Discover fresh drops and timeless classics. Comfort and style perfectly combined.',
-    ctaText: 'Shop Now',
-    ctaLink: '/collection',
-    id: '',
+    id: '1',
     companyId: '',
     productImageUrl: null,
     price: null,
@@ -61,49 +41,25 @@ const defaultSlides: HeroSlide[] = [
 ];
 
 export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProps) {
-  const defaultPrimaryColor = '#6B46C1';
-  const defaultSecondaryColor = '#D53F8C';
+  // Gamer Colors: Deep Purple/Black base
+  const defaultPrimaryColor = '#FFFFFF'; // For the "Silver" look
+  const defaultAccentColor = '#FF003C'; // Aggressive Red
 
-  const heroSlidesToShow: HeroSlide[] = (heroSlides && heroSlides.length > 0 ? heroSlides : defaultSlides).map(
-    (slide, index) => ({
-      ...slide,
-      imageUrl: slide.imageUrl || defaultSlides[index]?.imageUrl || defaultSlides[0].imageUrl,
-      subline: slide.subline || 'Exclusive Offer',
-      headline: slide.headline || defaultSlides[index]?.headline || 'Unlock Amazing Deals Now!',
-      badgeText:
-        slide.badgeText ||
-        defaultSlides[index]?.badgeText ||
-        'Discover curated collections and exceptional savings on your favorite products.',
-      ctaText: slide.ctaText || 'Explore Collections',
-      ctaLink: slide.ctaLink || '/shop',
-    })
-  );
+  const heroSlidesToShow = (heroSlides && heroSlides.length > 0 ? heroSlides : defaultSlides);
 
   const primary = themeSettings?.primaryColor || defaultPrimaryColor;
-  const secondary = themeSettings?.secondaryColor || defaultSecondaryColor;
+  const accent = themeSettings?.secondaryColor || defaultAccentColor;
 
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
   const timeoutRef = useRef<NodeJS.Timeout>();
-  const progressRef = useRef<HTMLDivElement>(null);
 
   const resetTimer = useCallback(() => {
     clearTimeout(timeoutRef.current);
-    if (heroSlidesToShow.length > 0) {
-      if (progressRef.current) {
-        progressRef.current.style.transition = 'none';
-        progressRef.current.style.width = '0%';
-        // force reflow
-        // @ts-ignore
-        progressRef.current.offsetWidth;
-        progressRef.current.style.transition = `width ${autoAdvanceDelay}ms linear`;
-        progressRef.current.style.width = '100%';
-      }
-      timeoutRef.current = setTimeout(() => {
-        setDirection(1);
-        setCurrent((prev) => (prev + 1) % heroSlidesToShow.length);
-      }, autoAdvanceDelay);
-    }
+    timeoutRef.current = setTimeout(() => {
+      setDirection(1);
+      setCurrent((prev) => (prev + 1) % heroSlidesToShow.length);
+    }, autoAdvanceDelay);
   }, [heroSlidesToShow.length]);
 
   useEffect(() => {
@@ -117,208 +73,118 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
     setCurrent(idx);
   };
 
-  const prevSlide = () =>
-    goTo((current - 1 + heroSlidesToShow.length) % heroSlidesToShow.length, -1);
+  const prevSlide = () => goTo((current - 1 + heroSlidesToShow.length) % heroSlidesToShow.length, -1);
   const nextSlide = () => goTo((current + 1) % heroSlidesToShow.length, 1);
 
-  const handleDragEnd = (_: any, info: PanInfo) => {
-    const offset = info.offset.x;
-    if (offset < -50) nextSlide();
-    else if (offset > 50) prevSlide();
-  };
-
   const slideVariants = {
-    enter: (dir: number) => ({
-      x: dir > 0 ? '100%' : '-100%',
-      opacity: 0,
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-      transition: { duration: transitionDuration, ease: 'easeOut' },
-    },
-    exit: (dir: number) => ({
-      x: dir < 0 ? '100%' : '-100%',
-      opacity: 0,
-      transition: { duration: transitionDuration, ease: 'easeInOut' },
-    }),
+    enter: (dir: number) => ({ x: dir > 0 ? '20%' : '-20%', opacity: 0 }),
+    center: { x: 0, opacity: 1, transition: { duration: transitionDuration, ease: [0.16, 1, 0.3, 1] } },
+    exit: (dir: number) => ({ x: dir < 0 ? '20%' : '-20%', opacity: 0, transition: { duration: 0.4 } }),
   };
 
   return (
-    <section className="relative mt-20 py-16 overflow-hidden min-h-[500px]">
-      <div className="container mx-auto px-4 md:px-8 lg:px-16 relative z-10">
+    <section className="relative bg-black mt-16 overflow-hidden min-h-[600px] flex flex-col justify-center">
+      
+      {/* BACKGROUND DECORATION */}
+      <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-red-600 rounded-full blur-[120px]" />
+      </div>
+
+      <div className="container mx-auto px-4 md:px-12 relative z-10">
         <AnimatePresence initial={false} custom={direction} mode="wait">
-          {heroSlidesToShow.map(
-            (slide, idx) =>
-              idx === current && (
-                <motion.div
-                  key={idx}
-                  className="relative overflow-hidden rounded-3xl shadow-2xl group flex flex-col md:flex-row h-[500px]"
-                  style={{ willChange: 'transform, opacity' }}
-                  custom={direction}
-                  variants={slideVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  drag="x"
-                  dragConstraints={{ left: 0, right: 0 }}
-                  onDragEnd={handleDragEnd}
-                >
-                  {/* IMAGE PANEL */}
-                  {/* IMAGE PANEL */}
-                  <div className="relative w-full md:w-1/2 overflow-hidden will-change-transform h-full"> 
-                    {/* FIX 1: Set inner image wrapper to h-full (no fixed pixel heights for mobile) */}
-                    <div className="relative h-full w-full overflow-hidden">
-                      <Image
-                        src={
-                          slide.imageUrl ||
-                          'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1600&q=80'
-                        }
-                        alt={slide.headline || 'Hero Image'}
-                        fill
-                        sizes="100vw"
-                        className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
-                        loader={loader}
-                        priority
-                      />
-                    </div>
-
-                    {/* FIX 2: Mobile Gradient for Contrast (kept the to-black/70 fix) */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70 z-10 md:hidden" />
-
-                    {/* Mobile Text - Z-INDEX CONFIRMATION */}
-                    <div className="absolute bottom-0 left-0 right-0 p-6 z-30 text-white md:hidden"> 
-                      <h2 className="text-2xl font-bold">{slide.headline}</h2>
-                      {slide.badgeText && (
-                        <p className="text-sm mt-2 line-clamp-3">{slide.badgeText}</p>
-                      )}
-                      {slide.ctaLink && slide.ctaText && (
-                        <Link
-                          href={slide.ctaLink}
-                          className="inline-block mt-3 bg-white text-black font-medium px-4 py-2 rounded-md"
-                        >
-                          {slide.ctaText}
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* TEXT PANEL (Desktop) */}
-                  <div className="hidden md:flex md:w-1/2 px-6 py-20 md:px-12 lg:px-20 flex-col justify-center relative overflow-hidden">
-                    {/* Translucent gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/70 via-white/60 to-white/30 backdrop-blur-[2px]" />
-
-                    <div className="relative z-10 space-y-6 text-gray-900">
-                      {/* Badge */}
-                      <motion.span
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2, duration: 0.5 }}
-                        className="inline-block px-4 py-1.5 rounded-full text-sm sm:text-base font-semibold shadow-md"
-                        style={{ background: primary, color: 'white' }}
-                      >
-                        {slide.subline}
-                      </motion.span>
-
-                      {/* Headline */}
-                      <motion.h2
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4, duration: 0.5 }}
-                        className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight drop-shadow-md"
-                      >
-                        {(slide.headline ?? '').split('\n').map((line, i, arr) => (
-                                            <React.Fragment key={i}>
-                                              {line.includes('$') ? (
-                                                <>
-                                                  {line.split('$')[0]}
-                                                  <span style={{ color: secondary }}>{line.split('$')[1]}</span>
-                                                </>
-                                              ) : (
-                                                line
-                                              )}
-                                              {i < arr.length - 1 && <br />}
-                                            </React.Fragment>
-                                          ))}      
-                      </motion.h2>
-
-                      {/* Description */}
-                      {slide.badgeText && (
-                        <motion.p
-                          initial={{ opacity: 0, y: -20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.6, duration: 0.5 }}
-                          className="text-gray-800 text-base sm:text-lg max-w-md drop-shadow-sm"
-                        >
-                          {slide.badgeText}
-                        </motion.p>
-                      )}
-
-                      {/* CTA Button */}
-                      {slide.ctaLink && slide.ctaText && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.8, duration: 0.5 }}
-                        >
-                          <Link
-                            href={slide.ctaLink}
-                            className="inline-block font-semibold text-sm sm:text-base px-8 py-4 rounded-xl shadow-lg transition transform duration-300 hover:scale-105 hover:shadow-xl relative overflow-hidden"
-                            style={{ background: primary, color: 'white' }}
-                          >
-                            {slide.ctaText}
-                            <span className="absolute inset-0 bg-white opacity-0 transition-opacity duration-300 group-hover:opacity-10" />
-                          </Link>
-                        </motion.div>
-                      )}
-                    </div>
-                  </div>
-
-                </motion.div>
-              )
-          )}
-        </AnimatePresence>
-
-        {/* ARROWS */}
-        <button
-          onClick={prevSlide}
-          className="absolute top-1/2 left-8 md:left-10 transform -translate-y-1/2 bg-white/50 hover:bg-white p-3 md:p-4 rounded-full text-gray-800 shadow-xl transition-all duration-200 z-30 backdrop-blur-sm"
-          aria-label="Previous slide"
-        >
-          <ArrowLeftIcon className="h-5 w-5 md:h-6 md:w-6" />
-        </button>
-
-        <button
-          onClick={nextSlide}
-          className="absolute top-1/2 right-8 md:right-10 transform -translate-y-1/2 bg-white/50 hover:bg-white p-3 md:p-4 rounded-full text-gray-800 shadow-xl transition-all duration-200 z-30 backdrop-blur-sm"
-          aria-label="Next slide"
-        >
-          <ArrowRightIcon className="h-5 w-5 md:h-6 md:w-6" />
-        </button>
-
-        {/* PAGINATION DOTS */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3 z-30">
-          {heroSlidesToShow.map((_, idx) => (
-            <button
+          {heroSlidesToShow.map((slide, idx) => idx === current && (
+            <motion.div
               key={idx}
-              onClick={() => goTo(idx, idx > current ? 1 : -1)}
-              className={`relative w-3.5 h-3.5 rounded-full overflow-hidden transition-all duration-300 border-2 ${
-                idx === current
-                  ? 'border-white scale-125'
-                  : 'border-gray-400 opacity-70 hover:scale-110'
-              }`}
+              className="flex flex-col md:flex-row items-center h-[550px] gap-8"
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
             >
-              {idx === current && (
-                <div
-                  ref={progressRef}
-                  className="absolute left-0 top-0 h-full rounded-full"
-                  style={{ backgroundColor: 'white', width: '0%' }}
-                />
-              )}
-            </button>
+              {/* TEXT CONTENT */}
+              <div className="w-full md:w-1/2 text-left space-y-6 order-2 md:order-1">
+                <motion.div 
+                   initial={{ opacity: 0, x: -30 }} 
+                   animate={{ opacity: 1, x: 0 }}
+                   className="flex items-center gap-3"
+                >
+                   <div className="h-[2px] w-8 bg-red-600" />
+                   <span className="text-red-500 font-black tracking-widest text-sm uppercase italic">
+                     {slide.subline}
+                   </span>
+                </motion.div>
+
+                <motion.h1 
+                  className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-300 to-gray-500 leading-[0.9] tracking-tighter italic"
+                  style={{ WebkitTextStroke: '1px rgba(255,255,255,0.1)' }}
+                >
+                  {slide.headline?.split('$').map((part, i) => (
+                    <span key={i} className={i === 1 ? "text-white opacity-90" : ""}>{part}</span>
+                  ))}
+                </motion.h1>
+
+                <p className="text-gray-400 text-lg max-w-md font-medium leading-relaxed">
+                  {slide.badgeText}
+                </p>
+
+                <div className="flex items-center gap-6 pt-4">
+                  <Link
+                    href={slide.ctaLink || '#'}
+                    className="group relative bg-white text-black font-black px-8 py-4 uppercase tracking-tighter flex items-center gap-2 hover:bg-red-600 hover:text-white transition-all duration-300"
+                  >
+                    {slide.ctaText}
+                    <ChevronRightIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
+              </div>
+
+              {/* IMAGE DISPLAY */}
+              <div className="w-full md:w-1/2 h-full relative order-1 md:order-2">
+                <motion.div 
+                  initial={{ scale: 0.8, opacity: 0, rotate: 5 }}
+                  animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                  transition={{ delay: 0.2, type: 'spring', stiffness: 100 }}
+                  className="relative w-full h-full"
+                >
+                  <Image
+                  // get game console image link for unspash
+                    src={slide.imageUrl || 'https://images.unsplash.com/photo-1605898930773-734733052153?q=80&w=1600&auto=format&fit=crop'}
+                    alt="Hardware"
+                    fill
+                    className="object-contain drop-shadow-[0_35px_35px_rgba(255,255,255,0.15)]"
+                    priority
+                    loader={loader}
+                  />
+                </motion.div>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+
+      {/* THE TICKER - FROM YOUR IMAGE */}
+      <div className="absolute bottom-0 w-full bg-red-600 py-3 overflow-hidden whitespace-nowrap border-y border-red-400/30 rotate-[-1deg] translate-y-4">
+        <div className="inline-block animate-marquee">
+          {[...Array(10)].map((_, i) => (
+            <span key={i} className="text-white font-black italic text-xl mx-8 uppercase">
+              ✦ 40% OFF TODAY AVAILABLE ✦ 40% OFF TODAY AVAILABLE
+            </span>
           ))}
         </div>
       </div>
+
+      <style jsx global>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+          display: inline-block;
+          animation: marquee 30s linear infinite;
+        }
+      `}</style>
     </section>
   );
 }

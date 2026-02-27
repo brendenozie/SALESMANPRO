@@ -3,6 +3,8 @@
 import { useStoreContext } from '@/contexts/StoreContext';
 import { IPromotion } from '@/types/typings';
 import React from 'react';
+import { motion } from 'framer-motion';
+import { BoltIcon, ShieldExclamationIcon } from '@heroicons/react/24/solid';
 
 export interface SecondPromoSectionProps {
   promotions: IPromotion[];
@@ -10,68 +12,125 @@ export interface SecondPromoSectionProps {
 
 export default function SecondPromoSection({ promotions }: SecondPromoSectionProps) {
   const { storeFormData } = useStoreContext();
-  const { themeSettings = {} } = storeFormData || {};
+  const accent = '#FF003C'; // Empire Red
 
-  const primary = themeSettings?.primaryColor || '#f97316'; // fallback orange
-  const secondary = themeSettings?.secondaryColor || '#3b82f6'; // fallback blue
-
-  // Grab the second promotion (index 1)
+  // Grab the second promotion (index 1) or fallback to gaming-themed content
   const promotion = promotions?.[1] || {
-    title: 'Promo weekend special',
-    subtitle: 'Limited Time Offer. Don\'t Miss Out!',
+    title: 'WEEKEND WARRIOR DROP',
     description:
-      'Enjoy exclusive discounts on our top products this weekend only. available while supplies last. Hurry and grab your favorites before they\'re gone!',
-    bannerUrl:
-      'https://dozi4r4ug9739.cloudfront.net/images/1763546711539-composition-black-friday-shopping-cart-with-copy-space.jpg',
-    ctaText: 'Shop Now',
+      'The armory has been restocked. Deploy now to claim exclusive legendary-tier equipment. Supplies are strictly limited to active-duty operators.',
+    bannerUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070',
+    ctaText: 'CLAIM LOOT',
     ctaLink: '#',
   };
 
   return (
-    <section
-      className="relative py-20 overflow-hidden"
-      style={{
-        background: `linear-gradient(135deg, ${primary}, ${secondary})`,
-      }}
-    >
-      <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-        {/* --- Text Block --- */}
-        <div className="text-center md:text-left relative z-10">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-white leading-tight drop-shadow-lg">
-            {promotion.title}
-          </h2>
-          {/* {promotion.subtitle && (
-            <h3 className="mt-4 text-2xl md:text-3xl font-semibold text-white/90">
-              {promotion.subtitle}
-            </h3>
-          )} */}
-          <p className="mt-6 text-base md:text-lg text-white/80 max-w-xl mx-auto md:mx-0">
-            {promotion.description}
-          </p>
-          <a
-            href={promotion.ctaLink || '#'}
-            className="mt-8 inline-block bg-white text-black font-semibold py-3 px-8 rounded-full shadow-md hover:bg-gray-100 transition duration-300"
-          >
-            {promotion.ctaText}
-          </a>
-        </div>
+    <section className="relative py-24 bg-zinc-950 overflow-hidden border-t border-white/5">
+      {/* Background HUD Elements */}
+      <div className="absolute top-0 right-0 w-1/2 h-full bg-red-600/5 skew-x-[-20deg] translate-x-32 pointer-events-none" />
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none" 
+           style={{ backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`, backgroundSize: '50px 50px' }} />
 
-        {/* --- Image Block --- */}
-        <div className="flex justify-center md:justify-end relative">
-          <div className="relative">
-            <img
-              src={promotion.bannerUrl || 'https://www.unsplash.com/'}
-              alt={promotion.title}
-              className="w-72 md:w-80 lg:w-96 rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-300"
-            />
-            {/* Decorative Glow Circle */}
-            <div
-              className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full opacity-30 blur-2xl"
-              style={{ background: secondary }}
-            />
-          </div>
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          
+          {/* --- Text Content Pane --- */}
+          <motion.div 
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="relative"
+          >
+            {/* Mission Badge */}
+            <div className="flex items-center gap-4 mb-8">
+               <div className="bg-red-600 p-2 shadow-[0_0_20px_rgba(255,0,60,0.4)]">
+                 <ShieldExclamationIcon className="w-6 h-6 text-white" />
+               </div>
+               <span className="font-mono text-xs tracking-[0.4em] text-red-500 uppercase font-black">
+                 Priority_Protocol_02
+               </span>
+            </div>
+
+            <h2 className="text-5xl md:text-7xl font-black italic text-white uppercase tracking-tighter leading-[0.9] mb-8">
+              {promotion.title}
+            </h2>
+
+            <div className="relative p-8 bg-white/5 backdrop-blur-md border-l-4 border-red-600 overflow-hidden">
+               {/* Cyber Decoration */}
+               <div className="absolute top-0 right-0 w-16 h-16 border-t border-r border-white/10" />
+               
+               <p className="text-zinc-400 text-lg md:text-xl font-medium leading-relaxed italic">
+                 "{promotion.description}"
+               </p>
+            </div>
+
+            <div className="mt-12 flex flex-wrap items-center gap-8">
+              <a
+                href={promotion.ctaLink || '#'}
+                className="group relative px-12 py-5 bg-white text-black font-black uppercase tracking-tighter italic text-xl hover:bg-red-600 hover:text-white transition-all overflow-hidden"
+                style={{ clipPath: 'polygon(0 0, 100% 0, 90% 100%, 0% 100%)' }}
+              >
+                <span className="relative z-10 flex items-center gap-3">
+                  {promotion.ctaText} <BoltIcon className="w-5 h-5 animate-bounce" />
+                </span>
+                <div className="absolute inset-0 translate-y-full group-hover:translate-y-0 bg-red-600 transition-transform duration-300" />
+              </a>
+
+              <div className="font-mono text-[10px] text-zinc-600 uppercase tracking-widest leading-tight">
+                Timer: 48:00:00 <br />
+                Location: Global_Sector
+              </div>
+            </div>
+          </motion.div>
+
+          {/* --- Visual Display Block --- */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="relative flex justify-center lg:justify-end"
+          >
+            <div className="relative group">
+              {/* Animated Border Frames */}
+              <div className="absolute -inset-4 border border-red-600/20 group-hover:border-red-600/50 transition-colors duration-500" />
+              <div className="absolute -inset-1 border border-white/10 group-hover:scale-105 transition-transform duration-500" />
+
+              {/* Main Image Container */}
+              <div className="relative w-[320px] md:w-[450px] aspect-[4/5] overflow-hidden bg-zinc-900 border border-white/20">
+                <img
+                  src={promotion.bannerUrl || 'https://www.unsplash.com/'}
+                  alt={promotion.title}
+                  className="w-full h-full object-cover opacity-80 grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000"
+                />
+                
+                {/* Scanner Line Effect */}
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-600/10 to-transparent h-20 w-full animate-scan pointer-events-none" />
+                
+                {/* HUD Overlay Text */}
+                <div className="absolute bottom-4 left-4 font-mono text-[10px] text-white/50 bg-black/60 p-2 backdrop-blur-sm">
+                   COORD: 40.7128° N, 74.0060° W <br />
+                   SIG_STRENGTH: 98%
+                </div>
+              </div>
+
+              {/* Decorative Floating Icon */}
+              <div className="absolute -top-8 -right-8 w-24 h-24 border border-red-600/40 rotate-45 flex items-center justify-center bg-zinc-950/80 backdrop-blur-xl">
+                 <span className="text-red-600 font-black text-2xl -rotate-45">GEM</span>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes scan {
+          0% { transform: translateY(-100%); }
+          100% { transform: translateY(400%); }
+        }
+        .animate-scan {
+          animation: scan 3s linear infinite;
+        }
+      `}</style>
     </section>
   );
 }

@@ -5,98 +5,131 @@ import { motion } from 'framer-motion';
 import * as OutlineIcons from '@heroicons/react/24/outline';
 import { ICoreValue } from '@/types/typings';
 
-
-// MetricCard component to display a single feature
+/**
+ * MetricCard: Refactored into a "Modular Component" design.
+ * Features: Obsidian glass, corner reticles, and monospaced "Unit" IDs.
+ */
 const MetricCard = ({
   title,
   description,
   Icon,
+  index,
 }: {
   title: string;
   description: string;
   Icon: (props: React.ComponentProps<'svg'>) => JSX.Element;
+  index: number;
 }) => {
   return (
     <motion.div
-      whileHover={{ scale: 1.05 }}
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, ease: 'easeOut' }}
+      initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
+      whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true }}
-      className="flex flex-col items-center text-center space-y-2 p-6 bg-white dark:bg-zinc-800 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1"
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+      className="group relative p-8 bg-zinc-900 border border-white/5 hover:border-red-600/40 transition-all duration-300"
     >
-      <div className="p-4 bg-red-100 dark:bg-red-900 rounded-full mb-4">
-        <Icon className="w-12 h-12 text-red-600" />
+      {/* Corner Accents */}
+      <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-red-600/50 group-hover:w-8 group-hover:h-8 transition-all" />
+      <div className="absolute bottom-0 right-0 w-2 h-2 bg-zinc-800" />
+
+      {/* Background Index Number */}
+      <span className="absolute top-4 right-6 font-mono text-4xl font-black text-white/[0.03] group-hover:text-red-600/10 transition-colors select-none">
+        0{index + 1}
+      </span>
+
+      {/* Icon with "Power Glow" */}
+      <div className="relative mb-8 inline-block">
+        <div className="absolute inset-0 bg-red-600 blur-2xl opacity-0 group-hover:opacity-20 transition-opacity" />
+        <div className="relative z-10 p-4 bg-black border border-white/10 text-red-600 skew-x-[-10deg] group-hover:bg-red-600 group-hover:text-white transition-all">
+          <Icon className="w-10 h-10 skew-x-[10deg]" />
+        </div>
       </div>
-      <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-        {title}
-      </h3>
-      <p className="text-gray-600 dark:text-gray-400 text-base font-medium">
-        {description}
-      </p>
+
+      {/* Content */}
+      <div className="text-left">
+        <h3 className="text-xl font-black italic text-white uppercase tracking-tighter mb-3 group-hover:text-red-500 transition-colors">
+          {title}
+        </h3>
+        <p className="text-zinc-500 text-sm font-medium leading-relaxed font-mono uppercase tracking-tight group-hover:text-zinc-300 transition-colors">
+          {description}
+        </p>
+      </div>
+
+      {/* System Status Line */}
+      <div className="mt-6 flex items-center gap-2">
+        <div className="h-1 w-8 bg-red-600" />
+        <div className="h-[1px] flex-1 bg-white/5" />
+        <span className="font-mono text-[9px] text-zinc-600 group-hover:text-red-600 transition-colors">
+          PROTOCOL_READY
+        </span>
+      </div>
     </motion.div>
   );
 };
 
-interface MetricCardProps { 
+interface MetricCardProps {
   coreValues: ICoreValue[];
 }
 
-// Main section
 export default function MetricsSection({ coreValues }: MetricCardProps) {
-
-  const CoreValues = [
-    {
-      id: '68ba95433e05e5090f8bb781',
-      companyId: '68b597b7de9bdd2ba7479f34',
-      title: 'Secure Payment',
-      description: 'Secure on every order',
-      icon: 'ShieldCheckIcon',
-    },
-    {
-      id: '68ba95433e05e5090f8bb782',
-      companyId: '68b597b7de9bdd2ba7479f34',
-      title: '24/7 Support',
-      description: 'Contact us 24 hrs a day',
-      icon: 'PhoneIcon',
-    },
-    {
-      id: '68ba95433e05e5090f8bb783',
-      companyId: '68b597b7de9bdd2ba7479f34',
-      title: 'Fast Delivery',
-      description: 'Fast delivery on your doorstep',
-      icon: 'TruckIcon',
-    },
+  const defaultValues = [
+    { id: '1', title: 'Secure Payment', description: 'Encrypted Transaction Tunnels', icon: 'ShieldCheckIcon' },
+    { id: '2', title: '24/7 Support', description: 'Constant Neural Link Support', icon: 'PhoneIcon' },
+    { id: '3', title: 'Fast Delivery', description: 'Supersonic Logistic Deployment', icon: 'TruckIcon' },
   ];
-  const coreValuesToUse = coreValues && coreValues.length > 0 ? coreValues : CoreValues;
+
+  const coreValuesToUse = coreValues?.length > 0 ? coreValues : defaultValues;
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-zinc-900 font-sans p-8 flex items-center justify-center">
-      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4">
-          Why Choose Us?
-        </h2>
-        <p className="text-lg text-gray-700 dark:text-gray-300 mb-16 max-w-2xl mx-auto">
-          We're committed to providing the best experience with our top-tier service.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-          {coreValuesToUse.map((value: ICoreValue) => {
+    <section className="relative py-32 bg-black overflow-hidden">
+      {/* HUD Grid Background */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+           style={{ backgroundImage: `radial-gradient(#fff 1px, transparent 1px)`, backgroundSize: '30px 30px' }} />
+      
+      {/* Vertical Data Path Lines */}
+      <div className="absolute left-1/2 top-0 h-full w-px bg-gradient-to-b from-transparent via-red-600/20 to-transparent hidden lg:block" />
+
+      <div className="container relative z-10 mx-auto max-w-7xl px-6">
+        {/* Header Section */}
+        <div className="mb-20 text-center lg:text-left flex flex-col lg:flex-row items-end justify-between gap-8 border-b border-white/5 pb-12">
+          <div className="max-w-2xl">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              className="inline-flex items-center gap-2 px-3 py-1 bg-red-600/10 border border-red-600/20 text-red-500 font-mono text-[10px] tracking-[0.3em] uppercase mb-6"
+            >
+              <div className="w-1.5 h-1.5 bg-red-600 animate-pulse" />
+              Operational_Foundations
+            </motion.div>
+
+            <h2 className="text-5xl md:text-7xl font-black italic text-white uppercase tracking-tighter leading-[0.8]">
+              WHY JOIN THE <span className="text-red-600">EMPIRE?</span>
+            </h2>
+          </div>
+
+          <p className="text-zinc-500 font-mono text-xs uppercase tracking-widest max-w-xs text-right hidden lg:block">
+            System uptime 99.9% // All security protocols active // Global delivery networks engaged.
+          </p>
+        </div>
+
+        {/* Modular Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 border border-white/5">
+          {coreValuesToUse.map((value, idx) => {
             const iconKey = (value.icon ?? 'SparklesIcon') as string;
-            const Icon =
-              ((OutlineIcons as any)[iconKey] || OutlineIcons.SparklesIcon) as (
-                props: React.ComponentProps<'svg'>
-              ) => JSX.Element;
+            const Icon = ((OutlineIcons as any)[iconKey] || OutlineIcons.SparklesIcon);
+
             return (
               <MetricCard
                 key={value.id}
                 title={value.title}
                 description={value.description || ''}
                 Icon={Icon}
+                index={idx}
               />
             );
           })}
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }

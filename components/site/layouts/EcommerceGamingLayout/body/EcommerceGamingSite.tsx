@@ -70,19 +70,72 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
   );
 
   return (
-    <div className="space-y-12">
-      <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
-      <CategorySection StoreCategory={StoreCategory} themeSettings={themeSettings} />
+    <div className="bg-black flex flex-col overflow-hidden">
+  {/* --- 01. COMMAND CENTER (Hero) --- */}
+  <section className="relative">
+    <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
+    {/* Visual bridge to next section */}
+    <div className="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-black to-transparent z-10" />
+  </section>
+
+  {/* --- 02. NAVIGATION NODES (Categories) --- */}
+  <div className="relative z-20 mt-8">
+    <CategorySection store={pageData} />
+  </div>
+
+  {/* --- 03. MISSION OBJECTIVES (Products) --- */}
+  <main className="space-y-0 relative">
+    {/* Grid Background Overlay for the entire product area */}
+    <div className="absolute inset-0 opacity-[0.02] pointer-events-none" 
+         style={{ backgroundImage: `radial-gradient(#fff 1px, transparent 1px)`, backgroundSize: '50px 50px' }} />
+
+    <section className="py-20 border-b border-white/5">
       <DynamicPopularProducts id={id} />
+    </section>
+
+    <section className="relative">
       <PromoSection promotions={promotions} />
-      <DynamicTrending id={id} />
-      <DynamicDailyBestSells id={id} />
+    </section>
+
+    <section className="py-20 bg-zinc-950/50">
+       <div className="container mx-auto">
+          <DynamicTrending id={id} />
+          <div className="h-px w-full bg-gradient-to-r from-transparent via-red-600/20 to-transparent my-20" />
+          <DynamicDailyBestSells id={id} />
+       </div>
+    </section>
+
+    <section className="relative">
       <SecondPromoSection promotions={promotions} />
+    </section>
+
+    <section className="py-24 border-t border-white/5 bg-black">
       <AllProducts id={id} marketplaceListings={featured} themeSettings={themeSettings} />
-      <MetricsSection coreValues={CoreValues} />
+    </section>
+  </main>
+
+  {/* --- 04. SYSTEM PROTOCOLS (Metrics & Awards) --- */}
+  <div className="relative">
+    {/* These two sections are stitched together with no gap */}
+    <MetricsSection coreValues={CoreValues} />
+    <div className="bg-zinc-950">
       <AwardsSection awards={awards} />
-      {testimonialsData?.data && <TestimonialsSection testimonials={testimonialsData.data} />}
+    </div>
+  </div>
+
+  {/* --- 05. COMMS & INTEL (Social) --- */}
+  <div className="relative bg-black border-t border-red-600/10">
+    {testimonialsData?.data && (
+      <TestimonialsSection testimonials={testimonialsData.data} />
+    )}
+    
+    <div className="relative z-10">
       <NewsletterSection />
     </div>
+  </div>
+
+  {/* Decorative Global Scan Line */}
+  <div className="fixed top-0 left-0 w-full h-[1px] bg-red-600/20 z-50 pointer-events-none shadow-[0_0_10px_rgba(255,0,60,0.3)]" />
+</div>
   );
 }
