@@ -4,34 +4,40 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import * as OutlineIcons from '@heroicons/react/24/outline';
 import { ICoreValue } from '@/types/typings';
+import { useStoreContext } from '@/contexts/StoreContext';
 
-
-// MetricCard component to display a single feature
 const MetricCard = ({
   title,
   description,
   Icon,
+  primary
 }: {
   title: string;
   description: string;
   Icon: (props: React.ComponentProps<'svg'>) => JSX.Element;
+  primary: string;
 }) => {
   return (
     <motion.div
-      whileHover={{ scale: 1.05 }}
-      initial={{ opacity: 0, y: 40 }}
+      initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, ease: 'easeOut' }}
+      transition={{ duration: 0.8 }}
       viewport={{ once: true }}
-      className="flex flex-col items-center text-center space-y-2 p-6 bg-white dark:bg-zinc-800 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1"
+      className="flex flex-col items-center text-center p-8 group"
     >
-      <div className="p-4 bg-red-100 dark:bg-red-900 rounded-full mb-4">
-        <Icon className="w-12 h-12 text-red-600" />
+      <div 
+        className="w-16 h-16 flex items-center justify-center rounded-full mb-6 transition-transform duration-500 group-hover:scale-110"
+        style={{ backgroundColor: `${primary}08` }} // Very subtle tint of primary
+      >
+        <Icon 
+          className="w-7 h-7 stroke-[1.5px] transition-colors duration-300" 
+          style={{ color: primary }}
+        />
       </div>
-      <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+      <h3 className="text-sm font-black uppercase tracking-[0.3em] text-slate-900 mb-2">
         {title}
       </h3>
-      <p className="text-gray-600 dark:text-gray-400 text-base font-medium">
+      <p className="text-slate-400 font-serif italic text-sm leading-relaxed max-w-[200px]">
         {description}
       </p>
     </motion.div>
@@ -42,61 +48,64 @@ interface MetricCardProps {
   coreValues: ICoreValue[];
 }
 
-// Main section
 export default function MetricsSection({ coreValues }: MetricCardProps) {
+  const { storeFormData } = useStoreContext();
+  const primary = storeFormData?.themeSettings?.primaryColor || '#10B981';
 
-  const CoreValues = [
+  const defaultValues = [
     {
-      id: '68ba95433e05e5090f8bb781',
-      companyId: '68b597b7de9bdd2ba7479f34',
-      title: 'Secure Payment',
-      description: 'Secure on every order',
+      id: '1',
+      title: 'Secure Checkout',
+      description: 'Encrypted & ethereal transactions',
       icon: 'ShieldCheckIcon',
     },
     {
-      id: '68ba95433e05e5090f8bb782',
-      companyId: '68b597b7de9bdd2ba7479f34',
-      title: '24/7 Support',
-      description: 'Contact us 24 hrs a day',
-      icon: 'PhoneIcon',
+      id: '2',
+      title: 'Concierge Support',
+      description: 'Dedicated floral assistance 24/7',
+      icon: 'UserGroupIcon',
     },
     {
-      id: '68ba95433e05e5090f8bb783',
-      companyId: '68b597b7de9bdd2ba7479f34',
-      title: 'Fast Delivery',
-      description: 'Fast delivery on your doorstep',
+      id: '3',
+      title: 'Studio Delivery',
+      description: 'Hand-delivered with botanical care',
       icon: 'TruckIcon',
     },
   ];
-  const coreValuesToUse = coreValues && coreValues.length > 0 ? coreValues : CoreValues;
+
+  const coreValuesToUse = coreValues?.length > 0 ? coreValues : defaultValues;
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-zinc-900 font-sans p-8 flex items-center justify-center">
-      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4">
-          Why Choose Us?
-        </h2>
-        <p className="text-lg text-gray-700 dark:text-gray-300 mb-16 max-w-2xl mx-auto">
-          We're committed to providing the best experience with our top-tier service.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-          {coreValuesToUse.map((value: ICoreValue) => {
+    <section className="py-24 bg-[#FCFBFA] border-t border-slate-100">
+      <div className="max-w-7xl mx-auto px-6">
+        {/* Subtle Header */}
+        <div className="text-center mb-16 space-y-3">
+          <span className="text-rose-400 text-[10px] font-black uppercase tracking-[0.5em]">
+            The Boutique Standard
+          </span>
+          <h2 className="text-3xl md:text-4xl font-serif italic text-slate-900">
+            Why Our <span className="text-slate-400">Patrons</span> Choose Us
+          </h2>
+        </div>
+
+        {/* Values Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 divide-y md:divide-y-0 md:divide-x divide-slate-100">
+          {coreValuesToUse.map((value: ICoreValue, index: number) => {
             const iconKey = (value.icon ?? 'SparklesIcon') as string;
-            const Icon =
-              ((OutlineIcons as any)[iconKey] || OutlineIcons.SparklesIcon) as (
-                props: React.ComponentProps<'svg'>
-              ) => JSX.Element;
+            const Icon = ((OutlineIcons as any)[iconKey] || OutlineIcons.SparklesIcon);
+
             return (
               <MetricCard
                 key={value.id}
                 title={value.title}
                 description={value.description || ''}
                 Icon={Icon}
+                primary={primary}
               />
             );
           })}
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }

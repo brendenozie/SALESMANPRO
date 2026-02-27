@@ -3,149 +3,130 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Testimonial } from '@/types/typings';
+import { useStoreContext } from '@/contexts/StoreContext';
+import { ChatBubbleBottomCenterIcon } from '@heroicons/react/24/solid';
 
 const sampletestimonials = [
-    {
-      authorName: 'Johnathon',
-      quote: 'The products exceeded my expectations! The quality is incredible and the style is unmatched. I will definitely be a returning customer.',
-      avatarUrl: 'https://placehold.co/100x100/FFF?text=J',
-    },
-    {
-      authorName: 'Alina',
-      quote: 'I am so happy with my purchase. The shoes are comfortable and stylish, and the delivery was incredibly fast. Highly recommended!',
-      avatarUrl: 'https://placehold.co/100x100/FFF?text=A',
-    },
-    {
-      authorName: 'Mikey',
-      quote: 'Fantastic experience from start to finish. The customer support was excellent, and the product arrived exactly as described. Love my new shoes!',
-      avatarUrl: 'https://placehold.co/100x100/FFF?text=M',
-    },
-  ];
+  {
+    authorName: 'Johnathon',
+    quote: 'The products exceeded my expectations! The quality is incredible and the style is unmatched. I will definitely be a returning customer.',
+    avatarUrl: 'https://placehold.co/100x100/000?text=J',
+  },
+  {
+    authorName: 'Alina',
+    quote: 'I am so happy with my purchase. The shoes are comfortable and stylish, and the delivery was incredibly fast. Highly recommended!',
+    avatarUrl: 'https://placehold.co/100x100/000?text=A',
+  },
+  {
+    authorName: 'Mikey',
+    quote: 'Fantastic experience from start to finish. The customer support was excellent, and the product arrived exactly as described.',
+    avatarUrl: 'https://placehold.co/100x100/000?text=M',
+  },
+];
 
-  interface TestimonialsSectionProps {
-    testimonials?: Testimonial[] | null;
-  }
-  
+interface TestimonialsSectionProps {
+  testimonials?: Testimonial[] | null;
+}
 
-// Main App component containing the "Testimonials" section
-export default function TestimonialsSection( { testimonials = sampletestimonials }: TestimonialsSectionProps) {
+export default function TestimonialsSection({ testimonials = sampletestimonials }: TestimonialsSectionProps) {
+  const { storeFormData } = useStoreContext();
+  const primary = storeFormData?.themeSettings?.primaryColor || '#f97316';
+
+  const listToUse = testimonials && testimonials.length > 0 ? testimonials : sampletestimonials;
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-zinc-900 font-sans p-8 flex items-center justify-center">
-      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-16">
-        <motion.h2
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-16"
-        >
-          Testimonials
-        </motion.h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-          {testimonials?.map((testimonial, index) => (
+    <section className="relative py-32 bg-[#050505] overflow-hidden border-t border-white/5">
+      {/* Background HUD Decals */}
+      <div className="absolute top-0 right-0 p-10 opacity-[0.02] pointer-events-none select-none">
+        <ChatBubbleBottomCenterIcon className="w-96 h-96 text-white" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-8">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primary }} />
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Network Feedback</span>
+            </div>
+            <h2 className="text-5xl md:text-8xl font-black text-white tracking-tighter italic uppercase leading-[0.8]">
+              Trusted by <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white/40 to-white/5">The Squad.</span>
+            </h2>
+          </div>
+          <p className="text-white/30 font-mono text-[10px] uppercase tracking-widest max-w-[180px] text-left md:text-right">
+            Real-time verified transmissions from our global operators.
+          </p>
+        </div>
+
+        {/* Testimonials Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {listToUse.map((t, idx) => (
             <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 40 }}
+              key={idx}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: index * 0.2, ease: 'easeOut' }}
+              transition={{ duration: 0.6, delay: idx * 0.1 }}
               viewport={{ once: true }}
-              className="flex flex-col items-center p-6 bg-white dark:bg-zinc-800 rounded-2xl shadow-lg transition-shadow duration-300"
+              className={`relative p-8 md:p-12 rounded-[2.5rem] bg-white/[0.03] border border-white/5 group hover:bg-white/[0.06] hover:border-white/20 transition-all duration-500
+                ${idx === 0 ? 'lg:col-span-7' : idx === 1 ? 'lg:col-span-5' : 'lg:col-span-12'}`}
             >
-              <div className="w-24 h-24 mb-4">
-                <img
-                  src={testimonial.avatarUrl || 'https://placehold.co/100x100/FFF?text=User'}
-                  alt={testimonial.authorName || 'author' }
-                  className="rounded-full w-full h-full object-cover border-4 border-red-500"
-                />
+              {/* Massive Quote Mark Decor */}
+              <span className="absolute top-6 right-10 text-8xl font-black italic text-white/[0.03] group-hover:text-white/[0.05] transition-colors pointer-events-none">
+                &rdquo;
+              </span>
+
+              <div className="flex flex-col h-full justify-between">
+                <div>
+                  <div className="flex items-center gap-4 mb-8">
+                    <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/10 p-1 group-hover:border-primary-color transition-colors" style={{ borderColor: idx % 2 === 0 ? primary : 'rgba(255,255,255,0.1)' }}>
+                      <img 
+                        src={t.avatarUrl || ''} 
+                        alt={t.authorName || ''} 
+                        className="w-full h-full rounded-full object-cover grayscale brightness-125"
+                      />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-black italic uppercase tracking-widest text-sm">
+                        {t.authorName}
+                      </h3>
+                      <p className="text-[10px] text-white/40 uppercase font-bold tracking-tighter">Verified Client</p>
+                    </div>
+                  </div>
+
+                  <p className="text-xl md:text-2xl font-medium text-white/80 leading-relaxed italic tracking-tight">
+                    &ldquo;{t.quote}&rdquo;
+                  </p>
+                </div>
+
+                {/* Tactical Footer for the card */}
+                <div className="mt-12 pt-6 border-t border-white/5 flex items-center justify-between">
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <div key={s} className="w-1.5 h-1.5 rounded-full bg-white/10 group-hover:bg-primary-color" style={{ backgroundColor: s <= 4 ? primary : undefined }} />
+                    ))}
+                  </div>
+                  <span className="font-mono text-[8px] text-white/10 uppercase tracking-widest group-hover:text-white/30 transition-colors">
+                    REF_ID: #00{idx + 124}
+                  </span>
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                {testimonial.authorName}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm italic">
-                "{testimonial.quote}"
-              </p>
             </motion.div>
           ))}
         </div>
-      </section>
-    </div>
+
+        {/* Dynamic Footer Counter */}
+        <div className="mt-20 flex justify-center">
+          <div className="inline-flex items-center gap-4 px-6 py-3 rounded-full border border-white/5 bg-white/[0.02]">
+            <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Aggregate Rating</span>
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-black text-white italic">4.9</span>
+              <span className="text-[10px] font-bold text-white/20">/ 5.0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
-
-// 'use client';
-
-// import React from 'react';
-// import { motion } from 'framer-motion';
-// import { useStoreContext } from '@/contexts/StoreContext';
-// import Section from '../Section/Section';
-// import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
-// import { Testimonial } from '@/types/typings';
-
-// interface TestimonialsSectionProps {
-//   testimonials: Testimonial[];
-// }
-
-// export default function TestimonialsSection({ testimonials }: TestimonialsSectionProps) {
-//   const { storeFormData } = useStoreContext();
-//   const { themeSettings = {} } = storeFormData || {};
-//   const primary = themeSettings?.primaryColor || '#f97316';
-//   const secondary = themeSettings?.secondaryColor || '#3b82f6';
-
-//   if (!testimonials || testimonials.length === 0) return null;
-
-//   const cardVariants = {
-//     hidden: { opacity: 0, y: 20 },
-//     visible: (idx: number) => ({
-//       opacity: 1,
-//       y: 0,
-//       transition: { delay: idx * 0.2, duration: 0.6, ease: 'easeOut' },
-//     }),
-//   };
-
-//   return (
-//     <Section title="What Our Customers Say">
-//       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-//         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-//           {testimonials.map((t, idx) => (
-//             <motion.div
-//               key={idx}
-//               custom={idx}
-//               initial="hidden"
-//               whileInView="visible"
-//               viewport={{ once: true, amount: 0.3 }}
-//               variants={cardVariants}
-//               whileHover={{ scale: 1.02 }}
-//               className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden"
-//             >
-//               {/* Top Gradient Accent */}
-//               <div
-//                 className="h-1 w-full"
-//                 style={{
-//                   background: `linear-gradient(90deg, ${primary}, ${secondary})`,
-//                 }}
-//               />
-
-//               <div className="p-6 flex flex-col h-full">
-//                 {/* Quote Icon */}
-//                 <div className="flex items-center mb-4 text-primary">
-//                   <ChatBubbleLeftRightIcon className="h-6 w-6" style={{ color: primary }} />
-//                 </div>
-
-//                 {/* Quote Text */}
-//                 <p className="flex-grow text-lg italic text-gray-700 dark:text-gray-200 h-12 overflow-clip">
-//                   “{t.quote}”
-//                 </p>
-
-//                 {/* Author */}
-//                 <p className="mt-6 text-sm font-medium text-gray-500 dark:text-gray-400 text-right">
-//                   — {t.authorName}
-//                 </p>
-//               </div>
-//             </motion.div>
-//           ))}
-//         </div>
-//       </div>
-//     </Section>
-//   );
-// }

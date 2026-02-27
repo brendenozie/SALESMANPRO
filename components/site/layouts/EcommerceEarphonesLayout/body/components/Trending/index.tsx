@@ -3,135 +3,121 @@
 import useSWR from 'swr';
 import ProductCard from '../ProductCard';
 import { SkeletonGrid } from '../SkeletonGrid/SkeletonGrid';
-import { ArrowRightCircleIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'; // Added Chevron icons
+import { 
+  ArrowRightIcon, 
+  FireIcon, 
+  ChevronLeftIcon, 
+  ChevronRightIcon 
+} from '@heroicons/react/24/outline';
 import { createCachedFetcher } from '@/lib/swrCachedFetcher';
-
-// Import Slick components and styles
-import Slider from 'react-slick';
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css'; 
-// Note: You might need to adjust the paths/import for slick.css/slick-theme.css 
-// based on your project's CSS setup if the imports above don't work globally.
+import { motion } from 'framer-motion';
+import { useRef } from 'react';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-// --- Custom Arrow Components for Slick ---
-// We'll use these to style the navigation arrows with Heroicons and Tailwind
-const PrevArrow = ({ onClick }: { onClick?: () => void }) => (
-  <button 
-    className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white p-2 rounded-full shadow-lg border border-gray-200 hidden sm:block md:hidden"
-    onClick={onClick}
-    aria-label="Previous"
-  >
-    <ChevronLeftIcon className="w-6 h-6 text-gray-700" />
-  </button>
-);
-
-const NextArrow = ({ onClick }: { onClick?: () => void }) => (
-  <button 
-    className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white p-2 rounded-full shadow-lg border border-gray-200 hidden sm:block md:hidden"
-    onClick={onClick}
-    aria-label="Next"
-  >
-    <ChevronRightIcon className="w-6 h-6 text-gray-700" />
-  </button>
-);
-
-
-export default function DailyBestSells({ id }: { id: string }) {
-
+export default function TrendingProducts({ id }: { id: string }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
   const url = `${apiBaseUrl}/site/productsByFlag?companyId=${id}&flag=trending&limit=8`;
   const cacheKey = `products-${id}-trending`;
-  const fallbackKey = `swr-cache:${cacheKey}:${url}`;
-
   const fetcher = createCachedFetcher(cacheKey);
 
-  const fallbackData =
-    typeof window !== 'undefined'
-      ? (() => {
-          try {
-            return JSON.parse(localStorage.getItem(fallbackKey) || 'null');
-          } catch {
-            return null;
-          }
-        })()
-      : null;
-
   const { data, error, isLoading } = useSWR(url, fetcher, {
-    fallbackData: fallbackData || undefined,
     revalidateOnFocus: true,
     dedupingInterval: 30000,
-    refreshInterval: 120000,
   });
 
-  // --- React Slick Configuration ---
-  const settings = {
-    // Show one card at a time on small screens
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    arrows: true, // Show arrows for navigation
-    dots: true, // Show pagination dots
-    infinite: false, // Don't loop the products
-    // Custom arrows are only shown on small screens (md:hidden)
-    nextArrow: <NextArrow />, 
-    prevArrow: <PrevArrow />,
-    // Responsive settings to switch to grid on desktop
-    responsive: [
-      {
-        breakpoint: 768, // md breakpoint in Tailwind
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-        }
-      },
-      {
-        breakpoint: 640, // sm breakpoint in Tailwind
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-          // Added centerPadding and centerMode for a 'peek' effect on very small screens
-          centerMode: true,
-          centerPadding: '20px', 
-        }
-      }
-    ]
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const { scrollLeft, clientWidth } = scrollRef.current;
+      const scrollTo = direction === 'left' ? scrollLeft - clientWidth : scrollLeft + clientWidth;
+      scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
+    }
   };
 
-  if (isLoading) return <SkeletonGrid count={8} />;
-  if (error) return <div className="text-center text-gray-500"></div>;
-  if (!data?.data?.length)
-    return <div className="text-center text-gray-500"></div>;
+  if (isLoading) return <div className="bg-[#050505] py-20"><SkeletonGrid count={8} /></div>;
+  if (error || !data?.data?.length) return null;
 
   return (
-    <section className="py-8 sm:py-12 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Trending Products</h2>
-          <button 
-          onClick={() => window.location.href = `/ecommerce/products`}
-          className="flex items-center text-green-600 font-semibold text-sm sm:text-base hover:underline transition duration-150 ease-in-out">
-            See All <ArrowRightCircleIcon className="w-5 h-5 ml-1 sm:w-6 sm:h-6 sm:ml-2" />
-          </button>
+    <section className="relative py-24 bg-[#050505] border-t border-white/5">
+      {/* Decorative Gradient Flare */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-color/10 blur-[120px] rounded-full pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-6">
+        {/* Header with Navigation Controls */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-8">
+          <div className="space-y-2">
+            <motion.div 
+              initial={{ opacity: 0, x: -10 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-500"
+            >
+              <FireIcon className="w-4 h-4" />
+              <span className="text-[10px] font-black uppercase tracking-widest">Live Now</span>
+            </motion.div>
+            <h2 className="text-4xl md:text-6xl font-black text-white tracking-tighter italic uppercase leading-none">
+              Trending <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/20">Gear</span>
+            </h2>
+          </div>
+
+          <div className="flex items-center gap-4">
+            {/* Custom Navigation for the Slider */}
+            <div className="hidden md:flex items-center gap-2">
+              <button 
+                onClick={() => scroll('left')}
+                className="p-3 rounded-full border border-white/10 text-white hover:bg-white hover:text-black transition-all"
+              >
+                <ChevronLeftIcon className="w-5 h-5" />
+              </button>
+              <button 
+                onClick={() => scroll('right')}
+                className="p-3 rounded-full border border-white/10 text-white hover:bg-white hover:text-black transition-all"
+              >
+                <ChevronRightIcon className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <button 
+              onClick={() => window.location.href = `/ecommerce/products`}
+              className="flex items-center gap-2 text-white/40 font-bold text-xs uppercase tracking-widest hover:text-white transition-colors group"
+            >
+              See Full Rank <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
         </div>
 
-        {/* --- Responsive Product Display --- */}
-        
-        {/* 1. Mobile Carousel (Visible below md) */}
-        <div className="md:hidden relative px-4"> 
-          <Slider {...settings}>
-            {data.data.map((product: any) => (
-              <div key={product.id} className="px-1 outline-none">
+        {/* The "Runway" Slider */}
+        <div 
+          ref={scrollRef}
+          className="flex gap-6 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-10"
+        >
+          {data.data.map((product: any, idx: number) => (
+            <motion.div 
+              key={product.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.05 }}
+              className="min-w-[280px] md:min-w-[320px] lg:min-w-[calc(25%-18px)] snap-start"
+            >
+              <div className="relative">
+                {/* Ranking Number Decal */}
+                <span className="absolute -top-4 -left-2 z-20 text-6xl font-black italic text-white/5 select-none pointer-events-none group-hover:text-white/10 transition-colors">
+                  0{idx + 1}
+                </span>
                 <ProductCard product={product} />
               </div>
-            ))}
-          </Slider>
+            </motion.div>
+          ))}
         </div>
 
-        {/* 2. Desktop Grid (Visible at md and above) */}
-        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {data.data.map((product: any) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+        {/* Desktop Progress Bar */}
+        <div className="hidden md:block w-full h-px bg-white/5 mt-4 relative">
+          <motion.div 
+            initial={{ width: "0%" }}
+            whileInView={{ width: "100%" }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
+            className="absolute top-0 left-0 h-px bg-primary-color"
+            style={{ backgroundColor: 'var(--primary-color)' }}
+          />
         </div>
       </div>
     </section>

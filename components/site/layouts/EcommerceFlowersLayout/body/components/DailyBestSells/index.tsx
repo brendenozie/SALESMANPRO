@@ -1,139 +1,140 @@
-'use client';
+"use client";
 
 import useSWR from 'swr';
 import ProductCard from '../ProductCard';
 import { SkeletonGrid } from '../SkeletonGrid/SkeletonGrid';
-import { ArrowRightCircleIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'; // Added Chevron icons
+import { 
+  ChevronLeftIcon, 
+  ChevronRightIcon, 
+  ArrowUpRightIcon, 
+  SparklesIcon 
+} from '@heroicons/react/24/outline';
 import { createCachedFetcher } from '@/lib/swrCachedFetcher';
-
-// Import Slick components and styles
-import Slider from 'react-slick';
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css'; 
-// Note: You might need to adjust the paths/import for slick.css/slick-theme.css 
-// based on your project's CSS setup if the imports above don't work globally.
+import { motion } from 'framer-motion';
+import { useRef } from 'react';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-// --- Custom Arrow Components for Slick ---
-// We'll use these to style the navigation arrows with Heroicons and Tailwind
-const PrevArrow = ({ onClick }: { onClick?: () => void }) => (
-  <button 
-    className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white p-2 rounded-full shadow-lg border border-gray-200 hidden sm:block md:hidden"
-    onClick={onClick}
-    aria-label="Previous"
-  >
-    <ChevronLeftIcon className="w-6 h-6 text-gray-700" />
-  </button>
-);
-
-const NextArrow = ({ onClick }: { onClick?: () => void }) => (
-  <button 
-    className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white p-2 rounded-full shadow-lg border border-gray-200 hidden sm:block md:hidden"
-    onClick={onClick}
-    aria-label="Next"
-  >
-    <ChevronRightIcon className="w-6 h-6 text-gray-700" />
-  </button>
-);
-
-
 export default function DailyBestSells({ id }: { id: string }) {
-
+  const scrollRef = useRef<HTMLDivElement>(null);
   const url = `${apiBaseUrl}/site/productsByFlag?companyId=${id}&flag=isOnOffer&limit=8`;
   const cacheKey = `products-${id}-isOnOffer`;
-  const fallbackKey = `swr-cache:${cacheKey}:${url}`;
-
   const fetcher = createCachedFetcher(cacheKey);
 
-  const fallbackData =
-    typeof window !== 'undefined'
-      ? (() => {
-          try {
-            return JSON.parse(localStorage.getItem(fallbackKey) || 'null');
-          } catch {
-            return null;
-          }
-        })()
-      : null;
-
   const { data, error, isLoading } = useSWR(url, fetcher, {
-    fallbackData: fallbackData || undefined,
     revalidateOnFocus: true,
     dedupingInterval: 30000,
-    refreshInterval: 120000,
   });
 
-  // --- React Slick Configuration ---
-  const settings = {
-    // Show one card at a time on small screens
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    arrows: true, // Show arrows for navigation
-    dots: true, // Show pagination dots
-    infinite: false, // Don't loop the products
-    // Custom arrows are only shown on small screens (md:hidden)
-    nextArrow: <NextArrow />, 
-    prevArrow: <PrevArrow />,
-    // Responsive settings to switch to grid on desktop
-    responsive: [
-      {
-        breakpoint: 768, // md breakpoint in Tailwind
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-        }
-      },
-      {
-        breakpoint: 640, // sm breakpoint in Tailwind
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-          // Added centerPadding and centerMode for a 'peek' effect on very small screens
-          centerMode: true,
-          centerPadding: '20px', 
-        }
-      }
-    ]
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const { scrollLeft, clientWidth } = scrollRef.current;
+      const scrollTo = direction === 'left' ? scrollLeft - clientWidth : scrollLeft + clientWidth;
+      scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
+    }
   };
 
-  if (isLoading) return <SkeletonGrid count={8} />;
-  if (error) return <div className="text-center text-gray-500"></div>;
-  if (!data?.data?.length)
-    return <div className="text-center text-gray-500"></div>;
+  if (isLoading) return <div className="max-w-7xl mx-auto px-6 py-20"><SkeletonGrid count={4} /></div>;
+  if (error || !data?.data?.length) return null;
 
   return (
-    <section className="py-8 sm:py-12 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Daily Best Sells</h2>
-          <button
-          onClick={() => window.location.href = `/ecommerce/products`}
-           className="flex items-center text-green-600 font-semibold text-sm sm:text-base hover:underline transition duration-150 ease-in-out">
-            See All <ArrowRightCircleIcon className="w-5 h-5 ml-1 sm:w-6 sm:h-6 sm:ml-2" />
-          </button>
-        </div>
+    <section className="py-28 bg-[#F9F6F3] relative overflow-hidden">
+      {/* Decorative Background Element */}
+      <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-[600px] h-[600px] bg-rose-50 rounded-full blur-[120px] opacity-50" />
 
-        {/* --- Responsive Product Display --- */}
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
         
-        {/* 1. Mobile Carousel (Visible below md) */}
-        <div className="md:hidden relative px-4"> 
-          <Slider {...settings}>
-            {data.data.map((product: any) => (
-              <div key={product.id} className="px-1 outline-none">
-                <ProductCard product={product} />
-              </div>
-            ))}
-          </Slider>
+        {/* Header: Editorial Layout */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-20 gap-8">
+          <div className="max-w-xl">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-3 text-rose-500 mb-6"
+            >
+              <SparklesIcon className="w-5 h-5" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.5em]">The Elite Selection</span>
+            </motion.div>
+            
+            <h2 className="text-5xl md:text-7xl font-serif italic text-slate-900 leading-[0.9]">
+              Best <span className="text-slate-400">of the</span> <br />
+              Season
+            </h2>
+          </div>
+
+          <div className="flex flex-col items-start lg:items-end gap-6">
+            <p className="text-slate-500 text-sm max-w-[280px] lg:text-right leading-relaxed italic">
+              "A curated collection of our most beloved stems, now available for a short window of time."
+            </p>
+            
+            <div className="flex items-center gap-3">
+              {/* Navigation Controls */}
+              <button 
+                onClick={() => scroll('left')}
+                className="group p-4 rounded-full border border-slate-200 bg-white/50 backdrop-blur-sm hover:bg-slate-900 transition-all duration-500"
+              >
+                <ChevronLeftIcon className="w-5 h-5 text-slate-900 group-hover:text-white" />
+              </button>
+              <button 
+                onClick={() => scroll('right')}
+                className="group p-4 rounded-full border border-slate-200 bg-white/50 backdrop-blur-sm hover:bg-slate-900 transition-all duration-500"
+              >
+                <ChevronRightIcon className="w-5 h-5 text-slate-900 group-hover:text-white" />
+              </button>
+              
+              <motion.button 
+                whileHover={{ scale: 1.05 }}
+                onClick={() => window.location.href = `/ecommerce/products`}
+                className="ml-4 h-14 w-14 flex items-center justify-center bg-rose-500 text-white rounded-full shadow-xl shadow-rose-200"
+              >
+                <ArrowUpRightIcon className="w-6 h-6" />
+              </motion.button>
+            </div>
+          </div>
         </div>
 
-        {/* 2. Desktop Grid (Visible at md and above) */}
-        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {data.data.map((product: any) => (
-            <ProductCard key={product.id} product={product} />
+        {/* Product Carousel: High-Depth Cards */}
+        <div 
+          ref={scrollRef}
+          className="flex overflow-x-auto gap-10 pb-16 snap-x snap-mandatory no-scrollbar"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {data.data.map((product: any, idx: number) => (
+            <motion.div
+              key={product.id}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1, duration: 0.8 }}
+              className="min-w-[300px] md:min-w-[380px] snap-start"
+            >
+              <div className="bg-white p-4 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.04)] hover:shadow-[0_40px_80px_rgba(0,0,0,0.08)] transition-all duration-700">
+                 <ProductCard product={product} />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Boutique Trust Bar */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-16 border-t border-slate-200/60">
+          {[
+            { label: "Freshness Guaranteed", sub: "Cut to order" },
+            { label: "Hand Wrapped", sub: "Silk paper & ribbons" },
+            { label: "Fast Delivery", sub: "Within 24 hours" },
+            { label: "Floral Care", sub: "Nutrient kit included" }
+          ].map((item, i) => (
+            <div key={i} className="text-center md:text-left">
+              <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900 mb-1">{item.label}</h4>
+              <p className="text-xs text-slate-400 italic font-serif">{item.sub}</p>
+            </div>
           ))}
         </div>
       </div>
+
+      <style jsx>{`
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </section>
   );
 }

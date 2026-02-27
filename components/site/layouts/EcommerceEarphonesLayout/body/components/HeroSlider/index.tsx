@@ -1,322 +1,179 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { AnimatePresence, motion, PanInfo } from 'framer-motion';
-import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowLongRightIcon, BeakerIcon, SpeakerWaveIcon, BoltIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
 import { HeroSlide } from '@/types/typings';
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
+const autoAdvanceDelay = 8000;
 
-const transitionDuration = 0.8;
-const autoAdvanceDelay = 5000;
+const loader = ({ src, width }: { src: string; width: number }) => `${src}?w=${width}&q=75`;
 
-export interface HeroSliderProps {
-  heroSlides: HeroSlide[] | null;
-  themeSettings: any;
-}
-
-const defaultSlides: HeroSlide[] = [
-  {
-    imageUrl: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80',
-    subline: 'Exclusive Offer',
-    headline: 'STEP INTO\nSTYLE & COMFORT',
-    badgeText:
-      'Out too the been like hard off. Improve enquire welcome own beloved matters her. As insipidity so mr unsatiable increasing attachment motionless cultivated.',
-    ctaText: 'Buy Now',
-    ctaLink: '/shop',
-    id: '',
-    companyId: '',
-    productImageUrl: null,
-    price: null,
-    endsAt: null,
-    order: 0,
-    iconKey: null,
-    backgroundColor: null,
-    textColor: null,
-    videoLink: null,
-    type: null,
-  },
-  {
-    imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
-    subline: 'New Collection',
-    headline: 'ELEVATE YOUR\nLOOK TODAY',
-    badgeText: 'Discover fresh drops and timeless classics. Comfort and style perfectly combined.',
-    ctaText: 'Shop Now',
-    ctaLink: '/collection',
-    id: '',
-    companyId: '',
-    productImageUrl: null,
-    price: null,
-    endsAt: null,
-    order: 0,
-    iconKey: null,
-    backgroundColor: null,
-    textColor: null,
-    videoLink: null,
-    type: null,
-  },
-];
-
-export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProps) {
-  const defaultPrimaryColor = '#6B46C1';
-  const defaultSecondaryColor = '#D53F8C';
-
-  const heroSlidesToShow: HeroSlide[] = (heroSlides && heroSlides.length > 0 ? heroSlides : defaultSlides).map(
-    (slide, index) => ({
-      ...slide,
-      imageUrl: slide.imageUrl || defaultSlides[index]?.imageUrl || defaultSlides[0].imageUrl,
-      subline: slide.subline || 'Exclusive Offer',
-      headline: slide.headline || defaultSlides[index]?.headline || 'Unlock Amazing Deals Now!',
-      badgeText:
-        slide.badgeText ||
-        defaultSlides[index]?.badgeText ||
-        'Discover curated collections and exceptional savings on your favorite products.',
-      ctaText: slide.ctaText || 'Explore Collections',
-      ctaLink: slide.ctaLink || '/shop',
-    })
-  );
-
-  const primary = themeSettings?.primaryColor || defaultPrimaryColor;
-  const secondary = themeSettings?.secondaryColor || defaultSecondaryColor;
-
+export default function PremiumHeroSlider({ heroSlides, themeSettings }: any) {
+  const primary = themeSettings?.primaryColor || '#1d4ed8';
+  const secondary = themeSettings?.secondaryColor || '#f59e0b';
+  
   const [current, setCurrent] = useState(0);
-  const [direction, setDirection] = useState(0);
-  const timeoutRef = useRef<NodeJS.Timeout>();
-  const progressRef = useRef<HTMLDivElement>(null);
-
-  const resetTimer = useCallback(() => {
-    clearTimeout(timeoutRef.current);
-    if (heroSlidesToShow.length > 0) {
-      if (progressRef.current) {
-        progressRef.current.style.transition = 'none';
-        progressRef.current.style.width = '0%';
-        // force reflow
-        // @ts-ignore
-        progressRef.current.offsetWidth;
-        progressRef.current.style.transition = `width ${autoAdvanceDelay}ms linear`;
-        progressRef.current.style.width = '100%';
-      }
-      timeoutRef.current = setTimeout(() => {
-        setDirection(1);
-        setCurrent((prev) => (prev + 1) % heroSlidesToShow.length);
-      }, autoAdvanceDelay);
+  const slides = heroSlides?.length ? heroSlides : [
+    {
+      subline: "Limited Edition Release",
+      headline: "PURE SOUND. $UNFILTERED.",
+      badgeText: "Experience Class 1 Bluetooth connectivity with 40-hour battery life. Engineered for the studio, built for the street.",
+      imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1200&q=80",
+      ctaText: "Explore the Series",
+      ctaLink: "/shop"
     }
-  }, [heroSlidesToShow.length]);
+  ];
 
+  // Logic for auto-advancing
   useEffect(() => {
-    resetTimer();
-    return () => clearTimeout(timeoutRef.current);
-  }, [current, resetTimer]);
-
-  const goTo = (idx: number, dir = 0) => {
-    clearTimeout(timeoutRef.current);
-    setDirection(dir);
-    setCurrent(idx);
-  };
-
-  const prevSlide = () =>
-    goTo((current - 1 + heroSlidesToShow.length) % heroSlidesToShow.length, -1);
-  const nextSlide = () => goTo((current + 1) % heroSlidesToShow.length, 1);
-
-  const handleDragEnd = (_: any, info: PanInfo) => {
-    const offset = info.offset.x;
-    if (offset < -50) nextSlide();
-    else if (offset > 50) prevSlide();
-  };
-
-  const slideVariants = {
-    enter: (dir: number) => ({
-      x: dir > 0 ? '100%' : '-100%',
-      opacity: 0,
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-      transition: { duration: transitionDuration, ease: 'easeOut' },
-    },
-    exit: (dir: number) => ({
-      x: dir < 0 ? '100%' : '-100%',
-      opacity: 0,
-      transition: { duration: transitionDuration, ease: 'easeInOut' },
-    }),
-  };
+    const timer = setTimeout(() => {
+      setCurrent((prev) => (prev + 1) % slides.length);
+    }, autoAdvanceDelay);
+    return () => clearTimeout(timer);
+  }, [current, slides.length]);
 
   return (
-    <section className="relative mt-20 py-16 overflow-hidden min-h-[500px]">
-      <div className="container mx-auto px-4 md:px-8 lg:px-16 relative z-10">
-        <AnimatePresence initial={false} custom={direction} mode="wait">
-          {heroSlidesToShow.map(
-            (slide, idx) =>
-              idx === current && (
-                <motion.div
-                  key={idx}
-                  className="relative overflow-hidden rounded-3xl shadow-2xl group flex flex-col md:flex-row h-[500px]"
-                  style={{ willChange: 'transform, opacity' }}
-                  custom={direction}
-                  variants={slideVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  drag="x"
-                  dragConstraints={{ left: 0, right: 0 }}
-                  onDragEnd={handleDragEnd}
+    <section className="relative min-h-[100vh] flex items-center bg-[#050505] overflow-hidden">
+      {/* Background Decorative Element - Moving Orb */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] blur-[120px] rounded-full opacity-20 pointer-events-none"
+           style={{ background: `radial-gradient(circle, ${primary} 0%, transparent 70%)` }} />
+
+      <div className="container mx-auto px-6 relative z-10">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={current}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center"
+          >
+            {/* TEXT CONTENT */}
+            <div className="lg:col-span-6 order-2 lg:order-1">
+              <motion.div
+                variants={{
+                  initial: { opacity: 0, x: -50 },
+                  animate: { opacity: 1, x: 0 },
+                  exit: { opacity: 0, x: -20 }
+                }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+              >
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="h-[2px] w-12 bg-current" style={{ color: secondary }} />
+                  <span className="text-xs font-bold tracking-[0.3em] uppercase text-white/60">
+                    {slides[current].subline}
+                  </span>
+                </div>
+
+                  <h2 className="text-5xl md:text-8xl font-black text-white leading-[0.9] mb-8 tracking-tighter">
+                  {slides[current].headline.split('$').map((part: string, i: number) => (
+                    <span key={i} className="block" style={i === 1 ? { WebkitTextStroke: '1px white', color: 'transparent' } : {}}>
+                      {part}
+                    </span>
+                  ))}
+                </h2>
+
+                <p className="text-lg text-white/40 max-w-md mb-10 leading-relaxed">
+                  {slides[current].badgeText}
+                </p>
+
+                <div className="flex flex-wrap gap-6 items-center">
+                  <Link
+                    href={slides[current].ctaLink}
+                    className="relative px-8 py-4 bg-white text-black font-bold rounded-full overflow-hidden group transition-transform hover:scale-105"
+                  >
+                    <span className="relative z-10 flex items-center gap-2">
+                      {slides[current].ctaText}
+                      <ArrowLongRightIcon className="w-5 h-5 transition-transform group-hover:translate-x-2" />
+                    </span>
+                  </Link>
+
+                  <div className="flex -space-x-3">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="w-10 h-10 rounded-full border-2 border-[#050505] bg-gray-800 flex items-center justify-center text-[10px] text-white font-bold">
+                        {i === 3 ? '+5k' : <div className="w-full h-full rounded-full bg-gradient-to-tr from-gray-600 to-gray-400" />}
+                      </div>
+                    ))}
+                    <span className="pl-6 text-sm text-white/60 self-center">Trusted by Audiophiles</span>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* FLOATING IMAGE PANEL */}
+            <div className="lg:col-span-6 order-1 lg:order-2 relative">
+              <motion.div
+                variants={{
+                  initial: { opacity: 0, scale: 0.8, rotate: -10 },
+                  animate: { opacity: 1, scale: 1, rotate: 0 },
+                  exit: { opacity: 0, scale: 1.1, rotate: 10 }
+                }}
+                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                className="relative z-20 aspect-square"
+              >
+                {/* Product Image */}
+                <Image
+                  src={slides[current].imageUrl}
+                  alt="Earphones"
+                  fill
+                  className="object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.5)]"
+                  priority
+                  loader={loader}
+                />
+
+                {/* Floating Micro-Badges */}
+                <motion.div 
+                  animate={{ y: [0, -20, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute top-10 right-0 bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 hidden md:block"
                 >
-                  {/* IMAGE PANEL */}
-                  {/* IMAGE PANEL */}
-                  <div className="relative w-full md:w-1/2 overflow-hidden will-change-transform h-full"> 
-                    {/* FIX 1: Set inner image wrapper to h-full (no fixed pixel heights for mobile) */}
-                    <div className="relative h-full w-full overflow-hidden">
-                      <Image
-                        src={
-                          slide.imageUrl ||
-                          'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1600&q=80'
-                        }
-                        alt={slide.headline || 'Hero Image'}
-                        fill
-                        sizes="100vw"
-                        className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
-                        loader={loader}
-                        priority
-                      />
-                    </div>
-
-                    {/* FIX 2: Mobile Gradient for Contrast (kept the to-black/70 fix) */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70 z-10 md:hidden" />
-
-                    {/* Mobile Text - Z-INDEX CONFIRMATION */}
-                    <div className="absolute bottom-0 left-0 right-0 p-6 z-30 text-white md:hidden"> 
-                      <h2 className="text-2xl font-bold">{slide.headline}</h2>
-                      {slide.badgeText && (
-                        <p className="text-sm mt-2 line-clamp-3">{slide.badgeText}</p>
-                      )}
-                      {slide.ctaLink && slide.ctaText && (
-                        <Link
-                          href={slide.ctaLink}
-                          className="inline-block mt-3 bg-white text-black font-medium px-4 py-2 rounded-md"
-                        >
-                          {slide.ctaText}
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* TEXT PANEL (Desktop) */}
-                  <div className="hidden md:flex md:w-1/2 px-6 py-20 md:px-12 lg:px-20 flex-col justify-center relative overflow-hidden">
-                    {/* Translucent gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/70 via-white/60 to-white/30 backdrop-blur-[2px]" />
-
-                    <div className="relative z-10 space-y-6 text-gray-900">
-                      {/* Badge */}
-                      <motion.span
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2, duration: 0.5 }}
-                        className="inline-block px-4 py-1.5 rounded-full text-sm sm:text-base font-semibold shadow-md"
-                        style={{ background: primary, color: 'white' }}
-                      >
-                        {slide.subline}
-                      </motion.span>
-
-                      {/* Headline */}
-                      <motion.h2
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4, duration: 0.5 }}
-                        className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight drop-shadow-md"
-                      >
-                        {(slide.headline ?? '').split('\n').map((line, i, arr) => (
-                                            <React.Fragment key={i}>
-                                              {line.includes('$') ? (
-                                                <>
-                                                  {line.split('$')[0]}
-                                                  <span style={{ color: secondary }}>{line.split('$')[1]}</span>
-                                                </>
-                                              ) : (
-                                                line
-                                              )}
-                                              {i < arr.length - 1 && <br />}
-                                            </React.Fragment>
-                                          ))}      
-                      </motion.h2>
-
-                      {/* Description */}
-                      {slide.badgeText && (
-                        <motion.p
-                          initial={{ opacity: 0, y: -20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.6, duration: 0.5 }}
-                          className="text-gray-800 text-base sm:text-lg max-w-md drop-shadow-sm"
-                        >
-                          {slide.badgeText}
-                        </motion.p>
-                      )}
-
-                      {/* CTA Button */}
-                      {slide.ctaLink && slide.ctaText && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.8, duration: 0.5 }}
-                        >
-                          <Link
-                            href={slide.ctaLink}
-                            className="inline-block font-semibold text-sm sm:text-base px-8 py-4 rounded-xl shadow-lg transition transform duration-300 hover:scale-105 hover:shadow-xl relative overflow-hidden"
-                            style={{ background: primary, color: 'white' }}
-                          >
-                            {slide.ctaText}
-                            <span className="absolute inset-0 bg-white opacity-0 transition-opacity duration-300 group-hover:opacity-10" />
-                          </Link>
-                        </motion.div>
-                      )}
-                    </div>
-                  </div>
-
+                  <BoltIcon className="w-6 h-6 mb-2 text-yellow-400" />
+                  <p className="text-[10px] font-bold text-white tracking-widest uppercase">Fast Charge</p>
+                  <p className="text-lg font-black text-white">5 min = 2 hrs</p>
                 </motion.div>
-              )
-          )}
+
+                <motion.div 
+                   animate={{ y: [0, 20, 0] }}
+                   transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                   className="absolute bottom-10 left-0 bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 hidden md:block"
+                >
+                  <SpeakerWaveIcon className="w-6 h-6 mb-2 text-blue-400" />
+                  <p className="text-[10px] font-bold text-white tracking-widest uppercase">Active ANC</p>
+                  <p className="text-lg font-black text-white">-35dB</p>
+                </motion.div>
+              </motion.div>
+
+              {/* Huge Background Text for Depth */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[15rem] font-black text-white/[0.03] select-none z-10 tracking-tighter">
+                AUDIO
+              </div>
+            </div>
+          </motion.div>
         </AnimatePresence>
 
-        {/* ARROWS */}
-        <button
-          onClick={prevSlide}
-          className="absolute top-1/2 left-8 md:left-10 transform -translate-y-1/2 bg-white/50 hover:bg-white p-3 md:p-4 rounded-full text-gray-800 shadow-xl transition-all duration-200 z-30 backdrop-blur-sm"
-          aria-label="Previous slide"
-        >
-          <ArrowLeftIcon className="h-5 w-5 md:h-6 md:w-6" />
-        </button>
-
-        <button
-          onClick={nextSlide}
-          className="absolute top-1/2 right-8 md:right-10 transform -translate-y-1/2 bg-white/50 hover:bg-white p-3 md:p-4 rounded-full text-gray-800 shadow-xl transition-all duration-200 z-30 backdrop-blur-sm"
-          aria-label="Next slide"
-        >
-          <ArrowRightIcon className="h-5 w-5 md:h-6 md:w-6" />
-        </button>
-
-        {/* PAGINATION DOTS */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3 z-30">
-          {heroSlidesToShow.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => goTo(idx, idx > current ? 1 : -1)}
-              className={`relative w-3.5 h-3.5 rounded-full overflow-hidden transition-all duration-300 border-2 ${
-                idx === current
-                  ? 'border-white scale-125'
-                  : 'border-gray-400 opacity-70 hover:scale-110'
-              }`}
-            >
-              {idx === current && (
-                <div
-                  ref={progressRef}
-                  className="absolute left-0 top-0 h-full rounded-full"
-                  style={{ backgroundColor: 'white', width: '0%' }}
-                />
-              )}
-            </button>
-          ))}
+        {/* Custom Progress Indicators */}
+        <div className="absolute bottom-12 left-6 flex gap-4 items-center">
+            {slides.map((_: any, i: number) => (
+                <button 
+                  key={i} 
+                  onClick={() => setCurrent(i)}
+                  className="group relative h-12 w-1 transition-all"
+                >
+                    <div className="absolute inset-0 bg-white/10 w-full h-full rounded-full overflow-hidden">
+                        {i === current && (
+                            <motion.div 
+                                initial={{ height: 0 }} 
+                                animate={{ height: '100%' }} 
+                                transition={{ duration: 8, ease: "linear" }}
+                                className="w-full bg-white origin-top" 
+                            />
+                        )}
+                    </div>
+                </button>
+            ))}
+            <span className="text-white/20 font-mono text-xs">0{current + 1} / 0{slides.length}</span>
         </div>
       </div>
     </section>
