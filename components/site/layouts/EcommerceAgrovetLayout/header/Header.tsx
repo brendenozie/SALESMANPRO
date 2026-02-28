@@ -16,6 +16,7 @@ import { useRouter } from 'next/navigation';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession, signOut } from 'next-auth/react'; 
+import CartDrawer from './CartDrawer';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -29,6 +30,8 @@ export default function AgrovetHeader() {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const { name, logoUrl, themeSettings = {} } = storeFormData || {};
   const primaryColor = themeSettings?.primaryColor || '#064e3b'; 
@@ -116,7 +119,8 @@ export default function AgrovetHeader() {
 
               {/* Cart Button - Styled as a Pill */}
               <button 
-                onClick={() => router.push('/ecommerce/checkout')}
+                // onClick={() => router.push('/ecommerce/checkout')}
+                onClick={() => setIsCartOpen(true)}
                 className="group flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 text-white shadow-xl shadow-slate-900/20 transition-all hover:scale-105 active:scale-95"
               >
                 <ShoppingBagIcon className="w-5 h-5" />
@@ -176,6 +180,11 @@ export default function AgrovetHeader() {
             </div>
           </motion.div>
         )}
+      </AnimatePresence>
+
+      {/* Cart Drawer */}
+      <AnimatePresence>
+        {isCartOpen && <CartDrawer isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} />}
       </AnimatePresence>
     </>
   );

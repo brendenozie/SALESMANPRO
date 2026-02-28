@@ -14,6 +14,10 @@ interface ProductCardProps {
   index?: number;
 }
 
+const FALLBACK_IMAGE_URL = 'https://via.placeholder.com/400';
+
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>  `${src}?w=${width}&q=${quality || 75}`;
+
 const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
   const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
   const { storeFormData } = useStoreContext();
@@ -43,6 +47,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
             alt={product.name}
             fill
             className="object-cover transition-transform duration-700 group-hover:scale-110"
+            loader={loader}
           />
           
           {/* Overlay Detail */}
