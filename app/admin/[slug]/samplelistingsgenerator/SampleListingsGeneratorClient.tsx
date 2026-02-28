@@ -159,13 +159,15 @@ export default function SampleListingsGeneratorClient({ companyId, categories }:
   return (
     <>
       {/* --- TRIGGER BUTTON --- */}
-      <button
-        onClick={() => setOpen(true)}
-        className="group relative inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-105 transition-all duration-300"
-      >
-        <SparklesIcon className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-        <span>Auto-Generate Listings</span>
-      </button>
+      <div className="p-4 flex items-center justify-center border border-gray-200 dark:border-gray-700 rounded-lg w-full h-full mb-6">
+        <button 
+            onClick={() => setOpen(true)}
+            className="group relative inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-105 transition-all duration-300"
+        >
+            <SparklesIcon className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+            <span>Auto-Generate Listings</span>
+        </button>
+      </div>
 
       {/* --- MODAL OVERLAY --- */}
       {open && (
