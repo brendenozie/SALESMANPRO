@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 export default async function CreateStorePage() {
   const cookieHeader = (await cookies()).toString();
   const res = await fetch(
-    `${apiBaseUrl}/admin/get-all-categories`,
+    `${apiBaseUrl}/admin/get-all-categories?limit=100`,
     { cache: 'no-store', headers: { Cookie: cookieHeader, } }
   );
 

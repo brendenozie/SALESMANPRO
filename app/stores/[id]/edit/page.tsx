@@ -104,7 +104,7 @@ export default async function EditStorePage({
 
   // --- Fetch available categories and locations for the form selectors ---
   const categoryRes = await fetch(
-    `${apiBaseUrl}/admin/get-all-categories`,
+    `${apiBaseUrl}/admin/get-all-categories?limit=100`,
     { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } }
   );
   const categoryData = await categoryRes.json();
