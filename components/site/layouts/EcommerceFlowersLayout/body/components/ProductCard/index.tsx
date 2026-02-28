@@ -9,6 +9,9 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
 
+
+const loader = ({ src }: { src: string }) => src;
+
 interface ProductCardProps {
   product: MarketListingForm;
 }
@@ -34,6 +37,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <Image
           src={imageSrc}
           alt={product.name}
+          loader={loader}
           fill
           className="object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
           sizes="(max-width: 768px) 100vw, 25vw"

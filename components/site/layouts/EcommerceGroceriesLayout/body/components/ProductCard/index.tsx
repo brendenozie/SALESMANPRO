@@ -9,6 +9,8 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
 
+const loader = ({ src }: { src: string }) => src;
+
 const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
@@ -30,6 +32,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
           <Image
             src={product.images?.[0] || 'https://via.placeholder.com/300'}
             alt={product.name}
+            loader={loader}
             fill
             className="object-contain p-4 transition-transform duration-700 group-hover:scale-110"
           />
