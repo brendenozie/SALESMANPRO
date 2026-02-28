@@ -86,7 +86,7 @@ export default function CategoryManager() {
   });
 
   useEffect(() => {
-    fetch(`${apiBaseUrl}/admin/get-all-categories`, {
+    fetch(`${apiBaseUrl}/admin/get-all-categories?limit=100`, {
       method: "GET",
       headers: { 
         "Content-Type": "application/json", 
