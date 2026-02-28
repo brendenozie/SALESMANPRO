@@ -122,8 +122,8 @@ const SITE_CATEGORIES: Category[] = [
     variants: [{ name: "Honey Store", link: "https://honey-store.salesmanpro.site", description: "Showcase honey and related products.", tag: 'New' }]
   },
   {
-    name: "Flowers Store",
-    icon: "🌸",
+    name: "Peanuts Store",
+    icon: "🥜",
     variants: [{ name: "Peanuts Store", link: "https://peanuts-store.salesmanpro.site", description: "Showcase peanuts and related snacks.", tag: 'New' }],
   },
   { 

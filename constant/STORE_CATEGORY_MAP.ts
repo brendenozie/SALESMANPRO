@@ -8,7 +8,15 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Health And Beauty",
     "Pets",
     "Baby Toys",
+    "Baby Store",
+    "Cake Store",
+    "Earphones Store",
+    "Flowers Store",
+    "Gaming Store",
     "Groceries",
+    "Groceries Store",
+    "Honey Store",
+    "Watch Store",
     "Books",
     "Clothing",
     "Electronics",
@@ -18,6 +26,7 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Office Supplies",
     "Property",
     "Services",
+    "Agrovet",
     "Arts & Crafts",
     "Travel & Experiences",
     "Digital Goods & Subscriptions",
@@ -229,79 +238,275 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "School Head",
     "Other"
   ],
+
+  "Agrovet Store": [
+    "Agrovet",
+    "Seeds",
+    "Fertilizers",
+    "Pesticides",
+    "Animal Feed",
+    "Farm Equipment",
+    "Irrigation Systems",
+    "Greenhouse Supplies",
+    "Gardening Tools",
+    "Plant Care Products",
+    "Livestock Supplies",
+    "Agricultural Chemicals",
+    "Organic Farming Products",
+    "Hydroponic Systems",
+    "Agricultural Technology",
+    "Crop Protection Products",
+    "Soil Amendments",
+    "Farm Safety Equipment",
+    "Agricultural Books & Resources",
+    "Other"
+  ],
+
+  "Gaming Store": [
+    "Gaming Store",
+    "Video Games",
+    "Gaming Consoles",
+    "PC Gaming",
+    "Gaming Accessories",
+    "Virtual Reality",
+    "Board Games",
+    "Card Games",
+    "Tabletop RPGs",
+    "Gaming Merchandise",
+    "Esports Gear",
+    "Mobile Gaming",
+    "Retro Gaming",
+    "Gaming Collectibles",
+    "Game Development Tools",
+    "Streaming Equipment",
+    "Gaming Chairs & Desks",
+    "Other"
+  ],
+
+  "Earphones Store": [  
+    "Earphones Store",
+    "In-Ear Earphones",
+    "Over-Ear Headphones",
+    "Wireless Earbuds",
+    "Noise-Canceling Headphones",
+    "Gaming Headsets",
+    "Sports Earphones",
+    "Studio Monitors",
+    "Audiophile Headphones",
+    "Bluetooth Earphones",
+    "True Wireless Earbuds",
+    "Waterproof Earphones",
+    "Kids' Earphones",
+    "Other"
+  ],
+
+  "Glasses Store": [
+    "Glasses Store",
+    "Prescription Glasses",
+    "Sunglasses",
+    "Blue Light Blocking Glasses",
+    "Reading Glasses",
+    "Sports Glasses",
+    "Safety Glasses",
+    "Fashion Eyewear",
+    "Kids' Glasses",
+    "Other"
+  ],
+  "Flowers Store": [
+    "Flowers Store",
+    "Fresh Flowers",
+    "Bouquets",
+    "Flower Arrangements",
+    "Potted Plants",
+    "Succulents",
+    "Floral Gifts",
+    "Wedding Flowers",
+    "Event Flowers",
+    "Sympathy Flowers",
+    "Seasonal Flowers",
+    "Other"
+  ],
+
+  "Honey Store":[
+    "Honey Store",
+    "Raw Honey",
+    "Flavored Honey",
+    "Honeycomb",
+    "Beeswax Products",
+    "Honey Gift Sets",
+    "Organic Honey",
+    "Manuka Honey",
+    "Local Honey",
+    "Other"
+  ],
+
+  "Peanuts Store":[
+    "Peanuts Store",
+    "Peanut Butter",
+    "Peanut Snacks",
+    "Peanut Oil",
+    "Other"
+  ],
+
+  "Watch Store":[
+    "Watch Store",
+    "Analog Watches",
+    "Digital Watches",
+    "Smartwatches",
+    "Luxury Watches",
+    "Sports Watches",
+    "Fashion Watches",
+    "Kids' Watches",
+    "Other"
+  ],
+
+  "Baby Store":[
+    "Baby Store",
+    "Baby Clothing",
+    "Baby Gear",
+    "Diapers & Wipes",
+    "Feeding Supplies",
+    "Nursery Furniture",
+    "Toys & Books",
+    "Health & Safety Products",
+    "Strollers & Car Seats",
+    "Baby Care Products",
+    "Maternity Wear",
+    "Other"
+  ],
+
+  "Cake Store":[
+    "Cake Store",
+    "Custom Cakes",
+    "Cupcakes",
+    "Cake Pops",
+    "Specialty Cakes",
+    "Wedding Cakes",
+    "Birthday Cakes",
+    "Dessert Cakes",
+    "Vegan & Gluten-Free Cakes",
+    "Other"
+  ],
+  
+  "Pets Store":[
+    "Pets Store",
+    "Pet Food",
+    "Pet Accessories",
+    "Pet Toys",
+    "Pet Health Products",
+    "Pet Grooming Supplies",
+    "Pet Beds & Furniture",
+    "Pet Training Aids",
+    "Pet Apparel",
+    "Other"
+  ],
+
+  "Groceries Store":[
+    "Groceries Store",
+    "Fresh Produce",
+    "Dairy Products",
+    "Meat & Seafood",
+    "Pantry Staples",
+    "Beverages",
+    "Snacks",
+    "Frozen Foods",
+    "Bakery Items",
+    "Health Foods",
+    "Organic Products",
+    "Other"
+  ],
+
   "Service Provider": [
     "Services",
     "Home And Garden",       // e.g., cleaning services + selling cleaning supplies
     "Health And Beauty"      // e.g., spa services + related products
   ],
+
   "Booking & Appointments": [
     "Booking & Appointments",
     "Services",
   ],
+
   "Portfolio & Personal Branding": [
     "Portfolio & Personal Branding",
     "Services",
   ],
+
   "Blog & Content": [
     "Blog & Content"
   ],
+
   "Directory & Listings": [
     "Directory & Listings"
   ],
+
   "Educational & Online Courses": [
     "Subjects",
     "Books"                  // maybe also sell books/resources
   ],
+
   "Nonprofit & Community": [
     "Nonprofit & Community",
     "Gifts"                  // fundraising gift items
   ],
+
   "Restaurant & Food Delivery": [
     "Restaurant & Food Delivery",
     "Groceries"              // meal kits or specialty groceries
   ],
+
   "Event & Ticketing": [
     "Event & Ticketing",
     "Travel & Experiences"   // tours + events
   ],
+
   "Real Estate": [
     "Property"
   ],
+
   "Healthcare & Clinics": [
     "Healthcare & Clinics",
     "Health And Beauty"      // e.g., cosmetic procedures + products
   ],
+
   "SaaS & Web Apps": [
     "SaaS & Web Apps",
     "Digital Goods & Subscriptions"
   ],
+
   "Media & Entertainment": [
     "Media & Entertainment",
     "Music",
     "Books"
   ],
+
   "Finance & Legal": [
     "Finance & Legal",
     "Services"
   ],
+
   "Automotive": [
     "Cars",
     "Services",              // e.g., repair services
     "Car Accessories"
   ],
+
   "Travel & Tourism": [
     "Travel & Experiences",
     "Booking & Appointments"
   ],
+
   "Fitness & Wellness": [
     "Fitness & Wellness",
     "Health And Beauty"
   ],
+
   "Marketplace": [
     "Fashion",
     "Electronics",
     "Home And Garden"
   ],
+
   "Security": [
     "Cybersecurity",
     "Electronic Security Systems",
@@ -312,31 +517,39 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Event Security Services",
     "Security Training Services"
   ],
+
   "Tutors": [
     "Tutors",
     "Subjects"
   ],
+
   "Lecturer": [
     "Lecturer",
     "Subjects"
   ],
+
   "Teacher": [
     "Teacher",
     "Subjects"
   ],
+
   "Students": [
     "Students",
     "Books"
   ],
+
   "Pupils": [
     "Pupils",
     "Books"
   ],
+
   "Principal": [
     "Principal"
   ],
+
   "School Head": [
     "School Head"
   ],
+  
   "Other": []
 };
