@@ -1,176 +1,105 @@
 'use client';
 
-import { MinusIcon, PlusIcon, StarIcon, TrashIcon } from '@heroicons/react/24/solid';
 import React from 'react';
 import { MarketListingForm } from '@/types/typings';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
-import classNames from 'classnames';
+import { PlusIcon, MinusIcon, ShoppingCartIcon } from '@heroicons/react/24/solid';
 
-interface ProductCardProps {
-  product: MarketListingForm;
-}
+const loader = ({ src }: { src: string }) => src;
 
-const loader = ({ src }: { src: string }) => {
-  return src;
-}
-
-const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
+export default function ProductCard({ product }: { product: MarketListingForm }) {
+  const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
-  const { slug } = storeFormData || {};
+  const primary = storeFormData?.themeSettings?.primaryColor || '#8B4513';
   
-  const primary = storeFormData?.themeSettings?.primaryColor || '#10B981';
-  const secondary = storeFormData?.themeSettings?.secondaryColor || '#3B82F6';
-
-  const getQuantity = (id: string) => cart.find((item : MarketListingForm) => item.id === id)?.quantity || 0;
-  const quantity = getQuantity(product.id);
-
-  const { name, images, finalPrice, sellingPrice } = product;
-  const rating = 4.5; // Example static value
-  const reviews = 149; // Example static value
-
-  const discount =
-    sellingPrice && finalPrice != null && sellingPrice > finalPrice
-      ? Math.round(((sellingPrice - finalPrice) / sellingPrice) * 100)
-      : null;
-    
-  const rawImage = images && images.length > 0 ? images[0] : null;
-  const imageSrc =
-    typeof rawImage === 'string' && rawImage.trim() !== ''
-      ? rawImage
-      : 'https://via.placeholder.com/300';
+  const quantity = cart.find((item: any) => item.id === product.id)?.quantity || 0;
+  const discount = product.sellingPrice && product.finalPrice 
+    ? Math.round(((product.sellingPrice - product.finalPrice) / product.sellingPrice) * 100) 
+    : null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="relative flex flex-col bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden group border border-gray-100"
+    <motion.div 
+      whileHover={{ y: -10 }}
+      className="group relative bg-white rounded-[2.5rem] p-4 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(62,39,35,0.15)] border border-stone-100"
     >
-      {/* Product Image Section */}
-      <Link
-        href={`/ecommerce/products/${product.id}`}
-        className="block relative h-72 w-full overflow-hidden" // Taller image section
-      >
-        {images && images.length > 0 && (
+      {/* Image Container */}
+      <div className="relative h-64 w-full rounded-[2rem] overflow-hidden bg-stone-50">
+        <Link href={`/ecommerce/products/${product.id}`}>
           <Image
-            src={imageSrc}
-            alt={name}
-            fill
+            src={product.images?.[0] || 'https://via.placeholder.com/300'}
+            alt={product.name}
             loader={loader}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover object-center transition-transform duration-500 group-hover:scale-105" // Subtler, more elegant zoom
-            priority
+            fill
+            className="object-contain p-6 transition-transform duration-700 group-hover:scale-110"
           />
+        </Link>
+        
+        {discount && (
+          <div className="absolute top-4 left-4 bg-[#F3A852] text-[#3E2723] text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
+            {discount}% Crunch
+          </div>
         )}
-        {/* Discount Badge */}
-        {discount !== null && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
-            className="absolute top-4 left-4 z-10 text-white text-xs md:text-sm font-bold px-3 py-1 rounded-full shadow-lg"
-            style={{ backgroundColor: secondary }}
-          >
-            -{discount}% OFF
-          </motion.div>
-        )}
-        {/* View Details Overlay on Hover */}
-        <div className="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-          <motion.span
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-white text-sm md:text-lg font-semibold px-6 py-2 rounded-full backdrop-blur-sm"
-            style={{ backgroundColor: `rgba(255,255,255,0.1)` }}
-          >
-            View Details
-          </motion.span>
-        </div>
-      </Link>
+      </div>
 
-      {/* Product Details and Actions */}
-      <div className="p-6 flex flex-col justify-between flex-grow">
-        {/* Product Title and Rating */}
-        <div className="flex flex-col mb-3">
-          <h4 className="text-xl font-extrabold text-gray-900 truncate" title={name}>
-            {name}
-          </h4>
-          <div className="mt-1 flex items-center gap-1 text-yellow-500 text-sm">
-            <StarIcon className="w-4 h-4" />
-            <span className="font-semibold">{rating.toFixed(1)}</span>
-            <span className="text-gray-500 ml-1 text-xs">({reviews} reviews)</span>
+      {/* Content */}
+      <div className="mt-6 px-2 space-y-1">
+        <div className="flex justify-between items-start">
+          <Link href={`/ecommerce/products/${product.id}`}>
+            <h4 className="text-lg font-black text-[#3E2723] tracking-tight group-hover:text-[#8B4513] transition-colors line-clamp-1">
+              {product.name}
+            </h4>
+          </Link>
+        </div>
+        
+        <p className="text-xs text-stone-400 font-medium">Stone-ground • Organic</p>
+
+        <div className="flex items-center justify-between pt-4">
+          <div className="flex flex-col">
+            <span className="text-2xl font-black text-[#3E2723]">${product.finalPrice?.toFixed(2)}</span>
+            {product.sellingPrice && product.sellingPrice > product.finalPrice && (
+              <span className="text-xs line-through text-stone-300 font-bold">${product.sellingPrice.toFixed(2)}</span>
+            )}
+          </div>
+
+          {/* Dynamic Action Button */}
+          <div className="relative">
+            <AnimatePresence mode="wait">
+              {quantity === 0 ? (
+                <motion.button
+                  key="add"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  onClick={() => addToCart(product)}
+                  className="w-12 h-12 rounded-2xl bg-[#3E2723] text-white flex items-center justify-center hover:bg-[#8B4513] transition-colors shadow-lg"
+                >
+                  <PlusIcon className="w-6 h-6" />
+                </motion.button>
+              ) : (
+                <motion.div
+                  key="qty"
+                  initial={{ width: 48, opacity: 0 }}
+                  animate={{ width: 110, opacity: 1 }}
+                  exit={{ width: 48, opacity: 0 }}
+                  className="h-12 bg-stone-100 rounded-2xl flex items-center justify-between px-2 overflow-hidden border border-stone-200"
+                >
+                  <button onClick={() => decreaseQuantity(product.id)} className="w-8 h-8 rounded-xl hover:bg-white flex items-center justify-center text-[#3E2723] transition-colors">
+                    <MinusIcon className="w-4 h-4" />
+                  </button>
+                  <span className="font-black text-[#3E2723] text-sm">{quantity}</span>
+                  <button onClick={() => addToCart(product)} className="w-8 h-8 rounded-xl hover:bg-white flex items-center justify-center text-[#3E2723] transition-colors">
+                    <PlusIcon className="w-4 h-4" />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
-
-        {/* Price Section */}
-        <div className="flex items-baseline gap-2 mb-4">
-          <span
-            className="text-2xl font-extrabold"
-            style={{ color: primary }}
-          >
-            {(finalPrice ?? 0).toFixed(2)}
-          </span>
-          {sellingPrice && finalPrice && sellingPrice > finalPrice && (
-            <span className="text-base line-through text-gray-400">
-              {sellingPrice.toFixed(2)}
-            </span>
-          )}
-        </div>
-
-        {/* Cart Actions */}
-        {quantity > 0 ? (
-          <div className="flex items-center justify-between mt-auto">
-            <div className="flex items-center space-x-2">
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => decreaseQuantity(product.id)}
-                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-all duration-200"
-              >
-                {quantity === 1 ? (
-                  <TrashIcon className="h-5 w-5 text-red-500" />
-                ) : (
-                  <MinusIcon className="h-5 w-5 text-gray-600" />
-                )}
-              </motion.button>
-              <span className="text-lg text-gray-800 font-bold">{quantity}</span>
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => addToCart(product)}
-                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-all duration-200"
-              >
-                <PlusIcon className="h-5 w-5 text-gray-600" />
-              </motion.button>
-            </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => removeFromCart(product.id)}
-              className="text-sm font-medium text-red-600 hover:text-red-800 transition-colors"
-            >
-              Remove
-            </motion.button>
-          </div>
-        ) : (
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => addToCart(product)}
-            className="mt-auto w-full py-3 rounded-lg text-white font-semibold text-base shadow-lg transition-all duration-300 hover:shadow-xl"
-            style={{
-              // background: `linear-gradient(135deg, ${primary}, ${secondary})`,
-              backgroundColor: primary,
-            }}
-          >
-            Add to Cart
-          </motion.button>
-        )}
       </div>
     </motion.div>
   );
-};
-
-export default ProductCard;
+}

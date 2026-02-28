@@ -1,240 +1,180 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { ChevronLeftIcon, ChevronRightIcon, BeakerIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
 import { HeroSlide } from '@/types/typings';
 
-const transitionDuration = 0.8;
-const autoAdvanceDelay = 6000;
-
+const autoAdvanceDelay = 7000;
 const loader = ({ src }: { src: string }) => src;
 
-export interface HeroSliderProps {
-  heroSlides: HeroSlide[] | null;
-  themeSettings: any;
-}
-
-const sampleSlides: HeroSlide[] = [
-  {
-    headline: 'Timeless\nElegance',
-    subline: 'Limited Edition',
-    badgeText: 'The Midnight Limited Edition features new subtle accents of white luminescent hands and new raised steel indices.',
-    ctaText: 'EXPLORE',
-    ctaLink: '/shop',
-    imageUrl: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?auto=format&fit=crop&w=400&q=80',
-    id: '',
-    companyId: '',
-    type: null,
-    productImageUrl: null,
-    videoLink: null,
-    price: null,
-    endsAt: null,
-    order: 0,
-    iconKey: null,
-    backgroundColor: null,
-    textColor: null
-  }
-];
-
-export default function HeroSlider({ heroSlides }: HeroSliderProps) {
-  const fallbackImage = 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?auto=format&fit=crop&w=400&q=80';
-
-  const heroSlidesToShow: HeroSlide[] = useMemo(() => {
-    if (!heroSlides || heroSlides.length === 0) return sampleSlides;
-
-    return heroSlides.map((slide) => ({
-      ...slide,
-      subline: slide.subline || 'Limited Edition',
-      headline: slide.headline || 'Timeless Elegance',
-      badgeText: slide.badgeText || 'Experience the new subtle accents of luxury.',
-      ctaText: (slide.ctaText || 'EXPLORE').toUpperCase(),
-      ctaLink: slide.ctaLink || '/shop',
-      imageUrl: slide.imageUrl || fallbackImage,
-    }));
-  }, [heroSlides]);
-
+export default function HoneyHero({ heroSlides }: { heroSlides: HeroSlide[] | null }) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
-  const timeoutRef = useRef<number | null>(null);
 
-  const resetTimer = useCallback(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    if (heroSlidesToShow.length > 1) {
-      timeoutRef.current = window.setTimeout(() => {
-        setDirection(1);
-        setCurrent((prev) => (prev + 1) % heroSlidesToShow.length);
-      }, autoAdvanceDelay);
-    }
-  }, [heroSlidesToShow.length]);
+  const slides = useMemo(() => {
+    const fallback = 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=1200&auto=format&fit=crop';
+    if (!heroSlides || heroSlides.length === 0) return [{
+      headline: "NATURE'S GOLDEN\nALCHEMY.",
+      subline: "Batch No. 724 / Wildflower",
+      badgeText: "Unfiltered, raw honey harvested from the sun-drenched meadows of the valley. A complex profile with notes of clover and citrus.",
+      ctaText: "Shop the Harvest",
+      ctaLink: "/shop",
+      imageUrl: fallback
+    }];
+    return heroSlides;
+  }, [heroSlides]);
+
+  const nextSlide = useCallback(() => {
+    setDirection(1);
+    setCurrent((prev) => (prev + 1) % slides.length);
+  }, [slides.length]);
+
+  const prevSlide = () => {
+    setDirection(-1);
+    setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
+  };
 
   useEffect(() => {
-    resetTimer();
-    return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
-  }, [current, resetTimer]);
-
-  const goTo = (idx: number, dir = 0) => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setDirection(dir);
-    setCurrent(idx);
-  };
-
-  const prevSlide = () => goTo((current - 1 + heroSlidesToShow.length) % heroSlidesToShow.length, -1);
-  const nextSlide = () => goTo((current + 1) % heroSlidesToShow.length, 1);
-
-  const handleDragEnd = (_: any, info: PanInfo) => {
-    if (info.offset.x < -50) nextSlide();
-    else if (info.offset.x > 50) prevSlide();
-  };
-
-  const slideVariants = {
-    enter: (dir: number) => ({ opacity: 0, x: dir > 0 ? 100 : -100 }),
-    center: { opacity: 1, x: 0, transition: { duration: transitionDuration, ease: [0.16, 1, 0.3, 1] } },
-    exit: (dir: number) => ({ opacity: 0, x: dir < 0 ? 100 : -100, transition: { duration: transitionDuration } }),
-  };
-
-  if (heroSlidesToShow.length === 0) return null;
-  const slide = heroSlidesToShow[current];
+    const timer = setInterval(nextSlide, autoAdvanceDelay);
+    return () => clearInterval(timer);
+  }, [nextSlide]);
 
   return (
-    <section className="relative bg-black min-h-screen flex items-center overflow-hidden">
-      
-      {/* ORGANIC DESIGN ATTRIBUTES (FROM IMAGE_6204FC) */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        {/* Top Left Botanical Branch */}
-        <div className="absolute top-10 left-10 w-32 h-48 opacity-40 grayscale invert">
-           <svg viewBox="0 0 100 150" className="w-full h-full text-white fill-current">
-              <path d="M10,140 Q30,100 50,80 T90,20 M10,140 Q15,110 30,105 M30,105 Q40,90 45,70" stroke="currentColor" fill="none" strokeWidth="1.5" />
-              <ellipse cx="32" cy="103" rx="8" ry="4" transform="rotate(-30 32 103)" />
-              <ellipse cx="47" cy="68" rx="8" ry="4" transform="rotate(-45 47 68)" />
-           </svg>
-        </div>
-
-        {/* Floating Animated Bees (From Image_6204FC) */}
-        <motion.div 
-          animate={{ y: [0, -15, 0], x: [0, 10, 0] }}
-          transition={{ duration: 5, repeat: Infinity }}
-          className="absolute top-[20%] left-[45%] w-8 h-8 opacity-60"
-        >
-          <Image src="https://img.icons8.com/ios-filled/50/ffffff/bee.png" alt="bee" width={32} height={32} loader={loader} />
-        </motion.div>
-
-        {/* Curved Dotted Path (From Image_5F5D62) */}
-        <svg className="absolute bottom-0 left-0 w-full h-64 opacity-20" viewBox="0 0 1440 320">
-          <path 
-            fill="none" 
-            stroke="white" 
-            strokeWidth="2" 
-            strokeDasharray="8 12" 
-            d="M0,224C240,288,480,288,720,224C960,160,1200,160,1440,224" 
+    <section className="relative min-h-[90vh] flex items-center bg-[#FDFCF7] overflow-hidden">
+      {/* Organic Background Elements */}
+      <div className="absolute inset-0 pointer-events-none">
+        {/* Animated Pollen Particles */}
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={i}
+            animate={{ 
+              y: [0, -100, 0], 
+              x: [0, 50, 0],
+              opacity: [0, 0.4, 0] 
+            }}
+            transition={{ duration: 10 + i * 2, repeat: Infinity, delay: i * 1.5 }}
+            className="absolute w-1 h-1 bg-[#D4AF37] rounded-full"
+            style={{ top: `${20 + i * 15}%`, left: `${10 + i * 12}%` }}
           />
-        </svg>
-
-        {/* Bottom Left Flowers */}
-        <div className="absolute bottom-10 left-10 w-24 h-24 opacity-40 grayscale invert">
-          <svg viewBox="0 0 100 100" className="w-full h-full text-white fill-current">
-            <circle cx="50" cy="50" r="10" />
-            <path d="M50,10 Q60,30 50,40 Q40,30 50,10 M90,50 Q70,60 60,50 Q70,40 90,50 M50,90 Q40,70 50,60 Q60,70 50,90 M10,50 Q30,40 40,50 Q30,60 10,50" />
-          </svg>
-        </div>
+        ))}
+        {/* Decorative Golden Blur */}
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#F3A852] opacity-10 blur-[120px] rounded-full" />
       </div>
 
-      <AnimatePresence initial={false} custom={direction} mode="wait">
-        <motion.div
-          key={current}
-          custom={direction}
-          variants={slideVariants}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
-          onDragEnd={handleDragEnd}
-          className="w-full z-10"
-        >
-          <div className="container mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            
-            {/* TEXT PANEL */}
-            <div className="order-2 lg:order-1 space-y-8 z-10">
-              <div className="space-y-2">
-                <span className="text-[#bc9c64] text-xs font-bold tracking-[0.4em] uppercase">
-                  {slide.subline}
-                </span>
-                <h1 className="text-white text-6xl md:text-7xl lg:text-9xl font-bold leading-[0.9] tracking-tighter">
-                  {slide.headline?.split('\n').map((line, i) => (
-                    <React.Fragment key={i}>
-                      {line}<br />
-                    </React.Fragment>
-                  ))}
-                </h1>
-              </div>
+      <div className="container mx-auto px-6 lg:px-20 relative z-10">
+        <AnimatePresence mode="wait" custom={direction}>
+          <motion.div
+            key={current}
+            initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction > 0 ? -50 : 50 }}
+            transition={{ duration: 0.8, ease: [0.19, 1, 0.22, 1] }}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center"
+          >
+            {/* 01. Text Block */}
+            <div className="lg:col-span-5 order-2 lg:order-1">
+              <motion.span 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="inline-block text-[10px] font-black uppercase tracking-[0.5em] text-[#B8860B] mb-6"
+              >
+                {slides[current].subline}
+              </motion.span>
+              
+              <h1 className="text-5xl md:text-7xl font-serif italic text-[#3E2723] leading-[0.9] mb-8 tracking-tight">
+                {slides[current].headline.split('\n').map((text, i) => (
+                  <span key={i} className="block">{text}</span>
+                ))}
+              </h1>
 
-              <p className="text-gray-400 text-lg max-w-sm leading-relaxed">
-                {slide.badgeText}
+              <p className="text-stone-500 text-sm md:text-base max-w-sm mb-10 leading-relaxed font-medium">
+                {slides[current].badgeText}
               </p>
 
-              <Link
-                href={slide.ctaLink || '/shop'}
-                className="inline-block bg-[#bc9c64] hover:bg-[#a68a58] text-white px-10 py-4 text-xs font-bold uppercase tracking-[0.2em] transition-all relative overflow-hidden group"
-              >
-                <span className="relative z-10">{slide.ctaText}</span>
-              </Link>
-            </div>
-
-            {/* DUAL IMAGE PANEL (FROM IMAGE_6FA879) */}
-            <div className="order-1 lg:order-2 relative flex items-center justify-end h-[450px] md:h-[650px] space-x-6">
-              <div className="w-1/5 h-[80%] relative overflow-hidden grayscale opacity-50 border border-white/10">
-                <Image
-                  src={slide.imageUrl || fallbackImage}
-                  alt="Detail"
-                  fill
-                  className="object-cover"
-                  sizes="20vw"
-                  priority
-                  loader={loader}
-                />
-              </div>
-
-              <div className="w-4/5 h-full relative overflow-hidden shadow-2xl border border-white/5">
-                <Image
-                  src={slide.imageUrl || fallbackImage}
-                  alt={slide.headline || 'Hero'}
-                  fill
-                  className="object-cover"
-                  sizes="80vw"
-                  priority
-                  loader={loader}
-                />
+              <div className="flex flex-col sm:flex-row items-start gap-8">
+                <Link
+                  href={slides[current].ctaLink || '#'}
+                  className="px-10 py-4 bg-[#3E2723] text-white text-[11px] font-black uppercase tracking-widest rounded-full hover:bg-[#B8860B] transition-colors shadow-xl shadow-stone-200"
+                >
+                  {slides[current].ctaText}
+                </Link>
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center">
+                        <BeakerIcon className="w-5 h-5 text-amber-600" />
+                    </div>
+                    <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Lab-Tested Purity</span>
+                </div>
               </div>
             </div>
 
-          </div>
-        </motion.div>
-      </AnimatePresence>
+            {/* 02. Image Composition */}
+            <div className="lg:col-span-7 order-1 lg:order-2 relative h-[400px] md:h-[600px]">
+              <div className="relative w-full h-full flex items-center justify-center">
+                {/* Main Image Frame */}
+                <motion.div 
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="relative w-4/5 h-[90%] z-10 rounded-t-[200px] rounded-b-2xl overflow-hidden border-[12px] border-white shadow-2xl"
+                >
+                  <Image 
+                    src={slides[current].imageUrl} 
+                    alt="Honey" 
+                    fill 
+                    loader={loader}
+                    className="object-cover"
+                  />
+                </motion.div>
+                
+                {/* Accent Detail Frame */}
+                <motion.div 
+                  initial={{ x: 50, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="absolute -right-4 bottom-10 w-48 h-64 z-20 rounded-2xl overflow-hidden border-8 border-white shadow-xl hidden md:block"
+                >
+                  <Image 
+                    src={slides[current].imageUrl} 
+                    alt="Detail" 
+                    fill 
+                    loader={loader}
+                    className="object-cover scale-150" 
+                  />
+                  <div className="absolute inset-0 bg-amber-900/10" />
+                </motion.div>
 
-      {/* NAVIGATION CONTROLS */}
-      <div className="absolute bottom-12 left-6 lg:left-24 flex items-center space-x-12 z-30">
-        <div className="flex space-x-6">
-          <button onClick={prevSlide} className="text-white hover:text-[#bc9c64] transition-colors p-2 border border-white/10 hover:border-[#bc9c64] rounded-full">
-            <ChevronLeftIcon className="h-5 w-5" />
-          </button>
-          <button onClick={nextSlide} className="text-white hover:text-[#bc9c64] transition-colors p-2 border border-white/10 hover:border-[#bc9c64] rounded-full">
-            <ChevronRightIcon className="h-5 w-5" />
-          </button>
-        </div>
+                {/* Decorative "Honey Drop" SVG */}
+                <svg className="absolute -left-10 top-20 w-32 h-32 text-amber-100 fill-current -z-10" viewBox="0 0 100 100">
+                    <path d="M50 0 C20 40 20 70 50 100 C80 70 80 40 50 0" />
+                </svg>
+              </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
-        <div className="flex items-center space-x-3">
-          {heroSlidesToShow.map((_, idx) => (
-            <div
-              key={idx}
-              className={`h-[1.5px] transition-all duration-700 ${
-                idx === current ? 'w-16 bg-[#bc9c64]' : 'w-6 bg-gray-800'
-              }`}
+      {/* Navigation Layer */}
+      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-12 z-30">
+        <button onClick={prevSlide} className="group flex items-center gap-2">
+            <ChevronLeftIcon className="w-5 h-5 text-stone-300 group-hover:text-[#3E2723] transition-colors" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-stone-300 group-hover:text-[#3E2723]">Prev</span>
+        </button>
+        
+        <div className="flex gap-3">
+          {slides.map((_, i) => (
+            <div 
+              key={i} 
+              className={`h-1 rounded-full transition-all duration-500 ${i === current ? 'w-12 bg-[#B8860B]' : 'w-2 bg-stone-200'}`} 
             />
           ))}
         </div>
+
+        <button onClick={nextSlide} className="group flex items-center gap-2">
+            <span className="text-[10px] font-black uppercase tracking-widest text-stone-300 group-hover:text-[#3E2723]">Next</span>
+            <ChevronRightIcon className="w-5 h-5 text-stone-300 group-hover:text-[#3E2723] transition-colors" />
+        </button>
       </div>
     </section>
   );

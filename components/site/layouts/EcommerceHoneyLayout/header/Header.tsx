@@ -111,7 +111,7 @@ export default function Header() {
 
             {/* Cart with count - Styled like image_5f4e43.png */}
             <button 
-              onClick={() => setIsCartOpen(false)}
+              onClick={() => setIsCartOpen(true)}
               className="relative text-black hover:text-[#bc9c64] transition-colors"
             >
               <ShoppingBagIcon className="h-5 w-5 stroke-2" />

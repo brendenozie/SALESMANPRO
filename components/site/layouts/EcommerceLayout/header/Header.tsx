@@ -326,7 +326,7 @@ export default function Header() {
             <motion.button
               whileHover={{ scale: 1.1, color: primaryColor }}
               className="relative transition-colors text-gray-900"
-              onClick={() => setIsCartOpen(false)}
+              onClick={() => setIsCartOpen(true)}
               // onClick={() => {
               //   if(cart.length === 0) return;
               //   if(user){

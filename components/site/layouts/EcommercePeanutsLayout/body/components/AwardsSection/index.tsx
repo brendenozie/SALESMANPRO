@@ -5,23 +5,22 @@ import Image from 'next/image';
 import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { Award } from '@/types/typings';
-import { TrophyIcon } from '@heroicons/react/24/solid';
+import { StarIcon } from '@heroicons/react/24/solid';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: { 
     opacity: 1, 
-    transition: { staggerChildren: 0.15 } 
+    transition: { staggerChildren: 0.2 } 
   },
 };
 
 const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 30, skewX: -5 },
+  hidden: { opacity: 0, y: 20 },
   visible: { 
     opacity: 1, 
     y: 0, 
-    skewX: 0,
-    transition: { duration: 0.6, ease: "easeOut" } 
+    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } 
   },
 };
 
@@ -29,48 +28,53 @@ const loader = ({ src, width }: { src: string; width: number }) => `${src}?w=${w
 
 export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
   const { storeFormData } = useStoreContext();
-  const accent = '#FF003C'; // Empire Red
+  const peanutGold = '#F3A852';
+  const darkCocoa = '#3E2723';
 
-  // Gaming-themed fallback data
   const defaultAwards = [
-    { iconUrl: 'https://images.unsplash.com/photo-1542838686-37a5027588b3', name: 'Digital Innovator 2026' },
-    { iconUrl: 'https://images.unsplash.com/photo-1629910419355-6b2257321598', name: 'E-commerce Excellence' },
-    { iconUrl: 'https://images.unsplash.com/photo-1579201529431-a4773221b033', name: 'Elite Choice Award' },
-    { iconUrl: 'https://images.unsplash.com/photo-1563729571343-98282367c00e', name: 'Industry Vanguard' },
+    { iconUrl: 'https://cdn-icons-png.flaticon.com/512/603/603332.png', name: 'Organic Certified 2026' },
+    { iconUrl: 'https://cdn-icons-png.flaticon.com/512/2643/2643719.png', name: 'Premium Roast Master' },
+    { iconUrl: 'https://cdn-icons-png.flaticon.com/512/3100/3100109.png', name: 'Pantry Choice Gold' },
+    { iconUrl: 'https://cdn-icons-png.flaticon.com/512/10617/10617300.png', name: 'Eco-Friendly Farmed' },
   ];
 
   const awardsToDisplay = awards && awards.length > 0 ? awards : defaultAwards;
 
   return (
-    <section className="relative py-24 bg-zinc-950 overflow-hidden">
-      {/* Background HUD Graphics */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-red-600/50 to-transparent" />
-      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-red-600/10 rounded-full blur-[120px] pointer-events-none" />
+    <section className="relative py-24 bg-[#FAF7F2] overflow-hidden">
+      {/* Soft Organic Decorative Glows */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#F3A852]/5 rounded-full blur-[100px] -mr-64 -mt-64" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#8B4513]/5 rounded-full blur-[80px] -ml-48 -mb-48" />
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">
-          <div className="max-w-2xl">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="w-8 h-[2px] bg-red-600" />
-              <span className="font-mono text-xs tracking-[0.5em] text-red-500 uppercase font-black">
-                Achievements_Unlocked
-              </span>
-            </div>
-            <h2 className="text-4xl md:text-6xl font-black italic text-white uppercase tracking-tighter leading-none">
-              RECOGNIZED FOR <span className="text-red-600">DOMINANCE</span>
-            </h2>
-          </div>
-          <p className="text-zinc-500 font-mono text-[10px] uppercase max-w-[200px] text-right hidden md:block">
-            Verified by global industry leaders // High performance standards met.
+        <div className="text-center mb-20">
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-center gap-3 mb-4"
+          >
+            <span className="h-px w-8 bg-[#F3A852]" />
+            <span className="font-black text-[10px] uppercase tracking-[0.4em] text-[#8B4513]">
+              World_Class_Heritage
+            </span>
+            <span className="h-px w-8 bg-[#F3A852]" />
+          </motion.div>
+          
+          <h2 className="text-4xl md:text-6xl font-black text-[#3E2723] tracking-tighter leading-tight mb-6">
+            RECOGNIZED FOR <br />
+            <span className="text-[#F3A852]">PURE EXCELLENCE</span>
+          </h2>
+          <p className="text-[#3E2723]/60 max-w-lg mx-auto font-medium text-sm">
+            From sustainable farming to small-batch roasting, our commitment to quality is verified by the industry's highest standards.
           </p>
         </div>
         
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8"
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: true }}
           variants={containerVariants}
         >
           {awardsToDisplay.map((award: any, idx) => {
@@ -81,56 +85,66 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
               <motion.div
                 key={idx}
                 variants={cardVariants}
-                className="group relative bg-zinc-900/50 border border-white/5 hover:border-red-600/50 transition-all duration-500 p-8 flex flex-col items-center justify-center min-h-[220px] overflow-hidden"
+                className="group relative bg-white rounded-[2.5rem] p-8 flex flex-col items-center text-center transition-all duration-500 hover:shadow-[0_20px_50px_rgba(62,39,35,0.08)] border border-stone-100"
               >
-                {/* Tactical Card Decorations */}
-                <div className="absolute top-0 right-0 w-2 h-2 bg-red-600/20" />
-                <div className="absolute bottom-2 left-2 font-mono text-[8px] text-white/5 tracking-widest">
-                  SECTOR_{idx + 101}
-                </div>
-
+                {/* Stamp Circle decoration */}
+                <div className="absolute inset-0 m-auto w-32 h-32 border border-[#F3A852]/10 rounded-full scale-0 group-hover:scale-100 transition-transform duration-700 ease-out" />
+                
                 {/* Main Content */}
-                <div className="relative z-10 w-full h-full flex flex-col items-center">
-                  <div className="relative w-20 h-20 mb-6">
+                <div className="relative z-10">
+                  <div className="relative w-16 h-16 mb-6 mx-auto">
                     {src ? (
                       <Image
                         src={src}
                         alt={label}
                         loader={loader}
                         fill
-                        className="object-contain grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500"
+                        className="object-contain transition-all duration-500 brightness-50 group-hover:brightness-100 group-hover:scale-110"
                       />
                     ) : (
-                      <TrophyIcon className="w-full h-full text-zinc-800 group-hover:text-red-600 transition-colors" />
+                      <StarIcon className="w-full h-full text-[#F3A852]" />
                     )}
                   </div>
                   
-                  <div className="text-center">
-                    <h3 className="text-sm font-black italic text-zinc-400 group-hover:text-white uppercase tracking-widest transition-colors leading-tight">
-                      {label}
-                    </h3>
-                  </div>
+                  <h3 className="text-xs font-black text-[#3E2723] uppercase tracking-[0.15em] leading-relaxed max-w-[120px] mx-auto">
+                    {label}
+                  </h3>
                 </div>
 
-                {/* Hover Glow Effect */}
-                <div className="absolute inset-0 bg-gradient-to-br from-red-600/0 via-transparent to-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute bottom-0 left-0 w-full h-[1px] bg-white/5 group-hover:bg-red-600 transition-all duration-500" />
+                {/* Corner detail */}
+                <div className="absolute top-6 right-6 text-[10px] font-black text-[#F3A852]/20 font-mono">
+                  0{idx + 1}
+                </div>
               </motion.div>
             );
           })}
         </motion.div>
 
-        {/* Bottom Ticker/Status Line */}
-        <div className="mt-12 flex items-center justify-center gap-4 py-4 border-y border-white/5">
-          <div className="flex gap-2">
-            {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 bg-red-600" />)}
-          </div>
-          <span className="font-mono text-[10px] text-zinc-600 uppercase tracking-[0.3em]">
-            Elite Tier Certification Active
-          </span>
-          <div className="flex gap-2">
-            {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 bg-red-600" />)}
-          </div>
+        {/* Floating Quality Seal */}
+        <motion.div 
+          animate={{ rotate: 360 }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute -bottom-10 -right-10 w-32 h-32 opacity-10 hidden xl:block"
+        >
+          <svg viewBox="0 0 100 100" className="w-full h-full fill-[#3E2723]">
+            <path id="circlePath" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="transparent" />
+            <text className="text-[10px] font-black uppercase tracking-[2px]">
+              <textPath xlinkHref="#circlePath">The Best Roast in the City • Quality First •</textPath>
+            </text>
+          </svg>
+        </motion.div>
+
+        {/* Bottom Status Ticker */}
+        <div className="mt-20 flex items-center justify-center gap-6">
+           <span className="h-px flex-1 bg-stone-200 hidden sm:block" />
+           <div className="flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-[#F3A852]" />
+              <span className="font-black text-[9px] text-stone-400 uppercase tracking-[0.3em]">
+                Authenticity Verified // Batch #2026-A
+              </span>
+              <div className="w-2 h-2 rounded-full bg-[#F3A852]" />
+           </div>
+           <span className="h-px flex-1 bg-stone-200 hidden sm:block" />
         </div>
       </div>
     </section>

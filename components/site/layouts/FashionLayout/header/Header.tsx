@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession, signIn, signOut } from 'next-auth/react';
+import CartDrawer from './CartDrawer';
 
 // Helper for image loader
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -41,6 +42,7 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [scrolled, setScrolled] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
@@ -218,14 +220,36 @@ export default function Header() {
 
           {/* Icons + Auth */}
           <div className="flex gap-4 items-center">
-            <ShoppingBagIcon
+            {/* <ShoppingBagIcon
               className="w-6 h-6 text-slate-800 cursor-pointer hover:text-indigo-600 transition-colors"
-              onClick={() => {
+              onClick={() => setIsCartOpen(true)} 
+              // onClick={() => {
                 if (cart.length === 0) return;
                 if (user) router.push(`/ecommerce/checkout`);
                 else handleGoogleSignIn();
               }}
-            />
+            />*/}
+            <motion.button
+                whileHover={{ scale: 1.1, color: primaryColor }}
+                className="relative transition-colors text-gray-900"
+                onClick={() => setIsCartOpen(true)}
+                // onClick={() => {  
+                //   if (cart.length === 0) return;
+                //   if (!user) {
+                //     handleGoogleSignIn();
+                //     return;
+                //   }
+                //   router.push(`/ecommerceshoes/checkout`);
+                // }}
+                aria-label={`Shopping cart with ${cart.length} items`}
+              >
+                <ShoppingBagIcon className="h-6 w-6" />
+                {cart.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                    {cart.length}
+                  </span>
+                )}
+              </motion.button>
             {status === 'loading' ? null : user ? (
               <UserIcon
                 className="w-6 h-6 text-slate-800 cursor-pointer hover:text-indigo-600 transition-colors"
@@ -364,6 +388,11 @@ export default function Header() {
             onClick={toggleMobileMenu}
           />
         )}
+      </AnimatePresence>
+      
+      {/* Cart Drawer */}
+      <AnimatePresence>
+        {isCartOpen && <CartDrawer isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} />}
       </AnimatePresence>
     </>
   );

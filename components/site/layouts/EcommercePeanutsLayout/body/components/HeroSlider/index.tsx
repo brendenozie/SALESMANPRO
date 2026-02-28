@@ -1,182 +1,131 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronLeftIcon, ChevronRightIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { ChevronLeftIcon, ChevronRightIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
-import { HeroSlide } from '@/types/typings';
 
 /* -------------------------------------------------------------------------- */
 /* Design Elements */
 /* -------------------------------------------------------------------------- */
 
-const USPItem = ({ Icon, label }: { Icon: React.FC; label: string }) => (
-  <div className="flex flex-col items-center group">
-    <div className="w-14 h-14 rounded-full border-2 border-amber-100 flex items-center justify-center mb-2 group-hover:bg-amber-500 group-hover:border-amber-500 transition-all duration-300">
-      <div className="text-amber-900 group-hover:text-white">
-        <Icon />
-      </div>
-    </div>
-    <span className="text-[10px] font-black uppercase tracking-widest text-amber-900/40 group-hover:text-amber-900 transition-colors">
-      {label}
-    </span>
+const StatBadge = ({ value, label }: { value: string; label: string }) => (
+  <div className="flex flex-col">
+    <span className="text-xl font-black text-[#3E2723] leading-none">{value}</span>
+    <span className="text-[9px] uppercase tracking-[0.2em] text-stone-400 font-bold mt-1">{label}</span>
   </div>
 );
 
-const loader = ({ src }: { src: string }) => src; // Bypass Next.js optimization for external URLs
-
-const FloatingPeanut = ({ delay, className }: { delay: number; className: string }) => (
-  <motion.div
-    initial={{ y: 0, rotate: 0 }}
-    animate={{ y: [0, -20, 0], rotate: [0, 10, -10, 0] }}
-    transition={{ duration: 5, repeat: Infinity, delay }}
-    className={`absolute pointer-events-none select-none opacity-20 md:opacity-40 ${className}`}
-  >
-    <span className="text-4xl">🥜</span>
-  </motion.div>
-);
+const loader = ({ src }: { src: string }) => src;
 
 /* -------------------------------------------------------------------------- */
 /* Main Component */
 /* -------------------------------------------------------------------------- */
 
-export default function PeanutHeroRedesign({ heroSlides, themeSettings }: any) {
-  const primary = themeSettings?.primaryColor || '#8B4513';
+export default function PeanutHeroIntuitive({ heroSlides }: any) {
   const [current, setCurrent] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
   const slides = (heroSlides && heroSlides.length > 0) ? heroSlides : [
     {
-      headline: "PURELY NUTS.\nNO NONSENSE.",
-      subline: "Stone-Ground Perfection",
-      badgeText: "Experience the crunch of 100% slow-roasted Argentinian peanuts. No palm oil, just pure energy.",
-      ctaText: "Grab a Jar",
+      headline: "The Art of the Roast.",
+      subline: "Batch No. 042",
+      badgeText: "Discover a deeper, more complex peanut butter. Slow-roasted in small batches to unlock hidden notes of caramel and smoke.",
+      ctaText: "Explore the Collection",
       imageUrl: "https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?q=80&w=1000&auto=format&fit=crop",
-      color: "#FDF8F1"
     },
     {
-      headline: "CREAMY OR\nCRUNCHY?",
-      subline: "The Great Debate",
-      badgeText: "Whether you're a smooth operator or a texture seeker, we've got the perfect roast for your toast.",
-      ctaText: "Explore Texture",
+      headline: "Texture, Refined.",
+      subline: "Velvet Smoothness",
+      badgeText: "Our triple-milled process ensures a silk-like consistency that melts instantly. No stabilizers, just pure nut oils.",
+      ctaText: "Shop Creamy",
       imageUrl: "https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?q=80&w=1000&auto=format&fit=crop",
-      color: "#FFFBF2"
     }
   ];
 
-  useEffect(() => {
-    if (!isAutoPlaying) return;
-    const interval = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % slides.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [isAutoPlaying, slides.length]);
-
   return (
-    <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-[#FAF7F2]">
+    <section className="relative min-h-[100vh] flex items-center bg-[#FCFAF7] overflow-hidden py-20 lg:py-0">
       
-      {/* Texture Overlay */}
-      <div className="absolute inset-0 opacity-[0.04] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/p6.png')] z-10" />
+      {/* Structural Decor */}
+      <div className="absolute top-0 right-0 w-1/3 h-full bg-[#F3A852]/5 hidden lg:block" />
+      <div className="absolute left-12 top-1/2 -translate-y-1/2 h-64 w-[1px] bg-stone-200 hidden xl:block" />
 
-      {/* Background Floating Elements */}
-      <FloatingPeanut delay={0} className="top-20 left-[10%]" />
-      <FloatingPeanut delay={1} className="bottom-40 left-[5%]" />
-      <FloatingPeanut delay={2} className="top-40 right-[15%]" />
-      <FloatingPeanut delay={0.5} className="bottom-20 right-[10%]" />
-
-      <div className="container mx-auto px-6 lg:px-12 relative z-20">
+      <div className="container mx-auto px-6 lg:px-24 relative z-20">
         <AnimatePresence mode="wait">
           <motion.div
             key={current}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6 }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.5, ease: "circOut" }}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center"
           >
-            {/* Left: Content Stage */}
-            <div className="order-2 lg:order-1 text-center lg:text-left">
+            {/* 01. Content Stage (5 cols) */}
+            <div className="lg:col-span-5 order-2 lg:order-1 text-left">
               <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
               >
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100/50 text-amber-900 mb-6">
-                  <SparklesIcon className="w-4 h-4" />
-                  <span className="text-xs font-black uppercase tracking-widest">{slides[current].subline}</span>
-                </div>
+                <span className="inline-block text-[10px] font-black uppercase tracking-[0.4em] text-[#F3A852] mb-4">
+                  {slides[current].subline}
+                </span>
 
-                <h1 className="text-5xl md:text-7xl xl:text-8xl font-black text-[#3E2723] leading-[0.9] mb-6">
-                  {slides[current].headline.split('\n').map((text: string, i: number) => (
-                    <span key={i} className="block">{text}</span>
-                  ))}
+                <h1 className="text-4xl md:text-5xl xl:text-6xl font-black text-[#3E2723] leading-tight mb-6 tracking-tighter">
+                  {slides[current].headline}
                 </h1>
 
-                <p className="text-lg text-stone-600 mb-10 max-w-lg mx-auto lg:mx-0 font-medium leading-relaxed">
+                <p className="text-sm md:text-base text-stone-500 mb-10 max-w-sm font-medium leading-relaxed">
                   {slides[current].badgeText}
                 </p>
 
-                <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6">
+                <div className="flex items-center gap-8">
                   <Link
                     href="/shop"
-                    className="group relative px-10 py-5 bg-[#3E2723] text-white rounded-2xl font-black uppercase tracking-widest text-sm overflow-hidden transition-all hover:scale-105 active:scale-95"
+                    className="group flex items-center gap-4 text-[11px] font-black uppercase tracking-[0.2em] text-[#3E2723] transition-all"
                   >
-                    <span className="relative z-10">{slides[current].ctaText}</span>
-                    <div className="absolute inset-0 bg-amber-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                  </Link>
-                  
-                  <Link href="/about" className="text-sm font-black uppercase tracking-widest text-[#3E2723] hover:text-amber-600 transition-colors">
-                    Our Process
+                    <span className="border-b-2 border-[#3E2723] pb-1 group-hover:border-[#F3A852] group-hover:text-[#F3A852] transition-colors">
+                      {slides[current].ctaText}
+                    </span>
+                    <div className="p-3 bg-[#3E2723] rounded-full text-white group-hover:bg-[#F3A852] group-hover:text-[#3E2723] transition-all">
+                      <ArrowRightIcon className="w-4 h-4" />
+                    </div>
                   </Link>
                 </div>
-              </motion.div>
 
-              {/* USPs: Line Icons */}
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="flex items-center justify-center lg:justify-start gap-12 mt-16 pt-8 border-t border-amber-900/5"
-              >
-                <USPItem Icon={() => <span>🚫🌴</span>} label="Palm Free" />
-                <USPItem Icon={() => <span>🌾</span>} label="Gluten Free" />
-                <USPItem Icon={() => <span>🫘</span>} label="No Added Soy" />
+                {/* Micro Stats */}
+                <div className="flex gap-10 mt-16 pt-10 border-t border-stone-100">
+                  <StatBadge value="100%" label="Natural" />
+                  <StatBadge value="0%" label="Palm Oil" />
+                  <StatBadge value="Argentine" label="Origin" />
+                </div>
               </motion.div>
             </div>
 
-            {/* Right: Visual Stage */}
-            <div className="order-1 lg:order-2 relative h-[400px] md:h-[600px] flex items-center justify-center">
+            {/* 02. Visual Stage (7 cols) */}
+            <div className="lg:col-span-7 order-1 lg:order-2 relative flex items-center justify-center">
               <motion.div 
-                initial={{ scale: 0.8, opacity: 0, rotate: -5 }}
-                animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                transition={{ type: "spring", stiffness: 100, damping: 20 }}
-                className="relative w-full h-full"
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="relative w-full aspect-square max-w-[500px]"
               >
-                {/* Decorative Jar Backdrop */}
-                <div className="absolute inset-0 bg-[#F5DEB3] clip-path-peanut opacity-20 scale-110 rotate-12" />
+                {/* Minimalist Jar Backdrop */}
+                <div className="absolute inset-0 bg-white rounded-full shadow-[0_40px_80px_rgba(0,0,0,0.03)] scale-90" />
                 
                 <Image
                   src={slides[current].imageUrl}
-                  alt="Peanut Butter"
+                  alt="Product"
                   fill
-                  className="object-contain drop-shadow-[0_35px_35px_rgba(62,39,35,0.2)]"
+                  className="object-contain drop-shadow-[0_20px_40px_rgba(62,39,35,0.15)] p-12"
                   priority
                   loader={loader}
                 />
-              </motion.div>
 
-              {/* Floating "Natural" Badge */}
-              <motion.div
-                animate={{ rotate: [0, 360] }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="absolute -top-4 right-10 w-24 h-24 md:w-32 md:h-32 pointer-events-none"
-              >
-                <svg viewBox="0 0 100 100" className="w-full h-full text-amber-600/20 fill-current">
-                   <path d="M50 0 L60 40 L100 50 L60 60 L50 100 L40 60 L0 50 L40 40 Z" />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center text-[10px] font-black uppercase text-amber-900 text-center leading-tight">
-                  100%<br/>Natural
+                {/* Draggable-feel badge */}
+                <div className="absolute bottom-[15%] right-0 bg-white p-4 rounded-2xl shadow-xl border border-stone-50 flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-[#3E2723]">In Stock: Limited Batch</span>
                 </div>
               </motion.div>
             </div>
@@ -184,37 +133,26 @@ export default function PeanutHeroRedesign({ heroSlides, themeSettings }: any) {
         </AnimatePresence>
       </div>
 
-      {/* Slider Controls */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-8 z-30">
-        <button 
-          onClick={() => setCurrent((prev) => (prev - 1 + slides.length) % slides.length)}
-          className="p-3 rounded-full border border-amber-900/10 hover:bg-white hover:shadow-xl transition-all"
-        >
-          <ChevronLeftIcon className="w-5 h-5 text-[#3E2723]" />
-        </button>
-
-        <div className="flex gap-2">
-          {slides.map((_ : any, i : any) => (
-            <div 
-              key={i} 
-              className={`h-1.5 transition-all duration-500 rounded-full ${i === current ? 'w-8 bg-[#3E2723]' : 'w-2 bg-[#3E2723]/20'}`} 
-            />
-          ))}
+      {/* Sleek Pagination */}
+      <div className="absolute bottom-12 right-12 flex items-center gap-6 z-30">
+        <div className="text-[10px] font-black text-[#3E2723] tracking-widest">
+          0{current + 1} <span className="text-stone-300 mx-2">/</span> 0{slides.length}
         </div>
-
-        <button 
-          onClick={() => setCurrent((prev) => (prev + 1) % slides.length)}
-          className="p-3 rounded-full border border-amber-900/10 hover:bg-white hover:shadow-xl transition-all"
-        >
-          <ChevronRightIcon className="w-5 h-5 text-[#3E2723]" />
-        </button>
+        <div className="flex gap-2">
+          <button 
+            onClick={() => setCurrent((prev) => (prev - 1 + slides.length) % slides.length)}
+            className="w-10 h-10 flex items-center justify-center rounded-full border border-stone-200 hover:bg-[#3E2723] hover:text-white transition-all"
+          >
+            <ChevronLeftIcon className="w-4 h-4" />
+          </button>
+          <button 
+            onClick={() => setCurrent((prev) => (prev + 1) % slides.length)}
+            className="w-10 h-10 flex items-center justify-center rounded-full border border-stone-200 hover:bg-[#3E2723] hover:text-white transition-all"
+          >
+            <ChevronRightIcon className="w-4 h-4" />
+          </button>
+        </div>
       </div>
-
-      <style jsx global>{`
-        .clip-path-peanut {
-          clip-path: ellipse(40% 50% at 50% 50%);
-        }
-      `}</style>
     </section>
   );
 }

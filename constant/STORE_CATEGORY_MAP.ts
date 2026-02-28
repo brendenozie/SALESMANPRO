@@ -7,6 +7,7 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Music",
     "Health And Beauty",
     "Pets",
+    "Pets Store",
     "Baby Toys",
     "Baby Store",
     "Cake Store",

@@ -282,7 +282,7 @@ export default function Header() {
             {/* Cart */}
             <motion.button
               whileHover={{ scale: 1.1 }}
-              onClick={() => setIsCartOpen(false)}
+              onClick={() => setIsCartOpen(true)}
               // onClick={() => {
               //   if (cart.length === 0) return;
               //   if (user) router.push(`/ecommerce/checkout`);

@@ -155,7 +155,7 @@ export default function PeanutHeader() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setIsCartOpen(false)}
+              onClick={() => setIsCartOpen(true)}
               // onClick={() => cart.length > 0 && router.push(`/ecommerce/checkout`)}
               className="flex items-center gap-3 bg-[#3E2723] text-white px-4 py-2 md:px-6 md:py-3 rounded-full shadow-lg shadow-amber-900/20"
             >

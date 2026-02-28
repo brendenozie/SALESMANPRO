@@ -4,91 +4,109 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import * as OutlineIcons from '@heroicons/react/24/outline';
 import { ICoreValue } from '@/types/typings';
+import { useStoreContext } from '@/contexts/StoreContext';
 
-
-// MetricCard component to display a single feature
 const MetricCard = ({
   title,
   description,
   Icon,
+  index
 }: {
   title: string;
   description: string;
   Icon: (props: React.ComponentProps<'svg'>) => JSX.Element;
+  index: number;
 }) => {
   return (
     <motion.div
-      whileHover={{ scale: 1.05 }}
-      initial={{ opacity: 0, y: 40 }}
+      initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, ease: 'easeOut' }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
       viewport={{ once: true }}
-      className="flex flex-col items-center text-center space-y-2 p-6 bg-white dark:bg-zinc-800 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1"
+      className="relative group p-8 rounded-[2.5rem] bg-white border border-stone-100 shadow-[0_10px_30px_rgba(62,39,35,0.04)] hover:shadow-[0_20px_50px_rgba(139,69,19,0.12)] transition-all duration-500 overflow-hidden"
     >
-      <div className="p-4 bg-red-100 dark:bg-red-900 rounded-full mb-4">
-        <Icon className="w-12 h-12 text-red-600" />
+      {/* Decorative background shape */}
+      <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-stone-50 rounded-full group-hover:scale-150 transition-transform duration-700 opacity-50" />
+      
+      <div className="relative z-10 flex flex-col items-center">
+        <div className="w-20 h-20 flex items-center justify-center rounded-3xl bg-[#FAF7F2] text-[#8B4513] mb-6 group-hover:bg-[#3E2723] group-hover:text-white transition-colors duration-500">
+          <Icon className="w-10 h-10 stroke-[1.5]" />
+        </div>
+        
+        <h3 className="text-xl font-black text-[#3E2723] mb-3 tracking-tight">
+          {title}
+        </h3>
+        
+        <p className="text-stone-500 text-sm font-medium leading-relaxed">
+          {description}
+        </p>
       </div>
-      <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-        {title}
-      </h3>
-      <p className="text-gray-600 dark:text-gray-400 text-base font-medium">
-        {description}
-      </p>
     </motion.div>
   );
 };
 
-interface MetricCardProps { 
-  coreValues: ICoreValue[];
-}
-
-// Main section
-export default function MetricsSection({ coreValues }: MetricCardProps) {
-
-  const CoreValues = [
+export default function MetricsSection({ coreValues }: { coreValues: ICoreValue[] }) {
+  const { storeFormData } = useStoreContext();
+  
+  const DefaultValues = [
     {
-      id: '68ba95433e05e5090f8bb781',
-      companyId: '68b597b7de9bdd2ba7479f34',
-      title: 'Secure Payment',
-      description: 'Secure on every order',
+      id: '1',
+      title: 'Secure Checkout',
+      description: 'Encrypted transactions for every jar of goodness.',
       icon: 'ShieldCheckIcon',
     },
     {
-      id: '68ba95433e05e5090f8bb782',
-      companyId: '68b597b7de9bdd2ba7479f34',
-      title: '24/7 Support',
-      description: 'Contact us 24 hrs a day',
-      icon: 'PhoneIcon',
+      id: '2',
+      title: 'Human Support',
+      description: 'Our peanut experts are here to help, day or night.',
+      icon: 'ChatBubbleLeftRightIcon',
     },
     {
-      id: '68ba95433e05e5090f8bb783',
-      companyId: '68b597b7de9bdd2ba7479f34',
-      title: 'Fast Delivery',
-      description: 'Fast delivery on your doorstep',
+      id: '3',
+      title: 'Flash Shipping',
+      description: 'Roasted yesterday, at your doorstep tomorrow.',
       icon: 'TruckIcon',
     },
   ];
-  const coreValuesToUse = coreValues && coreValues.length > 0 ? coreValues : CoreValues;
+
+  const values = coreValues?.length > 0 ? coreValues : DefaultValues;
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-zinc-900 font-sans p-8 flex items-center justify-center">
-      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4">
-          Why Choose Us?
-        </h2>
-        <p className="text-lg text-gray-700 dark:text-gray-300 mb-16 max-w-2xl mx-auto">
-          We're committed to providing the best experience with our top-tier service.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-          {coreValuesToUse.map((value: ICoreValue) => {
+    <section className="py-24 bg-white relative overflow-hidden">
+      {/* Organic background accent */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(#F3A852_1px,transparent_1px)] [background-size:40px_40px] opacity-[0.15] [mask-image:linear-gradient(to_bottom,white,transparent,white)]" />
+
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <div className="text-center max-w-2xl mx-auto mb-20">
+          <motion.span 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            className="text-[#8B4513] font-black uppercase tracking-[0.3em] text-[10px]"
+          >
+            The Peanut Way
+          </motion.span>
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="text-4xl md:text-5xl font-black text-[#3E2723] mt-4 mb-6 tracking-tighter"
+          >
+            Why our pantry <br />
+            <span className="text-[#F3A852]">hits different.</span>
+          </motion.h2>
+          <p className="text-stone-500 font-medium">
+            We’ve obsessed over every detail of the journey, from the farm to your morning toast.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {values.map((value, idx) => {
             const iconKey = (value.icon ?? 'SparklesIcon') as string;
-            const Icon =
-              ((OutlineIcons as any)[iconKey] || OutlineIcons.SparklesIcon) as (
-                props: React.ComponentProps<'svg'>
-              ) => JSX.Element;
+            const Icon = ((OutlineIcons as any)[iconKey] || OutlineIcons.SparklesIcon);
+            
             return (
               <MetricCard
                 key={value.id}
+                index={idx}
                 title={value.title}
                 description={value.description || ''}
                 Icon={Icon}
@@ -96,7 +114,7 @@ export default function MetricsSection({ coreValues }: MetricCardProps) {
             );
           })}
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }

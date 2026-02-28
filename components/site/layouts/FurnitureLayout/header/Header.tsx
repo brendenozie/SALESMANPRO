@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession, signOut } from 'next-auth/react';
+import CartDrawer from './CartDrawer';
 
 // --- Helpers ---
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -43,6 +44,7 @@ export default function Header() {
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuToggleButtonRef = useRef<HTMLButtonElement>(null);
   const [scrolled, setScrolled] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const { slug, name, logoUrl, socialLinks = [], themeSettings = {} } = storeFormData || {};
   const primaryColor = themeSettings?.primaryColor || '#F97316'; // Furniture accent (orange)
@@ -241,11 +243,12 @@ export default function Header() {
             )}
             <button
               className="relative"
-              onClick={() => {
-                if (cart.length === 0) return;
-                if (user) router.push(`/ecommerce/checkout`);
-                else handleGoogleSignIn();
-              }}
+              onClick={() => setIsCartOpen(true)}
+              // onClick={() => {
+              //   if (cart.length === 0) return;
+              //   if (user) router.push(`/ecommerce/checkout`);
+              //   else handleGoogleSignIn();
+              // }}
             >
               <ShoppingBagIcon className="w-6 h-6 cursor-pointer hover:text-orange-600 transition-colors" />
               {cart.length > 0 && (
@@ -323,6 +326,12 @@ export default function Header() {
           )}
         </AnimatePresence>
       </nav>
+      
+              
+        {/* Cart Drawer */}
+        <AnimatePresence>
+          {isCartOpen && <CartDrawer isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} />}
+        </AnimatePresence>
     </>
   );
 }
