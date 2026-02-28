@@ -17,11 +17,14 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Groceries Store",
     "Honey Store",
     "Watch Store",
+    "Peanuts Store",
     "Books",
     "Clothing",
     "Electronics",
     "Home Appliances",
     "Sports Equipment",
+    "Glasses Store",
+    "Glasses & Spectacles Store",
     "Toys",
     "Office Supplies",
     "Property",
@@ -302,6 +305,7 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
 
   "Glasses Store": [
     "Glasses Store",
+    "Glasses & Spectacles Store",
     "Prescription Glasses",
     "Sunglasses",
     "Blue Light Blocking Glasses",
@@ -312,6 +316,7 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Kids' Glasses",
     "Other"
   ],
+  
   "Flowers Store": [
     "Flowers Store",
     "Fresh Flowers",

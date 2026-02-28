@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession, signOut } from 'next-auth/react'; 
+import CartDrawer from './CartDrawer';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -25,6 +26,7 @@ export default function Header() {
 
   const { data: session, status } = useSession();
   const user = session?.user as { role?: string; name?: string } | undefined;
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -124,7 +126,8 @@ export default function Header() {
 
             {/* Cart Button (Industrial Design) */}
             <button
-              onClick={() => user ? router.push(`/ecommerce/checkout`) : handleGoogleSignIn()}
+              onClick={() => setIsCartOpen(true)}
+              // onClick={() => user ? router.push(`/ecommerce/checkout`) : handleGoogleSignIn()}
               className="relative bg-white text-black p-2 px-4 flex items-center gap-2 font-black text-xs hover:bg-[var(--header-accent)] hover:text-white transition-all gaming-skew"
             >
               <ShoppingBagIcon className="h-5 w-5" />
@@ -179,6 +182,11 @@ export default function Header() {
             </div>
           </motion.div>
         )}
+      </AnimatePresence>
+      
+      {/* Cart Drawer */}
+      <AnimatePresence>
+        {isCartOpen && <CartDrawer isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} />}
       </AnimatePresence>
     </>
   );

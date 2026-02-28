@@ -79,7 +79,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
   };
 
   return (
-    <section className="relative w-full bg-[#0a0a0a] min-h-[600px] lg:h-[80vh] flex items-center overflow-hidden">
+    <section className="relative w-full bg-[#0a0a0a] min-h-[600px] lg:h-[100vh] flex items-center overflow-hidden">
       <AnimatePresence initial={false} custom={direction} mode="wait">
         {heroSlidesToShow.map((slide, idx) => (
           idx === current && (

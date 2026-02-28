@@ -3,106 +3,131 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { ShoppingCartIcon } from '@heroicons/react/24/outline';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { ShoppingCartIcon, PlusIcon } from '@heroicons/react/24/solid';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
 export default function ProductShowcaseSection() {
-  // Pulling from your theme settings logic
-  const primaryColor = '#F3A852'; 
-  const accentLight = '#C5F1F7'; // The light blue background from the image
+  const primaryColor = '#8B4513'; // Deep Roasted Brown
+  const accentGold = '#F3A852'; // Golden Honey/Peanut tone
+  const softCream = '#FAF7F2'; 
+
+  // Scroll effect for parallax peanuts
+  const { scrollYProgress } = useScroll();
+  const yPeanut1 = useTransform(scrollYProgress, [0, 1], [0, -150]);
+  const yPeanut2 = useTransform(scrollYProgress, [0, 1], [0, 100]);
 
   return (
-    <section className="relative py-20 bg-white overflow-hidden">
-      <div className="container mx-auto px-4 md:px-12 lg:px-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+    <section className="relative py-24 bg-white overflow-hidden">
+      {/* Decorative Parallax Peanuts */}
+      <motion.div style={{ y: yPeanut1 }} className="absolute top-20 left-[10%] opacity-20 pointer-events-none z-0">
+        <span className="text-6xl">🥜</span>
+      </motion.div>
+      <motion.div style={{ y: yPeanut2 }} className="absolute bottom-40 right-[5%] opacity-10 pointer-events-none z-0">
+        <span className="text-8xl">🥜</span>
+      </motion.div>
+
+      <div className="container mx-auto px-6 md:px-12 lg:px-20 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           
-          {/* LEFT SIDE: Product Jar + Color Block */}
-          <div className="relative flex items-center justify-center h-[500px] md:h-[600px]">
-            {/* The Light Blue Background Block */}
+          {/* LEFT SIDE: The "Hero" Jar & Organic Mask */}
+          <div className="relative group">
+            {/* The "Spread" Background Blob */}
             <motion.div 
-              initial={{ scaleX: 0 }}
-              whileInView={{ scaleX: 1 }}
+              initial={{ scale: 0.8, rotate: -10, opacity: 0 }}
+              whileInView={{ scale: 1, rotate: 0, opacity: 1 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8, ease: "circOut" }}
-              className="absolute inset-0 right-10 md:right-20 rounded-r-3xl z-0 origin-left"
-              style={{ backgroundColor: accentLight }}
+              transition={{ duration: 1, ease: "backOut" }}
+              className="absolute inset-0 bg-amber-100/60 rounded-[4rem] rotate-3 -z-10 group-hover:rotate-6 transition-transform duration-700"
+              style={{ clipPath: 'polygon(10% 0%, 100% 0%, 90% 100%, 0% 100%)' }}
             />
 
-            {/* Product Jar */}
+            {/* Main Product Image with subtle floating animation */}
             <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-              className="relative z-10 w-full h-full flex justify-center py-10"
+              animate={{ y: [0, -15, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="relative z-10 drop-shadow-[0_35px_35px_rgba(139,69,19,0.25)] flex justify-center"
             >
               <Image
-                src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80" // Replace with your actual product image path
-                alt="Crunchy Peanut Butter Jar"
-                width={400}
-                height={550}
-                className="object-contain drop-shadow-2xl"
-                priority
-                loader={loader}
-              />
-            </motion.div>
-          </div>
-
-          {/* RIGHT SIDE: Floating Spoon + Info Card */}
-          <div className="relative space-y-8">
-            
-            {/* Floating Spoon with Peanut Butter */}
-            <motion.div
-              initial={{ opacity: 0, y: -30, rotate: 5 }}
-              whileInView={{ opacity: 1, y: 0, rotate: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.5, duration: 0.7 }}
-              className="absolute -top-24 right-10 md:right-20 z-20"
-            >
-              <Image
-                src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80" // Replace with your spoon image path
-                alt="Peanut Butter on Spoon"
-                width={250}
-                height={150}
+                src="https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?q=80&w=1000&auto=format&fit=crop"
+                alt="Crunchy Peanut Butter"
+                width={450}
+                height={600}
                 className="object-contain"
                 loader={loader}
               />
             </motion.div>
 
-            {/* Product Info Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-              className="bg-white border-2 p-8 md:p-12 rounded-sm shadow-sm relative z-10 max-w-lg"
-              style={{ borderColor: accentLight }}
+            {/* Price Badge Overlay */}
+            <motion.div 
+               initial={{ scale: 0 }}
+               whileInView={{ scale: 1 }}
+               transition={{ type: 'spring', delay: 0.5 }}
+               className="absolute top-10 right-10 w-24 h-24 rounded-full bg-[#3E2723] flex flex-col items-center justify-center text-white border-4 border-white shadow-xl z-20 -rotate-12"
             >
-              <h2 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight">
-                Crunchy<br />Peanut Butter
-              </h2>
-              
-              <p className="mt-6 text-gray-600 leading-relaxed font-medium">
-                Our Peanut Butter only contains the best tasting American grown peanuts 
-                to pack the biggest punch of peanut flavor.
-              </p>
-
-              <div className="mt-8 flex flex-col gap-4">
-                <span className="text-2xl font-black text-gray-900">$3.99</span>
-                
-                <Link
-                  href="/cart"
-                  className="flex items-center justify-center gap-2 px-8 py-3 rounded-lg text-white font-bold transition-transform hover:scale-105 active:scale-95 shadow-lg uppercase tracking-wider text-sm"
-                  style={{ backgroundColor: primaryColor }}
-                >
-                  <ShoppingCartIcon className="h-5 w-5" />
-                  Add to Cart
-                </Link>
-              </div>
+              <span className="text-[10px] font-bold uppercase tracking-widest opacity-70">Only</span>
+              <span className="text-xl font-black">$3.99</span>
             </motion.div>
+          </div>
+
+          {/* RIGHT SIDE: Info Card & Content */}
+          <div className="space-y-10">
+            <div className="space-y-4">
+              <motion.span 
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                className="inline-block text-amber-600 font-black uppercase tracking-[0.3em] text-xs"
+              >
+                Signature Roast No. 12
+              </motion.span>
+              <motion.h2 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                className="text-5xl md:text-6xl font-black text-[#3E2723] leading-none"
+              >
+                Extra Crunchy <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-amber-800">
+                  Sea Salt Blend
+                </span>
+              </motion.h2>
+            </div>
+
+            {/* Ingredient Highlights */}
+            <div className="flex flex-wrap gap-4">
+              {['Non-GMO', 'Keto Friendly', 'Vegan'].map((tag, i) => (
+                <div key={i} className="px-4 py-2 bg-stone-100 rounded-full text-[10px] font-black uppercase tracking-widest text-stone-500 border border-stone-200">
+                  {tag}
+                </div>
+              ))}
+            </div>
+
+            <motion.p 
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              className="text-stone-600 text-lg leading-relaxed max-w-lg"
+            >
+              We don&apos;t hide behind sugar. Our Extra Crunchy blend features slow-roasted peanuts, 
+              a dash of sea salt, and absolutely zero palm oil. Taste the grit of quality.
+            </motion.p>
+
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <Link
+                href="/cart"
+                className="group w-full sm:w-auto flex items-center justify-between gap-10 px-8 py-5 bg-[#3E2723] rounded-2xl text-white font-black transition-all hover:shadow-2xl hover:-translate-y-1 active:scale-95 overflow-hidden relative"
+              >
+                <span className="relative z-10 uppercase tracking-widest text-sm">Add To Pantry</span>
+                <div className="h-8 w-8 bg-amber-500 rounded-lg flex items-center justify-center relative z-10 group-hover:rotate-90 transition-transform">
+                  <PlusIcon className="h-5 w-5 text-white" />
+                </div>
+                <div className="absolute inset-0 bg-amber-700 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+              </Link>
+
+              <button className="text-sm font-black uppercase tracking-widest text-stone-400 hover:text-amber-600 transition-colors underline underline-offset-8">
+                View Nutrition Label
+              </button>
+            </div>
           </div>
 
         </div>

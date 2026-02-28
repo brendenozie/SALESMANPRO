@@ -24,6 +24,7 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession, signOut } from 'next-auth/react';
 import { IStoreCategory } from '@/types/typings';
+import CartDrawer from './CartDrawer';
 
 // Helper for image loader
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -73,6 +74,8 @@ export default function Header() {
     authUrl.searchParams.set("callbackUrl", window.location.origin);
     window.location.href = authUrl.toString();
   };
+
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const handleSignOut = () => signOut({ callbackUrl: `/` });
 
@@ -157,7 +160,8 @@ export default function Header() {
           </button>
           
           <button 
-            onClick={() => cart.length > 0 ? (user ? router.push('/ecommerce/checkout') : handleGoogleSignIn()) : null} 
+            onClick={() => setIsCartOpen(true)}
+            // onClick={() => cart.length > 0 ? (user ? router.push('/ecommerce/checkout') : handleGoogleSignIn()) : null} 
             className="flex items-center space-x-3 bg-gray-50 p-1.5 md:p-2 md:pr-4 rounded-xl hover:bg-gray-100 transition-all"
           >
             <div className="relative bg-gray-900 text-white p-2 rounded-lg">
@@ -241,6 +245,11 @@ export default function Header() {
             </motion.div>
           </>
         )}
+      </AnimatePresence>
+
+      {/* Cart Drawer */}
+      <AnimatePresence>
+        {isCartOpen && <CartDrawer isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} />}
       </AnimatePresence>
     </header>
   );

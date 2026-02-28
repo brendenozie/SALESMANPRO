@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession, signOut } from 'next-auth/react'; 
+import CartDrawer from './CartDrawer';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -31,6 +32,7 @@ export default function Header() {
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   const { name, logoUrl, themeSettings = {} } = storeFormData || {};
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Sophisticated Floral Palette
   const primaryColor = themeSettings?.primaryColor || '#E11D48'; // Rose Red
@@ -118,7 +120,8 @@ export default function Header() {
 
             {/* Shopping Bag */}
             <button
-              onClick={() => cart.length > 0 && (user ? router.push('/ecommerce/checkout') : handleGoogleSignIn())}
+              onClick={() => setIsCartOpen(true)}
+              // onClick={() => cart.length > 0 && (user ? router.push('/ecommerce/checkout') : handleGoogleSignIn())}
               className="relative group p-1"
             >
               <ShoppingBagIcon className="h-5 w-5 text-slate-800 group-hover:text-rose-500 transition-colors stroke-[1.5]" />
@@ -207,6 +210,11 @@ export default function Header() {
             </motion.div>
           </>
         )}
+      </AnimatePresence>
+
+      {/* Cart Drawer */}
+      <AnimatePresence>
+        {isCartOpen && <CartDrawer isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} />}
       </AnimatePresence>
     </>
   );

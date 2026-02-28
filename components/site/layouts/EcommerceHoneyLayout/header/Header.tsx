@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession, signOut } from 'next-auth/react'; 
+import CartDrawer from './CartDrawer';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -51,6 +52,8 @@ export default function Header() {
     authUrl.searchParams.set("callbackUrl", `${window.location.origin}`);
     window.location.href = authUrl.toString();
   };
+
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const navLinks = [
     { label: 'Home', href: `/` },
@@ -108,7 +111,7 @@ export default function Header() {
 
             {/* Cart with count - Styled like image_5f4e43.png */}
             <button 
-              onClick={() => cart.length > 0 && router.push('/ecommerce/checkout')}
+              onClick={() => setIsCartOpen(false)}
               className="relative text-black hover:text-[#bc9c64] transition-colors"
             >
               <ShoppingBagIcon className="h-5 w-5 stroke-2" />
@@ -171,6 +174,11 @@ export default function Header() {
             </div>
           </motion.div>
         )}
+      </AnimatePresence>      
+
+      {/* Cart Drawer */}
+      <AnimatePresence>
+        {isCartOpen && <CartDrawer isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} />}
       </AnimatePresence>
     </>
   );

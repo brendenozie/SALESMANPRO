@@ -1,233 +1,220 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { ChevronLeftIcon, ChevronRightIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
 import { HeroSlide } from '@/types/typings';
 
-// --- Custom USP Icons (Matching the Image Line-Art) ---
+/* -------------------------------------------------------------------------- */
+/* Design Elements */
+/* -------------------------------------------------------------------------- */
 
-
-const sampleSlides: HeroSlide[] = [
-  {
-    headline: '100% NATURAL\nPEANUT BUTTER',
-    subline: 'Gourmet Selection',
-    badgeText: 'Created to be a gourmet snack that can easily be enjoyed by the whole family.',
-    ctaText: 'Shop Now',
-    ctaLink: '/shop',
-    imageUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80',
-    id: '',
-    companyId: '',
-    type: null,
-    productImageUrl: null,
-    videoLink: null,
-    price: null,
-    endsAt: null,
-    order: 0,
-    iconKey: null,
-    backgroundColor: null,
-    textColor: null
-  },
-  {
-    headline: 'SMOOTH & CREAMY\nPERFECTION',
-    subline: 'Gourmet Selection',
-    badgeText: 'Indulge in the velvety texture and rich flavor of our premium peanut butter.',
-    ctaText: 'Discover More',
-    ctaLink: '/shop',
-    imageUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80',
-    id: '',
-    companyId: '',
-    type: null,
-    productImageUrl: null,
-    videoLink: null,
-    price: null,
-    endsAt: null,
-    order: 0,
-    iconKey: null,
-    backgroundColor: null,
-    textColor: null
-  },
-  {
-    headline: 'MADE WITH LOVE\nAND PEANUTS',
-    subline: 'Gourmet Selection',
-    badgeText: 'Crafted with care, our peanut butter is the perfect blend of taste and quality.',
-    ctaText: 'Shop Now',
-    ctaLink: '/shop',
-    imageUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80',
-    id: '',
-    companyId: '',
-    type: null,
-    productImageUrl: null,
-    videoLink: null,
-    price: null,
-    endsAt: null,
-    order: 0,
-    iconKey: null,
-    backgroundColor: null,
-    textColor: null
-  }
-];
-
-
-export interface HeroSliderProps {
-  heroSlides: HeroSlide[] | null;
-  themeSettings: any;
-}
-
-const CustomPalmIcon = () => (
-  <svg viewBox="0 0 100 100" className="h-10 w-10 text-gray-800">
-    <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="2"/>
-    <path d="M50 85V45 M50 45C50 45 30 40 25 25 M50 45C50 45 70 40 75 25 M50 45C50 45 35 60 20 65 M50 45C50 45 65 60 80 65" 
-          fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-  </svg>
+const USPItem = ({ Icon, label }: { Icon: React.FC; label: string }) => (
+  <div className="flex flex-col items-center group">
+    <div className="w-14 h-14 rounded-full border-2 border-amber-100 flex items-center justify-center mb-2 group-hover:bg-amber-500 group-hover:border-amber-500 transition-all duration-300">
+      <div className="text-amber-900 group-hover:text-white">
+        <Icon />
+      </div>
+    </div>
+    <span className="text-[10px] font-black uppercase tracking-widest text-amber-900/40 group-hover:text-amber-900 transition-colors">
+      {label}
+    </span>
+  </div>
 );
 
-const CustomGlutenIcon = () => (
-  <svg viewBox="0 0 100 100" className="h-10 w-10 text-gray-800">
-    <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="2"/>
-    <path d="M50 80V30 M40 45L50 35L60 45 M40 60L50 50L60 60 M40 30L50 20L60 30" 
-          fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
+const loader = ({ src }: { src: string }) => src; // Bypass Next.js optimization for external URLs
+
+const FloatingPeanut = ({ delay, className }: { delay: number; className: string }) => (
+  <motion.div
+    initial={{ y: 0, rotate: 0 }}
+    animate={{ y: [0, -20, 0], rotate: [0, 10, -10, 0] }}
+    transition={{ duration: 5, repeat: Infinity, delay }}
+    className={`absolute pointer-events-none select-none opacity-20 md:opacity-40 ${className}`}
+  >
+    <span className="text-4xl">🥜</span>
+  </motion.div>
 );
 
-const CustomSoyIcon = () => (
-  <svg viewBox="0 0 100 100" className="h-10 w-10 text-gray-800">
-    <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="2"/>
-    <path d="M40 75H60L55 40L65 25H35L45 40L40 75Z" 
-          fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round"/>
-  </svg>
-);
+/* -------------------------------------------------------------------------- */
+/* Main Component */
+/* -------------------------------------------------------------------------- */
 
-// --- Component ---
-
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
-
-export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProps) {
-  const defaultPrimaryColor = '#F3A852';
-  const primary = themeSettings?.primaryColor || defaultPrimaryColor;
-  
+export default function PeanutHeroRedesign({ heroSlides, themeSettings }: any) {
+  const primary = themeSettings?.primaryColor || '#8B4513';
   const [current, setCurrent] = useState(0);
-  const [direction, setDirection] = useState(0);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
-  const heroSlidesToShow = (heroSlides && heroSlides.length > 0 ? heroSlides : sampleSlides).map(slide => ({
-    ...slide,
-    headline: slide.headline || '100% NATURAL\nPEANUT BUTTER',
-    badgeText: slide.badgeText || 'Peanutty Peanut Butters are created to be a gourmet snack that can easily be enjoyed by the whole family.',
-  }));
-
-  const resetTimer = useCallback(() => {
-    clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      setDirection(1);
-      setCurrent((prev) => (prev + 1) % heroSlidesToShow.length);
-    }, 5000);
-  }, [heroSlidesToShow.length]);
+  const slides = (heroSlides && heroSlides.length > 0) ? heroSlides : [
+    {
+      headline: "PURELY NUTS.\nNO NONSENSE.",
+      subline: "Stone-Ground Perfection",
+      badgeText: "Experience the crunch of 100% slow-roasted Argentinian peanuts. No palm oil, just pure energy.",
+      ctaText: "Grab a Jar",
+      imageUrl: "https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?q=80&w=1000&auto=format&fit=crop",
+      color: "#FDF8F1"
+    },
+    {
+      headline: "CREAMY OR\nCRUNCHY?",
+      subline: "The Great Debate",
+      badgeText: "Whether you're a smooth operator or a texture seeker, we've got the perfect roast for your toast.",
+      ctaText: "Explore Texture",
+      imageUrl: "https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?q=80&w=1000&auto=format&fit=crop",
+      color: "#FFFBF2"
+    }
+  ];
 
   useEffect(() => {
-    resetTimer();
-    return () => clearTimeout(timeoutRef.current);
-  }, [current, resetTimer]);
-
-  const goTo = (idx: number, dir = 0) => {
-    clearTimeout(timeoutRef.current);
-    setDirection(dir);
-    setCurrent(idx);
-  };
+    if (!isAutoPlaying) return;
+    const interval = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % slides.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [isAutoPlaying, slides.length]);
 
   return (
-    <section className="relative mt-20 py-12 md:py-24 overflow-hidden bg-white">
-      <div className="container mx-auto px-4 md:px-12 lg:px-20 relative">
-        <AnimatePresence initial={false} custom={direction} mode="wait">
-          {heroSlidesToShow.map((slide, idx) => idx === current && (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: direction > 0 ? -50 : 50 }}
-              transition={{ duration: 0.5 }}
-              className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center"
-            >
-              {/* Left Content Area */}
-              <div className="z-20 space-y-6">
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                  <h1 className="text-6xl md:text-8xl font-black text-[#1a1a1a] leading-[0.9] tracking-tight mb-8">
-                    {slide.headline.split('\n').map((line, i) => (
-                      <span key={i} className="block">{line}</span>
-                    ))}
-                  </h1>
-                  <p className="text-gray-600 text-lg md:text-xl max-w-md leading-relaxed">
-                    {slide.badgeText}
-                  </p>
-                </motion.div>
+    <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-[#FAF7F2]">
+      
+      {/* Texture Overlay */}
+      <div className="absolute inset-0 opacity-[0.04] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/p6.png')] z-10" />
 
-                <div className="pt-4">
+      {/* Background Floating Elements */}
+      <FloatingPeanut delay={0} className="top-20 left-[10%]" />
+      <FloatingPeanut delay={1} className="bottom-40 left-[5%]" />
+      <FloatingPeanut delay={2} className="top-40 right-[15%]" />
+      <FloatingPeanut delay={0.5} className="bottom-20 right-[10%]" />
+
+      <div className="container mx-auto px-6 lg:px-12 relative z-20">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={current}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6 }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
+          >
+            {/* Left: Content Stage */}
+            <div className="order-2 lg:order-1 text-center lg:text-left">
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100/50 text-amber-900 mb-6">
+                  <SparklesIcon className="w-4 h-4" />
+                  <span className="text-xs font-black uppercase tracking-widest">{slides[current].subline}</span>
+                </div>
+
+                <h1 className="text-5xl md:text-7xl xl:text-8xl font-black text-[#3E2723] leading-[0.9] mb-6">
+                  {slides[current].headline.split('\n').map((text: string, i: number) => (
+                    <span key={i} className="block">{text}</span>
+                  ))}
+                </h1>
+
+                <p className="text-lg text-stone-600 mb-10 max-w-lg mx-auto lg:mx-0 font-medium leading-relaxed">
+                  {slides[current].badgeText}
+                </p>
+
+                <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6">
                   <Link
-                    href={slide.ctaLink || '/shop'}
-                    className="inline-block px-12 py-4 rounded-2xl text-white font-bold text-lg shadow-lg hover:brightness-110 transition-transform hover:scale-105 active:scale-95"
-                    style={{ backgroundColor: primary }}
+                    href="/shop"
+                    className="group relative px-10 py-5 bg-[#3E2723] text-white rounded-2xl font-black uppercase tracking-widest text-sm overflow-hidden transition-all hover:scale-105 active:scale-95"
                   >
-                    {slide.ctaText || 'Shop Now'}
+                    <span className="relative z-10">{slides[current].ctaText}</span>
+                    <div className="absolute inset-0 bg-amber-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                  </Link>
+                  
+                  <Link href="/about" className="text-sm font-black uppercase tracking-widest text-[#3E2723] hover:text-amber-600 transition-colors">
+                    Our Process
                   </Link>
                 </div>
+              </motion.div>
 
-                {/* Specific Stylized Icons from Image */}
-                <div className="flex items-center gap-10 pt-12">
-                  <div className="flex flex-col items-center gap-3">
-                    <CustomPalmIcon />
-                    <span className="text-[11px] font-bold text-gray-700 tracking-widest uppercase">Palm Free</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-3">
-                    <CustomGlutenIcon />
-                    <span className="text-[11px] font-bold text-gray-700 tracking-widest uppercase">Gluten Free</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-3">
-                    <CustomSoyIcon />
-                    <span className="text-[11px] font-bold text-gray-700 tracking-widest uppercase">Soy Free</span>
-                  </div>
-                </div>
-              </div>
+              {/* USPs: Line Icons */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="flex items-center justify-center lg:justify-start gap-12 mt-16 pt-8 border-t border-amber-900/5"
+              >
+                <USPItem Icon={() => <span>🚫🌴</span>} label="Palm Free" />
+                <USPItem Icon={() => <span>🌾</span>} label="Gluten Free" />
+                <USPItem Icon={() => <span>🫘</span>} label="No Added Soy" />
+              </motion.div>
+            </div>
 
-              {/* Right Image Area */}
-              <div className="relative flex justify-center items-center h-[500px]">
-                <motion.div
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="relative w-full h-full"
-                >
-                  <Image
-                    src={slide.imageUrl || '/peanut-butter-jars.png'}
-                    alt="Product"
-                    fill
-                    className="object-contain"
-                    priority
-                    loader={loader}
-                  />
-                </motion.div>
+            {/* Right: Visual Stage */}
+            <div className="order-1 lg:order-2 relative h-[400px] md:h-[600px] flex items-center justify-center">
+              <motion.div 
+                initial={{ scale: 0.8, opacity: 0, rotate: -5 }}
+                animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                className="relative w-full h-full"
+              >
+                {/* Decorative Jar Backdrop */}
+                <div className="absolute inset-0 bg-[#F5DEB3] clip-path-peanut opacity-20 scale-110 rotate-12" />
                 
-                {/* Floating Elements mimicking reference */}
-                <div className="absolute top-10 right-0 w-20 h-20 opacity-30 blur-2xl rounded-full bg-amber-400 -z-10" />
-                <div className="absolute bottom-10 left-0 w-32 h-32 opacity-20 blur-3xl rounded-full bg-orange-300 -z-10" />
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+                <Image
+                  src={slides[current].imageUrl}
+                  alt="Peanut Butter"
+                  fill
+                  className="object-contain drop-shadow-[0_35px_35px_rgba(62,39,35,0.2)]"
+                  priority
+                  loader={loader}
+                />
+              </motion.div>
 
-        {/* Navigation Arrows (Hero Icons) */}
-        <div className="hidden md:block">
-          <button onClick={() => goTo((current - 1 + heroSlidesToShow.length) % heroSlidesToShow.length, -1)} 
-                  className="absolute left-4 top-1/2 -translate-y-1/2 p-4 rounded-full bg-gray-50 hover:bg-white shadow-md text-gray-400 hover:text-gray-900 transition-all">
-            <ArrowLeftIcon className="h-6 w-6" />
-          </button>
-          <button onClick={() => goTo((current + 1) % heroSlidesToShow.length, 1)} 
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-4 rounded-full bg-gray-50 hover:bg-white shadow-md text-gray-400 hover:text-gray-900 transition-all">
-            <ArrowRightIcon className="h-6 w-6" />
-          </button>
-        </div>
+              {/* Floating "Natural" Badge */}
+              <motion.div
+                animate={{ rotate: [0, 360] }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                className="absolute -top-4 right-10 w-24 h-24 md:w-32 md:h-32 pointer-events-none"
+              >
+                <svg viewBox="0 0 100 100" className="w-full h-full text-amber-600/20 fill-current">
+                   <path d="M50 0 L60 40 L100 50 L60 60 L50 100 L40 60 L0 50 L40 40 Z" />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center text-[10px] font-black uppercase text-amber-900 text-center leading-tight">
+                  100%<br/>Natural
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
+
+      {/* Slider Controls */}
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-8 z-30">
+        <button 
+          onClick={() => setCurrent((prev) => (prev - 1 + slides.length) % slides.length)}
+          className="p-3 rounded-full border border-amber-900/10 hover:bg-white hover:shadow-xl transition-all"
+        >
+          <ChevronLeftIcon className="w-5 h-5 text-[#3E2723]" />
+        </button>
+
+        <div className="flex gap-2">
+          {slides.map((_ : any, i : any) => (
+            <div 
+              key={i} 
+              className={`h-1.5 transition-all duration-500 rounded-full ${i === current ? 'w-8 bg-[#3E2723]' : 'w-2 bg-[#3E2723]/20'}`} 
+            />
+          ))}
+        </div>
+
+        <button 
+          onClick={() => setCurrent((prev) => (prev + 1) % slides.length)}
+          className="p-3 rounded-full border border-amber-900/10 hover:bg-white hover:shadow-xl transition-all"
+        >
+          <ChevronRightIcon className="w-5 h-5 text-[#3E2723]" />
+        </button>
+      </div>
+
+      <style jsx global>{`
+        .clip-path-peanut {
+          clip-path: ellipse(40% 50% at 50% 50%);
+        }
+      `}</style>
     </section>
   );
 }

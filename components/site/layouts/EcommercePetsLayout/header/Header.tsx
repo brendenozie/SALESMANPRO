@@ -17,6 +17,7 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 // Assuming NextAuth is available in this environment
 import { useSession, signIn, signOut } from 'next-auth/react'; 
+import CartDrawer from './CartDrawer';
 
 // Helper for image loader
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -47,6 +48,8 @@ export default function Header() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuToggleButtonRef = useRef<HTMLButtonElement>(null);
+  
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Destructure relevant fields with default empty objects for safety
   const {
@@ -279,11 +282,12 @@ export default function Header() {
             {/* Cart */}
             <motion.button
               whileHover={{ scale: 1.1 }}
-              onClick={() => {
-                if (cart.length === 0) return;
-                if (user) router.push(`/ecommerce/checkout`);
-                else handleGoogleSignIn();
-              }}
+              onClick={() => setIsCartOpen(false)}
+              // onClick={() => {
+              //   if (cart.length === 0) return;
+              //   if (user) router.push(`/ecommerce/checkout`);
+              //   else handleGoogleSignIn();
+              // }}
               className={`
                 relative transition-colors
                 ${scrolled ? 'text-gray-800' : 'text-white'}
@@ -447,6 +451,11 @@ export default function Header() {
             onClick={toggleMobileMenu}
           />
         )}
+      </AnimatePresence>
+      
+      {/* Cart Drawer */}
+      <AnimatePresence>
+        {isCartOpen && <CartDrawer isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} />}
       </AnimatePresence>
     </>
   );
