@@ -73,11 +73,10 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
   );
 
   return (
-    <div className="space-y-12">
+    <div>
       <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
       <StoreFeatures primaryColor={themeSettings?.primaryColor} secondaryColor={themeSettings?.secondaryColor} />
-      <CategorySection StoreCategory={StoreCategory} themeSettings={themeSettings} />
-      <ShopByCategories/>
+      <CategorySection store={pageData}  />
       <PromoBanners primaryColor={themeSettings?.primaryColor} secondaryColor={themeSettings?.secondaryColor} />
       <DynamicPopularProducts id={id} />
       <PromoSection promotions={promotions} />

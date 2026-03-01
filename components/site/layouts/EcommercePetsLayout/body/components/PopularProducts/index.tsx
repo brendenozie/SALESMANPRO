@@ -3,134 +3,93 @@
 import useSWR from 'swr';
 import ProductCard from '../ProductCard';
 import { SkeletonGrid } from '../SkeletonGrid/SkeletonGrid';
-import { ArrowRightCircleIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'; // Added Chevron icons
+import { 
+  ArrowRightIcon, 
+  ChevronLeftIcon, 
+  ChevronRightIcon,
+  FireIcon 
+} from '@heroicons/react/24/solid';
 import { createCachedFetcher } from '@/lib/swrCachedFetcher';
-
-// Import Slick components and styles
 import Slider from 'react-slick';
+import { motion } from 'framer-motion';
+
+// Slider styles
 import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css'; 
-// Note: You might need to adjust the paths/import for slick.css/slick-theme.css 
-// based on your project's CSS setup if the imports above don't work globally.
+import 'slick-carousel/slick/slick-theme.css';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-// --- Custom Arrow Components for Slick ---
-// We'll use these to style the navigation arrows with Heroicons and Tailwind
-const PrevArrow = ({ onClick }: { onClick?: () => void }) => (
+const CustomArrow = ({ direction, onClick }: { direction: 'left' | 'right', onClick?: () => void }) => (
   <button 
-    className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white p-2 rounded-full shadow-lg border border-gray-200 hidden sm:block md:hidden"
     onClick={onClick}
-    aria-label="Previous"
+    className={`absolute top-1/2 -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-xl border border-slate-100 hover:scale-110 active:scale-95 transition-all
+      ${direction === 'left' ? '-left-6' : '-right-6'}`}
   >
-    <ChevronLeftIcon className="w-6 h-6 text-gray-700" />
+    {direction === 'left' ? <ChevronLeftIcon className="w-6 h-6 text-slate-900" /> : <ChevronRightIcon className="w-6 h-6 text-slate-900" />}
   </button>
 );
-
-const NextArrow = ({ onClick }: { onClick?: () => void }) => (
-  <button 
-    className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white p-2 rounded-full shadow-lg border border-gray-200 hidden sm:block md:hidden"
-    onClick={onClick}
-    aria-label="Next"
-  >
-    <ChevronRightIcon className="w-6 h-6 text-gray-700" />
-  </button>
-);
-
 
 export default function DailyBestSells({ id }: { id: string }) {
   const url = `${apiBaseUrl}/site/productsByFlag?companyId=${id}&flag=isOnOffer&limit=8`;
   const cacheKey = `products-${id}-isOnOffer`;
-  const fallbackKey = `swr-cache:${cacheKey}:${url}`;
-
   const fetcher = createCachedFetcher(cacheKey);
 
-  const fallbackData =
-    typeof window !== 'undefined'
-      ? (() => {
-          try {
-            return JSON.parse(localStorage.getItem(fallbackKey) || 'null');
-          } catch {
-            return null;
-          }
-        })()
-      : null;
-
   const { data, error, isLoading } = useSWR(url, fetcher, {
-    fallbackData: fallbackData || undefined,
     revalidateOnFocus: true,
     dedupingInterval: 30000,
-    refreshInterval: 120000,
   });
 
-  // --- React Slick Configuration ---
   const settings = {
-    // Show one card at a time on small screens
-    slidesToShow: 1,
+    slidesToShow: 4,
     slidesToScroll: 1,
-    arrows: true, // Show arrows for navigation
-    dots: true, // Show pagination dots
-    infinite: false, // Don't loop the products
-    // Custom arrows are only shown on small screens (md:hidden)
-    nextArrow: <NextArrow />, 
-    prevArrow: <PrevArrow />,
-    // Responsive settings to switch to grid on desktop
+    infinite: true,
+    nextArrow: <CustomArrow direction="right" />,
+    prevArrow: <CustomArrow direction="left" />,
     responsive: [
-      {
-        breakpoint: 768, // md breakpoint in Tailwind
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-        }
-      },
-      {
-        breakpoint: 640, // sm breakpoint in Tailwind
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-          // Added centerPadding and centerMode for a 'peek' effect on very small screens
-          centerMode: true,
-          centerPadding: '20px', 
-        }
-      }
+      { breakpoint: 1280, settings: { slidesToShow: 3 } },
+      { breakpoint: 1024, settings: { slidesToShow: 2 } },
+      { breakpoint: 640, settings: { slidesToShow: 1, centerMode: true, centerPadding: '40px' } }
     ]
   };
 
-  if (isLoading) return <SkeletonGrid count={8} />;
-  if (error) return <div className="text-center text-gray-500"></div>;
-  if (!data?.data?.length)
-    return <div className="text-center text-gray-500"></div>;
+  if (isLoading) return <div className="py-20"><SkeletonGrid count={4} /></div>;
+  if (!data?.data?.length) return null;
 
   return (
-    <section className="py-8 sm:py-12 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Popular Products</h2>
+    <section className="py-24 bg-white overflow-hidden">
+      <div className="container mx-auto px-6">
+        
+        {/* Header: High Tension Styling */}
+        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-rose-100">
+                <FireIcon className="w-5 h-5 text-rose-500" />
+              </div>
+              <span className="text-xs font-black uppercase tracking-[0.2em] text-rose-500">Trending Now</span>
+            </div>
+            <h2 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter leading-none">
+              Daily Best <br /> <span className="text-slate-300">Sellers.</span>
+            </h2>
+          </div>
+          
           <button 
-          onClick={() => window.location.href = `/ecommerce/products`}
-          className="flex items-center text-green-600 font-semibold text-sm sm:text-base hover:underline transition duration-150 ease-in-out">
-            See All <ArrowRightCircleIcon className="w-5 h-5 ml-1 sm:w-6 sm:h-6 sm:ml-2" />
+            onClick={() => window.location.href = `/ecommerce/products`}
+            className="group flex items-center gap-3 px-8 py-4 bg-slate-900 rounded-full text-white font-bold transition-all hover:pr-10"
+          >
+            Explore All <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
 
-        {/* --- Responsive Product Display --- */}
-        
-        {/* 1. Mobile Carousel (Visible below md) */}
-        <div className="md:hidden relative px-4"> 
+        {/* Carousel / Grid Wrapper */}
+        <div className="relative px-2">
           <Slider {...settings}>
-            {data.data.map((product: any) => (
-              <div key={product.id} className="px-1 outline-none">
+            {data.data.map((product: any, idx: number) => (
+              <div key={product.id} className="px-3 pb-10">
                 <ProductCard product={product} />
               </div>
             ))}
           </Slider>
-        </div>
-
-        {/* 2. Desktop Grid (Visible at md and above) */}
-        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {data.data.map((product: any) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
         </div>
       </div>
     </section>
