@@ -36,6 +36,7 @@ const MetricsSection = dynamic(() => import('./components/MetricsSection'), { lo
 const AwardsSection = dynamic(() => import('./components/AwardsSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const TestimonialsSection = dynamic(() => import('./components/TestimonialsSection/TestimonialsSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const NewsletterSection = dynamic(() => import('./components/NewsletterSection/NewsletterSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const MeetTheWatchmaker = dynamic(() => import('./components/MeetTheWatchmaker/MeetTheWatchmaker'), { loading: () => <SectionSkeleton />, ssr: false });
 
 type EcommerceSiteProps = {
   pageData: StoreForm;
@@ -71,7 +72,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
   );
 
   return (
-    <div className="space-y-12">
+    <div>
       <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
       <CategorySection StoreCategory={StoreCategory} themeSettings={themeSettings} />
       <FeatureSection />
@@ -81,6 +82,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       <DynamicDailyBestSells id={id} />
       <SecondPromoSection promotions={promotions} />
       <AllProducts id={id} marketplaceListings={featured} themeSettings={themeSettings} />
+      <MeetTheWatchmaker/>
       <MetricsSection coreValues={CoreValues} />
       <AwardsSection awards={awards} />
       {testimonialsData?.data && <TestimonialsSection testimonials={testimonialsData.data} />}

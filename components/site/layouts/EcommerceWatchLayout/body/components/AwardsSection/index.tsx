@@ -5,23 +5,22 @@ import Image from 'next/image';
 import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { Award } from '@/types/typings';
-import { TrophyIcon } from '@heroicons/react/24/solid';
+import { TrophyIcon, StarIcon, CheckBadgeIcon } from '@heroicons/react/24/outline';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: { 
     opacity: 1, 
-    transition: { staggerChildren: 0.15 } 
+    transition: { staggerChildren: 0.2 } 
   },
 };
 
 const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 30, skewX: -5 },
+  hidden: { opacity: 0, y: 40 },
   visible: { 
     opacity: 1, 
     y: 0, 
-    skewX: 0,
-    transition: { duration: 0.6, ease: "easeOut" } 
+    transition: { duration: 0.8, ease: [0.21, 0.45, 0.32, 0.9] } 
   },
 };
 
@@ -29,109 +28,115 @@ const loader = ({ src, width }: { src: string; width: number }) => `${src}?w=${w
 
 export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
   const { storeFormData } = useStoreContext();
-  const accent = '#FF003C'; // Empire Red
+  const primary = storeFormData?.themeSettings?.primaryColor || '#1a1a1a';
+  const gold = '#D4AF37'; // Classic Watch Gold
 
-  // Gaming-themed fallback data
   const defaultAwards = [
-    { iconUrl: 'https://images.unsplash.com/photo-1542838686-37a5027588b3', name: 'Digital Innovator 2026' },
-    { iconUrl: 'https://images.unsplash.com/photo-1629910419355-6b2257321598', name: 'E-commerce Excellence' },
-    { iconUrl: 'https://images.unsplash.com/photo-1579201529431-a4773221b033', name: 'Elite Choice Award' },
-    { iconUrl: 'https://images.unsplash.com/photo-1563729571343-98282367c00e', name: 'Industry Vanguard' },
+    { name: 'Grand Prix d\'Horlogerie', year: '2025 Winner' },
+    { name: 'Chronometer Excellence', year: 'Certified Partner' },
+    { name: 'Master Artisan Guild', year: 'Gold Medalist' },
+    { name: 'Swiss Heritage Award', year: 'Excellence in Craft' },
   ];
 
   const awardsToDisplay = awards && awards.length > 0 ? awards : defaultAwards;
 
   return (
-    <section className="relative py-24 bg-zinc-950 overflow-hidden">
-      {/* Background HUD Graphics */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-red-600/50 to-transparent" />
-      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-red-600/10 rounded-full blur-[120px] pointer-events-none" />
+    <section className="relative py-32 bg-white dark:bg-[#050505] overflow-hidden">
+      {/* Background Sophistication */}
+      <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
+        <h2 className="text-[20vw] font-serif italic select-none">Excellence</h2>
+      </div>
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">
-          <div className="max-w-2xl">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="w-8 h-[2px] bg-red-600" />
-              <span className="font-mono text-xs tracking-[0.5em] text-red-500 uppercase font-black">
-                Achievements_Unlocked
-              </span>
-            </div>
-            <h2 className="text-4xl md:text-6xl font-black italic text-white uppercase tracking-tighter leading-none">
-              RECOGNIZED FOR <span className="text-red-600">DOMINANCE</span>
-            </h2>
-          </div>
-          <p className="text-zinc-500 font-mono text-[10px] uppercase max-w-[200px] text-right hidden md:block">
-            Verified by global industry leaders // High performance standards met.
-          </p>
+        {/* Refined Header */}
+        <div className="text-center mb-24">
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-center gap-4 mb-6"
+          >
+            <div className="h-[1px] w-12 bg-zinc-300 dark:bg-zinc-800" />
+            <span className="text-[10px] font-bold tracking-[0.4em] text-zinc-400 uppercase">
+              The Hall of Horology
+            </span>
+            <div className="h-[1px] w-12 bg-zinc-300 dark:bg-zinc-800" />
+          </motion.div>
+          
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="text-4xl md:text-6xl font-serif text-zinc-900 dark:text-zinc-100"
+          >
+            A Legacy of <span className="italic">Distinction</span>
+          </motion.h2>
         </div>
         
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12"
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: true }}
           variants={containerVariants}
         >
           {awardsToDisplay.map((award: any, idx) => {
             const src = award?.imageUrl ?? award?.iconUrl ?? '';
-            const label = award?.name;
-
+            
             return (
               <motion.div
                 key={idx}
                 variants={cardVariants}
-                className="group relative bg-zinc-900/50 border border-white/5 hover:border-red-600/50 transition-all duration-500 p-8 flex flex-col items-center justify-center min-h-[220px] overflow-hidden"
+                className="group flex flex-col items-center text-center"
               >
-                {/* Tactical Card Decorations */}
-                <div className="absolute top-0 right-0 w-2 h-2 bg-red-600/20" />
-                <div className="absolute bottom-2 left-2 font-mono text-[8px] text-white/5 tracking-widest">
-                  SECTOR_{idx + 101}
-                </div>
-
-                {/* Main Content */}
-                <div className="relative z-10 w-full h-full flex flex-col items-center">
-                  <div className="relative w-20 h-20 mb-6">
+                {/* Prestige Icon Circle */}
+                <div className="relative w-32 h-32 mb-8 flex items-center justify-center">
+                  {/* Rotating Border on Hover */}
+                  <div className="absolute inset-0 rounded-full border border-zinc-100 dark:border-zinc-900 group-hover:border-gold/30 transition-all duration-700 group-hover:rotate-180" />
+                  
+                  <div className="relative w-16 h-16 transition-transform duration-500 group-hover:scale-110">
                     {src ? (
                       <Image
-                        src={src}
-                        alt={label}
+                        src={src || 'https:images.unsplash.com/photo-1508971344143-1c0b9a1e8c9b?auto=format&fit=crop&w=256&q=80'}
+                        alt={award.name}
                         loader={loader}
                         fill
-                        className="object-contain grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500"
+                        className="object-contain grayscale brightness-110 group-hover:grayscale-0"
                       />
                     ) : (
-                      <TrophyIcon className="w-full h-full text-zinc-800 group-hover:text-red-600 transition-colors" />
+                      <StarIcon className="w-full h-full text-zinc-300 dark:text-zinc-700 group-hover:text-gold transition-colors stroke-[1]" />
                     )}
                   </div>
                   
-                  <div className="text-center">
-                    <h3 className="text-sm font-black italic text-zinc-400 group-hover:text-white uppercase tracking-widest transition-colors leading-tight">
-                      {label}
-                    </h3>
+                  {/* Subtle Accent badge */}
+                  <div className="absolute -bottom-2 bg-white dark:bg-zinc-900 px-3 py-1 shadow-xl border border-zinc-100 dark:border-zinc-800 rounded-full">
+                    <p className="text-[8px] font-black tracking-widest text-gold uppercase">Verified</p>
                   </div>
                 </div>
 
-                {/* Hover Glow Effect */}
-                <div className="absolute inset-0 bg-gradient-to-br from-red-600/0 via-transparent to-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute bottom-0 left-0 w-full h-[1px] bg-white/5 group-hover:bg-red-600 transition-all duration-500" />
+                <div className="space-y-2">
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 tracking-wider uppercase">
+                    {award.name}
+                  </h3>
+                  <p className="text-xs font-serif italic text-zinc-500 dark:text-zinc-400">
+                    {award.year || 'Excellence Standard'}
+                  </p>
+                </div>
               </motion.div>
             );
           })}
         </motion.div>
 
-        {/* Bottom Ticker/Status Line */}
-        <div className="mt-12 flex items-center justify-center gap-4 py-4 border-y border-white/5">
-          <div className="flex gap-2">
-            {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 bg-red-600" />)}
-          </div>
-          <span className="font-mono text-[10px] text-zinc-600 uppercase tracking-[0.3em]">
-            Elite Tier Certification Active
-          </span>
-          <div className="flex gap-2">
-            {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 bg-red-600" />)}
-          </div>
-        </div>
+        {/* Floating Brand Seals */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+          className="mt-32 flex flex-wrap justify-center items-center gap-12 opacity-30 grayscale contrast-125"
+        >
+          <CheckBadgeIcon className="w-8 h-8" />
+          <TrophyIcon className="w-8 h-8" />
+          <StarIcon className="w-8 h-8" />
+          <div className="font-serif text-xl italic">Authentic</div>
+        </motion.div>
       </div>
     </section>
   );
