@@ -5,48 +5,60 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+// Using Hero Icons as per your saved preference
+import { 
+  SparklesIcon, 
+  ShoppingBagIcon, 
+  GiftIcon, 
+  RocketLaunchIcon,
+  HeartIcon
+} from '@heroicons/react/24/solid';
 
 const promoItems = [
   {
     id: 1,
-    title: 'SPECIAL GIVEAWAY',
+    title: 'GIVEAWAY',
     label: 'LEGO Movie',
-    bgColor: 'bg-[#EBF4FF]', // Soft Blue
-    image: '/lego-promo.png',
-    gridClass: 'col-span-1 row-span-1',
+    bgColor: 'bg-indigo-50',
+    icon: <GiftIcon className="w-6 h-6 text-indigo-400" />,
+    image: 'https://images.unsplash.com/photo-1585366119957-e9730b6d0f60', 
+    gridClass: 'md:col-span-1 md:row-span-1',
   },
   {
     id: 2,
-    title: 'HAPPY CHILDREN',
+    title: 'HAPPY KIDS',
     price: '$30.00',
-    discount: '15%',
-    bgColor: 'bg-[#EBF4FF]',
-    image: '/children-promo.png',
-    gridClass: 'col-span-1 row-span-1',
+    discount: '15% OFF',
+    bgColor: 'bg-blue-50',
+    icon: <HeartIcon className="w-6 h-6 text-blue-400" />,
+    image: 'https://images.unsplash.com/photo-1519340241574-2cec6aef0c01',
+    gridClass: 'md:col-span-1 md:row-span-1',
   },
   {
     id: 3,
-    title: 'Summer',
-    highlight: 'SALE',
-    subtitle: 'Shop Now',
-    bgColor: 'bg-[#FFF0F6]', // Soft Pink centerpiece
-    image: '/summer-sale-icon.png',
-    gridClass: 'col-span-2 row-span-2', // Center Large Banner
+    title: 'Summer Sale',
+    highlight: 'BIG SALE',
+    subtitle: 'Limited Time Only',
+    bgColor: 'bg-pink-50',
+    image: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4',
+    gridClass: 'md:col-span-2 md:row-span-2', 
     isCenter: true,
   },
   {
     id: 4,
-    title: 'BABY STROLLER',
-    bgColor: 'bg-[#EBF4FF]',
-    image: '/stroller-promo.png',
-    gridClass: 'col-span-1 row-span-1',
+    title: 'STROLLERS',
+    bgColor: 'bg-amber-50',
+    icon: <RocketLaunchIcon className="w-6 h-6 text-amber-400" />,
+    image: 'https://images.unsplash.com/photo-1591339102716-4bc24f7c41bc',
+    gridClass: 'md:col-span-1 md:row-span-1',
   },
   {
     id: 5,
     title: 'PLAY TIME',
-    bgColor: 'bg-[#EBF4FF]',
-    image: '/play-promo.png',
-    gridClass: 'col-span-1 row-span-1',
+    bgColor: 'bg-emerald-50',
+    icon: <SparklesIcon className="w-6 h-6 text-emerald-400" />,
+    image: 'https://images.unsplash.com/photo-1566438480900-0609be27a4be',
+    gridClass: 'md:col-span-1 md:row-span-1',
   },
 ];
 
@@ -56,62 +68,85 @@ export default function NewsletterPromoGrid() {
   const secondaryColor = storeFormData?.themeSettings?.secondaryColor || '#3B82F6';
 
   return (
-    <section className="max-w-7xl mx-auto px-4 md:px-10 py-16">
-      <div className="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-6 h-auto md:h-[500px]">
-        {promoItems.map((item) => (
+    <section className="max-w-7xl mx-auto px-6 py-20">
+      <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-6 auto-rows-[240px]">
+        {promoItems.map((item, idx) => (
           <motion.div
             key={item.id}
-            whileHover={{ scale: 1.02 }}
-            className={`relative rounded-[2.5rem] p-8 overflow-hidden flex flex-col ${item.gridClass} ${item.bgColor}`}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.1 }}
+            viewport={{ once: true }}
+            whileHover={{ y: -5 }}
+            className={`group relative rounded-[3rem] overflow-hidden flex flex-col ${item.gridClass} ${item.bgColor} border border-white shadow-sm hover:shadow-2xl transition-all duration-500`}
           >
-            {/* Content Container */}
-            <div className={`relative z-10 ${item.isCenter ? 'text-center flex flex-col items-center justify-center h-full' : ''}`}>
-              {item.isCenter ? (
-                <>
-                  <h2 className="text-4xl font-bold text-pink-400 font-serif italic">
-                    {item.title}
-                  </h2>
-                  <h3 className="text-7xl font-black tracking-tighter" style={{ color: secondaryColor }}>
-                    {item.highlight}
-                  </h3>
-                  <Link href="/shop" className="mt-6">
-                    <button 
-                      className="px-8 py-3 rounded-2xl text-white font-black text-sm shadow-lg hover:brightness-95 transition-all"
-                      style={{ backgroundColor: primaryColor }}
-                    >
-                      {item.subtitle}
-                    </button>
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <h4 className="text-sm font-black text-gray-900 mb-1">{item.title}</h4>
-                  {item.price && (
-                    <div className="flex items-center gap-1">
-                      <span className="text-blue-500 font-black">{item.price}</span>
-                      <span className="text-[10px] text-blue-300 font-bold">/{item.discount}</span>
-                    </div>
-                  )}
-                  <button 
-                    className="mt-4 px-5 py-2 rounded-xl text-white text-[10px] font-black uppercase tracking-wider shadow-sm"
-                    style={{ backgroundColor: secondaryColor }}
-                  >
-                    Shop Now
-                  </button>
-                </>
-              )}
-            </div>
-
-            {/* Image Layer */}
-            <div className={`absolute bottom-0 right-0 ${item.isCenter ? 'w-full h-1/2 opacity-20' : 'w-1/2 h-full'}`}>
+            {/* Background Image with Overlay */}
+            <div className="absolute inset-0 z-0">
               <Image
                 src={item.image}
                 alt={item.title}
                 fill
-                className="object-contain object-right-bottom p-4"
-                loader={({ src }) => src}
+                className="object-cover opacity-20 group-hover:scale-110 group-hover:rotate-2 transition-transform duration-700"
+                loader={({ src }) => `${src}?auto=format&fit=crop&w=600&q=80`}
               />
+              <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent" />
             </div>
+
+            {/* Content Container */}
+            <div className={`relative z-10 p-8 h-full flex flex-col ${item.isCenter ? 'items-center justify-center text-center' : 'justify-between'}`}>
+              
+              {item.isCenter ? (
+                <div className="space-y-4">
+                  <div className="inline-block px-4 py-1.5 rounded-full bg-white/80 backdrop-blur-md shadow-sm border border-pink-100">
+                    <span className="text-[10px] font-black tracking-[0.2em] text-pink-500 uppercase">{item.title}</span>
+                  </div>
+                  <h3 className="text-6xl md:text-7xl font-black tracking-tighter leading-none" style={{ color: secondaryColor }}>
+                    {item.highlight}
+                  </h3>
+                  <p className="text-slate-500 font-bold italic">{item.subtitle}</p>
+                  <Link href="/shop" className="block pt-4">
+                    <motion.button 
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="px-10 py-4 rounded-[2rem] text-white font-black text-lg shadow-xl flex items-center gap-2 mx-auto"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      <ShoppingBagIcon className="w-5 h-5" />
+                      Grab the Deal
+                    </motion.button>
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  <div className="flex justify-between items-start">
+                    <div className="w-12 h-12 rounded-2xl bg-white/90 backdrop-blur-md flex items-center justify-center shadow-sm">
+                      {item.icon}
+                    </div>
+                    {item.discount && (
+                      <span className="bg-white px-3 py-1 rounded-full text-[10px] font-black text-blue-500 shadow-sm border border-blue-50">
+                        {item.discount}
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-xl font-black text-slate-800 leading-tight mb-2">{item.title}</h4>
+                    {item.price && (
+                      <p className="text-blue-600 font-black text-2xl mb-3">{item.price}</p>
+                    )}
+                    <Link href="/shop">
+                      <button className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-slate-900 transition-colors">
+                        View Details 
+                        <span className="w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-sm group-hover:translate-x-1 transition-transform">→</span>
+                      </button>
+                    </Link>
+                  </div>
+                </>
+              )}
+            </div>
+            
+            {/* Floating Decorative Glow */}
+            <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-white/40 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
           </motion.div>
         ))}
       </div>

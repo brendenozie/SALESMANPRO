@@ -1,13 +1,11 @@
 "use client";
 
 import React, { useMemo, useRef } from "react";
-import { motion, Variants } from "framer-motion";
+import { motion, Variants, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { IStoreCategory, ISubcategory, StoreForm } from "@/types/typings";
-import { ChevronLeftIcon, ChevronRightIcon, SparklesIcon } from "@heroicons/react/24/outline";
-
-const MAX_SUBCATEGORIES_GRID = 12;
+import { ChevronLeftIcon, ChevronRightIcon, SparklesIcon, ArrowRightIcon } from "@heroicons/react/24/solid";
 
 /* -------------------------------------------------------------------------- */
 /* Helpers & Themes */
@@ -25,72 +23,91 @@ function safeSlug(value?: string, fallback = "category") {
     .replace(/[^a-z0-9-_]/g, "");
 }
 
-function resolveCategoryStyle(index: number) {
+function resolveCategoryTheme(index: number) {
   const themes = [
-    { bg: "bg-[#FFF0F6]", text: "text-pink-600", border: "hover:border-pink-200" },
-    { bg: "bg-[#EBF4FF]", text: "text-blue-600", border: "hover:border-blue-200" },
-    { bg: "bg-[#F0FFF4]", text: "text-green-600", border: "hover:border-green-200" },
-    { bg: "bg-[#FFF9DB]", text: "text-yellow-600", border: "hover:border-yellow-200" },
-    { bg: "bg-[#F3F0FF]", text: "text-purple-600", border: "hover:border-purple-200" },
-    { bg: "bg-[#FFF5F5]", text: "text-red-600", border: "hover:border-red-200" },
+    { bg: "bg-pink-50", iconBg: "bg-pink-100", text: "text-pink-600", accent: "bg-pink-400" },
+    { bg: "bg-blue-50", iconBg: "bg-blue-100", text: "text-blue-600", accent: "bg-blue-400" },
+    { bg: "bg-purple-50", iconBg: "bg-purple-100", text: "text-purple-600", accent: "bg-purple-400" },
+    { bg: "bg-amber-50", iconBg: "bg-amber-100", text: "text-amber-600", accent: "bg-amber-400" },
+    { bg: "bg-emerald-50", iconBg: "bg-emerald-100", text: "text-emerald-600", accent: "bg-emerald-400" },
   ];
   return themes[index % themes.length];
 }
 
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1, delayChildren: 0.2 },
+  },
+};
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.9, y: 20 },
+  visible: { 
+    opacity: 1, 
+    scale: 1, 
+    y: 0, 
+    transition: { type: "spring", stiffness: 100, damping: 15 } 
+  },
 };
 
 /* -------------------------------------------------------------------------- */
 /* Components */
 /* -------------------------------------------------------------------------- */
 
-function CategoryCircle({ cat, index }: { cat: IStoreCategory; index: number }) {
-  const catSlug = safeSlug(cat.displayName || "category"); //cat.slug || 
-  const { bg } = resolveCategoryStyle(index);
-  const imageUrl = cat.icon ||  "https://images.unsplash.com/photo-1595113316349-9fa4ee24f884?auto=format&fit=crop&w=800&q=80";//
+function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
+  const theme = resolveCategoryTheme(index);
+  const catSlug = safeSlug(cat.displayName || "category");
+  const imageUrl = cat.icon || "https://images.unsplash.com/photo-1595113316349-9fa4ee24f884?auto=format&fit=crop&w=800&q=80";
 
   return (
-    <motion.div variants={itemVariants} className="flex-shrink-0">
+    <motion.div variants={cardVariants} className="flex-shrink-0 group">
       <Link
         href={`/ecommerce/products?category=${catSlug}`}
-        className="flex flex-col items-center group cursor-pointer"
+        className="flex flex-col items-center w-40 md:w-48"
       >
-        <div
-          className={`w-32 h-32 md:w-36 md:h-36 rounded-[2.5rem] flex items-center justify-center transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-2 ${bg}`}
-        >
-          <div className="relative w-20 h-20 transition-transform duration-500 group-hover:scale-110">
+        <div className={`relative w-full aspect-[4/5] rounded-[3rem] ${theme.bg} transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-black/5 group-hover:-translate-y-3 flex flex-col items-center justify-center p-6 border-2 border-transparent group-hover:border-white`}>
+          
+          {/* Decorative Floating Circle behind icon */}
+          <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full ${theme.iconBg} opacity-50 blur-2xl group-hover:scale-150 transition-transform duration-700`} />
+          
+          <div className="relative w-24 h-24 mb-4 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
             <Image
               src={imageUrl}
               alt={cat.displayName || "Category"}
               fill
               loader={customLoader}
-              className="object-contain p-2"
+              className="object-contain"
             />
           </div>
-        </div>
 
-        <h3 className="mt-4 font-black text-gray-900 text-center text-sm md:text-base group-hover:text-pink-500 transition-colors">
-          {cat.displayName}
-        </h3>
-        <p className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-wider mt-1">
-          {cat.subcategories?.filter(s => s.visible).length || 0} Collections
-        </p>
+          <div className="absolute bottom-6 left-0 right-0 px-4 text-center">
+             <h3 className={`font-black tracking-tight text-sm md:text-base leading-tight ${theme.text}`}>
+                {cat.displayName}
+             </h3>
+             <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                Shop Now
+             </span>
+          </div>
+        </div>
       </Link>
     </motion.div>
   );
 }
 
 function SubcategoryPill({ sub, index }: { sub: ISubcategory; index: number }) {
-  const { bg, text, border } = resolveCategoryStyle(index);
+  const theme = resolveCategoryTheme(index);
   return (
-    <motion.div variants={itemVariants}>
+    <motion.div variants={cardVariants}>
       <Link href={`/ecommerce/products?subcategory=${sub.slug || sub.name}`}>
-        <div className={`flex items-center justify-between p-4 rounded-2xl border border-gray-100 transition-all ${bg} ${border} group shadow-sm hover:shadow-md`}>
-          <span className={`font-black text-sm ${text}`}>{sub.name}</span>
-          <div className="bg-white/50 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-            <ChevronRightIcon className={`h-4 w-4 ${text}`} />
+        <div className="relative group bg-white border border-slate-100 p-4 rounded-3xl transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50 hover:border-transparent overflow-hidden">
+          <div className={`absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity ${theme.accent}`} />
+          <div className="relative flex items-center justify-between">
+            <span className="font-black text-sm text-slate-700 group-hover:text-slate-900">{sub.name}</span>
+            <div className={`w-8 h-8 rounded-full ${theme.bg} flex items-center justify-center -rotate-45 group-hover:rotate-0 transition-transform`}>
+              <ArrowRightIcon className={`h-4 w-4 ${theme.text}`} />
+            </div>
           </div>
         </div>
       </Link>
@@ -104,6 +121,7 @@ function SubcategoryPill({ sub, index }: { sub: ISubcategory; index: number }) {
 
 export default function CategoriesSectionV5({ store }: { store: StoreForm | null }) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const primaryColor = store?.themeSettings?.primaryColor || '#F472B6';
 
   const categoriesToShow = useMemo(() => {
     return (store?.StoreCategory ?? [])
@@ -121,7 +139,7 @@ export default function CategoriesSectionV5({ store }: { store: StoreForm | null
         list.push(...cat.subcategories.filter((s) => s.visible ?? true));
       }
     });
-    return list.slice(0, MAX_SUBCATEGORIES_GRID);
+    return list.slice(0, 12);
   }, [categoriesToShow, isFew]);
 
   const scroll = (direction: "left" | "right") => {
@@ -135,38 +153,45 @@ export default function CategoriesSectionV5({ store }: { store: StoreForm | null
   if (categoriesToShow.length === 0) return null;
 
   return (
-    <section className="relative bg-white py-16 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 md:px-10">
+    <section className="relative bg-[#FAFAFA] py-24 overflow-hidden">
+      {/* Decorative Blobs */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-pink-100/50 rounded-full blur-[100px] -mr-48 -mt-24" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-100/50 rounded-full blur-[100px] -ml-48 -mb-24" />
+
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
         
         {/* Header Section */}
-        <div className="flex items-end justify-between mb-12">
-          <div>
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+          <div className="max-w-xl">
             <motion.div 
-              initial={{ opacity: 0, x: -10 }} 
-              whileInView={{ opacity: 1, x: 0 }}
-              className="flex items-center gap-2 mb-2"
+              initial={{ opacity: 0, y: 10 }} 
+              whileInView={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-2 mb-4"
             >
-              <SparklesIcon className="h-4 w-4 text-pink-500" />
-              <span className="text-pink-500 font-black text-sm uppercase tracking-widest">
+              <div className="p-2 rounded-lg bg-white shadow-sm">
+                <SparklesIcon className="h-5 w-5" style={{ color: primaryColor }} />
+              </div>
+              <span className="font-black text-xs uppercase tracking-[0.3em] text-slate-400">
                 {isFew ? "Specific Collections" : "Curated for you"}
               </span>
             </motion.div>
-            <h2 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight">
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight tracking-tight">
               {isFew ? "Find Exactly What You Need" : "Top Picks for Little Ones"}
             </h2>
           </div>
 
           {!isFew && (
-            <div className="hidden md:flex space-x-3">
+            <div className="flex space-x-4">
               <button
                 onClick={() => scroll("left")}
-                className="p-3 rounded-full bg-gray-50 hover:bg-white hover:shadow-md border border-gray-100 transition-all text-gray-400 hover:text-gray-900"
+                className="w-14 h-14 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center hover:shadow-xl transition-all active:scale-90"
               >
-                <ChevronLeftIcon className="h-6 w-6" />
+                <ChevronLeftIcon className="h-6 w-6 text-slate-900" />
               </button>
               <button
                 onClick={() => scroll("right")}
-                className="p-3 rounded-full bg-gray-50 hover:bg-white hover:shadow-md border border-gray-100 transition-all text-gray-400 hover:text-gray-900"
+                className="w-14 h-14 rounded-2xl text-white shadow-lg flex items-center justify-center hover:shadow-2xl transition-all active:scale-90"
+                style={{ backgroundColor: primaryColor }}
               >
                 <ChevronRightIcon className="h-6 w-6" />
               </button>
@@ -174,39 +199,52 @@ export default function CategoriesSectionV5({ store }: { store: StoreForm | null
           )}
         </div>
 
-        {/* Categories Circle Scroll */}
+        {/* Categories Card Scroll */}
         <motion.div
+          variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          transition={{ staggerChildren: 0.1 }}
           ref={scrollRef}
-          className="flex overflow-x-auto scrollbar-hide space-x-8 pb-8 -mx-4 px-4 md:mx-0 md:px-0"
+          className="flex overflow-x-auto scrollbar-hide space-x-8 pb-12 -mx-6 px-6"
         >
           {categoriesToShow.map((cat, idx) => (
-            <CategoryCircle key={cat.id || idx} cat={cat} index={idx} />
+            <CategoryCard key={cat.id || idx} cat={cat} index={idx} />
           ))}
         </motion.div>
 
-        {/* Subcategory Grid - Only shows if categories are few */}
-        {isFew && subcategoriesForGrid.length > 0 && (
-          <motion.div 
-            initial="hidden"
-            whileInView="visible"
-            transition={{ staggerChildren: 0.05, delayChildren: 0.2 }}
-            className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-          >
-            {subcategoriesForGrid.map((sub, idx) => (
-              <SubcategoryPill key={sub.id || idx} sub={sub} index={idx} />
-            ))}
-          </motion.div>
-        )}
+        {/* Subcategory Grid */}
+        <AnimatePresence>
+          {isFew && subcategoriesForGrid.length > 0 && (
+            <motion.div 
+              initial="hidden"
+              whileInView="visible"
+              className="mt-16"
+            >
+              <div className="flex items-center gap-4 mb-8">
+                <div className="h-px flex-1 bg-slate-200" />
+                <span className="font-black text-xs uppercase tracking-widest text-slate-400">Deep Dive</span>
+                <div className="h-px flex-1 bg-slate-200" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {subcategoriesForGrid.map((sub, idx) => (
+                  <SubcategoryPill key={sub.id || idx} sub={sub} index={idx} />
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Mobile Indicator */}
         {!isFew && (
           <div className="md:hidden flex justify-center mt-4">
-            <div className="h-1 w-12 bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full bg-pink-400 w-1/3 animate-pulse" />
+            <div className="h-1.5 w-16 bg-slate-200 rounded-full overflow-hidden">
+              <motion.div 
+                animate={{ x: [-20, 40, -20] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                className="h-full w-8 rounded-full" 
+                style={{ backgroundColor: primaryColor }}
+              />
             </div>
           </div>
         )}

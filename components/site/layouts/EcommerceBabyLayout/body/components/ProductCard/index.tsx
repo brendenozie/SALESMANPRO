@@ -1,173 +1,169 @@
 'use client';
 
-import { MinusIcon, PlusIcon, StarIcon, TrashIcon } from '@heroicons/react/24/solid';
 import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+// Using Hero Icons as requested
+import { 
+  MinusIcon, 
+  PlusIcon, 
+  StarIcon, 
+  TrashIcon, 
+  ShoppingBagIcon,
+  HeartIcon 
+} from '@heroicons/react/24/solid';
 import { MarketListingForm } from '@/types/typings';
-import { motion } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
-import classNames from 'classnames';
 
 interface ProductCardProps {
   product: MarketListingForm;
 }
 
-const loader = ({ src }: { src: string }) => {
-  return src;
-}
+const loader = ({ src }: { src: string }) => src;
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
+  const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
-  const { slug } = storeFormData || {};
   
-  const primary = storeFormData?.themeSettings?.primaryColor || '#10B981';
+  const primary = storeFormData?.themeSettings?.primaryColor || '#F472B6';
   const secondary = storeFormData?.themeSettings?.secondaryColor || '#3B82F6';
 
-  const getQuantity = (id: string) => cart.find((item : MarketListingForm) => item.id === id)?.quantity || 0;
-  const quantity = getQuantity(product.id);
-
+  const quantity = cart.find((item: any) => item.id === product.id)?.quantity || 0;
   const { name, images, finalPrice, sellingPrice } = product;
-  const rating = 4.5; // Example static value
-  const reviews = 149; // Example static value
 
-  const discount =
-    sellingPrice && finalPrice != null && sellingPrice > finalPrice
-      ? Math.round(((sellingPrice - finalPrice) / sellingPrice) * 100)
-      : null;
+  const discount = sellingPrice && finalPrice && sellingPrice > finalPrice
+    ? Math.round(((sellingPrice - finalPrice) / sellingPrice) * 100)
+    : null;
     
-  const rawImage = images && images.length > 0 ? images[0] : null;
-  const imageSrc =
-    typeof rawImage === 'string' && rawImage.trim() !== ''
-      ? rawImage
-      : 'https://via.placeholder.com/300';
+  const imageSrc = images?.[0] || 'https://images.unsplash.com/photo-1519408230728-0c7c8f0b2c5f';
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="relative flex flex-col bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden group border border-gray-100"
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      whileHover={{ y: -8 }}
+      className="relative flex flex-col bg-white rounded-[2.5rem] p-4 transition-all duration-500 group border border-transparent hover:border-slate-100 hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)]"
     >
-      {/* Product Image Section */}
-      <Link
-        href={`/ecommerce/products/${product.id}`}
-        className="block relative h-72 w-full overflow-hidden" // Taller image section
-      >
-        {images && images.length > 0 && (
+      {/* --- IMAGE CONTAINER --- */}
+      <div className="relative h-64 w-full rounded-[2rem] overflow-hidden bg-[#F8FAFC]">
+        <Link href={`/ecommerce/products/${product.id}`} className="block h-full w-full">
           <Image
             src={imageSrc}
             alt={name}
             fill
             loader={loader}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover object-center transition-transform duration-500 group-hover:scale-105" // Subtler, more elegant zoom
-            priority
+            className="object-cover transition-transform duration-700 group-hover:scale-110"
           />
-        )}
-        {/* Discount Badge */}
-        {discount !== null && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
-            className="absolute top-4 left-4 z-10 text-white text-xs md:text-sm font-bold px-3 py-1 rounded-full shadow-lg"
-            style={{ backgroundColor: secondary }}
-          >
-            -{discount}% OFF
-          </motion.div>
-        )}
-        {/* View Details Overlay on Hover */}
-        <div className="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-          <motion.span
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-white text-sm md:text-lg font-semibold px-6 py-2 rounded-full backdrop-blur-sm"
-            style={{ backgroundColor: `rgba(255,255,255,0.1)` }}
-          >
-            View Details
-          </motion.span>
-        </div>
-      </Link>
+        </Link>
 
-      {/* Product Details and Actions */}
-      <div className="p-6 flex flex-col justify-between flex-grow">
-        {/* Product Title and Rating */}
-        <div className="flex flex-col mb-3">
-          <h4 className="text-xl font-extrabold text-gray-900 truncate" title={name}>
-            {name}
-          </h4>
-          <div className="mt-1 flex items-center gap-1 text-yellow-500 text-sm">
-            <StarIcon className="w-4 h-4" />
-            <span className="font-semibold">{rating.toFixed(1)}</span>
-            <span className="text-gray-500 ml-1 text-xs">({reviews} reviews)</span>
-          </div>
-        </div>
-
-        {/* Price Section */}
-        <div className="flex items-baseline gap-2 mb-4">
-          <span
-            className="text-2xl font-extrabold"
-            style={{ color: primary }}
-          >
-            {(finalPrice ?? 0).toFixed(2)}
-          </span>
-          {sellingPrice && finalPrice && sellingPrice > finalPrice && (
-            <span className="text-base line-through text-gray-400">
-              {sellingPrice.toFixed(2)}
-            </span>
+        {/* Top Badges */}
+        <div className="absolute top-3 left-3 flex flex-col gap-2">
+          {discount && (
+            <div 
+              className="px-3 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-wider shadow-sm"
+              style={{ backgroundColor: secondary }}
+            >
+              {discount}% OFF
+            </div>
           )}
         </div>
 
-        {/* Cart Actions */}
-        {quantity > 0 ? (
-          <div className="flex items-center justify-between mt-auto">
-            <div className="flex items-center space-x-2">
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => decreaseQuantity(product.id)}
-                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-all duration-200"
-              >
-                {quantity === 1 ? (
-                  <TrashIcon className="h-5 w-5 text-red-500" />
-                ) : (
-                  <MinusIcon className="h-5 w-5 text-gray-600" />
-                )}
-              </motion.button>
-              <span className="text-lg text-gray-800 font-bold">{quantity}</span>
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => addToCart(product)}
-                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-all duration-200"
-              >
-                <PlusIcon className="h-5 w-5 text-gray-600" />
-              </motion.button>
-            </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => removeFromCart(product.id)}
-              className="text-sm font-medium text-red-600 hover:text-red-800 transition-colors"
-            >
-              Remove
-            </motion.button>
-          </div>
-        ) : (
+        {/* Heart Action */}
+        <button className="absolute top-3 right-3 p-2.5 rounded-full bg-white/80 backdrop-blur-md text-slate-400 hover:text-pink-500 transition-colors shadow-sm">
+          <HeartIcon className="w-5 h-5" />
+        </button>
+
+        {/* Quick Add Overlay (Only visible when quantity is 0) */}
+        {quantity === 0 && (
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileTap={{ scale: 0.9 }}
             onClick={() => addToCart(product)}
-            className="mt-auto w-full py-3 rounded-lg text-white font-semibold text-base shadow-lg transition-all duration-300 hover:shadow-xl"
-            style={{
-              // background: `linear-gradient(135deg, ${primary}, ${secondary})`,
-              backgroundColor: primary,
-            }}
+            className="absolute bottom-4 right-4 p-4 rounded-2xl bg-slate-900 text-white shadow-xl opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300"
           >
-            Add to Cart
+            <ShoppingBagIcon className="w-5 h-5" />
           </motion.button>
         )}
+      </div>
+
+      {/* --- CONTENT SECTION --- */}
+      <div className="px-2 pt-6 pb-2 flex flex-col flex-grow">
+        <div className="flex justify-between items-start mb-2">
+          <div className="flex items-center gap-1 text-amber-400">
+            <StarIcon className="w-4 h-4" />
+            <span className="text-xs font-bold text-slate-600">4.8</span>
+          </div>
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Organic Cotton</span>
+        </div>
+
+        <Link href={`/ecommerce/products/${product.id}`}>
+          <h4 className="text-lg font-bold text-slate-800 line-clamp-1 group-hover:text-blue-600 transition-colors">
+            {name}
+          </h4>
+        </Link>
+
+        <div className="mt-3 flex items-center justify-between">
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-black text-slate-900">
+              ${(finalPrice ?? 0).toFixed(2)}
+            </span>
+            {discount && (
+              <span className="text-sm line-through text-slate-300 font-medium">
+                ${sellingPrice?.toFixed(2)}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* --- DYNAMIC FOOTER ACTIONS --- */}
+        <div className="mt-6">
+          <AnimatePresence mode="wait">
+            {quantity > 0 ? (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="flex items-center justify-between bg-slate-50 p-1 rounded-2xl border border-slate-100"
+              >
+                <div className="flex items-center gap-1">
+                  <motion.button
+                    whileTap={{ scale: 0.8 }}
+                    onClick={() => decreaseQuantity(product.id)}
+                    className="p-3 rounded-xl bg-white shadow-sm hover:text-red-500 transition-colors"
+                  >
+                    {quantity === 1 ? <TrashIcon className="h-4 w-4" /> : <MinusIcon className="h-4 w-4" />}
+                  </motion.button>
+                  <span className="w-10 text-center font-black text-slate-700">{quantity}</span>
+                  <motion.button
+                    whileTap={{ scale: 0.8 }}
+                    onClick={() => addToCart(product)}
+                    className="p-3 rounded-xl bg-white shadow-sm hover:text-blue-500 transition-colors"
+                  >
+                    <PlusIcon className="h-4 w-4" />
+                  </motion.button>
+                </div>
+                <div className="pr-4">
+                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">In Cart</span>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => addToCart(product)}
+                className="w-full py-4 rounded-2xl text-white font-bold text-sm shadow-lg transition-all active:shadow-none"
+                style={{ 
+                  backgroundColor: primary,
+                  boxShadow: `0 12px 24px -8px ${primary}66`
+                }}
+              >
+                Add to Cart
+              </motion.button>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </motion.div>
   );
