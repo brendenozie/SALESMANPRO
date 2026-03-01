@@ -20,8 +20,7 @@ import {
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 
 // Above-the-fold components - statically imported
-import CategorySection from './components/CategorySection';
-import CategoriesSectionV5 from './components/CategorySection';
+import CategoriesSection from './components/CategorySection';
 
 // Loading skeleton
 const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
@@ -356,7 +355,7 @@ const Features = () => {
     <div>
       <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
       <Features />
-      <CategoriesSectionV5 store={pageData} />
+      <CategoriesSection store={pageData} />
       <DynamicPopularProducts id={id} />
       <PromoSection promotions={promotions} />
       <DynamicTrending id={id} />

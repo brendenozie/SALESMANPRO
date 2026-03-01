@@ -194,7 +194,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
       {/* USP Section */}
       <USPSlider  coreValues={CoreValues} themeSettings={themeSettings} />      
-      <CategorySection StoreCategory={StoreCategory} themeSettings={themeSettings} />      
+      <CategorySection store={pageData} />      
       {/* Product Grid */}
       <WeeklyProducts id={id} />
       {/* Featured Categories */}

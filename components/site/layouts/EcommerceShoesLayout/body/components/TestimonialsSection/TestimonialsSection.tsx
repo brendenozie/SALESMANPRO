@@ -2,150 +2,105 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { StarIcon } from '@heroicons/react/24/solid';
+import { useStore } from '@/contexts/StoreContext';
 import { Testimonial } from '@/types/typings';
+import Image from 'next/image';
+import Section from '@/components/site/Section/Section';
 
-const sampletestimonials = [
+const sampleTestimonials: Testimonial[] = [
     {
-      authorName: 'Johnathon',
-      quote: 'The products exceeded my expectations! The quality is incredible and the style is unmatched. I will definitely be a returning customer.',
-      avatarUrl: 'https://placehold.co/100x100/FFF?text=J',
+        authorName: 'Johnathon',
+        quote: 'The bounce and support on these sneakers are next level. I hit a new PB on my 5k the first week wearing them!',
+        avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80',
     },
     {
-      authorName: 'Alina',
-      quote: 'I am so happy with my purchase. The shoes are comfortable and stylish, and the delivery was incredibly fast. Highly recommended!',
-      avatarUrl: 'https://placehold.co/100x100/FFF?text=A',
+        authorName: 'Alina',
+        quote: 'Finally, a brand that balances aesthetics with actual arch support. These look great in the office and feel better on the street.',
+        avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
     },
     {
-      authorName: 'Mikey',
-      quote: 'Fantastic experience from start to finish. The customer support was excellent, and the product arrived exactly as described. Love my new shoes!',
-      avatarUrl: 'https://placehold.co/100x100/FFF?text=M',
+        authorName: 'Mikey',
+        quote: 'Customer service was lightning fast when I needed a size swap. The leather quality is buttery soft. 10/10.',
+        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
     },
-  ];
+];
 
-  interface TestimonialsSectionProps {
+interface TestimonialsSectionProps {
     testimonials?: Testimonial[] | null;
-  }
-  
-
-// Main App component containing the "Testimonials" section
-export default function TestimonialsSection( { testimonials = sampletestimonials }: TestimonialsSectionProps) {
-
-  return (
-    <div className="min-h-screen bg-gray-100 dark:bg-zinc-900 font-sans p-8 flex items-center justify-center">
-      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-16">
-        <motion.h2
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-16"
-        >
-          Testimonials
-        </motion.h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-          {testimonials?.map((testimonial, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: index * 0.2, ease: 'easeOut' }}
-              viewport={{ once: true }}
-              className="flex flex-col items-center p-6 bg-white dark:bg-zinc-800 rounded-2xl shadow-lg transition-shadow duration-300"
-            >
-              <div className="w-24 h-24 mb-4">
-                <img
-                  src={testimonial.avatarUrl || 'https://placehold.co/100x100/FFF?text=User'}
-                  alt={testimonial.authorName || 'author' }
-                  className="rounded-full w-full h-full object-cover border-4 border-red-500"
-                />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                {testimonial.authorName}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm italic">
-                "{testimonial.quote}"
-              </p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-    </div>
-  );
 }
 
-// 'use client';
+export default function TestimonialsSection({ testimonials = sampleTestimonials }: TestimonialsSectionProps) {
+    const store = useStore();
+    const primaryColor = store?.storeFormData?.themeSettings?.primaryColor || '#f97316';
 
-// import React from 'react';
-// import { motion } from 'framer-motion';
-// import { useStoreContext } from '@/contexts/StoreContext';
-// import Section from '../Section/Section';
-// import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
-// import { Testimonial } from '@/types/typings';
+    const list = testimonials || sampleTestimonials;
 
-// interface TestimonialsSectionProps {
-//   testimonials: Testimonial[];
-// }
+    return (
+        <Section 
+            title="Trusted by Pros, Loved by All" 
+            // subtitle="Join thousands of happy runners and trendsetters."
+        >
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                {/* Decorative Background Element */}
+                <div 
+                    className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full opacity-[0.03] pointer-events-none"
+                    style={{ color: primaryColor }}
+                >
+                    <span className="text-[20rem] font-black whitespace-nowrap select-none">TRUSTED BY PROS</span>
+                </div>
 
-// export default function TestimonialsSection({ testimonials }: TestimonialsSectionProps) {
-//   const { storeFormData } = useStoreContext();
-//   const { themeSettings = {} } = storeFormData || {};
-//   const primary = themeSettings?.primaryColor || '#f97316';
-//   const secondary = themeSettings?.secondaryColor || '#3b82f6';
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+                    {list.map((t, idx) => (
+                        <motion.div
+                            key={idx}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5, delay: idx * 0.1 }}
+                            className="flex flex-col bg-white dark:bg-zinc-800/50 backdrop-blur-sm p-8 rounded-3xl border border-gray-100 dark:border-zinc-700 shadow-sm hover:shadow-xl transition-all duration-300 group"
+                        >
+                            {/* Star Rating & Quote Icon */}
+                            <div className="flex justify-between items-start mb-6">
+                                <div className="flex gap-0.5">
+                                    {[...Array(5)].map((_, i) => (
+                                        <StarIcon key={i} className="w-5 h-5" style={{ color: primaryColor }} />
+                                    ))}
+                                </div>
+                                <div className="opacity-10 group-hover:opacity-30 transition-opacity">
+                                    <svg width="35" height="25" viewBox="0 0 35 25" fill="currentColor">
+                                        <path d="M11.25 0L15 3.75C11.25 7.5 9.375 11.25 9.375 15H15V25H0V15C0 7.5 3.75 2.5 11.25 0ZM31.25 0L35 3.75C31.25 7.5 29.375 11.25 29.375 15H35V25H20V15C20 7.5 23.75 2.5 31.25 0Z" />
+                                    </svg>
+                                </div>
+                            </div>
 
-//   if (!testimonials || testimonials.length === 0) return null;
+                            {/* Quote Text */}
+                            <p className="flex-grow text-lg font-medium leading-relaxed text-gray-800 dark:text-zinc-200">
+                                {t.quote}
+                            </p>
 
-//   const cardVariants = {
-//     hidden: { opacity: 0, y: 20 },
-//     visible: (idx: number) => ({
-//       opacity: 1,
-//       y: 0,
-//       transition: { delay: idx * 0.2, duration: 0.6, ease: 'easeOut' },
-//     }),
-//   };
-
-//   return (
-//     <Section title="What Our Customers Say">
-//       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-//         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-//           {testimonials.map((t, idx) => (
-//             <motion.div
-//               key={idx}
-//               custom={idx}
-//               initial="hidden"
-//               whileInView="visible"
-//               viewport={{ once: true, amount: 0.3 }}
-//               variants={cardVariants}
-//               whileHover={{ scale: 1.02 }}
-//               className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden"
-//             >
-//               {/* Top Gradient Accent */}
-//               <div
-//                 className="h-1 w-full"
-//                 style={{
-//                   background: `linear-gradient(90deg, ${primary}, ${secondary})`,
-//                 }}
-//               />
-
-//               <div className="p-6 flex flex-col h-full">
-//                 {/* Quote Icon */}
-//                 <div className="flex items-center mb-4 text-primary">
-//                   <ChatBubbleLeftRightIcon className="h-6 w-6" style={{ color: primary }} />
-//                 </div>
-
-//                 {/* Quote Text */}
-//                 <p className="flex-grow text-lg italic text-gray-700 dark:text-gray-200 h-12 overflow-clip">
-//                   “{t.quote}”
-//                 </p>
-
-//                 {/* Author */}
-//                 <p className="mt-6 text-sm font-medium text-gray-500 dark:text-gray-400 text-right">
-//                   — {t.authorName}
-//                 </p>
-//               </div>
-//             </motion.div>
-//           ))}
-//         </div>
-//       </div>
-//     </Section>
-//   );
-// }
+                            {/* Author Profile */}
+                            <div className="mt-8 flex items-center gap-4">
+                                <div className="relative w-12 h-12 overflow-hidden rounded-full border-2 p-0.5" style={{ borderColor: primaryColor }}>
+                                    <img
+                                        src={t.avatarUrl || `https://ui-avatars.com/api/?name=${t.authorName}`}
+                                        alt={t.authorName || 'Anonymous'}
+                                        className="w-full h-full rounded-full object-cover"
+                                    />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-gray-900 dark:text-white leading-tight">
+                                        {t.authorName}
+                                    </h4>
+                                    <p className="text-xs uppercase tracking-widest text-gray-500 dark:text-zinc-500 font-semibold">
+                                        Verified Buyer
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+            </div>
+        </Section>
+    );
+}

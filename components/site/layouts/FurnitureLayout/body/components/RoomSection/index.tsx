@@ -2,12 +2,14 @@
 
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRightIcon } from '@heroicons/react/24/outline';
+import { ArrowLongRightIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
-import { StoreForm, IStoreCategory } from '@/types/typings';
+import { StoreForm } from '@/types/typings';
 
-// --- Helpers ---
+/* -------------------------------------------------------------------------- */
+/* Helpers */
+/* -------------------------------------------------------------------------- */
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -20,136 +22,169 @@ interface RoomCard {
   img: string;
   href: string;
   isDynamic: boolean;
+  tag: string;
 }
 
-// Default static data for the furniture context
 const defaultRooms = [
   { 
     id: 'living', 
     keywords: ['living', 'sofa', 'lounge'], 
     defaultName: 'Living Room', 
-    defaultImg: 'https://images.unsplash.com/photo-1583847669868-28203b10cd11?q=80&w=1000' 
+    defaultImg: 'https://images.unsplash.com/photo-1583847669868-28203b10cd11?q=80&w=1000',
+    tag: 'The Social Space'
   },
   { 
     id: 'bedroom', 
     keywords: ['bed', 'sleep', 'night'], 
     defaultName: 'Bedroom', 
-    defaultImg: 'https://images.unsplash.com/photo-1616594039964-40891f913dd2?q=80&w=1000' 
+    defaultImg: 'https://images.unsplash.com/photo-1616594039964-40891f913dd2?q=80&w=1000',
+    tag: 'Private Sanctuary'
   },
   { 
     id: 'dining', 
     keywords: ['dining', 'kitchen', 'table', 'eat'], 
     defaultName: 'Dining Room', 
-    defaultImg: 'https://images.unsplash.com/photo-1617103996702-96ff29b1c467?q=80&w=1000' 
+    defaultImg: 'https://images.unsplash.com/photo-1617103996702-96ff29b1c467?q=80&w=1000',
+    tag: 'Culinary Stage'
   }
 ];
 
 export interface RoomSectionProps {
-  store?: StoreForm | null; // Added store prop
+  store?: StoreForm | null;
   themeSettings: any;
 }
 
 export default function RoomSection({ store, themeSettings }: RoomSectionProps) {
-  const primary = themeSettings?.primaryColor || '#ea580c'; // Default to orange-600
+  const primary = themeSettings?.primaryColor || '#18181b';
   const storeSlug = store?.slug || 'site';
 
-  // Logic: Map Store Categories to the 3 "Room" Slots
   const rooms: RoomCard[] = useMemo(() => {
     const categories = store?.StoreCategory || [];
-
     return defaultRooms.map((roomType) => {
-      // 1. Try to find a matching category in the store data
       const match = categories.find(cat => 
         roomType.keywords.some(k => cat.displayName?.toLowerCase().includes(k))
       );
 
-      // 2. If found, use dynamic data. If not, use static fallback.
-      if (match) {
-        return {
-          name: match.displayName || roomType.defaultName,
-          img: (match as any).imageUrl || (match as any).image || roomType.defaultImg,
-          href: `/furnitureecommerce/products?category=${safeSlug(match.categoryId || match.displayName || '')}`,
-          isDynamic: true
-        };
-      }
-
       return {
-        name: roomType.defaultName,
-        img: roomType.defaultImg,
-        href: `/furnitureecommerce/categories`, // General link if specific not found
-        isDynamic: false
+        name: match?.displayName || roomType.defaultName,
+        img: (match as any)?.imageUrl || (match as any)?.image || roomType.defaultImg,
+        href: `/furnitureecommerce/products?category=${safeSlug(match?.categoryId || match?.displayName || roomType.id)}`,
+        isDynamic: !!match,
+        tag: roomType.tag
       };
     });
-  }, [store, storeSlug]);
+  }, [store]);
 
   return (
-    <section className="py-24 max-w-7xl mx-auto px-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-end mb-12 gap-4">
-        <div>
-           <h2 className="text-4xl font-serif font-bold text-stone-900 dark:text-white">
-            Shop by Room
-           </h2>
-           <p className="mt-2 text-stone-500 dark:text-stone-400">
-             Curated arrangements for every corner of your home.
-           </p>
-        </div>
+    <section className="py-32 bg-zinc-50 dark:bg-zinc-950 overflow-hidden">
+      <div className="max-w-[1700px] mx-auto px-6">
         
-        <Link 
-          href={`/${storeSlug}/categories`}
-          className="group flex items-center text-stone-500 hover:text-[color:var(--primary)] transition-colors duration-300 underline underline-offset-4"
-          style={{ '--primary': primary } as React.CSSProperties}
-          onClick={() => window.location.href = `/furnitureecommerce/categories`}
-        >
-          View Full Catalog
-          <ArrowRightIcon className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
-        </Link>
-      </div>
-      
-      {/* Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {rooms.map((room, idx) => (
-          <Link href={room.href} key={idx} passHref legacyBehavior>
-            <motion.div
-              whileHover={{ y: -8 }}
-              transition={{ type: 'spring', stiffness: 300 }}
-              className="relative h-[400px] rounded-2xl overflow-hidden group cursor-pointer block shadow-sm hover:shadow-xl"
+        {/* Editorial Header */}
+        <div className="relative mb-20">
+          <motion.span 
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 block mb-4"
+          >
+            // Space Selection
+          </motion.span>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
+            <h2 className="text-6xl md:text-8xl font-light tracking-tighter text-zinc-900 dark:text-white uppercase leading-[0.8] max-w-2xl">
+              Shop by <br />
+              <span className="font-serif italic lowercase text-zinc-400 ml-12">Atmosphere</span>
+            </h2>
+            <Link 
+              href="/furnitureecommerce/categories"
+              className="group flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-900 dark:text-white pb-2 border-b border-zinc-200 dark:border-zinc-800"
             >
+              The Full Catalog
+              <ArrowLongRightIcon className="w-5 h-5 transition-transform group-hover:translate-x-2" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Asymmetric Grid Spread */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-auto lg:h-[900px]">
+          
+          {/* Main Hero: Living Room (60% Width) */}
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="lg:col-span-7 relative group overflow-hidden"
+          >
+            <Link href={rooms[0].href} className="block w-full h-full relative">
               <Image 
-                src={room.img} 
-                alt={room.name} 
+                src={rooms[0].img} 
+                alt={rooms[0].name} 
                 fill 
-                className="object-cover transition-transform duration-700 group-hover:scale-110" 
+                className="object-cover transition-transform duration-[2s] group-hover:scale-105" 
                 loader={loader}
               />
+              <div className="absolute inset-0 bg-zinc-950/20 group-hover:bg-zinc-950/40 transition-colors duration-700" />
               
-              {/* Overlay Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
-              
-              {/* Content */}
-              <div className="absolute bottom-0 left-0 p-8 w-full">
-                <div className="flex justify-between items-end">
-                  <div>
-                    <h3 className="text-3xl text-white font-serif font-medium mb-2">
-                      {room.name}
-                    </h3>
-                    <p className="text-white/80 text-sm font-light tracking-wide opacity-0 transform translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
-                      Explore Collection
-                    </p>
-                  </div>
-                  
-                  {/* Floating Action Button */}
-                  <div 
-                    className="w-10 h-10 rounded-full bg-white text-stone-900 flex items-center justify-center opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 transition-all duration-500 delay-100"
-                    style={{ color: primary }}
-                  >
-                    <ArrowRightIcon className="w-5 h-5" />
-                  </div>
-                </div>
+              <div className="absolute top-10 right-10 flex flex-col items-end">
+                 <span className="text-white text-[10px] font-black uppercase tracking-widest bg-zinc-900 px-4 py-2">
+                   Featured Space
+                 </span>
               </div>
-            </motion.div>
-          </Link>
-        ))}
+
+              <div className="absolute bottom-12 left-12">
+                <span className="text-white/60 text-[10px] font-black uppercase tracking-[0.4em] mb-4 block">
+                  {rooms[0].tag}
+                </span>
+                <h3 className="text-5xl md:text-7xl font-light text-white uppercase tracking-tighter">
+                  {rooms[0].name.split(' ')[0]} <br />
+                  <span className="font-serif italic lowercase block translate-x-8">{rooms[0].name.split(' ')[1]}</span>
+                </h3>
+              </div>
+            </Link>
+          </motion.div>
+
+          {/* Side Stack (40% Width) */}
+          <div className="lg:col-span-5 grid grid-rows-2 gap-6">
+            {rooms.slice(1).map((room, idx) => (
+              <motion.div 
+                key={idx}
+                initial={{ opacity: 0, x: 40 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.2 }}
+                className="relative group overflow-hidden"
+              >
+                <Link href={room.href} className="block w-full h-full relative">
+                  <Image 
+                    src={room.img} 
+                    alt={room.name} 
+                    fill 
+                    className="object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110" 
+                    loader={loader}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/80 via-zinc-950/20 to-transparent" />
+                  
+                  <div className="absolute inset-0 p-12 flex flex-col justify-end">
+                    <span className="text-white/50 text-[10px] font-black uppercase tracking-[0.4em] mb-2">
+                      {room.tag}
+                    </span>
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-3xl font-light text-white uppercase tracking-tighter">
+                        {room.name}
+                      </h3>
+                      <div className="w-12 h-px bg-white/30 group-hover:w-20 transition-all duration-500" />
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        {/* Floating Brand Label */}
+        <div className="mt-12 flex justify-end">
+          <p className="text-[10px] font-serif italic text-zinc-400 max-w-xs text-right">
+            Every room tells a story. Ours begins with architectural integrity and ends with your comfort.
+          </p>
+        </div>
       </div>
     </section>
   );

@@ -2,6 +2,8 @@
 
 import { useStoreContext } from '@/contexts/StoreContext';
 import { IPromotion } from '@/types/typings';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
 import React from 'react';
 
 export interface SecondPromoSectionProps {
@@ -12,64 +14,118 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
   const { storeFormData } = useStoreContext();
   const { themeSettings = {} } = storeFormData || {};
 
-  const primary = themeSettings?.primaryColor || '#f97316'; // fallback orange
-  const secondary = themeSettings?.secondaryColor || '#3b82f6'; // fallback blue
+  const primary = themeSettings?.primaryColor || '#ea580c'; 
+  const secondary = themeSettings?.secondaryColor || '#18181b';
 
-  // Grab the second promotion (index 1)
-  const promotion = promotions?.[1] || {
-    title: 'Promo weekend special',
-    subtitle: 'Limited Time Offer. Don\'t Miss Out!',
-    description:
-      'Enjoy exclusive discounts on our top products this weekend only. available while supplies last. Hurry and grab your favorites before they\'re gone!',
-    bannerUrl:
-      'https://dozi4r4ug9739.cloudfront.net/images/1763546711539-composition-black-friday-shopping-cart-with-copy-space.jpg',
-    ctaText: 'Shop Now',
+  // Grab the specific promotion (index 1) or provide high-end fallback
+  const promotion: any = promotions?.[1] || {
+    title: 'Seasonal Refinement',
+    subtitle: 'Limited Time Offer',
+    description: 'Elevate your living space with our weekend curation. Exceptional pieces, intentionally priced for a brief window.',
+    bannerUrl: 'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?q=80&w=1000',
+    ctaText: 'Access the Collection',
     ctaLink: '#',
   };
 
   return (
-    <section
-      className="relative py-20 overflow-hidden"
-      style={{
-        background: `linear-gradient(135deg, ${primary}, ${secondary})`,
-      }}
-    >
-      <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-        {/* --- Text Block --- */}
-        <div className="text-center md:text-left relative z-10">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-white leading-tight drop-shadow-lg">
-            {promotion.title}
-          </h2>
-          {/* {promotion.subtitle && (
-            <h3 className="mt-4 text-2xl md:text-3xl font-semibold text-white/90">
-              {promotion.subtitle}
-            </h3>
-          )} */}
-          <p className="mt-6 text-base md:text-lg text-white/80 max-w-xl mx-auto md:mx-0">
-            {promotion.description}
-          </p>
-          <a
-            href={promotion.ctaLink || '#'}
-            className="mt-8 inline-block bg-white text-black font-semibold py-3 px-8 rounded-full shadow-md hover:bg-gray-100 transition duration-300"
+    <section className="relative overflow-hidden bg-zinc-950">
+      <div className="flex flex-col md:flex-row min-h-[600px]">
+        
+        {/* --- LEFT: The Visual Impact (Flood Side) --- */}
+        <div 
+          className="relative w-full md:w-1/2 flex items-center justify-center p-12 overflow-hidden"
+          style={{ backgroundColor: primary }}
+        >
+          {/* Subtle Texture Overlay */}
+          <div className="absolute inset-0 opacity-10 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+          
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
+            whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
+            className="relative z-10 w-full max-w-md aspect-[3/4] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)]"
           >
-            {promotion.ctaText}
-          </a>
+            <Image
+              src={promotion.bannerUrl}
+              alt={promotion.title}
+              loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
+              fill
+              className="object-cover rounded-sm"
+              sizes="50vw"
+            />
+            {/* Architectural Border Frame */}
+            <div className="absolute inset-4 border border-white/20 pointer-events-none" />
+          </motion.div>
+
+          {/* Floating Text Detail */}
+          <div className="absolute top-10 left-10 hidden lg:block">
+            <span className="text-white/40 text-[12vw] font-black leading-none select-none">
+              02
+            </span>
+          </div>
         </div>
 
-        {/* --- Image Block --- */}
-        <div className="flex justify-center md:justify-end relative">
-          <div className="relative">
-            <img
-              src={promotion.bannerUrl || 'https://www.unsplash.com/'}
-              alt={promotion.title}
-              className="w-72 md:w-80 lg:w-96 rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-300"
-            />
-            {/* Decorative Glow Circle */}
-            <div
-              className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full opacity-30 blur-2xl"
-              style={{ background: secondary }}
-            />
-          </div>
+        {/* --- RIGHT: The Narrative (Dark Side) --- */}
+        <div className="w-full md:w-1/2 flex items-center justify-center p-8 md:p-24 bg-zinc-950 text-white">
+          <motion.div 
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+            className="max-w-lg space-y-10"
+          >
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <span className="h-px w-12 bg-zinc-700" />
+                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-500">
+                  {promotion.subtitle || 'Flash Event'}
+                </span>
+              </div>
+              <h2 className="text-5xl md:text-7xl font-light tracking-tighter uppercase leading-[0.9]">
+                {promotion.title}
+              </h2>
+            </div>
+
+            <p className="text-zinc-400 text-lg font-light leading-relaxed">
+              {promotion.description}
+            </p>
+
+            {/* Time Indicator - Captivating detail */}
+            <div className="flex gap-6 py-6 border-y border-zinc-900">
+                <div className="flex flex-col">
+                    <span className="text-xs text-zinc-500 uppercase font-bold tracking-widest">Status</span>
+                    <span className="text-white flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                        Live Now
+                    </span>
+                </div>
+                <div className="flex flex-col pl-6 border-l border-zinc-900">
+                    <span className="text-xs text-zinc-500 uppercase font-bold tracking-widest">Ending</span>
+                    <span className="text-white">Sunday, 11:59 PM</span>
+                </div>
+            </div>
+
+            <div className="pt-4">
+              <a
+                href={promotion.ctaLink || '#'}
+                className="group relative inline-flex items-center gap-8 overflow-hidden rounded-full border border-white/10 px-12 py-5 transition-all hover:border-white/40"
+              >
+                <span className="relative z-10 text-xs font-black uppercase tracking-[0.3em]">
+                  {promotion.ctaText}
+                </span>
+                <div 
+                    className="absolute inset-0 translate-y-full bg-white transition-transform duration-500 group-hover:translate-y-0" 
+                />
+                {/* Arrow that changes color on hover */}
+                <svg 
+                    className="relative z-10 w-5 h-5 transition-colors duration-500 group-hover:text-black" 
+                    fill="none" 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor"
+                >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </a>
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>

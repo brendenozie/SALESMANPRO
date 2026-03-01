@@ -1,25 +1,17 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { MarketListingForm } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-  FireIcon,
+  ShoppingBagIcon,
   HeartIcon,
-  MinusIcon,
   PlusIcon,
-  TrashIcon,
 } from '@heroicons/react/24/outline';
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
-
-const fadeIn = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
-};
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -28,7 +20,6 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-
   const {
     id,
     name,
@@ -38,24 +29,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     finalPrice,
     isNewArrival,
     isDiscounted,
-    isFlashDeal,
-    tags = [],
   } = product;
 
-  const rating = 4.8; // static rating until API
-  const img = images?.[0] || 'https://via.placeholder.com/400';
-
-  const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
+  const img = images?.[0] || 'https://via.placeholder.com/400x500';
+  const { addToCart, cart } = useStateContext();
   const { storeFormData } = useStoreContext();
-  const { slug } = storeFormData || {};
   
-  const primary = storeFormData?.themeSettings?.primaryColor || '#10B981';
-  const secondary = storeFormData?.themeSettings?.secondaryColor || '#3B82F6';
-
-  const getQuantity = (id: string) => cart.find((item : MarketListingForm) => item.id === id)?.quantity || 0;
-  const quantity = getQuantity(product.id);
-
-  const reviews = 149; // Example static value
+  const primary = storeFormData?.themeSettings?.primaryColor || '#18181b';
+  const quantity = cart.find((item: any) => item.id === id)?.quantity || 0;
 
   const discount =
     sellingPrice && finalPrice != null && sellingPrice > finalPrice
@@ -64,151 +45,106 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <motion.div
-      variants={fadeIn}
-      initial="hidden"
-      animate="visible"
-      whileHover={{ y: -8 }}
-      className="group relative bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100"
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="group flex flex-col bg-white dark:bg-zinc-950"
     >
       {/* IMAGE AREA */}
-      <Link
-        href={`/ecommerce/products/${id}`}
-        className="relative aspect-[3/4] bg-slate-100 overflow-hidden block"
-      >
-        <Image
-          src={img}
-          alt={name}
-          fill
-          loader={loader}
-          className="object-cover transition-transform duration-700 group-hover:scale-110"
-        />
+      <div className="relative aspect-[4/5] overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+        <Link href={`/ecommerce/products/${id}`} className="block w-full h-full">
+          <Image
+            src={img}
+            alt={name}
+            fill
+            loader={loader}
+            className="object-cover transition-transform duration-1000 group-hover:scale-105"
+          />
+        </Link>
 
-        {/* BADGES */}
-        <div className="absolute top-3 left-3 flex flex-col gap-2">
+        {/* TOP BADGES */}
+        <div className="absolute top-4 left-4 flex flex-col gap-2 pointer-events-none">
           {isNewArrival && (
-            <span className="bg-slate-900 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider rounded">
+            <span className="bg-white/90 backdrop-blur text-zinc-900 text-[10px] font-black px-3 py-1 uppercase tracking-[0.2em] shadow-sm">
               New
             </span>
           )}
-
           {isDiscounted && discount && (
-            <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider rounded">
+            <span className="bg-zinc-900 text-white text-[10px] font-black px-3 py-1 uppercase tracking-[0.2em]">
               -{discount}%
             </span>
           )}
-
-          {isFlashDeal && (
-            <span className="bg-amber-400 text-slate-900 text-[10px] font-bold px-2 py-1 uppercase tracking-wider rounded flex items-center gap-1">
-              <FireIcon className="w-3 h-3" /> Flash
-            </span>
-          )}
         </div>
 
-        {/* WISHLIST ICON */}
-        <button className="absolute top-3 right-3 p-2 bg-white/50 hover:bg-white rounded-full transition-colors text-slate-600 hover:text-red-500">
-          <HeartIcon className="w-5 h-5" />
+        {/* WISHLIST BUTTON */}
+        <button className="absolute top-4 right-4 p-2.5 bg-white/80 backdrop-blur-md rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 hover:bg-white text-zinc-900">
+          <HeartIcon className="w-4 h-4" />
         </button>
 
-        {/* QUICK ACTION */}
-        <div className="absolute bottom-4 left-0 right-0 px-4 flex justify-between translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-          {/* Cart Actions */}
-        {quantity > 0 ? (
-          <div className="flex items-center justify-between mt-auto">
-            <div className="flex items-center space-x-2">
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => decreaseQuantity(product.id)}
-                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-all duration-200"
-              >
-                {quantity === 1 ? (
-                  <TrashIcon className="h-5 w-5 text-red-500" />
-                ) : (
-                  <MinusIcon className="h-5 w-5 text-gray-600" />
-                )}
-              </motion.button>
-              <span className="text-lg text-gray-800 font-bold">{quantity}</span>
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => addToCart(product)}
-                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-all duration-200"
-              >
-                <PlusIcon className="h-5 w-5 text-gray-600" />
-              </motion.button>
-            </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => removeFromCart(product.id)}
-              className="text-sm font-medium text-red-600 hover:text-red-800 transition-colors"
-            >
-              Remove
-            </motion.button>
-          </div>
-        ) : (
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+        {/* QUICK ADD - SLIDE UP OVERLAY */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[0.22, 1, 0.36, 1]">
+          <button
             onClick={() => addToCart(product)}
-            className="mt-auto w-full py-3 rounded-lg text-white font-semibold text-base shadow-lg transition-all duration-300 hover:shadow-xl"
-            style={{
-              // background: `linear-gradient(135deg, ${primary}, ${secondary})`,
-              backgroundColor: primary,
-            }}
+            className="w-full py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-2 hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors shadow-2xl"
           >
-            Add to Cart
-          </motion.button>
-        )}
+            {quantity > 0 ? (
+              <>
+                <ShoppingBagIcon className="w-4 h-4" />
+                In Bag ({quantity})
+              </>
+            ) : (
+              <>
+                <PlusIcon className="w-4 h-4" />
+                Quick Add
+              </>
+            )}
+          </button>
         </div>
-      </Link>
+      </div>
 
       {/* INFO AREA */}
-      <div className="p-4">
-        <div className="flex justify-between items-start mb-1">
-          <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">
-            {brand ?? "No Brand"}
+      <div className="pt-6 pb-2 flex flex-col items-center text-center">
+        {brand && (
+          <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-[0.3em] mb-2">
+            {brand}
           </p>
-
-          {/* Static rating until backend */}
-          <div className="flex items-center gap-1">
-            <StarIconSolid className="w-3 h-3 text-yellow-400" />
-            <span className="text-xs text-slate-600 font-semibold">
-              {rating}
-            </span>
-          </div>
-        </div>
-
-        <h3 className="text-lg font-bold text-slate-900 truncate mb-2">
-          {name}
-        </h3>
+        )}
+        
+        <Link href={`/ecommerce/products/${id}`}>
+          <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-100 hover:text-zinc-500 transition-colors mb-2 tracking-tight leading-snug max-w-[200px] mx-auto">
+            {name}
+          </h3>
+        </Link>
 
         <div className="flex items-center gap-3">
           {isDiscounted ? (
             <>
-              <span className="text-lg font-bold text-indigo-600">
+              <span className="text-sm font-black text-zinc-900 dark:text-white">
                 ${finalPrice}
               </span>
-              <span className="text-sm text-slate-400 line-through">
+              <span className="text-xs text-zinc-400 line-through font-medium">
                 ${sellingPrice}
               </span>
             </>
           ) : (
-            <span className="text-lg font-bold text-slate-900">
+            <span className="text-sm font-black text-zinc-900 dark:text-white tracking-wide">
               ${sellingPrice}
             </span>
           )}
         </div>
 
-        {/* TAGS */}
-        <div className="mt-3 flex flex-wrap gap-1">
-          {tags.slice(0, 2).map((tag) => (
-            <span
-              key={tag}
-              className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
+        {/* SUBTLE INDICATOR IF IN CART */}
+        <AnimatePresence>
+          {quantity > 0 && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              className="mt-3 w-1.5 h-1.5 rounded-full"
+              style={{ backgroundColor: primary }}
+            />
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   );

@@ -5,72 +5,71 @@ import Image from 'next/image';
 import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { Award } from '@/types/typings';
-import { TrophyIcon } from '@heroicons/react/24/solid';
+import { TrophyIcon } from '@heroicons/react/24/outline';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: { 
     opacity: 1, 
-    transition: { staggerChildren: 0.15 } 
+    transition: { staggerChildren: 0.2 } 
   },
 };
 
 const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 30, skewX: -5 },
+  hidden: { opacity: 0, y: 20 },
   visible: { 
     opacity: 1, 
     y: 0, 
-    skewX: 0,
-    transition: { duration: 0.6, ease: "easeOut" } 
+    transition: { duration: 0.8, ease: [0.19, 1, 0.22, 1] } 
   },
 };
 
-const loader = ({ src, width }: { src: string; width: number }) => `${src}?w=${width}&q=75`;
+const loader = ({ src, width }: { src: string; width: number }) => `${src}?w=${width}&q=85`;
 
 export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
   const { storeFormData } = useStoreContext();
-  const accent = '#FF003C'; // Empire Red
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#18181b';
 
-  // Gaming-themed fallback data
   const defaultAwards = [
-    { iconUrl: 'https://images.unsplash.com/photo-1542838686-37a5027588b3', name: 'Digital Innovator 2026' },
-    { iconUrl: 'https://images.unsplash.com/photo-1629910419355-6b2257321598', name: 'E-commerce Excellence' },
-    { iconUrl: 'https://images.unsplash.com/photo-1579201529431-a4773221b033', name: 'Elite Choice Award' },
-    { iconUrl: 'https://images.unsplash.com/photo-1563729571343-98282367c00e', name: 'Industry Vanguard' },
+    { iconUrl: 'https://images.unsplash.com/photo-1542838686-37a5027588b3', name: 'Vogue Excellence 2026' },
+    { iconUrl: 'https://images.unsplash.com/photo-1629910419355-6b2257321598', name: 'Sustainable Label' },
+    { iconUrl: 'https://images.unsplash.com/photo-1579201529431-a4773221b033', name: 'Design of the Year' },
+    { iconUrl: 'https://images.unsplash.com/photo-1563729571343-98282367c00e', name: 'Artisan Craftsmanship' },
   ];
 
   const awardsToDisplay = awards && awards.length > 0 ? awards : defaultAwards;
 
   return (
-    <section className="relative py-24 bg-zinc-950 overflow-hidden">
-      {/* Background HUD Graphics */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-red-600/50 to-transparent" />
-      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-red-600/10 rounded-full blur-[120px] pointer-events-none" />
+    <section className="relative py-32 bg-white dark:bg-zinc-950 overflow-hidden border-y border-gray-100 dark:border-zinc-900">
+      {/* Decorative Brand Watermark */}
+      <div className="absolute top-0 right-0 p-10 opacity-[0.03] select-none pointer-events-none hidden lg:block">
+        <span className="text-[15rem] font-serif italic leading-none">Prestige</span>
+      </div>
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">
-          <div className="max-w-2xl">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="w-8 h-[2px] bg-red-600" />
-              <span className="font-mono text-xs tracking-[0.5em] text-red-500 uppercase font-black">
-                Achievements_Unlocked
-              </span>
-            </div>
-            <h2 className="text-4xl md:text-6xl font-black italic text-white uppercase tracking-tighter leading-none">
-              RECOGNIZED FOR <span className="text-red-600">DOMINANCE</span>
-            </h2>
-          </div>
-          <p className="text-zinc-500 font-mono text-[10px] uppercase max-w-[200px] text-right hidden md:block">
-            Verified by global industry leaders // High performance standards met.
-          </p>
+        <div className="text-center mb-24">
+          <motion.span 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            className="text-[10px] font-bold uppercase tracking-[0.5em] text-gray-400 mb-4 block"
+          >
+            A Legacy of Style
+          </motion.span>
+          <motion.h2 
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="text-4xl md:text-5xl font-light text-gray-900 dark:text-white tracking-tight leading-tight"
+          >
+            Recognized for <span className="font-serif italic">Craftsmanship.</span>
+          </motion.h2>
         </div>
         
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-gray-200 dark:bg-zinc-800"
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: true, amount: 0.1 }}
           variants={containerVariants}
         >
           {awardsToDisplay.map((award: any, idx) => {
@@ -81,56 +80,44 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
               <motion.div
                 key={idx}
                 variants={cardVariants}
-                className="group relative bg-zinc-900/50 border border-white/5 hover:border-red-600/50 transition-all duration-500 p-8 flex flex-col items-center justify-center min-h-[220px] overflow-hidden"
+                className="group relative bg-white dark:bg-zinc-950 p-12 flex flex-col items-center justify-center min-h-[280px] transition-colors duration-500 hover:bg-gray-50/50 dark:hover:bg-zinc-900/50"
               >
-                {/* Tactical Card Decorations */}
-                <div className="absolute top-0 right-0 w-2 h-2 bg-red-600/20" />
-                <div className="absolute bottom-2 left-2 font-mono text-[8px] text-white/5 tracking-widest">
-                  SECTOR_{idx + 101}
+                {/* Logo Area */}
+                <div className="relative w-24 h-24 mb-10 transition-transform duration-700 group-hover:scale-105">
+                  {src ? (
+                    <Image
+                      src={src}
+                      alt={label}
+                      loader={loader}
+                      fill
+                      className="object-contain grayscale opacity-40 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-700"
+                    />
+                  ) : (
+                    <TrophyIcon className="w-full h-full text-gray-200 dark:text-zinc-800" />
+                  )}
                 </div>
-
-                {/* Main Content */}
-                <div className="relative z-10 w-full h-full flex flex-col items-center">
-                  <div className="relative w-20 h-20 mb-6">
-                    {src ? (
-                      <Image
-                        src={src}
-                        alt={label}
-                        loader={loader}
-                        fill
-                        className="object-contain grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500"
-                      />
-                    ) : (
-                      <TrophyIcon className="w-full h-full text-zinc-800 group-hover:text-red-600 transition-colors" />
-                    )}
-                  </div>
-                  
-                  <div className="text-center">
-                    <h3 className="text-sm font-black italic text-zinc-400 group-hover:text-white uppercase tracking-widest transition-colors leading-tight">
-                      {label}
-                    </h3>
-                  </div>
+                
+                {/* Label Area */}
+                <div className="text-center">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 group-hover:text-gray-950 dark:group-hover:text-white transition-colors duration-300">
+                    {label}
+                  </h3>
+                  <div 
+                    className="mt-4 h-[1px] w-0 group-hover:w-full bg-current mx-auto transition-all duration-500 opacity-20"
+                    style={{ color: primaryColor }}
+                  />
                 </div>
-
-                {/* Hover Glow Effect */}
-                <div className="absolute inset-0 bg-gradient-to-br from-red-600/0 via-transparent to-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute bottom-0 left-0 w-full h-[1px] bg-white/5 group-hover:bg-red-600 transition-all duration-500" />
               </motion.div>
             );
           })}
         </motion.div>
 
-        {/* Bottom Ticker/Status Line */}
-        <div className="mt-12 flex items-center justify-center gap-4 py-4 border-y border-white/5">
-          <div className="flex gap-2">
-            {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 bg-red-600" />)}
-          </div>
-          <span className="font-mono text-[10px] text-zinc-600 uppercase tracking-[0.3em]">
-            Elite Tier Certification Active
-          </span>
-          <div className="flex gap-2">
-            {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 bg-red-600" />)}
-          </div>
+        {/* Brand Statement Footer */}
+        <div className="mt-20 flex flex-col items-center">
+          <div className="h-16 w-px bg-gray-200 dark:bg-zinc-800 mb-8" />
+          <p className="text-sm text-gray-400 dark:text-zinc-500 font-serif italic text-center max-w-lg leading-relaxed">
+            "Fashion is not just about labels. It’s about the soul of the creator and the excellence of the finish."
+          </p>
         </div>
       </div>
     </section>

@@ -1,21 +1,25 @@
-"use client";
+'use client';
 
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { IStoreCategory, ISubcategory, StoreForm } from "@/types/typings";
-import { ArrowRightIcon } from "@heroicons/react/24/outline";
+
+const FALLBACK_IMAGE_URL = "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2000";
+
+const customLoader = ({ src, width }: any) => `${src}?w=${width}&q=80`;
+
 
 /* -------------------------------------------------------------------------- */
 /* Types & Helpers */
 /* -------------------------------------------------------------------------- */
 
-const FALLBACK_IMAGE_URL =
-  "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2000&auto=format&fit=crop";
+// const FALLBACK_IMAGE_URL =
+//   "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2000&auto=format&fit=crop";
 
-const customLoader = ({ src, width, quality }: any) =>
-  `${src}?w=${width}&q=${quality || 75}`;
+// const customLoader = ({ src, width, quality }: any) =>
+//   `${src}?w=${width}&q=${quality || 75}`;
 
 function safeSlug(value?: string, fallback = "item") {
   if (!value) return fallback;
@@ -51,82 +55,63 @@ function getSubcategoryImageUrl(sub: ISubcategory) {
   return FALLBACK_IMAGE_URL;
 }
 
-/* -------------------------------------------------------------------------- */
-/* Components */
-/* -------------------------------------------------------------------------- */
+interface IBentoItem {
+  id: string;
+  name: string;
+  imageUrl: string;
+  href: string;
+  subtitle: string;
+}
 
-/**
- * Bento Item Component
- * Now accepts a generic IBentoItem interface instead of raw Category data
- */
 const BentoItem = ({
   item,
   className,
-  priority = false,
+  index,
 }: {
   item: IBentoItem;
   className?: string;
-  priority?: boolean;
+  index: number;
 }) => {
-  const [imgError, setImgError] = useState(false);
-  const imageUrl = imgError ? FALLBACK_IMAGE_URL : item.imageUrl;
-
   return (
-    <Link
-      href={item.href}
-      className={`relative block overflow-hidden rounded-2xl group cursor-pointer bg-gray-200 ${className}`}
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.8, delay: index * 0.1 }}
+      className={`relative group overflow-hidden bg-zinc-100 dark:bg-zinc-900 ${className}`}
     >
-      {/* Image Background */}
-      <Image
-        src={imageUrl}
-        loader={customLoader}
-        alt={item.name}
-        fill
-        priority={priority}
-        className="object-cover transition-transform duration-700 group-hover:scale-105"
-        onError={() => setImgError(true)}
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-      />
+      <Link href={`/fashionecommerce/${item.id}`} className="block w-full h-full relative">
+        <Image
+          src={FALLBACK_IMAGE_URL}
+          // item.imageUrl || 
+          loader={customLoader}
+          alt={item.name}
+          fill
+          className="object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
+        />
+        
+        {/* Subtle Scrim - only at bottom */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
 
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity duration-300 opacity-90 group-hover:opacity-100" />
-
-      {/* Content */}
-      <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full">
-        <motion.div
-          initial={{ y: 10, opacity: 0 }}
-          whileInView={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
+        {/* Floating Content */}
+        <div className="absolute inset-0 p-8 flex flex-col justify-end items-start">
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/70 mb-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+            {item.subtitle}
+          </span>
+          <h3 className="text-2xl md:text-3xl font-light text-white tracking-tighter uppercase italic">
             {item.name}
           </h3>
           
-          <div className="flex items-center justify-between">
-            <p className="text-white/80 text-sm font-medium">
-              {item.subtitle}
-            </p>
-            
-            {/* Hover Arrow Effect */}
-            <div className="bg-white/20 backdrop-blur-sm p-2 rounded-full opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
-              <ArrowRightIcon className="w-5 h-5 text-white" />
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    </Link>
+          {/* Animated Underline */}
+          <div className="mt-4 h-px w-0 group-hover:w-12 bg-white transition-all duration-500" />
+        </div>
+      </Link>
+    </motion.div>
   );
 };
 
-/* -------------------------------------------------------------------------- */
-/* Main Export */
-/* -------------------------------------------------------------------------- */
-
-export default function CategoriesSectionV5({
-  store,
-}: {
-  store: StoreForm | null;
-}) {
+export default function CategoriesSection({ store }: { store: StoreForm | null }) {
+  
   const storeSlug = store?.slug ?? "site";
 
   // Logic: Mix Categories and Subcategories to fill 4 slots
@@ -185,63 +170,57 @@ export default function CategoriesSectionV5({
   if (bentoItems.length === 0) return null;
 
   return (
-    <section className="py-24 bg-gray-50 dark:bg-gray-950">
-      <div className="max-w-7xl mx-auto px-6">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Shop by Category
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Explore our curated collections designed to match your style and needs.
-          </p>
-        </div>
-
-        {/* Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[200px] md:auto-rows-[300px]">
-          
-          {/* Slot 1: Large Item (Left Column, Spans 2 Rows) */}
-          {bentoItems[0] && (
-            <BentoItem
-              item={bentoItems[0]}
-              className="md:col-span-1 md:row-span-2 min-h-[400px]"
-              priority={true}
-            />
-          )}
-
-          {/* Slot 2: Small Item (Top Middle) */}
-          {bentoItems[1] && (
-            <BentoItem
-              item={bentoItems[1]}
-              className="md:col-span-1 md:row-span-1"
-            />
-          )}
-
-          {/* Slot 3: Small Item (Top Right) */}
-          {bentoItems[2] && (
-            <BentoItem
-              item={bentoItems[2]}
-              className="md:col-span-1 md:row-span-1"
-            />
-          )}
-
-          {/* Slot 4: Wide Item (Bottom Row, Spans 2 Columns) */}
-          {bentoItems[3] && (
-            <BentoItem
-              item={bentoItems[3]}
-              className="md:col-span-2 md:row-span-1"
-            />
-          )}
-        </div>
-
-        {/* View All Button */}
-        <div className="mt-12 text-center">
-          <Link
-            href={`/fashionecommerce/categories`}
-            className="inline-flex items-center justify-center px-8 py-3 border border-gray-300 dark:border-gray-700 rounded-full text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm"
+    <section className="py-32 bg-white dark:bg-zinc-950">
+      <div className="max-w-[1800px] mx-auto px-6 md:px-12">
+        
+        {/* Editorial Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+          <div className="max-w-xl">
+            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 block mb-4">
+              Curated Selection
+            </span>
+            <h2 className="text-5xl md:text-7xl font-light tracking-tighter text-zinc-900 dark:text-white uppercase leading-none">
+              Explore <span className="font-serif italic lowercase text-zinc-400">the</span> <br />
+              Collections
+            </h2>
+          </div>
+          <Link 
+            href={`/${store?.slug}/categories`}
+            className="text-[10px] font-black uppercase tracking-[0.3em] py-4 border-b border-zinc-900 dark:border-white text-zinc-900 dark:text-white hover:text-zinc-500 dark:hover:text-zinc-400 transition-colors"
           >
-            Browse All Categories
+            View All Series
           </Link>
+        </div>
+
+        {/* Luxury Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 h-[1200px] md:h-[800px]">
+          
+          {/* Main Hero Category */}
+          <BentoItem 
+            index={0}
+            item={bentoItems[0]} 
+            className="md:col-span-7 md:row-span-2" 
+          />
+
+          {/* Side Stack */}
+          <BentoItem 
+            index={1}
+            item={bentoItems[1]} 
+            className="md:col-span-5 md:row-span-1" 
+          />
+
+          {/* Bottom Split */}
+          <BentoItem 
+            index={2}
+            item={bentoItems[2]} 
+            className="md:col-span-2 md:row-span-1" 
+          />
+          <BentoItem 
+            index={3}
+            item={bentoItems[3]} 
+            className="md:col-span-3 md:row-span-1" 
+          />
+          
         </div>
       </div>
     </section>

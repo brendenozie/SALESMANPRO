@@ -104,8 +104,9 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteShoe
   } = pageData || {};
 
   return (
-    <div className="space-y-12">
+    <div>
       <HeroSlider heroSlides={heroSlides} />
+      <FeaturesSection features={features} themeSettings={themeSettings} />
       <CategorySection promotions={promotions} themeSettings={themeSettings} />
       <PromoSection promotions={promotions} />
       <DynamicPopularProducts id={id} themeSettings={themeSettings} marketplaceListings={marketplaceListings} slug={slug} />
@@ -114,10 +115,9 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteShoe
       <SleepTapeAd promotions={promotions} themeSettings={themeSettings} />
       <TrendingPromotion promotions={promotions} themeSettings={themeSettings}  />
       <AllProducts martketplaceListings={marketplaceListings} themeSettings={themeSettings} />
-      <FeaturesSection features={features} themeSettings={themeSettings} />
       <AwardsSection awards={awards} />
-      <TestimonialsSection testimonials={testimonials} />
       <BannerSection promotions={promotions} themeSettings={themeSettings}/>
+      <TestimonialsSection testimonials={testimonials} />
       <NewsletterSection />  
     </div>
   );
