@@ -199,18 +199,20 @@ export default async function EditStorePage({
     analyticsConfig: store.AnalyticsConfig ?? null,
     paymentSettings: store.PaymentSettings ?? null,
     shippingSettings: store.ShippingSettings ?? null,
-    StoreCategory: store.StoreCategory.map((sc) => ({
+    StoreCategory: store.StoreCategory ? store.StoreCategory.map((sc) => ({
       ...sc,
-      displayName: sc.displayName ?? sc.category.name,
+      displayName: sc.displayName ?? sc.category?.name ?? "",
       icon: sc.icon ?? "",
       subcategories: safeJsonParse(sc.subcategories, []) as ISubcategory[],
       allBrands: safeJsonParse(sc.allBrands, []) as string[],
       category: {
         ...sc.category,
-        subcategories: (sc.category.subcategories ??
-          []) as unknown as ISubcategory[],
+        id: sc.category?.id ?? "",
+        name: sc.category?.name ?? "",
+        slug: sc.category?.slug ?? "",
+        subcategories: (sc.category?.subcategories ??  []) as unknown as ISubcategory[],
       },
-    })),
+    })) : ( [] as IStoreCategory[]),
     CompanyLocation: store.CompanyLocation.map((cl) => ({
       ...cl,
       displayName: cl.displayName ?? null,
