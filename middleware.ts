@@ -2,6 +2,7 @@
 // middleware.ts
 import { getToken } from "next-auth/jwt";
 import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
+import { getClientIp } from "./lib/readIP";
 
 // Your app’s main host
 const PRIMARY_HOST = "salesmanpro.site";
@@ -25,6 +26,28 @@ export const config = {
   ],
 };
 
+const LOCAL_IPS = [
+  "127.0.0.1",
+  "::1",              // IPv6 localhost
+  "localhost"
+];
+
+const DEV_IP_RANGES = [
+  "192.168.",         // LAN
+  "10.",              // Private network
+  "172.16.", "172.17.", "172.18.", "172.19.",
+  "172.20.", "172.21.", "172.22.", "172.23.",
+  "172.24.", "172.25.", "172.26.", "172.27.",
+  "172.28.", "172.29.", "172.30.", "172.31."
+];
+
+function isPrivateIp(ip: string | null) {
+  if (!ip) return false;
+
+  if (LOCAL_IPS.includes(ip)) return true;
+  return DEV_IP_RANGES.some(prefix => ip.startsWith(prefix));
+}
+
 export default async function middleware(request: NextRequest, ev: NextFetchEvent) {
   const url = request.nextUrl.clone();
   const { pathname } = url;
@@ -38,8 +61,10 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   // 1. Detect if it's our Desktop App
   const isDesktop = userAgent.includes("SalesmanProDesktop");
 
+  const clientIp = getClientIp(request);
   // 2. Check for Next-Auth Session
   // const session = await getToken({ req: request });
+  const isLocalNetwork = isPrivateIp(clientIp);
 
   // We explicitly pass the secret and handle both secure and non-secure cookie names
   const session = await getToken({ 
@@ -76,6 +101,12 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
 
   // ---- REST OF YOUR EXISTING MIDDLEWARE LOGIC ----
   const host = request.headers.get("host")?.split(":")[0] || "";
+  const fullHost = request.headers.get("host") || "";
+
+  const isLocalHost =
+    host === "localhost" ||
+    host === "127.0.0.1" ||
+    fullHost.endsWith(":3000");
     
   // ---- 1. API & CORS HANDLING ----
    if (pathname.startsWith("/api/")) {
@@ -110,18 +141,30 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
 
   // ---- 3. PRIMARY HOST & LOCALHOST HANDLING ----
   // Serve salesmanpro.site and localhost:3000 requests normally
-  if (
-    host === PRIMARY_HOST ||
-    host === "127.0.0.1" ||
-    host === "localhost"
-  ) {
-    const fullHost = request.headers.get("host");
+  // const host = request.headers.get("host")?.split(":")[0] || "";
+  // const fullHost = request.headers.get("host") || "";
 
-    // Local dev (localhost:3000) or Main app (salesmanpro.site)
-    if (fullHost === "127.0.0.1:3000" || fullHost === "localhost:3000" || host === PRIMARY_HOST) {
-      return NextResponse.next();
-    }
+  // const isLocalHost =
+  //   host === "localhost" ||
+  //   host === "127.0.0.1" ||
+  //   fullHost.endsWith(":3000");
+
+  if (host === PRIMARY_HOST || isLocalHost) {
+    return NextResponse.next();
   }
+
+  // if (
+  //   host === PRIMARY_HOST ||
+  //   host === "127.0.0.1" ||
+  //   host === "localhost"
+  // ) {
+  //   const fullHost = request.headers.get("host");
+
+  //   // Local dev (localhost:3000) or Main app (salesmanpro.site)
+  //   if (fullHost === "127.0.0.1:3000" || fullHost === "localhost:3000" || host === PRIMARY_HOST) {
+  //     return NextResponse.next();
+  //   }
+  // }
 
   if(pathname.startsWith("/signin") || pathname.startsWith("/signup") || pathname.startsWith("/dashboards") || pathname.startsWith("/stores") || pathname.startsWith("/admin")){
     return NextResponse.next();
@@ -160,7 +203,8 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
     host &&
     host !== PRIMARY_HOST &&
     !host.endsWith(".salesmanpro.site") &&
-    !host.startsWith("127.0.0.1") &&
+    // !host.startsWith("127.0.0.1") &&
+    !isLocalHost &&
     !host.startsWith("localhost") &&
     !SECONDARY_HOSTS.includes(host)
   ) {

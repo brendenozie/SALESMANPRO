@@ -1,3 +1,50 @@
+// import { Redis } from "@upstash/redis";
+// import { Ratelimit } from "@upstash/ratelimit";
+
+// export const redis = new Redis({
+//   url: process.env.UPSTASH_REDIS_REST_URL!,
+//   token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+// });
+
+// /* -------------------------------------------------------------------------- */
+// /*                              RATE LIMITERS                                 */
+// /* -------------------------------------------------------------------------- */
+
+// /**
+//  * Sliding window with burst allowance
+//  *
+//  * Example:
+//  * - 100 requests / 60s
+//  * - burst up to 20 extra instantly
+//  */
+// export const generalLimiter = new Ratelimit({
+//   redis,
+//   limiter: Ratelimit.slidingWindow(100, "60 s"),
+//   analytics: true,
+// });
+
+// export const apiLimiter = new Ratelimit({
+//   redis,
+//   limiter: Ratelimit.slidingWindow(60, "60 s"),
+//   analytics: true,
+// });
+
+// export const authLimiter = new Ratelimit({
+//   redis,
+//   limiter: Ratelimit.slidingWindow(10, "60 s"),
+//   analytics: true,
+// });
+
+// /**
+//  * Burst limiter (short window)
+//  * Used together with sliding window
+//  */
+// export const burstLimiter = new Ratelimit({
+//   redis,
+//   limiter: Ratelimit.slidingWindow(20, "5 s"),
+//   analytics: true,
+// });
+
 type Bucket = {
   tokens: number;
   lastRefill: number;
