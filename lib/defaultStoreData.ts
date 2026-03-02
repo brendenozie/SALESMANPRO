@@ -124,14 +124,18 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       ],
       awards: [
         { name: "Best Online Retailer 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Top 100 E-commerce Sites 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Customer Choice Award 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" }
       ],
       metrics: [
         { label: "Products Sold", value: 15000 },
         { label: "5-Star Reviews", value: 3200 },
+        { label: "Countries Shipped To", value: 50 },
       ],
       stats: [
         { label: "Customer Satisfaction", value: "98%" },
         { label: "Repeat Customers", value: "75%" },
+        { label: "Average Delivery Time", value: "3 days" },
       ],
       faqs: [
         { question: "What payment methods do you accept?", answer: "Visa, Mastercard, PayPal, and Apple Pay.", order: 1 },
@@ -174,7 +178,7 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         imageUrl: getSampleImageUrl('coach'), headline: "Ready for the Next Step?", subline: "Schedule your free 15-minute intro call today.", ctaText: "Book Free Call", ctaLink: "/book",
         id: "", companyId: "", price: null, productImageUrl: null, badgeText: "New Clients", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
       }],
-      metrics: [{ label: "Clients Mentored", value: 350 }],
+      metrics: [{ label: "Clients Mentored", value: 350 }, { label: "Average Revenue Growth", value: "35% YOY" }, { label: "Client Retention", value: "80%" }],
       stats: [{ label: "Average Growth", value: "35% YOY" }],
       pricingTiers: [
         { name: "Intro Session", price: 199, duration: "one-time", features: ["60-min strategy session"] },

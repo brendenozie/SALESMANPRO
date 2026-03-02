@@ -308,7 +308,7 @@ export interface Stat {
 export interface Metric {
   id?: string;
   // title: string;
-  value: number;
+  value: any;//number;
   unit?: string | null; // e.g. "%", "users", "USD"
   trend?: "up" | "down" | "neutral";
   trendValue?: number | null; // e.g. +12 or -3.4
