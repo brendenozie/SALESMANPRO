@@ -179,8 +179,8 @@ model StoreCategory {
   company   Company @relation(fields: [companyId], references: [id])
   companyId String  @db.ObjectId
 
-  category   ProductCategory @relation(fields: [categoryId], references: [id])
-  categoryId String          @db.ObjectId
+  category   ProductCategory? @relation(fields: [categoryId], references: [id])
+  categoryId String?          @db.ObjectId
 
   displayName String?
   icon        String?
