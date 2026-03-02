@@ -268,8 +268,17 @@ export default function Footer() {
       >
         © {new Date().getFullYear()} {name}. All rights reserved.
         <br />
-        <span className="text-xs mt-1 block">Proudly developed in Nairobi, Kenya.</span>
       </motion.div>
+      <div className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-50 border border-slate-100 shadow-sm">
+        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Powered by</span>
+        <a 
+          href="https://salesmanpro.site" 
+          className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-700 transition-colors"
+        >
+          SalesmanPro.site
+        </a>
+    </div>
+
     </motion.footer>
   );
 }

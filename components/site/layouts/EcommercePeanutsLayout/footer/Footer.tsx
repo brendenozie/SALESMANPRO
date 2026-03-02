@@ -119,6 +119,16 @@ export default function Footer() {
       <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 text-[15vw] font-black text-white/[0.02] whitespace-nowrap pointer-events-none uppercase">
         Small Batch • Real Food
       </div>
+      <div className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-50 border border-slate-100 shadow-sm">
+        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Powered by</span>
+        <a 
+          href="https://salesmanpro.site" 
+          className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-700 transition-colors"
+        >
+          SalesmanPro.site
+        </a>
+    </div>
+
     </footer>
   );
 }

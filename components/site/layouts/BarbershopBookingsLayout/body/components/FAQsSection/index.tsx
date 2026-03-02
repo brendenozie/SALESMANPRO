@@ -2,114 +2,129 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PlusIcon, MinusIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, MinusIcon } from '@heroicons/react/24/outline';
+import { SparklesIcon } from '@heroicons/react/24/solid';
 
 const defaultFaqs = [
   {
-    question: 'How do I book a session?',
-    answer: 'Our intuitive booking system allows you to easily browse available services and professionals, select your preferred time, and confirm your appointment in just a few clicks.',
+    question: 'How do I initiate a ritual?',
+    answer: 'Our bespoke digital interface allows you to curate your experience. Select your desired practitioner and time, and our system will handle the logistics of your transformation.',
   },
   {
-    question: 'Are the professionals on your platform certified?',
-    answer: 'Absolutely. We rigorously vet all professionals on our platform to ensure they are fully licensed, highly experienced, and adhere to the highest industry standards.',
+    question: 'How are practitioners vetted?',
+    answer: 'We employ a rigorous 7-tier verification process. Only the top 2% of professionals who demonstrate technical mastery and emotional intelligence are invited to join our collective.',
   },
   {
-    question: 'What is your cancellation policy?',
-    answer: 'You can easily manage your bookings directly from your user dashboard. Please refer to our policy page for specific timeframes to avoid any charges.',
+    question: 'What is the cancellation protocol?',
+    answer: 'Time is our most valuable asset. Rituals can be rescheduled through your private dashboard up to 24 hours prior to the appointment without incurring a preservation fee.',
   },
 ];
 
-// Helper Component defined outside to prevent re-render errors
-const FAQItem = ({ faq, isOpen, onClick, primaryColor, isAnyOpen }: any) => (
+const FAQItem = ({ faq, isOpen, onClick, primaryColor }: any) => (
   <motion.div 
-    onClick={onClick}
     layout
-    className={`cursor-pointer overflow-hidden rounded-[2rem] transition-all duration-500 ${
-      isOpen 
-        ? 'bg-white shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] ring-1 ring-slate-200' 
-        : isAnyOpen 
-          ? 'bg-slate-50/40 opacity-50 scale-[0.98]' 
-          : 'bg-slate-50 hover:bg-white hover:shadow-xl'
-    }`}
+    className={`group relative border-b border-white/5 transition-all duration-700 ${isOpen ? 'bg-zinc-900/40' : 'hover:bg-zinc-900/20'}`}
   >
-    <div className="p-8 md:p-10">
-      <div className="flex justify-between items-center gap-6">
-        <h3 className={`text-xl font-bold transition-colors duration-300 ${isOpen ? 'text-slate-900' : 'text-slate-600'}`}>
+    <div 
+      onClick={onClick}
+      className="flex justify-between items-center py-10 px-8 cursor-pointer"
+    >
+      <div className="flex items-center gap-8">
+        <span className={`text-[10px] font-bold tracking-widest transition-colors duration-500 ${isOpen ? 'text-[#C5A267]' : 'text-zinc-700'}`}>
+          0{faq.index + 1}
+        </span>
+        <h3 className={`text-xl md:text-2xl font-light tracking-tight transition-all duration-500 ${isOpen ? 'text-white translate-x-4' : 'text-zinc-400 group-hover:text-zinc-200'}`}>
           {faq.question}
         </h3>
-        <div 
-          className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500"
-          style={{ 
-            backgroundColor: isOpen ? primaryColor : 'transparent',
-            border: isOpen ? 'none' : '2px solid #e2e8f0'
-          }}
-        >
-          {isOpen ? (
-            <MinusIcon className="w-5 h-5 text-white" />
-          ) : (
-            <PlusIcon className="w-5 h-5 text-slate-400" />
-          )}
-        </div>
       </div>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.4, ease: [0.04, 0.62, 0.23, 0.98] }}
-          >
-            <div className="pt-6 border-t border-slate-100 mt-6">
-              <p className="text-lg text-slate-500 leading-relaxed font-medium">
-                {faq.answer}
-              </p>
-            </div>
-          </motion.div>
+      <div className="relative w-12 h-12 flex items-center justify-center overflow-hidden">
+        <motion.div
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          className={`absolute inset-0 border rounded-full transition-colors duration-500 ${isOpen ? 'border-[#C5A267] bg-[#C5A267]' : 'border-zinc-800'}`}
+        />
+        {isOpen ? (
+          <MinusIcon className="w-5 h-5 text-black relative z-10" />
+        ) : (
+          <PlusIcon className="w-5 h-5 text-zinc-500 relative z-10" />
         )}
-      </AnimatePresence>
+      </div>
     </div>
+
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <div className="px-24 pb-12">
+            <p className="text-lg text-zinc-500 leading-relaxed font-light max-w-2xl">
+              {faq.answer}
+            </p>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   </motion.div>
 );
 
-export default function FAQsSection({ faqs = defaultFaqs, name, themeSettings }: any) {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-  const primaryColor = themeSettings?.primaryColor || '#059669';
-  const storeName = name || 'our platform';
+export default function FAQsSection({ faqs = defaultFaqs, themeSettings }: any) {
+  const [openIndex, setOpenIndex] = useState<number | null>(0); // First one open for visual impact
+  const primaryColor = themeSettings?.primaryColor || '#C5A267';
 
   return (
-    <section id="faq" className="relative py-24 lg:py-40 bg-white overflow-hidden">
-      <div className="absolute top-0 right-0 w-1/3 h-full bg-slate-50/50 -skew-x-12 translate-x-1/2 pointer-events-none" />
+    <section id="faq" className="relative py-24 lg:py-48 bg-[#050505] overflow-hidden">
+      {/* Texture Overlay */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
       
       <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="grid lg:grid-cols-12 gap-16">
+        <div className="grid lg:grid-cols-12 gap-20">
           
-          <div className="lg:col-span-5">
-            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} className="sticky top-24">
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-emerald-100" style={{ backgroundColor: `${primaryColor}10` }}>
-                <QuestionMarkCircleIcon className="w-7 h-7" style={{ color: primaryColor }} />
+          <div className="lg:col-span-4">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="sticky top-32"
+            >
+              <div className="flex items-center gap-3 mb-8">
+                <div className="w-2 h-2 rounded-full bg-[#C5A267] animate-pulse" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#C5A267]">Information Suite</span>
               </div>
-              <h2 className="text-5xl md:text-6xl font-black text-slate-900 leading-[0.9] tracking-tighter mb-8">
-                Common <br />
-                <span className="italic font-serif font-light text-slate-400">Curiosities.</span>
+              
+              <h2 className="text-6xl md:text-7xl font-black text-white leading-[0.85] tracking-tighter mb-10">
+                OFTEN <br />
+                <span className="font-serif italic font-light text-zinc-700 text-5xl md:text-6xl">Enquired.</span>
               </h2>
-              <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-sm">
-                Everything you need to know about navigating {storeName}.
+              
+              <p className="text-lg text-zinc-500 font-light leading-relaxed mb-12">
+                Clarity is the ultimate luxury. Explore the intricacies of our collective operations.
               </p>
+
+              <div className="p-8 rounded-3xl bg-zinc-900/50 border border-white/5 backdrop-blur-xl">
+                <SparklesIcon className="w-6 h-6 text-[#C5A267] mb-4" />
+                <p className="text-sm font-bold text-white mb-2">Still curious?</p>
+                <p className="text-xs text-zinc-500 mb-6">Our concierge is available for private consultation.</p>
+                <button className="text-[10px] font-black uppercase tracking-widest text-[#C5A267] hover:tracking-[0.2em] transition-all">
+                  Contact Support →
+                </button>
+              </div>
             </motion.div>
           </div>
 
-          <div className="lg:col-span-7 space-y-6">
-            {faqs.map((faq: any, index: number) => (
-              <FAQItem 
-                key={index}
-                faq={faq}
-                isOpen={openIndex === index}
-                isAnyOpen={openIndex !== null}
-                onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                primaryColor={primaryColor}
-              />
-            ))}
+          <div className="lg:col-span-8">
+            <div className="border-t border-white/5">
+              {faqs.map((faq: any, index: number) => (
+                <FAQItem 
+                  key={index}
+                  faq={{ ...faq, index }}
+                  isOpen={openIndex === index}
+                  onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                  primaryColor={primaryColor}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>

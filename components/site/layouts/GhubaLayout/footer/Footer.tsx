@@ -85,6 +85,16 @@ const Footer = () => {
         <div className="border-t border-gray-400 dark:border-[#152e4d] mt-12 pt-6 text-center text-sm opacity-70 text-gray-800 dark:text-gray-300">
           © 2025 <span className="text-yellow-500 font-semibold">ghuba</span>. All Rights Reserved.
         </div>
+      <div className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-50 border border-slate-100 shadow-sm">
+        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Powered by</span>
+        <a 
+          href="https://salesmanpro.site" 
+          className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-700 transition-colors"
+        >
+          SalesmanPro.site
+        </a>
+    </div>
+
       </footer>
       
       <Cart />

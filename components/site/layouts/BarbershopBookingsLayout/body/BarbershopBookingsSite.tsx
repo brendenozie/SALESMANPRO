@@ -16,6 +16,7 @@ const  apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/ap
 
 // Dynamically import below-the-fold components
 const FeaturesSection = dynamic<any>(() => import('./components/FeaturesSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const StyleGallerySection = dynamic<any>(() => import('./components/StyleGallerySection'), { loading: () => <SectionSkeleton />, ssr: false });
 const BenefitsSection = dynamic(() => import('./components/BenefitsSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const PricingAndStatsSection = dynamic(() => import('./components/PricingAndStatsSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const MassageFeatures = dynamic(() => import('./components/MessagesSection'), { loading: () => <SectionSkeleton />, ssr: false });
@@ -34,11 +35,13 @@ export default function BookingsSite({ pageData, companyId }: { pageData: StoreF
   const { name, slug, description, bannerUrl, marketplaceListings, heroSlides, themeSettings, CoreValues, stats, pricingTiers, promotions } = pageData;
 
   return (
-    <>
+    <div className="relative bg-[#0a0a0a] text-white">
       {/* Hero */}
       <Hero name={name} description={description} bannerUrl={bannerUrl} marketplaceListings={marketplaceListings} heroSlides={heroSlides} />
 
       <FeaturesSection name={name} description={description} themeSettings={themeSettings} CoreValues={CoreValues} />
+
+      <StyleGallerySection />
       
       <MassageFeatures marketplaceListings={marketplaceListings} slug={slug} themeSettings={themeSettings} />
       
@@ -52,7 +55,7 @@ export default function BookingsSite({ pageData, companyId }: { pageData: StoreF
 
       {faqsData?.data && <FAQsSection faqs={faqsData.data} name={name} themeSettings={themeSettings} />}
       
-    </>
+    </div>
   );
 }
 

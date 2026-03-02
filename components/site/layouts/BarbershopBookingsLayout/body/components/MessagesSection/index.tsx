@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
@@ -11,9 +11,9 @@ import {
     ClockIcon, 
     ArrowRightIcon,
     SparklesIcon,
-    InformationCircleIcon,
     ShieldCheckIcon,
-    ArrowUpRightIcon
+    ScissorsIcon,
+    TicketIcon
 } from '@heroicons/react/24/outline';
 import { MarketListingForm } from '@/types/typings';
 
@@ -22,32 +22,28 @@ const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
         opacity: 1,
-        transition: { staggerChildren: 0.1 }
+        transition: { staggerChildren: 0.12, delayChildren: 0.2 }
     }
 };
 
-const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+const cardVariants = {
+    hidden: { opacity: 0, y: 40 },
+    visible: { 
+        opacity: 1, 
+        y: 0, 
+        transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } 
+    }
 };
 
-// --- PREMIUM BOOKING FORM ---
-const BookingForm = ({ service, primaryColor }: { service: MarketListingForm, primaryColor: string }) => {
+const BookingForm = ({ service }: { service: MarketListingForm }) => {
     const router = useRouter();
     const [date, setDate] = useState("");
     const [timeSlot, setTimeSlot] = useState("");
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setError("");
-        if (!date || !timeSlot) {
-            setError("Selection required: Please choose a date and time.");
-            return;
-        }
         setLoading(true);
-
         const params = new URLSearchParams({
             listingId: String(service.id),
             name: service.name ?? "",
@@ -59,117 +55,87 @@ const BookingForm = ({ service, primaryColor }: { service: MarketListingForm, pr
     };
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">Date</label>
-                    <div className="relative group">
-                        <CalendarDaysIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-black transition-colors" />
-                        <input
-                            type="date"
-                            required
-                            value={date}
-                            onChange={(e) => setDate(e.target.value)}
-                            className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-offset-2 transition-all outline-none text-sm font-medium"
-                            style={{ ['--tw-ring-color' as any]: primaryColor }}
-                        />
-                    </div>
+                    <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500">Select Date</label>
+                    <input
+                        type="date"
+                        required
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                        className="w-full px-5 py-4 bg-zinc-900/50 border border-zinc-800 rounded-xl focus:border-[#C5A267] transition-all outline-none text-sm text-white appearance-none"
+                    />
                 </div>
-
                 <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 ml-1">Time</label>
-                    <div className="relative group">
-                        <ClockIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-black transition-colors" />
-                        <input
-                            type="time"
-                            required
-                            value={timeSlot}
-                            onChange={(e) => setTimeSlot(e.target.value)}
-                            className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-offset-2 transition-all outline-none text-sm font-medium"
-                            style={{ ['--tw-ring-color' as any]: primaryColor }}
-                        />
-                    </div>
+                    <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500">Arrival Time</label>
+                    <input
+                        type="time"
+                        required
+                        value={timeSlot}
+                        onChange={(e) => setTimeSlot(e.target.value)}
+                        className="w-full px-5 py-4 bg-zinc-900/50 border border-zinc-800 rounded-xl focus:border-[#C5A267] transition-all outline-none text-sm text-white appearance-none"
+                    />
                 </div>
             </div>
-
-            <AnimatePresence>
-                {error && (
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="flex items-center gap-2 p-4 bg-red-50 text-red-600 text-xs font-semibold rounded-2xl border border-red-100"
-                    >
-                        <InformationCircleIcon className="w-4 h-4 shrink-0" />
-                        {error}
-                    </motion.div>
-                )}
-            </AnimatePresence>
 
             <button
                 type="submit"
                 disabled={!service.isAvailable || loading}
-                className="w-full py-5 rounded-2xl text-white font-bold transition-all active:scale-[0.98] disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-3 shadow-2xl shadow-emerald-900/10"
-                style={{ backgroundColor: primaryColor }}
+                className="w-full relative group overflow-hidden py-5 bg-[#C5A267] rounded-xl text-black font-black uppercase tracking-[0.3em] text-[11px] transition-transform active:scale-[0.98]"
             >
-                {loading ? (
-                    <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                    <>
-                        <span>Confirm Reservation</span>
-                        <ArrowRightIcon className="w-5 h-5" />
-                    </>
-                )}
+                <span className="relative z-10 flex items-center justify-center gap-3">
+                    {loading ? "Processing..." : "Confirm Ritual"}
+                    {!loading && <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
+                </span>
             </button>
-            <p className="text-center text-[10px] text-gray-400 font-medium">Secure checkout powered by Stripe encrypted systems.</p>
         </form>
     );
 };
 
-export default function ServicesSection({ marketplaceListings, themeSettings }: any) {
-    const primaryColor = themeSettings?.primaryColor || '#059669';
+export default function ServicesSection({ marketplaceListings }: any) {
     const [search, setSearch] = useState('');
     const [selected, setSelected] = useState<MarketListingForm | null>(null);
 
     const filteredListings = useMemo(() => {
         return (marketplaceListings || []).filter((item: any) =>
-            item.name.toLowerCase().includes(search.toLowerCase()) ||
-            item.description?.toLowerCase().includes(search.toLowerCase())
+            item.name.toLowerCase().includes(search.toLowerCase())
         );
     }, [marketplaceListings, search]);
 
     return (
-        <section id="services" className="relative bg-[#FFFFFF] py-24 lg:py-32 overflow-hidden">
-            {/* Minimalist Background Gradients */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-50/50 rounded-full blur-[120px] -z-10 translate-x-1/2 -translate-y-1/2" />
+        <section id="services" className="relative bg-[#050505] py-24 lg:py-40 overflow-hidden text-white">
+            {/* Dark Mode Background Effects */}
+            <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-[#C5A267]/5 blur-[120px] rounded-full translate-x-1/4 -translate-y-1/4 pointer-events-none" />
             
-            <div className="max-w-7xl mx-auto px-6">
+            <div className="max-w-7xl mx-auto px-6 relative z-10">
                 {/* --- HEADER --- */}
-                <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-16 gap-10">
-                    <div className="max-w-xl">
+                <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-32 gap-12">
+                    <div className="max-w-2xl">
                         <motion.div 
-                            initial={{ opacity: 0, x: -10 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 mb-6"
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            className="flex items-center gap-3 mb-6"
                         >
-                            <SparklesIcon className="w-4 h-4 text-emerald-600" />
-                            <span className="text-emerald-700 font-bold uppercase tracking-widest text-[10px]">Curated Experiences</span>
+                            <div className="h-px w-8 bg-[#C5A267]" />
+                            <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#C5A267]">The Menu</span>
                         </motion.div>
                         <motion.h2 
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
-                            className="text-5xl md:text-7xl font-black text-gray-900 tracking-tighter leading-[0.9]"
+                            className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.85]"
                         >
-                            Our <span className="text-gray-400 italic font-serif">Services.</span>
+                            ELITE <br />
+                            <span className="font-serif italic font-light text-zinc-700">Treatments.</span>
                         </motion.h2>
                     </div>
 
-                    <div className="relative group w-full lg:w-96">
-                        <MagnifyingGlassIcon className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-black transition-colors" />
+                    <div className="relative w-full lg:w-80 group">
+                        <MagnifyingGlassIcon className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-600 group-focus-within:text-[#C5A267] transition-colors" />
                         <input
                             type="text"
-                            placeholder="Search our catalog..."
-                            className="w-full pl-14 pr-12 py-5 bg-gray-50 border-none rounded-[2rem] focus:ring-2 focus:ring-emerald-500/20 shadow-sm text-gray-800 transition-all placeholder:text-gray-400 font-medium"
+                            placeholder="Search services..."
+                            className="w-full bg-transparent border-b border-zinc-800 py-4 pl-10 focus:border-[#C5A267] outline-none text-sm transition-all placeholder:text-zinc-700"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
@@ -182,122 +148,105 @@ export default function ServicesSection({ marketplaceListings, themeSettings }: 
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true }}
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16"
                 >
-                    <AnimatePresence mode="popLayout">
-                        {filteredListings.map((item: any) => (
-                            <motion.div
-                                key={item.id}
-                                layout
-                                variants={itemVariants}
-                                onClick={() => setSelected(item)}
-                                className="group cursor-pointer"
-                            >
-                                <div className="relative aspect-[16/11] rounded-[2.5rem] overflow-hidden mb-6 bg-gray-100">
-                                    <Image
-                                        src={item.images?.[0] || 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=2835&auto=format&fit=crop'}
-                                        alt={item.name}
-                                        fill
-                                        className="object-cover transition-transform duration-1000 group-hover:scale-105"
-                                        loader={({ src }) => src}
-                                    />
-                                    
-                                    {/* Availability Badge */}
-                                    <div className="absolute top-5 right-5">
-                                        <div className={`px-4 py-2 rounded-2xl backdrop-blur-xl border text-[10px] font-bold uppercase tracking-widest ${
-                                            item.isAvailable ? 'bg-white/80 border-white/50 text-emerald-900' : 'bg-red-500/80 border-red-400 text-white'
-                                        }`}>
-                                            {item.isAvailable ? 'Available' : 'Booked'}
-                                        </div>
+                    {filteredListings.map((item: any) => (
+                        <motion.div
+                            key={item.id}
+                            variants={cardVariants}
+                            onClick={() => setSelected(item)}
+                            className="group cursor-pointer"
+                        >
+                            <div className="relative aspect-[4/5] overflow-hidden rounded-2xl mb-8 bg-zinc-900">
+                                <Image
+                                    src={item.images?.[0] || 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=2070'}
+                                    alt={item.name}
+                                    fill
+                                    className="object-cover opacity-60 group-hover:opacity-100 transition-all duration-700 scale-[1.02] group-hover:scale-110"
+                                    loader={({ src }) => src}
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                                
+                                <div className="absolute bottom-6 left-6 right-6 translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <SparklesIcon className="w-4 h-4 text-[#C5A267]" />
+                                        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#C5A267]">Signature Ritual</span>
                                     </div>
-
-                                    {/* Overlay on Hover */}
-                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
-                                        <div className="bg-white p-4 rounded-full scale-50 group-hover:scale-100 transition-transform duration-500 shadow-xl">
-                                            <ArrowUpRightIcon className="w-6 h-6 text-black" />
-                                        </div>
-                                    </div>
+                                    <h3 className="text-2xl font-black uppercase tracking-tighter leading-none">{item.name}</h3>
                                 </div>
+                            </div>
 
-                                <div className="px-2">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <h3 className="text-2xl font-bold text-gray-900 tracking-tight">{item.name}</h3>
-                                        <p className="text-xl font-black text-gray-900">
-                                            <span className="text-[10px] text-gray-400 mr-1">KES</span>
-                                            {item.finalPrice?.toLocaleString()}
-                                        </p>
-                                    </div>
-                                    <p className="text-gray-500 text-sm line-clamp-2 font-medium leading-relaxed">
-                                        {item.description}
-                                    </p>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
+                            <div className="flex justify-between items-center px-2">
+                                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{item.duration || '45 MIN'}</span>
+                                <div className="h-px flex-1 mx-4 bg-zinc-900 group-hover:bg-[#C5A267]/30 transition-colors" />
+                                <span className="text-xl font-serif italic">${item.finalPrice}</span>
+                            </div>
+                        </motion.div>
+                    ))}
                 </motion.div>
             </div>
 
-            {/* --- MODAL --- */}
+            {/* --- DARK DRAWER --- */}
             <AnimatePresence>
                 {selected && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+                    <div className="fixed inset-0 z-[100] flex items-center justify-end">
                         <motion.div 
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                             onClick={() => setSelected(null)}
-                            className="absolute inset-0 bg-black/60 backdrop-blur-md" 
+                            className="absolute inset-0 bg-black/90 backdrop-blur-md" 
                         />
                         
                         <motion.div 
-                            layoutId={`card-${selected.id}`}
-                            className="relative w-full max-w-6xl bg-white rounded-[3rem] overflow-hidden shadow-3xl flex flex-col lg:flex-row max-h-[90vh] overflow-y-auto lg:overflow-visible"
+                            initial={{ x: "100%" }}
+                            animate={{ x: 0 }}
+                            exit={{ x: "100%" }}
+                            transition={{ type: "spring", damping: 30, stiffness: 200 }}
+                            className="relative w-full max-w-xl h-screen bg-[#0A0A0A] border-l border-zinc-800 flex flex-col"
                         >
-                            {/* Left: Sticky Image Gallery Feel */}
-                            <div className="lg:w-1/2 relative min-h-[300px] lg:h-auto">
+                            <div className="relative h-1/3 w-full">
                                 <Image 
                                     src={selected.images?.[0] || ''} 
                                     alt={selected.name} 
                                     fill 
-                                    className="object-cover" 
+                                    className="object-cover opacity-40" 
                                     loader={({ src }) => src}
                                 />
                                 <button 
                                     onClick={() => setSelected(null)}
-                                    className="absolute top-8 left-8 p-3 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-black transition-all"
+                                    className="absolute top-8 right-8 p-3 bg-black/50 border border-white/10 text-white hover:bg-[#C5A267] hover:text-black transition-all rounded-full"
                                 >
-                                    <XMarkIcon className="w-6 h-6" />
+                                    <XMarkIcon className="w-5 h-5" />
                                 </button>
-                                
-                                <div className="absolute bottom-8 left-8 flex items-center gap-3">
-                                    <div className="p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 text-white flex items-center gap-2">
-                                        <ShieldCheckIcon className="w-5 h-5 text-emerald-400" />
-                                        <span className="text-xs font-bold uppercase tracking-widest">Verified Listing</span>
-                                    </div>
-                                </div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] to-transparent" />
                             </div>
 
-                            {/* Right: Modern Checkout Experience */}
-                            <div className="lg:w-1/2 p-8 lg:p-16 flex flex-col bg-white">
-                                <div className="mb-8">
-                                    <div className="flex items-center gap-2 text-emerald-600 mb-2">
-                                        <div className="h-px w-8 bg-emerald-200" />
-                                        <span className="text-[10px] font-black uppercase tracking-[0.3em]">Exclusive Service</span>
+                            <div className="flex-1 p-10 overflow-y-auto">
+                                <h2 className="text-4xl font-black tracking-tighter mb-4">{selected.name}</h2>
+                                <p className="text-zinc-500 text-sm leading-relaxed mb-10">
+                                    {selected.description}
+                                </p>
+
+                                <div className="grid grid-cols-2 gap-4 mb-10">
+                                    <div className="p-4 rounded-xl border border-zinc-800 bg-zinc-900/30">
+                                        <span className="text-[9px] text-zinc-500 uppercase tracking-widest block mb-1">Fee</span>
+                                        <span className="text-2xl font-serif italic text-[#C5A267]">${selected.finalPrice}</span>
                                     </div>
-                                    <h2 className="text-4xl lg:text-5xl font-black text-gray-900 tracking-tighter mb-4">{selected.name}</h2>
-                                    <p className="text-gray-500 font-medium leading-relaxed">
-                                        {selected.description}
-                                    </p>
+                                    <div className="p-4 rounded-xl border border-zinc-800 bg-zinc-900/30">
+                                        <span className="text-[9px] text-zinc-500 uppercase tracking-widest block mb-1">Duration</span>
+                                        <span className="text-xl font-bold uppercase tracking-tight">{selected.duration || '45 MIN'}</span>
+                                    </div>
                                 </div>
 
-                                <div className="mt-auto">
-                                    <div className="mb-8 p-6 bg-gray-50 rounded-[2rem] flex items-center justify-between">
-                                        <span className="text-sm font-bold text-gray-400 uppercase tracking-widest">Total Investment</span>
-                                        <span className="text-3xl font-black text-gray-900">
-                                            <span className="text-sm font-medium text-emerald-500 mr-2">KES</span>
-                                            {selected.finalPrice?.toLocaleString()}
-                                        </span>
+                                <BookingForm service={selected} />
+
+                                <div className="mt-12 flex items-start gap-4 p-5 rounded-xl bg-zinc-900/50 border border-zinc-800">
+                                    <ShieldCheckIcon className="w-6 h-6 text-[#C5A267] shrink-0" />
+                                    <div>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-300">Appointment Protection</p>
+                                        <p className="text-[9px] text-zinc-500 mt-1 uppercase tracking-wider leading-relaxed">
+                                            Reschedule up to 24 hours prior. Secure payments powered by Stripe.
+                                        </p>
                                     </div>
-                                    
-                                    <BookingForm service={selected} primaryColor={primaryColor} />
                                 </div>
                             </div>
                         </motion.div>
