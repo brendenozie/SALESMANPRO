@@ -90,6 +90,15 @@ const baseData: Partial<StoreForm> = {
     standardRate: null,
     expressRate: null
   },
+  
+  sectionSubtitle: null,
+  sectionTitle: null,
+  sectionDescription: null,
+  partnerLogos: null,
+
+  founderName: null,
+  founderQuote: null,
+  founderImage: null
 };
 
 // 2) Helper to merge category-specific overrides
@@ -161,6 +170,797 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       ],
       Collection: [{ name: "Best Sellers", description: "Our top selling products this month." } as any],
       pricingTiers: [{ name: "Standard", price: 0, duration: "monthly", features: ["Access to shop", "Email updates"] }],
+
+      sectionSubtitle: "Discover Our Collections",
+      sectionTitle: "Shop by Category",
+      sectionDescription: "Explore our wide range of products across various categories, curated to meet all your needs.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+    }),
+
+    "Agrovet Store": withOverrides({
+      tagline: "Shop the **Latest Trends** Online",
+      description: "From gadgets to fashion, find everything you need with **fast shipping** and easy returns.",
+      socialLinks: [
+        { channel: SocialChannel.FACEBOOK, url: "https://fb.com/onlinestore" },
+        { channel: SocialChannel.INSTAGRAM, url: "https://insta.com/onlinestore" },
+        { channel: SocialChannel.TWITTER, url: "https://twitter.com/onlinestore" }
+      ],
+      policies: [
+        { type: PolicyType.SHIPPING, content: "Free standard shipping on all orders over $50. Express options available." },
+        { type: PolicyType.RETURNS, content: "30-day money-back guarantee. Item must be unworn/unused." },
+        { type: PolicyType.PRIVACY, content: "We respect your privacy and protect your data with industry-standard security." }
+      ],
+      awards: [
+        { name: "Best Online Retailer 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Top 100 E-commerce Sites 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Customer Choice Award 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" }
+      ],
+      metrics: [
+        { label: "Products Sold", value: 15000 },
+        { label: "5-Star Reviews", value: 3200 },
+        { label: "Countries Shipped To", value: 50 },
+      ],
+      stats: [
+        { label: "Customer Satisfaction", value: "98%" },
+        { label: "Repeat Customers", value: "75%" },
+        { label: "Average Delivery Time", value: "3 days" },
+      ],
+      faqs: [
+        { question: "What payment methods do you accept?", answer: "Visa, Mastercard, PayPal, and Apple Pay.", order: 1 },
+        { question: "How long does shipping take?", answer: "Standard shipping takes 5-7 business days.", order: 2 },
+        { question: "Can I track my order?", answer: "Yes, tracking information is emailed once your order ships.", order: 3 },
+      ],
+      testimonials: [
+        { authorName: "Alex R.", quote: "The quality exceeded my expectations. Fast delivery too!", rating: 5 },
+        { authorName: "Mia K.", quote: "I found the perfect gift here. Great customer service.", rating: 5 },
+        { authorName: "Liam S.", quote: "Easy to navigate site and hassle-free returns.", rating: 4 }
+      ],
+      heroSlides: [
+        {
+          imageUrl: getSampleImageUrl('ecommerce'), headline: "Summer Collection: Up to 50% Off", subline: "Limited time offer on all apparel.", ctaText: "Shop Sale", ctaLink: "/shop/sale",
+          id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Best Deals", endsAt: in3Days, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
+        },
+      ],
+      promotions: [
+        {
+          title: "Flash Weekend Deal", description: "Get an extra 10% off using code WKND10.", ctaText: "Activate Code", ctaLink: "/deals", bannerUrl: getSampleImageUrl('flash-deal'),
+          companyId: "", perks: [{ id: "", label: "Free Gift", icon: "StarIcon" }, { id: "", label: "10% off", icon: "" }], trustLogos: []
+        },
+      ],
+      Collection: [{ name: "Best Sellers", description: "Our top selling products this month." } as any],
+      pricingTiers: [{ name: "Standard", price: 0, duration: "monthly", features: ["Access to shop", "Email updates"] }],
+
+      sectionSubtitle: "Discover Our Collections",
+      sectionTitle: "Shop by Category",
+      sectionDescription: "Explore our wide range of products across various categories, curated to meet all your needs.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+    }),
+
+    "Gaming Store": withOverrides({
+      tagline: "Shop the **Latest Trends** Online",
+      description: "From gadgets to fashion, find everything you need with **fast shipping** and easy returns.",
+      socialLinks: [
+        { channel: SocialChannel.FACEBOOK, url: "https://fb.com/onlinestore" },
+        { channel: SocialChannel.INSTAGRAM, url: "https://insta.com/onlinestore" },
+        { channel: SocialChannel.TWITTER, url: "https://twitter.com/onlinestore" }
+      ],
+      policies: [
+        { type: PolicyType.SHIPPING, content: "Free standard shipping on all orders over $50. Express options available." },
+        { type: PolicyType.RETURNS, content: "30-day money-back guarantee. Item must be unworn/unused." },
+        { type: PolicyType.PRIVACY, content: "We respect your privacy and protect your data with industry-standard security." }
+      ],
+      awards: [
+        { name: "Best Online Retailer 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Top 100 E-commerce Sites 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Customer Choice Award 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" }
+      ],
+      metrics: [
+        { label: "Products Sold", value: 15000 },
+        { label: "5-Star Reviews", value: 3200 },
+        { label: "Countries Shipped To", value: 50 },
+      ],
+      stats: [
+        { label: "Customer Satisfaction", value: "98%" },
+        { label: "Repeat Customers", value: "75%" },
+        { label: "Average Delivery Time", value: "3 days" },
+      ],
+      faqs: [
+        { question: "What payment methods do you accept?", answer: "Visa, Mastercard, PayPal, and Apple Pay.", order: 1 },
+        { question: "How long does shipping take?", answer: "Standard shipping takes 5-7 business days.", order: 2 },
+        { question: "Can I track my order?", answer: "Yes, tracking information is emailed once your order ships.", order: 3 },
+      ],
+      testimonials: [
+        { authorName: "Alex R.", quote: "The quality exceeded my expectations. Fast delivery too!", rating: 5 },
+        { authorName: "Mia K.", quote: "I found the perfect gift here. Great customer service.", rating: 5 },
+        { authorName: "Liam S.", quote: "Easy to navigate site and hassle-free returns.", rating: 4 }
+      ],
+      heroSlides: [
+        {
+          imageUrl: getSampleImageUrl('ecommerce'), headline: "Summer Collection: Up to 50% Off", subline: "Limited time offer on all apparel.", ctaText: "Shop Sale", ctaLink: "/shop/sale",
+          id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Best Deals", endsAt: in3Days, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
+        },
+      ],
+      promotions: [
+        {
+          title: "Flash Weekend Deal", description: "Get an extra 10% off using code WKND10.", ctaText: "Activate Code", ctaLink: "/deals", bannerUrl: getSampleImageUrl('flash-deal'),
+          companyId: "", perks: [{ id: "", label: "Free Gift", icon: "StarIcon" }, { id: "", label: "10% off", icon: "" }], trustLogos: []
+        },
+      ],
+      Collection: [{ name: "Best Sellers", description: "Our top selling products this month." } as any],
+      pricingTiers: [{ name: "Standard", price: 0, duration: "monthly", features: ["Access to shop", "Email updates"] }],
+
+      sectionSubtitle: "Discover Our Collections",
+      sectionTitle: "Shop by Category",
+      sectionDescription: "Explore our wide range of products across various categories, curated to meet all your needs.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+    }),
+
+    "Earphones Store": withOverrides({
+      tagline: "Shop the **Latest Trends** Online",
+      description: "From gadgets to fashion, find everything you need with **fast shipping** and easy returns.",
+      socialLinks: [
+        { channel: SocialChannel.FACEBOOK, url: "https://fb.com/onlinestore" },
+        { channel: SocialChannel.INSTAGRAM, url: "https://insta.com/onlinestore" },
+        { channel: SocialChannel.TWITTER, url: "https://twitter.com/onlinestore" }
+      ],
+      policies: [
+        { type: PolicyType.SHIPPING, content: "Free standard shipping on all orders over $50. Express options available." },
+        { type: PolicyType.RETURNS, content: "30-day money-back guarantee. Item must be unworn/unused." },
+        { type: PolicyType.PRIVACY, content: "We respect your privacy and protect your data with industry-standard security." }
+      ],
+      awards: [
+        { name: "Best Online Retailer 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Top 100 E-commerce Sites 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Customer Choice Award 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" }
+      ],
+      metrics: [
+        { label: "Products Sold", value: 15000 },
+        { label: "5-Star Reviews", value: 3200 },
+        { label: "Countries Shipped To", value: 50 },
+      ],
+      stats: [
+        { label: "Customer Satisfaction", value: "98%" },
+        { label: "Repeat Customers", value: "75%" },
+        { label: "Average Delivery Time", value: "3 days" },
+      ],
+      faqs: [
+        { question: "What payment methods do you accept?", answer: "Visa, Mastercard, PayPal, and Apple Pay.", order: 1 },
+        { question: "How long does shipping take?", answer: "Standard shipping takes 5-7 business days.", order: 2 },
+        { question: "Can I track my order?", answer: "Yes, tracking information is emailed once your order ships.", order: 3 },
+      ],
+      testimonials: [
+        { authorName: "Alex R.", quote: "The quality exceeded my expectations. Fast delivery too!", rating: 5 },
+        { authorName: "Mia K.", quote: "I found the perfect gift here. Great customer service.", rating: 5 },
+        { authorName: "Liam S.", quote: "Easy to navigate site and hassle-free returns.", rating: 4 }
+      ],
+      heroSlides: [
+        {
+          imageUrl: getSampleImageUrl('ecommerce'), headline: "Summer Collection: Up to 50% Off", subline: "Limited time offer on all apparel.", ctaText: "Shop Sale", ctaLink: "/shop/sale",
+          id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Best Deals", endsAt: in3Days, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
+        },
+      ],
+      promotions: [
+        {
+          title: "Flash Weekend Deal", description: "Get an extra 10% off using code WKND10.", ctaText: "Activate Code", ctaLink: "/deals", bannerUrl: getSampleImageUrl('flash-deal'),
+          companyId: "", perks: [{ id: "", label: "Free Gift", icon: "StarIcon" }, { id: "", label: "10% off", icon: "" }], trustLogos: []
+        },
+      ],
+      Collection: [{ name: "Best Sellers", description: "Our top selling products this month." } as any],
+      pricingTiers: [{ name: "Standard", price: 0, duration: "monthly", features: ["Access to shop", "Email updates"] }],
+
+      sectionSubtitle: "Discover Our Collections",
+      sectionTitle: "Shop by Category",
+      sectionDescription: "Explore our wide range of products across various categories, curated to meet all your needs.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+    }),
+
+    "Glasses Store": withOverrides({
+      tagline: "Shop the **Latest Trends** Online",
+      description: "From gadgets to fashion, find everything you need with **fast shipping** and easy returns.",
+      socialLinks: [
+        { channel: SocialChannel.FACEBOOK, url: "https://fb.com/onlinestore" },
+        { channel: SocialChannel.INSTAGRAM, url: "https://insta.com/onlinestore" },
+        { channel: SocialChannel.TWITTER, url: "https://twitter.com/onlinestore" }
+      ],
+      policies: [
+        { type: PolicyType.SHIPPING, content: "Free standard shipping on all orders over $50. Express options available." },
+        { type: PolicyType.RETURNS, content: "30-day money-back guarantee. Item must be unworn/unused." },
+        { type: PolicyType.PRIVACY, content: "We respect your privacy and protect your data with industry-standard security." }
+      ],
+      awards: [
+        { name: "Best Online Retailer 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Top 100 E-commerce Sites 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Customer Choice Award 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" }
+      ],
+      metrics: [
+        { label: "Products Sold", value: 15000 },
+        { label: "5-Star Reviews", value: 3200 },
+        { label: "Countries Shipped To", value: 50 },
+      ],
+      stats: [
+        { label: "Customer Satisfaction", value: "98%" },
+        { label: "Repeat Customers", value: "75%" },
+        { label: "Average Delivery Time", value: "3 days" },
+      ],
+      faqs: [
+        { question: "What payment methods do you accept?", answer: "Visa, Mastercard, PayPal, and Apple Pay.", order: 1 },
+        { question: "How long does shipping take?", answer: "Standard shipping takes 5-7 business days.", order: 2 },
+        { question: "Can I track my order?", answer: "Yes, tracking information is emailed once your order ships.", order: 3 },
+      ],
+      testimonials: [
+        { authorName: "Alex R.", quote: "The quality exceeded my expectations. Fast delivery too!", rating: 5 },
+        { authorName: "Mia K.", quote: "I found the perfect gift here. Great customer service.", rating: 5 },
+        { authorName: "Liam S.", quote: "Easy to navigate site and hassle-free returns.", rating: 4 }
+      ],
+      heroSlides: [
+        {
+          imageUrl: getSampleImageUrl('ecommerce'), headline: "Summer Collection: Up to 50% Off", subline: "Limited time offer on all apparel.", ctaText: "Shop Sale", ctaLink: "/shop/sale",
+          id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Best Deals", endsAt: in3Days, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
+        },
+      ],
+      promotions: [
+        {
+          title: "Flash Weekend Deal", description: "Get an extra 10% off using code WKND10.", ctaText: "Activate Code", ctaLink: "/deals", bannerUrl: getSampleImageUrl('flash-deal'),
+          companyId: "", perks: [{ id: "", label: "Free Gift", icon: "StarIcon" }, { id: "", label: "10% off", icon: "" }], trustLogos: []
+        },
+      ],
+      Collection: [{ name: "Best Sellers", description: "Our top selling products this month." } as any],
+      pricingTiers: [{ name: "Standard", price: 0, duration: "monthly", features: ["Access to shop", "Email updates"] }],
+
+      sectionSubtitle: "Discover Our Collections",
+      sectionTitle: "Shop by Category",
+      sectionDescription: "Explore our wide range of products across various categories, curated to meet all your needs.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+    }),
+
+    "Flowers Store": withOverrides({
+      tagline: "Shop the **Latest Trends** Online",
+      description: "From gadgets to fashion, find everything you need with **fast shipping** and easy returns.",
+      socialLinks: [
+        { channel: SocialChannel.FACEBOOK, url: "https://fb.com/onlinestore" },
+        { channel: SocialChannel.INSTAGRAM, url: "https://insta.com/onlinestore" },
+        { channel: SocialChannel.TWITTER, url: "https://twitter.com/onlinestore" }
+      ],
+      policies: [
+        { type: PolicyType.SHIPPING, content: "Free standard shipping on all orders over $50. Express options available." },
+        { type: PolicyType.RETURNS, content: "30-day money-back guarantee. Item must be unworn/unused." },
+        { type: PolicyType.PRIVACY, content: "We respect your privacy and protect your data with industry-standard security." }
+      ],
+      awards: [
+        { name: "Best Online Retailer 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Top 100 E-commerce Sites 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Customer Choice Award 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" }
+      ],
+      metrics: [
+        { label: "Products Sold", value: 15000 },
+        { label: "5-Star Reviews", value: 3200 },
+        { label: "Countries Shipped To", value: 50 },
+      ],
+      stats: [
+        { label: "Customer Satisfaction", value: "98%" },
+        { label: "Repeat Customers", value: "75%" },
+        { label: "Average Delivery Time", value: "3 days" },
+      ],
+      faqs: [
+        { question: "What payment methods do you accept?", answer: "Visa, Mastercard, PayPal, and Apple Pay.", order: 1 },
+        { question: "How long does shipping take?", answer: "Standard shipping takes 5-7 business days.", order: 2 },
+        { question: "Can I track my order?", answer: "Yes, tracking information is emailed once your order ships.", order: 3 },
+      ],
+      testimonials: [
+        { authorName: "Alex R.", quote: "The quality exceeded my expectations. Fast delivery too!", rating: 5 },
+        { authorName: "Mia K.", quote: "I found the perfect gift here. Great customer service.", rating: 5 },
+        { authorName: "Liam S.", quote: "Easy to navigate site and hassle-free returns.", rating: 4 }
+      ],
+      heroSlides: [
+        {
+          imageUrl: getSampleImageUrl('ecommerce'), headline: "Summer Collection: Up to 50% Off", subline: "Limited time offer on all apparel.", ctaText: "Shop Sale", ctaLink: "/shop/sale",
+          id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Best Deals", endsAt: in3Days, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
+        },
+      ],
+      promotions: [
+        {
+          title: "Flash Weekend Deal", description: "Get an extra 10% off using code WKND10.", ctaText: "Activate Code", ctaLink: "/deals", bannerUrl: getSampleImageUrl('flash-deal'),
+          companyId: "", perks: [{ id: "", label: "Free Gift", icon: "StarIcon" }, { id: "", label: "10% off", icon: "" }], trustLogos: []
+        },
+      ],
+      Collection: [{ name: "Best Sellers", description: "Our top selling products this month." } as any],
+      pricingTiers: [{ name: "Standard", price: 0, duration: "monthly", features: ["Access to shop", "Email updates"] }],
+
+      sectionSubtitle: "Discover Our Collections",
+      sectionTitle: "Shop by Category",
+      sectionDescription: "Explore our wide range of products across various categories, curated to meet all your needs.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+    }),
+
+    "Honey Store": withOverrides({
+      tagline: "Shop the **Latest Trends** Online",
+      description: "From gadgets to fashion, find everything you need with **fast shipping** and easy returns.",
+      socialLinks: [
+        { channel: SocialChannel.FACEBOOK, url: "https://fb.com/onlinestore" },
+        { channel: SocialChannel.INSTAGRAM, url: "https://insta.com/onlinestore" },
+        { channel: SocialChannel.TWITTER, url: "https://twitter.com/onlinestore" }
+      ],
+      policies: [
+        { type: PolicyType.SHIPPING, content: "Free standard shipping on all orders over $50. Express options available." },
+        { type: PolicyType.RETURNS, content: "30-day money-back guarantee. Item must be unworn/unused." },
+        { type: PolicyType.PRIVACY, content: "We respect your privacy and protect your data with industry-standard security." }
+      ],
+      awards: [
+        { name: "Best Online Retailer 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Top 100 E-commerce Sites 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Customer Choice Award 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" }
+      ],
+      metrics: [
+        { label: "Products Sold", value: 15000 },
+        { label: "5-Star Reviews", value: 3200 },
+        { label: "Countries Shipped To", value: 50 },
+      ],
+      stats: [
+        { label: "Customer Satisfaction", value: "98%" },
+        { label: "Repeat Customers", value: "75%" },
+        { label: "Average Delivery Time", value: "3 days" },
+      ],
+      faqs: [
+        { question: "What payment methods do you accept?", answer: "Visa, Mastercard, PayPal, and Apple Pay.", order: 1 },
+        { question: "How long does shipping take?", answer: "Standard shipping takes 5-7 business days.", order: 2 },
+        { question: "Can I track my order?", answer: "Yes, tracking information is emailed once your order ships.", order: 3 },
+      ],
+      testimonials: [
+        { authorName: "Alex R.", quote: "The quality exceeded my expectations. Fast delivery too!", rating: 5 },
+        { authorName: "Mia K.", quote: "I found the perfect gift here. Great customer service.", rating: 5 },
+        { authorName: "Liam S.", quote: "Easy to navigate site and hassle-free returns.", rating: 4 }
+      ],
+      heroSlides: [
+        {
+          imageUrl: getSampleImageUrl('ecommerce'), headline: "Summer Collection: Up to 50% Off", subline: "Limited time offer on all apparel.", ctaText: "Shop Sale", ctaLink: "/shop/sale",
+          id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Best Deals", endsAt: in3Days, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
+        },
+      ],
+      promotions: [
+        {
+          title: "Flash Weekend Deal", description: "Get an extra 10% off using code WKND10.", ctaText: "Activate Code", ctaLink: "/deals", bannerUrl: getSampleImageUrl('flash-deal'),
+          companyId: "", perks: [{ id: "", label: "Free Gift", icon: "StarIcon" }, { id: "", label: "10% off", icon: "" }], trustLogos: []
+        },
+      ],
+      Collection: [{ name: "Best Sellers", description: "Our top selling products this month." } as any],
+      pricingTiers: [{ name: "Standard", price: 0, duration: "monthly", features: ["Access to shop", "Email updates"] }],
+
+      sectionSubtitle: "Discover Our Collections",
+      sectionTitle: "Shop by Category",
+      sectionDescription: "Explore our wide range of products across various categories, curated to meet all your needs.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+    }),
+
+    "Peanuts Store": withOverrides({
+      tagline: "Shop the **Latest Trends** Online",
+      description: "From gadgets to fashion, find everything you need with **fast shipping** and easy returns.",
+      socialLinks: [
+        { channel: SocialChannel.FACEBOOK, url: "https://fb.com/onlinestore" },
+        { channel: SocialChannel.INSTAGRAM, url: "https://insta.com/onlinestore" },
+        { channel: SocialChannel.TWITTER, url: "https://twitter.com/onlinestore" }
+      ],
+      policies: [
+        { type: PolicyType.SHIPPING, content: "Free standard shipping on all orders over $50. Express options available." },
+        { type: PolicyType.RETURNS, content: "30-day money-back guarantee. Item must be unworn/unused." },
+        { type: PolicyType.PRIVACY, content: "We respect your privacy and protect your data with industry-standard security." }
+      ],
+      awards: [
+        { name: "Best Online Retailer 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Top 100 E-commerce Sites 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Customer Choice Award 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" }
+      ],
+      metrics: [
+        { label: "Products Sold", value: 15000 },
+        { label: "5-Star Reviews", value: 3200 },
+        { label: "Countries Shipped To", value: 50 },
+      ],
+      stats: [
+        { label: "Customer Satisfaction", value: "98%" },
+        { label: "Repeat Customers", value: "75%" },
+        { label: "Average Delivery Time", value: "3 days" },
+      ],
+      faqs: [
+        { question: "What payment methods do you accept?", answer: "Visa, Mastercard, PayPal, and Apple Pay.", order: 1 },
+        { question: "How long does shipping take?", answer: "Standard shipping takes 5-7 business days.", order: 2 },
+        { question: "Can I track my order?", answer: "Yes, tracking information is emailed once your order ships.", order: 3 },
+      ],
+      testimonials: [
+        { authorName: "Alex R.", quote: "The quality exceeded my expectations. Fast delivery too!", rating: 5 },
+        { authorName: "Mia K.", quote: "I found the perfect gift here. Great customer service.", rating: 5 },
+        { authorName: "Liam S.", quote: "Easy to navigate site and hassle-free returns.", rating: 4 }
+      ],
+      heroSlides: [
+        {
+          imageUrl: getSampleImageUrl('ecommerce'), headline: "Summer Collection: Up to 50% Off", subline: "Limited time offer on all apparel.", ctaText: "Shop Sale", ctaLink: "/shop/sale",
+          id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Best Deals", endsAt: in3Days, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
+        },
+      ],
+      promotions: [
+        {
+          title: "Flash Weekend Deal", description: "Get an extra 10% off using code WKND10.", ctaText: "Activate Code", ctaLink: "/deals", bannerUrl: getSampleImageUrl('flash-deal'),
+          companyId: "", perks: [{ id: "", label: "Free Gift", icon: "StarIcon" }, { id: "", label: "10% off", icon: "" }], trustLogos: []
+        },
+      ],
+      Collection: [{ name: "Best Sellers", description: "Our top selling products this month." } as any],
+      pricingTiers: [{ name: "Standard", price: 0, duration: "monthly", features: ["Access to shop", "Email updates"] }],
+
+      sectionSubtitle: "Discover Our Collections",
+      sectionTitle: "Shop by Category",
+      sectionDescription: "Explore our wide range of products across various categories, curated to meet all your needs.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+    }),
+
+    "Watch Store": withOverrides({
+      tagline: "Shop the **Latest Trends** Online",
+      description: "From gadgets to fashion, find everything you need with **fast shipping** and easy returns.",
+      socialLinks: [
+        { channel: SocialChannel.FACEBOOK, url: "https://fb.com/onlinestore" },
+        { channel: SocialChannel.INSTAGRAM, url: "https://insta.com/onlinestore" },
+        { channel: SocialChannel.TWITTER, url: "https://twitter.com/onlinestore" }
+      ],
+      policies: [
+        { type: PolicyType.SHIPPING, content: "Free standard shipping on all orders over $50. Express options available." },
+        { type: PolicyType.RETURNS, content: "30-day money-back guarantee. Item must be unworn/unused." },
+        { type: PolicyType.PRIVACY, content: "We respect your privacy and protect your data with industry-standard security." }
+      ],
+      awards: [
+        { name: "Best Online Retailer 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Top 100 E-commerce Sites 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Customer Choice Award 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" }
+      ],
+      metrics: [
+        { label: "Products Sold", value: 15000 },
+        { label: "5-Star Reviews", value: 3200 },
+        { label: "Countries Shipped To", value: 50 },
+      ],
+      stats: [
+        { label: "Customer Satisfaction", value: "98%" },
+        { label: "Repeat Customers", value: "75%" },
+        { label: "Average Delivery Time", value: "3 days" },
+      ],
+      faqs: [
+        { question: "What payment methods do you accept?", answer: "Visa, Mastercard, PayPal, and Apple Pay.", order: 1 },
+        { question: "How long does shipping take?", answer: "Standard shipping takes 5-7 business days.", order: 2 },
+        { question: "Can I track my order?", answer: "Yes, tracking information is emailed once your order ships.", order: 3 },
+      ],
+      testimonials: [
+        { authorName: "Alex R.", quote: "The quality exceeded my expectations. Fast delivery too!", rating: 5 },
+        { authorName: "Mia K.", quote: "I found the perfect gift here. Great customer service.", rating: 5 },
+        { authorName: "Liam S.", quote: "Easy to navigate site and hassle-free returns.", rating: 4 }
+      ],
+      heroSlides: [
+        {
+          imageUrl: getSampleImageUrl('ecommerce'), headline: "Summer Collection: Up to 50% Off", subline: "Limited time offer on all apparel.", ctaText: "Shop Sale", ctaLink: "/shop/sale",
+          id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Best Deals", endsAt: in3Days, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
+        },
+      ],
+      promotions: [
+        {
+          title: "Flash Weekend Deal", description: "Get an extra 10% off using code WKND10.", ctaText: "Activate Code", ctaLink: "/deals", bannerUrl: getSampleImageUrl('flash-deal'),
+          companyId: "", perks: [{ id: "", label: "Free Gift", icon: "StarIcon" }, { id: "", label: "10% off", icon: "" }], trustLogos: []
+        },
+      ],
+      Collection: [{ name: "Best Sellers", description: "Our top selling products this month." } as any],
+      pricingTiers: [{ name: "Standard", price: 0, duration: "monthly", features: ["Access to shop", "Email updates"] }],
+
+      sectionSubtitle: "Discover Our Collections",
+      sectionTitle: "Shop by Category",
+      sectionDescription: "Explore our wide range of products across various categories, curated to meet all your needs.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+    }),
+
+    "Baby Store": withOverrides({
+      tagline: "Shop the **Latest Trends** Online",
+      description: "From gadgets to fashion, find everything you need with **fast shipping** and easy returns.",
+      socialLinks: [
+        { channel: SocialChannel.FACEBOOK, url: "https://fb.com/onlinestore" },
+        { channel: SocialChannel.INSTAGRAM, url: "https://insta.com/onlinestore" },
+        { channel: SocialChannel.TWITTER, url: "https://twitter.com/onlinestore" }
+      ],
+      policies: [
+        { type: PolicyType.SHIPPING, content: "Free standard shipping on all orders over $50. Express options available." },
+        { type: PolicyType.RETURNS, content: "30-day money-back guarantee. Item must be unworn/unused." },
+        { type: PolicyType.PRIVACY, content: "We respect your privacy and protect your data with industry-standard security." }
+      ],
+      awards: [
+        { name: "Best Online Retailer 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Top 100 E-commerce Sites 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Customer Choice Award 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" }
+      ],
+      metrics: [
+        { label: "Products Sold", value: 15000 },
+        { label: "5-Star Reviews", value: 3200 },
+        { label: "Countries Shipped To", value: 50 },
+      ],
+      stats: [
+        { label: "Customer Satisfaction", value: "98%" },
+        { label: "Repeat Customers", value: "75%" },
+        { label: "Average Delivery Time", value: "3 days" },
+      ],
+      faqs: [
+        { question: "What payment methods do you accept?", answer: "Visa, Mastercard, PayPal, and Apple Pay.", order: 1 },
+        { question: "How long does shipping take?", answer: "Standard shipping takes 5-7 business days.", order: 2 },
+        { question: "Can I track my order?", answer: "Yes, tracking information is emailed once your order ships.", order: 3 },
+      ],
+      testimonials: [
+        { authorName: "Alex R.", quote: "The quality exceeded my expectations. Fast delivery too!", rating: 5 },
+        { authorName: "Mia K.", quote: "I found the perfect gift here. Great customer service.", rating: 5 },
+        { authorName: "Liam S.", quote: "Easy to navigate site and hassle-free returns.", rating: 4 }
+      ],
+      heroSlides: [
+        {
+          imageUrl: getSampleImageUrl('ecommerce'), headline: "Summer Collection: Up to 50% Off", subline: "Limited time offer on all apparel.", ctaText: "Shop Sale", ctaLink: "/shop/sale",
+          id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Best Deals", endsAt: in3Days, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
+        },
+      ],
+      promotions: [
+        {
+          title: "Flash Weekend Deal", description: "Get an extra 10% off using code WKND10.", ctaText: "Activate Code", ctaLink: "/deals", bannerUrl: getSampleImageUrl('flash-deal'),
+          companyId: "", perks: [{ id: "", label: "Free Gift", icon: "StarIcon" }, { id: "", label: "10% off", icon: "" }], trustLogos: []
+        },
+      ],
+      Collection: [{ name: "Best Sellers", description: "Our top selling products this month." } as any],
+      pricingTiers: [{ name: "Standard", price: 0, duration: "monthly", features: ["Access to shop", "Email updates"] }],
+
+      sectionSubtitle: "Discover Our Collections",
+      sectionTitle: "Shop by Category",
+      sectionDescription: "Explore our wide range of products across various categories, curated to meet all your needs.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+    }),
+
+    "Cake Store": withOverrides({
+      tagline: "Shop the **Latest Trends** Online",
+      description: "From gadgets to fashion, find everything you need with **fast shipping** and easy returns.",
+      socialLinks: [
+        { channel: SocialChannel.FACEBOOK, url: "https://fb.com/onlinestore" },
+        { channel: SocialChannel.INSTAGRAM, url: "https://insta.com/onlinestore" },
+        { channel: SocialChannel.TWITTER, url: "https://twitter.com/onlinestore" }
+      ],
+      policies: [
+        { type: PolicyType.SHIPPING, content: "Free standard shipping on all orders over $50. Express options available." },
+        { type: PolicyType.RETURNS, content: "30-day money-back guarantee. Item must be unworn/unused." },
+        { type: PolicyType.PRIVACY, content: "We respect your privacy and protect your data with industry-standard security." }
+      ],
+      awards: [
+        { name: "Best Online Retailer 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Top 100 E-commerce Sites 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Customer Choice Award 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" }
+      ],
+      metrics: [
+        { label: "Products Sold", value: 15000 },
+        { label: "5-Star Reviews", value: 3200 },
+        { label: "Countries Shipped To", value: 50 },
+      ],
+      stats: [
+        { label: "Customer Satisfaction", value: "98%" },
+        { label: "Repeat Customers", value: "75%" },
+        { label: "Average Delivery Time", value: "3 days" },
+      ],
+      faqs: [
+        { question: "What payment methods do you accept?", answer: "Visa, Mastercard, PayPal, and Apple Pay.", order: 1 },
+        { question: "How long does shipping take?", answer: "Standard shipping takes 5-7 business days.", order: 2 },
+        { question: "Can I track my order?", answer: "Yes, tracking information is emailed once your order ships.", order: 3 },
+      ],
+      testimonials: [
+        { authorName: "Alex R.", quote: "The quality exceeded my expectations. Fast delivery too!", rating: 5 },
+        { authorName: "Mia K.", quote: "I found the perfect gift here. Great customer service.", rating: 5 },
+        { authorName: "Liam S.", quote: "Easy to navigate site and hassle-free returns.", rating: 4 }
+      ],
+      heroSlides: [
+        {
+          imageUrl: getSampleImageUrl('ecommerce'), headline: "Summer Collection: Up to 50% Off", subline: "Limited time offer on all apparel.", ctaText: "Shop Sale", ctaLink: "/shop/sale",
+          id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Best Deals", endsAt: in3Days, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
+        },
+      ],
+      promotions: [
+        {
+          title: "Flash Weekend Deal", description: "Get an extra 10% off using code WKND10.", ctaText: "Activate Code", ctaLink: "/deals", bannerUrl: getSampleImageUrl('flash-deal'),
+          companyId: "", perks: [{ id: "", label: "Free Gift", icon: "StarIcon" }, { id: "", label: "10% off", icon: "" }], trustLogos: []
+        },
+      ],
+      Collection: [{ name: "Best Sellers", description: "Our top selling products this month." } as any],
+      pricingTiers: [{ name: "Standard", price: 0, duration: "monthly", features: ["Access to shop", "Email updates"] }],
+
+      sectionSubtitle: "Discover Our Collections",
+      sectionTitle: "Shop by Category",
+      sectionDescription: "Explore our wide range of products across various categories, curated to meet all your needs.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+    }),
+
+    "Pets Store": withOverrides({
+      tagline: "Shop the **Latest Trends** Online",
+      description: "From gadgets to fashion, find everything you need with **fast shipping** and easy returns.",
+      socialLinks: [
+        { channel: SocialChannel.FACEBOOK, url: "https://fb.com/onlinestore" },
+        { channel: SocialChannel.INSTAGRAM, url: "https://insta.com/onlinestore" },
+        { channel: SocialChannel.TWITTER, url: "https://twitter.com/onlinestore" }
+      ],
+      policies: [
+        { type: PolicyType.SHIPPING, content: "Free standard shipping on all orders over $50. Express options available." },
+        { type: PolicyType.RETURNS, content: "30-day money-back guarantee. Item must be unworn/unused." },
+        { type: PolicyType.PRIVACY, content: "We respect your privacy and protect your data with industry-standard security." }
+      ],
+      awards: [
+        { name: "Best Online Retailer 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Top 100 E-commerce Sites 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Customer Choice Award 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" }
+      ],
+      metrics: [
+        { label: "Products Sold", value: 15000 },
+        { label: "5-Star Reviews", value: 3200 },
+        { label: "Countries Shipped To", value: 50 },
+      ],
+      stats: [
+        { label: "Customer Satisfaction", value: "98%" },
+        { label: "Repeat Customers", value: "75%" },
+        { label: "Average Delivery Time", value: "3 days" },
+      ],
+      faqs: [
+        { question: "What payment methods do you accept?", answer: "Visa, Mastercard, PayPal, and Apple Pay.", order: 1 },
+        { question: "How long does shipping take?", answer: "Standard shipping takes 5-7 business days.", order: 2 },
+        { question: "Can I track my order?", answer: "Yes, tracking information is emailed once your order ships.", order: 3 },
+      ],
+      testimonials: [
+        { authorName: "Alex R.", quote: "The quality exceeded my expectations. Fast delivery too!", rating: 5 },
+        { authorName: "Mia K.", quote: "I found the perfect gift here. Great customer service.", rating: 5 },
+        { authorName: "Liam S.", quote: "Easy to navigate site and hassle-free returns.", rating: 4 }
+      ],
+      heroSlides: [
+        {
+          imageUrl: getSampleImageUrl('ecommerce'), headline: "Summer Collection: Up to 50% Off", subline: "Limited time offer on all apparel.", ctaText: "Shop Sale", ctaLink: "/shop/sale",
+          id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Best Deals", endsAt: in3Days, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
+        },
+      ],
+      promotions: [
+        {
+          title: "Flash Weekend Deal", description: "Get an extra 10% off using code WKND10.", ctaText: "Activate Code", ctaLink: "/deals", bannerUrl: getSampleImageUrl('flash-deal'),
+          companyId: "", perks: [{ id: "", label: "Free Gift", icon: "StarIcon" }, { id: "", label: "10% off", icon: "" }], trustLogos: []
+        },
+      ],
+      Collection: [{ name: "Best Sellers", description: "Our top selling products this month." } as any],
+      pricingTiers: [{ name: "Standard", price: 0, duration: "monthly", features: ["Access to shop", "Email updates"] }],
+
+      sectionSubtitle: "Discover Our Collections",
+      sectionTitle: "Shop by Category",
+      sectionDescription: "Explore our wide range of products across various categories, curated to meet all your needs.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+    }),
+
+    "Groceries Store": withOverrides({
+      tagline: "Shop the **Latest Trends** Online",
+      description: "From gadgets to fashion, find everything you need with **fast shipping** and easy returns.",
+      socialLinks: [
+        { channel: SocialChannel.FACEBOOK, url: "https://fb.com/onlinestore" },
+        { channel: SocialChannel.INSTAGRAM, url: "https://insta.com/onlinestore" },
+        { channel: SocialChannel.TWITTER, url: "https://twitter.com/onlinestore" }
+      ],
+      policies: [
+        { type: PolicyType.SHIPPING, content: "Free standard shipping on all orders over $50. Express options available." },
+        { type: PolicyType.RETURNS, content: "30-day money-back guarantee. Item must be unworn/unused." },
+        { type: PolicyType.PRIVACY, content: "We respect your privacy and protect your data with industry-standard security." }
+      ],
+      awards: [
+        { name: "Best Online Retailer 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Top 100 E-commerce Sites 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+        { name: "Customer Choice Award 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" }
+      ],
+      metrics: [
+        { label: "Products Sold", value: 15000 },
+        { label: "5-Star Reviews", value: 3200 },
+        { label: "Countries Shipped To", value: 50 },
+      ],
+      stats: [
+        { label: "Customer Satisfaction", value: "98%" },
+        { label: "Repeat Customers", value: "75%" },
+        { label: "Average Delivery Time", value: "3 days" },
+      ],
+      faqs: [
+        { question: "What payment methods do you accept?", answer: "Visa, Mastercard, PayPal, and Apple Pay.", order: 1 },
+        { question: "How long does shipping take?", answer: "Standard shipping takes 5-7 business days.", order: 2 },
+        { question: "Can I track my order?", answer: "Yes, tracking information is emailed once your order ships.", order: 3 },
+      ],
+      testimonials: [
+        { authorName: "Alex R.", quote: "The quality exceeded my expectations. Fast delivery too!", rating: 5 },
+        { authorName: "Mia K.", quote: "I found the perfect gift here. Great customer service.", rating: 5 },
+        { authorName: "Liam S.", quote: "Easy to navigate site and hassle-free returns.", rating: 4 }
+      ],
+      heroSlides: [
+        {
+          imageUrl: getSampleImageUrl('ecommerce'), headline: "Summer Collection: Up to 50% Off", subline: "Limited time offer on all apparel.", ctaText: "Shop Sale", ctaLink: "/shop/sale",
+          id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Best Deals", endsAt: in3Days, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
+        },
+      ],
+      promotions: [
+        {
+          title: "Flash Weekend Deal", description: "Get an extra 10% off using code WKND10.", ctaText: "Activate Code", ctaLink: "/deals", bannerUrl: getSampleImageUrl('flash-deal'),
+          companyId: "", perks: [{ id: "", label: "Free Gift", icon: "StarIcon" }, { id: "", label: "10% off", icon: "" }], trustLogos: []
+        },
+      ],
+      Collection: [{ name: "Best Sellers", description: "Our top selling products this month." } as any],
+      pricingTiers: [{ name: "Standard", price: 0, duration: "monthly", features: ["Access to shop", "Email updates"] }],
+
+      sectionSubtitle: "Discover Our Collections",
+      sectionTitle: "Shop by Category",
+      sectionDescription: "Explore our wide range of products across various categories, curated to meet all your needs.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
     }),
 
     "Consultant & Coach": withOverrides({
@@ -171,15 +971,22 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { channel: SocialChannel.TWITTER, url: "https://twitter.com/coach" },
         { channel: SocialChannel.FACEBOOK, url: "https://fb.com/coach" }
       ],
-      policies: [{ type: PolicyType.TERMS, content: "Confidentiality and payment terms apply to all coaching packages." },{ type: PolicyType.CANCELLATION, content: "Cancellations must be made at least 24 hours in advance for a full refund." }],
-      faqs: [{ question: "What packages do you offer?", answer: "We offer 1:1, group, and corporate coaching programs.", order: 1 },{ question: "What is your coaching philosophy?", answer: "We focus on actionable strategies and mindset shifts for sustainable growth.", order: 2 },{ question: "How do I get started?", answer: "Schedule a free 15-minute intro call to discuss your goals and how we can help.", order: 3 }],
-      testimonials: [{ authorName: "Emily W.", quote: "My revenue doubled after 6 months of executive coaching. Highly recommend!", rating: 5 },{ authorName: "Michael B.", quote: "The insights and accountability provided were game-changers for my business.", rating: 5 }],
+      policies: [
+        { type: PolicyType.TERMS, content: "Confidentiality and payment terms apply to all coaching packages." },
+        { type: PolicyType.PRIVACY, content: "We respect your privacy and protect your data with industry-standard security." },
+        { type: PolicyType.CANCELLATION, content: "Cancellations must be made at least 24 hours in advance for a full refund." }],
+      faqs: [{ question: "What packages do you offer?", answer: "We offer 1:1, group, and corporate coaching programs.", order: 1 },
+        { question: "What is your coaching philosophy?", answer: "We focus on actionable strategies and mindset shifts for sustainable growth.", order: 2 },
+        { question: "How do I get started?", answer: "Schedule a free 15-minute intro call to discuss your goals and how we can help.", order: 3 }],
+      testimonials: [{ authorName: "Emily W.", quote: "My revenue doubled after 6 months of executive coaching. Highly recommend!", rating: 5 },
+        { authorName: "David T.", quote: "The insights I gained were invaluable for my leadership development.", rating: 5 },
+        { authorName: "Michael B.", quote: "The insights and accountability provided were game-changers for my business.", rating: 5 }],
       heroSlides: [{
         imageUrl: getSampleImageUrl('coach'), headline: "Ready for the Next Step?", subline: "Schedule your free 15-minute intro call today.", ctaText: "Book Free Call", ctaLink: "/book",
         id: "", companyId: "", price: null, productImageUrl: null, badgeText: "New Clients", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
       }],
       metrics: [{ label: "Clients Mentored", value: 350 }, { label: "Average Revenue Growth", value: "35% YOY" }, { label: "Client Retention", value: "80%" }],
-      stats: [{ label: "Average Growth", value: "35% YOY" }],
+      stats: [{ label: "Average Growth", value: "35% YOY" }, { label: "Client Retention", value: "80%" }, { label: "Repeat Clients", value: "60%" }],
       pricingTiers: [
         { name: "Intro Session", price: 199, duration: "one-time", features: ["60-min strategy session"] },
         { name: "VIP Program", price: 2999, duration: "monthly", features: ["Weekly 1:1 calls", "Unlimited email access"] },
@@ -195,6 +1002,18 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           companyId: "", perks: [{ id: "", label: "20% Off", icon: "StarIcon" }], trustLogos: []
         }
       ],
+      
+      sectionSubtitle: "Unlock Your Potential",
+      sectionTitle: "Coaching & Consulting Services",
+      sectionDescription: "Whether you're an executive looking to level up your leadership skills or a team seeking strategic guidance, our tailored coaching programs are designed to drive real results and lasting transformation.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+
     }),
 
     "Public Speaking": withOverrides({
@@ -225,6 +1044,18 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           companyId: "", perks: [{ id: "", label: "Free Workshop", icon: "StarIcon" }], trustLogos: []
         },
       ],
+
+      sectionSubtitle: "Unlock Your Potential",
+      sectionTitle: "Coaching & Consulting Services",
+      sectionDescription: "Whether you're an executive looking to level up your leadership skills or a team seeking strategic guidance, our tailored coaching programs are designed to drive real results and lasting transformation.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+
 
     }),
 
@@ -262,8 +1093,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           companyId: "", perks: [{ id: "", label: "BOGO 50% Off", icon: "StarIcon" }], trustLogos: []
         }
       ],
-      Collection: [{ name: "Best Sellers Sneakers", description: "Our most popular everyday shoes." } as any],
-
+      Collection: [{ name: "Best Sellers Sneakers", description: "Our most popular everyday shoes." } as any],      
+      
+      sectionSubtitle: "Discover Our Collections",
+      sectionTitle: "Shop by Category",
+      sectionDescription: "Explore our wide range of footwear across various styles and brands, curated to meet all your needs for comfort, performance, and fashion.",
+   
     }),
 
     "Service Provider": withOverrides({
@@ -284,6 +1119,17 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       { name: "Emergency Service", price: 150, duration: "hourly", features: ["Immediate dispatch", "24/7 availability"] }
       ],
       awards: [{ name: "Best Home Service Platform 2024", iconUrl: "/icons/award.svg" }, { name: "Top 50 Startups 2024", iconUrl: "/icons/award.svg" }],
+      
+      sectionSubtitle: "Expert Solutions for Your Home",
+      sectionTitle: "Service Providers You Can Trust",
+      sectionDescription: "Our network of certified professionals is here to provide fast, reliable, and high-quality service for all your home repair and maintenance needs. Whether it's a leaky faucet or a major electrical issue, we've got you covered with vetted experts and a satisfaction guarantee.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
 
     }),
 
@@ -310,6 +1156,55 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           companyId: "", perks: [{ id: "", label: "Free Follow-Up", icon: "StarIcon" }], trustLogos: []
         }
       ],
+    
+      sectionSubtitle: "Effortless Scheduling",
+      sectionTitle: "Book Your Appointment Online",
+      sectionDescription: "Whether you're an executive looking to level up your leadership skills or a team seeking strategic guidance, our tailored coaching programs are designed to drive real results and lasting transformation.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+
+    }),
+
+    "Barbershop": withOverrides({
+      tagline: "Schedule Your Service in Minutes",
+      description: "Find available slots and **book appointments** online seamlessly for our premium services.",
+      socialLinks: [{ channel: SocialChannel.FACEBOOK, url: "https://fb.com/bookinghub" }],
+      policies: [{ type: PolicyType.PRIVACY, content: "Your booking data is secured and never shared." }],
+      faqs: [{ question: "Can I reschedule my appointment?", answer: "Yes, up to 24 hours before your scheduled time via the confirmation link.", order: 1 }],
+      testimonials: [{ authorName: "John D.", quote: "The booking process was incredibly smooth and fast.", rating: 4 }],
+      heroSlides: [{
+        imageUrl: getSampleImageUrl('booking-appointments'), headline: "See What's Open", subline: "Instant confirmation for all bookings.", ctaText: "Book Now", ctaLink: "/scheduler",
+        id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Fast & Easy", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
+      }],
+      metrics: [{ label: "Monthly Bookings", value: 1200 }, { label: "Average Booking Value", value: 75 }, { label: "Customer Retention", value: 95 }],
+      stats: [{ label: "Client Retention", value: "95%" }, { label: "Average Booking Value", value: "$75" }, { label: "Monthly Bookings", value: 1200 }],
+      pricingTiers: [{ name: "Initial Consult", price: 20, duration: "per appointment", features: ["Online confirmation"] }],
+      awards: [{ name: "Best Booking Experience 2024", iconUrl: "/icons/award.svg" }, { name: "Top 10 Apps 2024", iconUrl: "/icons/award.svg" }],
+      promotions: [
+        { title: "Early Bird Discount", description: "Book your appointment before 10 AM and get 10% off.", ctaText: "Book Early", ctaLink: "/scheduler",
+          companyId: "", perks: [{ id: "", label: "10% Off", icon: "StarIcon" }], trustLogos: []
+        },
+        { title: "Weekend Special", description: "Book a weekend appointment and receive a complimentary follow-up consultation.", ctaText: "Book Weekend", ctaLink: "/scheduler",
+          companyId: "", perks: [{ id: "", label: "Free Follow-Up", icon: "StarIcon" }], trustLogos: []
+        }
+      ],
+    
+      sectionSubtitle: "Effortless Scheduling",
+      sectionTitle: "Book Your Appointment Online",
+      sectionDescription: "Whether you're an executive looking to level up your leadership skills or a team seeking strategic guidance, our tailored coaching programs are designed to drive real results and lasting transformation.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+
     }),
 
     "Portfolio & Personal Branding": withOverrides({
@@ -334,6 +1229,18 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           companyId: "", perks: [{ id: "", label: "15% Off", icon: "StarIcon" }], trustLogos: []
         },
       ],
+
+      sectionSubtitle: "Showcasing My Work",
+      sectionTitle: "Portfolio & Personal Branding",
+      sectionDescription: "Showcasing a blend of creative design, technical development skills, and professional experience.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+
     }),
 
     "Blog & Content": withOverrides({
@@ -355,6 +1262,18 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           companyId: "", perks: [{ id: "", label: "Exclusive Content", icon: "StarIcon" }], trustLogos: []
         },
       ],
+
+      sectionSubtitle: "Insights & Analysis",
+      sectionTitle: "Blog & Content",
+      sectionDescription: "Daily articles, reviews, and tutorials covering AI, software development, and futurism. Join the discussion!",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+
     }),
 
     "Nonprofit & Community": withOverrides({
@@ -376,6 +1295,18 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           companyId: "", perks: [{ id: "", label: "Double Your Impact", icon: "StarIcon" }], trustLogos: []
         },
       ],
+      
+      sectionSubtitle: "Join Our Mission",
+      sectionTitle: "Nonprofit & Community",
+      sectionDescription: "you're an executive looking to level up your leadership skills or a team seeking strategic guidance, our tailored coaching programs are designed to drive real results and lasting transformation.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+
     }),
 
     "Healthcare & Clinics": withOverrides({
@@ -398,6 +1329,18 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           companyId: "", perks: [{ id: "", label: "Free Flu Shot", icon: "StarIcon" }], trustLogos: []
         },
       ],
+      
+      sectionSubtitle: "Your Health, Our Priority",
+      sectionTitle: "Healthcare & Clinics",
+      sectionDescription: "Providing comprehensive health and wellness services with patient-first technology and experienced staff.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+
     }),
 
     "Media & Entertainment": withOverrides({
@@ -418,6 +1361,18 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           companyId: "", perks: [{ id: "", label: "Exclusive Content", icon: "StarIcon" }], trustLogos: []
         },
       ],
+      
+      sectionSubtitle: "Experience the Magic of Storytelling",
+      sectionTitle: "Media & Entertainment",
+      sectionDescription: "Showcasing the latest trailers, exclusive behind-the-scenes content, and upcoming film/series releases.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+
     }),
 
     "Finance & Legal": withOverrides({
@@ -438,6 +1393,17 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           companyId: "", perks: [{ id: "", label: "Free Consultation", icon: "StarIcon" }], trustLogos: []
         },
       ],
+
+      sectionSubtitle: "Your Trusted Advisors",
+      sectionTitle: "Finance & Legal",
+      sectionDescription: "Trusted advisors providing strategic financial planning and comprehensive legal counsel for businesses and individuals.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
     }),
 
     "Automotive": withOverrides({
@@ -454,6 +1420,23 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       stats: [{ label: "Cars Sold", value: 500 }, { label: "Customer Satisfaction", value: "95%" }, { label: "Average Financing Rate", value: "3.5%" }],
       awards: [{ name: "Best Dealership 2024", iconUrl: "/icons/award.svg" }, { name: "Top Customer Service 2024", iconUrl: "/icons/award.svg" }],
       policies: [{ type: PolicyType.RETURNS, content: "7-day return policy on all used vehicles. Terms and conditions apply." }],
+
+      promotions: [
+        { title: "Holiday Sales Event", description: "Celebrate the season with exclusive discounts and offers on select models.", ctaText: "Shop Now", ctaLink: "/inventory",
+          companyId: "", perks: [{ id: "", label: "Exclusive Discounts", icon: "StarIcon" }], trustLogos: []
+        },
+      ],
+
+      sectionSubtitle: "Find Your Perfect Ride",
+      sectionTitle: "Automotive",
+      sectionDescription: "The premier car dealership in the region, offering new and used vehicles, servicing, and financing options.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
     }),
 
     "Travel & Tourism": withOverrides({
@@ -471,6 +1454,23 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       metrics: [{ label: "Trips Booked", value: 300 }, { label: "Customer Satisfaction", value: 97 }, { label: "Repeat Travelers", value: 80 }],
       stats: [{ label: "Trips Booked", value: 300 }, { label: "Customer Satisfaction", value: "97%" }, { label: "Repeat Travelers", value: "80%" }],
       policies: [{ type: PolicyType.CANCELLATION, content: "Cancellations must be made at least 30 days before departure for a full refund." }],
+
+      promotions: [
+        { title: "Summer Getaway Sale", description: "Book your summer vacation by the end of June and save 15% on select packages.", ctaText: "Book Now", ctaLink: "/packages",
+          companyId: "", perks: [{ id: "", label: "15% Off", icon: "StarIcon" }], trustLogos: []
+        },
+      ],
+
+      sectionSubtitle: "Your Adventure Awaits",
+      sectionTitle: "Travel & Tourism",
+      sectionDescription: "Promote travel packages, custom itineraries, and services for unforgettable global destinations.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
     }),
 
     "Fitness & Wellness": withOverrides({
@@ -497,6 +1497,17 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           companyId: "", perks: [{ id: "", label: "3 Months Free", icon: "StarIcon" }], trustLogos: []
         },
       ],
+
+      sectionSubtitle: "Achieve Your Fitness Goals",
+      sectionTitle: "Fitness & Wellness",
+      sectionDescription: "A comprehensive gym and fitness center offering classes, personal training, and wellness consultations.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
     }),
 
     "Directory & Listings": withOverrides({
@@ -519,6 +1530,17 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { title: "Free Legal Consultation", description: "Get a free 30-minute consultation with our expert attorneys.", ctaText: "Book Now", ctaLink: "/consultation",
           companyId: "", perks: [{ id: "", label: "Free Consultation", icon: "StarIcon" }], trustLogos: []
         },
+      ],
+
+      sectionSubtitle: "Discover Local Gems",
+      sectionTitle: "Directory & Listings",
+      sectionDescription: "The ultimate local resource to list and discover businesses, services, and community events.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
       ],
     }),
 
@@ -545,6 +1567,17 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           companyId: "", perks: [{ id: "", label: "20% Off", icon: "StarIcon" }], trustLogos: []
         },
       ],
+
+      sectionSubtitle: "Expand Your Knowledge",
+      sectionTitle: "Educational & Online Courses",
+      sectionDescription: "High-quality, self-paced online courses taught by industry leaders in technology and business.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
     }),
 
     "Restaurant & Food Delivery": withOverrides({
@@ -565,6 +1598,17 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { title: "Free Dessert", description: "Get a free dessert with any main course ordered online.", ctaText: "Order Now", ctaLink: "/menu",
           companyId: "", perks: [{ id: "", label: "Free Dessert", icon: "StarIcon" }], trustLogos: []
         },
+      ],
+
+      sectionSubtitle: "Savor Every Bite",
+      sectionTitle: "Restaurant & Food Delivery",
+      sectionDescription: "Browse our menu of gourmet dishes, order online, and get fast delivery right to your door.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
       ],
     }),
 
@@ -587,6 +1631,17 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           companyId: "", perks: [{ id: "", label: "25% Off", icon: "StarIcon" }], trustLogos: []
         },
       ],
+
+      sectionSubtitle: "Experience Unforgettable Moments",
+      sectionTitle: "Event & Ticketing",
+      sectionDescription: "The easiest way to find and book tickets for concerts, conferences, and local events.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
     }),
 
     "Real Estate": withOverrides({
@@ -608,6 +1663,17 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { title: "Free Home Valuation", description: "Get a free market analysis of your home's value. No obligation!", ctaText: "Get Valuation", ctaLink: "/valuation",
           companyId: "", perks: [{ id: "", label: "Free Valuation", icon: "StarIcon" }], trustLogos: []
         },
+      ],
+
+      sectionSubtitle: "Find Your Dream Home",
+      sectionTitle: "Real Estate",
+      sectionDescription: "The leading resource for property listings, sales, and rental management in the city.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
       ],
     }),
 
@@ -635,6 +1701,17 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           companyId: "", perks: [{ id: "", label: "2 Months Free", icon: "StarIcon" }], trustLogos: []
         },
       ],
+
+      sectionSubtitle: "Boost Your Team's Productivity",
+      sectionTitle: "SaaS & Web Apps",
+      sectionDescription: "Powerful cloud-based software designed to streamline team collaboration and boost productivity for remote teams.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
     }),
 
     "Marketplace": withOverrides({
@@ -656,6 +1733,18 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           companyId: "", perks: [{ id: "", label: "Featured Listing", icon: "StarIcon" }], trustLogos: []
         },
       ],
+
+      sectionSubtitle: "Find Great Deals Near You",
+      sectionTitle: "Marketplace",
+      sectionDescription: "The largest online product marketplace for connecting local buyers and sellers across all categories.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+
     }),
 
     'Security Services': withOverrides({
@@ -685,6 +1774,17 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           companyId: "", perks: [{ id: "", label: "Free Consultation", icon: "StarIcon" }], trustLogos: []
         },
       ],
+
+      sectionSubtitle: "Your Safety, Our Priority",
+      sectionTitle: "Security Services",
+      sectionDescription: "Offering comprehensive security solutions including surveillance systems, alarm installations, and 24/7 monitoring to safeguard your home and business.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
     }),
 
     "Fashion Shop": withOverrides({
@@ -706,6 +1806,17 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           companyId: "", perks: [{ id: "", label: "Up to 50% Off", icon: "StarIcon" }], trustLogos: []
         },
       ],
+
+      sectionSubtitle: "Discover Your Unique Style",
+      sectionTitle: "Fashion Shop",
+      sectionDescription: "Discover the latest trends in fashion with our curated selection of clothing and accessories for every occasion.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
     }),
 
     "Furniture Shop": withOverrides({
@@ -726,6 +1837,17 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { title: "Spring Sale", description: "Get 20% off all furniture pieces during our Spring Sale. Refresh your home for less!", ctaText: "Shop Now", ctaLink: "/sale",
           companyId: "", perks: [{ id: "", label: "20% Off", icon: "StarIcon" }], trustLogos: []
         },
+      ],
+
+      sectionSubtitle: "Create Your Perfect Living Space",
+      sectionTitle: "Furniture Shop",
+      sectionDescription: "Discover our curated collection of modern and classic furniture pieces designed to elevate your living space with comfort and elegance.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
       ],
     }),
 
@@ -756,6 +1878,18 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           companyId: "", perks: [{ id: "", label: "Free Consultation", icon: "StarIcon" }], trustLogos: []
         },
       ],
+
+      sectionSubtitle: "Your Security, Our Expertise",
+      sectionTitle: "Security Consulting",
+      sectionDescription: "Our security consulting services provide comprehensive risk assessments, strategic planning, and implementation support to protect your business from evolving threats.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+
     }),
 
     "Security": withOverrides({
@@ -785,6 +1919,17 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           companyId: "", perks: [{ id: "", label: "Free Consultation", icon: "StarIcon" }], trustLogos: []
         },
       ],
+
+      sectionSubtitle: "Your Security, Our Expertise",
+      sectionTitle: "Security Consulting",
+      sectionDescription: "Our security consulting services provide comprehensive risk assessments, strategic planning, and implementation support to protect your business from evolving threats.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
     }),
 
     "Delivery & Logistics": withOverrides({
@@ -812,6 +1957,17 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { title: "Free First Delivery", description: "Try our delivery service with your first delivery on us. Sign up today!", ctaText: "Sign Up Now", ctaLink: "/signup",
           companyId: "", perks: [{ id: "", label: "Free Delivery", icon: "StarIcon" }], trustLogos: []
         },
+      ],
+
+      sectionSubtitle: "Efficient & Secure Transportation Solutions",
+      sectionTitle: "Delivery & Logistics",
+      sectionDescription: "Our delivery and logistics services provide efficient and secure transportation solutions to meet your business needs, ensuring timely deliveries and customer satisfaction.",
+      partnerLogos: [
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
       ],
     }),
 
