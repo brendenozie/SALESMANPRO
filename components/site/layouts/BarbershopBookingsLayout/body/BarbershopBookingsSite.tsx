@@ -35,7 +35,7 @@ export default function BookingsSite({ pageData, companyId }: { pageData: StoreF
   const { name, slug, description, bannerUrl, marketplaceListings, heroSlides, themeSettings, CoreValues, stats, pricingTiers, promotions } = pageData;
 
   return (
-    <div className="relative bg-[#0a0a0a] text-white">
+    <div className="bg-[#0a0a0a]">
       {/* Hero */}
       <Hero name={name} description={description} bannerUrl={bannerUrl} marketplaceListings={marketplaceListings} heroSlides={heroSlides} />
 
@@ -49,7 +49,9 @@ export default function BookingsSite({ pageData, companyId }: { pageData: StoreF
 
       <BenefitsSection name={name} description={description} bannerUrl={bannerUrl} themeSettings={themeSettings} promotions={promotions} />
 
-      {testimonialsData?.data && <TestimonialsSection name={name} testimonials={testimonialsData.data} themeSettings={themeSettings} />}
+      <TestimonialsSection/>
+      {/* {testimonialsData?.data && <TestimonialsSection/>} */}
+       {/* name={name} testimonials={testimonialsData.data} themeSettings={themeSettings}  */}
 
       <CtaSection />
 

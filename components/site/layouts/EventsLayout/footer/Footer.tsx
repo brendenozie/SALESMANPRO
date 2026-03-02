@@ -199,7 +199,7 @@ export default function Footer() {
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-50 border border-slate-100 shadow-sm">
+      <div className="flex items-center gap-1.5 px-4 py-2 mt-4 justify-center">
         <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Powered by</span>
         <a 
           href="https://salesmanpro.site" 
