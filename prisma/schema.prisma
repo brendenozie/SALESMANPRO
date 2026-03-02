@@ -216,7 +216,7 @@ model Company {
 
   companyCategoryId String?          @db.ObjectId
   companyCategory   CompanyCategory? @relation(fields: [companyCategoryId], references: [id])
-  category          String
+  category          String?
   variant           String?
   logoUrl           String?
   bannerUrl         String?
