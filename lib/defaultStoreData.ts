@@ -98,7 +98,14 @@ const baseData: Partial<StoreForm> = {
 
   founderName: null,
   founderQuote: null,
-  founderImage: null
+  founderImage: null,
+
+  CoreValues:[
+    { id: "", title: "Customer Centricity", description: "We put our customers at the heart of everything we do, striving to exceed their expectations and deliver exceptional value.", icon: "CustomerIcon" },
+    { id: "", title: "Integrity", description: "We conduct our business with honesty, transparency, and accountability, building trust with our customers, partners, and employees.", icon: "IntegrityIcon" }, 
+    { id: "", title: "Innovation", description: "We embrace creativity and continuously seek new ways to improve our products, services, and customer experience.", icon: "InnovationIcon" },
+    { id: "", title: "Sustainability", description: "We are committed to minimizing our environmental impact and promoting sustainable practices throughout our operations.", icon: "SustainabilityIcon" },
+  ]
 };
 
 // 2) Helper to merge category-specific overrides
