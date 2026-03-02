@@ -129,7 +129,7 @@ export default async function EditStorePage({
     deletedAt: store.deletedAt,
     sEOId: store.sEOId,
     site: store.site,
-    category: store.category,
+    category: store.category || "Default Category",
     variant: store.variant,
     tagline: store.tagline ?? "",
     description: store.description ?? "",
