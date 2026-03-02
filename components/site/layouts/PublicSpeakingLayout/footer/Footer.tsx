@@ -230,12 +230,12 @@ export default function Footer({ storeFormData }: FooterProps) {
           >
             &copy; {new Date().getFullYear()} {name || "YourCoach"} — All Rights Reserved.
             <br />
-            <span className="font-semibold text-orange-400" style={{ color: primaryColor }}>
+            <span className="font-semibold text-orange-400" style={{ color: "#FF5722" }}>
               Empowering You to Lead with Clarity and Confidence.
             </span>
           </motion.p>
         </div>
-      <div className="flex items-center gap-1.5 px-4 py-2 mt-4 justify-center">
+      <div className="flex items-center gap-1.5 px-4 py-2 mt-8 justify-center">
         <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Powered by</span>
         <a 
           href="https://salesmanpro.site" 

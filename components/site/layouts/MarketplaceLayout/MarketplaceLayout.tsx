@@ -2,6 +2,7 @@
 
 import React, { ReactNode } from "react";
 import Header from "./header/Header";
+import Footer from "./footer/Footer";
 
 interface MarketplaceLayoutProps {
   params: { storeFormData: any };
@@ -20,7 +21,7 @@ export default function MarketplaceHeaderLayout({ params, children }: Marketplac
       {/* Child Content (Category/Product Pages) */}
       <section >{children}</section>
 
-      {/* <Footer storeFormData={storeFormData} /> */}
+      <Footer storeFormData={params.storeFormData} />
     </>
   );
 }

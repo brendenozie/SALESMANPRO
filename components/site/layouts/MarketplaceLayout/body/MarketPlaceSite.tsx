@@ -100,9 +100,6 @@ export default function MarketPlaceSite({ pageData, companyId }: { pageData: Sto
             </motion.div>
           )}
         </AnimatePresence>
-
-        <Footer />
-
     </div>
   );
 }
@@ -325,56 +322,5 @@ export function MiniCartPreview({ items, subtotal, onClose }:any) {
         </div>
       </div>
     </motion.div>
-  );
-}
-
-/* Footer */
-export function Footer() {
-  return (
-    <footer className="bg-gray-100 py-8">
-      <div className="max-w-6xl mx-auto grid grid-cols-4 gap-6 px-6">
-        <div>
-          <h6 className="font-semibold mb-2">About</h6>
-          <p className="text-sm text-gray-600">We connect buyers with the newest trends.</p>
-        </div>
-        <div>
-          <h6 className="font-semibold mb-2">Help</h6>
-          <ul className="space-y-1 text-sm text-gray-600">
-            <li>Support</li>
-            <li>FAQ</li>
-            <li>Contact Us</li>
-          </ul>
-        </div>
-        <div>
-          <h6 className="font-semibold mb-2">Legal</h6>
-          <ul className="space-y-1 text-sm text-gray-600">
-            <li>Terms of Service</li>
-            <li>Privacy Policy</li>
-            <li>Cookies</li>
-          </ul>
-        </div>
-        <div>
-          <h6 className="font-semibold mb-2">Social</h6>
-          <div className="flex gap-3">
-            <span className="cursor-pointer">🌐</span>
-            <span className="cursor-pointer">🐦</span>
-            <span className="cursor-pointer">📘</span>
-          </div>
-          <div className="mt-4">
-            <input
-              type="email"
-              placeholder="Your email"
-              className="px-3 py-2 border rounded-l-lg focus:outline-none"
-            />
-            <button className="px-4 py-2 bg-indigo-600 text-white rounded-r-lg">
-              Subscribe
-            </button>
-          </div>
-        </div>
-      </div>
-      <div className="mt-6 text-center text-sm text-gray-500">
-        © {new Date().getFullYear()} YourBrand. All rights reserved.
-      </div>
-    </footer>
   );
 }
