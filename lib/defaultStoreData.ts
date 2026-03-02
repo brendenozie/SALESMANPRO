@@ -105,7 +105,8 @@ const baseData: Partial<StoreForm> = {
     { id: "", title: "Integrity", description: "We conduct our business with honesty, transparency, and accountability, building trust with our customers, partners, and employees.", icon: "IntegrityIcon" }, 
     { id: "", title: "Innovation", description: "We embrace creativity and continuously seek new ways to improve our products, services, and customer experience.", icon: "InnovationIcon" },
     { id: "", title: "Sustainability", description: "We are committed to minimizing our environmental impact and promoting sustainable practices throughout our operations.", icon: "SustainabilityIcon" },
-  ]
+  ],
+
 };
 
 // 2) Helper to merge category-specific overrides
@@ -133,6 +134,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { channel: SocialChannel.INSTAGRAM, url: "https://insta.com/onlinestore" },
         { channel: SocialChannel.TWITTER, url: "https://twitter.com/onlinestore" }
       ],
+      seo: {
+        id: "",
+        title: "Shop the Latest Trends Online | Your One-Stop E-commerce Store",
+        description: "Discover the latest trends in fashion, electronics, and more at our online store. Enjoy fast shipping and easy returns on all orders.",
+        keywords: ["online shopping", "latest trends", "fast shipping", "easy returns", "fashion", "electronics"]
+      },
       policies: [
         { type: PolicyType.SHIPPING, content: "Free standard shipping on all orders over $50. Express options available." },
         { type: PolicyType.RETURNS, content: "30-day money-back guarantee. Item must be unworn/unused." },
@@ -227,7 +234,13 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { authorName: "Alex R.", quote: "The quality exceeded my expectations. Fast delivery too!", rating: 5 },
         { authorName: "Mia K.", quote: "I found the perfect gift here. Great customer service.", rating: 5 },
         { authorName: "Liam S.", quote: "Easy to navigate site and hassle-free returns.", rating: 4 }
-      ],
+      ],      
+      seo: {
+        id: "",
+        title: "Shop the Latest Trends Online | Your One-Stop E-commerce Store",
+        description: "Discover the latest trends in fashion, electronics, and more at our online store. Enjoy fast shipping and easy returns on all orders.",
+        keywords: ["online shopping", "latest trends", "fast shipping", "easy returns", "fashion", "electronics"]
+      },
       heroSlides: [
         {
           imageUrl: getSampleImageUrl('ecommerce'), headline: "Summer Collection: Up to 50% Off", subline: "Limited time offer on all apparel.", ctaText: "Shop Sale", ctaLink: "/shop/sale",
@@ -278,6 +291,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { label: "5-Star Reviews", value: 3200 },
         { label: "Countries Shipped To", value: 50 },
       ],
+      seo:{
+        id: "",
+        title: "Shop the Latest Trends Online | Your One-Stop E-commerce Store",
+        description: "Discover the latest trends in fashion, electronics, and more at our online store. Enjoy fast shipping and easy returns on all orders.",
+        keywords: ["online shopping", "latest trends", "fast shipping", "easy returns", "fashion", "electronics"]
+      },
       stats: [
         { label: "Customer Satisfaction", value: "98%" },
         { label: "Repeat Customers", value: "75%" },
@@ -343,6 +362,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { label: "5-Star Reviews", value: 3200 },
         { label: "Countries Shipped To", value: 50 },
       ],
+      seo: {
+        id: "",
+        title: "Shop the Latest Trends Online | Your One-Stop E-commerce Store",
+        description: "Discover the latest trends in fashion, electronics, and more at our online store. Enjoy fast shipping and easy returns on all orders.",
+        keywords: ["online shopping", "latest trends", "fast shipping", "easy returns", "fashion", "electronics"]
+      },
       stats: [
         { label: "Customer Satisfaction", value: "98%" },
         { label: "Repeat Customers", value: "75%" },
@@ -408,6 +433,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { label: "5-Star Reviews", value: 3200 },
         { label: "Countries Shipped To", value: 50 },
       ],
+      seo: {
+        id: "",
+        title: "Shop the Latest Trends Online | Your One-Stop E-commerce Store",
+        description: "Discover the latest trends in fashion, electronics, and more at our online store. Enjoy fast shipping and easy returns on all orders.",
+        keywords: ["online shopping", "latest trends", "fast shipping", "easy returns", "fashion", "electronics"]
+      },
       stats: [
         { label: "Customer Satisfaction", value: "98%" },
         { label: "Repeat Customers", value: "75%" },
@@ -473,6 +504,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { label: "5-Star Reviews", value: 3200 },
         { label: "Countries Shipped To", value: 50 },
       ],
+      seo: {
+        id: "",
+        title: "Shop the Latest Trends Online | Your One-Stop E-commerce Store",
+        description: "Discover the latest trends in fashion, electronics, and more at our online store. Enjoy fast shipping and easy returns on all orders.",
+        keywords: ["online shopping", "latest trends", "fast shipping", "easy returns", "fashion", "electronics"]
+      },
       stats: [
         { label: "Customer Satisfaction", value: "98%" },
         { label: "Repeat Customers", value: "75%" },
@@ -538,6 +575,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { label: "5-Star Reviews", value: 3200 },
         { label: "Countries Shipped To", value: 50 },
       ],
+      seo: {
+        id: "",
+        title: "Shop the Latest Trends Online | Your One-Stop E-commerce Store",
+        description: "Discover the latest trends in fashion, electronics, and more at our online store. Enjoy fast shipping and easy returns on all orders.",
+        keywords: ["online shopping", "latest trends", "fast shipping", "easy returns", "fashion", "electronics"]
+      },
       stats: [
         { label: "Customer Satisfaction", value: "98%" },
         { label: "Repeat Customers", value: "75%" },
@@ -603,6 +646,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { label: "5-Star Reviews", value: 3200 },
         { label: "Countries Shipped To", value: 50 },
       ],
+      seo: {
+        id: "",
+        title: "Shop the Latest Trends Online | Your One-Stop E-commerce Store",
+        description: "Discover the latest trends in fashion, electronics, and more at our online store. Enjoy fast shipping and easy returns on all orders.",
+        keywords: ["online shopping", "latest trends", "fast shipping", "easy returns", "fashion", "electronics"]
+      },
       stats: [
         { label: "Customer Satisfaction", value: "98%" },
         { label: "Repeat Customers", value: "75%" },
@@ -668,6 +717,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { label: "5-Star Reviews", value: 3200 },
         { label: "Countries Shipped To", value: 50 },
       ],
+      seo: {
+        id: "",
+        title: "Shop the Latest Trends Online | Your One-Stop E-commerce Store",
+        description: "Discover the latest trends in fashion, electronics, and more at our online store. Enjoy fast shipping and easy returns on all orders.",
+        keywords: ["online shopping", "latest trends", "fast shipping", "easy returns", "fashion", "electronics"]
+      },
       stats: [
         { label: "Customer Satisfaction", value: "98%" },
         { label: "Repeat Customers", value: "75%" },
@@ -733,6 +788,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { label: "5-Star Reviews", value: 3200 },
         { label: "Countries Shipped To", value: 50 },
       ],
+      seo: {
+        id: "",
+        title: "Shop the Latest Trends Online | Your One-Stop E-commerce Store",
+        description: "Discover the latest trends in fashion, electronics, and more at our online store. Enjoy fast shipping and easy returns on all orders.",
+        keywords: ["online shopping", "latest trends", "fast shipping", "easy returns", "fashion", "electronics"]
+      },
       stats: [
         { label: "Customer Satisfaction", value: "98%" },
         { label: "Repeat Customers", value: "75%" },
@@ -798,6 +859,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { label: "5-Star Reviews", value: 3200 },
         { label: "Countries Shipped To", value: 50 },
       ],
+      seo: {
+        id: "",
+        title: "Shop the Latest Trends Online | Your One-Stop E-commerce Store",
+        description: "Discover the latest trends in fashion, electronics, and more at our online store. Enjoy fast shipping and easy returns on all orders.",
+        keywords: ["online shopping", "latest trends", "fast shipping", "easy returns", "fashion", "electronics"]
+      },
       stats: [
         { label: "Customer Satisfaction", value: "98%" },
         { label: "Repeat Customers", value: "75%" },
@@ -863,6 +930,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { label: "5-Star Reviews", value: 3200 },
         { label: "Countries Shipped To", value: 50 },
       ],
+      seo:{
+        id: "",
+        title: "Shop the Latest Trends Online | Your One-Stop E-commerce Store",
+        description: "Discover the latest trends in fashion, electronics, and more at our online store. Enjoy fast shipping and easy returns on all orders.",
+        keywords: ["online shopping", "latest trends", "fast shipping", "easy returns", "fashion", "electronics"]
+      },
       stats: [
         { label: "Customer Satisfaction", value: "98%" },
         { label: "Repeat Customers", value: "75%" },
@@ -923,6 +996,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { name: "Top 100 E-commerce Sites 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
         { name: "Customer Choice Award 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" }
       ],
+      seo:{
+        id: "",
+        title: "Shop the Latest Trends Online | Your One-Stop E-commerce Store",
+        description: "Discover the latest trends in fashion, electronics, and more at our online store. Enjoy fast shipping and easy returns on all orders.",
+        keywords: ["online shopping", "latest trends", "fast shipping", "easy returns", "fashion", "electronics"]
+      },
       metrics: [
         { label: "Products Sold", value: 15000 },
         { label: "5-Star Reviews", value: 3200 },
@@ -993,6 +1072,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         id: "", companyId: "", price: null, productImageUrl: null, badgeText: "New Clients", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
       }],
       metrics: [{ label: "Clients Mentored", value: 350 }, { label: "Average Revenue Growth", value: "35% YOY" }, { label: "Client Retention", value: "80%" }],
+      seo: {
+        id: "",
+        title: "Executive Coaching & Strategic Consulting | Unlock Your Potential",
+        description: "Transform your career with high-performance coaching and strategic consulting for executives and leaders. Schedule your free intro call today.",
+        keywords: ["executive coaching", "strategic consulting", "leadership development", "career growth", "business coaching"]
+      },
       stats: [{ label: "Average Growth", value: "35% YOY" }, { label: "Client Retention", value: "80%" }, { label: "Repeat Clients", value: "60%" }],
       pricingTiers: [
         { name: "Intro Session", price: 199, duration: "one-time", features: ["60-min strategy session"] },
@@ -1044,6 +1129,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       ],
       policies: [{ type: PolicyType.CANCELLATION, content: "Cancellations must be made at least 30 days in advance for a full refund." }],
       metrics: [{ label: "Events Spoken At", value: 100 }, { label: "Audience Reached", value: 50000 }, { label: "Repeat Bookings", value: 40 }],
+      seo: {
+        id: "",
+        title: "Book a Keynote Speaker | Inspiring Presentations on Technology & Leadership",
+        description: "Book an experienced keynote speaker for your next event. Delivering impactful presentations on technology, leadership, and future trends worldwide.",
+        keywords: ["keynote speaker", "book a speaker", "technology presentations", "leadership talks", "future trends"]
+      },
       stats: [{ label: "Average Rating", value: "4.9/5" }, { label: "Referral Rate", value: "60%" }, { label: "International Events", value: "30%" }],
       promotions: [
         {
@@ -1088,6 +1179,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
         { src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
       ],
+      seo: {
+        id: "",
+        title: "Shop Premium Footwear | Step into Style with Our Curated Shoe Collection",
+        description: "Discover the perfect pair for any occasion with our curated selection of comfort, performance, and fashion footwear. Shop now for free returns and fast shipping.",
+        keywords: ["premium footwear", "comfortable shoes", "fashion shoes", "running shoes", "shoe store"]
+      },
       stats: [{ label: "Customer Satisfaction", value: "97%" }, { label: "Repeat Buyers", value: "80%" }, { label: "Average Delivery Time", value: "3 days" }],
       awards: [{ name: "Best Footwear Store 2024", iconUrl: "/icons/award.svg" }, { name: "Top 100 Retailers 2024", iconUrl: "/icons/award.svg" }],
       metrics: [{ label: "Pairs Sold", value: 20000 }, { label: "5-Star Reviews", value: 5000 }, { label: "Countries Shipped To", value: 50 }, { label: "New Customers", value: 5000 }],
@@ -1120,6 +1217,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         id: "", companyId: "", price: null, productImageUrl: null, badgeText: "24/7 Support", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
       }],
       metrics: [{ label: "Jobs Completed", value: 5000 }, { label: "Average Response Time", value: 30 }, { label: "Customer Satisfaction", value: 95 }],
+      seo:{
+        id: "",
+        title: "Trusted Home Service Providers | Fast, Reliable, and Vetted Professionals",
+        description: "Connect with certified professionals quickly and reliably for plumbing, electrical, and maintenance needs. All services covered by a 90-day guarantee.",
+        keywords: ["home services", "trusted service providers", "vetted professionals", "plumbing", "electrical", "maintenance"]
+      },
       stats: [{ label: "Avg. Customer Rating", value: "4.8/5" }, { label: "Repeat Customers", value: "70%" }, { label: "Service Areas", value: 100 }, { label: "Average Job Value", value: "$150" }],
       pricingTiers: [{ name: "Standard Callout", price: 50, duration: "hourly", features: ["Quality guarantee", "Vetted professionals"] },
       { name: "Premium Service", price: 100, duration: "hourly", features: ["Priority scheduling", "Extended warranty"] },
@@ -1152,6 +1255,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Fast & Easy", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
       }],
       metrics: [{ label: "Monthly Bookings", value: 1200 }, { label: "Average Booking Value", value: 75 }, { label: "Customer Retention", value: 95 }],
+      seo:{
+        id: "",
+        title: "Online Booking & Appointment Scheduling | Fast, Easy, and Secure",
+        description: "Schedule your service in minutes with our seamless online booking system. Find available slots and get instant confirmation for all appointments.",
+        keywords: ["online booking", "appointment scheduling", "fast booking", "easy scheduling", "secure appointments"]
+      },
       stats: [{ label: "Client Retention", value: "95%" }, { label: "Average Booking Value", value: "$75" }, { label: "Monthly Bookings", value: 1200 }],
       pricingTiers: [{ name: "Initial Consult", price: 20, duration: "per appointment", features: ["Online confirmation"] }],
       awards: [{ name: "Best Booking Experience 2024", iconUrl: "/icons/award.svg" }, { name: "Top 10 Apps 2024", iconUrl: "/icons/award.svg" }],
@@ -1189,6 +1298,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Fast & Easy", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
       }],
       metrics: [{ label: "Monthly Bookings", value: 1200 }, { label: "Average Booking Value", value: 75 }, { label: "Customer Retention", value: 95 }],
+      seo:{
+        id: "",
+        title: "Online Booking & Appointment Scheduling | Fast, Easy, and Secure",
+        description: "Schedule your service in minutes with our seamless online booking system. Find available slots and get instant confirmation for all appointments.",
+        keywords: ["online booking", "appointment scheduling", "fast booking", "easy scheduling", "secure appointments"]
+      },
       stats: [{ label: "Client Retention", value: "95%" }, { label: "Average Booking Value", value: "$75" }, { label: "Monthly Bookings", value: 1200 }],
       pricingTiers: [{ name: "Initial Consult", price: 20, duration: "per appointment", features: ["Online confirmation"] }],
       awards: [{ name: "Best Booking Experience 2024", iconUrl: "/icons/award.svg" }, { name: "Top 10 Apps 2024", iconUrl: "/icons/award.svg" }],
@@ -1225,6 +1340,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Creative Pro", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
       }],
       metrics: [{ label: "Projects Completed", value: 50 }, { label: "Happy Clients", value: 20 }, { label: "Years of Experience", value: 5 }],
+      seo:{
+        id: "",
+        title: "Portfolio & Personal Branding | Showcasing Creative Design & Development",
+        description: "Explore my portfolio showcasing a blend of creative design, technical development skills, and professional experience. Available for freelance and full-time opportunities.",
+        keywords: ["portfolio", "personal branding", "creative design", "technical development", "freelance designer"]
+      },
       stats: [{ label: "Client Satisfaction", value: "98%" }, { label: "Repeat Clients", value: "60%" }, { label: "Average Project Value", value: "$10,000" }],
       awards: [{ name: "Best Portfolio 2024", iconUrl: "/icons/award.svg" }, { name: "Top 10 Designers 2024", iconUrl: "/icons/award.svg" }],
       policies: [{ type: PolicyType.TERMS, content: "All project work is subject to a signed agreement outlining scope, timelines, and payment terms." }],
@@ -1262,6 +1383,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       Collection: [{ name: "Popular Articles", description: "The most read posts this month." } as any],
       awards: [{ name: "Best Tech Blog 2024", iconUrl: "/icons/award.svg" }, { name: "Top 50 Blogs 2024", iconUrl: "/icons/award.svg" }],
       policies: [{ type: PolicyType.PRIVACY, content: "We respect your privacy and do not share your data with third parties." }],
+      seo:{
+        id: "",
+        title: "Tech Blog & Content | Deep Dive into AI, Software Development & Futurism",
+        description: "Explore our tech blog for daily articles, reviews, and tutorials covering AI, software development, and futurism. Join the discussion and stay ahead of the curve.",
+        keywords: ["tech blog", "AI articles", "software development tutorials", "futurism insights", "technology news"]
+      },
       stats: [{ label: "Monthly Readers", value: 100000 }, { label: "Average Time on Page", value: "5 minutes" }, { label: "Newsletter Subscribers", value: 20000 }],
       metrics: [{ label: "Articles Published", value: 500 }, { label: "5-Star Reviews", value: 3000 }, { label: "Social Shares", value: 15000 }],
       promotions: [
@@ -1294,6 +1421,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       }],
       metrics: [{ label: "Funds Raised", value: 50000 }],
       awards: [{ name: "Community Impact 2024", iconUrl: "/icons/award.svg" }],
+      seo:{
+        id: "",
+        title: "Nonprofit & Community Support | Make a Difference with Your Donation",
+        description: "Join our mission to support local education initiatives. Every dollar provides a child with educational resources. See how your contribution helps make a difference.",
+        keywords: ["nonprofit", "community support", "donate for education", "charity", "make a difference"]
+      },
       stats: [{ label: "Students Supported", value: 200 }, { label: "Volunteers", value: 50 }, { label: "Events Hosted", value: 10 }],
       policies: [{ type: PolicyType.PRIVACY, content: "We respect your privacy and protect your data with industry-standard security." }],
       pricingTiers: [{ name: "One-Time Donation", price: 0, duration: "one-time", features: ["Support our cause"] }, { name: "Monthly Supporter", price: 20, duration: "monthly", features: ["Ongoing impact"] }],
@@ -1328,6 +1461,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       }],
       services: [{ title: "Pediatrics", description: "Care for children 0-18" } as any],
       metrics: [{ label: "Patients Served", value: 10000 }, { label: "Average Wait Time", value: 15  }, { label: "Patient Satisfaction", value: 95 }],
+      seo:{
+        id: "",
+        title: "Healthcare & Clinics | Compassionate Care You Can Trust",
+        description: "Providing comprehensive health and wellness services with patient-first technology and experienced staff. Book your appointment online today.",
+        keywords: ["healthcare", "clinics", "compassionate care", "patient-first", "health and wellness"]
+      },
       stats: [{ label: "Patient Satisfaction", value: "95%" }, { label: "Average Wait Time", value: "15 minutes" }, { label: "Patients Served", value: 10000 }],
       awards: [{ name: "Best Clinic 2024", iconUrl: "/icons/award.svg" }, { name: "Top Healthcare Provider 2024", iconUrl: "/icons/award.svg" }],
       policies: [{ type: PolicyType.PRIVACY, content: "We respect your privacy and protect your data with industry-standard security." }],
@@ -1360,6 +1499,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Exclusive", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
       }],
       metrics: [{ label: "Subscribers", value: 500000 }, { label: "Average View Time", value: 10 }, { label: "Social Engagement", value: 20000 }],
+      seo:{
+        id: "",
+        title: "Media & Entertainment | Original Content, Trailers & Exclusive Access",
+        description: "Discover the latest trailers, exclusive behind-the-scenes content, and upcoming film and series releases. Your source for original entertainment.",
+        keywords: ["media", "entertainment", "trailers", "exclusive content", "film releases"]
+      },
       stats: [{ label: "Subscribers", value: 500000 }, { label: "Average View Time", value: "10 minutes" }, { label: "Social Engagement", value: 20000 }],
       awards: [{ name: "Best New Series 2024", iconUrl: "/icons/award.svg" }, { name: "Top Entertainment Channel 2024", iconUrl: "/icons/award.svg" }],
       policies: [{ type: PolicyType.PRIVACY, content: "We respect your privacy and protect your data with industry-standard security." }],
@@ -1391,6 +1536,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         imageUrl: getSampleImageUrl('finance-legal'), headline: "Plan Your Future Today", subline: "Schedule a secure consultation with our certified experts.", ctaText: "Get Started", ctaLink: "/contact",
         id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Confidential", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
       }],
+      seo:{
+        id: "",
+        title: "Finance & Legal Services | Expert Financial Planning & Legal Counsel",
+        description: "Trusted advisors providing strategic financial planning and comprehensive legal counsel for businesses and individuals. Schedule a secure consultation today.",
+        keywords: ["finance services", "legal services", "financial planning", "legal counsel", "expert advisors"]
+      },
       stats: [{ label: "Client Satisfaction", value: "98%" }, { label: "Repeat Clients", value: "85%" }, { label: "Average Consultation Value", value: "$500" }],
       metrics: [{ label: "Clients Served", value: 200 }, { label: "5-Star Reviews", value: 150 }, { label: "Years of Experience", value: 20 }],
       awards: [{ name: "Best Financial Advisor 2024", iconUrl: "/icons/award.svg" }, { name: "Top Legal Firm 2024", iconUrl: "/icons/award.svg" }],
@@ -1424,6 +1575,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       }],
       Collection: [{ name: "Sedans", description: "Economical and reliable models." } as any],
       metrics: [{ label: "Cars Sold", value: 500 }, { label: "Customer Satisfaction", value: 95 }, { label: "Average Financing Rate", value: 3.5 }],
+      seo:{
+        id: "",
+        title: "Automotive Dealership | New & Used Cars, Service & Financing",
+        description: "Discover your dream car at our premier dealership. We offer new and used vehicles, expert servicing, and competitive financing options. Visit us today!",
+        keywords: ["automotive dealership", "new cars", "used cars", "car service", "car financing"]
+      },
       stats: [{ label: "Cars Sold", value: 500 }, { label: "Customer Satisfaction", value: "95%" }, { label: "Average Financing Rate", value: "3.5%" }],
       awards: [{ name: "Best Dealership 2024", iconUrl: "/icons/award.svg" }, { name: "Top Customer Service 2024", iconUrl: "/icons/award.svg" }],
       policies: [{ type: PolicyType.RETURNS, content: "7-day return policy on all used vehicles. Terms and conditions apply." }],
@@ -1459,6 +1616,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       events: [{ title: "Travel Info Webinar", date: in1Day } as any],
       awards: [{ name: "Best Travel Agency 2024", iconUrl: "/icons/award.svg" }, { name: "Top 10 Tour Operators 2024", iconUrl: "/icons/award.svg" }],
       metrics: [{ label: "Trips Booked", value: 300 }, { label: "Customer Satisfaction", value: 97 }, { label: "Repeat Travelers", value: 80 }],
+      seo:{
+        id: "",
+        title: "Travel & Tourism | Explore the World with Unforgettable Packages",
+        description: "Discover unforgettable global destinations with our travel packages and custom itineraries. Book your adventure today and explore the world with us.",
+        keywords: ["travel agency", "tour packages", "custom itineraries", "global destinations", "book travel"]
+      },
       stats: [{ label: "Trips Booked", value: 300 }, { label: "Customer Satisfaction", value: "97%" }, { label: "Repeat Travelers", value: "80%" }],
       policies: [{ type: PolicyType.CANCELLATION, content: "Cancellations must be made at least 30 days before departure for a full refund." }],
 
@@ -1497,6 +1660,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       events: [{ title: "Yoga Workshop", date: in1Day, location: "Studio A" } as any],
       awards: [{ name: "Best Gym 2024", iconUrl: "/icons/award.svg" }, { name: "Top Fitness Center 2024", iconUrl: "/icons/award.svg" }],
       metrics: [{ label: "Active Members", value: 500 }, { label: "Average Class Attendance", value: 30 }, { label: "Member Retention", value: 90 }],
+      seo: {  
+        id: "",
+        title: "Fitness & Wellness Center | Achieve Your Health Goals",
+        description: "Join our comprehensive gym and fitness center offering classes, personal training, and wellness consultations. Start your fitness journey with us today.",
+        keywords: ["fitness center", "gym", "personal training", "wellness consultations", "health and fitness"]
+      },
       stats: [{ label: "Active Members", value: 500 }, { label: "Average Class Attendance", value: 30 }, { label: "Member Retention", value: "90%" }],
       policies: [{ type: PolicyType.CANCELLATION, content: "Memberships can be canceled with 30 days' notice. No refunds for partial months." }],
       promotions: [
@@ -1531,6 +1700,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       Announcement: [{ title: "New Feature: User Reviews", content: "Customers can now leave reviews on business listings.", date: in1Day } as any],
       awards: [{ name: "Best Local Directory 2024", iconUrl: "/icons/award.svg" }, { name: "Top 50 Startups 2024", iconUrl: "/icons/award.svg" }, { name: "Best User Experience 2024", iconUrl: "/icons/award.svg" }],
       metrics: [{ label: "Businesses Listed", value: 2000 }, { label: "Monthly Visitors", value: 50000 }, { label: "User Reviews", value: 10000 }, { label: "Events Listed", value: 500 }],
+      seo:{
+        id: "",
+        title: "Directory & Listings | Discover Local Businesses & Services",
+        description: "Find what you need in your city with our comprehensive directory of local businesses, services, and community events. Start your search today!",
+        keywords: ["local directory", "business listings", "community events", "discover local", "list your business"]
+      },
       stats: [{ label: "Monthly Visitors", value: 50000 }, { label: "Businesses Listed", value: 2000 }, { label: "User Reviews", value: 10000 }, { label: "Events Listed", value: 500 }],
       policies: [{ type: PolicyType.CANCELLATION, content: "Listings can be canceled with 30 days' notice. No refunds for partial months." }],
       promotions: [
@@ -1567,6 +1742,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       events: [{ title: "Live Q&A with Instructors", date: in1Day, location: "Online" } as any],
       awards: [{ name: "Best Online Learning Platform 2024", iconUrl: "/icons/award.svg" }, { name: "Top 10 EdTech Companies 2024", iconUrl: "/icons/award.svg" }, { name: "Best User Experience 2024", iconUrl: "/icons/award.svg" }, { name: "Most Courses Available 2024", iconUrl: "/icons/award.svg" }],
       metrics: [{ label: "Students Enrolled", value: 10000 }, { label: "Average Course Rating", value: 4.8 }, { label: "Courses Offered", value: 50 }, { label: "Live Events Hosted", value: 20 },{ label: "Certificates Issued", value: 8000 }],
+      seo:{
+        id: "",
+        title: "Educational & Online Courses | Learn New Skills, Advance Your Career",
+        description: "Discover high-quality, self-paced online courses taught by industry leaders in technology and business. Enroll today and advance your career with new skills.",
+        keywords: ["online courses", "educational platform", "learn new skills", "advance your career", "certified courses"]
+      },
       stats: [{ label: "Students Enrolled", value: 10000 }, { label: "Average Course Rating", value: "4.8/5" }, { label: "Courses Offered", value: 50 }, { label: "Live Events Hosted", value: 20 }, { label: "Certificates Issued", value: 8000 }],
       policies: [{ type: PolicyType.CANCELLATION, content: "Courses can be canceled within 14 days of purchase for a full refund." }],
       promotions: [
@@ -1598,6 +1779,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       }],
       Collection: [{ name: "Signature Dishes", description: "Our chef's recommended plates." } as any],
       metrics: [{ label: "Orders Delivered", value: 5000 }, { label: "Average Delivery Time", value: 30 }, { label: "Customer Satisfaction", value: 95 }],
+      seo:{
+        id: "",
+        title: "Restaurant & Food Delivery | Delicious Food Delivered Hot & Fresh",
+        description: "Browse our menu of gourmet dishes, order online, and get fast delivery right to your door. Experience delicious food delivered hot and fresh.",
+        keywords: ["restaurant", "food delivery", "gourmet dishes", "order online", "fast delivery"]
+      },
       stats: [{ label: "Orders Delivered", value: 5000 }, { label: "Average Delivery Time", value: "30 minutes" }, { label: "Customer Satisfaction", value: "95%" }],
       awards: [{ name: "Best Local Restaurant 2024", iconUrl: "/icons/award.svg" }, { name: "Top Food Delivery Service 2024", iconUrl: "/icons/award.svg" }],
       policies: [{ type: PolicyType.CANCELLATION, content: "Orders can be canceled within 5 minutes of placement for a full refund." }],
@@ -1631,6 +1818,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       Announcement: [{ title: "Early Bird Discounts", content: "Get 20% off if you book before next month.", date: in3Days } as any],
       awards: [{ name: "Top Event Organizer 2024", iconUrl: "/icons/award.svg" }, { name: "Best Ticketing Platform 2024", iconUrl: "/icons/award.svg" }, { name: "Best User Experience 2024", iconUrl: "/icons/award.svg" }],
       metrics: [{ label: "Events Hosted", value: 150 }, { label: "Tickets Sold", value: 10000 }, { label: "Customer Satisfaction", value: 95 }],
+      seo:{
+        id: "",
+        title: "Event & Ticketing | Discover Events and Get Your Tickets",
+        description: "Find and book tickets for concerts, conferences, and local events with ease. Discover unforgettable moments with our event and ticketing platform.",
+        keywords: ["event ticketing", "buy tickets", "concerts", "conferences", "local events"]
+      },
       stats: [{ label: "Average Attendance", value: 500 }, { label: "Tickets Sold", value: 10000 }, { label: "Customer Satisfaction", value: 95 }],
       policies: [{ type: PolicyType.CANCELLATION, content: "Tickets can be canceled up to 24 hours before the event for a full refund." }],
       promotions: [
@@ -1663,6 +1856,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       }],
       Collection: [{ name: "Featured Properties", description: "Handpicked homes for you." } as any],
       metrics: [{ label: "Properties Sold", value: 100 }, { label: "Average Days on Market", value: 30 }, { label: "Customer Satisfaction", value: 95 }],
+      seo:{
+        id: "",
+        title: "Real Estate | Find Your Dream Home with Our Property Listings",
+        description: "Discover your dream home with our comprehensive real estate platform. Browse property listings, sales, and rental management services in the city.",
+        keywords: ["real estate", "property listings", "homes for sale", "rental management", "find a home"]
+      },
       stats: [{ label: "Properties Sold", value: 100 }, { label: "Average Days on Market", value: 30 }, { label: "Customer Satisfaction", value: "95%" }],
       awards: [{ name: "Best Real Estate Agency 2024", iconUrl: "/icons/award.svg" }, { name: "Top Property Listings 2024", iconUrl: "/icons/award.svg" }],
       policies: [{ type: PolicyType.CANCELLATION, content: "Listings can be canceled with 30 days' notice. No refunds for partial months." }],
@@ -1700,6 +1899,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       ],
       Collection: [{ name: "Integrations", description: "Works seamlessly with your favorite tools." } as any],
       metrics: [{ label: "Active Users", value: 1000 }, { label: "Customer Satisfaction", value: 95 }, { label: "Integrations Available", value: 50 }],
+      seo:{
+        id: "",
+        title: "SaaS & Web Apps | Automate Your Workflow, Simplify Everything",
+        description: "Discover powerful cloud-based software designed to streamline team collaboration and boost productivity for remote teams. Start your free trial today.",
+        keywords: ["saas", "web apps", "team collaboration", "productivity tools", "cloud software"]
+      },  
       stats: [{ label: "Active Users", value: 1000 }, { label: "Customer Satisfaction", value: 95 }, { label: "Integrations Available", value: 50 }],
       awards: [{ name: "Best SaaS Product 2024", iconUrl: "/icons/award.svg" }, { name: "Top 10 Startups 2024", iconUrl: "/icons/award.svg" }],
       policies: [{ type: PolicyType.CANCELLATION, content: "Subscriptions can be canceled at any time. No refunds for partial months." }],
@@ -1732,6 +1937,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Local Deals", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
       }],
       metrics: [{ label: "Active Listings", value: 5000 }, { label: "Monthly Buyers", value: 20000 }, { label: "Successful Transactions", value: 1500 }],
+      seo:{
+        id: "",
+        title: "Marketplace | Buy & Sell Locally with Ease",
+        description: "Discover the largest online product marketplace for connecting local buyers and sellers across all categories. List your items for free and start selling today!",
+        keywords: ["marketplace", "buy locally", "sell locally", "product listings", "local deals"]
+      },
       stats: [{ label: "Active Listings", value: 5000 }, { label: "Monthly Buyers", value: 20000 }, { label: "Successful Transactions", value: 1500 }],
       awards: [{ name: "Best Local Marketplace 2024", iconUrl: "/icons/award.svg" }, { name: "Top 50 Startups 2024", iconUrl: "/icons/award.svg" }],
       policies: [{ type: PolicyType.CANCELLATION, content: "Listings can be canceled at any time. No refunds for listing fees." }],
@@ -1773,6 +1984,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { name: "Premium Package", price: 59, duration: "monthly", features: ["All Basic features", "Advanced surveillance", "Priority support"] }
       ],
       metrics: [{ label: "Systems Installed", value: 200 }, { label: "24/7 Monitoring", value: 1 }, { label: "Customer Satisfaction", value: 98 }],
+      seo:{
+        id: "",
+        title: "Security Services | Protect Your Home and Business with Expert Solutions",
+        description: "Discover comprehensive security solutions including surveillance systems, alarm installations, and 24/7 monitoring to safeguard your home and business. Get a free consultation today.",
+        keywords: ["security services", "home security", "business security", "surveillance systems", "alarm installations"]
+      },
       stats: [{ label: "Systems Installed", value: 200 }, { label: "24/7 Monitoring", value: "Yes" }, { label: "Customer Satisfaction", value: "98%" }],
       awards: [{ name: "Best Security Company 2024", iconUrl: "/icons/award.svg" }, { name: "Top 10 Security Services 2024", iconUrl: "/icons/award.svg" }],
       policies: [{ type: PolicyType.CANCELLATION, content: "Monitoring services can be canceled with 30 days' notice. No refunds for partial months." }],
@@ -1805,6 +2022,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         id: "", companyId: "", price: null, productImageUrl: null, badgeText: "New Arrivals", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
       }],
       metrics: [{ label: "Styles Available", value: 300 }, { label: "Happy Customers", value: 1500 }, { label: "International Shipping", value: 1 }],
+      seo:{
+        id: "",
+        title: "Fashion Shop | Elevate Your Style with Our Latest Collection",
+        description: "Discover the latest trends in fashion with our curated selection of clothing and accessories for every occasion. Shop now and elevate your style.",
+        keywords: ["fashion shop", "clothing", "accessories", "latest trends", "international shipping"]
+      },
       stats: [{ label: "Styles Available", value: 300 }, { label: "Happy Customers", value: 1500 }, { label: "International Shipping", value: "Yes" }],
       awards: [{ name: "Best Fashion Retailer 2024", iconUrl: "/icons/award.svg" }, { name: "Top 100 Retailers 2024", iconUrl: "/icons/award.svg" }],
       policies: [{ type: PolicyType.CANCELLATION, content: "Returns accepted within 30 days. Items must be in original condition." }],
@@ -1837,6 +2060,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         id: "", companyId: "", price: null, productImageUrl: null, badgeText: "New Arrivals", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
       }],
       metrics: [{ label: "Furniture Styles", value: 200 }, { label: "Satisfied Customers", value: 1200 }, { label: "Custom Orders", value: 300 }],
+      seo:{
+        id: "",
+        title: "Furniture Shop | Furnish Your Dream Home with Style",
+        description: "Discover our curated collection of modern and classic furniture pieces designed to elevate your living space with comfort and elegance. Shop now and furnish your dream home.",
+        keywords: ["furniture shop", "home furnishings", "modern furniture", "classic furniture", "custom furniture"]
+      },
       stats: [{ label: "Furniture Styles", value: 200 }, { label: "Satisfied Customers", value: 1200 }, { label: "Custom Orders", value: 300 }],
       awards: [{ name: "Best Furniture Store 2024", iconUrl: "/icons/award.svg" }, { name: "Top 100 Retailers 2024", iconUrl: "/icons/award.svg" }],
       policies: [{ type: PolicyType.CANCELLATION, content: "Returns accepted within 30 days. Custom orders are non-refundable." }],
@@ -1876,6 +2105,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { name: "Basic Assessment", price: 499, duration: "one-time", features: ["Comprehensive risk assessment", "Detailed report"] },
         { name: "Full Consulting Package", price: 1999, duration: "project-based", features: ["All Basic features", "Strategic planning", "Implementation support"] }
       ],
+      seo:{
+        id: "",
+        title: "Security Consulting | Expert Risk Assessments and Strategic Planning",
+        description: "Our security consulting services provide comprehensive risk assessments, strategic planning, and implementation support to protect your business from evolving threats. Schedule a free consultation today.",
+        keywords: ["security consulting", "risk assessment", "strategic planning", "business security", "security implementation"]
+      },
       stats: [{ label: "Systems Installed", value: 200 }, { label: "24/7 Monitoring", value: "Yes" }, { label: "Customer Satisfaction", value: "98%" }],
       metrics: [{ label: "Systems Installed", value: 200 }, { label: "24/7 Monitoring", value: 1 }, { label: "Customer Satisfaction", value: 98 }],
       awards: [{ name: "Best Security Company 2024", iconUrl: "/icons/award.svg" }, { name: "Top 10 Security Services 2024", iconUrl: "/icons/award.svg" }],
@@ -1917,6 +2152,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { name: "Basic Assessment", price: 499, duration: "one-time", features: ["Comprehensive risk assessment", "Detailed report"] },
         { name: "Full Consulting Package", price: 1999, duration: "project-based", features: ["All Basic features", "Strategic planning", "Implementation support"] }
       ],
+      seo:{
+        id: "",
+        title: "Security Consulting | Expert Risk Assessments and Strategic Planning",
+        description: "Our security consulting services provide comprehensive risk assessments, strategic planning, and implementation support to protect your business from evolving threats. Schedule a free consultation today.",
+        keywords: ["security consulting", "risk assessment", "strategic planning", "business security", "security implementation"]
+      },
       stats: [{ label: "Systems Installed", value: 200 }, { label: "24/7 Monitoring", value: "Yes" }, { label: "Customer Satisfaction", value: "98%" }],
       metrics: [{ label: "Systems Installed", value: 200 }, { label: "24/7 Monitoring", value: 1 }, { label: "Customer Satisfaction", value: 98 }],
       awards: [{ name: "Best Security Company 2024", iconUrl: "/icons/award.svg" }, { name: "Top 10 Security Services 2024", iconUrl: "/icons/award.svg" }],
@@ -1957,6 +2198,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { name: "Express Delivery", price: 15, duration: "per delivery", features: ["Delivery within 1-2 business days"] }
       ],
       metrics: [{ label: "Deliveries Completed", value: 10000 }, { label: "Average Delivery Time", value: 3 }, { label: "Customer Satisfaction", value: 95 }],
+      seo:{
+        id: "",
+        title: "Delivery & Logistics | Fast and Reliable Delivery Solutions",
+        description: "Our delivery and logistics services provide efficient and secure transportation solutions to meet your business needs, ensuring timely deliveries and customer satisfaction. Get a free quote today.",
+        keywords: ["delivery services", "logistics", "fast delivery", "reliable delivery", "business logistics"]
+      },
       stats: [{ label: "Deliveries Completed", value: 10000 }, { label: "Average Delivery Time", value: "3 days" }, { label: "Customer Satisfaction", value: "95%" }],
       awards: [{ name: "Best Delivery Service 2024", iconUrl: "/icons/award.svg" }, { name: "Top 10 Logistics Companies 2024", iconUrl: "/icons/award.svg" }],
       policies: [{ type: PolicyType.CANCELLATION, content: "Deliveries can be canceled up to 24 hours before the scheduled delivery time for a full refund." }],
