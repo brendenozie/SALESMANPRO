@@ -380,38 +380,64 @@ export default function CreateStoreForm({
   // REFACTORED HOOK: This now works without the 'categoryChanged' flag
   // ----------------------------------------------------------------
   // Use a ref to track the previous category to detect a *real* change
-  const prevCategoryRef = useRef<string | undefined>(form.category);
+  // const prevCategoryRef = useRef<string | undefined>(form.category);
+  const prevCategoryRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
-    // 1. Don't run this logic if we are editing (initialData is present)
-    if (initialData) return;
+    if (initialData?.id) return; // Editing mode → do nothing
 
-    // 2. Check if the category has *actually* changed from the previous render.
-    //    This prevents it from running on the initial load.
     const prevCategory = prevCategoryRef.current;
-    if (prevCategory === form.category) return;
+
+    // Run if:
+    // 1. First mount (prevCategory is undefined)
+    // 2. Category actually changed
+    if (prevCategory !== form.category) {
+      prevCategoryRef.current = form.category;
+
+      const sampleData = getCategoryDefaultData(form.category);
+
+      setForm(prevForm => ({
+        ...prevForm,
+        ...sampleData,
+        name: prevForm.name,
+        slug: prevForm.slug,
+        category: form.category,
+        contactEmail: prevForm.contactEmail,
+      }));
+    }
+
+  }, [form.category, initialData?.id]);
+  
+  // useEffect(() => {
+  //   // 1. Don't run this logic if we are editing (initialData is present)
+  //   if (initialData.id) return;
+
+  //   // 2. Check if the category has *actually* changed from the previous render.
+  //   //    This prevents it from running on the initial load.
+  //   const prevCategory = prevCategoryRef.current;
+  //   if (prevCategory === form.category) return;
     
-    // 3. Update the ref for the next render
-    prevCategoryRef.current = form.category;
+  //   // 3. Update the ref for the next render
+  //   prevCategoryRef.current = form.category;
 
-    console.log(`Loading sample data for new category: ${form.category}`);
+  //   // console.log(`Loading sample data for new category: ${form.category}`);
     
-    // 4. Get the sample data
-    const sampleData = getCategoryDefaultData(form.category);
+  //   // 4. Get the sample data
+  //   const sampleData = getCategoryDefaultData(form.category);
 
-    // 5. Merge the sample data into the form state
-    setForm(prevForm => ({
-      ...prevForm,
-      ...sampleData,
-      // CRITICAL: Preserve key fields the user already entered
-      // The sample data should not overwrite these.
-      name: prevForm.name,
-      slug: prevForm.slug,
-      category: form.category, // Ensure we keep the one just selected
-      contactEmail: prevForm.contactEmail, // Already set by session
-    }));
+  //   // 5. Merge the sample data into the form state
+  //   setForm(prevForm => ({
+  //     ...prevForm,
+  //     ...sampleData,
+  //     // CRITICAL: Preserve key fields the user already entered
+  //     // The sample data should not overwrite these.
+  //     name: prevForm.name,
+  //     slug: prevForm.slug,
+  //     category: form.category, // Ensure we keep the one just selected
+  //     contactEmail: prevForm.contactEmail, // Already set by session
+  //   }));
 
-  }, [form.category, initialData]); // Only depends on these!
+  // }, [form.category, initialData]); // Only depends on these!
   // ----------------------------------------------------------------
   // END OF REFACTORED HOOK
   // ----------------------------------------------------------------
