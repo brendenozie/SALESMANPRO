@@ -1,209 +1,134 @@
 "use client";
 
-import React, { useContext, useState, useEffect } from "react";
+import React from "react";
 import Link from "next/link";
-// import { StoreContext } from "../path/to/StoreContext"; // adjust to your actual context path
-import { SunIcon, MoonIcon } from "@heroicons/react/24/outline";
+import { 
+  CpuChipIcon, 
+  GlobeAltIcon, 
+  ShieldCheckIcon,
+  HashtagIcon
+} from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
 
 export default function Footer() {
   const { storeFormData } = useStoreContext();
-  const [darkMode, setDarkMode] = useState(false);
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [darkMode]);
 
   if (!storeFormData) return null;
 
-  // Example footer links; adjust routes as needed
-  // const programLinks = storeFormData.classes.map((c: any) => ({
-  //   name: c.name,
-  //   href: `/programs/${c.slug}`,
-  // }));
-  // const trainerLinks = storeFormData.trainers.map((t: any) => ({
-  //   name: t.name,
-  //   href: `/trainers/${t.id}`,
-  // }));
+  const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gray-900 text-gray-300 dark:bg-gray-800 dark:text-gray-400">
-      <div className="max-w-7xl mx-auto py-12 px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-        {/* Column 1: Brand & Description */}
-        <div>
-          <h4 className="text-xl font-bold text-white dark:text-white mb-4">
-            {storeFormData.name}
-          </h4>
-          <p className="text-sm">
-            {/* Optionally include a tagline or description if available */}
-            {storeFormData.description || "Your fitness journey starts here."}
-          </p>
-        </div>
+    <footer className="relative bg-[#050505] pt-24 pb-12 overflow-hidden border-t border-white/5">
+      {/* Structural Accents */}
+      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-orange-500/50 to-transparent" />
+      
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-16 mb-24">
+          
+          {/* Brand & Status Column */}
+          <div className="md:col-span-4 space-y-8">
+            <div>
+              <h4 className="text-3xl font-black text-white italic tracking-tighter uppercase mb-4">
+                {storeFormData.name}<span className="text-orange-500">.</span>
+              </h4>
+              <p className="text-gray-500 text-xs font-medium uppercase tracking-widest leading-relaxed max-w-xs">
+                {storeFormData.description || "Architecting elite human performance through neural and physical recalibration."}
+              </p>
+            </div>
 
-        {/* Column 2: Programs */}
-        {/* <div>
-          <h5 className="font-semibold text-white dark:text-white mb-3">Programs</h5>
-          <ul className="space-y-2 text-sm">
-            {programLinks.slice(0, 5).map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className="hover:text-white transition-colors"
-                >
-                  {link.name}
-                </Link>
-              </li>
-            ))}
-            {programLinks.length > 5 && (
-              <li>
-                <Link
-                  href="/programs"
-                  className="hover:text-white font-medium text-sm"
-                >
-                  View All &rarr;
-                </Link>
-              </li>
-            )}
-          </ul>
-        </div> */}
-
-        {/* Column 3: Trainers & Resources */}
-        <div>
-          <h5 className="font-semibold text-white dark:text-white mb-3">
-            Trainers
-          </h5>
-          {/* <ul className="space-y-2 text-sm">
-            {trainerLinks.slice(0, 5).map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className="hover:text-white transition-colors"
-                >
-                  {link.name}
-                </Link>
-              </li>
-            ))}
-            {trainerLinks.length > 5 && (
-              <li>
-                <Link
-                  href="/trainers"
-                  className="hover:text-white font-medium text-sm"
-                >
-                  View All &rarr;
-                </Link>
-              </li>
-            )}
-          </ul> */}
-        </div>
-
-        {/* Column 4: Legal & Social */}
-        <div className="space-y-6">
-          <div>
-            <h5 className="font-semibold text-white dark:text-white mb-3">
-              Legal
-            </h5>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link
-                  href="/terms"
-                  className="hover:text-white transition-colors"
-                >
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/privacy"
-                  className="hover:text-white transition-colors"
-                >
-                  Privacy Policy
-                </Link>
-              </li>
-            </ul>
+            {/* System Status Mockup */}
+            <div className="p-4 bg-white/[0.02] border border-white/5 inline-block">
+              <div className="flex items-center gap-4 mb-2">
+                <div className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
+                <span className="text-[10px] font-black text-white uppercase tracking-[0.3em]">System Status: Operational</span>
+              </div>
+              <div className="flex gap-1">
+                {[...Array(12)].map((_, i) => (
+                  <div key={i} className={`h-3 w-[2px] ${i < 9 ? 'bg-orange-500/40' : 'bg-white/5'}`} />
+                ))}
+              </div>
+            </div>
           </div>
 
-          <div className="flex space-x-4">
-            {/* <a
-              href={storeFormData.socialLinks? || "#"}
-              aria-label="Facebook"
-              className="hover:text-white transition-colors"
-            >
-        
-              <svg
-                className="w-5 h-5"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path d="M22 12a10 10 0 10-11.5 9.9v-7H8.5v-2.9h2V9.3c0-2 1.2-3.1 3-3.1.9 0 1.7.1 1.9.1v2.1H14c-1.1 0-1.4.7-1.4 1.4V12h2.8l-.4 2.9h-2.4v7A10 10 0 0022 12z" />
-              </svg>
-            </a>
-            <a
-              href={storeFormData.social?.instagram || "#"}
-              aria-label="Instagram"
-              className="hover:text-white transition-colors"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path d="M7 2C4.79 2 3 3.79 3 6v12c0 2.21 1.79 4 4 4h10c2.21 0 4-1.79 4-4V6c0-2.21-1.79-4-4-4H7zm10 2a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2h10zm-5 3a5 5 0 100 10 5 5 0 000-10zm0 2a3 3 0 110 6 3 3 0 010-6zm5.5-.75a1 1 0 11-2 0 1 1 0 012 0z" />
-              </svg>
-            </a>
-            <a
-              href={storeFormData.social?.twitter || "#"}
-              aria-label="Twitter"
-              className="hover:text-white transition-colors"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path d="M22.46 6c-.77.35-1.6.58-2.47.69a4.28 4.28 0 001.88-2.37 8.54 8.54 0 01-2.7 1.03 4.24 4.24 0 00-7.23 3.86 12.02 12.02 0 01-8.73-4.43 4.24 4.24 0 001.31 5.66 4.17 4.17 0 01-1.92-.53v.05a4.24 4.24 0 003.39 4.16 4.3 4.3 0 01-1.92.07 4.24 4.24 0 003.96 2.94A8.5 8.5 0 012 19.54a12.02 12.02 0 006.5 1.9c7.8 0 12.07-6.47 12.07-12.08 0-.18-.01-.36-.02-.54A8.7 8.7 0 0024 4.56a8.41 8.41 0 01-2.54.7z" />
-              </svg>
-            </a> */}
+          {/* Navigation Grid */}
+          <div className="md:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-12">
+            {/* Column: Protocols */}
+            <div className="space-y-6">
+              <h5 className="text-orange-500 text-[10px] font-black uppercase tracking-[0.4em]">Protocols</h5>
+              <ul className="space-y-4">
+                {['Programs', 'Trainers', 'Intelligence', 'Community'].map((item) => (
+                  <li key={item}>
+                    <Link href={`/${item.toLowerCase()}`} className="text-white/40 hover:text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2 group">
+                      <div className="h-[1px] w-0 bg-orange-500 group-hover:w-3 transition-all" />
+                      {item}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Column: Network */}
+            <div className="space-y-6">
+              <h5 className="text-orange-500 text-[10px] font-black uppercase tracking-[0.4em]">Network</h5>
+              <div className="flex flex-col gap-4">
+                <a href="#" className="flex items-center gap-3 text-white/40 hover:text-white transition-colors">
+                  <HashtagIcon className="h-4 w-4" />
+                  <span className="text-xs font-black uppercase tracking-widest">Instagram</span>
+                </a>
+                <a href="#" className="flex items-center gap-3 text-white/40 hover:text-white transition-colors">
+                  <GlobeAltIcon className="h-4 w-4" />
+                  <span className="text-xs font-black uppercase tracking-widest">Global Link</span>
+                </a>
+                <a href="#" className="flex items-center gap-3 text-white/40 hover:text-white transition-colors">
+                  <CpuChipIcon className="h-4 w-4" />
+                  <span className="text-xs font-black uppercase tracking-widest">App OS</span>
+                </a>
+              </div>
+            </div>
+
+            {/* Column: Compliance */}
+            <div className="space-y-6">
+              <h5 className="text-orange-500 text-[10px] font-black uppercase tracking-[0.4em]">Compliance</h5>
+              <ul className="space-y-4">
+                <li><Link href="/privacy" className="text-white/40 hover:text-white text-xs font-black uppercase tracking-widest transition-colors">Privacy</Link></li>
+                <li><Link href="/terms" className="text-white/40 hover:text-white text-xs font-black uppercase tracking-widest transition-colors">Terms</Link></li>
+                <li><Link href="/security" className="text-white/40 hover:text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2">
+                  <ShieldCheckIcon className="h-3 w-3" /> Security
+                </Link></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="text-[10px] font-black text-gray-700 uppercase tracking-[0.5em]">
+            &copy; {currentYear} {storeFormData.name} // Neural Dynamics Inc.
           </div>
 
-          {/* Dark Mode Toggle */}
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className="mt-4 flex items-center space-x-2 p-2 bg-gray-800 dark:bg-gray-700 rounded-full hover:bg-gray-700 dark:hover:bg-gray-600 transition"
-            aria-label="Toggle Dark Mode"
-          >
-            {darkMode ? (
-              <SunIcon className="w-5 h-5 text-yellow-400" />
-            ) : (
-              <MoonIcon className="w-5 h-5 text-gray-300" />
-            )}
-            <span className="text-sm">
-              {darkMode ? "Light Mode" : "Dark Mode"}
-            </span>
-          </button>
+          <div className="flex items-center gap-8">
+            <div className="flex items-center gap-2">
+              <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Encryption:</span>
+              <span className="text-[9px] font-black uppercase tracking-widest text-orange-500/50">AES-256</span>
+            </div>
+            
+            <div className="flex items-center gap-1.5 group">
+              <span className="text-[10px] font-black uppercase tracking-widest text-white/20">Powered by</span>
+              <a 
+                href="https://salesmanpro.site" 
+                className="text-[10px] font-black uppercase tracking-widest text-orange-600 group-hover:text-orange-400 transition-colors"
+              >
+                SalesmanPro.site
+              </a>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Bottom Bar */}
-      <div className="border-t border-gray-700 py-4 text-center text-xs">
-        &copy; {new Date().getFullYear()} {storeFormData.name}. All rights reserved.
+      {/* Background ghost text */}
+      <div className="absolute bottom-[-2%] left-1/2 -translate-x-1/2 text-[15vw] font-black text-white/[0.02] whitespace-nowrap pointer-events-none select-none italic tracking-tighter">
+        PERFORMANCE ARCHITECTURE
       </div>
-      <div className="flex items-center gap-1.5 px-4 py-2 mt-4 justify-center">
-        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Powered by</span>
-        <a 
-          href="https://salesmanpro.site" 
-          className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-700 transition-colors"
-        >
-          SalesmanPro.site
-        </a>
-    </div>
-
     </footer>
   );
 }

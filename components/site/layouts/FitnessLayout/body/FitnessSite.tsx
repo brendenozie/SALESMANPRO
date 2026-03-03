@@ -13,6 +13,7 @@ import AppPromotionSection from "./components/AppPromotionSection"; // Renamed f
 import FaqsSection from "./components/FAQsSection"; // Renamed for clarity
 import ExpertsSection from "./components/ExpertsSection";
 import FilterBar from "./components/FilterBarSection";
+import GallerySection from "./components/GallerySection";
 import HeroSection from "./components/heroSection";
 import ListingsGrid from "./components/ListingsGridSection";
 import LocationsSection from "./components/LocationsSection";
@@ -460,7 +461,7 @@ export default function FitnessSite({ pageData, companyId }: { pageData: StoreFo
     
 
     return (
-        <div className="">
+        <div className={'relative w-full overflow-hidden bg-[#050505] text-white'}>
             {/* Hero Section */}
             <HeroSection store={pageData} 
             onSearch={handleSearch}
@@ -497,6 +498,8 @@ export default function FitnessSite({ pageData, companyId }: { pageData: StoreFo
 
             {/* Insights Section */}
             <MarketInsights blogs={storeFormData?.blogs} />
+
+            <GallerySection/>
 
             {/* Testimonials */}
             <TestimonialsSection testimonials={storeFormData?.testimonials} />
