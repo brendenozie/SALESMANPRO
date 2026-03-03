@@ -991,7 +991,26 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     { label: "Properties", href: `/admin/${adminSlug}/properties`, icon: BuildingOfficeIcon }, // Manage all property listings (add, edit, delete, status)
     { label: "Inquiries", href: `/admin/${adminSlug}/properties-inquiries`, icon: ChatBubbleLeftRightIcon }, // Track and manage all property inquiries and messages
     { label: "Showings", href: `/admin/${adminSlug}/properties-showings`, icon: CalendarDaysIcon }, // Schedule and manage property viewings
+    { label: "Hostel", href: `/admin/${adminSlug}/hostel`, icon: HomeIcon,
+      subItems: [
+        { label: "Blocks", href: `/admin/${adminSlug}/hostel-blocks` },
+        { label: "Rooms", href: `/admin/${adminSlug}/hostel-rooms` },
+        { label: "Residents", href: `/admin/${adminSlug}/hostel-residents` },
+        { label: "Room Assignments", href: `/admin/${adminSlug}/hostel-room-assignments` },
+        { label: "Maintenance Requests", href: `/admin/${adminSlug}/hostel-maintenance-requests` },
+        { label: "Visitors", href: `/admin/${adminSlug}/hostel-visitors` },
+        // { label: "Fee Management", href: `/admin/${adminSlug}/hostel-fee-management` },
+        // { label: "Inventory", href: `/admin/${adminSlug}/hostel-inventory` },
+        { label: "Staff", href: `/admin/${adminSlug}/hostel-staff` },
+        { label: "Reports", href: `/admin/${adminSlug}/hostel-reports` },
+      ], 
+     },
     { label: "Offers & Contracts", href: `/admin/${adminSlug}/properties-offers`, icon: DocumentTextIcon }, // Manage offers, sales agreements, and contracts
+    { label: "Virtual Tours", href: `/admin/${adminSlug}/properties-virtual-tours`, icon: PlayCircleIcon }, // Manage virtual tour content for listings
+    { label: "Testimonials", href: `/admin/${adminSlug}/properties-testimonials`, icon: ChatBubbleLeftRightIcon }, // Manage client testimonials for properties
+    { label: "Promotions & Deals", href: `/admin/${adminSlug}/properties-promotions`, icon: TagIcon }, // Create and manage discounts, special offers for listings
+    { label: "FAQs", href: `/admin/${adminSlug}/properties-faqs`, icon: QuestionMarkCircleIcon }, // Manage frequently asked questions related to properties
+    { label: "Media Library", href: `/admin/${adminSlug}/properties-media`, icon: PhotoIcon }, // Central place for property images, videos, and virtual tour media
     { label: "Blogs", icon: DocumentTextIcon, href: `/admin/${adminSlug}/blogs` },
     { label: "Reports", href: `/admin/${adminSlug}/properties-reports`, icon: ChartBarIcon }, // Generate various reports (sales, agent performance, market trends)
     { label: "Settings", href: `/admin/${adminSlug}/properties-settings`, icon: Cog6ToothIcon }, // General administrative settings
