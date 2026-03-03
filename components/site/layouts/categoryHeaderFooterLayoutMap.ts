@@ -15,7 +15,9 @@ const EcommerceWatchLayout = dynamic(() => import('@/components/site/layouts/Eco
 const EcommerceBabyLayout = dynamic(() => import('@/components/site/layouts/EcommerceBabyLayout/EcommerceBabyLayout'));
 const EcommerceCakeLayout = dynamic(() => import('@/components/site/layouts/EcommerceCakeLayout/EcommerceCakeLayout'));
 const EcommercePetsLayout = dynamic(() => import('@/components/site/layouts/EcommercePetsLayout/EcommercePetsLayout'));
+const EcommerceBikeLayout = dynamic(() => import('@/components/site/layouts/EcommerceBikeLayout/EcommerceBikeLayout'));
 const EcommerceGroceriesLayout = dynamic(() => import('@/components/site/layouts/EcommerceGroceriesLayout/EcommerceGroceriesLayout'));
+const EcommerceMotorCycleLayout = dynamic(() => import('@/components/site/layouts/EcommerceMotorCycleLayout/EcommerceMotorCycleLayout'));
 const ServicesLayout = dynamic(() =>  import('@/components/site/layouts/ServicesLayout/ServicesLayout'));
 const BookingsLayout = dynamic(() => import( '@/components/site/layouts/BookingsLayout/BookingsLayout'));
 const BarbershopBookingsLayout = dynamic(() => import( '@/components/site/layouts/BarbershopBookingsLayout/BarbershopBookingsLayout'));
@@ -72,6 +74,8 @@ const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterComponent>
     'watch store': EcommerceWatchLayout,
     'baby store': EcommerceBabyLayout,
     'cake store': EcommerceCakeLayout,
+    'bike store': EcommerceBikeLayout,
+    'motorcycle store': EcommerceMotorCycleLayout,
     'e-commerce': EcommerceLayout,
     'pets store': EcommercePetsLayout,
     'groceries store': EcommerceGroceriesLayout,
