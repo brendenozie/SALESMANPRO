@@ -517,6 +517,11 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Property"
   ],
 
+  "Property Management": [
+    "Property Management",
+    "Property"
+  ],  
+
   "Healthcare & Clinics": [
     "Healthcare & Clinics",
     "Health And Beauty"      // e.g., cosmetic procedures + products

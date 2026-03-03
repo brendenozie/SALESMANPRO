@@ -180,10 +180,10 @@ const SITE_CATEGORIES: Category[] = [
     ] 
   },
   { 
-    name: "Shoes Store", icon: "👟", variants: [
-    { name: "Shoes Store Classic", link: "https://shoes-store.salesmanpro.site", description: "Grid-based product layout.", tag: 'Standard' }
-  ] 
-},
+      name: "Shoes Store", icon: "👟", variants: [
+      { name: "Shoes Store Classic", link: "https://shoes-store.salesmanpro.site", description: "Grid-based product layout.", tag: 'Standard' }
+    ] 
+  },
   { name: "Service Provider", 
     icon: "🔧", variants: [
       { 
@@ -284,6 +284,13 @@ const SITE_CATEGORIES: Category[] = [
         { name: "Property Listings", link: "https://real-estate.salesmanpro.site", description: "Showcase real estate properties.", tag: 'Standard' }
       ]
     },
+    {
+      name: "Property Management",
+      icon: "🏥",
+      variants: [
+        { name: "Property Manager", link: "https://property-management.salesmanpro.site", description: "Manage properties and tenants.", tag: 'Standard' }
+      ]
+     },
     // { name: "SaaS & Web Apps",
     //   icon: "💻",
     //   variants: [

@@ -36,6 +36,27 @@ export const SITE_CATEGORIES: Category[] = [
     ]
   },
   {
+    name: "Bike Store",
+    icon: "🚲",
+    variants: [
+      { name: "Bike Store", link: "https://bike-store.salesmanpro.site", description: "Dynamic layout for bike products.", tag: 'Standard' }
+    ]
+  },
+  {
+    name: "Motorcycle Store",
+    icon: "🏍️",
+    variants: [
+      { name: "Motorcycle Store", link: "https://motorcycle-store.salesmanpro.site", description: "Bold design for motorcycle products.", tag: 'Standard' }
+    ]
+  },
+  {
+    name: "Barbershop",
+    icon: "💈",
+    variants: [
+      { name: "Barbershop", link: "https://barbershop.salesmanpro.site", description: "Classic design for barbershop services.", tag: 'Standard' }
+    ]
+  },
+  {
     name: "Fashion Boutique",
     icon: "👗",
     variants: [
