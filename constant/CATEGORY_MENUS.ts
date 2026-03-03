@@ -982,6 +982,21 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     }
   ],
 
+  "Property Management":[
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon }, // Overall view of key metrics
+    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
+    { label: "Locations", href: `/admin/${adminSlug}/locations`, icon: MapPinIcon }, // company-locations properties-locations Manage geographic locations for listings
+    { label: "Agents", href: `/admin/${adminSlug}/properties-agents`, icon: UsersIcon }, // Manage agent profiles, performance, and assignments
+    { label: "Clients", href: `/admin/${adminSlug}/clients`, icon: UserGroupIcon }, // Manage client profiles, inquiries, and history (changed to UserGroupIcon for clarity)
+    { label: "Properties", href: `/admin/${adminSlug}/properties`, icon: BuildingOfficeIcon }, // Manage all property listings (add, edit, delete, status)
+    { label: "Inquiries", href: `/admin/${adminSlug}/properties-inquiries`, icon: ChatBubbleLeftRightIcon }, // Track and manage all property inquiries and messages
+    { label: "Showings", href: `/admin/${adminSlug}/properties-showings`, icon: CalendarDaysIcon }, // Schedule and manage property viewings
+    { label: "Offers & Contracts", href: `/admin/${adminSlug}/properties-offers`, icon: DocumentTextIcon }, // Manage offers, sales agreements, and contracts
+    { label: "Blogs", icon: DocumentTextIcon, href: `/admin/${adminSlug}/blogs` },
+    { label: "Reports", href: `/admin/${adminSlug}/properties-reports`, icon: ChartBarIcon }, // Generate various reports (sales, agent performance, market trends)
+    { label: "Settings", href: `/admin/${adminSlug}/properties-settings`, icon: Cog6ToothIcon }, // General administrative settings
+  ],
+
   "Fitness & Wellness": [
         { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon }, // Overview of gym activity
         { label: "POS & Sales", href: `/admin/${adminSlug}/fitness-pos`, icon: CurrencyDollarIcon }, // Point of Sale and transaction management

@@ -1845,8 +1845,8 @@ model marketplaceListings {
   productId  String?     @db.ObjectId
   product    Product?    @relation(fields: [productId], references: [id])
 
-  productCategoryId String          @db.ObjectId
-  productCategory   ProductCategory @relation(fields: [productCategoryId], references: [id])
+  productCategoryId String?          @db.ObjectId
+  productCategory   ProductCategory? @relation(fields: [productCategoryId], references: [id])
   category          String? // Consider enum or relation
   subCategory       Json // Consider specific model if structure is fixed
   subCategoryName   String? // Matches Product model
