@@ -1,417 +1,299 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
 import Image from "next/image";
 import {
   MapPinIcon,
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  TruckIcon,
-  CalendarDaysIcon,
-  CurrencyDollarIcon,
+  ChevronDownIcon,
+  TicketIcon,
+  CpuChipIcon, // Using for a technical/luxury feel
+  AdjustmentsHorizontalIcon,
 } from "@heroicons/react/24/outline";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
-import { StoreForm } from "@/types/typings";
+import { MagnifyingGlassIcon, SparklesIcon } from "@heroicons/react/24/solid";
+import { IStoreCategory, ISubcategory, StoreForm, HeroSlide } from "@/types/typings";
 
-// --- TYPES ---
-// Defining types locally to ensure self-containment
-export interface TrendingLocation {
-  id: string;
-  name: string;
-}
-
-interface ISlide {
-  id: string;
-  imageUrl?: string;
-  productImageUrl?: string;
-  videoUrl?: string;
-  headline: string;
-  subline: string;
-}
-
-export interface IFilters {
-  location: string | null;
-  vehicleType: string | null;
-  minPrice: number | string;
-  maxPrice: number | string;
+export interface SearchFilters {
+  location: string;
+  vehicleType: string;
+  make: string;
+  model: string;
+  minPrice: string;
+  maxPrice: string;
   isBuy: boolean;
-  year: number | string | null;
+  category?: string;
+  subcategory?: string;
 }
 
-type PartialFilters = Partial<IFilters>;
-
-// --- CONSTANTS & MOCK DATA ---
-const customLoader = ({ src, width, quality }: any) =>
-  `${src}?w=${width}&q=${quality || 75}`;
-
-const heroSlidesData: ISlide[] = [
+const defaultSlides: HeroSlide[] = [
   {
-    id: "slide1",
-    imageUrl:
-      "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2560&auto=format&fit=crop",
-    headline: "Command the Road",
-    subline: "Experience the thrill of precision engineering and luxury.",
-  },
-  {
-    id: "slide2",
-    videoUrl:
-      "https://cdn.pixabay.com/video/2024/02/26/200827-919106201_large.mp4", // Fallback or dynamic
-    headline: "Future in Motion",
-    subline: "Discover our fleet of next-generation electric vehicles.",
-  },
-  {
-    id: "slide3",
-    imageUrl:
-      "https://images.unsplash.com/photo-1503376763036-066120622c74?q=80&w=2560&auto=format&fit=crop",
-    headline: "Adventure Ready",
-    subline: "Rugged capability meets refined comfort for every journey.",
-  },
+    id: "1",
+    imageUrl: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2560",
+    headline: "VELOCITY\nWITHOUT BORDERS",
+    subline: "The world's most exclusive automotive icons, delivered to your coordinates.",
+    type: null,
+    companyId: "",
+    productImageUrl: null,
+    ctaText: null,
+    ctaLink: null,
+    videoLink: null,
+    badgeText: null,
+    price: null,
+    endsAt: null,
+    order: 0,
+    iconKey: null,
+    backgroundColor: null,
+    textColor: null
+  }
 ];
 
-const AUTO_ADVANCE_DELAY = 8000;
-
-// --- ANIMATION VARIANTS ---
-const fadeInVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: { duration: 0.8, ease: "easeOut" }
-  },
-  exit: { opacity: 0, y: -20, transition: { duration: 0.5 } }
-};
-
-const slideVariants = {
-  enter: (direction: number) => ({
-    x: direction > 0 ? 1000 : -1000,
-    opacity: 0
-  }),
-  center: {
-    zIndex: 1,
-    x: 0,
-    opacity: 1
-  },
-  exit: (direction: number) => ({
-    zIndex: 0,
-    x: direction < 0 ? 1000 : -1000,
-    opacity: 0
-  })
-};
-
-// --- SUB-COMPONENT: Custom Select ---
-// Replacing external FloatingLabelDropdown for portability and style matching
-const CustomSelect = ({ 
-  icon, 
-  label, 
-  value, 
-  onChange, 
-  options 
-}: { 
-  icon: React.ReactNode; 
-  label: string; 
-  value: string | null; 
-  onChange: (val: string) => void; 
-  options: { id?: string; name?: string; displayName?: string | null; categoryId?: string | null }[] 
-}) => (
-  <div className="relative group w-full">
-    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors">
-      {icon}
-    </div>
-    <select
-      value={value || ""}
-      onChange={(e) => onChange(e.target.value)}
-      className="w-full h-14 pl-10 pr-4 bg-gray-50/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl 
-                 text-gray-900 dark:text-white text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                 appearance-none cursor-pointer transition-all hover:bg-white dark:hover:bg-gray-900"
-    >
-      <option value="" disabled>{label}</option>
-      {options.map((opt, idx) => {
-        // Handle various data shapes (StoreCategory vs TrendingLocation)
-        const val = opt.categoryId || opt.id || opt.name || idx.toString();
-        // displayName might be null coming from backend types; prefer non-null displayName, then name, then fallback value
-        const display = (opt.displayName ?? opt.name) || val;
-        return <option key={val} value={val}>{display}</option>;
-      })}
-    </select>
-    {/* Custom Arrow */}
-    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/></svg>
-    </div>
-  </div>
-);
-
-// --- MAIN COMPONENT ---
-export default function HeroSection({
+export default function LuxuryCommandHero({
   store,
-  trendingLocations = [],
-  filters,
-  setFilters,
   onSearch,
+  trendingLocations = [{ name: "Monaco" }, { name: "Dubai Marina" }, { name: "Beverly Hills" }],
 }: {
-  store?: StoreForm | null | undefined;
-  trendingLocations?: TrendingLocation[];
-  filters: IFilters | undefined;
-  setFilters: (filters: IFilters) => void;
-  onSearch: (e: React.FormEvent) => void;
+  store?: StoreForm | null;
+  onSearch: (filters: SearchFilters) => void;
+  trendingLocations?: { name: string }[];
 }) {
-  const heroSlides = store?.heroSlides?.length ? store.heroSlides : heroSlidesData;
-  const categories = store?.StoreCategory ?? [];
+  // --- Data & States ---
+  const heroSlides = store?.heroSlides?.length ? store.heroSlides : defaultSlides;
+  const categories = (store?.StoreCategory ?? []).filter((c) => c.visible ?? true);
   
   const [current, setCurrent] = useState(0);
-  const [direction, setDirection] = useState(0);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [location, setLocation] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<IStoreCategory | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<ISubcategory | null>(null);
 
-  // Filters State Logic
-  const safeFilters: IFilters = {
-    location: filters?.location ?? null,
-    vehicleType: filters?.vehicleType ?? null,
-    minPrice: filters?.minPrice ?? "",
-    maxPrice: filters?.maxPrice ?? "",
-    isBuy: filters?.isBuy ?? true,
-    year: filters?.year ?? null,
+  // --- UI States ---
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Parallax Logic
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const springX = useSpring(mouseX, { stiffness: 40, damping: 20 });
+  const springY = useSpring(mouseY, { stiffness: 40, damping: 20 });
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const { clientX, clientY } = e;
+    const { innerWidth, innerHeight } = window;
+    mouseX.set((clientX / innerWidth - 0.5) * 30);
+    mouseY.set((clientY / innerHeight - 0.5) * 30);
   };
 
-  const updateFilters = (updates: PartialFilters) => setFilters({ ...safeFilters, ...updates });
-
-  // Carousel Logic
-  const paginate = useCallback((newDirection: number) => {
-    setDirection(newDirection);
-    setCurrent((prev) => (prev + newDirection + heroSlides.length) % heroSlides.length);
-  }, [heroSlides.length]);
+  const nextSlide = useCallback(() => setCurrent((prev) => (prev + 1) % heroSlides.length), [heroSlides.length]);
 
   useEffect(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => paginate(1), AUTO_ADVANCE_DELAY);
-    return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
-  }, [current, paginate]);
-
-  const currentSlide = heroSlides[current];
-  const { isBuy } = safeFilters;
+    const timer = setInterval(nextSlide, 10000);
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setActiveDropdown(null);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => { clearInterval(timer); document.removeEventListener("mousedown", handleClickOutside); };
+  }, [nextSlide]);
 
   return (
-    <section className="relative h-[100dvh] w-full overflow-hidden bg-gray-950">
-      
-      {/* 1. IMMERSIVE BACKGROUND LAYER */}
-      <AnimatePresence initial={false} custom={direction}>
+    <>
+    <section 
+      onMouseMove={handleMouseMove}
+      className="relative h-screen w-full overflow-hidden bg-[#050505] selection:bg-blue-500/30"
+    >
+      {/* 1. KINETIC BACKGROUND */}
+      <AnimatePresence mode="wait">
         <motion.div
-          key={currentSlide.id}
-          className="absolute inset-0 z-0"
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 1, scale: 1 }} // Ken Burns Effect (Zoom Out)
+          key={current}
+          style={{ x: springX, y: springY, scale: 1.1 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 1.5, ease: "easeInOut" }}
+          transition={{ duration: 1.5 }}
+          className="absolute inset-0 z-0"
         >
-          {currentSlide.imageUrl || currentSlide.productImageUrl ? (
-            <Image
-              src={currentSlide.imageUrl || currentSlide.productImageUrl || ""}
-              alt={currentSlide.headline || "Hero Image"}
-              fill
-              priority
-              loader={customLoader}
-              className="object-cover"
-            />
-          ) : (
-            <video
-              src={store?.videoUrl || "https://cdn.pixabay.com/video/2024/02/26/200827-919106201_large.mp4"}
-              autoPlay muted loop playsInline
-              className="h-full w-full object-cover"
-            />
-          )}
-          {/* Cinematic Overlay Gradient */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/20 to-black/80" />
-          <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px]" /> 
+          <Image
+            src={heroSlides[current].imageUrl || "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2560"}
+            loader={({ src }) => src}
+            alt="Hero"
+            fill
+            className="object-cover brightness-[0.4] saturate-[1.2]"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-black/20" />
         </motion.div>
       </AnimatePresence>
 
       {/* 2. CONTENT LAYER */}
-      <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-20 pb-12">
+      <div className="relative z-10 flex h-full flex-col items-center justify-center px-6">
         
-        {/* Hero Text */}
-        <div className="w-full max-w-5xl text-center mb-12">
+        {/* Animated Badge */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8 flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 backdrop-blur-2xl"
+        >
+          <SparklesIcon className="h-4 w-4 text-blue-400" />
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/80">
+            Exclusive Inventory Access
+          </span>
+        </motion.div>
+
+        {/* Massive Headline */}
+        <div className="mb-16 text-center select-none">
           <AnimatePresence mode="wait">
-            <motion.div
+            <motion.h1
               key={current}
-              variants={fadeInVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
+              initial={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
+              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+              exit={{ opacity: 0, scale: 1.05, filter: "blur(10px)" }}
+              className="text-6xl md:text-9xl font-[1000] leading-[0.85] tracking-tighter text-white italic uppercase"
             >
-              <motion.span className="inline-block py-1 px-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-blue-400 text-xs font-bold uppercase tracking-widest mb-4">
-                 {isBuy ? "Premium Dealership" : "Flexible Rentals"}
-              </motion.span>
-              <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white tracking-tight drop-shadow-2xl mb-6">
-                {currentSlide.headline}
-              </h1>
-              <p className="text-lg sm:text-xl text-gray-200 max-w-2xl mx-auto font-medium leading-relaxed drop-shadow-lg">
-                {currentSlide.subline}
-              </p>
-            </motion.div>
+              {heroSlides[current].headline}
+            </motion.h1>
           </AnimatePresence>
         </div>
 
-        {/* 3. UNIFIED CONTROL DECK (Tabs + Search) */}
+        {/* 3. THE COMMAND CONSOLE (Unified Search) */}
         <motion.div 
-          initial={{ y: 40, opacity: 0 }}
+          ref={containerRef}
+          initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-          className="w-full max-w-5xl"
+          className="w-full max-w-7xl"
         >
-          {/* Mode Switcher (Tabs) */}
-          <div className="flex justify-center mb-4">
-            <div className="flex p-1.5 bg-gray-900/60 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl">
-              <button
-                onClick={() => updateFilters({ isBuy: true })}
-                className={`relative px-8 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${isBuy ? 'text-white' : 'text-gray-400 hover:text-white'}`}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-2 bg-white/5 backdrop-blur-3xl p-3 rounded-[2.5rem] border border-white/10 shadow-2xl">
+            
+            {/* 1. LOCATION */}
+            <div className="relative group">
+              <button 
+                onClick={() => setActiveDropdown(activeDropdown === 'loc' ? null : 'loc')}
+                className="w-full h-full flex flex-col justify-center px-8 py-5 rounded-2xl hover:bg-white/5 transition-all text-left"
               >
-                {isBuy && (
-                  <motion.div layoutId="activeTab" className="absolute inset-0 bg-blue-600 rounded-full shadow-lg shadow-blue-600/40" />
-                )}
-                <span className="relative z-10">Buy Car</span>
+                <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest mb-1">Coordinates</span>
+                <div className="flex items-center gap-2">
+                  <MapPinIcon className="h-4 w-4 text-white/40" />
+                  <span className="text-sm font-bold text-white truncate">{location || "Worldwide"}</span>
+                </div>
               </button>
-              <button
-                onClick={() => updateFilters({ isBuy: false })}
-                className={`relative px-8 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${!isBuy ? 'text-white' : 'text-gray-400 hover:text-white'}`}
-              >
-                {!isBuy && (
-                  <motion.div layoutId="activeTab" className="absolute inset-0 bg-emerald-600 rounded-full shadow-lg shadow-emerald-600/40" />
-                )}
-                <span className="relative z-10">Rent Car</span>
-              </button>
+              <Dropdown isOpen={activeDropdown === 'loc'}>
+                {trendingLocations.map((loc, i) => (
+                  <button key={i} onClick={() => { setLocation(loc.name); setActiveDropdown(null); }} className="dropdown-item">{loc.name}</button>
+                ))}
+              </Dropdown>
             </div>
+
+            {/* 2. CATEGORY (DISCIPLINE) */}
+            <div className="relative border-l border-white/5">
+              <button 
+                onClick={() => setActiveDropdown(activeDropdown === 'cat' ? null : 'cat')}
+                className="w-full h-full flex flex-col justify-center px-8 py-5 rounded-2xl hover:bg-white/5 transition-all text-left"
+              >
+                <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest mb-1">Collection</span>
+                <div className="flex items-center gap-2">
+                  <CpuChipIcon className="h-4 w-4 text-white/40" />
+                  <span className="text-sm font-bold text-white truncate">{selectedCategory?.displayName || "Select Group"}</span>
+                </div>
+              </button>
+              <Dropdown isOpen={activeDropdown === 'cat'}>
+                {categories.map((cat) => (
+                  <button key={cat.id} onClick={() => { setSelectedCategory(cat); setSelectedSubcategory(null); setActiveDropdown(null); }} className="dropdown-item">{cat.displayName}</button>
+                ))}
+              </Dropdown>
+            </div>
+
+            {/* 3. SUBCATEGORY (DYNAMIC FOCUS) */}
+            <div className="relative border-l border-white/5">
+              <button 
+                disabled={!selectedCategory}
+                onClick={() => setActiveDropdown(activeDropdown === 'sub' ? null : 'sub')}
+                className={`w-full h-full flex flex-col justify-center px-8 py-5 rounded-2xl transition-all text-left ${!selectedCategory ? 'opacity-20 cursor-not-allowed' : 'hover:bg-white/5'}`}
+              >
+                <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest mb-1">Model Variant</span>
+                <div className="flex items-center gap-2">
+                  <AdjustmentsHorizontalIcon className="h-4 w-4 text-white/40" />
+                  <span className="text-sm font-bold text-white truncate">{selectedSubcategory?.name || "All Types"}</span>
+                </div>
+              </button>
+              <Dropdown isOpen={activeDropdown === 'sub'}>
+                {(selectedCategory?.subcategories || []).map((sub) => (
+                  <button key={sub.id} onClick={() => { setSelectedSubcategory(sub); setActiveDropdown(null); }} className="dropdown-item">{sub.name}</button>
+                ))}
+              </Dropdown>
+            </div>
+
+            {/* 4. BUDGET */}
+            <div className="flex flex-col justify-center px-8 py-5 rounded-2xl border-l border-white/5">
+              <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest mb-1">Budget Range</span>
+              <div className="flex items-center gap-2">
+                <TicketIcon className="h-4 w-4 text-white/40" />
+                <input 
+                  type="text" 
+                  placeholder="Max USD"
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                  className="bg-transparent text-sm font-bold text-white outline-none placeholder:text-white/10 w-full"
+                />
+              </div>
+            </div>
+
+            {/* 5. SEARCH BUTTON */}
+            <button 
+              onClick={() => onSearch({
+                location, 
+                minPrice, 
+                maxPrice, 
+                category: selectedCategory?.id, 
+                subcategory: selectedSubcategory?.id,
+                vehicleType: "",
+                make: "",
+                model: "",
+                isBuy: false
+              })}
+              className="group/btn relative overflow-hidden rounded-3xl bg-white text-black transition-all hover:bg-blue-600 hover:text-white"
+            >
+              <div className="relative z-10 flex items-center justify-center gap-3 py-5 px-4">
+                <MagnifyingGlassIcon className="h-5 w-5 transition-transform group-hover/btn:scale-110" />
+                <span className="text-xs font-[1000] uppercase tracking-widest">Execute</span>
+              </div>
+              <motion.div 
+                className="absolute inset-0 bg-blue-400/20"
+                initial={false}
+                whileHover={{ scale: 1.5, opacity: 1 }}
+              />
+            </button>
+
           </div>
-
-          {/* Search Panel */}
-          <form 
-            onSubmit={onSearch}
-            className="bg-white/95 dark:bg-gray-900/90 backdrop-blur-xl p-3 rounded-3xl shadow-2xl border border-white/20 dark:border-gray-700/50"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-              
-              {/* Location */}
-              <div className="md:col-span-3">
-                 <CustomSelect 
-                    icon={<MapPinIcon className="w-5 h-5" />}
-                    label="All Locations"
-                    value={safeFilters.location}
-                    onChange={(v) => updateFilters({ location: v })}
-                    options={trendingLocations}
-                 />
-              </div>
-
-              {/* Type */}
-              <div className="md:col-span-3">
-                <CustomSelect 
-                    icon={<TruckIcon className="w-5 h-5" />}
-                    label="Any Type"
-                    value={safeFilters.vehicleType}
-                    onChange={(v) => updateFilters({ vehicleType: v })}
-                    options={categories}
-                 />
-              </div>
-
-              {/* Price Range (Double Inputs) */}
-              <div className="md:col-span-4 flex gap-2">
-                 <div className="relative w-1/2 group">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500">
-                        <CurrencyDollarIcon className="w-5 h-5" />
-                    </div>
-                    <input 
-                      type="number" 
-                      placeholder="Min"
-                      value={safeFilters.minPrice}
-                      onChange={(e) => updateFilters({ minPrice: e.target.value })}
-                      className="w-full h-14 pl-10 pr-3 bg-gray-50/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all hover:bg-white dark:hover:bg-gray-900 dark:text-white"
-                    />
-                 </div>
-                 <div className="relative w-1/2 group">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500">
-                        <CurrencyDollarIcon className="w-5 h-5" />
-                    </div>
-                    <input 
-                      type="number" 
-                      placeholder="Max"
-                      value={safeFilters.maxPrice}
-                      onChange={(e) => updateFilters({ maxPrice: e.target.value })}
-                      className="w-full h-14 pl-10 pr-3 bg-gray-50/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all hover:bg-white dark:hover:bg-gray-900 dark:text-white"
-                    />
-                 </div>
-              </div>
-
-              {/* Submit Button */}
-              <div className="md:col-span-2">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  type="submit"
-                  className={`w-full h-14 rounded-xl font-bold text-white shadow-lg transition-all duration-300 flex items-center justify-center gap-2
-                    ${isBuy 
-                      ? 'bg-gradient-to-br from-blue-600 to-indigo-700 hover:shadow-blue-600/40' 
-                      : 'bg-gradient-to-br from-emerald-500 to-teal-600 hover:shadow-emerald-500/40'
-                    }`}
-                >
-                  <MagnifyingGlassIcon className="w-5 h-5" />
-                  <span>Search</span>
-                </motion.button>
-              </div>
-
-            </div>
-          </form>
         </motion.div>
       </div>
-
-      {/* 4. PROGRESS & NAVIGATION CONTROLS */}
-      <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/90 to-transparent pt-20 pb-8">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-          
-          {/* Progress Bars */}
-          <div className="flex gap-3 w-full max-w-md">
-            {heroSlides.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => {
-                  setDirection(idx > current ? 1 : -1);
-                  setCurrent(idx);
-                }}
-                className="group relative h-1.5 flex-1 bg-white/20 rounded-full overflow-hidden transition-all hover:h-2"
-              >
-                {/* Background track */}
-                <div className="absolute inset-0 bg-white/20 group-hover:bg-white/30 transition-colors" />
-                
-                {/* Active Fill */}
-                {idx === current && (
-                  <motion.div
-                    layoutId="progressFill"
-                    className={`absolute inset-y-0 left-0 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.7)]`}
-                    initial={{ width: "0%" }}
-                    animate={{ width: "100%" }}
-                    transition={{ duration: AUTO_ADVANCE_DELAY / 1000, ease: "linear" }}
-                  />
-                )}
-                {/* Completed Fill */}
-                {idx < current && <div className="absolute inset-0 bg-white/60" />}
-              </button>
-            ))}
-          </div>
-
-          {/* Arrow Controls */}
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => paginate(-1)}
-              className="p-3 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm text-white hover:bg-white hover:text-black transition-all duration-300"
-            >
-              <ArrowLeftIcon className="w-5 h-5" />
-            </button>
-            <button 
-              onClick={() => paginate(1)}
-              className="p-3 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm text-white hover:bg-white hover:text-black transition-all duration-300"
-            >
-              <ArrowRightIcon className="w-5 h-5" />
-            </button>
-          </div>
-
-        </div>
-      </div>
     </section>
+
+      <style jsx global>{`
+        .dropdown-item {
+          @apply w-full text-left px-5 py-4 text-[11px] font-black text-white/60 hover:text-white hover:bg-white/5 transition-all uppercase tracking-widest;
+        }
+      `}</style>
+  </>
   );
 }
+
+// --- Helper Components ---
+
+function Dropdown({ children, isOpen }: { children: React.ReactNode; isOpen: boolean }) {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div 
+          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+          className="absolute top-[calc(100%+12px)] left-0 w-64 bg-neutral-900/90 backdrop-blur-2xl border border-white/10 rounded-2xl overflow-hidden z-[100] p-1 shadow-2xl"
+        >
+          {children}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+// Global CSS or Tailwind for the dropdown items
+// .dropdown-item { @apply w-full text-left px-5 py-4 text-[11px] font-black text-white/60 hover:text-white hover:bg-white/5 transition-all uppercase tracking-widest; }

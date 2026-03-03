@@ -1,302 +1,222 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import {
   MagnifyingGlassIcon,
   Bars3BottomRightIcon,
   XMarkIcon,
   UserIcon,
+  ShoppingBagIcon,
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { StoreForm } from "@/types/typings";
 
-// Fallback sample data (same style as your other header)
-const fallbackData: StoreForm = {
-  name: "AutoHub",
-  slug: "autohub",
-  logoUrl: "https://placehold.co/120x40?text=Logo",
-  contactEmail: "sales@autohub.com",
-  contactPhone: "+1 555-987-654",
-  socialLinks: [],
-  themeSettings: {
-    primaryColor: "#2563eb",
-    secondaryColor: "#1e3a8a",
-  },
-  id: "",
-  tagline: null,
-  description: null,
-  hasWebsite: undefined,
-  companyCategoryId: null,
-  category: "",
-  bannerUrl: null,
-  site: null,
-  address: null,
-  domain: null,
-  currency: "",
-  locale: "",
-  userId: null,
-  createdAt: null,
-  updatedAt: null,
-  deletedAt: null,
-  sEOId: null,
-  CoreValues: [],
-  geoLocation: null,
-  openingHours: null,
-  pricingTiers: [],
-  awards: null,
-  metrics: null,
-  stats: null,
-  settings: null,
-  policies: [],
-  faqs: [],
-  testimonials: [],
-  promotions: [],
-  Announcement: [],
-  Collection: [],
-  pageSections: [],
-  heroSlides: [],
-  appPromos: [],
-  events: [],
-  courses: [],
-  blogs: [],
-  projects: [],
-  seo: null,
-  analyticsConfig: null,
-  paymentSettings: null,
-  shippingSettings: null,
-  StoreCategory: [],
-  CompanyLocation: [],
-  marketplaceListings: [],
-  Writer: [],
-  Expert: [],
-  salesAgents: [],
-  Educator: [],
-  Doctor: [],
-  packages: [],
-  Podcast: [],
-  services: [],
-  destinations: [],
-  tourPackages: []
-};
-
 interface HeaderProps {
   storeFormData?: StoreForm;
 }
 
-// Next.js Image loader
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
-
-// --- Animation Variants ---
-const menuVariants = {
-  hidden: { y: -20, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 90 } },
-};
-
-const mobileMenuVariants = {
-  open: { height: "auto", opacity: 1, transition: { duration: 0.25 } },
-  closed: { height: 0, opacity: 0, transition: { duration: 0.25 } },
-};
-
 const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
-  const data = storeFormData || fallbackData;
+  const data = storeFormData || ({} as StoreForm);
   const router = useRouter();
-
   const { data: session } = useSession();
-  const user = session?.user as { name?: string; role?: string } | undefined;
+  const user = session?.user as { name?: string; image?: string } | undefined;
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
+  
+  // Scroll Logic for dynamic styling
+  const { scrollY } = useScroll();
+  const headerBg = useTransform(
+    scrollY,
+    [0, 100],
+    ["rgba(0,0,0,0)", "rgba(5,5,5,0.8)"]
+  );
+  const headerBlur = useTransform(
+    scrollY,
+    [0, 100],
+    ["blur(0px)", "blur(20px)"]
+  );
+  const headerBorder = useTransform(
+    scrollY,
+    [0, 100],
+    ["border-bottom: 1px solid rgba(255,255,255,0)", "border-bottom: 1px solid rgba(255,255,255,0.1)"]
+  );
 
-  const navItems = ["Home", "Listings", "Categories"];
-
-  // --- Authentication Logic ---
-  const handleGoogleSignIn = () => {
-    const url = new URL("https://auth.salesmanpro.site/signin");
-    url.searchParams.set("callbackUrl", `${window.location.origin}`);
-    window.location.href = url.toString();
-  };
-
-  const handleGoogleSignUp = () => {
-    const url = new URL("https://auth.salesmanpro.site/signup");
-    url.searchParams.set("callbackUrl", `${window.location.origin}`);
-    window.location.href = url.toString();
-  };
-
-  const handleProfileClick = () => {
-    if (!user) return handleGoogleSignIn();
-    router.push(`/site/${data.slug}/automotive/profile`);
-  };
+  const navItems = [
+    { label: "Inventory", href: "/listings" },
+    { label: "Collections", href: "/categories" },
+    { label: "Services", href: "/services" },
+  ];
 
   return (
-    <header className="absolute inset-x-0 top-0 z-50">
-      <div className="backdrop-blur-md bg-white/60 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            {/* Logo */}
-            <motion.div variants={menuVariants} initial="hidden" animate="visible">
-              <Link href={`/site/${data.slug}`} className="flex items-center">
-                {data.logoUrl ? (
+    <motion.header
+      style={{ backgroundColor: headerBg, backdropFilter: headerBlur }}
+      className="fixed inset-x-0 top-0 z-[100] transition-all duration-300 border-b border-transparent"
+    >
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
+        <div className="flex items-center justify-between h-24">
+          
+          {/* 1. BRANDING */}
+          <div className="flex items-center gap-12">
+            <Link href={`/site/${data.slug}`} className="relative group">
+              {data.logoUrl ? (
+                <div className="relative h-10 w-32 transition-transform duration-500 group-hover:scale-110">
                   <Image
                     src={data.logoUrl}
                     alt={data.name}
-                    width={120}
+                    loader={({ src }) => src} // Use the URL directly
+                    unoptimized
+                    width={40}
                     height={40}
-                    loader={loader}
-                    className="object-contain hover:scale-105 transition"
+                    // fill
+                    className="object-contain brightness-0 invert" // Forces logo to white for dark theme
                   />
-                ) : (
-                  <span className="text-2xl font-bold text-gray-900">{data.name}</span>
-                )}
-              </Link>
-            </motion.div>
+                </div>
+              ) : (
+                <span className="text-2xl font-[1000] tracking-tighter text-white italic uppercase">
+                  {data.name || "PRESTIGE"}
+                </span>
+              )}
+              <motion.div 
+                className="absolute -bottom-1 left-0 h-[2px] bg-blue-500"
+                initial={{ width: 0 }}
+                whileHover={{ width: "100%" }}
+              />
+            </Link>
 
-            {/* Desktop Nav + Search */}
-            <div className="hidden lg:flex items-center space-x-8">
-              {navItems.map((label, index) => (
+            {/* Desktop Nav */}
+            <nav className="hidden lg:flex items-center gap-8">
+              {navItems.map((item) => (
+                <Link
+                  key={item.label}
+                  href={`/site/${data.slug}${item.href}`}
+                  className="text-[11px] font-black uppercase tracking-[0.2em] text-white/60 hover:text-white transition-colors"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+
+          {/* 2. ACTIONS */}
+          <div className="flex items-center gap-6">
+            
+            {/* Search Trigger */}
+            <div className="hidden md:flex items-center">
+              <AnimatePresence>
+                {isSearchVisible && (
+                  <motion.div
+                    initial={{ width: 0, opacity: 0 }}
+                    animate={{ width: 240, opacity: 1 }}
+                    exit={{ width: 0, opacity: 0 }}
+                    className="overflow-hidden mr-2"
+                  >
+                    <input
+                      autoFocus
+                      placeholder="SEARCH INVENTORY..."
+                      className="w-full bg-white/5 border border-white/10 rounded-full py-2 px-5 text-[10px] font-bold text-white placeholder:text-white/20 focus:outline-none focus:border-blue-500/50"
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <button
+                onClick={() => setIsSearchVisible(!isSearchVisible)}
+                className="p-2 text-white/60 hover:text-white transition-colors"
+              >
+                {isSearchVisible ? <XMarkIcon className="h-5 w-5" /> : <MagnifyingGlassIcon className="h-5 w-5" />}
+              </button>
+            </div>
+
+            {/* Auth / Profile Section */}
+            <div className="hidden lg:flex items-center gap-4 pl-6 border-l border-white/10">
+              {!user ? (
+                <button
+                  onClick={() => router.push("https://auth.salesmanpro.site/signin")}
+                  className="text-[10px] font-black uppercase tracking-widest text-white px-6 py-2.5 rounded-full border border-white/20 hover:bg-white hover:text-black transition-all"
+                >
+                  Membership
+                </button>
+              ) : (
+                <button
+                  onClick={() => router.push(`/site/${data.slug}/automotive/profile`)}
+                  className="group flex items-center gap-3"
+                >
+                  <div className="text-right">
+                    <p className="text-[9px] font-bold text-white/40 uppercase">Verified Member</p>
+                    <p className="text-[11px] font-black text-white uppercase tracking-tight">{user.name}</p>
+                  </div>
+                  <div className="h-10 w-10 rounded-full border-2 border-blue-500/30 p-0.5 overflow-hidden">
+                    <Image 
+                       src={user.image || "https://ui-avatars.com/api/?name=" + user.name} 
+                       width={40} height={40} alt="User" className="rounded-full object-cover"
+                       loader={({ src }) => src} unoptimized 
+
+                    />
+                  </div>
+                </button>
+              )}
+            </div>
+
+            {/* Mobile Menu Toggle */}
+            <button
+              className="lg:hidden p-3 rounded-xl bg-white/5 border border-white/10 text-white"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Bars3BottomRightIcon className="h-6 w-6" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. MOBILE OVERLAY (Full Screen) */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="fixed inset-0 z-[110] bg-[#050505] p-8 flex flex-col"
+          >
+            <div className="flex justify-between items-center mb-16">
+              <span className="text-xl font-black italic text-white uppercase tracking-tighter">Menu</span>
+              <button onClick={() => setMobileMenuOpen(false)} className="p-3 bg-white/5 rounded-full text-white">
+                <XMarkIcon className="h-8 w-8" />
+              </button>
+            </div>
+
+            <nav className="flex flex-col gap-8">
+              {navItems.map((item, i) => (
                 <motion.div
-                  key={label}
-                  variants={menuVariants}
-                  initial="hidden"
-                  animate="visible"
-                  custom={index}
-                  whileHover={{ scale: 1.05 }}
-                  className="font-medium text-gray-700 hover:text-blue-600 transition"
+                  key={item.label}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.1 }}
                 >
                   <Link
-                    href={`/site/${data.slug}${label === "Home" ? "" : "#" + label.toLowerCase()}`}
+                    href={item.href}
+                    className="text-5xl font-black text-white uppercase italic tracking-tighter hover:text-blue-500 transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
                   >
-                    {label}
+                    {item.label}
                   </Link>
                 </motion.div>
               ))}
+            </nav>
 
-              {/* Search */}
-              <div className="relative flex items-center">
-                <AnimatePresence>
-                  {isSearchVisible && (
-                    <motion.input
-                      initial={{ width: 0, opacity: 0 }}
-                      animate={{ width: 260, opacity: 1 }}
-                      exit={{ width: 0, opacity: 0 }}
-                      placeholder="Search..."
-                      className="bg-gray-100 text-gray-700 rounded-full py-2 pl-4 pr-10 focus:outline-none"
-                    />
-                  )}
-                </AnimatePresence>
-
-                <motion.button
-                  onClick={() => setIsSearchVisible(!isSearchVisible)}
-                  className={`p-2 rounded-full ${
-                    isSearchVisible ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-gray-200"
-                  }`}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <MagnifyingGlassIcon className="h-5 w-5" />
-                </motion.button>
-              </div>
+            <div className="mt-auto pt-12 border-t border-white/10">
+               <button className="w-full py-6 bg-blue-600 rounded-2xl text-white font-black uppercase tracking-widest">
+                 Member Portal
+               </button>
             </div>
-
-            {/* Right Side: Profile + Mobile Button */}
-            <div className="flex items-center space-x-4">
-              {/* Auth/Profile */}
-              {!user ? (
-                <div className="hidden lg:flex space-x-2">
-                  <button
-                    onClick={handleGoogleSignIn}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition"
-                  >
-                    Login
-                  </button>
-                  <button
-                    onClick={handleGoogleSignUp}
-                    className="px-4 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition"
-                  >
-                    Register
-                  </button>
-                </div>
-              ) : (
-                <motion.button
-                  onClick={handleProfileClick}
-                  className="hidden lg:flex items-center space-x-2 p-2 rounded-full hover:bg-gray-200 transition"
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <UserIcon className="h-6 w-6 text-gray-700" />
-                  <span className="font-medium text-gray-700">{user.name || "Profile"}</span>
-                </motion.button>
-              )}
-
-              {/* Mobile Menu Toggle */}
-              <button
-                className="lg:hidden p-2 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              >
-                {mobileMenuOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3BottomRightIcon className="h-6 w-6" />}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {mobileMenuOpen && (
-            <motion.div
-              variants={mobileMenuVariants}
-              initial="closed"
-              animate="open"
-              exit="closed"
-              className="lg:hidden bg-white/80 border-t border-gray-200 overflow-hidden"
-            >
-              <div className="flex flex-col px-4 py-4 space-y-4">
-                {navItems.map((label) => (
-                  <Link
-                    key={label}
-                    href={`/site/${data.slug}${label === "Home" ? "" : "#" + label.toLowerCase()}`}
-                    className="text-gray-900 font-medium hover:text-blue-600"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {label}
-                  </Link>
-                ))}
-
-                {/* Auth Mobile */}
-                <div className="pt-3 border-t">
-                  {user ? (
-                    <>
-                      <button
-                        onClick={handleProfileClick}
-                        className="w-full text-left py-2"
-                      >
-                        Profile
-                      </button>
-                      <button
-                        onClick={() => signOut({ callbackUrl: "/" })}
-                        className="w-full text-left py-2 text-red-600"
-                      >
-                        Logout
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button onClick={handleGoogleSignIn} className="w-full text-left py-2">
-                        Login
-                      </button>
-                      <button onClick={handleGoogleSignUp} className="w-full text-left py-2">
-                        Register
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </header>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.header>
   );
 };
 

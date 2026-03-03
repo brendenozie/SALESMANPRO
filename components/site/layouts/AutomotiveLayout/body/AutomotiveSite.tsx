@@ -8,7 +8,7 @@ import { useStoreContext } from "@/contexts/StoreContext";
 import { StoreForm } from "@/types/typings";
 
 // Above-the-fold components - statically imported
-import HeroSection, { IFilters } from "./components/HeroSection";
+import HeroSection, { SearchFilters } from "./components/HeroSection";
 
 // Loading skeleton
 const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
@@ -89,15 +89,30 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
     }
   }, [testimonialsData]);
   
-  const [filters, setFilters] = useState<IFilters | undefined>(undefined);
+  const [filters, setFilters] = useState<SearchFilters>({
+    location: "",
+    vehicleType: "",
+    make: "",
+    model: "",
+    minPrice: "",
+    maxPrice: "",
+    isBuy: true
+  });
 
-  const handleSearch = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      console.log("Search triggered with filters:", filters);
-    },
-    [filters]
-  );
+  const handleSearch = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    // Build query params based on filters
+    const queryParams = new URLSearchParams();
+    if (filters.location) queryParams.append("location", filters.location);
+    if (filters.vehicleType) queryParams.append("vehicleType", filters.vehicleType);
+    if (filters.make) queryParams.append("make", filters.make);
+    if (filters.model) queryParams.append("model", filters.model);
+    if (filters.minPrice) queryParams.append("minPrice", filters.minPrice);
+    if (filters.maxPrice) queryParams.append("maxPrice", filters.maxPrice);
+    queryParams.append("isBuy", String(filters.isBuy));
+    // Navigate to search results page with query params
+    window.location.href = `/search?${queryParams.toString()}`;
+  }, [filters]);
 
   return (
     <div className="font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
@@ -117,9 +132,9 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
             ...loc,
           }))
           : []} 
-          filters={filters} 
-          setFilters={setFilters} 
-          onSearch={handleSearch}
+          // filters={filters}
+          // setFilters={setFilters}
+          onSearch={() => {}} // No-op since search is handled in FilterBarSection
       />
 
       <AutomotiveFeaturedListingsWrapper companyId={pageData.id}/>
