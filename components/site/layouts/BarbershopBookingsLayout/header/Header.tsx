@@ -1,229 +1,227 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
+  MagnifyingGlassIcon,
+  ShoppingBagIcon,
   Bars3BottomRightIcon,
   XMarkIcon,
-  UserCircleIcon,
-  ArrowRightIcon,
-  SparklesIcon,
-  ShieldCheckIcon
+  UserIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
-
-const loader = ({ src, width, quality }: any) =>
+import { useSession } from 'next-auth/react'; 
+// import CartDrawer from './CartDrawer';
+// 
+const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
 export default function Header() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [hoveredNav, setHoveredNav] = useState<string | null>(null);
-  const router = useRouter();
-  const { scrollY } = useScroll();
-
+  const { cart } = useStateContext();
   const { storeFormData } = useStoreContext();
+  const router = useRouter();
   const { data: session } = useSession();
-  const user = session?.user as { role?: string; name?: string; image?: string } | undefined;
+  const user = session?.user as { role?: string; name?: string } | undefined;
 
-  const { name, logoUrl, themeSettings = {} } = storeFormData || {};
-  const primaryColor = themeSettings?.primaryColor || '#C5A267';
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  const navItems = [
-    { id: 'services', label: 'Rituals' },
-    { id: 'benefits', label: 'Philosophy' },
-    { id: 'testimonials', label: 'Collective' },
-    { id: 'faq', label: 'Intelligence' },
-    { id: 'contact', label: 'Concierge' },
+  const { name, logoUrl } = storeFormData || {};
+  const primaryColor = '#D4AF37'; // Matching the Hero's Gold
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const navLinks = [
+    { label: 'Services', href: `/services` },
+    { label: 'Products', href: `/ecommerce/products` },
+    { label: 'Master Barbers', href: `/team` },
+    { label: 'Journal', href: `/about` },
   ];
 
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    setScrolled(latest > 50);
-  });
-
-  const handleUserAction = () => {
-    if (!user) return handleGoogleSignIn();
-    user.role?.toLowerCase() === 'admin' ? router.push('/dashboards') : router.push(`/bookings/profile`);
-  };
-
   const handleGoogleSignIn = () => {
-    const authUrl = new URL('https://auth.salesmanpro.site/signin');
-    authUrl.searchParams.set('callbackUrl', window.location.origin);
-    window.location.href = authUrl.toString();
-  };
-
-  const handleGoogleSignUp = () => {
-    const authUrl = new URL('https://auth.salesmanpro.site/signup');
-    authUrl.searchParams.set('callbackUrl', window.location.origin);
+    const authUrl = new URL("https://auth.salesmanpro.site/signin");
+    authUrl.searchParams.set("callbackUrl", `${window.location.origin}`);
     window.location.href = authUrl.toString();
   };
 
   return (
     <>
-      <motion.header
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed top-0 inset-x-0 z-[100] pointer-events-none"
+      <header
+        className={`
+          fixed top-0 left-0 w-full z-50 transition-all duration-500 ease-in-out py-6
+          ${scrolled 
+            ? 'bg-black/80 backdrop-blur-2xl border-b border-white/5 py-4' 
+            : 'bg-transparent'}
+        `}
       >
-        <div className="container mx-auto px-6 py-6">
-          <div className={`
-            relative flex items-center justify-between px-6 py-3 rounded-full transition-all duration-700 pointer-events-auto
-            ${scrolled 
-              ? 'bg-black/60 backdrop-blur-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] scale-[0.98]' 
-              : 'bg-transparent border border-transparent'
-            }
-          `}>
-            
-            {/* Logo: Architectural Branding */}
-            <Link href="/" className="flex items-center gap-4 z-50 group">
-              <div className="relative w-9 h-9 overflow-hidden rounded-full bg-zinc-900 border border-white/5 group-hover:border-[#C5A267]/50 transition-all duration-500">
-                {logoUrl ? (
-                  <Image
-                    src={logoUrl}
-                    alt={name || 'Logo'}
-                    fill
-                    loader={loader}
-                    className="object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-[10px] font-black text-white" style={{ backgroundColor: primaryColor }}>
-                    {name?.charAt(0) || 'R'}
-                  </div>
-                )}
-              </div>
-              <span className={`text-lg font-black tracking-tighter transition-colors duration-500 ${scrolled ? 'text-white' : 'text-zinc-900'}`}>
-                {name || 'RITUAL'}<span style={{ color: primaryColor }}>.</span>
-              </span>
-            </Link>
-
-            {/* Desktop Nav: Magnetic Experience */}
-            <nav className="hidden md:flex items-center bg-white/5 rounded-full p-1 border border-white/5">
-              {navItems.map((item) => (
-                <a
-                  key={item.id}
-                  href={`#${item.id}`}
-                  onMouseEnter={() => setHoveredNav(item.id)}
-                  onMouseLeave={() => setHoveredNav(null)}
-                  className={`relative px-6 py-2 text-[10px] font-black uppercase tracking-[0.2em] transition-colors duration-300 ${
-                    hoveredNav === item.id ? 'text-white' : (scrolled ? 'text-zinc-400' : 'text-zinc-500')
-                  }`}
-                >
-                  <span className="relative z-10">{item.label}</span>
-                  {hoveredNav === item.id && (
-                    <motion.div
-                      layoutId="nav-glow"
-                      className="absolute inset-0 rounded-full bg-white/10"
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                    />
-                  )}
-                </a>
-              ))}
-            </nav>
-
-            {/* Actions: Command Center */}
-            <div className="hidden md:flex items-center gap-6">
-              {!user ? (
-                <>
-                  <button
-                    onClick={handleGoogleSignIn}
-                    className={`text-[10px] font-black uppercase tracking-widest transition-all hover:text-[#C5A267] ${scrolled ? 'text-zinc-400' : 'text-zinc-600'}`}
-                  >
-                    Login
-                  </button>
-                  <button
-                    onClick={handleGoogleSignUp}
-                    className="group relative flex items-center gap-3 px-6 py-3 rounded-full bg-white text-black text-[10px] font-black uppercase tracking-widest shadow-2xl hover:bg-[#C5A267] hover:text-white transition-all duration-500"
-                  >
-                    Join Ritual
-                    <ArrowRightIcon className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </>
+        <div className="max-w-[1400px] mx-auto px-6 flex items-center justify-between">
+          
+          {/* LEFT: BRANDING */}
+          <div className="flex-1">
+            <Link href="/" className="inline-block group">
+              {logoUrl ? (
+                <Image 
+                  src={logoUrl} 
+                  alt={name || 'Barber'} 
+                  width={140} 
+                  height={40} 
+                  className="object-contain h-8 w-auto brightness-0 invert" 
+                  loader={imageLoader} 
+                />
               ) : (
-                <button
-                  onClick={handleUserAction}
-                  className="flex items-center gap-3 p-1 pr-5 rounded-full bg-zinc-900 border border-white/10 hover:border-[#C5A267]/50 transition-all group"
-                >
-                  <div className="relative">
-                    {user.image ? (
-                      <img src={user.image} alt="User" className="w-8 h-8 rounded-full object-cover grayscale group-hover:grayscale-0 transition-all" />
-                    ) : (
-                      <UserCircleIcon className="w-8 h-8 text-zinc-600" />
-                    )}
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-zinc-900 rounded-full" />
-                  </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-white">
-                    {user.name?.split(' ')[0]}
+                <div className="flex flex-col leading-none">
+                  <span className="text-2xl font-black tracking-tighter text-white uppercase group-hover:text-[#D4AF37] transition-colors">
+                    {name || 'THE CRAFT'}
                   </span>
-                </button>
+                  <div className="flex items-center gap-1">
+                    <span className="h-[1px] w-3 bg-[#D4AF37]" />
+                    <span className="text-[7px] uppercase tracking-[0.5em] text-[#D4AF37] font-bold">Bespoke Grooming</span>
+                  </div>
+                </div>
               )}
-            </div>
+            </Link>
+          </div>
 
-            {/* Mobile Toggle: Aesthetic Bars */}
-            <button
-              onClick={() => setIsOpen(true)}
-              className={`md:hidden p-3 rounded-full transition-colors ${scrolled ? 'bg-white/10 text-white' : 'bg-zinc-100 text-zinc-900'}`}
+          {/* CENTER: NAV */}
+          <nav className="hidden lg:flex items-center space-x-10">
+            {navLinks.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/70 hover:text-[#D4AF37] transition-all relative group"
+              >
+                {item.label}
+                <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-[#D4AF37] transition-all group-hover:w-full" />
+              </Link>
+            ))}
+          </nav>
+
+          {/* RIGHT: ICON SYSTEM */}
+          <div className="flex-1 flex items-center justify-end space-x-3 md:space-x-6">
+            <button className="p-2 text-white/80 hover:text-[#D4AF37] transition-colors hidden sm:block">
+              <MagnifyingGlassIcon className="h-5 w-5" />
+            </button>
+
+            {user ? (
+              <button 
+                onClick={() => router.push('/ecommerce/profile')} 
+                className="w-9 h-9 rounded-full border border-white/10 flex items-center justify-center text-white hover:border-[#D4AF37] hover:text-[#D4AF37] transition-all"
+              >
+                <UserIcon className="h-4 w-4" />
+              </button>
+            ) : (
+              <button 
+                onClick={handleGoogleSignIn}
+                className="hidden md:flex flex-col items-end group"
+              >
+                <span className="text-[9px] font-black uppercase tracking-widest text-white group-hover:text-[#D4AF37] transition-colors">Members</span>
+                <span className="h-[1px] w-4 bg-[#D4AF37]" />
+              </button>
+            )}
+
+            <button 
+              onClick={() => setIsCartOpen(true)} 
+              className="relative p-2 text-white group"
             >
-              <Bars3BottomRightIcon className="h-5 w-5" />
+              <ShoppingBagIcon className="h-5 w-5 group-hover:text-[#D4AF37] transition-colors" />
+              {cart.length > 0 && (
+                <span className="absolute top-0 right-0 bg-[#D4AF37] text-black text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center">
+                  {cart.length}
+                </span>
+              )}
+            </button>
+
+            <button 
+              onClick={() => setMobileMenuOpen(true)} 
+              className="lg:hidden p-2 text-white border border-white/10 rounded-lg"
+            >
+              <Bars3BottomRightIcon className="h-6 w-6" />
             </button>
           </div>
         </div>
-      </motion.header>
+      </header>
 
-      {/* MOBILE OVERLAY: The Velvet Room */}
+      {/* MOBILE DRAWER (Brutal Luxury Design) */}
       <AnimatePresence>
-        {isOpen && (
-          <motion.aside
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", damping: 30, stiffness: 200 }}
-            className="fixed inset-0 z-[150] bg-[#050505] flex flex-col p-12"
-          >
-            <div className="flex items-center justify-between mb-20">
-              <span className="text-xl font-black tracking-tighter text-white">{name}</span>
-              <button onClick={() => setIsOpen(false)} className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-white">
-                <XMarkIcon className="h-6 w-6" />
-              </button>
-            </div>
-
-            <nav className="flex flex-col gap-8">
-              {navItems.map((item, i) => (
-                <motion.a
-                  key={item.id}
-                  href={`#${item.id}`}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  onClick={() => setIsOpen(false)}
-                  className="group flex items-baseline gap-6"
+        {mobileMenuOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[60]"
+            />
+            <motion.div
+              initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
+              transition={{ type: 'tween', duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="fixed right-0 top-0 h-full w-full sm:w-[450px] bg-[#0A0A0A] border-l border-white/5 z-[70] shadow-2xl flex flex-col"
+            >
+              <div className="p-8 flex justify-between items-center">
+                <span className="text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.5em]">Navigation</span>
+                <button 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-3 bg-white/5 text-white rounded-full hover:bg-[#D4AF37] hover:text-black transition-all"
                 >
-                  <span className="text-[10px] font-bold text-zinc-700 group-hover:text-[#C5A267]">0{i + 1}</span>
-                  <span className="text-5xl font-black text-white tracking-tighter group-hover:italic group-hover:text-[#C5A267] transition-all">
-                    {item.label}
-                  </span>
-                </motion.a>
-              ))}
-            </nav>
-
-            <div className="mt-auto pt-12 border-t border-white/5 space-y-8">
-              <div className="flex items-center gap-4 text-zinc-500">
-                <ShieldCheckIcon className="w-5 h-5 text-[#C5A267]" />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Secure Access Protocol Active</span>
-              </div>
-              <div className="grid grid-cols-1 gap-4">
-                <button onClick={handleUserAction} className="w-full py-6 rounded-2xl bg-[#C5A267] text-black font-black uppercase tracking-[0.2em] text-xs">
-                  {user ? 'Enter Dashboard' : 'Get Started'}
+                  <XMarkIcon className="h-5 w-5" />
                 </button>
               </div>
-            </div>
-          </motion.aside>
+
+              <div className="flex-1 px-12 flex flex-col justify-center space-y-10">
+                {navLinks.map((item, i) => (
+                  <motion.div 
+                    key={item.label} 
+                    initial={{ x: 50, opacity: 0 }} 
+                    animate={{ x: 0, opacity: 1 }} 
+                    transition={{ delay: i * 0.1 + 0.3 }}
+                  >
+                    <Link 
+                      href={item.href} 
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="group flex items-baseline gap-6"
+                    >
+                      <span className="text-[#D4AF37] font-serif italic text-xl">0{i + 1}</span>
+                      <span className="text-6xl font-black text-white uppercase tracking-tighter group-hover:italic group-hover:text-[#D4AF37] transition-all duration-300">
+                        {item.label}
+                      </span>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="p-12 border-t border-white/5 bg-white/[0.02]">
+                <button 
+                  onClick={handleGoogleSignIn}
+                  className="w-full py-6 bg-[#D4AF37] text-black font-black uppercase tracking-[0.3em] text-[11px] hover:bg-white transition-colors mb-8"
+                >
+                  Client Login
+                </button>
+                <div className="grid grid-cols-2 gap-4 text-[9px] text-white/30 uppercase tracking-[0.2em] font-bold">
+                   <div className="space-y-2">
+                     <p className="text-white/60">Follow</p>
+                     <p className="hover:text-[#D4AF37] cursor-pointer">Instagram</p>
+                     <p className="hover:text-[#D4AF37] cursor-pointer">Facebook</p>
+                   </div>
+                   <div className="space-y-2 text-right">
+                     <p className="text-white/60">Location</p>
+                     <p>123 Barber St, NY</p>
+                     <p>Bookings: 555-0123</p>
+                   </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
+
+      {/* <CartDrawer isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} /> */}
     </>
   );
 }

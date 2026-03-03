@@ -1,178 +1,185 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-// Using Heroicons as requested
 import {
   MagnifyingGlassIcon,
   CalendarDaysIcon,
   ClockIcon,
-  MapPinIcon,
-  ChevronRightIcon,
-  StarIcon,
-  SparklesIcon
-} from "@heroicons/react/24/solid"; 
+  TicketIcon,
+  ArrowRightIcon,
+} from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
-import { MarketListingForm, HeroSlide } from "@/types/typings";
-import { useRouter } from "next/navigation";
 
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
-export default function Hero({ name, description, bannerUrl, heroSlides, marketplaceListings }: any) {
+export default function Hero({ name, bannerUrl, heroSlides }: any) {
   const { storeFormData } = useStoreContext();
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#D4AF37'; // Gold default
-  const [searchTerm, setSearchTerm] = useState("");
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#D4AF37'; 
   const [date, setDate] = useState(new Date());
-  const [timeSlot, setTimeSlot] = useState<string>("");
-  const [isFocused, setIsFocused] = useState(false);
-  const [selectedListing, setSelectedListing] = useState<any>(null);
-  const router = useRouter();
 
-  // --- Animation Variants ---
-  const floatingVariant = {
-    animate: {
-      y: [0, -10, 0],
-      transition: { duration: 5, repeat: Infinity, ease: "easeInOut" }
+  // Animation Variants
+  const containerVars = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.2, delayChildren: 0.3 }
     }
   };
 
+  const itemVars = {
+    hidden: { y: 100, opacity: 0 },
+    show: { y: 0, opacity: 1, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
+  };
+
   return (
-    <section className="relative h-[100vh] w-full flex flex-col items-center justify-center overflow-hidden bg-[#0a0a0a]">
+    <section className="relative h-screen w-full bg-[#050505] overflow-hidden flex items-center">
       
-      {/* 1. BACKGROUND VISUALS */}
+      {/* 1. ULTRA-WIDE BACKGROUND WITH TEXT MASKING */}
       <div className="absolute inset-0 z-0">
-        <Image
-          src={heroSlides?.[0]?.imageUrl || bannerUrl || "/barber-bg.jpg"}
-          loader={loader}
-          alt="Luxury Barber"
-          fill
-          priority
-          className="object-cover object-center opacity-60 scale-105"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/20 to-[#0a0a0a]" />
-      </div>
-
-      {/* 2. FLOATING UI ELEMENTS (The "Pro" Touch) */}
-      <div className="absolute inset-0 z-10 hidden lg:block pointer-events-none">
-        {/* Review Card */}
         <motion.div 
-          variants={floatingVariant}
-          animate="animate"
-          className="absolute bottom-[20%] left-[10%] p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl w-64 shadow-2xl"
+          initial={{ scale: 1.2, opacity: 0 }}
+          animate={{ scale: 1, opacity: 0.5 }}
+          transition={{ duration: 2, ease: "easeOut" }}
+          className="relative h-full w-full"
         >
-          <div className="flex items-center gap-3 mb-2">
-            <div className="h-8 w-8 rounded-full bg-gray-400 border border-white/20" />
-            <div>
-              <p className="text-white text-xs font-bold">John Doe</p>
-              <div className="flex gap-0.5">
-                {[...Array(5)].map((_, i) => <StarIcon key={i} className="h-3 w-3 text-yellow-500" />)}
-              </div>
-            </div>
-          </div>
-          <p className="text-gray-300 text-[11px] leading-relaxed">
-            "The attention to detail here is unmatched. Finally found a barber who knows their business."
-          </p>
-        </motion.div>
-
-        {/* Price/Bundle Badge */}
-        <motion.div 
-          initial={{ x: 50, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          className="absolute top-[25%] right-[12%] flex items-center gap-3 bg-[#C5A267] p-1 pr-4 rounded-full shadow-xl"
-        >
-          <div className="bg-black/20 p-2 rounded-full">
-            <SparklesIcon className="h-5 w-5 text-white" />
-          </div>
-          <div className="text-black">
-            <p className="text-[10px] font-bold uppercase tracking-tighter leading-none">Monthly Care</p>
-            <p className="text-lg font-black">$95</p>
-          </div>
+          <Image
+            src={heroSlides?.[0]?.imageUrl || bannerUrl || "/barber-hero.jpg"}
+            loader={loader}
+            alt="Master Barber"
+            fill
+            className="object-cover object-center grayscale hover:grayscale-0 transition-all duration-1000"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/60 to-transparent" />
         </motion.div>
       </div>
 
-      {/* 3. MAIN CONTENT */}
-      <div className="relative z-20 w-full max-w-6xl px-6 flex flex-col items-center">
+      {/* 2. BACKGROUND TEXT (The "Visual Punch") */}
+      <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none z-10">
+        <motion.h2 
+          initial={{ x: '100%' }}
+          animate={{ x: '-100%' }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="text-[25vw] font-black text-white/[0.03] whitespace-nowrap uppercase leading-none"
+        >
+          {name || "Premium Grooming"} • Sharp & Classic • {name || "Premium Grooming"}
+        </motion.h2>
+      </div>
+
+      <div className="relative z-20 w-full max-w-[1400px] mx-auto px-6 grid lg:grid-cols-12 gap-8">
         
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
+        {/* 3. TEXTUAL CONTENT */}
+        <motion.div 
+          variants={containerVars}
+          initial="hidden"
+          animate="show"
+          className="lg:col-span-7 flex flex-col justify-center"
         >
-          <h1 className="text-5xl md:text-8xl font-light text-white leading-tight">
-            Getting you <span className="font-serif italic text-[#C5A267]">handsome</span> <br /> 
-            <span className="font-bold tracking-tighter">is our goal</span>
-          </h1>
-          <p className="mt-6 text-gray-400 text-lg md:text-xl max-w-xl mx-auto font-light leading-relaxed">
-            Experience the perfect cut tailored to your dreams at the barbershop that defines modern style.
-          </p>
+          <motion.div variants={itemVars} className="flex items-center gap-4 mb-8">
+            <span className="w-12 h-[2px] bg-[#D4AF37]" />
+            <p className="text-[#D4AF37] font-bold tracking-[0.5em] text-xs uppercase">The Art of the Blade</p>
+          </motion.div>
+
+          <motion.h1 variants={itemVars} className="text-7xl md:text-[120px] font-bold text-white leading-[0.9] tracking-tighter mb-10">
+            CRAFTED <br />
+            <span className="italic font-serif font-light text-[#D4AF37]">Confidence.</span>
+          </motion.h1>
+
+          <motion.div variants={itemVars} className="flex flex-wrap gap-8 items-center">
+            <div className="group flex items-center gap-4 cursor-pointer">
+              <div className="w-14 h-14 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:border-[#D4AF37] transition-all duration-500">
+                <TicketIcon className="h-6 w-6 text-white group-hover:text-black" />
+              </div>
+              <div>
+                <p className="text-white font-bold text-sm">View Pricing</p>
+                <p className="text-gray-500 text-xs tracking-wide">Starting at $35.00</p>
+              </div>
+            </div>
+
+            <div className="group flex items-center gap-4 cursor-pointer">
+              <div className="w-14 h-14 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-white transition-all duration-500">
+                <ClockIcon className="h-6 w-6 text-white group-hover:text-black" />
+              </div>
+              <div>
+                <p className="text-white font-bold text-sm">Open Today</p>
+                <p className="text-gray-500 text-xs tracking-wide">9:00 AM - 8:00 PM</p>
+              </div>
+            </div>
+          </motion.div>
         </motion.div>
 
-        {/* 4. THE REFINED BOOKING BAR */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="w-full max-w-4xl"
+        {/* 4. THE BOOKING ENGINE (Neobrutalist Glass) */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, delay: 0.5 }}
+          className="lg:col-span-5 flex items-center"
         >
-          <div className={`
-            grid grid-cols-1 md:grid-cols-12 items-center bg-white rounded-3xl md:rounded-full p-2 shadow-2xl transition-all duration-500
-            ${isFocused ? 'ring-8 ring-white/10' : ''}
-          `}>
-            
-            {/* Service Search */}
-            <div className="md:col-span-5 flex items-center px-6 py-3 border-b md:border-b-0 md:border-r border-gray-100">
-              <MagnifyingGlassIcon className="h-5 w-5 text-[#C5A267] mr-3" />
-              <div className="flex flex-col flex-grow">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Service</span>
-                <input 
-                  type="text"
-                  placeholder="Haircut, Beard Trim..."
-                  onFocus={() => setIsFocused(true)}
-                  onBlur={() => setIsFocused(false)}
-                  className="bg-transparent border-none p-0 text-gray-900 focus:ring-0 font-semibold placeholder:text-gray-300"
-                />
-              </div>
+          <div className="relative w-full bg-[#111]/80 backdrop-blur-3xl p-10 rounded-sm border-l-4 border-[#D4AF37] shadow-2xl">
+            {/* Corner Accents */}
+            <div className="absolute top-0 right-0 p-4 opacity-20">
+              <div className="w-8 h-8 border-t-2 border-r-2 border-white" />
             </div>
 
-            {/* Date Selection */}
-            <div className="md:col-span-3 flex items-center px-6 py-3 border-b md:border-b-0 md:border-r border-gray-100">
-              <CalendarDaysIcon className="h-5 w-5 text-[#C5A267] mr-3" />
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">When</span>
-                <DatePicker
-                  selected={date}
-                  onChange={(d) => d && setDate(d)}
-                  className="bg-transparent border-none p-0 text-gray-900 focus:ring-0 font-semibold w-full cursor-pointer"
-                  dateFormat="MMM dd, yyyy"
-                />
-              </div>
-            </div>
+            <h3 className="text-3xl font-bold text-white mb-2">Book the Chair</h3>
+            <p className="text-gray-400 text-sm mb-8 tracking-wide uppercase">Select your next experience</p>
 
-            {/* Action Button */}
-            <div className="md:col-span-4 p-1">
-              <button 
-                className="w-full h-14 md:h-16 rounded-2xl md:rounded-full bg-black text-[#C5A267] font-bold uppercase tracking-widest text-sm hover:bg-[#111] transition-all flex items-center justify-center gap-3 active:scale-95"
-              >
-                Book Appointment
-                <ChevronRightIcon className="h-4 w-4" />
+            <div className="space-y-6">
+              <div className="group">
+                <label className="block text-[10px] font-bold text-[#D4AF37] uppercase tracking-[0.2em] mb-2">Service</label>
+                <div className="flex items-center border-b border-white/10 group-focus-within:border-[#D4AF37] transition-colors pb-2">
+                  <MagnifyingGlassIcon className="h-5 w-5 text-gray-500 mr-3" />
+                  <input 
+                    type="text" 
+                    placeholder="Signature Haircut" 
+                    className="bg-transparent w-full text-white placeholder:text-gray-700 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="group">
+                <label className="block text-[10px] font-bold text-[#D4AF37] uppercase tracking-[0.2em] mb-2">Desired Date</label>
+                <div className="flex items-center border-b border-white/10 group-focus-within:border-[#D4AF37] transition-colors pb-2">
+                  <CalendarDaysIcon className="h-5 w-5 text-gray-500 mr-3" />
+                  <DatePicker
+                    selected={date}
+                    onChange={(d) => d && setDate(d)}
+                    className="bg-transparent w-full text-white outline-none cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              <button className="relative w-full overflow-hidden bg-white group py-5 transition-all">
+                <div className="absolute inset-0 w-0 bg-[#D4AF37] group-hover:w-full transition-all duration-500 ease-[0.76, 0, 0.24, 1]" />
+                <span className="relative z-10 flex items-center justify-center gap-3 text-black font-black uppercase tracking-widest text-sm">
+                  Check Availability <ArrowRightIcon className="h-4 w-4" />
+                </span>
               </button>
             </div>
+            
+            <p className="mt-6 text-center text-gray-600 text-[10px] uppercase tracking-widest font-bold">
+              Instant Confirmation • Free Cancellation
+            </p>
           </div>
         </motion.div>
-
-        {/* Quick Links */}
-        <div className="mt-8 flex gap-6 text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
-          <span className="hover:text-[#C5A267] cursor-pointer transition-colors">Our Services</span>
-          <span className="text-white/10">|</span>
-          <span className="hover:text-[#C5A267] cursor-pointer transition-colors">View Gallery</span>
-          <span className="text-white/10">|</span>
-          <span className="hover:text-[#C5A267] cursor-pointer transition-colors">Contact Us</span>
-        </div>
-
       </div>
+
+      {/* 5. VERTICAL PROGRESS INDICATOR (Side) */}
+      <div className="absolute right-12 bottom-12 hidden md:flex flex-col items-center gap-6">
+        <div className="h-40 w-[2px] bg-white/5 relative overflow-hidden">
+          <motion.div 
+            initial={{ y: -160 }}
+            animate={{ y: 0 }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="absolute top-0 w-full h-full bg-[#D4AF37]"
+          />
+        </div>
+        <span className="text-white font-bold text-xs [writing-mode:vertical-lr] tracking-[0.3em] uppercase opacity-40">Scroll to Explore</span>
+      </div>
+
     </section>
   );
 }

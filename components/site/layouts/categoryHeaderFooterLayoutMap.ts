@@ -81,7 +81,7 @@ const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterComponent>
     'consultant & coach': ConsultancyLayout,
     'bookings':BookingsLayout,
     'booking & appointments':BookingsLayout, 
-    'barbershop':BarbershopBookingsLayout,      
+    'barbershop store':BarbershopBookingsLayout,      
     'real estate': RealEstateLayout,    
     'portfolio':PortfolioLayout,
     'portfolio & personal branding':PortfolioLayout,     
