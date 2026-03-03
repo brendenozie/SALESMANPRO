@@ -5,23 +5,22 @@ import Image from 'next/image';
 import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { Award } from '@/types/typings';
-import { TrophyIcon } from '@heroicons/react/24/solid';
+import { TrophyIcon } from '@heroicons/react/24/outline';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: { 
     opacity: 1, 
-    transition: { staggerChildren: 0.15 } 
+    transition: { staggerChildren: 0.1 } 
   },
 };
 
 const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 30, skewX: -5 },
+  hidden: { opacity: 0, y: 20 },
   visible: { 
     opacity: 1, 
     y: 0, 
-    skewX: 0,
-    transition: { duration: 0.6, ease: "easeOut" } 
+    transition: { duration: 0.8, ease: [0.215, 0.61, 0.355, 1] } 
   },
 };
 
@@ -29,45 +28,47 @@ const loader = ({ src, width }: { src: string; width: number }) => `${src}?w=${w
 
 export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
   const { storeFormData } = useStoreContext();
-  const accent = '#FF003C'; // Empire Red
+  const accent = '#F3A852'; // Peanut / Gold accent
 
-  // Gaming-themed fallback data
   const defaultAwards = [
-    { iconUrl: 'https://images.unsplash.com/photo-1542838686-37a5027588b3', name: 'Digital Innovator 2026' },
-    { iconUrl: 'https://images.unsplash.com/photo-1629910419355-6b2257321598', name: 'E-commerce Excellence' },
-    { iconUrl: 'https://images.unsplash.com/photo-1579201529431-a4773221b033', name: 'Elite Choice Award' },
-    { iconUrl: 'https://images.unsplash.com/photo-1563729571343-98282367c00e', name: 'Industry Vanguard' },
+    { name: 'Excellence in Craftsmanship', organization: 'Artisans Guild 2026' },
+    { name: 'Sustainable Design Award', organization: 'Green Optics Forum' },
+    { name: 'Customer Choice: Luxury', organization: 'Retailer Monthly' },
+    { name: 'Innovation in Lens Tech', organization: 'Global Tech Expo' },
   ];
 
   const awardsToDisplay = awards && awards.length > 0 ? awards : defaultAwards;
 
   return (
-    <section className="relative py-24 bg-zinc-950 overflow-hidden">
-      {/* Background HUD Graphics */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-red-600/50 to-transparent" />
-      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-red-600/10 rounded-full blur-[120px] pointer-events-none" />
+    <section className="relative py-32 bg-[#F9F6F2] overflow-hidden">
+      {/* Subtle Background Texture/Pattern */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none flex items-center justify-center">
+        <span className="text-[30vw] font-serif italic text-black leading-none">AWARDS</span>
+      </div>
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">
-          <div className="max-w-2xl">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="w-8 h-[2px] bg-red-600" />
-              <span className="font-mono text-xs tracking-[0.5em] text-red-500 uppercase font-black">
-                Achievements_Unlocked
-              </span>
-            </div>
-            <h2 className="text-4xl md:text-6xl font-black italic text-white uppercase tracking-tighter leading-none">
-              RECOGNIZED FOR <span className="text-red-600">DOMINANCE</span>
-            </h2>
-          </div>
-          <p className="text-zinc-500 font-mono text-[10px] uppercase max-w-[200px] text-right hidden md:block">
-            Verified by global industry leaders // High performance standards met.
-          </p>
+        
+        {/* Header: Editorial Style */}
+        <div className="flex flex-col items-center text-center mb-24">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            className="flex items-center gap-3 mb-6"
+          >
+            <span className="h-px w-8 bg-[#F3A852]" />
+            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-[#F3A852]">
+              Global Recognition
+            </span>
+            <span className="h-px w-8 bg-[#F3A852]" />
+          </motion.div>
+          
+          <h2 className="text-5xl md:text-7xl font-serif text-gray-900 leading-none">
+            Our <span className="italic font-light text-gray-400">Distinctions</span>
+          </h2>
         </div>
         
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
@@ -76,62 +77,64 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
           {awardsToDisplay.map((award: any, idx) => {
             const src = award?.imageUrl ?? award?.iconUrl ?? '';
             const label = award?.name;
+            const org = award?.organization || "International Recognition";
 
             return (
               <motion.div
                 key={idx}
                 variants={cardVariants}
-                className="group relative bg-zinc-900/50 border border-white/5 hover:border-red-600/50 transition-all duration-500 p-8 flex flex-col items-center justify-center min-h-[220px] overflow-hidden"
+                className="group relative bg-white p-10 flex flex-col items-center justify-between min-h-[320px] shadow-[0_4px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.06)] transition-all duration-700 rounded-2xl border border-transparent hover:border-[#F3A852]/10"
               >
-                {/* Tactical Card Decorations */}
-                <div className="absolute top-0 right-0 w-2 h-2 bg-red-600/20" />
-                <div className="absolute bottom-2 left-2 font-mono text-[8px] text-white/5 tracking-widest">
-                  SECTOR_{idx + 101}
+                {/* Decorative corner accent */}
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                   <div className="w-1.5 h-1.5 rounded-full bg-[#F3A852]" />
                 </div>
 
-                {/* Main Content */}
-                <div className="relative z-10 w-full h-full flex flex-col items-center">
-                  <div className="relative w-20 h-20 mb-6">
-                    {src ? (
-                      <Image
-                        src={src}
-                        alt={label}
-                        loader={loader}
-                        fill
-                        className="object-contain grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500"
-                      />
-                    ) : (
-                      <TrophyIcon className="w-full h-full text-zinc-800 group-hover:text-red-600 transition-colors" />
-                    )}
-                  </div>
-                  
-                  <div className="text-center">
-                    <h3 className="text-sm font-black italic text-zinc-400 group-hover:text-white uppercase tracking-widest transition-colors leading-tight">
-                      {label}
-                    </h3>
-                  </div>
+                {/* Award Icon/Logo */}
+                <div className="relative w-24 h-24 mb-8">
+                  {src ? (
+                    <Image
+                      src={src}
+                      alt={label}
+                      loader={loader}
+                      fill
+                      className="object-contain filter grayscale brightness-50 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-700"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-[#FDF8F4] rounded-full">
+                        <TrophyIcon className="w-10 h-10 text-[#F3A852]/60 group-hover:text-[#F3A852] transition-colors" />
+                    </div>
+                  )}
+                </div>
+                
+                <div className="text-center space-y-3">
+                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest leading-tight px-2">
+                    {label}
+                  </h3>
+                  <p className="text-[10px] font-medium text-gray-400 uppercase tracking-[0.2em]">
+                    {org}
+                  </p>
                 </div>
 
-                {/* Hover Glow Effect */}
-                <div className="absolute inset-0 bg-gradient-to-br from-red-600/0 via-transparent to-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute bottom-0 left-0 w-full h-[1px] bg-white/5 group-hover:bg-red-600 transition-all duration-500" />
+                {/* Subtle bottom detail */}
+                <div className="mt-8 w-6 h-[1px] bg-gray-200 group-hover:w-16 group-hover:bg-[#F3A852] transition-all duration-500" />
               </motion.div>
             );
           })}
         </motion.div>
 
-        {/* Bottom Ticker/Status Line */}
-        <div className="mt-12 flex items-center justify-center gap-4 py-4 border-y border-white/5">
-          <div className="flex gap-2">
-            {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 bg-red-600" />)}
-          </div>
-          <span className="font-mono text-[10px] text-zinc-600 uppercase tracking-[0.3em]">
-            Elite Tier Certification Active
-          </span>
-          <div className="flex gap-2">
-            {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 bg-red-600" />)}
-          </div>
-        </div>
+        {/* Bottom Verification Text */}
+        <motion.div 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className="mt-20 flex flex-col items-center gap-4"
+        >
+           <p className="font-serif italic text-gray-400 text-sm">
+             Celebrating a decade of visionary craftsmanship.
+           </p>
+           <div className="h-12 w-px bg-gradient-to-b from-gray-200 to-transparent" />
+        </motion.div>
       </div>
     </section>
   );

@@ -1,11 +1,32 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeftIcon, ArrowRightIcon, CheckBadgeIcon, BeakerIcon } from '@heroicons/react/24/outline'; // Using Hero Icons
+import React, { useState, useEffect, useRef } from 'react';
+import { AnimatePresence, motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import { EyeIcon, SunIcon, SparklesIcon, ShoppingBagIcon } from '@heroicons/react/24/outline'; 
 import Image from 'next/image';
 import Link from 'next/link';
 import { HeroSlide } from '@/types/typings';
+
+// Enhanced Mock Data
+const opticalSlides = [
+  {
+    id: '1',
+    headline: 'CLARITY & STYLE',
+    highlight: 'ALL IN ONE',
+    subline: '2026 LUXE COLLECTION',
+    description: 'Bespoke eyewear crafted for those who see the world differently. Merging clinical precision with runway aesthetics.',
+    ctaText: 'Explore Collection',
+    imageUrl: 'https://images.unsplash.com/photo-1511499767390-90342f16b147?q=80&w=1000&auto=format&fit=crop', // Better High-Res Model
+    productImage: 'https://images.unsplash.com/photo-1574258495973-f010dfbb5371?q=80&w=500&auto=format&fit=crop', // Isolated Glasses
+    productName: 'Metal Lennons',
+    price: '$175.00',
+    oldPrice: '$199.00',
+    accentColor: '#0D4C4F'
+  }
+];
+
+const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+  `${src}?w=${width}&q=${quality || 75}`;
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -18,28 +39,6 @@ export interface HeroSliderProps {
   themeSettings: any;
 }
 
-const sampleSlides: HeroSlide[] = [
-  {
-    headline: '100% NATURAL\nPEANUT BUTTER',
-    subline: 'Gourmet Selection',
-    badgeText: 'Created to be a gourmet snack that can easily be enjoyed by the whole family.',
-    ctaText: 'Shop Now',
-    ctaLink: '/shop',
-    imageUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80',
-    id: '',
-    companyId: '',
-    type: null,
-    productImageUrl: null,
-    videoLink: null,
-    price: null,
-    endsAt: null,
-    order: 0,
-    iconKey: null,
-    backgroundColor: null,
-    textColor: null
-  }
-];
-
 // Custom Leaf SVG for "Palm Free"
 const LeafIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -48,161 +47,189 @@ const LeafIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProps) {
-  const defaultPrimaryColor = '#F3A852'; // Adapted to the peanut butter theme
-  const defaultSecondaryColor = '#2D3748';
-
-  const heroSlidesToShow: HeroSlide[] = (heroSlides && heroSlides.length > 0 ? heroSlides : sampleSlides).map(
-    (slide, index) => ({
-      ...slide,
-      subline: slide.subline || 'Gourmet Selection',
-      headline: slide.headline || '100% NATURAL\nPEANUT BUTTER',
-      badgeText: slide.badgeText || 'Created to be a gourmet snack that can easily be enjoyed by the whole family.',
-      ctaText: slide.ctaText || 'Shop Now',
-      ctaLink: slide.ctaLink || '/shop',
-    })
-  );
-
-  const primary = themeSettings?.primaryColor || defaultPrimaryColor;
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   
-  const [current, setCurrent] = useState(0);
-  const [direction, setDirection] = useState(0);
-  const timeoutRef = useRef<NodeJS.Timeout>();
-
-  const resetTimer = useCallback(() => {
-    clearTimeout(timeoutRef.current);
-    if (heroSlidesToShow.length > 0) {
-      timeoutRef.current = setTimeout(() => {
-        setDirection(1);
-        setCurrent((prev) => (prev + 1) % heroSlidesToShow.length);
-      }, autoAdvanceDelay);
-    }
-  }, [heroSlidesToShow.length]);
-
-  useEffect(() => {
-    resetTimer();
-    return () => clearTimeout(timeoutRef.current);
-  }, [current, resetTimer]);
-
-  const goTo = (idx: number, dir = 0) => {
-    clearTimeout(timeoutRef.current);
-    setDirection(dir);
-    setCurrent(idx);
+  // Parallax Effect Logic
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const { clientX, clientY } = e;
+    const moveX = (clientX - window.innerWidth / 2) / 50;
+    const moveY = (clientY - window.innerHeight / 2) / 50;
+    setMousePos({ x: moveX, y: moveY });
   };
 
-  const nextSlide = () => goTo((current + 1) % heroSlidesToShow.length, 1);
-  const prevSlide = () => goTo((current - 1 + heroSlidesToShow.length) % heroSlidesToShow.length, -1);
-
   return (
-    <section className="relative mt-20 py-12 md:py-20 overflow-hidden bg-white">
-      <div className="container mx-auto px-4 md:px-8 lg:px-16 relative">
-        <AnimatePresence initial={false} custom={direction} mode="wait">
-          {heroSlidesToShow.map((slide, idx) => idx === current && (
+    <section 
+      onMouseMove={handleMouseMove}
+      className="relative min-h-screen flex items-center overflow-hidden bg-[#F9F6F2] py-20 lg:py-0"
+    >
+      {/* 1. HUGE BACKGROUND TYPOGRAPHY (The "Wow" Factor) */}
+      <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none select-none">
+        <motion.h2 
+          style={{ x: mousePos.x * -1, y: mousePos.y * -1 }}
+          className="text-[25vw] font-black text-black/[0.03] leading-none whitespace-nowrap"
+        >
+          VISIONARY
+        </motion.h2>
+      </div>
+
+      {/* 2. DYNAMIC ACCENT SHAPES */}
+      <motion.div 
+        animate={{ 
+          x: mousePos.x * 2, 
+          y: mousePos.y * 2,
+          rotate: mousePos.x 
+        }}
+        className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#F3A852] opacity-10 rounded-full blur-[100px]"
+      />
+
+      <div className="container mx-auto px-6 md:px-12 lg:px-20 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+          
+          {/* LEFT CONTENT */}
+          <div className="lg:col-span-5 space-y-10 order-2 lg:order-1">
             <motion.div
-              key={idx}
-              initial={{ opacity: 0, x: direction > 0 ? 100 : -100 }}
+              initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: direction > 0 ? -100 : 100 }}
-              transition={{ duration: 0.6, ease: "circOut" }}
-              className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center min-h-[500px]"
+              transition={{ duration: 1, ease: "easeOut" }}
             >
-              {/* LEFT CONTENT */}
-              <div className="order-2 md:order-1 space-y-8 z-20">
-                <motion.div 
-                   initial={{ opacity: 0, y: 20 }}
-                   animate={{ opacity: 1, y: 0 }}
-                   transition={{ delay: 0.2 }}
-                >
-                  <h1 className="text-5xl md:text-7xl font-black text-gray-900 leading-tight">
-                    {slide.headline?.split('\n').map((line, i) => (
-                      <span key={i} className="block">{line}</span>
-                    ))}
-                  </h1>
-                  <p className="mt-6 text-lg text-gray-600 max-w-sm font-medium">
-                    {slide.badgeText}
-                  </p>
-                </motion.div>
+              <div className="inline-flex items-center gap-3 mb-6">
+                <span className="h-[1px] w-12 bg-[#F3A852]" />
+                <span className="text-xs font-bold tracking-[0.4em] text-[#F3A852] uppercase">
+                  {heroSlides && heroSlides.length > 0 ? heroSlides[0].subline : 'Default Subline'}
+                </span>
+              </div>
+              
+              <h1 className="text-7xl md:text-8xl xl:text-9xl font-serif text-gray-900 leading-[0.85] tracking-tighter mb-8">
+                {heroSlides && heroSlides.length > 0 ? heroSlides[0].headline : 'Default Headline'} <br />
+                <span className="text-transparent italic stroke-text">{opticalSlides[0].highlight}</span>
+              </h1>
+              
+              <p className="text-xl text-gray-600 max-w-md leading-relaxed font-light">
+                {opticalSlides[0].description}
+              </p>
+            </motion.div>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  <Link
-                    href={slide.ctaLink || '/shop'}
-                    className="inline-block px-10 py-4 rounded-xl text-white font-bold text-lg shadow-xl hover:brightness-110 transition-all"
-                    style={{ backgroundColor: primary }}
-                  >
-                    {slide.ctaText}
-                  </Link>
-                </motion.div>
-
-                {/* USPs - New feature from design */}
-                <div className="flex flex-wrap gap-8 pt-8 border-t border-gray-100">
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="p-3 rounded-full bg-gray-50 border border-gray-200">
-                      <LeafIcon className="h-6 w-6 text-gray-600" />
-                    </div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Palm Free</span>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="flex flex-wrap items-center gap-6"
+            >
+              <Link
+                href="/shop"
+                className="group relative px-10 py-5 bg-[#0D4C4F] text-white overflow-hidden"
+              >
+                <motion.div className="absolute inset-0 bg-black translate-y-[101%] group-hover:translate-y-0 transition-transform duration-300" />
+                <span className="relative z-10 font-bold uppercase tracking-widest text-sm flex items-center gap-3">
+                  {opticalSlides[0].ctaText}
+                  <ShoppingBagIcon className="w-5 h-5" />
+                </span>
+              </Link>
+              
+              <div className="flex -space-x-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gray-200 overflow-hidden">
+                    <Image src={`https://i.pravatar.cc/100?img=${i+10}`} alt="user" width={40} height={40} loader={imageLoader} />
                   </div>
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="p-3 rounded-full bg-gray-50 border border-gray-200">
-                      <CheckBadgeIcon className="h-6 w-6 text-gray-600" />
-                    </div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Gluten Free</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="p-3 rounded-full bg-gray-50 border border-gray-200">
-                      <BeakerIcon className="h-6 w-6 text-gray-600" />
-                    </div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Soy Free</span>
-                  </div>
+                ))}
+                <div className="pl-6 flex flex-col justify-center">
+                  <span className="text-sm font-bold text-gray-900 leading-none">46K+ Users</span>
+                  <span className="text-[10px] text-gray-500 uppercase tracking-widest">Styled Weekly</span>
                 </div>
               </div>
-
-              {/* RIGHT PRODUCT IMAGE */}
-              <div className="order-1 md:order-2 relative flex justify-center items-center h-[400px] md:h-full">
-                {/* Floating Decoration (Peanuts) */}
-                <motion.div 
-                  animate={{ y: [0, -20, 0], rotate: [0, 10, 0] }}
-                  transition={{ duration: 5, repeat: Infinity }}
-                  className="absolute -top-10 right-10 z-0 opacity-20"
-                >
-                    {/* This would be a peanut image asset */}
-                    <div className="w-16 h-16 bg-amber-200 rounded-full blur-xl" />
-                </motion.div>
-
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0, rotate: -5 }}
-                  animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                  transition={{ type: "spring", stiffness: 100 }}
-                  className="relative w-full h-full"
-                >
-                  <Image
-                    src={slide.imageUrl || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80'}
-                    alt="Product jars"
-                    fill
-                    className="object-contain"
-                    priority
-                    loader={loader}
-                  />
-                </motion.div>
-              </div>
             </motion.div>
-          ))}
-        </AnimatePresence>
 
-        {/* NAVIGATION CONTROLS */}
-        <div className="absolute top-1/2 -left-4 md:left-4 z-30 -translate-y-1/2">
-            <button onClick={prevSlide} className="p-3 rounded-full bg-white shadow-lg text-gray-800 hover:bg-gray-50">
-              <ArrowLeftIcon className="h-6 w-6" />
-            </button>
-        </div>
-        <div className="absolute top-1/2 -right-4 md:right-4 z-30 -translate-y-1/2">
-            <button onClick={nextSlide} className="p-3 rounded-full bg-white shadow-lg text-gray-800 hover:bg-gray-50">
-              <ArrowRightIcon className="h-6 w-6" />
-            </button>
+            {/* MINIMAL USPs */}
+            <div className="grid grid-cols-3 gap-4 pt-10 border-t border-gray-200/50">
+                <USPItem icon={<SunIcon className="w-5 h-5"/>} label="UV400" />
+                <USPItem icon={<EyeIcon className="w-5 h-5"/>} label="Anti-Blue" />
+                <USPItem icon={<SparklesIcon className="w-5 h-5"/>} label="Anti-Glare" />
+            </div>
+          </div>
+
+          {/* RIGHT VISUALS (The Masterpiece) */}
+          <div className="lg:col-span-7 relative order-1 lg:order-2">
+            <div className="relative w-full aspect-[4/5] md:aspect-square">
+              
+              {/* Main Image with Frame */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                style={{ x: mousePos.x * 0.5, y: mousePos.y * 0.5 }}
+                transition={{ duration: 1.2, ease: "circOut" }}
+                className="relative z-20 w-full h-full rounded-[40px] overflow-hidden shadow-2xl"
+              >
+                <Image 
+                  src={opticalSlides[0].imageUrl} 
+                  loader={imageLoader}
+                  alt="Model"
+                  fill
+                  className="object-cover transition-transform duration-700 hover:scale-105"
+                />
+              </motion.div>
+
+              {/* FLOATING PRODUCT CARD */}
+              <motion.div 
+                animate={{ 
+                    y: [0, -20, 0],
+                    x: mousePos.x * -1.5
+                }}
+                transition={{ 
+                    y: { duration: 4, repeat: Infinity, ease: "easeInOut" },
+                }}
+                className="absolute -bottom-10 -left-10 md:left-[-15%] z-30 bg-white p-6 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] max-w-[280px]"
+              >
+                <div className="absolute top-4 right-4 bg-[#F3A852] text-white text-[10px] font-black px-2 py-0.5">SALE</div>
+                <div className="h-32 w-full relative mb-4">
+                  <Image src={opticalSlides[0].productImage} loader={imageLoader} alt="Product" fill className="object-contain" />
+                </div>
+                <div className="space-y-1">
+                    <p className="text-[10px] text-[#F3A852] font-black tracking-widest uppercase">New Arrival</p>
+                    <h3 className="text-xl font-serif text-gray-900">{opticalSlides[0].productName}</h3>
+                    <div className="flex items-center gap-3">
+                        <span className="text-2xl font-black text-[#0D4C4F]">{opticalSlides[0].price}</span>
+                        <span className="text-sm text-gray-400 line-through font-light">{opticalSlides[0].oldPrice}</span>
+                    </div>
+                </div>
+              </motion.div>
+
+              {/* SECONDARY FLOATING ELEMENT (LENS DETAIL) */}
+              <motion.div 
+                animate={{ y: mousePos.y * -2, x: mousePos.x * 1 }}
+                className="absolute top-10 -right-8 z-30 bg-black text-white p-5 rounded-2xl shadow-xl hidden md:block"
+              >
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                        <SparklesIcon className="w-6 h-6 text-[#F3A852]" />
+                    </div>
+                    <div>
+                        <p className="text-[10px] uppercase tracking-widest opacity-60">Tech</p>
+                        <p className="text-sm font-bold">HD Polished Lens</p>
+                    </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+
         </div>
       </div>
+
+      <style jsx>{`
+        .stroke-text {
+          -webkit-text-stroke: 1px #0D4C4F;
+        }
+      `}</style>
     </section>
+  );
+}
+
+function USPItem({ icon, label }: { icon: React.ReactNode, label: string }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-900">
+        {icon}
+      </div>
+      <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">{label}</span>
+    </div>
   );
 }

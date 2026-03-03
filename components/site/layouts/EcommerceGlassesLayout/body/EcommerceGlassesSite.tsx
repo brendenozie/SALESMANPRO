@@ -74,20 +74,20 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
   );
 
   return (
-    <div className="space-y-12">
+    <div className="relative">
       <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
-      <CategorySection StoreCategory={StoreCategory} themeSettings={themeSettings} />
+      <CategorySection store={pageData} />
       <FeatureGrid />
       <QualityStandards />
-      <AppointmentSection/>
-      <LatestUpdates/>
       <DynamicPopularProducts id={id} />
       <PromoSection promotions={promotions} />
       <DynamicTrending id={id} />
       <DynamicDailyBestSells id={id} />
       <SecondPromoSection promotions={promotions} />
       <AllProducts id={id} marketplaceListings={featured} themeSettings={themeSettings} />
-      <MetricsSection coreValues={CoreValues} />
+      <MetricsSection coreValues={CoreValues} />      
+      <AppointmentSection/>
+      <LatestUpdates/>
       <AwardsSection awards={awards} />
       {testimonialsData?.data && <TestimonialsSection testimonials={testimonialsData.data} />}
       <NewsletterSection />
