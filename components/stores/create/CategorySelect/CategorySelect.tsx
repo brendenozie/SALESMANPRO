@@ -47,6 +47,7 @@ const SITE_CATEGORIES: Category[] = [
       { name: "Gaming Store", link: "https://gaming-store.salesmanpro.site", description: "Designed for gaming products and accessories.", tag: 'New' },
       { name: "Earphones Store", link: "https://earphones-store.salesmanpro.site", description: "Showcase earphones and audio accessories.", tag: 'New' },
       { name: "Bike Store", link: "https://bike-store.salesmanpro.site", description: "Showcase bikes and cycling accessories.", tag: 'New' },
+      { name: "Motorcycle Store", link: "https://motorcycle-store.salesmanpro.site", description: "Showcase motorcycles and accessories.", tag: 'New' },
       { name: "Glasses Store", link: "https://glasses-store.salesmanpro.site", description: "Showcase eyewear and accessories.", tag: 'New' },
       { name: "Flowers Store", link: "https://flowers-store.salesmanpro.site", description: "Showcase floral arrangements and gifts.", tag: 'New' },
       { name: "Honey Store", link: "https://honey-store.salesmanpro.site", description: "Showcase honey and related products.", tag: 'New' },
@@ -108,6 +109,13 @@ const SITE_CATEGORIES: Category[] = [
     icon: "🚲",
     variants: [
       { name: "Bike Store", link: "https://bike-store.salesmanpro.site", description: "Showcase bikes and cycling accessories.", tag: 'New' }
+    ]
+  },
+  {
+    name: "Motorcycle Store",
+    icon: "🏍️",
+    variants: [
+      { name: "Motorcycle Store", link: "https://motorcycle-store.salesmanpro.site", description: "Showcase motorcycles and accessories.", tag: 'New' }
     ]
   },
   {
