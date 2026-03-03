@@ -1,199 +1,291 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  MagnifyingGlassIcon,
+  MapPinIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronDownIcon,
+  SparklesIcon,
+  TicketIcon,
   FireIcon,
+  QueueListIcon,
 } from "@heroicons/react/24/outline";
-import { HeroSlide } from "@/types/typings";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import Image from "next/image";
+import { HeroSlide, IStoreCategory, ISubcategory, StoreForm } from "@/types/typings";
 
-// Assuming these types are already defined elsewhere
-// interface HeroSlide {
-//   imageUrl: string;
-//   headline?: string;
-//   subline?: string;
-// }
-
-interface IStoreCategory {
-  id: string;
-  displayName: string;
+interface SearchFilters {
+  location: string;
+  minPrice: string;
+  maxPrice: string;
+  category?: string;
+  subcategory?: string;
 }
 
-interface ILocation {
-  name: string;
-  id: string;
+interface HeroSectionProps {
+  store?: StoreForm | null;
+  onSearch: (filters: SearchFilters) => void;
+  trendingLocations?: { name: string }[];
 }
 
-interface IGoal {
-  name: string;
-  id: string;
-}
+const defaultHeroSlides: HeroSlide[] = [
+  {
+    imageUrl: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2670&auto=format&fit=crop",
+    headline: "REFINE YOUR\nLIMITLESS POTENTIAL",
+    subline: "Elite performance coaching tailored for the modern athlete.",
+    id: "1", companyId: "", type: null, price: null, order: 0, ctaText: null, ctaLink: null, videoLink: null, badgeText: null, endsAt: null, iconKey: null, backgroundColor: null, textColor: null, productImageUrl: null
+  },
+  {
+    imageUrl: "https://images.unsplash.com/photo-1518611012118-2969c636020d?q=80&w=2670&auto=format&fit=crop",
+    headline: "MINDFULNESS &\nTOTAL RECOVERY",
+    subline: "Restore your balance with expert-led meditation and wellness sessions.",
+    id: "2", companyId: "", type: null, price: null, order: 0, ctaText: null, ctaLink: null, videoLink: null, badgeText: null, endsAt: null, iconKey: null, backgroundColor: null, textColor: null, productImageUrl: null
+  },
+];
 
-interface FitnessFilters {
-  searchTerm?: string;
-  program?: string;
-  location?: string;
-  goal?: string;
-}
+export default function HeroSection({
+  store,
+  onSearch,
+  trendingLocations = [{ name: "Downtown Elite" }, { name: "Soho Yoga" }, { name: "Brooklyn Iron" }],
+}: HeroSectionProps) {
+  // --- Data Logic ---
+  const heroSlides = store?.heroSlides?.length ? store.heroSlides : defaultHeroSlides;
+  const categories = (store?.StoreCategory ?? [])
+    .filter((c) => c.visible ?? true)
+    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  
+  const allSubcategories = categories.flatMap(cat => cat.subcategories || []);
 
-interface Props {
-  storeFormData?: {
-    heroSlides?: HeroSlide[];
-    programTypes?: IStoreCategory[];
-    locations?: ILocation[];
-    goals?: IGoal[];
-  };
-  onSearch: (filters: FitnessFilters) => void;
-}
+  // --- Search States ---
+  const [current, setCurrent] = useState(0);
+  const [location, setLocation] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<IStoreCategory | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<ISubcategory | null>(null);
 
-// Default fallback data with new light-themed images
-const defaultStoreFormData = {
-  heroSlides: [
-    {
-      imageUrl: "https://images.unsplash.com/photo-1534438327276-14e5300d3a48?q=80&w=2940&auto=format&fit=crop",
-      headline: "Forge Your Strength",
-      subline: "Discover personalized training and nutrition programs.",
-    },
-    {
-      imageUrl: "https://images.unsplash.com/photo-1502213753554-4f25b29b9f91?q=80&w=2940&auto=format&fit=crop",
-      headline: "Move with Purpose",
-      subline: "Find the perfect class to challenge your body and uplift your spirit.",
-    },
-    {
-      imageUrl: "https://images.unsplash.com/photo-1599908610738-9562657e4e13?q=80&w=2940&auto=format&fit=crop",
-      headline: "Find Your Flow",
-      subline: "Connect with expert yoga instructors and studios near you.",
-    },
-  ],
-  programTypes: [
-    { id: "yoga", displayName: "Yoga" },
-    { id: "crossfit", displayName: "CrossFit" },
-    { id: "online", displayName: "Online" },
-  ],
-};
+  // --- Dropdown States ---
+  const [isLocationOpen, setIsLocationOpen] = useState(false);
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [isSubcategoryOpen, setIsSubcategoryOpen] = useState(false);
 
-const slideVariants = {
-  initial: { opacity: 0, scale: 1.05 },
-  animate: { opacity: 1, scale: 1, transition: { duration: 1.5, ease: "easeInOut" } },
-  exit: { opacity: 0, transition: { duration: 1.5, ease: "easeInOut" } },
-};
+  const locRef = useRef<HTMLDivElement>(null);
+  const catRef = useRef<HTMLDivElement>(null);
+  const subRef = useRef<HTMLDivElement>(null);
 
-const textVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut", delay: 0.5 } },
-};
+  // --- Handlers ---
+  const nextSlide = useCallback(() => setCurrent((prev) => (prev + 1) % heroSlides.length), [heroSlides.length]);
+  const prevSlide = useCallback(() => setCurrent((prev) => (prev - 1 + heroSlides.length) % heroSlides.length), [heroSlides.length]);
 
-export default function RedesignedHeroSection({ storeFormData, onSearch }: Props) {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [activeFilter, setActiveFilter] = useState<string | null>(null);
-
-  // Fallback data logic
-  const heroSlides = storeFormData?.heroSlides?.length ? storeFormData.heroSlides : defaultStoreFormData.heroSlides;
-  const programTypes = storeFormData?.programTypes?.length ? storeFormData.programTypes : defaultStoreFormData.programTypes;
-
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearch({ searchTerm, program: activeFilter || undefined });
+    onSearch({
+      location,
+      minPrice,
+      maxPrice,
+      category: selectedCategory?.categoryId || selectedCategory?.id,
+      subcategory: selectedSubcategory?.slug || selectedSubcategory?.id,
+    });
   };
 
-  const handleFilterClick = (filterId: string) => {
-    const newFilter = activeFilter === filterId ? null : filterId;
-    setActiveFilter(newFilter);
-    if (newFilter) {
-      onSearch({ program: newFilter });
-    }
-  };
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (locRef.current && !locRef.current.contains(event.target as Node)) setIsLocationOpen(false);
+      if (catRef.current && !catRef.current.contains(event.target as Node)) setIsCategoryOpen(false);
+      if (subRef.current && !subRef.current.contains(event.target as Node)) setIsSubcategoryOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 5000); // Change slide every 5 seconds
-    return () => clearInterval(interval);
-  }, [heroSlides.length]);
+  useEffect(() => {
+    const timer = setInterval(nextSlide, 8000);
+    return () => clearInterval(timer);
+  }, [nextSlide]);
 
   return (
-    <section className="relative h-screen w-full overflow-hidden flex items-center justify-center bg-white font-sans">
-      {/* Background Slideshow */}
-      <AnimatePresence>
-        <motion.img
-          key={heroSlides[currentSlide].imageUrl}
-          src={heroSlides[currentSlide].imageUrl || "https://images.unsplash.com/photo-1534438327276-14e5300d3a48?q=80&w=2940&auto=format&fit=crop"}
-          alt={heroSlides[currentSlide].headline ?? "hero background"}
-          className="absolute inset-0 z-0 object-cover w-full h-full"
-          variants={slideVariants}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-        />
+    <section className="relative min-h-screen w-full justify-center items-center overflow-hidden bg-[#050505]">
+      {/* 1. ANIMATED BACKGROUND */}
+      <AnimatePresence initial={false} mode="wait">
+        <motion.div
+          key={current}
+          initial={{ opacity: 0, scale: 1.1 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 1.05 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+          className="absolute inset-0 z-0"
+        >
+          <Image
+            src={heroSlides[current].imageUrl || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2670&auto=format&fit=crop"}
+            alt="Hero Background"
+            fill
+            className="object-cover brightness-[0.45] saturate-[1.1]"
+            priority
+            loader={({ src }) => src}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black" />
+        </motion.div>
       </AnimatePresence>
 
-      {/* Lightened Overlay */}
-      <div className="absolute inset-0 z-10 bg-white/50" />
-
-      {/* Main Content */}
-      <div className="relative z-30 flex flex-col items-center justify-center h-full px-6 text-center text-gray-900 max-w-5xl mx-auto">
-        <motion.h1
-          className="mb-4 text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight"
-          variants={textVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {heroSlides[currentSlide]?.headline ?? "Your Fitness Journey Starts Here"}
-        </motion.h1>
-        <motion.p
-          className="mb-8 text-lg md:text-2xl max-w-3xl leading-relaxed font-light text-gray-700"
-          variants={textVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {heroSlides[currentSlide]?.subline ?? "Find programs, trainers, and gyms to reach your health goals."}
-        </motion.p>
-        
-        {/* Integrated Search & Trending Section */}
-        <motion.div
-          className="w-full max-w-2xl bg-gray-100 rounded-xl p-4 sm:p-6 border border-gray-200 shadow-xl space-y-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0, transition: { delay: 1 } }}
-        >
-          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-center gap-3">
-            <div className="relative w-full">
-              <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search for a program, gym, or trainer..."
-                className="w-full py-4 pl-12 pr-4 rounded-full bg-white text-gray-900 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow"
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full sm:w-auto px-8 py-4 rounded-full bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white font-semibold shadow-lg transition-transform transform hover:scale-105"
+      {/* 2. CORE CONTENT */}
+      {/* center on the screen */}
+      <div className="relative z-20 h-full flex flex-col items-center justify-center px-4 sm:px-6 my-auto py-16 lg:py-32 w-full">
+        <div className="max-w-6xl w-full text-center space-y-10">
+          
+          <div className="space-y-6">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+              className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-orange-500/20 border border-orange-500/30 text-orange-400 text-xs font-bold uppercase tracking-widest"
             >
-              Search
-            </button>
-          </form>
+              <FireIcon className="w-4 h-4" />
+              <span>Transform Your Routine</span>
+            </motion.div>
 
-          {/* Trending Categories */}
-          <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
-            <FireIcon className="w-5 h-5 text-red-500" />
-            {programTypes.slice(0, 3).map((p) => (
-              <button
-                key={p.id}
-                onClick={() => handleFilterClick(p.id)}
-                className={`text-sm font-medium px-4 py-2 rounded-full transition-all duration-300 border ${
-                  activeFilter === p.id
-                    ? "bg-teal-600 text-white border-teal-600"
-                    : "bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300"
-                }`}
-              >
-                {p.displayName}
-              </button>
-            ))}
+            <motion.h1
+              key={`h1-${current}`}
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+              className="text-6xl md:text-8xl font-black text-white leading-[0.9] tracking-tighter italic uppercase"
+            >
+              {heroSlides[current].headline?.split("\n").map((line, i) => (
+                <span key={i} className="block">{line}</span>
+              ))}
+            </motion.h1>
           </div>
-        </motion.div>
+
+          {/* 3. THE GLASS SEARCH INTERFACE */}
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="w-full max-w-6xl mx-auto"
+          >
+            <form onSubmit={handleSearchSubmit} className="bg-white/5 backdrop-blur-3xl p-3 rounded-[2.5rem] border border-white/10 shadow-2xl grid grid-cols-1 md:grid-cols-12 gap-3">
+              
+              {/* LOCATION PICKER */}
+              <div className="md:col-span-3 relative" ref={locRef}>
+                <div 
+                  className="group flex items-center bg-white/5 hover:bg-white/10 border border-transparent focus-within:border-orange-500/50 rounded-[1.8rem] transition-all px-5 py-4 cursor-text"
+                  onClick={() => setIsLocationOpen(true)}
+                >
+                  <MapPinIcon className="w-5 h-5 text-orange-500 mr-3" />
+                  <div className="text-left flex-1">
+                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-tighter">Location</p>
+                    <input
+                      type="text"
+                      placeholder="Find a studio..."
+                      className="w-full bg-transparent text-white outline-none font-bold placeholder:text-gray-600 text-sm"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <AnimatePresence>
+                  {isLocationOpen && (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute top-full left-0 w-full mt-3 bg-gray-900/95 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden z-50 shadow-2xl">
+                      {trendingLocations.map((loc, i) => (
+                        <button key={i} type="button" onClick={() => { setLocation(loc.name); setIsLocationOpen(false); }} className="w-full text-left px-5 py-4 text-sm font-bold text-gray-300 hover:bg-orange-500 hover:text-white transition-colors">{loc.name}</button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* CATEGORY PICKER */}
+              <div className="md:col-span-2 relative" ref={catRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                  className="w-full h-full bg-white/5 hover:bg-white/10 border border-transparent rounded-[1.8rem] px-6 py-4 text-left transition-all"
+                >
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-tighter">Discipline</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-white font-bold text-sm truncate">{selectedCategory?.displayName || "Select"}</span>
+                    <ChevronDownIcon className={`w-4 h-4 text-orange-500 transition-transform ${isCategoryOpen ? 'rotate-180' : ''}`} />
+                  </div>
+                </button>
+                <AnimatePresence>
+                  {isCategoryOpen && (
+                    <motion.div className="absolute top-full left-0 w-full mt-3 bg-gray-900/95 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden z-50 shadow-2xl max-h-60 overflow-y-auto">
+                      {categories.map((cat) => (
+                        <button key={cat.id} type="button" onClick={() => { setSelectedCategory(cat); setSelectedSubcategory(null); setIsCategoryOpen(false); }} className="w-full text-left px-5 py-4 text-sm font-bold text-gray-300 hover:bg-orange-500 hover:text-white transition-colors">{cat.displayName}</button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* SUBCATEGORY PICKER */}
+              <div className="md:col-span-2 relative" ref={subRef}>
+                <button
+                  type="button"
+                  disabled={!selectedCategory}
+                  onClick={() => setIsSubcategoryOpen(!isSubcategoryOpen)}
+                  className={`w-full h-full bg-white/5 hover:bg-white/10 border border-transparent rounded-[1.8rem] px-6 py-4 text-left transition-all ${!selectedCategory ? 'opacity-30 cursor-not-allowed' : ''}`}
+                >
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-tighter">Session Focus</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-white font-bold text-sm truncate">{selectedSubcategory?.name || "Type"}</span>
+                    <ChevronDownIcon className="w-4 h-4 text-orange-500" />
+                  </div>
+                </button>
+                <AnimatePresence>
+                  {isSubcategoryOpen && (
+                    <motion.div className="absolute top-full left-0 w-full mt-3 bg-gray-900/95 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden z-50 shadow-2xl">
+                      {(selectedCategory?.subcategories || []).map((sub) => (
+                        <button key={sub.id} type="button" onClick={() => { setSelectedSubcategory(sub); setIsSubcategoryOpen(false); }} className="w-full text-left px-5 py-4 text-sm font-bold text-gray-300 hover:bg-orange-500 hover:text-white transition-colors">{sub.name}</button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* BUDGET PICKER */}
+              <div className="md:col-span-3 flex bg-white/5 rounded-[1.8rem] border border-transparent focus-within:border-orange-500/50 transition-all items-center px-4 py-4">
+                <TicketIcon className="w-5 h-5 text-orange-500 mr-3" />
+                <div className="text-left flex-1">
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-tighter">Price Range</p>
+                  <div className="flex items-center">
+                    <input type="number" placeholder="Min" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="w-full bg-transparent text-white outline-none text-sm font-bold placeholder:text-gray-700" />
+                    <span className="mx-2 text-gray-600">—</span>
+                    <input type="number" placeholder="Max" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className="w-full bg-transparent text-white outline-none text-sm font-bold placeholder:text-gray-700" />
+                  </div>
+                </div>
+              </div>
+
+              {/* ACTION BUTTON */}
+              <div className="md:col-span-2">
+                <button type="submit" className="w-full h-full bg-orange-500 hover:bg-orange-600 text-black font-black rounded-[1.8rem] flex items-center justify-center space-x-2 transition-all shadow-[0_10px_30px_rgba(249,115,22,0.3)] active:scale-95 py-5">
+                  <MagnifyingGlassIcon className="w-5 h-5" />
+                  <span className="uppercase tracking-tighter text-sm">Explore</span>
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* 4. FOOTER CONTROLS */}
+      <div className="absolute bottom-10 right-10 z-30 flex items-center space-x-8">
+        <div className="flex space-x-2">
+          {heroSlides.map((_, i) => (
+            <motion.div 
+              key={i} 
+              animate={{ width: i === current ? 40 : 8, backgroundColor: i === current ? "#f97316" : "rgba(255,255,255,0.2)" }}
+              className="h-1 rounded-full cursor-pointer"
+              onClick={() => setCurrent(i)}
+            />
+          ))}
+        </div>
+        <div className="flex space-x-3 bg-black/20 backdrop-blur-md p-1.5 rounded-full border border-white/5">
+          <button onClick={prevSlide} className="p-3 rounded-full hover:bg-orange-500 hover:text-black text-white transition-all">
+            <ChevronLeftIcon className="w-5 h-5" />
+          </button>
+          <button onClick={nextSlide} className="p-3 rounded-full hover:bg-orange-500 hover:text-black text-white transition-all">
+            <ChevronRightIcon className="w-5 h-5" />
+          </button>
+        </div>
       </div>
     </section>
   );

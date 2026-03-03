@@ -407,26 +407,80 @@ const DUMMY_DATA = {
 };
 
 
+// Updated SearchFilters to include category and subcategory
+interface SearchFilters {
+  location: string;
+  minPrice: string;
+  maxPrice: string;
+  category?: string; // The ID or slug of the selected category
+  subcategory?: string; // The ID or slug of the selected subcategory
+}
+
 export default function FitnessSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
     const router = useRouter();
     // Use pageData prop instead of context for content data
     const { storeFormData } = useStoreContext(); // Keep for global theme settings
+    // Destructure data using the potentially updated storeData
+    const {
+        id,
+        name,
+        slug,
+        description,
+        bannerUrl,
+        StoreCategory, // Renamed for clarity in props
+        marketplaceListings,
+        salesAgents,
+        metrics,
+        awards,
+        testimonials,
+        faqs,
+        CompanyLocation,
+        blogs,
+        contactPhone,
+        CoreValues,
+    } = pageData || {};
 
     // Use pageData for all content
     const siteData = pageData || DUMMY_DATA;
 
-
+      
+      const handleSearch = (filters: SearchFilters) => {
+        // Implement actual search logic, e.g., navigate to a search results page
+        alert(`Searching in ${filters.location || 'all locations'} between KES ${filters.minPrice || 'any'} and KES ${filters.maxPrice || 'any'}`);
+        router.push(`/realestate/listings?location=${filters.location}&minPrice=${filters.minPrice}&maxPrice=${filters.maxPrice}`);
+      };
+    
+      const handleNewsletter = (e: React.FormEvent) => {
+        e.preventDefault();
+        // Simulate newsletter submission
+        console.log("Newsletter subscribed!");
+        // setShowNewsletter(false); // Hide newsletter after submission for this session
+        // In a real app, you'd send this data to a backend
+      };
+    
 
     return (
         <div className="">
             {/* Hero Section */}
-            <HeroSection storeFormData={siteData || undefined} onSearch={()=>{}} />
+            <HeroSection store={pageData} 
+            onSearch={handleSearch}
+            trendingLocations={
+            CompanyLocation
+                ? CompanyLocation.map((loc: any) => ({
+                    // Map/transform to Location type as needed
+                    name: loc.name,
+                    slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
+                    metaKeywords: loc.metaKeywords || "",
+                    status: loc.status || "active",
+                    parentId: loc.parentId || null,
+                    // Spread any additional fields if needed
+                    ...loc,
+                }))
+                : []
+            } />
 
             {/* Filter Bar */}
-            <FilterBar
-                storeFormData={siteData || {}}
-                onSearch={()=>{}}
-            />
+            <FilterBar  storeFormData={siteData || {}}  onSearch={()=>{}}  />
 
             {/* Listings Grid */}
             <ListingsGrid courses={siteData?.courses}/>

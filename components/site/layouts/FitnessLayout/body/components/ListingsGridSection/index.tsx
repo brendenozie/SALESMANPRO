@@ -8,241 +8,168 @@ import {
   ClockIcon,
   ArrowRightIcon,
   UserCircleIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { ICourse } from "@/types/typings";
-// import { useStoreContext } from "@/context/StoreContext";
 
-// Optimized image loader
-const loader = ({
-  src,
-  width,
-  quality,
-}: {
-  src: string;
-  width: number;
-  quality?: number;
-}) => `${src}?w=${width}&q=${quality || 75}`;
+const loader = ({ src }: { src: string }) => src;
 
-// Motion variants
+// Variants for the bento-grid entrance
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.2 },
+    transition: { staggerChildren: 0.15 },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 50, scale: 0.9 },
+  hidden: { opacity: 0, y: 30 },
   visible: {
     opacity: 1,
     y: 0,
-    scale: 1,
-    transition: { duration: 0.5, ease: "easeOut" },
+    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
   },
 };
 
-// Course type
-interface Course {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl: string | null;
-  credits: number;
-  code: string;
-  rating: number | null;
-  price: number;
-  duration: string;
-  status: string;
-  companyId: string;
-  companyName?: string | null; // <-- Added for display
-  departmentId: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-// Dummy fallback data
-const dummyCourses: ICourse[] = [
-  {
-    id: "1",
-    title: "Beginner Yoga & Mindfulness",
-    description: "A gentle introduction to yoga postures, breathing techniques, and meditation to reduce stress.",
-    imageUrl: "https://placehold.co/600x400/7c3aed/faf5ff?text=Yoga+Class",
-    credits: 0,
-    code: "YOGA-101",
-    rating: 4.8,
-    price: 50,
-    duration: "60 Minutes",
-    status: "ACTIVE",
-    companyId: "683581bba1bdf6ca3624b541",
-    departmentId: null,
-    createdAt: null,
-    updatedAt: null
-  },
-  {
-    id: "2",
-    title: "High-Intensity Interval Training",
-    description: "Maximize your calorie burn and improve cardiovascular health with this dynamic, full-body workout.",
-    imageUrl: "https://placehold.co/600x400/22c55e/f0fdf4?text=HIIT+Class",
-    credits: 0,
-    code: "HIIT-201",
-    rating: 4.9,
-    price: 75,
-    duration: "45 Minutes",
-    status: "ACTIVE",
-    companyId: "683581bba1bdf6ca3624b541",
-    departmentId: null,
-    createdAt: null,
-    updatedAt: null
-  },
-];
-
 export default function ListingsGrid({
-  courses = dummyCourses,
+  courses = [],
 }: {
   courses?: ICourse[];
 }) {
   const { storeFormData } = useStoreContext();
-
-  const { primaryColor = "#4F46E5", secondaryColor = "#9333EA" } =
-    storeFormData?.themeSettings || {};
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || "#f97316";
 
   return (
-    <section id="programs" className="py-16 px-4 md:px-8 bg-gray-50 relative">
+    <section id="programs" className="py-24 px-6 bg-[#050505] relative overflow-hidden">
+      {/* Background Decorative Element */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-orange-500/5 blur-[120px] rounded-full -z-10" />
+      
       <div className="max-w-7xl mx-auto">
-        {/* Heading */}
-        <motion.h2
-          className="mb-12 text-4xl md:text-5xl font-extrabold text-center leading-tight"
-          style={{ color: primaryColor }}
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1 }}
-        >
-          Explore Our{" "}
-          <span style={{ color: secondaryColor }}>Curated Programs</span> ✨
-        </motion.h2>
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+          <div className="space-y-4">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              className="flex items-center space-x-2 text-orange-500 font-black tracking-[0.3em] uppercase text-xs"
+            >
+              <SparklesIcon className="w-4 h-4" />
+              <span>Elite Selection</span>
+            </motion.div>
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="text-5xl md:text-7xl font-black text-white tracking-tighter italic uppercase leading-[0.9]"
+            >
+              Curated <br /> <span className="text-gray-500">Experiences</span>
+            </motion.h2>
+          </div>
+          
+          <motion.p 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            className="max-w-sm text-gray-400 font-medium leading-relaxed"
+          >
+            Hand-picked training protocols designed by world-class athletes and bio-performance experts.
+          </motion.p>
+        </div>
 
-        {/* Grid */}
+        {/* Listings Grid */}
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: true, amount: 0.1 }}
         >
           {courses.map((course) => (
             <motion.div
               key={course.id}
-              className="group relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-xl border border-gray-100 hover:border-gray-200 transition-all duration-300 transform hover:-translate-y-2 cursor-pointer"
               variants={itemVariants}
-              whileHover={{ scale: 1.02 }}
+              className="group relative bg-white/[0.03] border border-white/10 rounded-[2.5rem] overflow-hidden hover:bg-white/[0.06] transition-all duration-500"
             >
-              {/* Image */}
-              <div className="relative h-56 w-full">
+              {/* IMAGE WRAPPER */}
+              <div className="relative h-80 w-full overflow-hidden">
                 <Image
                   loader={loader}
-                  src={
-                    course.imageUrl ||
-                    "https://placehold.co/600x400/e5e7eb/4b5563?text=No+Image"
-                  }
+                  src={course.imageUrl || "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2000&auto=format&fit=crop"}
                   alt={course.title}
                   fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500 ease-in-out"
+                  className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700 ease-in-out"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-white/80 via-transparent to-transparent" />
-
-                {/* Price Badge */}
-                <div className="absolute top-4 left-4 z-10">
-                  <motion.span
-                    className="px-4 py-1.5 text-sm font-bold rounded-full text-white shadow-lg"
-                    style={{ background: primaryColor }}
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3, delay: 0.3 }}
-                  >
-                    ${course.price?.toLocaleString()}
-                  </motion.span>
+                
+                {/* Overlay Gradients */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent opacity-80" />
+                
+                {/* Badges */}
+                <div className="absolute top-6 left-6 flex flex-col gap-2">
+                   <div className="px-4 py-1.5 bg-black/60 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-black text-white uppercase tracking-widest">
+                     {course.code || "Premium"}
+                   </div>
                 </div>
 
-                {/* Favorite button */}
                 <motion.button
-                  className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/80 backdrop-blur-sm text-gray-600 hover:text-white transition-all duration-200 shadow"
-                  style={{ color: primaryColor }}
-                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  aria-label="Add to favorites"
+                  className="absolute top-6 right-6 p-3 rounded-full bg-white/10 backdrop-blur-md text-white border border-white/10 hover:bg-orange-500 hover:text-black transition-all"
                 >
                   <HeartIcon className="h-5 w-5" />
                 </motion.button>
               </div>
 
-              {/* Content */}
-              <div className="p-6 flex flex-col gap-3">
-                <h3
-                  className="text-xl font-bold group-hover:underline"
-                  style={{ color: primaryColor }}
-                >
-                  {course.title}
-                </h3>
-                <p className="text-sm text-gray-600 line-clamp-3">
-                  {course.description}
-                </p>
-
-                {/* Metadata */}
-                <div className="flex items-center text-gray-500 text-sm gap-4 flex-wrap">
-                  {course.duration && (
-                    <span className="flex items-center gap-1">
-                      <ClockIcon className="h-4 w-4 text-gray-400" />
-                      {course.duration}
+              {/* CONTENT AREA */}
+              <div className="p-8 space-y-6">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-start">
+                    <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter leading-tight group-hover:text-orange-500 transition-colors">
+                      {course.title}
+                    </h3>
+                    <span className="text-2xl font-black text-white italic tracking-tighter">
+                      ${course.price}
                     </span>
-                  )}
-                  <span className="flex items-center gap-1">
-                    <UserCircleIcon className="h-4 w-4 text-gray-400" />
-                    {"Unknown Provider"}
-                    {/* course.companyName ||  */}
-                  </span>
-                </div>
-
-                {/* Rating */}
-                {course.rating && (
-                  <div className="flex items-center text-sm font-semibold text-yellow-500">
-                    ⭐ {course.rating.toFixed(1)}
                   </div>
-                )}
-
-                {/* CTA */}
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <motion.button
-                    className="w-full px-6 py-3 rounded-xl text-white font-semibold shadow-md hover:opacity-90 transition flex items-center justify-center gap-2"
-                    style={{ background: primaryColor }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <span>Book Now</span>
-                    <ArrowRightIcon className="h-4 w-4" />
-                  </motion.button>
+                  <p className="text-gray-400 text-sm font-medium line-clamp-2 leading-relaxed">
+                    {course.description}
+                  </p>
                 </div>
+
+                {/* STATS ROW */}
+                <div className="flex items-center gap-6 border-y border-white/5 py-4">
+                  <div className="flex items-center gap-2">
+                    <ClockIcon className="h-4 w-4 text-orange-500" />
+                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">{course.duration}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <UserCircleIcon className="h-4 w-4 text-orange-500" />
+                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Master Coach</span>
+                  </div>
+                </div>
+
+                {/* ACTION */}
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full group/btn flex items-center justify-between px-8 py-5 bg-white text-black rounded-2xl font-black uppercase tracking-tighter hover:bg-orange-500 transition-all"
+                >
+                  <span>Secure Spot</span>
+                  <ArrowRightIcon className="h-5 w-5 group-hover/btn:translate-x-2 transition-transform" />
+                </motion.button>
               </div>
             </motion.div>
           ))}
         </motion.div>
 
-        {/* Footer CTA */}
+        {/* Bottom CTA */}
         <motion.div
-          className="text-center mt-16"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          viewport={{ once: true, amount: 0.5 }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          className="mt-20 flex flex-col items-center"
         >
-          <a
-            href="/all-programs"
-            className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-full shadow-lg hover:opacity-90 transition gap-3"
-            style={{ background: secondaryColor, color: "#fff" }}
-          >
-            View All Programs
-            <ArrowRightIcon className="h-5 w-5" />
-          </a>
+          <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-orange-500 to-transparent mb-8" />
+          <button className="text-white font-black uppercase tracking-[0.4em] text-xs hover:text-orange-500 transition-colors flex items-center gap-4">
+            Explore All Programs <ArrowRightIcon className="w-4 h-4" />
+          </button>
         </motion.div>
       </div>
     </section>

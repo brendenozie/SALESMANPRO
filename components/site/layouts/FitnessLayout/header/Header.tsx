@@ -3,16 +3,15 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import {
-  Bars3CenterLeftIcon,
+  Bars3BottomRightIcon,
   XMarkIcon,
   SunIcon,
   MoonIcon,
   MagnifyingGlassIcon,
-  PhoneIcon,
-  EnvelopeIcon,
-  GlobeAltIcon,
+  UserIcon,
+  ShoppingBagIcon,
 } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { useSession, signOut } from "next-auth/react";
@@ -22,254 +21,193 @@ const defaultStoreData = {
   name: "YourBrand",
   slug: "yourbrand",
   logoUrl: "",
-  contactPhone: "",
-  contactEmail: "",
-  socialLinks: [],
   themeSettings: {
-    primaryColor: "#0d9488",
-    secondaryColor: "#0f766e",
+    primaryColor: "#f97316", // Matching the orange from your Hero
   },
 };
 
-const loader = ({ src, width, quality }: any) =>
-  `${src}?w=${width}&q=${quality || 75}`;
+const loader = ({ src }: any) => src;
 
 export default function Header() {
   const router = useRouter();
   const { storeFormData } = useStoreContext();
   const data = { ...defaultStoreData, ...storeFormData };
+  const { name, slug, logoUrl, themeSettings } = data;
+  
+  const primaryColor = themeSettings?.primaryColor || "#f97316";
 
-  const {
-    name,
-    slug,
-    logoUrl,
-    contactPhone,
-    contactEmail,
-    socialLinks,
-    themeSettings,
-  } = data;
-
-  const primaryColor = themeSettings?.primaryColor || "#0d9488";
-
-  // Auth session
   const { data: session } = useSession();
-  const user = session?.user as { role?: string; name?: string } | undefined;
+  const user = session?.user as { role?: string; name?: string; image?: string } | undefined;
 
-  // UI
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
+  const [darkMode, setDarkMode] = useState(true); // Default to dark for the new vibe
+  const [scrolled, setScrolled] = useState(false);
 
-  // Theme effect
+  // Scroll logic for the "floating" effect
+  const { scrollY } = useScroll();
+  const headerWidth = useTransform(scrollY, [0, 100], ["100%", "92%"]);
+  const headerTop = useTransform(scrollY, [0, 100], ["0px", "20px"]);
+
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
-  }, [darkMode]);
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const navLinks = [
-    { name: "Home", href: "" },
     { name: "Programs", href: "#programs" },
     { name: "Trainers", href: "#trainers" },
-    { name: "About", href: "#about" },
+    { name: "Membership", href: "#pricing" },
     { name: "Contact", href: "#contact" },
   ];
 
-  const handleGoogleSignIn = () => {
-    const url = new URL("https://auth.salesmanpro.site/signin");
-    url.searchParams.set("callbackUrl", `${window.location.origin}`);
-    window.location.href = url.toString();
-  };
-
-  const handleGoogleSignUp = () => {
-    const url = new URL("https://auth.salesmanpro.site/signup");
-    url.searchParams.set("callbackUrl", `${window.location.origin}`);
-    window.location.href = url.toString();
-  };
-
   const handleUserAction = () => {
-    if (!user) return handleGoogleSignIn();
+    if (!user) {
+      const url = new URL("https://auth.salesmanpro.site/signin");
+      url.searchParams.set("callbackUrl", window.location.href);
+      window.location.href = url.toString();
+      return;
+    }
     router.push(user.role === "admin" ? "/dashboards" : "/profile");
   };
 
   return (
-    <header className=" top-0 inset-x-0 z-50 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl shadow-lg font-sans border-b border-gray-200 dark:border-gray-700">
-      {/* ---------- TOP BAR ---------- */}
-      <div className="hidden md:flex justify-between items-center px-6 py-2 bg-gray-50 dark:bg-gray-800 text-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center space-x-6 text-gray-700 dark:text-gray-300">
-          {contactPhone && (
-            <a href={`tel:${contactPhone}`} className="flex items-center space-x-2 hover:text-teal-600">
-              <PhoneIcon className="w-4 h-4" />
-              <span>{contactPhone}</span>
-            </a>
-          )}
-
-          {contactEmail && (
-            <a href={`mailto:${contactEmail}`} className="flex items-center space-x-2 hover:text-teal-600">
-              <EnvelopeIcon className="w-4 h-4" />
-              <span>{contactEmail}</span>
-            </a>
-          )}
-        </div>
-
-        <div className="flex items-center space-x-4">
-          {socialLinks?.map((s, i) => (
-            <Link key={i} href={s.url} target="_blank">
-              <GlobeAltIcon className="w-5 h-5 hover:text-teal-600 text-gray-600 dark:text-gray-300" />
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* ---------- MAIN NAVBAR ---------- */}
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        {/* LOGO */}
-        <Link href={`/${slug}`}>
+    <motion.header
+      style={{ width: headerWidth, top: headerTop }}
+      className={`fixed inset-x-0 mx-auto z-[60] transition-all duration-500 rounded-b-[2rem] ${
+        scrolled 
+          ? "bg-black/60 backdrop-blur-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] py-3 px-6 rounded-[2.5rem]" 
+          : "bg-transparent py-6 px-8"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        {/* LOGO SECTION */}
+        <Link href={`/${slug}`} className="relative z-10">
           {logoUrl ? (
             <Image
               src={logoUrl}
               alt={name}
-              width={140}
-              height={40}
+              width={150}
+              height={50}
               loader={loader}
-              className="object-contain max-h-[45px]"
+              className={`object-contain transition-all duration-300 ${scrolled ? 'scale-90' : 'scale-100'}`}
             />
           ) : (
-            <span className="text-2xl font-extrabold text-gray-900 dark:text-white">
-              {name}
+            <span className="text-2xl font-black text-white tracking-tighter italic uppercase">
+              {name}<span style={{ color: primaryColor }}>.</span>
             </span>
           )}
         </Link>
 
-        {/* DESKTOP LINKS */}
-        <nav className="hidden md:flex items-center space-x-8 text-gray-800 dark:text-gray-100">
+        {/* CENTER NAV: PILL DESIGN */}
+        <nav className="hidden lg:flex items-center space-x-1 bg-white/5 backdrop-blur-md border border-white/10 p-1.5 rounded-full">
           {navLinks.map((link) => (
             <Link
               key={link.name}
               href={`/${slug}${link.href}`}
-              className="relative text-lg font-medium group"
+              className="px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest text-gray-300 hover:text-white hover:bg-white/10 transition-all"
             >
               {link.name}
-              <span className="absolute left-0 bottom-[-4px] w-0 h-[3px] bg-teal-600 group-hover:w-full transition-all duration-300" />
             </Link>
           ))}
-
-          {/* SEARCH */}
-          <div className="relative">
-            <button
-              className="p-2 rounded-full bg-gray-100 dark:bg-gray-800"
-              onClick={() => setShowSearch(!showSearch)}
-            >
-              <MagnifyingGlassIcon className="w-6 h-6" />
-            </button>
-
-            <AnimatePresence>
-              {showSearch && (
-                <motion.input
-                  initial={{ width: 0, opacity: 0 }}
-                  animate={{ width: 220, opacity: 1 }}
-                  exit={{ width: 0, opacity: 0 }}
-                  placeholder="Search..."
-                  className="absolute right-0 top-1/2 -translate-y-1/2 bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-full"
-                />
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* THEME TOGGLE */}
-          <button
-            className="p-2 rounded-full bg-gray-200 dark:bg-gray-700"
-            onClick={() => setDarkMode(!darkMode)}
-          >
-            {darkMode ? (
-              <SunIcon className="w-5 h-5" />
-            ) : (
-              <MoonIcon className="w-5 h-5" />
-            )}
-          </button>
         </nav>
 
-        {/* AUTH + MOBILE TOGGLE */}
-        <div className="flex items-center space-x-4">
-          {/* AUTH */}
+        {/* RIGHT SIDE: UTILITIES */}
+        <div className="flex items-center space-x-3">
+          {/* SEARCH ICON */}
+          <button className="hidden sm:flex p-2.5 text-white hover:bg-white/10 rounded-full transition-colors">
+            <MagnifyingGlassIcon className="w-5 h-5" />
+          </button>
+
+          {/* AUTHENTICATION / PROFILE */}
+          <div className="h-8 w-[1px] bg-white/10 mx-2 hidden sm:block" />
+          
           {user ? (
-            <button onClick={handleUserAction} className="font-medium">
-              {user.name || "Profile"}
+            <button 
+              onClick={handleUserAction}
+              className="flex items-center space-x-2 bg-white/10 hover:bg-white/20 p-1 pr-4 rounded-full border border-white/10 transition-all"
+            >
+              <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center overflow-hidden">
+                {user.image ? (
+                  <Image src={user.image} alt="avatar" width={32} height={32} />
+                ) : (
+                  <UserIcon className="w-5 h-5 text-white" />
+                )}
+              </div>
+              <span className="text-xs font-black text-white uppercase tracking-tight hidden md:block">
+                {user.name?.split(' ')[0] || "Account"}
+              </span>
             </button>
           ) : (
-            <>
-              <button
-                onClick={handleGoogleSignIn}
-                className="px-4 py-2 rounded-full text-white font-medium"
-                style={{ backgroundColor: primaryColor }}
+            <button
+              onClick={handleUserAction}
+              className="group relative px-6 py-2.5 overflow-hidden rounded-full bg-white text-black font-black text-xs uppercase tracking-widest hover:pr-10 transition-all"
+            >
+              <span className="relative z-10">Join Club</span>
+              <div 
+                className="absolute right-[-20px] top-1/2 -translate-y-1/2 group-hover:right-3 transition-all opacity-0 group-hover:opacity-100"
               >
-                Login
-              </button>
-              <button
-                onClick={handleGoogleSignUp}
-                className="px-4 py-2 rounded-full font-medium border"
-                style={{ color: primaryColor, borderColor: primaryColor }}
-              >
-                Register
-              </button>
-            </>
+                <Bars3BottomRightIcon className="w-4 h-4" />
+              </div>
+            </button>
           )}
 
-          {/* MOBILE ICON */}
-          <button className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
-            {mobileOpen ? <XMarkIcon className="w-7 h-7" /> : <Bars3CenterLeftIcon className="w-7 h-7" />}
+          {/* MOBILE MENU TOGGLE */}
+          <button 
+            className="lg:hidden p-2.5 bg-white/5 rounded-full text-white"
+            onClick={() => setMobileOpen(true)}
+          >
+            <Bars3BottomRightIcon className="w-6 h-6" />
           </button>
         </div>
       </div>
 
-      {/* ---------- MOBILE DRAWER ---------- */}
+      {/* MOBILE FULL-SCREEN OVERLAY */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            className="fixed inset-y-0 right-0 w-64 bg-white dark:bg-gray-900 shadow-xl p-6 flex flex-col z-50"
+            initial={{ opacity: 0, scale: 1.1 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.1 }}
+            className="fixed inset-0 z-[100] bg-black backdrop-blur-3xl p-8 flex flex-col justify-center items-center"
           >
-            <button onClick={() => setMobileOpen(false)} className="mb-6">
-              <XMarkIcon className="w-6 h-6" />
+            <button 
+              onClick={() => setMobileOpen(false)}
+              className="absolute top-10 right-10 p-4 bg-white/5 rounded-full text-white"
+            >
+              <XMarkIcon className="w-8 h-8" />
             </button>
 
-            <nav className="flex flex-col space-y-6">
-              {navLinks.map((link) => (
-                <Link
+            <div className="flex flex-col space-y-8 text-center">
+              {navLinks.map((link, i) => (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
                   key={link.name}
-                  onClick={() => setMobileOpen(false)}
-                  href={`/${slug}${link.href}`}
-                  className="text-lg font-semibold"
                 >
-                  {link.name}
-                </Link>
+                  <Link
+                    href={`/${slug}${link.href}`}
+                    onClick={() => setMobileOpen(false)}
+                    className="text-4xl font-black text-white uppercase italic tracking-tighter hover:text-orange-500 transition-colors"
+                  >
+                    {link.name}
+                  </Link>
+                </motion.div>
               ))}
-            </nav>
-
-            <div className="mt-auto pt-6 border-t dark:border-gray-700">
-              {user ? (
-                <>
-                  <button onClick={handleUserAction} className="block w-full text-left py-2">
-                    Profile
-                  </button>
-                  <button onClick={() => signOut()} className="block w-full text-left py-2 text-red-600">
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button onClick={handleGoogleSignIn} className="block w-full text-left py-2">
-                    Login
-                  </button>
-                  <button onClick={handleGoogleSignUp} className="block w-full text-left py-2">
-                    Register
-                  </button>
-                </>
-              )}
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                onClick={() => { signOut(); setMobileOpen(false); }}
+                className="pt-10 text-orange-500 font-black uppercase tracking-[0.3em] text-xs"
+              >
+                {user ? "Sign Out" : ""}
+              </motion.button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </header>
+    </motion.header>
   );
 }

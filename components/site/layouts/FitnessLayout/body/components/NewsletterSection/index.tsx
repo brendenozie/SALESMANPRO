@@ -1,158 +1,124 @@
 "use client";
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircleIcon, InboxArrowDownIcon, RocketLaunchIcon } from '@heroicons/react/24/outline';
-
-const sectionVariants = {
-    hidden: { opacity: 0, scale: 0.95 },
-    visible: {
-        opacity: 1,
-        scale: 1,
-        transition: {
-            duration: 0.9,
-            ease: "easeOut",
-            staggerChildren: 0.1,
-        },
-    },
-};
-
-const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-        opacity: 1,
-        y: 0,
-        transition: {
-            duration: 0.7,
-            ease: "easeOut",
-        },
-    },
-};
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { 
+  EnvelopeIcon, 
+  ArrowRightIcon, 
+  ShieldCheckIcon 
+} from "@heroicons/react/24/outline";
 
 export default function NewsletterSection() {
-    const [email, setEmail] = useState("");
-    const [subscribed, setSubscribed] = useState(false);
-    const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
 
-    const handleSubmit = async (e : any) => {
-        e.preventDefault();
-        setLoading(true);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus("loading");
+    // Simulate API call
+    setTimeout(() => setStatus("success"), 1500);
+  };
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
+  return (
+    <section className="relative py-24 bg-[#050505] overflow-hidden border-t border-b border-white/5">
+      {/* Background Decorative Element */}
+      <div className="absolute top-0 right-0 w-1/3 h-full bg-orange-500/5 skew-x-12 translate-x-20 pointer-events-none" />
+      
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          
+          {/* Left Side: Copy */}
+          <div className="space-y-8">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-3"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+              </span>
+              <span className="text-orange-500 font-black tracking-[0.4em] uppercase text-[10px]">
+                Intelligence Briefing
+              </span>
+            </motion.div>
 
-        // TODO: integrate real subscription API here
-        console.log(`Subscribing email: ${email}`);
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="text-5xl md:text-7xl font-black text-white italic tracking-tighter uppercase leading-[0.85]"
+            >
+              Join the <br /> <span className="text-white/10">Inner Circle</span>
+            </motion.h2>
 
-        setSubscribed(true);
-        setLoading(false);
-        setEmail("");
-    };
+            <motion.p 
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="max-w-md text-gray-500 font-medium text-sm leading-relaxed uppercase tracking-wide"
+            >
+              Weekly protocols on metabolic optimization, tactical strength, and high-performance psychology. No noise. Just signal.
+            </motion.p>
+          </div>
 
-    return (
-        <motion.section
-            id="contact"
-            className="relative py-20 px-4 md:px-8 bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-[3rem] mx-4 md:mx-8 lg:mx-16 my-20 overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
-            variants={sectionVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-        >
-            {/* Background elements for visual interest */}
-            <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
-                <motion.div
-                    className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-700 rounded-full mix-blend-multiply blur-[120px] animate-blob"
-                    initial={{ scale: 0.8, rotate: 0 }}
-                    animate={{ scale: 1.2, rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 10, ease: "linear" }}
+          {/* Right Side: Form */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            className="relative group"
+          >
+            {/* Form Container */}
+            <form 
+              onSubmit={handleSubmit}
+              className="relative z-10 bg-white/[0.02] border border-white/10 p-2 md:p-3 flex flex-col md:flex-row gap-4 backdrop-blur-md"
+            >
+              <div className="flex-grow flex items-center px-4 gap-4">
+                <EnvelopeIcon className="h-5 w-5 text-gray-600 group-focus-within:text-orange-500 transition-colors" />
+                <input 
+                  type="email" 
+                  required
+                  placeholder="ENTER EMAIL ADDRESS"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="bg-transparent border-none focus:ring-0 text-white font-black tracking-widest text-xs uppercase w-full placeholder:text-gray-700"
                 />
-                <motion.div
-                    className="absolute top-1/2 left-1/2 w-80 h-80 bg-slate-700 rounded-full mix-blend-multiply blur-[100px] animate-blob animation-delay-2000"
-                    initial={{ scale: 1.2, rotate: 360 }}
-                    animate={{ scale: 0.8, rotate: 0 }}
-                    transition={{ repeat: Infinity, duration: 10, ease: "linear" }}
-                />
+              </div>
+
+              <button 
+                type="submit"
+                disabled={status !== "idle"}
+                className="bg-white hover:bg-orange-500 text-black font-black uppercase tracking-[0.2em] text-[10px] px-10 py-5 transition-all duration-300 flex items-center justify-center gap-3 disabled:bg-gray-800 disabled:text-gray-500"
+              >
+                {status === "loading" ? "Processing..." : status === "success" ? "Access Granted" : (
+                  <>
+                    Request Access <ArrowRightIcon className="h-4 w-4" />
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* Bottom Meta Info */}
+            <div className="mt-6 flex flex-wrap items-center gap-8 opacity-40">
+              <div className="flex items-center gap-2">
+                <ShieldCheckIcon className="h-4 w-4 text-white" />
+                <span className="text-[9px] font-black text-white uppercase tracking-[0.2em]">Encrypted Data</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-1 w-1 rounded-full bg-white" />
+                <span className="text-[9px] font-black text-white uppercase tracking-[0.2em]">Weekly Delivery</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-1 w-1 rounded-full bg-white" />
+                <span className="text-[9px] font-black text-white uppercase tracking-[0.2em]">Opt-out Anytime</span>
+              </div>
             </div>
 
-            <div className="max-w-xl mx-auto text-center relative z-10">
-                <motion.div variants={itemVariants}>
-                    <InboxArrowDownIcon className="h-20 w-20 mx-auto mb-6 text-white drop-shadow-lg" />
-                </motion.div>
+            {/* Decorative background border effect */}
+            <div className="absolute -inset-1 border border-orange-500/10 -z-10 group-hover:border-orange-500/30 transition-colors duration-500" />
+          </motion.div>
 
-                <motion.h2
-                    className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight drop-shadow-md font-sans"
-                    variants={itemVariants}
-                >
-                    Unlock Your Potential: <span className="text-cyan-300">Subscribe for Exclusive Content</span>
-                </motion.h2>
-
-                <motion.p
-                    className="text-lg md:text-xl text-white/80 mb-8 max-w-md mx-auto font-light"
-                    variants={itemVariants}
-                >
-                    Join our community and get exclusive content, special offers, and early access to new programs delivered right to your inbox.
-                </motion.p>
-
-                <AnimatePresence mode="wait">
-                    {subscribed ? (
-                        <motion.div
-                            key="success"
-                            className="bg-slate-800 text-white p-8 rounded-2xl shadow-lg flex flex-col items-center justify-center gap-4"
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.8 }}
-                            transition={{ duration: 0.5, ease: "easeOut" }}
-                        >
-                            <CheckCircleIcon className="h-12 w-12 text-green-500 animate-pulse" />
-                            <p className="text-2xl font-semibold">Awesome! You're in! 🎉</p>
-                            <p className="text-gray-300">Check your inbox for a welcome email. We can't wait to share with you.</p>
-                        </motion.div>
-                    ) : (
-                        <motion.form
-                            key="form"
-                            onSubmit={handleSubmit}
-                            className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 20 }}
-                        >
-                            <input
-                                type="email"
-                                required
-                                placeholder="Your email address"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="flex-1 p-4 rounded-full text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-cyan-300 focus:ring-opacity-70 transition-all duration-300 shadow-md"
-                                disabled={loading}
-                            />
-                            <motion.button
-                                type="submit"
-                                className="px-8 py-4 bg-cyan-500 text-slate-900 rounded-full font-bold hover:bg-cyan-600 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                disabled={loading}
-                            >
-                                {loading ? (
-                                    <svg className="animate-spin h-5 w-5 text-slate-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                ) : (
-                                    <>
-                                        Subscribe <RocketLaunchIcon className="h-5 w-5" />
-                                    </>
-                                )}
-                            </motion.button>
-                        </motion.form>
-                    )}
-                </AnimatePresence>
-                <motion.div
-                    className="text-sm mt-6 text-white/60 font-light"
-                    variants={itemVariants}
-                >
-                    We respect your privacy. No spam, ever.
-                </motion.div>
-            </div>
-        </motion.section>
-    );
+        </div>
+      </div>
+    </section>
+  );
 }

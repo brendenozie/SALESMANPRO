@@ -9,218 +9,192 @@ import {
     ChartBarSquareIcon,
     SparklesIcon,
     CheckCircleIcon,
-    FireIcon
-} from '@heroicons/react/24/solid';
+    FireIcon,
+    CpuChipIcon
+} from '@heroicons/react/24/outline';
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-    `${src}?w=${width}&q=${quality || 75}`;
+const loader = ({ src }: { src: string }) => src;
 
 // --- Animation Variants ---
 const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
         opacity: 1,
-        transition: { staggerChildren: 0.15, delayChildren: 0.2 }
+        transition: { staggerChildren: 0.1, delayChildren: 0.2 }
     }
 };
 
 const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
+    hidden: { opacity: 0, y: 20 },
     visible: {
         opacity: 1,
         y: 0,
-        transition: { type: "spring", stiffness: 50, damping: 20 }
+        transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] }
     }
 };
 
 const floatAnimation = {
-    y: [-10, 10, -10],
+    y: [0, -12, 0],
     transition: {
-        duration: 6,
+        duration: 5,
         repeat: Infinity,
         ease: "easeInOut"
     }
 };
 
-const floatAnimationDelayed = {
-    y: [10, -10, 10],
-    transition: {
-        duration: 7,
-        repeat: Infinity,
-        ease: "easeInOut"
-    }
-};
-
-// --- Sub-Components for cleaner code ---
+// --- Sub-Components ---
 
 const FeaturePill = ({ icon: Icon, text }: { icon: any, text: string }) => (
-    <div className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl hover:bg-white/10 transition-colors duration-300">
-        <div className="p-2 rounded-full bg-indigo-500/20">
-            <Icon className="w-5 h-5 text-indigo-400" />
-        </div>
-        <span className="text-gray-200 font-medium text-sm md:text-base">{text}</span>
+    <div className="flex items-center gap-3 px-4 py-2 border border-white/5 bg-white/[0.02] backdrop-blur-sm group hover:border-orange-500/50 transition-colors duration-500">
+        <Icon className="w-4 h-4 text-orange-500 group-hover:scale-110 transition-transform" />
+        <span className="text-gray-400 group-hover:text-white font-black uppercase tracking-[0.2em] text-[10px] transition-colors">{text}</span>
     </div>
 );
 
-const FloatingStatCard = ({ icon: Icon, label, value, color, className, delay }: any) => (
+const TacticalStat = ({ icon: Icon, label, value, className, delay = 0 }: any) => (
     <motion.div
-        className={`absolute z-20 p-4 rounded-2xl bg-gray-900/80 border border-white/10 backdrop-blur-xl shadow-2xl flex items-center gap-4 min-w-[180px] ${className}`}
-        initial={{ opacity: 0, scale: 0.8 }}
+        className={`absolute z-30 p-5 bg-black/80 border border-white/10 backdrop-blur-md flex flex-col gap-2 min-w-[160px] ${className}`}
+        initial={{ opacity: 0, scale: 0.9 }}
         whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: true }}
-        animate={delay ? floatAnimationDelayed : floatAnimation}
+        animate={floatAnimation}
+        transition={{ delay }}
     >
-        <div className={`p-3 rounded-xl ${color}`}>
-            <Icon className="w-6 h-6 text-white" />
+        <div className="flex justify-between items-center">
+            <Icon className="w-5 h-5 text-orange-500" />
+            <div className="h-1 w-1 rounded-full bg-orange-500 animate-pulse" />
         </div>
         <div>
-            <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">{label}</p>
-            <p className="text-lg font-bold text-white">{value}</p>
+            <p className="text-[9px] text-gray-500 uppercase font-black tracking-[0.2em]">{label}</p>
+            <p className="text-xl font-black text-white italic tracking-tighter uppercase">{value}</p>
         </div>
     </motion.div>
 );
 
-// ----------------------------------------------------------------------------
-// Main Component
-// ----------------------------------------------------------------------------
 export default function AppPromotion() {
     return (
-        <section className="relative py-24 lg:py-32 overflow-hidden bg-gray-950">
-            {/* Background Effects */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full z-0">
-                <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse" />
-                <div className="absolute bottom-[10%] right-[-5%] w-[400px] h-[400px] bg-purple-600/20 rounded-full blur-[100px]" />
-                <div className="absolute top-[20%] right-[20%] w-[300px] h-[300px] bg-cyan-500/10 rounded-full blur-[80px]" />
-                {/* Grid Pattern Overlay */}
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay"></div>
+        <section className="relative py-32 overflow-hidden bg-[#050505]">
+            {/* Structural Background */}
+            <div className="absolute inset-0 z-0">
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:60px_60px]" />
+                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-[#050505] via-transparent to-[#050505]" />
             </div>
 
-            <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
-                <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
+            <div className="max-w-7xl mx-auto px-6 relative z-10">
+                <div className="flex flex-col lg:flex-row items-center gap-20">
 
                     {/* LEFT: Content */}
                     <motion.div
-                        className="flex-1 text-center lg:text-left"
+                        className="flex-1 order-2 lg:order-1"
                         variants={containerVariants}
                         initial="hidden"
                         whileInView="visible"
                         viewport={{ once: true }}
                     >
-                        <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-900/30 border border-indigo-500/30 mb-8">
-                            <span className="relative flex h-3 w-3">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span>
-                            </span>
-                            <span className="text-indigo-300 text-sm font-semibold tracking-wide uppercase">New Version 2.0 Live</span>
+                        <motion.div variants={itemVariants} className="flex items-center gap-3 mb-8">
+                            <div className="h-[1px] w-12 bg-orange-500" />
+                            <span className="text-orange-500 text-xs font-black tracking-[0.4em] uppercase">System v2.0 Operational</span>
                         </motion.div>
 
-                        <motion.h2 variants={itemVariants} className="text-5xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.1] mb-6">
-                            Pocket-Sized <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-cyan-400">
-                                Personal Trainer
-                            </span>
+                        <motion.h2 variants={itemVariants} className="text-6xl lg:text-8xl font-black text-white tracking-tighter uppercase italic leading-[0.8] mb-10">
+                            Digital <br />
+                            <span className="text-white/10 group-hover:text-white transition-colors duration-700">Architecture</span>
                         </motion.h2>
 
-                        <motion.p variants={itemVariants} className="text-lg text-gray-400 mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                            Experience fitness evolved. Join live classes, track detailed biometrics, and follow AI-generated workout plans tailored specifically to your goals.
+                        <motion.p variants={itemVariants} className="text-gray-500 font-medium text-sm md:text-base leading-relaxed uppercase mb-12 max-w-lg">
+                            Your performance ecosystem, recalibrated. AI-driven protocols, biometric syncing, and world-class instructional content delivered with surgical precision.
                         </motion.p>
 
-                        {/* Feature Pills Grid */}
-                        <motion.div variants={itemVariants} className="flex flex-wrap justify-center lg:justify-start gap-4 mb-12">
-                            <FeaturePill icon={CalendarDaysIcon} text="Smart Scheduling" />
-                            <FeaturePill icon={VideoCameraIcon} text="Live 4K Classes" />
-                            <FeaturePill icon={ChartBarSquareIcon} text="Real-time Analytics" />
-                            <FeaturePill icon={SparklesIcon} text="AI Coaching" />
+                        {/* Tactical Grid */}
+                        <motion.div variants={itemVariants} className="grid grid-cols-2 gap-px bg-white/10 border border-white/10 mb-12 overflow-hidden">
+                            <FeaturePill icon={CpuChipIcon} text="Neural Sync" />
+                            <FeaturePill icon={VideoCameraIcon} text="4K Live Stream" />
+                            <FeaturePill icon={ChartBarSquareIcon} text="Bio-Analytics" />
+                            <FeaturePill icon={CalendarDaysIcon} text="Duty Cycles" />
                         </motion.div>
 
-                        {/* App Store Buttons */}
-                        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-                            <a href="#" className="group relative overflow-hidden rounded-xl bg-white shadow-lg transition-transform hover:-translate-y-1">
-                                <div className="absolute inset-0 bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                <Image
-                                    src="/images/app-store-badge.svg"
-                                    alt="Download on App Store"
-                                    width={160}
-                                    height={48}
-                                    className="relative z-10 block h-12 w-auto"
-                                    loader={loader}
-                                />
-                            </a>
-                            <a href="#" className="group relative overflow-hidden rounded-xl bg-white shadow-lg transition-transform hover:-translate-y-1">
-                                <div className="absolute inset-0 bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                <Image
-                                    src="/images/play-store-badge.svg"
-                                    alt="Get it on Google Play"
-                                    width={160}
-                                    height={48}
-                                    className="relative z-10 block h-12 w-auto"
-                                    loader={loader}
-                                />
-                            </a>
+                        {/* Download Interface */}
+                        <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-8">
+                            <div className="flex gap-4">
+                                <a href="#" className="h-14 w-40 bg-white hover:bg-orange-500 transition-colors rounded-sm flex items-center justify-center p-4">
+                                    <Image src="/images/app-store-badge.svg" alt="iOS" width={120} height={40} className="invert group-hover:invert-0" loader={loader}/>
+                                </a>
+                                <a href="#" className="h-14 w-40 bg-white hover:bg-orange-500 transition-colors rounded-sm flex items-center justify-center p-4">
+                                    <Image src="/images/play-store-badge.svg" alt="Android" width={120} height={40} className="invert" loader={loader}/>
+                                </a>
+                            </div>
                             
-                            {/* QR Code Hint */}
-                            <div className="hidden xl:flex items-center gap-3 pl-4 border-l border-gray-800 ml-2">
-                                <div className="w-10 h-10 bg-white rounded-md p-0.5">
-                                    {/* Placeholder for a real QR code image */}
-                                    <div className="w-full h-full bg-gray-900 flex items-center justify-center text-[6px] text-white text-center leading-tight">SCAN<br/>ME</div>
+                            <div className="flex items-center gap-4 py-2 px-4 border-l border-white/10">
+                                <div className="p-1 bg-white">
+                                    <div className="w-8 h-8 bg-black flex items-center justify-center text-[7px] font-black text-white">QR</div>
                                 </div>
-                                <span className="text-xs text-gray-500 w-20">Scan to install immediately</span>
+                                <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest leading-tight">Instant <br/> Deploy</span>
                             </div>
                         </motion.div>
                     </motion.div>
 
-                    {/* RIGHT: Visual Mockup */}
+                    {/* RIGHT: Visual Command Center */}
                     <motion.div
-                        className="flex-1 relative flex justify-center items-center"
-                        initial={{ opacity: 0, x: 50 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                        viewport={{ once: true }}
+                        className="flex-1 relative order-1 lg:order-2 py-12"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 1 }}
                     >
-                        {/* Glow behind phone */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[500px] bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-full blur-[60px] opacity-40" />
+                        {/* Central Glow */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-orange-500/20 rounded-full blur-[100px]" />
 
-                        {/* Floating Element 1: Calories */}
-                        <FloatingStatCard 
+                        {/* Floating Telemetry */}
+                        <TacticalStat 
                             icon={FireIcon} 
-                            label="Active Energy" 
-                            value="840 kCal" 
-                            color="bg-orange-500" 
-                            className="top-10 -left-10 hidden md:flex" 
-                            delay={false}
+                            label="Metabolic Output" 
+                            value="1,240 KCAL" 
+                            className="-top-4 -left-12 hidden xl:flex" 
                         />
 
-                         {/* Floating Element 2: Success/Streak */}
-                         <FloatingStatCard 
+                        <TacticalStat 
                             icon={CheckCircleIcon} 
-                            label="Weekly Streak" 
-                            value="5 Days" 
-                            color="bg-emerald-500" 
-                            className="bottom-20 -right-4 hidden md:flex" 
-                            delay={true}
+                            label="Compliance" 
+                            value="98.4%" 
+                            className="bottom-12 -right-8 hidden xl:flex" 
+                            delay={0.5}
                         />
 
-                        {/* Main Phone Image */}
-                        <div className="relative z-10 w-[300px] h-[600px] drop-shadow-2xl transform rotate-[-6deg] transition-transform duration-500 hover:rotate-0">
-                            {/* Using a frame for the phone gives it more realism if the image is just a screenshot */}
-                            <div className="absolute inset-0 rounded-[3rem] border-8 border-gray-900 bg-gray-900 overflow-hidden shadow-2xl">
+                        {/* The Device */}
+                        <div className="relative z-20 group">
+                            <div className="relative w-[280px] h-[580px] mx-auto border-[12px] border-[#111] rounded-[3rem] shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden">
                                 <Image
                                     src="/images/app-mockup-main.png"
-                                    alt="App Interface"
+                                    alt="Interface"
                                     fill
-                                    className="object-cover"
+                                    className="object-cover grayscale hover:grayscale-0 transition-all duration-700"
                                     loader={loader}
-                                    sizes="(max-width: 768px) 100vw, 400px"
                                     priority
                                 />
-                                {/* Reflection overlay for glossy feel */}
-                                <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none rounded-[2.5rem]" />
+                                {/* Scanning line effect */}
+                                <div className="absolute top-0 left-0 w-full h-1 bg-orange-500/50 shadow-[0_0_15px_rgba(249,115,22,0.8)] animate-scan z-30" />
+                                
+                                {/* Overlay Glass */}
+                                <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent pointer-events-none" />
                             </div>
+                            
+                            {/* Device Frame Accents */}
+                            <div className="absolute -inset-4 border border-white/5 rounded-[4rem] pointer-events-none group-hover:border-orange-500/20 transition-colors duration-1000" />
                         </div>
                     </motion.div>
 
                 </div>
             </div>
+            
+            <style jsx global>{`
+                @keyframes scan {
+                    0% { top: 0%; opacity: 0; }
+                    10% { opacity: 1; }
+                    90% { opacity: 1; }
+                    100% { top: 100%; opacity: 0; }
+                }
+                .animate-scan {
+                    animation: scan 4s linear infinite;
+                }
+            `}</style>
         </section>
     );
 }

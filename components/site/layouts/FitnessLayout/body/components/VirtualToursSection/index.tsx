@@ -5,19 +5,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRightIcon,
   ClockIcon,
-  PlayCircleIcon,
+  PlayIcon,
   UserIcon,
-  WifiIcon,
-} from "@heroicons/react/24/outline";
+  SignalIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/solid";
 import Image from "next/image";
 
-// Mocking the image loader for demonstration purposes
-const customLoader = ({ src, width, quality }:any) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-};
-
-
-// --- Shared Type (from Virtual Tours) ---
+// --- Types ---
 export interface IMediaExperience {
   id: string;
   title: string;
@@ -31,30 +26,31 @@ export interface IMediaExperience {
   isLive?: boolean;
 }
 
-// --- Variants ---
+const customLoader = ({ src }: any) => src;
+
+// --- Animation Variants ---
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.15, delayChildren: 0.2 },
-  },
-};
-const cardVariants = {
-  hidden: { opacity: 0, y: 50, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { duration: 0.6, ease: "easeOut" },
+    transition: { staggerChildren: 0.1 },
   },
 };
 
-// --- Single Card ---
+const cardVariants = {
+  hidden: { opacity: 0, scale: 0.9, y: 20 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+// --- Sub-component: Video Card ---
 const VideoItem = ({
-  id,
   title,
   thumbnail,
-  videoUrl,
   duration,
   category,
   instructor,
@@ -62,141 +58,139 @@ const VideoItem = ({
   onClick,
 }: IMediaExperience & { onClick: () => void }) => (
   <motion.div
-    key={id}
-    className="relative cursor-pointer rounded-3xl overflow-hidden shadow-2xl hover:shadow-primary-accent/40 transition-all duration-500 transform snap-center border border-gray-200 group"
     variants={cardVariants}
-    whileHover={{
-      scale: 1.05,
-      rotate: 1,
-      y: -10,
-      boxShadow: "0 25px 50px -12px rgba(99, 102, 241, 0.5)",
-    }}
     onClick={onClick}
+    className="group relative cursor-pointer bg-white/5 border border-white/10 rounded-[2rem] overflow-hidden hover:bg-white/10 transition-all duration-500"
   >
-    {/* Thumbnail */}
-    <div className="relative h-56 w-full overflow-hidden">
+    {/* Thumbnail Container */}
+    <div className="relative h-64 w-full overflow-hidden">
       <Image
-        src={
-          thumbnail ||
-          "https://images.unsplash.com/photo-1546522301-447544d673f4?q=80&w=2940&auto=format&fit=crop"
-        }
-        alt={title || "video thumbnail"}
         loader={customLoader}
+        src={thumbnail}
+        alt={title}
         fill
-        className="object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
+        className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+      
+      {/* Cinematic Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/20 to-transparent" />
 
-      {/* Play Overlay */}
-      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-        <motion.div
-          className="p-4 bg-white/90 backdrop-blur-sm rounded-full text-indigo-600 shadow-lg"
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <PlayCircleIcon className="h-10 w-10" />
-        </motion.div>
+      {/* Play Button Overlay */}
+      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 scale-75 group-hover:scale-100">
+        <div className="w-16 h-16 flex items-center justify-center bg-orange-500 rounded-full text-black shadow-[0_0_30px_rgba(249,115,22,0.5)]">
+          <PlayIcon className="h-8 w-8 ml-1" />
+        </div>
       </div>
 
-      {/* Live Badge */}
-      {isLive && (
-        <span className="absolute top-4 right-4 px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full shadow-md animate-pulse">
-          LIVE <WifiIcon className="inline-block h-3 w-3 ml-1" />
-        </span>
-      )}
+      {/* Status Badges */}
+      <div className="absolute top-5 left-5 flex gap-2">
+        {isLive && (
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-red-600 rounded-full text-[10px] font-black text-white uppercase tracking-widest animate-pulse">
+            <SignalIcon className="h-3 w-3" />
+            Live Now
+          </div>
+        )}
+        <div className="px-3 py-1 bg-black/60 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-black text-white uppercase tracking-widest">
+          {category}
+        </div>
+      </div>
     </div>
 
-    {/* Details */}
-    <div className="p-5 flex flex-col space-y-2">
-      <h3 className="text-xl font-bold text-gray-900 group-hover:text-indigo-700 transition-colors">
+    {/* Info Footer */}
+    <div className="p-6">
+      <h3 className="text-xl font-black text-white uppercase italic tracking-tighter leading-tight mb-4 group-hover:text-orange-500 transition-colors">
         {title}
       </h3>
-      {instructor && (
-        <div className="flex items-center text-gray-600 text-sm">
-          <UserIcon className="h-4 w-4 mr-1 text-indigo-400" /> {instructor}
+      
+      <div className="flex items-center justify-between border-t border-white/5 pt-4">
+        <div className="flex items-center gap-2 text-gray-400">
+          <UserIcon className="h-4 w-4 text-orange-500" />
+          <span className="text-[10px] font-black uppercase tracking-widest">{instructor}</span>
         </div>
-      )}
-      <div className="flex items-center text-gray-600 text-sm">
-        <ClockIcon className="h-4 w-4 mr-1 text-indigo-400" /> {duration}
-        {category && (
-          <span className="ml-auto text-indigo-500 font-medium">
-            {category}
-          </span>
-        )}
+        <div className="flex items-center gap-2 text-gray-400">
+          <ClockIcon className="h-4 w-4 text-orange-500" />
+          <span className="text-[10px] font-black uppercase tracking-widest">{duration}</span>
+        </div>
       </div>
     </div>
   </motion.div>
 );
 
-// --- Sample Data ---
-const fallbackVideos: IMediaExperience[] = [
-  {
-    id: "vid1",
-    title: "Full Body HIIT Blast",
-    description: "A powerful workout to boost stamina and strength.",
-    thumbnail: "https://placehold.co/600x400/818CF8/FFFFFF?text=HIIT+Blast",
-    videoUrl: "https://www.youtube.com/embed/LXb3EKWsInQ?autoplay=1",
-    duration: "30 min",
-    instructor: "Coach Alex",
-    category: "Fitness",
-  },
-  {
-    id: "vid2",
-    title: "Beginner Yoga Flow",
-    description: "Gentle yoga sequence to improve flexibility and balance.",
-    thumbnail: "https://placehold.co/600x400/A78BFA/FFFFFF?text=Yoga+Flow",
-    videoUrl: "https://www.youtube.com/embed/q_2h_2Q00c0?autoplay=1",
-    duration: "45 min",
-    instructor: "Sarah Lee",
-    category: "Yoga",
-    isLive: true,
-  },
-  {
-    id: "vid3",
-    title: "Core Strength & Stability",
-    description: "Engage your core with this guided strength workout.",
-    thumbnail: "https://placehold.co/600x400/4F46E5/FFFFFF?text=Core+Strength",
-    videoUrl: "https://www.youtube.com/embed/FwV8h6rC2i0?autoplay=1",
-    duration: "20 min",
-    instructor: "Dr. Emily",
-    category: "Strength Training",
-  },
-];
-
-// --- Component ---
+// --- Main Section ---
 export default function VirtualClassesSection({
-  videos,
+  videos = [],
 }: {
   videos?: IMediaExperience[];
 }) {
-  const [selectedVideo, setSelectedVideo] = useState<IMediaExperience | null>(
-    null
-  );
-  const dataToShow = videos?.length ? videos : fallbackVideos;
+  const [selectedVideo, setSelectedVideo] = useState<IMediaExperience | null>(null);
+
+  const dataToShow = videos.length > 0 ? videos : [
+    {
+      id: "1",
+      title: "Shadow Boxing: Pro Protocol",
+      thumbnail: "https://images.unsplash.com/photo-1599058917232-d750c185967c?q=80&w=2000&auto=format&fit=crop",
+      videoUrl: "https://www.youtube.com/embed/LXb3EKWsInQ?autoplay=1",
+      duration: "45 MIN",
+      instructor: "COACH VANCE",
+      category: "STRIKING",
+      isLive: true
+    },
+    {
+      id: "2",
+      title: "Bio-Mechanical Power Flow",
+      thumbnail: "https://images.unsplash.com/photo-1518611012118-29a8d63ee0c2?q=80&w=2000&auto=format&fit=crop",
+      videoUrl: "https://www.youtube.com/embed/q_2h_2Q00c0?autoplay=1",
+      duration: "30 MIN",
+      instructor: "MARCUS REED",
+      category: "MOBILITY",
+    },
+    {
+      id: "3",
+      title: "Metabolic Threshold HIIT",
+      thumbnail: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2000&auto=format&fit=crop",
+      videoUrl: "https://www.youtube.com/embed/FwV8h6rC2i0?autoplay=1",
+      duration: "20 MIN",
+      instructor: "SARA JANE",
+      category: "CARDIO",
+    }
+  ];
 
   return (
-    <section className="py-16 bg-gradient-to-br from-indigo-50 to-purple-50 relative">
-      <div className="max-w-7xl mx-auto px-4 md:px-8">
-        <motion.h2
-          className="mb-14 text-4xl md:text-5xl font-extrabold text-center text-gray-900 leading-tight"
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-        >
-          Dive Into Our{" "}
-          <span className="text-indigo-700">
-            Virtual Classes & On-Demand Library
-          </span>
-        </motion.h2>
+    <section className="py-32 bg-[#050505] relative overflow-hidden">
+      {/* Background Ambience */}
+      <div className="absolute -bottom-[20%] -left-[10%] w-[600px] h-[600px] bg-orange-500/10 blur-[150px] rounded-full" />
 
+      <div className="max-w-7xl mx-auto px-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+          <div className="space-y-4">
+            <span className="text-orange-500 font-black tracking-[0.4em] uppercase text-xs">Digital Dojo</span>
+            <h2 className="text-6xl md:text-8xl font-black text-white italic tracking-tighter uppercase leading-[0.8]">
+              Virtual <br /> <span className="text-white/10">Archive</span>
+            </h2>
+          </div>
+          
+          <div className="flex flex-col items-start md:items-end gap-6">
+            <p className="max-w-[320px] text-gray-400 font-medium text-sm leading-relaxed text-left md:text-right">
+              Train from anywhere. Zero excuses. Access our encrypted high-performance library 24/7.
+            </p>
+            <motion.a
+              href="/virtual-library"
+              whileHover={{ x: 5 }}
+              className="flex items-center gap-3 text-white font-black uppercase tracking-widest text-xs border-b-2 border-orange-500 pb-2"
+            >
+              Full Library <ArrowRightIcon className="w-4 h-4 text-orange-500" />
+            </motion.a>
+          </div>
+        </div>
+
+        {/* Grid */}
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: true }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
         >
           {dataToShow.map((vid) => (
             <VideoItem
@@ -206,49 +200,38 @@ export default function VirtualClassesSection({
             />
           ))}
         </motion.div>
-
-        {/* CTA */}
-        <div className="text-center mt-16">
-          <a
-            href="/virtual-library"
-            className="inline-flex items-center px-8 py-4 bg-gray-900 text-white text-lg font-semibold rounded-full shadow-lg hover:bg-gray-700 transition-transform hover:-translate-y-1"
-          >
-            Browse Full Video Library
-            <ArrowRightIcon className="h-5 w-5 ml-3" />
-          </a>
-        </div>
       </div>
 
-      {/* Modal */}
+      {/* Cinematic Modal */}
       <AnimatePresence>
         {selectedVideo && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-85 p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-2xl p-4 md:p-10"
             onClick={() => setSelectedVideo(null)}
           >
             <motion.div
-              className="relative w-full max-w-5xl bg-gray-900 rounded-3xl overflow-hidden shadow-2xl"
-              initial={{ scale: 0.7, y: 50 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.7, y: 50 }}
-              onClick={(e : any) => e.stopPropagation()}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-6xl aspect-video bg-[#111] rounded-[2rem] overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(0,0,0,1)]"
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
             >
               <button
-                className="absolute top-4 right-4 z-10 text-white/80 hover:text-white p-2 rounded-full bg-white/10 hover:bg-white/20"
                 onClick={() => setSelectedVideo(null)}
+                className="absolute top-6 right-6 z-50 p-3 bg-black/50 hover:bg-orange-500 text-white hover:text-black rounded-full transition-all"
               >
-                ✕
+                <XMarkIcon className="w-6 h-6" />
               </button>
+              
               <iframe
                 src={selectedVideo.videoUrl}
                 title={selectedVideo.title}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                className="w-full h-full"
+                allow="autoplay; encrypted-media"
                 allowFullScreen
-                className="w-full h-auto aspect-video"
               />
             </motion.div>
           </motion.div>

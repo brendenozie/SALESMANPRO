@@ -1,233 +1,172 @@
 "use client";
 
-import React, { useState } from 'react'; // Ensure useState is imported
-import { motion, AnimatePresence } from 'framer-motion'; // Ensure AnimatePresence is imported
-import Image from 'next/image'; // Not strictly needed for this component, but good to keep if used elsewhere
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowRightIcon,
-    ChevronDownIcon, // For accordion open/close
-    LightBulbIcon,   // For a helpful tip/CTA
-    QuestionMarkCircleIcon, // General FAQ icon
-    SparklesIcon // For a touch of magic
-} from '@heroicons/react/24/solid';
+    ArrowRightIcon,
+    ChevronDownIcon,
+    LightBulbIcon,
+    ChatBubbleLeftRightIcon,
+} from '@heroicons/react/24/outline';
 import { FAQ } from '@/types/typings';
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-    `${src}?w=${width}&q=${quality || 75}`;
-
-// Framer Motion variants
 const sectionVariants = {
-    hidden: { opacity: 0, y: 50 },
+    hidden: { opacity: 0 },
     visible: {
         opacity: 1,
-        y: 0,
-        transition: {
-            duration: 0.9, // Slower for a grand entrance
-            ease: "easeOut",
-            staggerChildren: 0.1, // Stagger items
-            delayChildren: 0.2,
-        },
+        transition: { staggerChildren: 0.1, delayChildren: 0.2 },
     },
 };
 
 const faqItemVariants = {
-    hidden: { opacity: 0, y: 30, scale: 0.95 },
+    hidden: { opacity: 0, x: -20 },
     visible: {
         opacity: 1,
-        y: 0,
-        scale: 1,
-        transition: {
-            duration: 0.7,
-            ease: "easeOut",
-        },
+        x: 0,
+        transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
     },
 };
 
 const answerVariants = {
-    hidden: { opacity: 0, height: 0 },
+    hidden: { opacity: 0, height: 0, marginBottom: 0 },
     visible: {
         opacity: 1,
         height: "auto",
-        transition: {
-            duration: 0.4,
-            ease: "easeOut",
-        },
+        marginBottom: 20,
+        transition: { duration: 0.4, ease: "easeOut" },
     },
     exit: {
         opacity: 0,
         height: 0,
-        transition: {
-            duration: 0.3,
-            ease: "easeIn",
-        },
+        marginBottom: 0,
+        transition: { duration: 0.3, ease: "easeIn" },
     },
 };
-
-// Dummy data for demonstration
-// interface FAQItem {
-//     id: string;
-//     question: string;
-//     answer: string;
-//     category?: string; // New: for filtering or categorization
-// }
 
 const dummyFaqs: FAQ[] = [
     {
         id: 'faq1',
-        question: "How do I sign up for a new program?",
-        answer: "Signing up is easy! Just navigate to our 'Programs' page, choose your desired plan, and follow the simple steps to create an account and enroll. You'll be ready to start your journey in minutes!",
-        // category: "Getting Started",
+        question: "SYSTEM ONBOARDING PROTOCOL",
+        answer: "Accessing our performance architecture is streamlined. Select your tier, initiate your profile, and synchronize your biometrics via the command center. Deployment takes less than 120 seconds.",
     },
     {
         id: 'faq2',
-        question: "What types of workouts are available?",
-        answer: "We offer a diverse range of workouts including HIIT, yoga, strength training, dance fitness, and specialized recovery sessions. Our library is constantly updated with new content to keep things fresh and engaging.",
-        // category: "Programs & Workouts",
+        question: "MODALITIES & WORKOUT ARCHITECTURE",
+        answer: "We deploy a multi-disciplinary approach: HIIT, Metabolic Conditioning, Strength Cycles, and Neural Recovery. Every program is mathematically balanced for maximal adaptive response.",
     },
     {
         id: 'faq3',
-        question: "Can I get personalized coaching?",
-        answer: "Absolutely! We offer one-on-one coaching sessions with our certified experts. You can schedule a consultation directly from the 'Coaches & Experts' section to discuss your specific goals.",
-        // category: "Coaching & Support",
+        question: "ELITE TIER PERSONAL COACHING",
+        answer: "Direct uplink to certified performance architects is available for Tier-3 members. This includes biometric auditing, custom protocol design, and weekly strategic reviews.",
     },
     {
         id: 'faq4',
-        question: "Is there a mobile app to track my progress?",
-        answer: "Yes, we have a fantastic mobile app available on both iOS and Android! You can download it from the App Store or Google Play to track workouts, monitor nutrition, and connect with the community on the go.",
-        // category: "Technical & App",
-    },
-    {
-        id: 'faq5',
-        question: "What is your refund policy?",
-        answer: "We offer a 30-day money-back guarantee on all our premium programs. If you're not completely satisfied, simply contact our support team within 30 days of purchase for a full refund. Your satisfaction is our priority!",
-        // category: "Billing & Subscriptions",
+        question: "MOBILE INTERFACE & TRACKING",
+        answer: "Our native OS is available on both iOS and Android. It functions as a portable command center for real-time data visualization and community tactical updates.",
     },
 ];
 
-// ----------------------------------------------------------------------------
-// FaqsSection: Transformed for an engaging, intuitive, captivating, and beautiful design
-// ----------------------------------------------------------------------------
 export default function FaqsSection({ faqs = dummyFaqs }: { faqs?: FAQ[] }) {
-    const [openId, setOpenId] = useState<string | null>(null); // State to manage which FAQ is open
-
-    const toggleFaq = (id: string | null | undefined) => {
-        setOpenId(openId === id ? null : id!);
-    };
+    const [openId, setOpenId] = useState<string | null>(null);
 
     return (
         <motion.section
-            className="relative py-20 bg-gradient-to-br from-gray-50 to-blue-50 overflow-hidden" // Soft, inviting gradient
+            className="relative py-32 bg-[#050505] overflow-hidden border-t border-white/5"
             variants={sectionVariants}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
+            viewport={{ once: true, amount: 0.1 }}
         >
-            {/* Abstract Background Blobs - adds visual depth and movement */}
-            <div className="absolute top-0 left-0 w-64 h-64 bg-blue-200 opacity-15 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
-            <div className="absolute bottom-0 right-0 w-64 h-64 bg-purple-200 opacity-15 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
+            {/* Tactical Grid Background */}
+            <div className="absolute inset-0 opacity-20 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
 
-            <div className="max-w-3xl mx-auto px-4 md:px-8 relative z-10">
-                <motion.h2
-                    className="mb-14 text-4xl md:text-5xl font-extrabold text-center text-gray-900 leading-tight"
-                    // variants={itemVariants}
-                >
-                    Got Questions? We've Got <span className="text-primary-dark">Answers!</span> 💡
-                </motion.h2>
+            <div className="max-w-4xl mx-auto px-6 relative z-10">
+                {/* Header Section */}
+                <div className="text-center mb-24">
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        className="inline-flex items-center gap-3 px-4 py-1 border border-orange-500/30 rounded-full mb-6"
+                    >
+                        <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                        <span className="text-orange-500 font-black tracking-[0.4em] uppercase text-[10px]">Knowledge Base</span>
+                    </motion.div>
+                    <h2 className="text-6xl md:text-8xl font-black text-white italic tracking-tighter uppercase leading-[0.8] mb-6">
+                        Support <br /> <span className="text-white/10">Protocols</span>
+                    </h2>
+                </div>
 
-                <div className="space-y-6">
-                    {faqs.map((faq,i) => (
+                {/* FAQ Accordion */}
+                <div className="space-y-px bg-white/10 border border-white/10">
+                    {faqs.map((faq, i) => (
                         <motion.div
                             key={faq.id}
-                            className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100 cursor-pointer transition-all duration-300 hover:shadow-2xl" // Enhanced card styling
+                            className="bg-[#050505] group cursor-pointer"
                             variants={faqItemVariants}
-                            onClick={() => toggleFaq(faq?.id)} // Click handler on the div
+                            onClick={() => setOpenId(openId === faq.id ? null : faq.id!)}
                         >
-                            <div className="flex justify-between items-center">
-                                <h3 className="text-xl md:text-2xl font-bold text-gray-800">{faq.question}</h3>
+                            <div className="flex justify-between items-center p-8 group-hover:bg-white/[0.02] transition-colors">
+                                <div className="flex items-center gap-6">
+                                    <span className="text-orange-500 font-black italic text-sm tracking-tighter opacity-40 group-hover:opacity-100 transition-opacity">
+                                        0{i + 1}
+                                    </span>
+                                    <h3 className="text-lg md:text-xl font-black text-white uppercase italic tracking-tighter transition-colors group-hover:text-orange-500">
+                                        {faq.question}
+                                    </h3>
+                                </div>
                                 <motion.div
-                                    initial={false} // Prevents initial animation on mount
-                                    animate={{ rotate: openId === faq.id ? 180 : 0 }}
-                                    transition={{ duration: 0.3 }}
+                                    animate={{ rotate: openId === faq.id ? 180 : 0, color: openId === faq.id ? "#f97316" : "#444" }}
+                                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                                 >
-                                    <ChevronDownIcon className="h-7 w-7 text-primary-dark" /> {/* Larger, colored icon */}
+                                    <ChevronDownIcon className="h-6 w-6" />
                                 </motion.div>
                             </div>
+
                             <AnimatePresence>
                                 {openId === faq.id && (
-                                    <motion.p
-                                        key="answer" // Key for AnimatePresence to track
+                                    <motion.div
                                         variants={answerVariants}
                                         initial="hidden"
                                         animate="visible"
                                         exit="exit"
-                                        className="mt-4 text-lg text-gray-700 leading-relaxed" // More readable text
+                                        className="px-20 overflow-hidden"
                                     >
-                                        {faq.answer}
-                                    </motion.p>
+                                        <div className="h-[1px] w-12 bg-orange-500 mb-6" />
+                                        <p className="text-gray-500 text-sm md:text-base font-medium leading-relaxed uppercase tracking-wider max-w-2xl">
+                                            {faq.answer}
+                                        </p>
+                                    </motion.div>
                                 )}
                             </AnimatePresence>
                         </motion.div>
                     ))}
                 </div>
 
-                {/* Call to action for unresolved questions */}
+                {/* Tactical Support Footer */}
                 <motion.div
-                    className="text-center mt-16 p-8 bg-primary-light text-white rounded-2xl shadow-lg flex flex-col md:flex-row items-center justify-center gap-6"
-                    // variants={itemVariants}
+                    className="mt-24 p-1px bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
                 >
-                    <LightBulbIcon className="h-12 w-12 text-white drop-shadow-md" />
-                    <div>
-                        <h3 className="text-2xl font-bold mb-2">Still Have Questions?</h3>
-                        <p className="text-lg opacity-90">Our friendly support team is here to help you!</p>
+                    <div className="bg-[#050505] py-12 px-8 flex flex-col md:flex-row items-center justify-between gap-8 border-x border-white/5">
+                        <div className="flex items-center gap-6">
+                            <div className="p-4 bg-orange-500/10 border border-orange-500/20">
+                                <ChatBubbleLeftRightIcon className="h-8 w-8 text-orange-500" />
+                            </div>
+                            <div className="text-left">
+                                <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Human Intelligence</h3>
+                                <p className="text-xs text-gray-500 font-black uppercase tracking-[0.2em]">Live operator support available 24/7</p>
+                            </div>
+                        </div>
+                        <a
+                            href="/contact"
+                            className="group flex items-center gap-4 bg-white text-black px-10 py-5 font-black uppercase tracking-[0.2em] text-[10px] hover:bg-orange-500 transition-colors"
+                        >
+                            Open Comms <ArrowRightIcon className="h-4 w-4 group-hover:translate-x-2 transition-transform" />
+                        </a>
                     </div>
-                    <a
-                        href="/contact" // Link to your contact page
-                        className="inline-flex items-center justify-center px-8 py-3 bg-white text-primary-dark font-semibold rounded-full shadow-md hover:bg-gray-100 transition-all duration-300 transform hover:-translate-y-1"
-                    >
-                        Contact Support <ArrowRightIcon className="h-5 w-5 ml-2" />
-                    </a>
                 </motion.div>
             </div>
         </motion.section>
     );
 }
-
-// Remember to update your tailwind.config.js with these colors if you haven't already:
-/*
-module.exports = {
-  theme: {
-    extend: {
-      colors: {
-        primary: {
-          DEFAULT: '#6366F1', // A nice vibrant indigo
-          light: '#818CF8',
-          dark: '#4F46E5', // Slightly darker for accents/buttons
-          hover: '#4338CA', // Even darker for hover states
-          accent: '#A78BFA', // A brighter accent for highlights
-        },
-      },
-    },
-  },
-  plugins: [],
-}
-
-// For the background blobs (optional, but adds a lot):
-// Add this to your `tailwind.config.js` under `extend.keyframes` and `extend.animation`
-// (You might need to install `tailwindcss-animate` if you haven't, or define these manually)
-
-// In tailwind.config.js plugins array:
-// require('tailwindcss-animate'),
-
-// Keyframes:
-// blob: {
-//   '0%': { transform: 'translate(0px, 0px) scale(1)' },
-//   '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
-//   '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
-//   '100%': { transform: 'translate(0px, 0px) scale(1)' },
-// },
-
-// Animation:
-// animation: {
-//   blob: 'blob 7s infinite cubic-bezier(0.6, 0.01, 0.4, 1)',
-// },
-*/
