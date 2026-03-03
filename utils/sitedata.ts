@@ -179,6 +179,13 @@ export const SITE_CATEGORIES: Category[] = [
         { name: "Property Listings", link: "https://realestate.salesmanpro.site", description: "Showcase real estate properties.", tag: 'Standard' }
       ]
     },
+    {
+      name: "Property Management",
+      icon: "🏢",
+      variants: [
+        { name: "Property Management", link: "https://propertymanagement.salesmanpro.site", description: "Manage rental properties and tenants.", tag: 'Standard' }
+      ]
+    },
     { name: "SaaS & Web Apps",
       icon: "💻",
       variants: [

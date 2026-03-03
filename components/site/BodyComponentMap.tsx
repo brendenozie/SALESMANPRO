@@ -36,6 +36,7 @@ import NonProfitSite from './layouts/NonprofitLayout/body/NonProfitSite';
 import PortfolioSite from './layouts/PortfolioLayout/body/PortfolioSite';
 import PublicSpeakingSite from './layouts/PublicSpeakingLayout/body/PublicSpeakingSite';
 import RealEstateSite from './layouts/RealEstateLayout/body/RealEstateSite';
+import PropertyManagementLayout from './layouts/PropertyManagementLayout/body/PropertyManagementSite';
 import RestaurentSite from './layouts/RestaurantLayout/body/RestaurentSite';
 import SaaSSite from './layouts/SaaSLayout/body/SaasSite';
 import ServiceSite from './layouts/ServicesLayout/body/ServiceSite';
@@ -73,6 +74,7 @@ export const BodyComponentMap: Record<string, React.ComponentType<{ pageData: St
   'EcommerceMotorCycleSite': EcommerceMotorCycleSite,
   'ConsultancySite': ConsultancyLayout,
   'RealEstateSite': RealEstateSite,
+  'PropertyManagementSite': PropertyManagementLayout,
   'BlogSite': BlogSite,
   'CoursesSite': CoursesSite,
   'CoursesSite2': CoursesSite2,

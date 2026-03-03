@@ -23,6 +23,7 @@ const BookingsLayout = dynamic(() => import( '@/components/site/layouts/Bookings
 const BarbershopBookingsLayout = dynamic(() => import( '@/components/site/layouts/BarbershopBookingsLayout/BarbershopBookingsLayout'));
 const DefaultLayout = dynamic(() => import( '@/components/site/layouts/DefaultLayout/DefaultLayout'));
 const RealEstateLayout = dynamic(() => import( '@/components/site/layouts/RealEstateLayout/RealEstateLayout'));
+const PropertyManagementLayout = dynamic(() => import( '@/components/site/layouts/PropertyManagementLayout/PropertyManagementLayout'));
 const PortfolioLayout = dynamic(() => import( '@/components/site/layouts/PortfolioLayout/PortfolioLayout'));
 const BlogLayout = dynamic(() => import( '@/components/site/layouts/BlogLayout/BlogLayout'));
 const CoursesLayout = dynamic(() => import( '@/components/site/layouts/CoursesLayout/CoursesLayout'));
@@ -87,6 +88,7 @@ const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterComponent>
     'booking & appointments':BookingsLayout, 
     'barbershop store':BarbershopBookingsLayout,      
     'real estate': RealEstateLayout,    
+    'property management': PropertyManagementLayout,
     'portfolio':PortfolioLayout,
     'portfolio & personal branding':PortfolioLayout,     
     'restaurant':RestaurantLayout,
