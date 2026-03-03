@@ -73,7 +73,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
 
   return (
     <div>
-      <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
+      <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings || {}} />
       <CategorySection StoreCategory={StoreCategory} themeSettings={themeSettings} />
       <FeatureSection />
       <DynamicPopularProducts id={id} />
