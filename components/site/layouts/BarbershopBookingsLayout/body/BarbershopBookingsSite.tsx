@@ -40,12 +40,12 @@ export default function BookingsSite({ pageData, companyId }: { pageData: StoreF
       <Hero name={name} description={description} bannerUrl={bannerUrl} marketplaceListings={marketplaceListings} heroSlides={heroSlides} />
 
       <FeaturesSection name={name} description={description} themeSettings={themeSettings} CoreValues={CoreValues} />
-
-      <StyleGallerySection />
       
       <MassageFeatures marketplaceListings={marketplaceListings} slug={slug} themeSettings={themeSettings} />
       
       <PricingAndStatsSection stats={stats} pricingTiers={pricingTiers} themeSettings={themeSettings} />
+
+      <StyleGallerySection />
 
       <BenefitsSection name={name} description={description} bannerUrl={bannerUrl} themeSettings={themeSettings} promotions={promotions} />
 
