@@ -1,223 +1,149 @@
-// **********************************************
-// NOTE: This assumes the required imports are present:
-// React, CheckCircleIcon, ArrowRightIcon, AcademicCapIcon, UserGroupIcon, LightBulbIcon (from @heroicons/react/24/outline)
-// motion (from framer-motion), Image (from next/image), clsx, useStoreContext
-// **********************************************
+"use client";
+
 import React from 'react';
-import { CheckCircleIcon, ArrowRightIcon, AcademicCapIcon, UserGroupIcon, LightBulbIcon, ChevronDoubleRightIcon } from '@heroicons/react/24/outline';
+import { 
+  CheckCircleIcon, 
+  ArrowRightIcon, 
+  AcademicCapIcon, 
+  UserGroupIcon, 
+  LightBulbIcon,
+  SparklesIcon 
+} from '@heroicons/react/24/outline'; // Consistent Hero Icons
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import clsx from 'clsx';
-// import { useStoreContext } from '@/contexts/StoreContext'; // Keep this for context
 
-// Placeholder for context/loader/handler functions if needed for runnable code
-const useStoreContext = () => ({
-  storeFormData: {
-    id: '683581bba1bdf6ca3624b530',
-    name: 'Academic Excellence Hub',
-    description: 'Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency.',
-    bannerUrl: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2670&auto=format&fit=crop',
-    CoreValues: [
-      { title: 'Tailored learning experiences.', icon: 'AcademicCapIcon' },
-      { title: 'Intuitive and engaging content.', icon: 'LightBulbIcon' },
-      { title: 'Expert personalized guidance.', icon: 'UserGroupIcon' },
-      { title: 'Real-time performance analytics.', icon: 'CheckCircleIcon' },
-    ],
-    ctaText: 'Enroll Now',
-    ctaLink: '/enroll',
-    themeSettings: { primaryColor: '#06B6D4', secondaryColor: '#FBBF24' }, // Tailwind Cyan & Amber
-  } as any,
-});
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => 
+  `${src}?w=${width}&q=${quality || 75}`;
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-    return `${src}?w=${width}&q=${quality || 75}`;
-};
-const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    e.currentTarget.onerror = null;
-    e.currentTarget.src = "https://placehold.co/600x400/CCCCCC/333333?text=Image+Error";
-};
-// --- Utility function to map string icon names to components ---
 const IconMap = {
-    CheckCircleIcon,
-    AcademicCapIcon,
-    UserGroupIcon,
-    LightBulbIcon,
-    // Add other necessary icons here
+  CheckCircleIcon,
+  AcademicCapIcon,
+  UserGroupIcon,
+  LightBulbIcon,
 };
 
-
-// --- Main Section Component (Diagonal Focus) ---
-const SchoolSection = ({ storeFormData }: any) => {
-  // const { storeFormData } = useStoreContext();
+export default function SchoolSection({ storeFormData }: any) {
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#1e3a8a';
+  const secondaryColor = storeFormData?.themeSettings?.secondaryColor || '#d4af37';
 
   const headline = storeFormData?.name || "Unlock Your Academic Excellence";
-  const mainDescription = storeFormData?.description || "Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency.";
-
+  const mainDescription = storeFormData?.description || "Empower your academic journey with innovative tools and personalized learning paths.";
+  
   const CoreValuesFallback = [
-    { id: '1', title: 'Tailored learning experiences.', icon: 'AcademicCapIcon' },
-    { id: '2', title: 'Intuitive and engaging content.', icon: 'LightBulbIcon' },
-    { id: '3', 'title': 'Expert personalized guidance.', icon: 'UserGroupIcon' },
-    { id: '4', 'title': 'Real-time performance analytics.', icon: 'CheckCircleIcon' },
+    { title: 'Tailored learning.', icon: 'AcademicCapIcon' },
+    { title: 'Engaging content.', icon: 'LightBulbIcon' },
+    { title: 'Expert guidance.', icon: 'UserGroupIcon' },
+    { title: 'Real-time analytics.', icon: 'CheckCircleIcon' },
   ];
 
-  // Map values to a maximum of 4 features
   const coreValues = (storeFormData?.CoreValues?.length ? storeFormData.CoreValues : CoreValuesFallback).slice(0, 4);
   const imageUrl = storeFormData?.bannerUrl || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2670&auto=format&fit=crop";
-  const ctaText = storeFormData?.ctaText || "Start Learning Today"; 
-  const ctaLink = storeFormData?.ctaLink || "#";
-
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#06B6D4'; // Default Cyan
-  const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FBBF24'; // Default Amber
-  
-  // Testimonial/Quote Block Content
-  const quote = "This platform transformed my study habits and boosted my grades by over 20%. Highly recommended for focused learning!";
-  const quoteAuthor = "Sarah J., Top Student";
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        when: "beforeChildren",
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const textItemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { type: "spring", stiffness: 100, damping: 15 },
-    },
-  };
-
-  const featureIconVariants = {
-    hidden: { opacity: 0, scale: 0.7, rotate: 10 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      rotate: 0,
-      transition: { type: "spring", stiffness: 150, damping: 10 },
-    },
-  };
 
   return (
-    <motion.section
-      className="relative py-24 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900 overflow-hidden"
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.1 }}
-      variants={containerVariants}
-    >
-      <div className="max-w-7xl mx-auto relative z-10">
+    <section className="relative py-24 bg-white overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6">
         
-        {/* Outer Container (The Card-in-Card Base) */}
-        <div 
-            className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden p-6 lg:p-0"
-            style={{ boxShadow: `0 25px 50px -12px ${primaryColor}40` }} // Custom shadow with primary color
-        >
-            <div className="flex flex-col lg:flex-row relative">
-                
-                {/* Diagonal Separator (Visual Trick) */}
-                <div 
-                    className="absolute inset-y-0 right-0 hidden lg:block w-full h-full"
-                    style={{ 
-                        clipPath: 'polygon(70% 0, 100% 0, 100% 100%, 30% 100%)', 
-                        backgroundColor: primaryColor,
-                        opacity: 0.05
-                    }}
-                />
+        <div className="flex flex-col lg:flex-row items-center gap-16">
+          
+          {/* --- LEFT SIDE: THE CONTENT CANVAS --- */}
+          <div className="w-full lg:w-1/2 relative z-10">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+            >
+              <div className="flex items-center gap-2 mb-6">
+                <div className="h-px w-8 bg-slate-200" />
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Our Philosophy</span>
+              </div>
 
-                {/* Left Content Area (The floating card) */}
-                <div className="w-full lg:w-3/5 p-4 sm:p-10 lg:p-16 relative z-10">
-                    <motion.h2
-                      className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 leading-tight tracking-tight text-gray-900 dark:text-white"
-                      variants={textItemVariants}
-                    >
-                      {/* Highlight key part of the headline using primary color */}
-                      <span style={{ color: primaryColor }}>{headline.split(' ').slice(0, 2).join(' ')}</span>{' '}
-                      {headline.split(' ').slice(2).join(' ')}
-                    </motion.h2>
+              <h2 className="text-4xl md:text-6xl font-serif font-bold text-slate-900 mb-8 leading-tight">
+                {headline}
+              </h2>
 
-                    <motion.p
-                      className="mb-8 leading-relaxed text-lg text-gray-700 dark:text-gray-300"
-                      variants={textItemVariants}
-                    >
-                      {mainDescription}
-                    </motion.p>
-                    
-                    {/* Embedded Quote Block */}
-                    <motion.blockquote 
-                        className="p-6 mb-10 border-l-4 rounded-r-lg italic bg-gray-50 dark:bg-gray-700/50"
-                        style={{ borderColor: accentColor }}
-                        variants={textItemVariants}
-                    >
-                        <p className="text-gray-800 dark:text-gray-200">"{quote}"</p>
-                        <footer className="mt-2 text-sm font-semibold" style={{ color: accentColor }}>— {quoteAuthor}</footer>
-                    </motion.blockquote>
+              <p className="text-lg text-slate-500 font-light leading-relaxed mb-10 max-w-xl">
+                {mainDescription}
+              </p>
 
-                    {/* CTA Button */}
-                    <motion.a
-                      href={ctaLink}
-                      className="inline-flex items-center text-white font-bold py-4 px-10 rounded-full shadow-lg transition-all duration-300 transform group focus:outline-none focus:ring-4 focus:ring-opacity-75"
-                      style={{
-                        backgroundColor: primaryColor,
-                        '--tw-ring-color': `${primaryColor} !important` as any,
-                      }}
-                      whileHover={{ scale: 1.05, boxShadow: `0 10px 20px ${primaryColor}40` }}
-                      whileTap={{ scale: 0.95 }}
-                      variants={textItemVariants}
-                    >
-                      {ctaText}
-                      <ArrowRightIcon className="ml-2 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-                    </motion.a>
+              {/* Minimalist Feature List */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-8 gap-x-12 mb-12">
+                {coreValues.map((value: any, idx: number) => {
+                  const Icon = IconMap[value.icon as keyof typeof IconMap] || CheckCircleIcon;
+                  return (
+                    <div key={idx} className="flex items-start gap-4 group">
+                      <div className="mt-1">
+                        <Icon className="w-5 h-5 transition-colors group-hover:text-slate-900" style={{ color: primaryColor }} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900 uppercase tracking-tight mb-1">{value.title}</h4>
+                        <div className="h-0.5 w-0 group-hover:w-full bg-slate-100 transition-all duration-500" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <motion.button
+                whileHover={{ gap: '1.5rem' }}
+                className="flex items-center gap-4 text-[11px] font-black uppercase tracking-[0.2em] text-white px-10 py-5 rounded-full shadow-2xl transition-all"
+                style={{ backgroundColor: primaryColor }}
+              >
+                Enroll Now <ArrowRightIcon className="w-4 h-4" />
+              </motion.button>
+            </motion.div>
+          </div>
+
+          {/* --- RIGHT SIDE: THE LAYERED IMAGERY --- */}
+          <div className="w-full lg:w-1/2 relative">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="relative aspect-[4/5] rounded-[0rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)]"
+            >
+              <Image 
+                src={imageUrl} 
+                alt="Campus life" 
+                fill 
+                className="object-cover transition-transform duration-1000 hover:scale-105" 
+                loader={loader}
+              />
+              {/* Elegant overlay for the bottom info */}
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
+              
+              {/* Floating Quote Badge */}
+              <motion.div 
+                initial={{ y: 40, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.5 }}
+                className="absolute bottom-8 left-8 right-8 bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-2xl"
+              >
+                <div className="flex gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <SparklesIcon key={i} className="w-3 h-3 text-amber-400" />
+                  ))}
                 </div>
-
-                {/* Right Image Area (The Layered Background) */}
-                <div className="w-full lg:w-2/5 relative min-h-[300px] lg:min-h-0">
-                    <Image
-                        src={imageUrl}
-                        alt="Academic success background"
-                        fill
-                        className="object-cover object-center lg:rounded-r-3xl"
-                        loader={loader}
-                        sizes="(max-width: 1024px) 100vw, 40vw"
-                        onError={handleImageError}
-                    />
-                    
-                    {/* Image Overlay for Contrast/Depth */}
-                    <div className="absolute inset-0 bg-black/30 lg:bg-black/40"></div>
-                    
-                    {/* Floating Feature Icons (Overlaying the image) */}
-                    <motion.div 
-                        className="absolute inset-0 flex flex-wrap content-center justify-center p-8 gap-4 lg:gap-6"
-                        variants={containerVariants} // Use container to stagger the children
-                    >
-                        {coreValues.map((item: any, index: number) => {
-                            const IconComponent = IconMap[item.icon as keyof typeof IconMap] || CheckCircleIcon;
-                            return (
-                                <motion.div
-                                    key={index}
-                                    className="flex flex-col items-center justify-center w-28 h-28 p-3 rounded-xl shadow-lg bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm cursor-help"
-                                    variants={featureIconVariants}
-                                    whileHover={{ scale: 1.1, rotate: -5 }}
-                                >
-                                    <IconComponent className="w-8 h-8 mb-2" style={{ color: primaryColor }} />
-                                    <span className="text-xs font-semibold text-center text-gray-800 dark:text-gray-200 leading-tight">{item.title}</span>
-                                </motion.div>
-                            );
-                        })}
-                    </motion.div>
+                <p className="text-slate-700 italic text-sm leading-relaxed mb-4 font-serif">
+                  "The standard of teaching here is unparalleled. It's not just an education; it's a transformation of character."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="h-px w-4 bg-slate-300" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-900">Dr. Helena Vance, Alumni</span>
                 </div>
+              </motion.div>
+            </motion.div>
 
-            </div>
+            {/* Geometric Accent Decoration */}
+            <div 
+              className="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-[80px] opacity-20" 
+              style={{ backgroundColor: secondaryColor }}
+            />
+          </div>
+
         </div>
       </div>
-    </motion.section>
+    </section>
   );
-};
-
-export default SchoolSection;
+}

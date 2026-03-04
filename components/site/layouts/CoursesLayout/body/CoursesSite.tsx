@@ -7,6 +7,7 @@ import { StoreForm } from "@/types/typings";
 
 // Above-the-fold components - statically imported
 import HeroSection from "./components/HeroSection";
+import GlassInfoCardsSection from "./components/GlassInfoCardsSection";
 
 // Loading skeleton
 const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
@@ -37,6 +38,8 @@ export default function CoursesSite({ pageData, companyId }: { pageData: StoreFo
     <div className="font-sans">
       {/* Hero */}
       <HeroSection storeFormData={pageData} />
+
+      <GlassInfoCardsSection storeFormData={pageData} />
 
       <SchoolSection storeFormData={pageData} />
 
