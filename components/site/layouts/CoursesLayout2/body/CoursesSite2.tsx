@@ -48,7 +48,7 @@ export default function CoursesSite({ pageData, companyId }: { pageData: StoreFo
 
       {blogsData?.data && <PopularBlogsSection storeFormData={pageData} />}
 
-      <CtaSection />
+      <CtaSection  storeFormData={pageData} />
 
       {faqsData?.data && <FAQSection storeFormData={pageData} />}   
 

@@ -1,226 +1,141 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { PlayCircleIcon } from '@heroicons/react/24/solid';
-import { AcademicCapIcon, UserGroupIcon, TrophyIcon, BookOpenIcon, SparklesIcon } from '@heroicons/react/24/outline'; // More icons
 import Image from 'next/image';
-import { useStoreContext } from '@/contexts/StoreContext';
-import clsx from 'clsx';
-import { Stat } from '@/types/typings';
+import { 
+  PlayIcon, 
+  UserGroupIcon, 
+  BookOpenIcon, 
+  AcademicCapIcon, 
+  TrophyIcon,
+  SparklesIcon,
+  ArrowUpRightIcon
+} from '@heroicons/react/24/outline'; // Consistency with Hero Icons
 
-
-
-// --- Utility Functions ---
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-};
-const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-  e.currentTarget.onerror = null;
-  e.currentTarget.src = "https://placehold.co/1200x800/CCCCCC/333333?text=Image+Error";
-};
 const getStatIcon = (label: string) => {
-    const normalizedLabel = label.toLowerCase();
-    if (normalizedLabel.includes("student") || normalizedLabel.includes("enrolled")) return UserGroupIcon;
-    if (normalizedLabel.includes("course") || normalizedLabel.includes("offered")) return BookOpenIcon;
-    if (normalizedLabel.includes("tutor") || normalizedLabel.includes("expert")) return AcademicCapIcon;
-    if (normalizedLabel.includes("award") || normalizedLabel.includes("countrywide")) return TrophyIcon;
-    return SparklesIcon; // Default
+  const low = label.toLowerCase();
+  if (low.includes("student")) return UserGroupIcon;
+  if (low.includes("course")) return BookOpenIcon;
+  if (low.includes("tutor") || low.includes("expert")) return AcademicCapIcon;
+  return TrophyIcon;
 };
 
-
-// --- Custom Stat Component (Floating Badge) ---
-const StatBadge = ({ stat, primaryColor, variants, delay }: { stat: Stat, primaryColor: string, variants: any, delay: number }) => {
-    const Icon = getStatIcon(stat.label);
-    
-    // Apply a unique animation to each stat for a "floating" feel
-    const badgeVariants = {
-        hidden: { opacity: 0, scale: 0.5, y: 50 },
-        visible: {
-            opacity: 1,
-            scale: 1,
-            y: 0,
-            transition: {
-                type: "spring",
-                stiffness: 100,
-                damping: 10,
-                delay: delay
-            },
-        },
-    };
-
-    return (
-        <motion.div 
-            className="flex items-center p-3 rounded-full shadow-lg bg-white dark:bg-gray-800 border-2"
-            style={{ borderColor: primaryColor }}
-            variants={badgeVariants}
-            whileHover={{ y: -5, scale: 1.05, boxShadow: `0 10px 20px ${primaryColor}40` }}
-            transition={{ type: "spring", stiffness: 300 }}
-        >
-            <div className="p-2 rounded-full mr-3" style={{ backgroundColor: `${primaryColor}1A` }}>
-                <Icon className="w-5 h-5" style={{ color: primaryColor }} />
-            </div>
-            <div>
-                <p className="text-base font-bold text-gray-900 dark:text-white leading-none">{stat.value}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">{stat.label}</p>
-            </div>
-        </motion.div>
-    );
-};
-
-
-// --- Main Component ---
-export default function AboutSection({ storeFormData }: any) {
-//   const { storeFormData } = useStoreContext();
-
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#fd2121';
-  const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FFC107';
-
-  // --- Framer Motion Variants ---
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { when: "beforeChildren", staggerChildren: 0.1 }
-    },
-  };
-
-  const textItemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { type: "spring", stiffness: 100, damping: 15 }
-    },
-  };
-
-  const aboutHeadline = storeFormData?.name ? `The Smarter Way to Learn with ${storeFormData.name}` : "The Smarter Way to Learn";
-  const aboutDescription = storeFormData?.description || "Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency. Our comprehensive resources are designed to seamlessly integrate with your existing curriculum, providing a supportive environment for growth and success.";
-  const aboutVideoThumbnail = storeFormData?.heroSlides?.[0]?.imageUrl || "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2670&auto=format&fit=crop"; // New image for a different feel
-  const aboutVideoLink = storeFormData?.heroSlides?.[0]?.videoLink || "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
-  const aboutStats = storeFormData?.stats || [
-    { label: "Students Enrolled", value: "5000+" },
-    { label: "Courses Offered", value: "150+" },
-    { label: "Expert Tutors", value: "50+" },
-    { label: "Countrywide Awards", value: "60+" },
+export default function MoriahAboutSection({ storeFormData }: any) {
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#1e40af';
+  
+  const aboutHeadline = storeFormData?.name || "Moriah Academy";
+  const aboutDescription = storeFormData?.description || "Empower your academic journey with innovative tools and personalized learning paths.";
+  const videoThumbnail = storeFormData?.heroSlides?.[0]?.imageUrl || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f";
+  
+  const stats = storeFormData?.stats || [
+    { label: "Students", value: "5k+" },
+    { label: "Specialized Labs", value: "12" },
+    { label: "Expert Faculty", value: "85" },
   ];
-  const aboutTagline = storeFormData?.tagline || "Unlock Your Potential";
 
   return (
-    <motion.section
-      className="bg-white dark:bg-gray-950 py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.1 }}
-      variants={containerVariants}
-    >
-        {/* Decorative Background Swirl/Blob (uses theme color) */}
-        <div 
-            className="absolute -top-1/4 -right-1/4 w-3/4 h-3/4 rounded-full mix-blend-multiply filter blur-3xl opacity-10 hidden lg:block"
-            style={{ backgroundColor: primaryColor }}
-        />
+    <section className="relative py-32 bg-white overflow-hidden">
+      {/* Subtle Background Elements */}
+      <div className="absolute top-0 right-0 w-1/3 h-2/3 bg-blue-50/30 rounded-full blur-[120px] -z-10" />
+      
+      <div className="container mx-auto px-6">
+        <div className="grid lg:grid-cols-12 gap-20 items-center">
+          
+          {/* --- Left: The Narrative (5 Columns) --- */}
+          <div className="lg:col-span-5 order-2 lg:order-1">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 rounded-full mb-8">
+                <SparklesIcon className="w-3.5 h-3.5 text-blue-600" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Our Story</span>
+              </div>
 
-        {/* --- Main Content Layout --- */}
-      <div className="max-w-7xl mx-auto relative grid lg:grid-cols-12 gap-16 items-start">
-            
-            {/* 1. Video & Stats Block (3/4th width on desktop) */}
-            <div className="lg:col-span-7 relative order-1">
-                
-                {/* --- The Framed Video Window --- */}
-                <motion.div 
-                    className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl group border-8"
-                    style={{ borderColor: accentColor }}
-                    initial={{ opacity: 0, rotate: 1, scale: 0.9 }}
-                    animate="visible"
-                    variants={{ visible: { opacity: 1, rotate: 0, scale: 1, transition: { type: 'spring', stiffness: 50, damping: 10 }}}}
-                >
-                    <Image
-                        src={aboutVideoThumbnail}
-                        alt="Video thumbnail for school introduction"
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        loader={loader}
-                        sizes="(max-width: 1024px) 100vw, 50vw"
-                        onError={handleImageError}
-                    />
+              <h2 className="text-5xl md:text-6xl font-light text-slate-900 leading-[1.1] tracking-tight mb-8">
+                A tradition of <br />
+                <span className="font-semibold italic">excellence</span> at {aboutHeadline}.
+              </h2>
 
-                    {/* Play Button */}
-                    <motion.button
-                        className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 hover:bg-opacity-10 transition-colors duration-300"
-                        onClick={() => window.open(aboutVideoLink, '_blank')}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                    >
-                        <div
-                            className={`rounded-full p-6 shadow-xl transition-all duration-300 animate-pulse`}
-                            style={{ backgroundColor: primaryColor }}
-                        >
-                            <PlayCircleIcon className="w-16 h-16 text-white" />
-                        </div>
-                    </motion.button>
-                </motion.div>
+              <p className="text-lg text-slate-500 leading-relaxed mb-12 font-normal">
+                {aboutDescription}
+              </p>
 
-                {/* --- Floating Stats Badges (Positioned absolutely for a 'sticking' effect) --- */}
-                <div className="absolute top-full left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full pt-8 lg:pt-0">
-                    <div className="flex justify-center flex-wrap gap-4">
-                        {aboutStats.map((stat: any, idx: number) => (
-                            <StatBadge 
-                                key={idx} 
-                                stat={stat} 
-                                primaryColor={primaryColor} 
-                                variants={containerVariants}
-                                delay={0.6 + idx * 0.15} // Staggered delay after image loads
-                            />
-                        ))}
+              {/* Stats in a minimalist glass row */}
+              <div className="grid grid-cols-3 gap-8 mb-12 border-t border-slate-100 pt-12">
+                {stats.map((stat: any, i: number) => {
+                  const Icon = getStatIcon(stat.label);
+                  return (
+                    <div key={i} className="flex flex-col gap-2">
+                      <span className="text-2xl font-bold text-slate-900 tracking-tighter">{stat.value}</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{stat.label}</span>
                     </div>
-                </div>
+                  );
+                })}
+              </div>
 
-            </div>
-            
-            {/* 2. Text Content Block (5/12th width on desktop) */}
-            <div className="lg:col-span-5 order-2 pt-20 lg:pt-0">
-                <motion.p
-                    className={`text-base font-extrabold uppercase tracking-widest mb-3`}
-                    style={{ color: accentColor }}
-                    variants={textItemVariants}
-                >
-                    {aboutTagline}
-                </motion.p>
-                <motion.h2
-                    className="text-4xl md:text-5xl lg:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight"
-                    variants={textItemVariants}
-                >
-                    {aboutHeadline.split(' ').map((word, index) => (
-                        <span key={index}>
-                            {word === "Smarter" || word === "Learn" || word === (storeFormData?.name || '').split(' ')[0] ? (
-                                <span style={{ color: primaryColor }}>{word} </span>
-                            ) : (
-                                `${word} `
-                            )}
-                        </span>
-                    ))}
-                </motion.h2>
-                <motion.p
-                    className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed mb-8 h-24 overflow-hidden"
-                    variants={textItemVariants}
-                >
-                    {aboutDescription}
-                </motion.p>
-                <motion.a
-                    href="/about"
-                    className={`inline-flex items-center text-lg font-bold py-3 px-8 rounded-full transition-all duration-300 shadow-lg hover:shadow-2xl`}
-                    style={{ backgroundColor: primaryColor, color: 'white' }}
-                    variants={textItemVariants}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                >
-                    Discover Our Mission
-                </motion.a>
-            </div>
-            
+              <button className="group flex items-center gap-4 text-xs font-black uppercase tracking-[0.2em] text-slate-900">
+                Explore Our Campus
+                <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center group-hover:bg-slate-900 group-hover:text-white transition-all">
+                  <ArrowUpRightIcon className="w-4 h-4" />
+                </div>
+              </button>
+            </motion.div>
+          </div>
+
+          {/* --- Right: The Visual Centerpiece (7 Columns) --- */}
+          <div className="lg:col-span-7 order-1 lg:order-2">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="relative"
+            >
+              {/* The "Cinematic" Video Frame */}
+              <div className="relative aspect-video rounded-[3rem] overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] border-[8px] border-white group">
+                <Image
+                  src={videoThumbnail || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f"}
+                    loader={({src})=>src}
+                  alt="Campus Life"
+                  fill
+                  className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-slate-900/10 group-hover:bg-slate-900/30 transition-colors duration-500 flex items-center justify-center">
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="w-20 h-20 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-2xl transition-all"
+                  >
+                    <PlayIcon className="w-8 h-8 text-slate-900 ml-1" />
+                  </motion.button>
+                </div>
+              </div>
+
+              {/* Floating Decorative Glass Tablet */}
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="absolute -bottom-10 -left-10 hidden md:block"
+              >
+                <div className="bg-white/70 backdrop-blur-2xl p-8 rounded-[2rem] border border-white shadow-2xl shadow-blue-900/5 max-w-[240px]">
+                  <TrophyIcon className="w-8 h-8 text-blue-600 mb-4" />
+                  <p className="text-sm font-bold text-slate-900 mb-1">Globally Recognized</p>
+                  <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
+                    Awarded "Innovation of the Year" for our digital learning integration.
+                  </p>
+                </div>
+              </motion.div>
+
+              {/* Design Detail: Orbiting Ring */}
+              <div className="absolute -top-10 -right-10 w-40 h-40 border border-slate-100 rounded-full -z-10 animate-pulse" />
+            </motion.div>
+          </div>
+
+        </div>
       </div>
-        {/* Spacer to account for the absolutely positioned stats block */}
-        <div className="h-40 lg:h-20" /> 
-    </motion.section>
+    </section>
   );
 }

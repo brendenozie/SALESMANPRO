@@ -1,310 +1,170 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { StarIcon, TvIcon, UsersIcon } from '@heroicons/react/24/solid'; // Changed to solid icons for better visibility
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
-import { PlayCircleIcon } from '@heroicons/react/24/solid';
-import clsx from 'clsx'; // Utility for conditional classes
+import { 
+  StarIcon, 
+  UsersIcon, 
+  ArrowRightIcon, 
+  AcademicCapIcon, 
+  ClockIcon,
+  SparklesIcon
+} from '@heroicons/react/24/outline'; // Using Outline for the Apple aesthetic
+import { PlayIcon } from '@heroicons/react/24/solid';
 
-// --- Component and Type Definitions remain the same ---
-// Define types based on your transformCompanyToStoreForm and Prisma schema
-export type Course = {
-  id: string; // Assuming an ID for each course
-  title: string;
-  description: string;
-  imageUrl: string; // Changed from 'image' to 'imageUrl' for clarity and consistency
-  gradeLevel?: string; // Changed from 'grade' to 'gradeLevel'
-  averageRating?: number; // Changed from 'rating' to 'averageRating', now a number
-  enrolledStudents?: number; // Changed from 'students' to 'enrolledStudents', now a number
-  // Add other fields from your Course model if relevant for display
-  ctaText?: string; // e.g., "Enroll Now"
-  ctaLink?: string; // Link to the course details page
-};
-
-
-// --- Optimized image loader and error handler remain the same ---
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-};
-const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-  e.currentTarget.onerror = null;
-  e.currentTarget.src = "https://placehold.co/600x350/A0A0A0/FFFFFF?text=Course+Image";
-};
-
-// Placeholder for useStoreContext (or import actual context)
-import { useStoreContext } from '@/contexts/StoreContext'; 
-// import { Course } from '@prisma/client';
-
-// --- Transformed Course Card Component ---
-const CourseCard = ({ course, primaryColor, accentColor, cardItemVariants }: { course: Course, primaryColor: string, accentColor: string, cardItemVariants: any }) => {
-
-    // Helper to render rating stars
-    const renderRating = (rating: number) => {
-        const fullStars = Math.floor(rating);
-        const stars = [];
-        for (let i = 0; i < 5; i++) {
-            stars.push(
-                <StarIcon 
-                    key={i} 
-                    className={clsx('w-4 h-4 transition-colors duration-300', {
-                        'text-yellow-400': i < fullStars, // Use a consistent yellow for stars
-                        'text-gray-300': i >= fullStars
-                    })} 
-                />
-            );
-        }
-        return (
-            <div className="flex items-center">
-                {stars}
-                <span className="ml-2 text-sm font-bold text-gray-800 dark:text-gray-200">
-                    {rating.toFixed(1)}
-                </span>
-            </div>
-        );
-    };
-
-    return (
-        <motion.a
-            href={course.ctaLink || '#'}
-            target="_blank" // Open in new tab for better UX
-            rel="noopener noreferrer"
-            key={course.id}
-            className="block h-full"
-            variants={cardItemVariants}
-        >
-            <motion.div
-                className={clsx(
-                    "bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-xl border-4 border-transparent h-full",
-                    "transform transition-all duration-300 group cursor-pointer relative"
-                )}
-                whileHover={{ 
-                    scale: 1.05, 
-                    boxShadow: `0 15px 30px ${primaryColor}40`,
-                    border: '4px solid', // Re-apply border style on hover
-                    borderColor: primaryColor // Set border color on hover
-                }}
-                whileTap={{ scale: 0.98 }}
-            >
-                {/* 1. Image & Tag-Ribbon */}
-                <div className="relative w-full h-56 overflow-hidden">
-                    <Image
-                        src={course.imageUrl || 'https://placehold.co/600x350/A0A0A0/FFFFFF?text=Course+Image'}
-                        alt={course.title}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                        loader={loader}
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        onError={handleImageError}
-                    />
-                    
-                    {/* Tag-Ribbon (e.g., Grade Level) */}
-                    {course.gradeLevel && (
-                        <div 
-                            className="absolute top-0 right-0 p-2 transform -translate-x-1/2 -translate-y-1/2"
-                        >
-                            <div 
-                                className="px-4 py-1 text-sm font-bold text-white rounded-full shadow-lg" 
-                                style={{ backgroundColor: accentColor }}
-                            >
-                                {course.gradeLevel}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Play Button Overlay */}
-                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <PlayCircleIcon 
-                            className="w-16 h-16 text-white text-opacity-80 group-hover:text-opacity-100 transition-transform duration-300 hover:scale-110" 
-                            style={{ color: accentColor }} 
-                        />
-                    </div>
-                </div>
-
-                {/* 2. Content */}
-                <div className="p-6 flex flex-col h-auto">
-                    <h3 className="text-2xl font-extrabold mb-3 text-gray-900 dark:text-white transition-colors duration-300">
-                        {course.title}
-                    </h3>
-                    
-                    {/* Info Row: Prominent Stats */}
-                    <div className="flex items-center text-sm gap-4 mb-4 pb-4 border-b border-gray-100 dark:border-gray-700">
-                        {/* Rating */}
-                        {course.averageRating !== undefined && renderRating(course.averageRating)}
-                        
-                        {/* Students */}
-                        {course.enrolledStudents !== undefined && (
-                            <span className="flex items-center gap-2 font-semibold text-gray-600 dark:text-gray-400">
-                                <UsersIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" /> 
-                                {course.enrolledStudents.toLocaleString()} Students
-                            </span>
-                        )}
-                    </div>
-                    
-                    {/* Description */}
-                    <p className="text-gray-600 dark:text-gray-400 text-base mb-6 leading-relaxed line-clamp-3 flex-grow">
-                        {course.description}
-                    </p>
-                    
-                    {/* CTA Button */}
-                    <motion.button
-                        whileHover={{ scale: 1.02, boxShadow: `0 5px 20px ${primaryColor}60` }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`w-full text-white py-3 rounded-lg text-lg font-extrabold 
-                                    transition-all duration-300 shadow-lg focus:outline-none focus:ring-4 focus:ring-opacity-75`}
-                        style={{
-                            backgroundColor: primaryColor,
-                            '--tw-ring-color': `${primaryColor} !important` 
-                        }}
-                    >
-                        {course.ctaText || 'Enroll Now'}
-                    </motion.button>
-                </div>
-            </motion.div>
-        </motion.a>
-    );
-}
-
-
-// Static fallback data for courses
-const fallbackCourses: Course[] = [
-  {
-    id: 'fb-course-1',
-    title: 'Introduction to Web Development',
-    imageUrl: 'https://placehold.co/600x350/3498DB/FFFFFF?text=Web+Dev',
-    description: 'Learn the basics of HTML, CSS, and JavaScript to build your first website.',
-    gradeLevel: 'Beginner',
-    averageRating: 4.7,
-    enrolledStudents: 500,
-    ctaText: 'Start Learning',
-    ctaLink: '#',
-  },
-  {
-    id: 'fb-course-2',
-    title: 'Digital Marketing Essentials',
-    imageUrl: 'https://placehold.co/600x350/2ECC71/FFFFFF?text=Digital+Marketing',
-    description: 'Understand SEO, social media, and content marketing to grow your online presence.',
-    gradeLevel: 'Intermediate',
-    averageRating: 4.5,
-    enrolledStudents: 300,
-    ctaText: 'Discover Course',
-    ctaLink: '#',
-  },
-  {
-    id: 'fb-course-3',
-    title: 'Graphic Design Masterclass',
-    imageUrl: 'https://placehold.co/600x350/9B59B6/FFFFFF?text=Graphic+Design',
-    description: 'Unleash your creativity with Photoshop, Illustrator, and InDesign.',
-    gradeLevel: 'All Levels',
-    averageRating: 4.9,
-    enrolledStudents: 400,
-    ctaText: 'View Details',
-    ctaLink: '#',
-  },
-];
-
-// --- Main CoursesSection Component ---
-export default function CoursesSection({ storeFormData }: any) {
-    // const { storeFormData } = useStoreContext();
-
-    const primaryColor = storeFormData?.themeSettings?.primaryColor || '#fd2121';
-    const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FFC107'; 
-
-    // Determine which courses to render: dynamic or fallback
-    const coursesToRender = storeFormData?.courses && Array.isArray(storeFormData?.courses) && storeFormData.courses.length > 0
-        ? storeFormData.courses
-        : fallbackCourses;
-
-    // ... (Animation variants remain the same) ...
-    const containerVariants = {
-        hidden: { opacity: 0, y: 50 },
-        visible: {
-            opacity: 1,
-            y: 0,
-            transition: {
-                type: "spring",
-                stiffness: 70,
-                damping: 10,
-                when: "beforeChildren",
-                staggerChildren: 0.2
-            },
-        },
-    };
-    const itemVariants = {
-        hidden: { opacity: 0, y: 20 },
-        visible: {
-            opacity: 1,
-            y: 0,
-            transition: {
-                type: "spring",
-                stiffness: 100,
-                damping: 15
-            },
-        },
-    };
-    const cardItemVariants = {
-        hidden: { opacity: 0, scale: 0.9 },
-        visible: {
-            opacity: 1,
-            scale: 1,
-            transition: {
-                type: "spring",
-                stiffness: 100,
-                damping: 12
-            },
-        },
-    };
-
-    return (
-        <div className="font-sans bg-gray-50 dark:bg-gray-900">
-            {/* Main Courses Section */}
-            <motion.section
-                className="py-20 px-4 sm:px-6 lg:px-8 text-center"
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.3 }}
-                variants={containerVariants}
-            >
-                {/* Heading */}
-                <motion.div
-                    className="mb-14 max-w-4xl mx-auto"
-                    variants={itemVariants}
-                >
-                    <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-gray-900 dark:text-white leading-tight">
-                        Our <span style={{ color: primaryColor }}>Flagship</span> Programs
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-400 text-lg leading-relaxed">
-                        Discover a diverse range of programs crafted to ignite your passion and accelerate your career. Each course is designed for excellence and taught by industry experts.
-                    </p>
-                </motion.div>
-
-                {/* Courses Grid */}
-                <div className="grid gap-12 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto">
-                    {coursesToRender.map((course: any) => (
-                        <CourseCard 
-                            key={course.id}
-                            course={course}
-                            primaryColor={primaryColor}
-                            accentColor={accentColor}
-                            cardItemVariants={cardItemVariants}
-                        />
-                    ))}
-                </div>
-
-                {/* Call to Action for More Courses */}
-                <motion.div variants={itemVariants} className="mt-16">
-                    <a
-                        href="/all-courses" // Link to the full course catalog
-                        className={`inline-flex items-center text-lg font-bold py-3 px-8 rounded-lg transition-colors duration-300 border-2`}
-                        style={{ color: primaryColor, borderColor: primaryColor }}
-                    >
-                        View All {coursesToRender.length}+ Courses
-                        <ChevronRightIcon className="w-5 h-5 ml-2" />
-                    </a>
-                </motion.div>
-
-            </motion.section>
+const CourseCard = ({ course, primaryColor }: any) => {
+  return (
+    <motion.div
+      whileHover={{ y: -10 }}
+      className="group relative flex flex-col bg-white rounded-[3rem] overflow-hidden border border-slate-100 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.05)] transition-all duration-500"
+    >
+      {/* 1. Immersive Media Header */}
+      <div className="relative h-72 w-full overflow-hidden">
+        <Image
+          src={course.imageUrl || "https://images.unsplash.com/photo-1503676260728-1c00da094a0b"}
+            loader={({src})=>src}
+          alt={course.title}
+          fill
+          className="object-cover transition-transform duration-700 group-hover:scale-110"
+        />
+        {/* Apple-style Frosted Grade Badge */}
+        <div className="absolute top-6 left-6 backdrop-blur-md bg-white/70 border border-white/20 px-4 py-1.5 rounded-full shadow-sm">
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">
+            {course.gradeLevel || 'Standard'}
+          </span>
         </div>
-    );
+        
+        {/* Subtle Play Overlay */}
+        <div className="absolute inset-0 bg-slate-900/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          <div className="w-16 h-16 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-2xl">
+            <PlayIcon className="w-6 h-6 text-slate-900" />
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Refined Content Area */}
+      <div className="p-10 flex flex-col flex-grow">
+        {/* Metadata Row */}
+        <div className="flex items-center gap-4 mb-6">
+          <div className="flex items-center gap-1.5">
+            <StarIcon className="w-4 h-4 text-amber-400" />
+            <span className="text-xs font-bold text-slate-900">{course.averageRating || '5.0'}</span>
+          </div>
+          <div className="w-[1px] h-3 bg-slate-200" />
+          <div className="flex items-center gap-1.5">
+            <UsersIcon className="w-4 h-4 text-slate-400" />
+            <span className="text-xs font-medium text-slate-500">{course.enrolledStudents || '120'} Enrolled</span>
+          </div>
+        </div>
+
+        <h3 className="text-2xl font-semibold text-slate-900 mb-4 leading-snug group-hover:text-blue-600 transition-colors">
+          {course.title}
+        </h3>
+        
+        <p className="text-slate-500 text-sm leading-relaxed mb-8 line-clamp-2">
+          {course.description}
+        </p>
+
+        {/* Footer Action */}
+        <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <ClockIcon className="w-4 h-4 text-slate-300" />
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Full Term</span>
+          </div>
+          <button 
+            className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-900 group-hover:gap-4 transition-all"
+          >
+            Details <ArrowRightIcon className="w-4 h-4 text-blue-600" />
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+export default function MoriahProgramsSection({ storeFormData }: any) {
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#1e40af';
+  const courses = storeFormData?.courses?.length > 0 ? storeFormData.courses : [
+    { id: 1, title: 'Early Years Foundation', description: 'Nurturing curiosity through play-based international learning standards.', imageUrl: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b', gradeLevel: 'Playgroup' },
+    { id: 2, title: 'Primary Discovery Path', description: 'Academic rigor balanced with character development and creative arts.', imageUrl: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b', gradeLevel: 'Grade 1-6' },
+    { id: 3, title: 'Junior Secondary Innovation', description: 'Specialized STEM curriculum designed for the next generation of leaders.', imageUrl: 'https://images.unsplash.com/photo-1509062522246-3755977927d7', gradeLevel: 'Grade 7-9' },
+  ];
+
+  return (
+    <section className="py-32 bg-[#fafafa] relative overflow-hidden">
+      {/* Background Accent */}
+      <div className="absolute top-0 right-0 w-1/2 h-full bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.02),transparent)]" />
+
+      <div className="container mx-auto px-6 relative z-10">
+        
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="max-w-2xl"
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 rounded-full mb-6">
+              <SparklesIcon className="w-3.5 h-3.5 text-blue-500" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Curriculum Excellence</span>
+            </div>
+            <h2 className="text-4xl md:text-6xl font-light text-slate-900 tracking-tight leading-[1.1]">
+              Explore our <span className="font-semibold">flagship programs.</span>
+            </h2>
+          </motion.div>
+
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            className="px-8 py-4 bg-white border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-900 shadow-sm hover:shadow-md transition-all"
+          >
+            View All Programs
+          </motion.button>
+        </div>
+
+        {/* The Course Gallery */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          {courses.slice(0, 3).map((course: any, idx: number) => (
+            <motion.div
+              key={course.id}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: idx * 0.1 }}
+            >
+              <CourseCard course={course} primaryColor={primaryColor} />
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Bottom Trust Banner */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          className="mt-24 py-12 border-y border-slate-100 flex flex-wrap justify-center md:justify-between items-center gap-12"
+        >
+          <div className="flex items-center gap-4">
+             <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center">
+                <AcademicCapIcon className="w-6 h-6 text-blue-600" />
+             </div>
+             <div>
+                <p className="text-sm font-bold text-slate-900">KICD Approved</p>
+                <p className="text-xs text-slate-400 font-medium">National Curriculum Standards</p>
+             </div>
+          </div>
+          <div className="flex items-center gap-4 text-slate-200">
+             <div className="h-10 w-[1px] bg-slate-200 hidden md:block" />
+          </div>
+          <div className="flex flex-col items-center md:items-start">
+             <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] mb-2">Accredited Partner</p>
+             <div className="flex gap-8 grayscale opacity-50">
+                <span className="text-lg font-black tracking-tighter text-slate-900 italic">CAMBRIDGE</span>
+                <span className="text-lg font-black tracking-tighter text-slate-900 italic">CBC</span>
+             </div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
 }

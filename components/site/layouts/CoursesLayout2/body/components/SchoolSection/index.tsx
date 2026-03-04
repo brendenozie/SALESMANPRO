@@ -1,223 +1,143 @@
-// **********************************************
-// NOTE: This assumes the required imports are present:
-// React, CheckCircleIcon, ArrowRightIcon, AcademicCapIcon, UserGroupIcon, LightBulbIcon (from @heroicons/react/24/outline)
-// motion (from framer-motion), Image (from next/image), clsx, useStoreContext
-// **********************************************
+'use client';
+
 import React from 'react';
-import { CheckCircleIcon, ArrowRightIcon, AcademicCapIcon, UserGroupIcon, LightBulbIcon, ChevronDoubleRightIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import clsx from 'clsx';
-// import { useStoreContext } from '@/contexts/StoreContext'; // Keep this for context
+import { 
+  CheckCircleIcon, 
+  ArrowRightIcon, 
+  AcademicCapIcon, 
+  UserGroupIcon, 
+  LightBulbIcon,
+  SparklesIcon
+} from '@heroicons/react/24/outline';
 
-// Placeholder for context/loader/handler functions if needed for runnable code
-const useStoreContext = () => ({
-  storeFormData: {
-    id: '683581bba1bdf6ca3624b530',
-    name: 'Academic Excellence Hub',
-    description: 'Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency.',
-    bannerUrl: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2670&auto=format&fit=crop',
-    CoreValues: [
-      { title: 'Tailored learning experiences.', icon: 'AcademicCapIcon' },
-      { title: 'Intuitive and engaging content.', icon: 'LightBulbIcon' },
-      { title: 'Expert personalized guidance.', icon: 'UserGroupIcon' },
-      { title: 'Real-time performance analytics.', icon: 'CheckCircleIcon' },
-    ],
-    ctaText: 'Enroll Now',
-    ctaLink: '/enroll',
-    themeSettings: { primaryColor: '#06B6D4', secondaryColor: '#FBBF24' }, // Tailwind Cyan & Amber
-  } as any,
-});
-
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-    return `${src}?w=${width}&q=${quality || 75}`;
-};
-const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    e.currentTarget.onerror = null;
-    e.currentTarget.src = "https://placehold.co/600x400/CCCCCC/333333?text=Image+Error";
-};
-// --- Utility function to map string icon names to components ---
 const IconMap = {
-    CheckCircleIcon,
-    AcademicCapIcon,
-    UserGroupIcon,
-    LightBulbIcon,
-    // Add other necessary icons here
+  AcademicCapIcon,
+  LightBulbIcon,
+  UserGroupIcon,
+  CheckCircleIcon,
 };
 
-
-// --- Main Section Component (Diagonal Focus) ---
-const SchoolSection = ({ storeFormData }: any) => {
-  // const { storeFormData } = useStoreContext();
-
+export default function MoriahExcellenceSection({ storeFormData }: any) {
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#1e40af';
   const headline = storeFormData?.name || "Unlock Your Academic Excellence";
-  const mainDescription = storeFormData?.description || "Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency.";
-
-  const CoreValuesFallback = [
-    { id: '1', title: 'Tailored learning experiences.', icon: 'AcademicCapIcon' },
-    { id: '2', title: 'Intuitive and engaging content.', icon: 'LightBulbIcon' },
-    { id: '3', 'title': 'Expert personalized guidance.', icon: 'UserGroupIcon' },
-    { id: '4', 'title': 'Real-time performance analytics.', icon: 'CheckCircleIcon' },
-  ];
-
-  // Map values to a maximum of 4 features
-  const coreValues = (storeFormData?.CoreValues?.length ? storeFormData.CoreValues : CoreValuesFallback).slice(0, 4);
-  const imageUrl = storeFormData?.bannerUrl || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2670&auto=format&fit=crop";
-  const ctaText = storeFormData?.ctaText || "Start Learning Today"; 
-  const ctaLink = storeFormData?.ctaLink || "#";
-
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#06B6D4'; // Default Cyan
-  const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FBBF24'; // Default Amber
+  const mainDescription = storeFormData?.description || "Empower your academic journey with innovative tools and personalized learning paths.";
   
-  // Testimonial/Quote Block Content
-  const quote = "This platform transformed my study habits and boosted my grades by over 20%. Highly recommended for focused learning!";
-  const quoteAuthor = "Sarah J., Top Student";
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        when: "beforeChildren",
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const textItemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { type: "spring", stiffness: 100, damping: 15 },
-    },
-  };
-
-  const featureIconVariants = {
-    hidden: { opacity: 0, scale: 0.7, rotate: 10 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      rotate: 0,
-      transition: { type: "spring", stiffness: 150, damping: 10 },
-    },
-  };
+  const coreValues = storeFormData?.CoreValues?.slice(0, 4) || [];
+  const imageUrl = storeFormData?.bannerUrl || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f";
 
   return (
-    <motion.section
-      className="relative py-24 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900 overflow-hidden"
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.1 }}
-      variants={containerVariants}
-    >
-      <div className="max-w-7xl mx-auto relative z-10">
-        
-        {/* Outer Container (The Card-in-Card Base) */}
-        <div 
-            className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden p-6 lg:p-0"
-            style={{ boxShadow: `0 25px 50px -12px ${primaryColor}40` }} // Custom shadow with primary color
-        >
-            <div className="flex flex-col lg:flex-row relative">
-                
-                {/* Diagonal Separator (Visual Trick) */}
-                <div 
-                    className="absolute inset-y-0 right-0 hidden lg:block w-full h-full"
-                    style={{ 
-                        clipPath: 'polygon(70% 0, 100% 0, 100% 100%, 30% 100%)', 
-                        backgroundColor: primaryColor,
-                        opacity: 0.05
-                    }}
+    <section className="relative py-32 bg-white overflow-hidden">
+      {/* Background Accent - Ultra soft */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(50%_50%_at_50%_50%,rgba(30,64,175,0.03)_0%,rgba(255,255,255,0)_100%)]" />
+
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="grid lg:grid-cols-12 gap-16 items-center">
+          
+          {/* --- Left: The Visual Storytelling (5 Columns) --- */}
+          <div className="lg:col-span-5 relative order-2 lg:order-1">
+            <motion.div 
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="relative"
+            >
+              {/* Main Subject Image - Using an Apple-style rounded bezel */}
+              <div className="relative aspect-[4/5] rounded-[4rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] border-[12px] border-white">
+                <Image
+                  src={imageUrl}
+                  loader={({src})=>src}
+                  alt="Academic Excellence"
+                  fill
+                  className="object-cover"
+                  priority
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              </div>
 
-                {/* Left Content Area (The floating card) */}
-                <div className="w-full lg:w-3/5 p-4 sm:p-10 lg:p-16 relative z-10">
-                    <motion.h2
-                      className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 leading-tight tracking-tight text-gray-900 dark:text-white"
-                      variants={textItemVariants}
+              {/* Floating Glass Value Cards - Displaced for Depth */}
+              <div className="absolute -right-12 top-10 flex flex-col gap-4 z-20">
+                {coreValues.slice(0, 2).map((item: any, i: number) => {
+                  const Icon = IconMap[item.icon as keyof typeof IconMap] || AcademicCapIcon;
+                  return (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: 20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.2 + i * 0.1 }}
+                      className="bg-white/80 backdrop-blur-xl border border-white p-5 rounded-[2rem] shadow-xl flex items-center gap-4 w-64"
                     >
-                      {/* Highlight key part of the headline using primary color */}
-                      <span style={{ color: primaryColor }}>{headline.split(' ').slice(0, 2).join(' ')}</span>{' '}
-                      {headline.split(' ').slice(2).join(' ')}
-                    </motion.h2>
-
-                    <motion.p
-                      className="mb-8 leading-relaxed text-lg text-gray-700 dark:text-gray-300"
-                      variants={textItemVariants}
-                    >
-                      {mainDescription}
-                    </motion.p>
-                    
-                    {/* Embedded Quote Block */}
-                    <motion.blockquote 
-                        className="p-6 mb-10 border-l-4 rounded-r-lg italic bg-gray-50 dark:bg-gray-700/50"
-                        style={{ borderColor: accentColor }}
-                        variants={textItemVariants}
-                    >
-                        <p className="text-gray-800 dark:text-gray-200">"{quote}"</p>
-                        <footer className="mt-2 text-sm font-semibold" style={{ color: accentColor }}>— {quoteAuthor}</footer>
-                    </motion.blockquote>
-
-                    {/* CTA Button */}
-                    <motion.a
-                      href={ctaLink}
-                      className="inline-flex items-center text-white font-bold py-4 px-10 rounded-full shadow-lg transition-all duration-300 transform group focus:outline-none focus:ring-4 focus:ring-opacity-75"
-                      style={{
-                        backgroundColor: primaryColor,
-                        '--tw-ring-color': `${primaryColor} !important` as any,
-                      }}
-                      whileHover={{ scale: 1.05, boxShadow: `0 10px 20px ${primaryColor}40` }}
-                      whileTap={{ scale: 0.95 }}
-                      variants={textItemVariants}
-                    >
-                      {ctaText}
-                      <ArrowRightIcon className="ml-2 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-                    </motion.a>
-                </div>
-
-                {/* Right Image Area (The Layered Background) */}
-                <div className="w-full lg:w-2/5 relative min-h-[300px] lg:min-h-0">
-                    <Image
-                        src={imageUrl}
-                        alt="Academic success background"
-                        fill
-                        className="object-cover object-center lg:rounded-r-3xl"
-                        loader={loader}
-                        sizes="(max-width: 1024px) 100vw, 40vw"
-                        onError={handleImageError}
-                    />
-                    
-                    {/* Image Overlay for Contrast/Depth */}
-                    <div className="absolute inset-0 bg-black/30 lg:bg-black/40"></div>
-                    
-                    {/* Floating Feature Icons (Overlaying the image) */}
-                    <motion.div 
-                        className="absolute inset-0 flex flex-wrap content-center justify-center p-8 gap-4 lg:gap-6"
-                        variants={containerVariants} // Use container to stagger the children
-                    >
-                        {coreValues.map((item: any, index: number) => {
-                            const IconComponent = IconMap[item.icon as keyof typeof IconMap] || CheckCircleIcon;
-                            return (
-                                <motion.div
-                                    key={index}
-                                    className="flex flex-col items-center justify-center w-28 h-28 p-3 rounded-xl shadow-lg bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm cursor-help"
-                                    variants={featureIconVariants}
-                                    whileHover={{ scale: 1.1, rotate: -5 }}
-                                >
-                                    <IconComponent className="w-8 h-8 mb-2" style={{ color: primaryColor }} />
-                                    <span className="text-xs font-semibold text-center text-gray-800 dark:text-gray-200 leading-tight">{item.title}</span>
-                                </motion.div>
-                            );
-                        })}
+                      <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <p className="text-xs font-bold text-slate-800 leading-tight">{item.title}</p>
                     </motion.div>
-                </div>
+                  );
+                })}
+              </div>
 
-            </div>
+              {/* Decorative Blur Element */}
+              <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-blue-200/40 rounded-full blur-[60px] -z-10" />
+            </motion.div>
+          </div>
+
+          {/* --- Right: The Content (7 Columns) --- */}
+          <div className="lg:col-span-7 order-1 lg:order-2">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="max-w-2xl"
+            >
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-full mb-8">
+                <SparklesIcon className="w-4 h-4 text-blue-600" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-700">The Moriah Standard</span>
+              </div>
+
+              <h2 className="text-5xl md:text-7xl font-light text-slate-900 leading-[1.1] tracking-tight mb-8">
+                Building a <span className="font-semibold">legacy of excellence</span> in every child.
+              </h2>
+
+              <p className="text-xl text-slate-500 mb-12 leading-relaxed font-normal">
+                {mainDescription}
+              </p>
+
+              {/* The "Bottom Half" Grid for remaining values */}
+              <div className="grid sm:grid-cols-2 gap-8 mb-12">
+                {coreValues.slice(2, 4).map((item: any, i: number) => {
+                  const Icon = IconMap[item.icon as keyof typeof IconMap] || CheckCircleIcon;
+                  return (
+                    <div key={i} className="flex gap-4">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white">
+                        <Icon className="w-3.5 h-3.5" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900 mb-1">{item.title}</h4>
+                        <p className="text-xs text-slate-400">Integrated into our daily international curriculum.</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Action Suite */}
+              <div className="flex flex-wrap items-center gap-8">
+                <button className="px-10 py-5 bg-slate-900 text-white rounded-full font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-slate-200">
+                  Join the Community
+                </button>
+                <div className="flex items-center gap-3 group cursor-pointer">
+                  <span className="text-xs font-black uppercase tracking-widest text-slate-400 group-hover:text-blue-600 transition-colors">Learn more</span>
+                  <div className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center group-hover:border-blue-600 transition-colors">
+                    <ArrowRightIcon className="w-3 h-3 text-slate-400 group-hover:text-blue-600 transition-transform group-hover:translate-x-1" />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
         </div>
       </div>
-    </motion.section>
+    </section>
   );
-};
-
-export default SchoolSection;
+}
