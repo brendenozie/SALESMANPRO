@@ -2,225 +2,180 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { PlayCircleIcon } from '@heroicons/react/24/solid';
-import { AcademicCapIcon, UserGroupIcon, TrophyIcon, BookOpenIcon, SparklesIcon } from '@heroicons/react/24/outline'; // More icons
+import { 
+  PlayIcon, 
+  UserGroupIcon, 
+  AcademicCapIcon, 
+  TrophyIcon, 
+  BookOpenIcon, 
+  SparklesIcon,
+  ArrowRightIcon
+} from '@heroicons/react/24/solid'; // Using Solid Hero Icons
 import Image from 'next/image';
-import { useStoreContext } from '@/contexts/StoreContext';
 import clsx from 'clsx';
-import { Stat } from '@/types/typings';
-
-
 
 // --- Utility Functions ---
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
+
 const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
   e.currentTarget.onerror = null;
   e.currentTarget.src = "https://placehold.co/1200x800/CCCCCC/333333?text=Image+Error";
 };
-const getStatIcon = (label: string) => {
-    const normalizedLabel = label.toLowerCase();
-    if (normalizedLabel.includes("student") || normalizedLabel.includes("enrolled")) return UserGroupIcon;
-    if (normalizedLabel.includes("course") || normalizedLabel.includes("offered")) return BookOpenIcon;
-    if (normalizedLabel.includes("tutor") || normalizedLabel.includes("expert")) return AcademicCapIcon;
-    if (normalizedLabel.includes("award") || normalizedLabel.includes("countrywide")) return TrophyIcon;
-    return SparklesIcon; // Default
-};
 
+const getStatIcon = (label: string) => {
+  const normalizedLabel = label.toLowerCase();
+  if (normalizedLabel.includes("student") || normalizedLabel.includes("enrolled")) return UserGroupIcon;
+  if (normalizedLabel.includes("course") || normalizedLabel.includes("offered")) return BookOpenIcon;
+  if (normalizedLabel.includes("tutor") || normalizedLabel.includes("expert")) return AcademicCapIcon;
+  if (normalizedLabel.includes("award") || normalizedLabel.includes("countrywide")) return TrophyIcon;
+  return SparklesIcon;
+};
 
 // --- Custom Stat Component (Floating Badge) ---
-const StatBadge = ({ stat, primaryColor, variants, delay }: { stat: Stat, primaryColor: string, variants: any, delay: number }) => {
-    const Icon = getStatIcon(stat.label);
-    
-    // Apply a unique animation to each stat for a "floating" feel
-    const badgeVariants = {
-        hidden: { opacity: 0, scale: 0.5, y: 50 },
-        visible: {
-            opacity: 1,
-            scale: 1,
-            y: 0,
-            transition: {
-                type: "spring",
-                stiffness: 100,
-                damping: 10,
-                delay: delay
-            },
-        },
-    };
-
-    return (
-        <motion.div 
-            className="flex items-center p-3 rounded-full shadow-lg bg-white dark:bg-gray-800 border-2"
-            style={{ borderColor: primaryColor }}
-            variants={badgeVariants}
-            whileHover={{ y: -5, scale: 1.05, boxShadow: `0 10px 20px ${primaryColor}40` }}
-            transition={{ type: "spring", stiffness: 300 }}
-        >
-            <div className="p-2 rounded-full mr-3" style={{ backgroundColor: `${primaryColor}1A` }}>
-                <Icon className="w-5 h-5" style={{ color: primaryColor }} />
-            </div>
-            <div>
-                <p className="text-base font-bold text-gray-900 dark:text-white leading-none">{stat.value}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">{stat.label}</p>
-            </div>
-        </motion.div>
-    );
+const StatBadge = ({ stat, primaryColor, delay }: { stat: any, primaryColor: string, delay: number }) => {
+  const Icon = getStatIcon(stat.label);
+  
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ delay, type: "spring", stiffness: 100 }}
+      whileHover={{ y: -5, transition: { duration: 0.2 } }}
+      className="flex items-center p-4 rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-md shadow-xl border border-gray-100 dark:border-gray-700 min-w-[180px]"
+    >
+      <div 
+        className="p-2.5 rounded-xl mr-4 flex-shrink-0" 
+        style={{ backgroundColor: `${primaryColor}15` }}
+      >
+        <Icon className="w-6 h-6" style={{ color: primaryColor }} />
+      </div>
+      <div>
+        <p className="text-xl font-black text-gray-900 dark:text-white leading-none mb-1">{stat.value}</p>
+        <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">{stat.label}</p>
+      </div>
+    </motion.div>
+  );
 };
 
-
-// --- Main Component ---
 export default function AboutSection({ storeFormData }: any) {
-//   const { storeFormData } = useStoreContext();
-
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#fd2121';
   const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FFC107';
 
-  // --- Framer Motion Variants ---
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { when: "beforeChildren", staggerChildren: 0.1 }
-    },
-  };
-
-  const textItemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { type: "spring", stiffness: 100, damping: 15 }
-    },
-  };
-
   const aboutHeadline = storeFormData?.name ? `The Smarter Way to Learn with ${storeFormData.name}` : "The Smarter Way to Learn";
-  const aboutDescription = storeFormData?.description || "Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency. Our comprehensive resources are designed to seamlessly integrate with your existing curriculum, providing a supportive environment for growth and success.";
-  const aboutVideoThumbnail = storeFormData?.heroSlides?.[0]?.imageUrl || "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2670&auto=format&fit=crop"; // New image for a different feel
-  const aboutVideoLink = storeFormData?.heroSlides?.[0]?.videoLink || "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+  const aboutDescription = storeFormData?.description || "Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency.";
+  const aboutVideoThumbnail = storeFormData?.heroSlides?.[0]?.imageUrl || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2671&auto=format&fit=crop";
+  const aboutVideoLink = storeFormData?.heroSlides?.[0]?.videoLink || "#";
   const aboutStats = storeFormData?.stats || [
-    { label: "Students Enrolled", value: "5000+" },
-    { label: "Courses Offered", value: "150+" },
+    { label: "Students", value: "5,000+" },
+    { label: "Courses", value: "150+" },
     { label: "Expert Tutors", value: "50+" },
-    { label: "Countrywide Awards", value: "60+" },
+    { label: "Awards", value: "60+" },
   ];
-  const aboutTagline = storeFormData?.tagline || "Unlock Your Potential";
 
   return (
-    <motion.section
-      className="bg-white dark:bg-gray-950 py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.1 }}
-      variants={containerVariants}
-    >
-        {/* Decorative Background Swirl/Blob (uses theme color) */}
-        <div 
-            className="absolute -top-1/4 -right-1/4 w-3/4 h-3/4 rounded-full mix-blend-multiply filter blur-3xl opacity-10 hidden lg:block"
-            style={{ backgroundColor: primaryColor }}
-        />
-
-        {/* --- Main Content Layout --- */}
-      <div className="max-w-7xl mx-auto relative grid lg:grid-cols-12 gap-16 items-start">
-            
-            {/* 1. Video & Stats Block (3/4th width on desktop) */}
-            <div className="lg:col-span-7 relative order-1">
+    <section className="relative py-24 px-6 lg:px-8 bg-white dark:bg-gray-950 overflow-hidden">
+      {/* Abstract Background Accents */}
+      <div className="absolute top-0 right-0 w-1/2 h-full bg-gray-50/50 dark:bg-gray-900/20 -skew-x-12 translate-x-1/4 z-0" />
+      
+      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="grid lg:grid-cols-12 gap-16 items-center">
+          
+          {/* Visual Side */}
+          <div className="lg:col-span-7 relative">
+            <motion.div 
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              className="relative rounded-[2.5rem] overflow-hidden shadow-2xl z-10"
+            >
+              <div className="aspect-[16/10] relative group cursor-pointer" onClick={() => window.open(aboutVideoLink, '_blank')}>
+                <Image
+                  src={aboutVideoThumbnail || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2671&auto=format&fit=crop"}
+                  alt="About Us"
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  loader={loader}
+                  onError={handleImageError}
+                />
                 
-                {/* --- The Framed Video Window --- */}
-                <motion.div 
-                    className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl group border-8"
-                    style={{ borderColor: accentColor }}
-                    initial={{ opacity: 0, rotate: 1, scale: 0.9 }}
-                    animate="visible"
-                    variants={{ visible: { opacity: 1, rotate: 0, scale: 1, transition: { type: 'spring', stiffness: 50, damping: 10 }}}}
-                >
-                    <Image
-                        src={aboutVideoThumbnail}
-                        alt="Video thumbnail for school introduction"
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        loader={loader}
-                        sizes="(max-width: 1024px) 100vw, 50vw"
-                        onError={handleImageError}
-                    />
-
-                    {/* Play Button */}
-                    <motion.button
-                        className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 hover:bg-opacity-10 transition-colors duration-300"
-                        onClick={() => window.open(aboutVideoLink, '_blank')}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                    >
-                        <div
-                            className={`rounded-full p-6 shadow-xl transition-all duration-300 animate-pulse`}
-                            style={{ backgroundColor: primaryColor }}
-                        >
-                            <PlayCircleIcon className="w-16 h-16 text-white" />
-                        </div>
-                    </motion.button>
-                </motion.div>
-
-                {/* --- Floating Stats Badges (Positioned absolutely for a 'sticking' effect) --- */}
-                <div className="absolute top-full left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full pt-8 lg:pt-0">
-                    <div className="flex justify-center flex-wrap gap-4">
-                        {aboutStats.map((stat: any, idx: number) => (
-                            <StatBadge 
-                                key={idx} 
-                                stat={stat} 
-                                primaryColor={primaryColor} 
-                                variants={containerVariants}
-                                delay={0.6 + idx * 0.15} // Staggered delay after image loads
-                            />
-                        ))}
-                    </div>
+                {/* Play Button Overlay */}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-all">
+                  <motion.div 
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="w-20 h-20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/30"
+                    style={{ backgroundColor: `${primaryColor}cc` }}
+                  >
+                    <PlayIcon className="w-8 h-8 text-white ml-1" />
+                  </motion.div>
                 </div>
+              </div>
+            </motion.div>
 
+            {/* Floating Stats - Overlapping the image slightly */}
+            <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-[90%] lg:w-full flex flex-wrap justify-center gap-4 z-20">
+              {aboutStats.slice(0, 4).map((stat: any, idx: number) => (
+                <StatBadge 
+                  key={idx} 
+                  stat={stat} 
+                  primaryColor={primaryColor} 
+                  delay={0.2 + (idx * 0.1)} 
+                />
+              ))}
             </div>
-            
-            {/* 2. Text Content Block (5/12th width on desktop) */}
-            <div className="lg:col-span-5 order-2 pt-20 lg:pt-0">
-                <motion.p
-                    className={`text-base font-extrabold uppercase tracking-widest mb-3`}
-                    style={{ color: accentColor }}
-                    variants={textItemVariants}
-                >
-                    {aboutTagline}
-                </motion.p>
-                <motion.h2
-                    className="text-4xl md:text-5xl lg:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight"
-                    variants={textItemVariants}
-                >
-                    {aboutHeadline.split(' ').map((word, index) => (
-                        <span key={index}>
-                            {word === "Smarter" || word === "Learn" || word === (storeFormData?.name || '').split(' ')[0] ? (
-                                <span style={{ color: primaryColor }}>{word} </span>
-                            ) : (
-                                `${word} `
-                            )}
-                        </span>
-                    ))}
-                </motion.h2>
-                <motion.p
-                    className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed mb-8 h-24 overflow-hidden"
-                    variants={textItemVariants}
-                >
-                    {aboutDescription}
-                </motion.p>
+          </div>
+
+          {/* Text Side */}
+          <div className="lg:col-span-5 pt-12 lg:pt-0">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <span 
+                className="inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-6"
+                style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}
+              >
+                {storeFormData?.tagline || "Our Evolution"}
+              </span>
+              
+              <h2 className="text-4xl lg:text-5xl font-black text-gray-900 dark:text-white leading-tight mb-6 tracking-tight">
+                {aboutHeadline.split(' ').map((word, i) => (
+                  <span key={i} className={clsx(i % 3 === 0 && i !== 0 ? "block" : "")}>
+                    {word}{" "}
+                  </span>
+                ))}
+              </h2>
+
+              <p className="text-gray-500 dark:text-gray-400 text-lg leading-relaxed mb-10">
+                {aboutDescription}
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4">
                 <motion.a
-                    href="/about"
-                    className={`inline-flex items-center text-lg font-bold py-3 px-8 rounded-full transition-all duration-300 shadow-lg hover:shadow-2xl`}
-                    style={{ backgroundColor: primaryColor, color: 'white' }}
-                    variants={textItemVariants}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                  href="/about"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="inline-flex items-center justify-center px-8 py-4 rounded-xl font-bold text-white shadow-lg transition-all"
+                  style={{ backgroundColor: primaryColor }}
                 >
-                    Discover Our Mission
+                  Learn Our Story
+                  <ArrowRightIcon className="w-5 h-5 ml-2" />
                 </motion.a>
-            </div>
-            
+                
+                <button className="px-8 py-4 rounded-xl font-bold text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                  Contact Us
+                </button>
+              </div>
+            </motion.div>
+          </div>
+
+        </div>
       </div>
-        {/* Spacer to account for the absolutely positioned stats block */}
-        <div className="h-40 lg:h-20" /> 
-    </motion.section>
+      
+      {/* Bottom Spacer for Floating Stats */}
+      <div className="h-16" />
+    </section>
   );
 }

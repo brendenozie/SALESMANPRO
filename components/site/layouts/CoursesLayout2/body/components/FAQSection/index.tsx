@@ -1,8 +1,15 @@
-'use client';
+"use client";
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDownIcon, PlusIcon, MinusIcon, LifebuoyIcon } from '@heroicons/react/24/outline';
+import { 
+  ChevronDownIcon, 
+  PlusIcon, 
+  MinusIcon, 
+  LifebuoyIcon, 
+  ArrowRightIcon,
+  QuestionMarkCircleIcon 
+} from '@heroicons/react/24/outline'; // Consistency with Heroicons
 
 const FAQItem = ({ faq, primaryColor, activeId, setActiveId }: any) => {
   const isOpen = activeId === faq.id;
@@ -10,29 +17,30 @@ const FAQItem = ({ faq, primaryColor, activeId, setActiveId }: any) => {
   return (
     <motion.div
       layout
-      className={`relative mb-4 transition-all duration-500 rounded-[2rem] overflow-hidden ${
-        isOpen 
-          ? 'bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)]' 
-          : 'bg-slate-50 hover:bg-white border border-transparent hover:border-slate-100'
+      className={`relative border-b border-gray-100 transition-all duration-300 ${
+        isOpen ? 'bg-gray-50/50' : 'bg-white hover:bg-gray-50'
       }`}
     >
       <button
         onClick={() => setActiveId(isOpen ? null : faq.id)}
-        className="w-full p-8 text-left flex items-center justify-between group"
+        className="w-full py-10 px-6 text-left flex items-start justify-between group"
       >
-        <span className={`text-lg font-bold transition-colors duration-300 ${
-          isOpen ? 'text-slate-900' : 'text-slate-600 group-hover:text-slate-900'
-        }`}>
-          {faq.question}
-        </span>
+        <div className="flex gap-6">
+          <span className="text-[10px] font-black text-gray-300 mt-1.5 tracking-tighter">
+            {faq.id.padStart(2, '0')}
+          </span>
+          <span className={`text-xl font-bold tracking-tight transition-colors duration-300 ${
+            isOpen ? 'text-gray-900' : 'text-gray-600 group-hover:text-gray-900'
+          }`}>
+            {faq.question}
+          </span>
+        </div>
         
-        <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 ${
-          isOpen ? 'bg-slate-900 rotate-180' : 'bg-white shadow-sm'
-        }`}>
+        <div className="flex-shrink-0 ml-4">
           {isOpen ? (
-            <MinusIcon className="w-5 h-5 text-white" />
+            <MinusIcon className="w-5 h-5 text-gray-900" />
           ) : (
-            <PlusIcon className="w-5 h-5 text-slate-400" />
+            <PlusIcon className="w-5 h-5 text-gray-300 group-hover:text-gray-900" />
           )}
         </div>
       </button>
@@ -43,11 +51,10 @@ const FAQItem = ({ faq, primaryColor, activeId, setActiveId }: any) => {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.4, ease: [0.04, 0.62, 0.23, 0.98] }}
+            transition={{ duration: 0.3, ease: "circOut" }}
           >
-            <div className="px-8 pb-8">
-              <div className="w-full h-px bg-slate-100 mb-6" />
-              <p className="text-slate-600 leading-relaxed text-base max-w-2xl">
+            <div className="pl-16 pr-12 pb-10">
+              <p className="text-gray-500 leading-relaxed text-base max-w-2xl border-l-2 pl-8" style={{ borderColor: primaryColor }}>
                 {faq.answer}
               </p>
             </div>
@@ -58,59 +65,63 @@ const FAQItem = ({ faq, primaryColor, activeId, setActiveId }: any) => {
   );
 };
 
-export default function MoriahFAQ({ storeFormData }: any) {
+export default function ProfessionalFAQ({ storeFormData }: any) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#1e40af';
 
   const faqs = storeFormData?.faqs?.length > 0 ? storeFormData.faqs : [
-    { id: "1", question: "How do I enroll in a course?", answer: "Enrolling is simple! Browse our courses, select your desired program, and click 'Enroll Now'. You'll be guided through a quick registration and payment process." },
-    { id: "2", question: "Are there any prerequisites?", answer: "Most introductory courses have no prerequisites. Advanced tracks may require specific certifications, clearly noted in descriptions." },
-    { id: "3", question: "What payment methods are accepted?", answer: "We accept all major credit cards, PayPal, and regional bank transfers." },
-    { id: "4", question: "Do you offer career placement?", answer: "While we don't guarantee jobs, our programs include career coaching, resume audits, and direct intros to our hiring partners." }
+    { id: "1", question: "Institutional Enrollment Protocols", answer: "Our admission process is streamlined through a secure digital portal. Candidates are vetted based on prerequisite alignment and professional background." },
+    { id: "2", question: "Prerequisite Technical Requirements", answer: "Standard tracks require a foundational baseline in relevant disciplines. Advanced fellowships may require prior certification or a portfolio review." },
+    { id: "3", question: "Fiscal Payment Frameworks", answer: "We support corporate billing, institutional grants, and all major global credit facilities through encrypted gateways." },
+    { id: "4", question: "Career Advancement Trajectory", answer: "Programs include strategic career counseling, industry networking, and direct access to our institutional partner ecosystem." }
   ];
 
   return (
-    <section className="py-32 bg-white">
-      <div className="container mx-auto px-6">
+    <section className="py-32 bg-white relative">
+      <div className="container mx-auto px-6 lg:px-8">
         <div className="grid lg:grid-cols-12 gap-16 items-start">
           
-          {/* Left Column: Context & Help Branding */}
+          {/* Left Column: The Help Desk Monolith */}
           <div className="lg:col-span-5 lg:sticky lg:top-32">
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 rounded-full mb-6">
-                <LifebuoyIcon className="w-3.5 h-3.5 text-blue-600" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Support Hub</span>
+              <div className="flex items-center gap-3 mb-8">
+                <QuestionMarkCircleIcon className="w-5 h-5 text-gray-400" />
+                <span className="text-[11px] font-black uppercase tracking-[0.4em] text-gray-400">Institutional Knowledge</span>
               </div>
-              <h2 className="text-5xl font-light text-slate-900 tracking-tight leading-tight mb-8">
-                Got questions? <br />
-                <span className="font-semibold italic text-blue-600">We have answers.</span>
+              
+              <h2 className="text-5xl lg:text-7xl font-bold text-gray-900 tracking-tighter leading-none mb-10">
+                Strategic <br />
+                <span className="text-gray-300 font-light italic">clarity.</span>
               </h2>
-              <p className="text-slate-500 text-lg leading-relaxed max-w-sm mb-10">
-                Can't find what you're looking for? Our dedicated support team is available 24/7 to help you navigate your journey.
+
+              <p className="text-gray-500 text-lg leading-relaxed max-w-sm mb-12 font-medium">
+                Our support protocols ensure a seamless transition into the academic environment. Access our full library of documentation for deep technical inquiries.
               </p>
               
-              <div className="p-8 bg-slate-900 rounded-[2.5rem] text-white overflow-hidden relative group">
-                {/* Decorative Pattern */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/20 rounded-full blur-3xl -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
+              <div className="bg-gray-900 p-10 shadow-2xl relative overflow-hidden group">
+                {/* Technical grid overlay */}
+                <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
+                     style={{ backgroundImage: 'radial-gradient(#fff 0.5px, transparent 0.5px)', backgroundSize: '20px 20px' }} />
                 
-                <p className="text-xs font-black uppercase tracking-widest text-blue-400 mb-2">Still curious?</p>
-                <p className="text-xl font-medium mb-6">Talk to a real human.</p>
-                <button className="flex items-center gap-3 text-sm font-bold group">
-                  <span className="border-b border-white/30 group-hover:border-white transition-all pb-1">Contact Support</span>
-                  <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-white group-hover:text-slate-900 transition-all">
-                    <ChevronDownIcon className="w-4 h-4 -rotate-90" />
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-2">Direct Inquiry</p>
+                <p className="text-xl font-bold text-white mb-8">Liaison Support Office</p>
+                
+                <button className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.2em] text-white group">
+                  <span className="border-b border-white/20 pb-1 group-hover:border-white transition-all">Submit Support Ticket</span>
+                  <div className="w-10 h-10 border border-white/10 flex items-center justify-center transition-all group-hover:bg-white group-hover:text-gray-900">
+                    <ArrowRightIcon className="w-4 h-4" />
                   </div>
                 </button>
               </div>
             </motion.div>
           </div>
 
-          {/* Right Column: The Accordion Explorer */}
-          <div className="lg:col-span-7">
+          {/* Right Column: The Ledger Accordion */}
+          <div className="lg:col-span-7 border-t border-gray-100">
             <motion.div
               initial="hidden"
               whileInView="visible"
@@ -129,6 +140,12 @@ export default function MoriahFAQ({ storeFormData }: any) {
                 />
               ))}
             </motion.div>
+            
+            <div className="mt-12 flex items-center gap-4 text-gray-400">
+              <div className="h-[1px] flex-grow bg-gray-100" />
+              <span className="text-[9px] font-black uppercase tracking-widest">End of Record</span>
+              <div className="h-[1px] flex-grow bg-gray-100" />
+            </div>
           </div>
 
         </div>

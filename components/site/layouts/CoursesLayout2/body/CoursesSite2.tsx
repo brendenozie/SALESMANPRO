@@ -13,6 +13,7 @@ const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-
 const  apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // Dynamically import below-the-fold components
+const ProfessionalInfoGrid = dynamic(() => import('./components/ProfessionalInfoGrid'), { loading: () => <SectionSkeleton />, ssr: false });
 const SchoolSection = dynamic(() => import('./components/SchoolSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const MainCoursesSection = dynamic(() => import('./components/MainCoursesSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const AboutSection = dynamic(() => import('./components/AboutSection'), { loading: () => <SectionSkeleton />, ssr: false });
@@ -37,6 +38,8 @@ export default function CoursesSite({ pageData, companyId }: { pageData: StoreFo
     <div className="font-sans">
       {/* Hero */}
       <HeroSection storeFormData={pageData} />
+
+      <ProfessionalInfoGrid storeFormData={pageData} />
 
       <SchoolSection storeFormData={pageData} />
 

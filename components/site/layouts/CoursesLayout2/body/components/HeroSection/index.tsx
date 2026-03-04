@@ -1,278 +1,148 @@
-'use client';
+"use client";
 
-import React, { useRef, useState, useEffect, useMemo } from 'react';
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useSpring,
-  AnimatePresence
-} from 'framer-motion';
-import {
-  ArrowRightIcon,
-  SparklesIcon,
-  ShieldCheckIcon,
-  AcademicCapIcon,
-  UserGroupIcon,
+import React from 'react';
+import { motion } from 'framer-motion';
+import { 
+  ArrowRightIcon, 
   PlayIcon,
-  ChevronDownIcon,
-} from '@heroicons/react/24/outline';
+  CheckBadgeIcon,
+  ShieldCheckIcon,
+  ChartBarIcon
+} from "@heroicons/react/24/solid"; // Heroicons as requested
+import { useStoreContext } from '@/contexts/StoreContext';
 import Image from 'next/image';
 
-export default function MoriahCinematicHero({ storeFormData }: any) {
-  const containerRef = useRef(null);
-  const heroSlides = storeFormData?.heroSlides || [
-    {
-      headline: "The future is exceptionally bright.",
-      subline: "Mount Moriah International combines world-class pedagogy with values-based learning to prepare your child for a global stage.",
-      imageUrl: "https://images.unsplash.com/photo-1523050335392-9befbf527f4c?auto=format&fit=crop&q=80",
-      badge: "Admissions Open 2026"
-    }
-  ];
-  
-  const [activeIndex, setActiveIndex] = useState(0);
-  const activeSlide = heroSlides[activeIndex];
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#1e40af';
-  
-  const headline =
-    activeSlide?.headline ||
-    "The future is exceptionally bright.";
+const fadeUp = {
+  hidden: { opacity: 0, y: 15 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }
+};
 
-  const subline =
-    activeSlide?.subline ||
-    "Mount Moriah International combines world-class pedagogy with values-based learning to prepare your child for a global stage.";
+export default function ProfessionalHero({storeFormData}: { storeFormData: any }) {
+  // const { storeFormData } = useStoreContext();
 
-  const bannerImg =
-    activeSlide?.imageUrl ||
-    "https://images.unsplash.com/photo-1541339907198-e08756ebafe3";
-
-   const badgeText = activeSlide?.badge || "Admissions Open 2026";
-  
-    /* ---------------------------------
-       HEADLINE SPLIT LOGIC (SMART)
-    -----------------------------------*/
-    const { lineOne, lineTwo } = useMemo(() => {
-      if (!headline) return { lineOne: "", lineTwo: "" };
-  
-      // Split by first period if exists
-      if (headline.includes(".")) {
-        const parts = headline.split(".");
-        return {
-          lineOne: parts[0],
-          lineTwo: parts.slice(1).join(".").trim()
-        };
-      }
-  
-      // Otherwise split by word midpoint
-      const words = headline.split(" ");
-      const midpoint = Math.ceil(words.length / 2);
-  
-      return {
-        lineOne: words.slice(0, midpoint).join(" "),
-        lineTwo: words.slice(midpoint).join(" ")
-      };
-    }, [headline]);
-
-  // Auto-slide logic
-  useEffect(() => {
-    if (heroSlides.length <= 1) return;
-    const interval = setInterval(() => {
-      setActiveIndex(prev => (prev === heroSlides.length - 1 ? 0 : prev + 1));
-    }, 8000);
-    return () => clearInterval(interval);
-  }, [heroSlides.length]);
-
-  // Parallax effects
-  // const { scrollYProgress } = useScroll({
-  //   target: containerRef,
-  //   offset: ["start start", "end start"]
-  // });
-
-  // const y1 = useTransform(scrollYProgress, [0, 1], [0, 200]);
-  // const y2 = useTransform(scrollYProgress, [0, 1], [0, -150]);
-  // const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-
-  /* ---------------------------------
-       AUTO SLIDE ROTATION
-    -----------------------------------*/
-    // useEffect(() => {
-    //   if (heroSlides.length <= 1) return;
-  
-    //   const interval = setInterval(() => {
-    //     setActiveIndex(prev =>
-    //       prev === heroSlides.length - 1 ? 0 : prev + 1
-    //     );
-    //   }, 6000);
-  
-    //   return () => clearInterval(interval);
-    // }, [heroSlides.length]);
-  
-    /* ---------------------------------
-       SCROLL PARALLAX
-    -----------------------------------*/
-    const { scrollYProgress } = useScroll({
-      target: containerRef,
-      offset: ["start start", "end start"]
-    });
-  
-    const imageY = useTransform(scrollYProgress, [0, 1], [0, -100]);
-    const smoothImageY = useSpring(imageY, {
-      stiffness: 100,
-      damping: 30
-    });
-  
-    /* ---------------------------------
-       GLASS CARD SYNC
-    -----------------------------------*/
-    const glassCard = activeSlide?.glassCard || {
-      label: "Environment",
-      title: "Safe & Secure",
-      icon: "shield"
-    };
-  
-    const iconMap: any = {
-      shield: ShieldCheckIcon,
-      academic: AcademicCapIcon,
-      community: UserGroupIcon
-    };
-  
-    const GlassIcon = iconMap[glassCard.icon] || ShieldCheckIcon;
+  const activeHeroSlide = storeFormData?.heroSlides?.[0];
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#fd2121';
 
   return (
-    <section
-      ref={containerRef}
-      className="relative min-h-[110vh] w-full bg-white flex items-center pt-24 overflow-hidden"
-    >
-      {/* Background Subtle Elements */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-blue-50/50 rounded-full blur-[120px] mix-blend-multiply" />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-indigo-50/40 rounded-full blur-[100px] mix-blend-multiply" />
+    <section className="relative min-h-[85vh] flex items-center bg-white overflow-hidden pt-20">
+      {/* Structural Background Layout */}
+      <div className="absolute inset-0 z-0 flex">
+        <div className="w-full lg:w-1/2 bg-gray-50" /> {/* Subtle split background */}
+        <div className="hidden lg:block w-1/2 relative">
+           <Image
+            src={activeHeroSlide?.imageUrl || "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop"}
+            alt="Professional Environment"
+            fill
+            className="object-cover"
+            priority
+            loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
+          />
+          {/* Professional Overlay: Clean gradient for text legibility if needed */}
+          <div className="absolute inset-0 bg-gray-900/10" />
+        </div>
       </div>
 
-       <div className="container mx-auto px-6 relative z-10">
-              <div className="flex flex-col lg:flex-row items-center gap-16 xl:gap-24">
-      
-                {/* LEFT */}
-                <div className="w-full lg:w-1/2">
-                  <div>
-      
-                    {/* Badge */}
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100/50 border border-slate-200/60 rounded-full mb-8">
-                      <SparklesIcon className="w-3.5 h-3.5 text-blue-500" />
-                      <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500">
-                        {badgeText}
-                      </span>
-                    </div>
-      
-                    {/* Headline */}
-                    <AnimatePresence mode="wait">
-                      <motion.h1
-                        key={headline}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.6 }}
-                        className="text-6xl md:text-8xl font-light text-slate-900 leading-[1.05] tracking-tight mb-8"
-                      >
-                        {lineOne}
-                        <br />
-                        <span className="font-medium">
-                          {lineTwo}
-                        </span>
-                      </motion.h1>
-                    </AnimatePresence>
-      
-                    {/* Subline */}
-                    <AnimatePresence mode="wait">
-                      <motion.p
-                        key={subline}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.6 }}
-                        className="text-xl text-slate-500 max-w-lg mb-12 leading-relaxed font-normal"
-                      >
-                        {subline}
-                      </motion.p>
-                    </AnimatePresence>
-      
-                    {/* CTA */}
-                    <div className="flex flex-wrap items-center gap-8">
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="px-10 py-5 rounded-full bg-slate-900 text-white font-semibold text-sm shadow-xl shadow-slate-200 flex items-center gap-3"
-                      >
-                        Enroll Today
-                        <ArrowRightIcon className="w-4 h-4" />
-                      </motion.button>
-      
-                      <button className="group flex items-center gap-2 text-sm font-semibold text-blue-600">
-                        Take a virtual tour
-                        <ChevronDownIcon className="w-4 h-4 -rotate-90 group-hover:translate-x-1 transition-transform" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-      
-                {/* RIGHT */}
-                <div className="w-full lg:w-1/2 relative">
-                  <div className="relative aspect-square">
-      
-                    {/* Image */}
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={bannerImg}
-                        initial={{ opacity: 0, scale: 1.05 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ duration: 0.8 }}
-                        style={{ y: smoothImageY }}
-                        className="absolute inset-0 z-10 rounded-[3rem] overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.08)] border border-white"
-                      >
-                        <Image
-                          src={bannerImg || "https://images.unsplash.com/photo-1541339907198-e08756ebafe3"}
-                          alt={headline}
-                          loader={({src})=>src}
-                          fill
-                          className="object-cover"
-                          priority
-                        />
-                      </motion.div>
-                    </AnimatePresence>
-      
-                    {/* Glass Card */}
-                    <motion.div
-                      key={glassCard.title}
-                      animate={{ y: [0, 10, 0] }}
-                      transition={{ duration: 6, repeat: Infinity }}
-                      className="absolute -left-12 bottom-12 z-20 bg-white/70 backdrop-blur-xl p-6 rounded-3xl shadow-xl border border-white/50 w-56"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
-                          <GlassIcon className="w-5 h-5 text-green-600" />
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                            {glassCard.label}
-                          </p>
-                          <p className="text-sm font-bold text-slate-900">
-                            {glassCard.title}
-                          </p>
-                        </div>
-                      </div>
-                    </motion.div>
-      
-                  </div>
-                </div>
-              </div>
-            </div>
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
+          {/* Content Column */}
+          <motion.div 
+            className="lg:col-span-6 py-12"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              visible: { transition: { staggerChildren: 0.1 } }
+            }}
+          >
+            {/* Status Badge */}
+            <motion.div variants={fadeUp} className="flex items-center gap-2 mb-6">
+              <span 
+                className="w-2 h-2 rounded-full animate-pulse" 
+                style={{ backgroundColor: primaryColor }} 
+              />
+              <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-gray-500">
+                {storeFormData?.tagline || "Professional Excellence"}
+              </span>
+            </motion.div>
 
-            
-                  {/* Bottom indicator */}
-                  <div className="absolute bottom-10 left-1/2 -translate-x-1/2 opacity-20">
-                    <ChevronDownIcon className="w-6 h-6 animate-bounce text-slate-400" />
+            {/* Corporate Typography */}
+            <motion.h1 
+              variants={fadeUp}
+              className="text-5xl lg:text-7xl font-bold text-gray-900 leading-[1.1] tracking-tight mb-8"
+            >
+              {activeHeroSlide?.headline || "Drive Success Through Strategic Learning."}
+            </motion.h1>
+
+            <motion.p 
+              variants={fadeUp}
+              className="text-lg text-gray-600 leading-relaxed max-w-lg mb-10 border-l-2 pl-6"
+              style={{ borderColor: `${primaryColor}40` }}
+            >
+              {activeHeroSlide?.subline || "Empowering organizations and professionals with industry-validated curriculum and measurable learning outcomes."}
+            </motion.p>
+
+            {/* Action Group */}
+            <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-6">
+              <button
+                className="group flex items-center gap-3 px-8 py-4 rounded-none font-bold text-sm uppercase tracking-widest text-white transition-all hover:brightness-110 active:scale-95"
+                style={{ backgroundColor: primaryColor }}
+                onClick={() => window.location.href = activeHeroSlide?.ctaLink || '#'}
+              >
+                {activeHeroSlide?.ctaText || "Explore Curriculum"}
+                <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </button>
+
+              {activeHeroSlide?.videoLink && (
+                <button 
+                  className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-gray-900 hover:text-gray-600 transition-colors"
+                  onClick={() => window.open(activeHeroSlide?.videoLink || '', '_blank')}
+                >
+                  <div className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center">
+                    <PlayIcon className="w-3 h-3 text-gray-900" />
                   </div>
+                  Overview
+                </button>
+              )}
+            </motion.div>
+
+            {/* Trust Signals */}
+            <motion.div 
+              variants={fadeUp}
+              className="mt-16 grid grid-cols-3 gap-4"
+            >
+              <div className="space-y-2">
+                <CheckBadgeIcon className="w-5 h-5 text-gray-400" />
+                <p className="text-[10px] font-black uppercase text-gray-400">Certified</p>
+                <p className="text-sm font-bold text-gray-900">Accredited Programs</p>
+              </div>
+              <div className="space-y-2">
+                <ShieldCheckIcon className="w-5 h-5 text-gray-400" />
+                <p className="text-[10px] font-black uppercase text-gray-400">Security</p>
+                <p className="text-sm font-bold text-gray-900">Safe Enrollment</p>
+              </div>
+              <div className="space-y-2">
+                <ChartBarIcon className="w-5 h-5 text-gray-400" />
+                <p className="text-[10px] font-black uppercase text-gray-400">Outcomes</p>
+                <p className="text-sm font-bold text-gray-900">Career Growth</p>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          {/* Right Column: High-Impact Image Card (Mobile only, or inset for desktop) */}
+          <div className="lg:col-span-6 lg:hidden">
+            <div className="relative aspect-video rounded-none overflow-hidden shadow-2xl">
+               <Image
+                src={activeHeroSlide?.productImageUrl || activeHeroSlide?.imageUrl || "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop"}
+                alt="Product"
+                fill
+                className="object-cover"
+                loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
+              />
+            </div>
+          </div>
+          
+        </div>
+      </div>
     </section>
   );
 }

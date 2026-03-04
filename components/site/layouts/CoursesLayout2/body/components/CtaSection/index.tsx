@@ -1,113 +1,114 @@
-'use client';
+"use client";
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { EnvelopeIcon, SparklesIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { EnvelopeIcon, SparklesIcon, ArrowRightIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { AcademicCapIcon } from '@heroicons/react/24/solid'; // Heroicons
 import Image from 'next/image';
 
-export default function MoriahCTA({ storeFormData }: any) {
+export default function ProfessionalCTA({ storeFormData }: any) {
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#1e40af';
-  const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FFC107';
 
   return (
-    <section className="py-32 bg-white relative overflow-hidden">
-      {/* Background Decorative Element: Soft Glowing Orb */}
-      <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[120px] opacity-10 pointer-events-none"
-        style={{ backgroundColor: primaryColor }}
-      />
-
-      <div className="container mx-auto px-6 relative z-10">
-        <div className="max-w-6xl mx-auto">
-          <motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="relative bg-slate-900 rounded-[4rem] overflow-hidden shadow-2xl"
-          >
-            {/* Background Image with Parallax-like Overlay */}
-            <div className="absolute inset-0">
-              <Image
-                src={storeFormData?.bannerUrl || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f"}
-                alt="CTA Background"
-                loader={({src})=>src}
-                fill
-                className="object-cover opacity-30 grayscale"
-              />
-              <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-900/90 to-transparent" />
-            </div>
-
-            <div className="relative z-10 grid lg:grid-cols-2 items-center">
+    <section className="py-24 bg-white relative overflow-hidden">
+      {/* Background Structural Detail */}
+      <div className="absolute top-0 right-0 w-1/3 h-full bg-gray-50 -z-10" />
+      
+      <div className="container mx-auto px-6 lg:px-8 relative z-10">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="bg-gray-900 border border-gray-800 shadow-[40px_40px_0px_rgba(0,0,0,0.05)]"
+        >
+          <div className="grid lg:grid-cols-12 items-stretch">
+            
+            {/* Left Side: The Executive Invitation (7 Columns) */}
+            <div className="lg:col-span-7 p-10 lg:p-20 relative overflow-hidden">
+              {/* Subtle Texture Overlay */}
+              <div className="absolute inset-0 opacity-10 pointer-events-none" 
+                   style={{ backgroundImage: `radial-gradient(${primaryColor} 1px, transparent 1px)`, backgroundSize: '30px 30px' }} />
               
-              {/* Left Side: The "Direct Action" */}
-              <div className="p-12 lg:p-20 border-b lg:border-b-0 lg:border-r border-white/10">
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 backdrop-blur-md rounded-full mb-8 border border-white/10">
-                    <SparklesIcon className="w-4 h-4 text-blue-400" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">Ready to begin?</span>
-                  </div>
-                  
-                  <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-8">
-                    Your future self <br />
-                    <span className="text-blue-500 italic">will thank you.</span>
-                  </h2>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="relative z-10"
+              >
+                <div className="flex items-center gap-3 mb-10">
+                  <AcademicCapIcon className="w-5 h-5 text-white" />
+                  <span className="text-[11px] font-black uppercase tracking-[0.4em] text-gray-500">Admissions 2026/27</span>
+                </div>
+                
+                <h2 className="text-5xl lg:text-7xl font-bold text-white leading-[0.9] tracking-tighter mb-10">
+                  Secure your place in the <br />
+                  <span className="text-gray-500 italic font-light">next cohort.</span>
+                </h2>
 
+                <div className="flex flex-wrap items-center gap-8">
                   <motion.button
-                    whileHover={{ scale: 1.02, x: 5 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="group bg-blue-600 hover:bg-white text-white hover:text-slate-900 px-10 py-5 rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all flex items-center gap-4 shadow-xl"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="group bg-white text-gray-900 px-12 py-5 text-[11px] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-4"
                   >
-                    Explore Our Catalog
-                    <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    Apply for Admission
+                    <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </motion.button>
-                </motion.div>
-              </div>
-
-              {/* Right Side: The "Community Connection" */}
-              <div className="p-12 lg:p-20 bg-white/5 backdrop-blur-xl">
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <h3 className="text-2xl font-bold text-white mb-4">Stay in the loop.</h3>
-                  <p className="text-slate-400 text-sm leading-relaxed mb-10 max-w-sm">
-                    Get exclusive first-access to new courses, educational insights, and community events delivered to your inbox.
-                  </p>
-
-                  <div className="relative group">
-                    <input 
-                      type="email" 
-                      placeholder="Enter your email" 
-                      className="w-full bg-slate-800/50 border border-white/10 rounded-2xl px-6 py-5 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
-                    />
-                    <button className="absolute right-3 top-1/2 -translate-y-1/2 bg-white p-3 rounded-xl text-slate-900 hover:bg-blue-500 hover:text-white transition-all shadow-lg">
-                      <EnvelopeIcon className="w-5 h-5" />
-                    </button>
-                  </div>
                   
-                  <div className="mt-8 flex items-center gap-4">
-                    <div className="flex -space-x-2">
-                      {[1,2,3].map(i => (
-                        <div key={i} className="w-8 h-8 rounded-full border-2 border-slate-900 bg-slate-800 flex items-center justify-center overflow-hidden">
-                          <Image src={storeFormData?.bannerUrl || `https://i.pravatar.cc/100?img=${i+10}`} alt="User" width={32} height={32} loader={({src})=>src} />
-                        </div>
-                      ))}
-                    </div>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                      Join 2,000+ Students
-                    </p>
+                  <div className="flex items-center gap-3 text-gray-500 border-l border-gray-800 pl-8">
+                    <ShieldCheckIcon className="w-5 h-5" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Verified Institution</span>
                   </div>
-                </motion.div>
-              </div>
-
+                </div>
+              </motion.div>
             </div>
-          </motion.div>
-        </div>
+
+            {/* Right Side: The Briefing Subscription (5 Columns) */}
+            <div className="lg:col-span-5 p-10 lg:p-20 bg-white/5 backdrop-blur-sm border-l border-gray-800 flex flex-col justify-center">
+              <motion.div
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+              >
+                <h3 className="text-xl font-bold text-white mb-4 tracking-tight">Executive Briefing</h3>
+                <p className="text-gray-500 text-sm leading-relaxed mb-10 font-medium">
+                  Receive quarterly curriculum updates, institutional reports, and strategic academic insights directly.
+                </p>
+
+                <div className="relative border-b border-gray-700 pb-2 group focus-within:border-white transition-colors">
+                  <input 
+                    type="email" 
+                    placeholder="Professional Email Address" 
+                    className="w-full bg-transparent py-3 text-white placeholder:text-gray-700 focus:outline-none text-sm"
+                  />
+                  <button className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors">
+                    <EnvelopeIcon className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                <div className="mt-10 flex items-center gap-5">
+                  <div className="flex -space-x-3">
+                    {[1,2,3,4].map(i => (
+                      <div key={i} className="w-10 h-10 border-2 border-gray-900 overflow-hidden grayscale contrast-125">
+                        <Image 
+                          src={`https://i.pravatar.cc/100?img=${i+10}`} 
+                          alt="Candidate" 
+                          width={40} 
+                          height={40} 
+                          loader={({src})=>src} 
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[9px] font-black text-gray-600 uppercase tracking-[0.2em]">
+                    Joined by 2.4k+ Professionals
+                  </p>
+                </div>
+              </motion.div>
+            </div>
+
+          </div>
+        </motion.div>
       </div>
     </section>
   );

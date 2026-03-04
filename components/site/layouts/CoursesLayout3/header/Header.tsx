@@ -400,7 +400,7 @@ export default function Header() {
             <span className="text-sm font-medium">{user ? user.name ?? 'Account' : 'Sign in'}</span>
           </button>
 
-          <button
+          {/* <button
             onClick={() => router.push(`/checkout`)}
             className="relative p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors"
           >
@@ -410,7 +410,7 @@ export default function Header() {
                 {cart.length}
               </span>
             )}
-          </button>
+          </button> */}
         </div>
 
         {/* Mobile menu toggle */}

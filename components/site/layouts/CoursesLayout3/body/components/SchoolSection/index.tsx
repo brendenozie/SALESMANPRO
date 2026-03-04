@@ -1,222 +1,178 @@
-// **********************************************
-// NOTE: This assumes the required imports are present:
-// React, CheckCircleIcon, ArrowRightIcon, AcademicCapIcon, UserGroupIcon, LightBulbIcon (from @heroicons/react/24/outline)
-// motion (from framer-motion), Image (from next/image), clsx, useStoreContext
-// **********************************************
+"use client";
+
 import React from 'react';
-import { CheckCircleIcon, ArrowRightIcon, AcademicCapIcon, UserGroupIcon, LightBulbIcon, ChevronDoubleRightIcon } from '@heroicons/react/24/outline';
+import { 
+  CheckBadgeIcon, 
+  ArrowRightIcon, 
+  AcademicCapIcon, 
+  UserGroupIcon, 
+  SparklesIcon,
+  ShieldCheckIcon
+} from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import clsx from 'clsx';
-// import { useStoreContext } from '@/contexts/StoreContext'; // Keep this for context
 
-// Placeholder for context/loader/handler functions if needed for runnable code
-const useStoreContext = () => ({
-  storeFormData: {
-    id: '683581bba1bdf6ca3624b530',
-    name: 'Academic Excellence Hub',
-    description: 'Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency.',
-    bannerUrl: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2670&auto=format&fit=crop',
-    CoreValues: [
-      { title: 'Tailored learning experiences.', icon: 'AcademicCapIcon' },
-      { title: 'Intuitive and engaging content.', icon: 'LightBulbIcon' },
-      { title: 'Expert personalized guidance.', icon: 'UserGroupIcon' },
-      { title: 'Real-time performance analytics.', icon: 'CheckCircleIcon' },
-    ],
-    ctaText: 'Enroll Now',
-    ctaLink: '/enroll',
-    themeSettings: { primaryColor: '#06B6D4', secondaryColor: '#FBBF24' }, // Tailwind Cyan & Amber
-  } as any,
-});
-
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-    return `${src}?w=${width}&q=${quality || 75}`;
-};
-const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    e.currentTarget.onerror = null;
-    e.currentTarget.src = "https://placehold.co/600x400/CCCCCC/333333?text=Image+Error";
-};
-// --- Utility function to map string icon names to components ---
-const IconMap = {
-    CheckCircleIcon,
-    AcademicCapIcon,
-    UserGroupIcon,
-    LightBulbIcon,
-    // Add other necessary icons here
-};
-
-
-// --- Main Section Component (Diagonal Focus) ---
 const SchoolSection = ({ storeFormData }: any) => {
-  // const { storeFormData } = useStoreContext();
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#1e3a8a'; 
+  const accentColor = storeFormData?.themeSettings?.secondaryColor || '#d4af37'; 
 
-  const headline = storeFormData?.name || "Unlock Your Academic Excellence";
-  const mainDescription = storeFormData?.description || "Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency.";
+  const headline = storeFormData?.name || "A Foundation Built on Excellence";
+  const description = storeFormData?.description || "Providing a world-class junior primary education where character development meets academic rigor. We prepare your child for the global stage.";
 
-  const CoreValuesFallback = [
-    { id: '1', title: 'Tailored learning experiences.', icon: 'AcademicCapIcon' },
-    { id: '2', title: 'Intuitive and engaging content.', icon: 'LightBulbIcon' },
-    { id: '3', 'title': 'Expert personalized guidance.', icon: 'UserGroupIcon' },
-    { id: '4', 'title': 'Real-time performance analytics.', icon: 'CheckCircleIcon' },
-  ];
+  const IconMap: any = {
+    AcademicCapIcon: AcademicCapIcon,
+    LightBulbIcon: SparklesIcon,
+    UserGroupIcon: UserGroupIcon,
+    CheckCircleIcon: ShieldCheckIcon,
+  };
 
-  // Map values to a maximum of 4 features
-  const coreValues = (storeFormData?.CoreValues?.length ? storeFormData.CoreValues : CoreValuesFallback).slice(0, 4);
-  const imageUrl = storeFormData?.bannerUrl || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2670&auto=format&fit=crop";
-  const ctaText = storeFormData?.ctaText || "Start Learning Today"; 
-  const ctaLink = storeFormData?.ctaLink || "#";
+  const coreValues = storeFormData?.CoreValues?.slice(0, 4) || [];
 
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#06B6D4'; // Default Cyan
-  const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FBBF24'; // Default Amber
+  const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
+    return `${src}?w=${width}&q=${quality || 75}`;
+  };
   
-  // Testimonial/Quote Block Content
-  const quote = "This platform transformed my study habits and boosted my grades by over 20%. Highly recommended for focused learning!";
-  const quoteAuthor = "Sarah J., Top Student";
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        when: "beforeChildren",
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const textItemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { type: "spring", stiffness: 100, damping: 15 },
-    },
-  };
-
-  const featureIconVariants = {
-    hidden: { opacity: 0, scale: 0.7, rotate: 10 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      rotate: 0,
-      transition: { type: "spring", stiffness: 150, damping: 10 },
-    },
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.src = "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2040&auto=format&fit=crop";
   };
 
   return (
-    <motion.section
-      className="relative py-24 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900 overflow-hidden"
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.1 }}
-      variants={containerVariants}
-    >
+    <section className="relative py-24 lg:py-32 px-6 bg-[#F8F9FA] overflow-hidden">
+      {/* Decorative Brand Watermark */}
+      <div className="absolute top-10 left-10 text-[8rem] lg:text-[12rem] font-serif font-black opacity-[0.03] select-none pointer-events-none uppercase tracking-tighter">
+        Academy
+      </div>
+
       <div className="max-w-7xl mx-auto relative z-10">
-        
-        {/* Outer Container (The Card-in-Card Base) */}
-        <div 
-            className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden p-6 lg:p-0"
-            style={{ boxShadow: `0 25px 50px -12px ${primaryColor}40` }} // Custom shadow with primary color
-        >
-            <div className="flex flex-col lg:flex-row relative">
-                
-                {/* Diagonal Separator (Visual Trick) */}
-                <div 
-                    className="absolute inset-y-0 right-0 hidden lg:block w-full h-full"
-                    style={{ 
-                        clipPath: 'polygon(70% 0, 100% 0, 100% 100%, 30% 100%)', 
-                        backgroundColor: primaryColor,
-                        opacity: 0.05
-                    }}
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
+          
+          {/* LEFT: THE CONTENT COLUMN */}
+          <div className="w-full lg:w-5/12 text-center lg:text-left">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7 }}
+            >
+              <div className="flex items-center justify-center lg:justify-start gap-3 mb-6">
+                <span className="h-px w-8 bg-slate-300" />
+                <span className="text-[10px] lg:text-xs font-bold tracking-[0.3em] uppercase text-slate-500">
+                  Est. 2026 • Premier Junior Education
+                </span>
+              </div>
+
+              <h2 className="text-4xl lg:text-6xl font-serif font-bold text-slate-900 leading-[1.1] mb-8">
+                {headline.split(' ').slice(0, -1).join(' ')}{' '}
+                <span className="relative inline-block">
+                  {headline.split(' ').slice(-1)}
+                  <svg className="absolute -bottom-2 left-0 w-full h-2" viewBox="0 0 100 10" preserveAspectRatio="none">
+                    <path d="M0 5 Q 50 10 100 5" stroke={accentColor} strokeWidth="6" fill="none" />
+                  </svg>
+                </span>
+              </h2>
+
+              <p className="text-lg lg:text-xl text-slate-600 leading-relaxed mb-10">
+                {description}
+              </p>
+
+              {/* Professional Merit Grid */}
+              <div className="grid sm:grid-cols-2 gap-4 mb-10 text-left">
+                {coreValues.map((item: any, idx: number) => {
+                  const Icon = IconMap[item.icon] || AcademicCapIcon;
+                  return (
+                    <div key={idx} className="flex items-center gap-4 p-4 rounded-xl bg-white shadow-sm border border-slate-100 group hover:border-slate-200 transition-all">
+                      <div className="p-2 rounded-lg bg-slate-50 group-hover:bg-white transition-colors">
+                        <Icon className="w-5 h-5" style={{ color: primaryColor }} />
+                      </div>
+                      <h4 className="font-bold text-slate-900 text-xs lg:text-sm leading-tight">{item.title}</h4>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full sm:w-auto px-8 py-4 rounded-full text-white font-bold text-base shadow-lg flex items-center justify-center gap-3 transition-all"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  Schedule a Private Tour
+                  <ArrowRightIcon className="w-5 h-5" />
+                </motion.button>
+                <button className="w-full sm:w-auto px-8 py-4 rounded-full bg-white border border-slate-200 text-slate-700 font-bold text-base hover:bg-slate-50 transition-colors">
+                  View Prospectus
+                </button>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* RIGHT: THE VISUAL COLUMN - Fixed Alignment & Constraints */}
+          <div className="w-full lg:w-7/12 flex items-center justify-center relative min-h-[500px] lg:min-h-[600px]">
+            
+            <div className="relative w-full max-w-[500px] aspect-square lg:aspect-[4/5]">
+              
+              {/* Main Center Image - Constrained within parent */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                className="relative w-full h-full rounded-[2.5rem] overflow-hidden shadow-2xl z-20 border-[10px] border-white"
+              >
+                <Image 
+                  src={storeFormData.bannerUrl || "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2040&auto=format&fit=crop"}
+                  alt="Main School Visual"
+                  fill
+                  className="object-cover"
+                  loader={customLoader}
+                  onError={handleImageError}
                 />
+              </motion.div>
 
-                {/* Left Content Area (The floating card) */}
-                <div className="w-full lg:w-3/5 p-4 sm:p-10 lg:p-16 relative z-10">
-                    <motion.h2
-                      className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 leading-tight tracking-tight text-gray-900 dark:text-white"
-                      variants={textItemVariants}
-                    >
-                      {/* Highlight key part of the headline using primary color */}
-                      <span style={{ color: primaryColor }}>{headline.split(' ').slice(0, 2).join(' ')}</span>{' '}
-                      {headline.split(' ').slice(2).join(' ')}
-                    </motion.h2>
+              {/* Top-Left Accent - Anchored to the main box */}
+              <motion.div 
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="absolute -top-6 -left-6 lg:-top-12 lg:-left-12 w-32 h-32 lg:w-48 lg:h-48 rounded-2xl overflow-hidden shadow-xl z-30 border-4 border-white -rotate-6 hidden sm:block"
+              >
+                <Image src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80" alt="Student" fill className="object-cover" loader={customLoader} onError={handleImageError} />
+              </motion.div>
 
-                    <motion.p
-                      className="mb-8 leading-relaxed text-lg text-gray-700 dark:text-gray-300"
-                      variants={textItemVariants}
-                    >
-                      {mainDescription}
-                    </motion.p>
-                    
-                    {/* Embedded Quote Block */}
-                    <motion.blockquote 
-                        className="p-6 mb-10 border-l-4 rounded-r-lg italic bg-gray-50 dark:bg-gray-700/50"
-                        style={{ borderColor: accentColor }}
-                        variants={textItemVariants}
-                    >
-                        <p className="text-gray-800 dark:text-gray-200">"{quote}"</p>
-                        <footer className="mt-2 text-sm font-semibold" style={{ color: accentColor }}>— {quoteAuthor}</footer>
-                    </motion.blockquote>
+              {/* Bottom-Right Accent - Anchored to the main box */}
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="absolute -bottom-6 -right-6 lg:-bottom-10 lg:-right-10 w-40 h-32 lg:w-56 lg:h-44 rounded-2xl overflow-hidden shadow-xl z-30 border-4 border-white rotate-3 hidden sm:block"
+              >
+                <Image src="https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&q=80" alt="Classroom" fill className="object-cover" loader={customLoader} onError={handleImageError} />
+              </motion.div>
 
-                    {/* CTA Button */}
-                    <motion.a
-                      href={ctaLink}
-                      className="inline-flex items-center text-white font-bold py-4 px-10 rounded-full shadow-lg transition-all duration-300 transform group focus:outline-none focus:ring-4 focus:ring-opacity-75"
-                      style={{
-                        backgroundColor: primaryColor,
-                        '--tw-ring-color': `${primaryColor} !important` as any,
-                      }}
-                      whileHover={{ scale: 1.05, boxShadow: `0 10px 20px ${primaryColor}40` }}
-                      whileTap={{ scale: 0.95 }}
-                      variants={textItemVariants}
-                    >
-                      {ctaText}
-                      <ArrowRightIcon className="ml-2 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-                    </motion.a>
+              {/* Trust Badge - Positioned relative to the main image corner */}
+              <motion.div 
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 4, repeat: Infinity }}
+                className="absolute -right-4 top-10 lg:right-[-20%] lg:top-1/4 z-40 bg-white/95 backdrop-blur-sm p-4 rounded-xl shadow-lg flex items-center gap-3 border border-slate-100"
+              >
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-md" style={{ backgroundColor: accentColor }}>
+                  <CheckBadgeIcon className="w-6 h-6" />
                 </div>
-
-                {/* Right Image Area (The Layered Background) */}
-                <div className="w-full lg:w-2/5 relative min-h-[300px] lg:min-h-0">
-                    <Image
-                        src={imageUrl}
-                        alt="Academic success background"
-                        fill
-                        className="object-cover object-center lg:rounded-r-3xl"
-                        loader={loader}
-                        sizes="(max-width: 1024px) 100vw, 40vw"
-                        onError={handleImageError}
-                    />
-                    
-                    {/* Image Overlay for Contrast/Depth */}
-                    <div className="absolute inset-0 bg-black/30 lg:bg-black/40"></div>
-                    
-                    {/* Floating Feature Icons (Overlaying the image) */}
-                    <motion.div 
-                        className="absolute inset-0 flex flex-wrap content-center justify-center p-8 gap-4 lg:gap-6"
-                        variants={containerVariants} // Use container to stagger the children
-                    >
-                        {coreValues.map((item: any, index: number) => {
-                            const IconComponent = IconMap[item.icon as keyof typeof IconMap] || CheckCircleIcon;
-                            return (
-                                <motion.div
-                                    key={index}
-                                    className="flex flex-col items-center justify-center w-28 h-28 p-3 rounded-xl shadow-lg bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm cursor-help"
-                                    variants={featureIconVariants}
-                                    whileHover={{ scale: 1.1, rotate: -5 }}
-                                >
-                                    <IconComponent className="w-8 h-8 mb-2" style={{ color: primaryColor }} />
-                                    <span className="text-xs font-semibold text-center text-gray-800 dark:text-gray-200 leading-tight">{item.title}</span>
-                                </motion.div>
-                            );
-                        })}
-                    </motion.div>
+                <div>
+                  <p className="text-[10px] font-black text-slate-900 uppercase tracking-tighter">Accredited</p>
+                  <p className="text-[9px] text-slate-400 font-bold uppercase">Excellence</p>
                 </div>
+              </motion.div>
 
+              {/* Background Glow */}
+              <div 
+                className="absolute inset-0 rounded-full blur-[80px] lg:blur-[120px] opacity-20 -z-10 scale-110" 
+                style={{ backgroundColor: primaryColor }}
+              />
             </div>
+          </div>
+
         </div>
       </div>
-    </motion.section>
+    </section>
   );
 };
 
