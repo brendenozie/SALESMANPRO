@@ -1,195 +1,253 @@
 'use client';
 
-import React from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { AcademicCapIcon, BanknotesIcon, RocketLaunchIcon } from '@heroicons/react/24/outline';
-import { useStoreContext } from '@/contexts/StoreContext';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useSpring,
+  AnimatePresence
+} from 'framer-motion';
+import {
+  ArrowRightIcon,
+  SparklesIcon,
+  ShieldCheckIcon,
+  AcademicCapIcon,
+  UserGroupIcon,
+  ChevronDownIcon
+} from '@heroicons/react/24/outline';
 import Image from 'next/image';
 
-// --- Assets & Utils ---
-const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-};
+export default function MountMoriahGlassHero({ storeFormData }: any) {
+  const containerRef = useRef(null);
 
-const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-  e.currentTarget.onerror = null;
-  e.currentTarget.src = "https://placehold.co/1200x800/CCCCCC/000000?text=Image+Unavailable";
-};
+  const heroSlides = storeFormData?.heroSlides || [];
+  const [activeIndex, setActiveIndex] = useState(0);
 
-// --- Doodle Components (Matching the Reference Style) ---
-const FloatingDoodle = ({ children, className, delay = 0, yOffset = 15 }: any) => (
-  <motion.div
-    initial={{ opacity: 0, scale: 0.8 }}
-    animate={{ opacity: 1, scale: 1, y: [0, -yOffset, 0] }}
-    transition={{ opacity: { duration: 0.8, delay }, y: { duration: 4, repeat: Infinity, ease: "easeInOut", delay } }}
-    className={`${className} pointer-events-none absolute z-0 text-[#003366] opacity-80`}
-  >
-    {children}
-  </motion.div>
-);
+  const activeSlide = heroSlides[activeIndex] || {};
 
-const WashiTape = () => (
-  <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-16 h-6 bg-yellow-200/60 rotate-[-2deg] border-x border-dashed border-yellow-400/50 z-20" />
-);
+  const primaryColor =
+    storeFormData?.themeSettings?.primaryColor || '#1e40af';
 
-const StatCard = ({ stat, index, primaryColor }: any) => {
-  const Icons = [AcademicCapIcon, BanknotesIcon, RocketLaunchIcon];
-  const Icon = Icons[index % Icons.length];
-  const rotation = index % 2 === 0 ? 'rotate-1' : 'rotate-[-1deg]';
+  const headline =
+    activeSlide?.headline ||
+    "The future is exceptionally bright.";
+
+  const subline =
+    activeSlide?.subline ||
+    "Mount Moriah International combines world-class pedagogy with values-based learning to prepare your child for a global stage.";
+
+  const bannerImg =
+    activeSlide?.imageUrl ||
+    "https://images.unsplash.com/photo-1541339907198-e08756ebafe3";
+
+  const badgeText = activeSlide?.badge || "Admissions Open 2026";
+
+  /* ---------------------------------
+     HEADLINE SPLIT LOGIC (SMART)
+  -----------------------------------*/
+  const { lineOne, lineTwo } = useMemo(() => {
+    if (!headline) return { lineOne: "", lineTwo: "" };
+
+    // Split by first period if exists
+    if (headline.includes(".")) {
+      const parts = headline.split(".");
+      return {
+        lineOne: parts[0],
+        lineTwo: parts.slice(1).join(".").trim()
+      };
+    }
+
+    // Otherwise split by word midpoint
+    const words = headline.split(" ");
+    const midpoint = Math.ceil(words.length / 2);
+
+    return {
+      lineOne: words.slice(0, midpoint).join(" "),
+      lineTwo: words.slice(midpoint).join(" ")
+    };
+  }, [headline]);
+
+  /* ---------------------------------
+     AUTO SLIDE ROTATION
+  -----------------------------------*/
+  useEffect(() => {
+    if (heroSlides.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setActiveIndex(prev =>
+        prev === heroSlides.length - 1 ? 0 : prev + 1
+      );
+    }, 6000);
+
+    return () => clearInterval(interval);
+  }, [heroSlides.length]);
+
+  /* ---------------------------------
+     SCROLL PARALLAX
+  -----------------------------------*/
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end start"]
+  });
+
+  const imageY = useTransform(scrollYProgress, [0, 1], [0, -100]);
+  const smoothImageY = useSpring(imageY, {
+    stiffness: 100,
+    damping: 30
+  });
+
+  /* ---------------------------------
+     GLASS CARD SYNC
+  -----------------------------------*/
+  const glassCard = activeSlide?.glassCard || {
+    label: "Environment",
+    title: "Safe & Secure",
+    icon: "shield"
+  };
+
+  const iconMap: any = {
+    shield: ShieldCheckIcon,
+    academic: AcademicCapIcon,
+    community: UserGroupIcon
+  };
+
+  const GlassIcon = iconMap[glassCard.icon] || ShieldCheckIcon;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.1 }}
-      className={`relative flex-1 min-w-[180px] bg-white border-2 border-slate-900 p-6 shadow-[6px_6px_0px_#0f172a] ${rotation} z-30`}
+    <section
+      ref={containerRef}
+      className="relative min-h-screen w-full bg-white flex items-center overflow-hidden"
     >
-      <WashiTape />
-      <div className="flex flex-col items-center text-center">
-        <div className="mb-3 p-2 rounded-full border border-slate-900 bg-white" style={{ color: primaryColor }}>
-          <Icon className="w-6 h-6" />
-        </div>
-        <div className="text-3xl font-black text-slate-900 tracking-tighter">{stat.value}</div>
-        <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{stat.label}</div>
-      </div>
-    </motion.div>
-  );
-};
-
-export default function HeroSection() {
-  const { storeFormData } = useStoreContext();
-  const { scrollY } = useScroll();
-  const yParallax = useTransform(scrollY, [0, 500], [0, -50]);
-
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#007bff';
-  const activeSlide = storeFormData?.heroSlides?.[0];
-  const headline = activeSlide?.headline || "PRIVATE SCHOOL";
-  const subline = activeSlide?.subline || "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna";
-  const bannerImg = activeSlide?.imageUrl || activeSlide?.productImageUrl || "https://images.unsplash.com/photo-1517694712202-14dd9538aa97";
-
-  const stats = storeFormData?.stats || [
-    { label: 'Students', value: '5K+' },
-    { label: 'Courses', value: '120+' },
-    { label: 'Awards', value: '25+' }
-  ];
-
-  return (
-    <section className="relative w-full bg-white overflow-hidden font-sans">
-      
-      {/* 1. Blueprint Grid */}
-      <div 
-        className="absolute inset-0 z-0 opacity-[0.1]" 
-        style={{ 
-          backgroundImage: `linear-gradient(#003366 1px, transparent 1px), linear-gradient(90deg, #003366 1px, transparent 1px)`, 
-          backgroundSize: '45px 45px',
-        }} 
-      />
-
-      {/* 2. Doodles & Background Accents */}
-      <motion.div style={{ y: yParallax }} className="absolute inset-0 z-0">
-         {/* Top Left Rocket Area */}
-         <div className="absolute top-[-20px] left-[-20px] w-32 h-32 bg-blue-500/20 rounded-full blur-3xl" />
-         
-         <FloatingDoodle className="left-[2%] top-[10%] w-24 md:w-32 rotate-[-10deg]" delay={0.1}>
-            <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="3"><path d="M30 70 L50 20 L70 70 Z M40 70 L40 85 M60 70 L60 85" /></svg>
-         </FloatingDoodle>
-
-         <FloatingDoodle className="right-[10%] top-[8%] w-16" delay={0.4}>
-            <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="4"><path d="M50 10 L60 40 L90 50 L60 60 L50 90 L40 60 L10 50 L40 40 Z" /></svg>
-         </FloatingDoodle>
-
-         <FloatingDoodle className="right-[5%] top-[25%] w-20 rotate-12" delay={0.6}>
-            <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="3"><rect x="30" y="20" width="40" height="60" rx="2" /><path d="M30 40 H70 M30 60 H70" /></svg>
-         </FloatingDoodle>
-      </motion.div>
-
-      {/* 3. Hero Text Content */}
-      <div className="relative z-10 pt-24 pb-16 px-6 flex flex-col items-center text-center max-w-4xl mx-auto">
-        <motion.h1 
-          className="text-6xl md:text-[100px] font-black text-[#002b5c] mb-6 tracking-tighter uppercase leading-[0.85]"
-        >
-          {headline}
-        </motion.h1>
-        
-        <p className="text-slate-500 text-sm md:text-base font-medium max-w-xl mx-auto mb-10 leading-relaxed">
-          {subline}
-        </p>
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <button 
-            className="px-8 py-3 bg-[#007bff] text-white font-bold text-sm uppercase rounded-sm shadow-sm hover:brightness-110 transition-all"
-            style={{ backgroundColor: primaryColor }}
-          >
-            Register Now!
-          </button>
-          
-          <button 
-            className="px-8 py-3 border-2 border-[#007bff] text-[#007bff] font-bold text-sm uppercase rounded-sm bg-white hover:bg-blue-50 transition-all"
-            style={{ borderColor: primaryColor, color: primaryColor }}
-          >
-            Read More
-          </button>
-        </div>
+      {/* Background blur gradients */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-slate-50 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[60%] rounded-full bg-blue-50/50 blur-[120px]" />
       </div>
 
-      {/* 4. The S-Curve Transition & Image */}
-      <div className="relative w-full mt-10">
-        
-        {/* 1. We use a container with a background color that matches the curve fill.
-            2. We apply a clip-path to the image container.
-        */}
-        <div 
-          className="relative w-full h-[400px] md:h-[650px] overflow-hidden"
-          style={{
-            /* This creates the "mask". 
-              We use the same path data from your SVG to ensure they line up perfectly.
-            */
-            clipPath: "path('M0,160 C320,40 480,200 960,80 C1280,0 1440,120 1440,120 V800 H0 Z')",
-            // Note: I added "V800 H0 Z" to close the shape at the bottom
-          }}
-        >
-          <Image 
-            src={bannerImg} 
-            alt="Students" 
-            fill 
-            className="object-cover object-center"
-            priority
-            loader={customLoader}
-            onError={handleImageError}
-          />
-        </div>
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="flex flex-col lg:flex-row items-center gap-16 xl:gap-24">
 
-        {/* Keep the SVG Border on top as well! 
-            This adds the crisp "stroke" or solid color transition 
-            that makes the edge look sharp.
-        */}
-        <div className="absolute top-0 left-0 w-full z-20 -translate-y-[99%] pointer-events-none">
-          <svg 
-            viewBox="0 0 1440 160" 
-            fill="none" 
-            preserveAspectRatio="none" 
-            className="w-full h-[80px] md:h-[160px]"
-          >
-            <path 
-              d="M0,160 C320,40 480,200 960,80 C1280,0 1440,120 1440,120" 
-              stroke="#002b5c" 
-              strokeWidth="8" // This mimics the thick blue line in your reference
-              fill="none"
-            />
-          </svg>
-        </div>
+          {/* LEFT */}
+          <div className="w-full lg:w-1/2">
+            <div>
 
-        {/* 5. Stats Overlay */}
-        <div className="absolute left-1/2 -translate-x-1/2 -bottom-10 z-30 w-full max-w-5xl px-6">
-          <div className="flex flex-wrap justify-center gap-6 md:gap-8">
-            {stats.slice(0, 3).map((stat, i) => (
-              <StatCard key={i} stat={stat} index={i} primaryColor={primaryColor} />
-            ))}
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100/50 border border-slate-200/60 rounded-full mb-8">
+                <SparklesIcon className="w-3.5 h-3.5 text-blue-500" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500">
+                  {badgeText}
+                </span>
+              </div>
+
+              {/* Headline */}
+              <AnimatePresence mode="wait">
+                <motion.h1
+                  key={headline}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.6 }}
+                  className="text-6xl md:text-8xl font-light text-slate-900 leading-[1.05] tracking-tight mb-8"
+                >
+                  {lineOne}
+                  <br />
+                  <span className="font-medium">
+                    {lineTwo}
+                  </span>
+                </motion.h1>
+              </AnimatePresence>
+
+              {/* Subline */}
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={subline}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.6 }}
+                  className="text-xl text-slate-500 max-w-lg mb-12 leading-relaxed font-normal"
+                >
+                  {subline}
+                </motion.p>
+              </AnimatePresence>
+
+              {/* CTA */}
+              <div className="flex flex-wrap items-center gap-8">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="px-10 py-5 rounded-full bg-slate-900 text-white font-semibold text-sm shadow-xl shadow-slate-200 flex items-center gap-3"
+                >
+                  Enroll Today
+                  <ArrowRightIcon className="w-4 h-4" />
+                </motion.button>
+
+                <button className="group flex items-center gap-2 text-sm font-semibold text-blue-600">
+                  Take a virtual tour
+                  <ChevronDownIcon className="w-4 h-4 -rotate-90 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT */}
+          <div className="w-full lg:w-1/2 relative">
+            <div className="relative aspect-square">
+
+              {/* Image */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={bannerImg}
+                  initial={{ opacity: 0, scale: 1.05 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.8 }}
+                  style={{ y: smoothImageY }}
+                  className="absolute inset-0 z-10 rounded-[3rem] overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.08)] border border-white"
+                >
+                  <Image
+                    src={bannerImg || "https://images.unsplash.com/photo-1541339907198-e08756ebafe3"}
+                    alt={headline}
+                    loader={({src})=>src}
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Glass Card */}
+              <motion.div
+                key={glassCard.title}
+                animate={{ y: [0, 10, 0] }}
+                transition={{ duration: 6, repeat: Infinity }}
+                className="absolute -left-12 bottom-12 z-20 bg-white/70 backdrop-blur-xl p-6 rounded-3xl shadow-xl border border-white/50 w-56"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
+                    <GlassIcon className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      {glassCard.label}
+                    </p>
+                    <p className="text-sm font-bold text-slate-900">
+                      {glassCard.title}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+
+            </div>
           </div>
         </div>
       </div>
-          
+
+      {/* Bottom indicator */}
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 opacity-20">
+        <ChevronDownIcon className="w-6 h-6 animate-bounce text-slate-400" />
+      </div>
     </section>
   );
 }

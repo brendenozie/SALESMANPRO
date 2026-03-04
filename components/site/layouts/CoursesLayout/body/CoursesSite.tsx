@@ -36,21 +36,21 @@ export default function CoursesSite({ pageData, companyId }: { pageData: StoreFo
   return (
     <div className="font-sans">
       {/* Hero */}
-      <HeroSection />
+      <HeroSection storeFormData={pageData} />
 
-      <SchoolSection />
+      <SchoolSection storeFormData={pageData} />
 
-      <MainCoursesSection />
+      <MainCoursesSection  storeFormData={pageData} />
 
-      <AboutSection />
+      <AboutSection  storeFormData={pageData} />
 
-      {testimonialsData?.data && <TestimonialsSection />}
+      {testimonialsData?.data && <TestimonialsSection  storeFormData={pageData} />}
 
-      {blogsData?.data && <PopularBlogsSection />}
+      {blogsData?.data && <PopularBlogsSection  storeFormData={pageData} />}
 
       <CtaSection />
 
-      {faqsData?.data && <FAQSection/>}   
+      {faqsData?.data && <FAQSection  storeFormData={pageData} />}   
 
     </div>
   );

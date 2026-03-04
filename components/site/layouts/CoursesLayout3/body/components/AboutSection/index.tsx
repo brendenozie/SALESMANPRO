@@ -70,8 +70,8 @@ const StatBadge = ({ stat, primaryColor, variants, delay }: { stat: Stat, primar
 
 
 // --- Main Component ---
-export default function AboutSection() {
-  const { storeFormData } = useStoreContext();
+export default function AboutSection({ storeFormData }: any) {
+//   const { storeFormData } = useStoreContext();
 
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#fd2121';
   const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FFC107';
@@ -163,7 +163,7 @@ export default function AboutSection() {
                 {/* --- Floating Stats Badges (Positioned absolutely for a 'sticking' effect) --- */}
                 <div className="absolute top-full left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full pt-8 lg:pt-0">
                     <div className="flex justify-center flex-wrap gap-4">
-                        {aboutStats.map((stat, idx) => (
+                        {aboutStats.map((stat: any, idx: number) => (
                             <StatBadge 
                                 key={idx} 
                                 stat={stat} 

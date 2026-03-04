@@ -47,8 +47,8 @@ const IconMap = {
 
 
 // --- Main Section Component (Diagonal Focus) ---
-const SchoolSection = () => {
-  const { storeFormData } = useStoreContext();
+const SchoolSection = ({ storeFormData }: any) => {
+  // const { storeFormData } = useStoreContext();
 
   const headline = storeFormData?.name || "Unlock Your Academic Excellence";
   const mainDescription = storeFormData?.description || "Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency.";

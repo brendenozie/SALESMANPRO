@@ -205,8 +205,8 @@ const fallbackCourses: Course[] = [
 ];
 
 // --- Main CoursesSection Component ---
-export default function CoursesSection() {
-    const { storeFormData } = useStoreContext();
+export default function CoursesSection({ storeFormData }: any) {
+    // const { storeFormData } = useStoreContext();
 
     const primaryColor = storeFormData?.themeSettings?.primaryColor || '#fd2121';
     const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FFC107'; 

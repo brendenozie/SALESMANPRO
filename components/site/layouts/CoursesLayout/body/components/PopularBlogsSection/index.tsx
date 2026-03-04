@@ -82,8 +82,8 @@ const fallbackEvents = [
 
 
 // --- Main Component ---
-export default function LatestEventsSection() {
-  const { storeFormData } = useStoreContext();
+export default function LatestEventsSection({ storeFormData }: any) {
+  // const { storeFormData } = useStoreContext();
 
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#fd2121';
   const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FFC107';
@@ -239,7 +239,7 @@ export default function LatestEventsSection() {
             viewport={{ once: true, amount: 0.3 }}
             variants={sideCardContainerVariants}
           >
-            {sideEvents.map((event) => (
+            {sideEvents.map((event: any) => (
               <motion.a
                 key={event.id}
                 href={`${event.id}`}

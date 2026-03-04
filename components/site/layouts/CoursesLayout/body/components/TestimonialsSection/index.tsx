@@ -126,8 +126,8 @@ const fallbackTestimonials: Testimonial[] = [
   },
 ];
 
-export default function TestimonialSection() {
-  const { storeFormData } = useStoreContext();
+export default function TestimonialSection({ storeFormData }: any) {
+  // const { storeFormData } = useStoreContext();
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
 
   // Dynamic colors from storeFormData
@@ -137,14 +137,14 @@ export default function TestimonialSection() {
   // Determine which testimonials to render: dynamic or fallback
   const testimonialsToRender: Testimonial[] = storeFormData?.testimonials && Array.isArray(storeFormData?.testimonials) && storeFormData.testimonials.length > 0
     ? storeFormData.testimonials
-        .sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order if available
-        .map(t => ({
+        .sort((a: any, b: any) => (a.order || 0) - (b.order || 0)) // Sort by order if available
+        .map((t: any) => ({
           id: t.id,
           name: t.authorName || '',
           author: t.authorName?.includes('Dr.') ? 'Educator' : (t.authorName?.includes('Parent') ? 'Parent' : 'Student/Alumnus'), // Simple role derivation
           quote: t.quote,
           rating: t.rating || 5, // Default to 5 if rating is not provided
-          avatarUrl: t.avatarUrl || `https://placehold.co/100x100/${primaryColor.replace('#', '')}/FFFFFF?text=${t.authorName?.split(' ').map(n => n[0]).join('')}`, // Fallback avatar with initials
+          avatarUrl: t.avatarUrl || `https://placehold.co/100x100/${primaryColor.replace('#', '')}/FFFFFF?text=${t.authorName?.split(' ').map((n: any) => n[0]).join('')}`, // Fallback avatar with initials
         }))
     : fallbackTestimonials;
 

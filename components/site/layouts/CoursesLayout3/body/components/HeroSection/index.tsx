@@ -15,8 +15,8 @@ const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
   e.currentTarget.src = "https://placehold.co/600x400/CCCCCC/000000?text=School+Image";
 };
 
-export default function HeroSection() {
-  const { storeFormData } = useStoreContext();
+export default function HeroSection({ storeFormData }: any) {
+  // const { storeFormData } = useStoreContext();
 
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#22c55e'; // Green from reference
   const activeSlide = storeFormData?.heroSlides?.[0];

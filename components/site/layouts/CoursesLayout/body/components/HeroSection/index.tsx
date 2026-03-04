@@ -345,17 +345,19 @@ function InfoCardsSection({ storeFormData }: any) {
         { title: 'Global Education Programs', description: 'Explore our wide array of international study programs.', image: 'https://images.unsplash.com/photo-1541339907198-e087566d3f00?q=80&w=2670&auto=format&fit=crop', iconComponent: null, link: '#global-programs' },
         { title: 'Innovative Research Hubs', description: 'Engage with cutting-edge research projects across disciplines.', image: null, iconComponent: AcademicCapIcon, link: '#research' },
         { title: 'Student Wellness Services', description: 'Comprehensive support for mental health and well-being.', image: 'https://images.unsplash.com/photo-1534017366050-6a0b16f31623?q=80&w=2670&auto=format&fit=crop', iconComponent: null, link: '#wellness' },
+        { title: 'Career Development Center', description: 'Personalized career counseling and job placement services.', image: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=2670&auto=format&fit=crop', iconComponent: BanknotesIcon, link: '#career-center' },
     ];
-    const dynamicInfoCardsData = storeFormData?.stats && storeFormData.stats.length > 0 ?
-        storeFormData.stats.map((stat: any, index: number) => ({
-            title: stat.label || `Dynamic Insight ${index + 1}`,
-            description: stat.value ? `Value: ${stat.value}` : 'No description provided.',
-            image: stat.iconUrl || null,
-            iconComponent: index % 2 === 0 ? BanknotesIcon : AcademicCapIcon,
-            link: '#'
-        }))
-        : fallbackInfoCardsData;
+    // const dynamicInfoCardsData = storeFormData?.stats && storeFormData.stats.length > 0 ?
+    //     storeFormData.stats.map((stat: any, index: number) => ({
+    //         title: stat.label || `Dynamic Insight ${index + 1}`,
+    //         description: stat.value ? `Value: ${stat.value}` : 'No description provided.',
+    //         image: stat.iconUrl || null,
+    //         iconComponent: index % 2 === 0 ? BanknotesIcon : AcademicCapIcon,
+    //         link: '#'
+    //     }))
+    //     : fallbackInfoCardsData;
 
+    const dynamicInfoCardsData = fallbackInfoCardsData; // Using fallback data for demonstration; replace with dynamic mapping as needed.
   return (
     <motion.section
       className="relative z-20 -mt-24 px-4 sm:px-6 lg:px-8"
@@ -376,8 +378,8 @@ function InfoCardsSection({ storeFormData }: any) {
   );
 }
 
-export default function HeroSection() {
-  const { storeFormData } = useStoreContext();
+export default function HeroSection({storeFormData}: any) {
+  // const { storeFormData } = useStoreContext();
 
   const activeHeroSlide = storeFormData?.heroSlides?.[0];
 

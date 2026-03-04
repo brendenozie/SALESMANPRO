@@ -188,8 +188,8 @@ const fallbackFaqs: FAQ[] = [
   },
 ];
 
-export default function FAQSection() {
-  const { storeFormData } = useStoreContext();
+export default function FAQSection({ storeFormData }: any) {
+  // const { storeFormData } = useStoreContext();
 
   // Dynamic colors from storeFormData
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#fd2121';
@@ -197,7 +197,7 @@ export default function FAQSection() {
 
   // Determine which FAQs to render: dynamic or fallback
   const faqsToRender = storeFormData?.faqs && Array.isArray(storeFormData?.faqs) && storeFormData?.faqs?.length > 0
-    ? storeFormData?.faqs?.sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order
+    ? storeFormData?.faqs?.sort((a: any, b: any) => (a.order || 0) - (b.order || 0)) // Sort by order
     : fallbackFaqs;
 
   // Animation variants for section title
@@ -243,7 +243,7 @@ export default function FAQSection() {
           Frequently Asked <span style={{ color: primaryColor }}>Questions</span>
         </motion.h2>
         <motion.div>
-          {faqsToRender.map((faq) => (
+          {faqsToRender.map((faq: any) => (
             <FAQItem key={faq.id} faq={faq} primaryColor={primaryColor} accentColor={accentColor} />
           ))}
         </motion.div>
