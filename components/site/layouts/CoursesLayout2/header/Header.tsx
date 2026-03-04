@@ -68,7 +68,7 @@ export default function MoriahHeader() {
           <Link href={`/site/${slug}`} className="flex items-center gap-3 group">
             <div 
               className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-500 group-hover:shadow-lg"
-              style={{ backgroundColor: primaryColor }}
+              style={{ backgroundColor: storeFormData?.logoUrl ? 'transparent' : primaryColor }}
             >
               {/* <AcademicCapIcon className="w-6 h-6 text-white" /> */}
               {storeFormData?.logoUrl ? (
