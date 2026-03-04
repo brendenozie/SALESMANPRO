@@ -16,6 +16,7 @@ import {
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useStateContext } from '@/contexts/ContextProvider'; 
 import { useSession } from 'next-auth/react';
+import Image from 'next/image';
 
 export default function MoriahHeader() {
   const router = useRouter();
@@ -69,7 +70,19 @@ export default function MoriahHeader() {
               className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-500 group-hover:shadow-lg"
               style={{ backgroundColor: primaryColor }}
             >
-              <AcademicCapIcon className="w-6 h-6 text-white" />
+              {/* <AcademicCapIcon className="w-6 h-6 text-white" /> */}
+              {storeFormData?.logoUrl ? (
+                <Image 
+                  src={storeFormData?.logoUrl || "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d"}
+                  alt={name} 
+                  width={24} 
+                  height={24} 
+                  className="object-cover rounded-lg"
+                  loader={({src})=>src}
+                />
+                ) : (
+                  <AcademicCapIcon className="w-6 h-6 text-white" />
+                )}
             </div>
             <span className={`text-xl font-bold tracking-tight transition-colors duration-500 ${
               isScrolled ? 'text-slate-900' : 'text-slate-900'
