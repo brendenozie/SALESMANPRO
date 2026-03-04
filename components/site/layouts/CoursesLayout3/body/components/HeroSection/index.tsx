@@ -5,167 +5,202 @@ import { motion } from 'framer-motion';
 import { 
   ShieldCheckIcon, 
   AcademicCapIcon, 
-  UserGroupIcon, 
   StarIcon,
   CheckBadgeIcon,
   ArrowRightIcon,
-  PlayIcon
-} from '@heroicons/react/24/solid';
-import { useStoreContext } from '@/contexts/StoreContext';
+  PlayIcon,
+  GlobeAltIcon
+} from '@heroicons/react/24/solid'; 
 import Image from 'next/image';
 
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
-export default function JuniorPrimaryHero({storeFormData}: { storeFormData: any }) {
-  // const { storeFormData } = useStoreContext();
-  
+// --- Animations: Faster, Bright Reveal ---
+const fadeUpReveal = {
+  hidden: { opacity: 0, y: 15 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { 
+      duration: 0.5, 
+      ease: [0.33, 1, 0.68, 1] 
+    } 
+  }
+};
+
+const maskReveal = {
+  hidden: { scaleY: 1, originY: 0 },
+  visible: { 
+    scaleY: 0, 
+    transition: { 
+      duration: 0.8, 
+      ease: [0.19, 1, 0.22, 1],
+      delay: 0.1 
+    } 
+  }
+};
+
+export default function BrightProfessionalHero({storeFormData}: { storeFormData: any }) {
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#1e40af';
+  const secondaryAccent = '#14b8a6'; 
+
   const activeSlide = storeFormData?.heroSlides?.[0];
 
-  // Professional school-focused fallback content
   const headline = activeSlide?.headline || "Building Foundations for a Lifetime of Excellence.";
   const subline = activeSlide?.subline || "A nurturing environment where curiosity meets world-class curriculum. We prepare your child for the global stage with values-based primary education.";
 
   return (
     <div className="relative bg-white font-sans overflow-hidden">
       
-      {/* --- TOP BRAND BAR (Subtle Trust Signal) --- */}
-      <div className="bg-slate-50 border-b border-slate-100 py-2 hidden md:block">
+      {/* --- ACADEMIC TRUST BAR --- */}
+      {/* <div className="bg-gray-50/50 border-b border-gray-100 py-3 hidden md:block">
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <div className="flex items-center gap-6">
-            <span className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-              <CheckBadgeIcon className="w-4 h-4 text-blue-600" />
-              Ministry of Education Accredited
+          <div className="flex items-center gap-8">
+            <span className="flex items-center gap-2 text-[9px] font-black text-gray-500 uppercase tracking-[0.3em]">
+              <CheckBadgeIcon className="w-3.5 h-3.5" style={{ color: secondaryAccent }} />
+              Accredited Institution 2026
             </span>
-            <span className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-              <ShieldCheckIcon className="w-4 h-4 text-green-600" />
-              Secure 24/7 Monitored Campus
+            <div className="h-3 w-px bg-gray-200" />
+            <span className="flex items-center gap-2 text-[9px] font-black text-gray-500 uppercase tracking-[0.3em]">
+              <GlobeAltIcon className="w-3.5 h-3.5" style={{ color: secondaryAccent }} />
+              Global Standards
             </span>
           </div>
-          <div className="flex items-center gap-1">
-            {[...Array(5)].map((_, i) => <StarIcon key={i} className="w-3 h-3 text-amber-400" />)}
-            <span className="text-[10px] font-bold text-slate-400 ml-2">Top Rated Junior School 2026</span>
+          <div className="flex items-center gap-1.5 border border-gray-200 bg-white px-3 py-1.5 rounded-full shadow-sm">
+            {[...Array(5)].map((_, i) => <StarIcon key={i} className="w-3 h-3" style={{ color: primaryColor }} />)}
+            <span className="text-[9px] font-black text-gray-900 ml-3 uppercase tracking-widest">Top Tier Rank</span>
           </div>
         </div>
-      </div>
+      </div> */}
 
-      <section className="relative pt-12 pb-24 lg:pt-20 lg:pb-32">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+      <section className="relative pt-8 pb-24 lg:pt-8 lg:pb-32">
+       
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+          <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
             
-            {/* --- CONTENT: THE PROFESSIONAL PROMISE --- */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <div 
-                className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-6"
-                style={{ backgroundColor: `${primaryColor}10` }}
+            {/* --- LEFT: CONTENT (Takes up 7 columns on desktop) --- */}
+            <div className="lg:col-span-7">
+              <motion.div
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
               >
-                <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
-                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: primaryColor }}>
-                  Admissions Open for 2026 Academic Year
-                </span>
-              </div>
+                <motion.div variants={fadeUpReveal} className="inline-flex items-center gap-3 mb-8 border-l-2 pl-4" style={{ borderColor: `${primaryColor}40` }}>
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">
+                    Admission Cycle Active
+                  </span>
+                </motion.div>
 
-              <h1 className="text-5xl md:text-6xl xl:text-7xl font-serif font-bold text-slate-900 leading-[1.1] mb-8">
-                {headline}
-              </h1>
-
-              <p className="text-lg md:text-xl text-slate-600 leading-relaxed mb-10 border-l-4 pl-6" style={{ borderColor: primaryColor }}>
-                {subline}
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-4">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="px-8 py-4 rounded-xl text-white font-bold text-lg shadow-lg flex items-center justify-center gap-3"
-                  style={{ backgroundColor: primaryColor }}
+                <motion.h1 
+                  variants={fadeUpReveal}
+                  className="text-5xl md:text-7xl xl:text-8xl font-serif font-bold text-gray-900 leading-[1.0] mb-8 tracking-tighter"
                 >
-                  Book a Campus Tour
-                  <ArrowRightIcon className="w-5 h-5" />
-                </motion.button>
-                
-                <button className="px-8 py-4 rounded-xl bg-white border-2 border-slate-200 text-slate-700 font-bold text-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-3">
-                  <PlayIcon className="w-5 h-5 text-slate-400" />
-                  See Our Classrooms
-                </button>
-              </div>
+                  {headline.split(' ').map((word: string, i: number) => (
+                    <span key={i} className={`${i === 2 ? "italic font-light text-gray-400" : "text-gray-900"}`}>
+                      {word}{' '}
+                    </span>
+                  ))}
+                </motion.h1>
 
-              {/* Trust Indicators for Parents */}
-              <div className="mt-12 grid grid-cols-3 gap-4 border-t border-slate-100 pt-10">
-                <div>
-                  <p className="text-2xl font-bold text-slate-900">12:1</p>
-                  <p className="text-xs text-slate-500 uppercase font-semibold">Teacher Ratio</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-slate-900">STEM+</p>
-                  <p className="text-xs text-slate-500 uppercase font-semibold">Curriculum</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-slate-900">100%</p>
-                  <p className="text-xs text-slate-500 uppercase font-semibold">Safe Environment</p>
-                </div>
-              </div>
-            </motion.div>
+                <motion.p 
+                  variants={fadeUpReveal}
+                  className="text-lg md:text-xl text-gray-600 leading-relaxed mb-10 max-w-xl font-medium"
+                >
+                  {subline}
+                </motion.p>
 
-            {/* --- VISUAL: THE SAFE & HAPPY LEARNER --- */}
-            <motion.div 
-              className="relative"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1 }}
-            >
-              {/* Decorative Elements */}
-              <div className="absolute -top-10 -right-10 w-64 h-64 rounded-full blur-3xl opacity-20" style={{ backgroundColor: primaryColor }} />
-              
-              <div className="relative z-10 rounded-[2.5rem] overflow-hidden shadow-2xl border-8 border-white">
-                <Image
-                  src={activeSlide?.imageUrl || "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80"}
-                  alt="Happy Junior Student"
-                  width={600}
-                  height={700}
-                  className="object-cover aspect-[4/5]"
-                  loader={customLoader}
-                  priority
-                />
-                
-                {/* Floating "Quality" Badge */}
-                <div className="absolute bottom-8 left-8 right-8 bg-white/95 backdrop-blur-md p-6 rounded-2xl shadow-xl flex items-center gap-5 border border-slate-100">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-blue-50">
-                    <AcademicCapIcon className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-slate-900">Certified Excellence</h4>
-                    <p className="text-xs text-slate-500">Recognized for outstanding primary pedagogy and child development.</p>
-                  </div>
-                </div>
-              </div>
+                <motion.div variants={fadeUpReveal} className="flex flex-wrap gap-5 mb-16">
+                  <motion.button
+                    whileHover={{ scale: 1.02, backgroundColor: '#fff', color: primaryColor, boxShadow: `0 0 0 1px ${primaryColor}40` }}
+                    whileTap={{ scale: 0.98 }}
+                    className="px-10 py-5 text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-xl transition-all"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    Initiate Enrollment
+                  </motion.button>
+                  
+                  <button className="flex items-center gap-4 text-[11px] font-black uppercase tracking-[0.2em] text-gray-900 group">
+                    <div className="w-12 h-12 border border-gray-200 bg-white flex items-center justify-center transition-all group-hover:border-gray-900">
+                      <PlayIcon className="w-4 h-4" />
+                    </div>
+                    Experience Campus
+                  </button>
+                </motion.div>
 
-              {/* Parent Testimonial Snippet */}
-              <motion.div 
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 5, repeat: Infinity }}
-                className="absolute -left-12 top-20 hidden xl:block bg-white p-4 rounded-2xl shadow-xl border border-slate-100 max-w-[200px]"
-              >
-                <div className="flex gap-1 mb-2">
-                  {[...Array(5)].map((_, i) => <StarIcon key={i} className="w-3 h-3 text-amber-400" />)}
-                </div>
-                <p className="text-[11px] italic text-slate-600">"The best decision we made for our daughter's foundation."</p>
-                <p className="text-[10px] font-bold mt-2 text-slate-900">— Sarah M., Parent</p>
+                {/* Technical Metric Grid */}
+                <motion.div variants={fadeUpReveal} className="grid grid-cols-3 gap-6 pt-10 border-t border-gray-100">
+                  {[
+                    { val: "12:1", label: "Student Ratio" },
+                    { val: "IB/STEM", label: "Curriculum" },
+                    { val: "100%", label: "Security Rate" }
+                  ].map((stat, i) => (
+                    <div key={i} className="bg-gray-50/50 border border-gray-100 p-5">
+                      <p className="text-2xl font-black tracking-tighter" style={{ color: primaryColor }}>{stat.val}</p>
+                      <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">{stat.label}</p>
+                    </div>
+                  ))}
+                </motion.div>
               </motion.div>
-            </motion.div>
+            </div>
+
+            {/* --- RIGHT: IMAGE (Takes up 5 columns on desktop) --- */}
+            <div className="lg:col-span-5 relative">
+              <motion.div 
+                className="relative z-10"
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+              >
+                {/* Main Image Frame */}
+                <div className="relative bg-white p-3 shadow-[20px_20px_60px_-15px_rgba(0,0,0,0.07)] border border-gray-100">
+                  <div className="relative aspect-[4/5] overflow-hidden">
+                    <Image
+                      src={activeSlide?.imageUrl || "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80"}
+                      alt="Student Excellence"
+                      fill
+                      className="object-cover"
+                      loader={customLoader}
+                      priority
+                    />
+                    
+                    {/* Instant Brightening Mask */}
+                    <motion.div 
+                      variants={maskReveal}
+                      initial="hidden"
+                      whileInView="visible"
+                      viewport={{ once: true }}
+                      className="absolute inset-0 bg-white z-10"
+                    />
+
+                    {/* Integrated Detail Card */}
+                    <div className="absolute bottom-4 left-4 right-4 p-5 bg-white/95 backdrop-blur-sm border border-gray-100 shadow-lg z-20">
+                      <div className="flex items-center gap-3 mb-2">
+                        <AcademicCapIcon className="w-4 h-4" style={{ color: secondaryAccent }} />
+                        <span className="text-[9px] font-black uppercase tracking-widest text-gray-900">Verified Pedagogy</span>
+                      </div>
+                      <p className="text-[10px] text-gray-500 font-medium leading-relaxed">
+                        Recognized globally for excellence in child development and primary education.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Institutional Vertical Text */}
+                <div className="absolute -right-12 top-1/2 -rotate-90 origin-right hidden xl:block">
+                  <span className="text-[10px] font-black text-gray-200 uppercase tracking-[0.8em] whitespace-nowrap">
+                    Institutional Excellence • Est. 2026
+                  </span>
+                </div>
+              </motion.div>
+            </div>
 
           </div>
         </div>
       </section>
-
-      {/* Background Subtle Shapes */}
-      <div className="absolute top-0 left-0 -translate-x-1/2 translate-y-1/2 w-96 h-96 bg-blue-50 rounded-full blur-3xl -z-10" />
     </div>
   );
 }

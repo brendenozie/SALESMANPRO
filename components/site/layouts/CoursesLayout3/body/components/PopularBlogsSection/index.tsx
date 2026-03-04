@@ -93,7 +93,7 @@ export default function LatestEventsSection({ storeFormData }: any) {
             className="lg:col-span-8 group relative rounded-[2.5rem] overflow-hidden shadow-2xl bg-gray-900 aspect-[16/10] md:aspect-auto md:h-[600px]"
           >
             <Image
-              src={mainEvent.imageUrl || "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=2670"}
+              src={mainEvent.imageUrl}
               alt={mainEvent.title}
               fill
               className="object-cover transition-transform duration-1000 group-hover:scale-110 opacity-80 group-hover:opacity-100"

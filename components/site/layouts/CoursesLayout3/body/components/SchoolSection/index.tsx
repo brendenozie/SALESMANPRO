@@ -31,91 +31,92 @@ const SchoolSection = ({ storeFormData }: any) => {
   const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
     return `${src}?w=${width}&q=${quality || 75}`;
   };
-  
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    e.currentTarget.src = "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2040&auto=format&fit=crop";
-  };
 
   return (
-    <section className="relative py-24 lg:py-32 px-6 bg-[#F8F9FA] overflow-hidden">
-      {/* Decorative Brand Watermark */}
-      <div className="absolute top-10 left-10 text-[8rem] lg:text-[12rem] font-serif font-black opacity-[0.03] select-none pointer-events-none uppercase tracking-tighter">
+    <section className="relative py-24 lg:py-40 bg-white overflow-hidden">
+      {/* --- BACKGROUND ELEMENTS --- */}
+      <div className="absolute top-0 right-0 w-1/3 h-full bg-gray-50/50 -z-10" />
+      <div className="absolute top-20 left-10 text-[10rem] font-serif font-black text-gray-50 opacity-[0.05] select-none pointer-events-none uppercase tracking-tighter">
         Academy
       </div>
 
-      <div className="max-w-7xl mx-auto relative z-10">
-        <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <div className="grid lg:grid-cols-12 gap-16 lg:gap-24 items-start">
           
-          {/* LEFT: THE CONTENT COLUMN */}
-          <div className="w-full lg:w-5/12 text-center lg:text-left">
+          {/* LEFT: THE CONTENT COLUMN (Col Span 5) */}
+          <div className="lg:col-span-5">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7 }}
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
             >
-              <div className="flex items-center justify-center lg:justify-start gap-3 mb-6">
-                <span className="h-px w-8 bg-slate-300" />
-                <span className="text-[10px] lg:text-xs font-bold tracking-[0.3em] uppercase text-slate-500">
-                  Est. 2026 • Premier Junior Education
+              <div className="flex items-center gap-4 mb-8">
+                <div className="h-[2px] w-12" style={{ backgroundColor: accentColor }} />
+                <span className="text-[10px] font-black tracking-[0.4em] uppercase text-gray-400">
+                  Institutional Profile
                 </span>
               </div>
 
-              <h2 className="text-4xl lg:text-6xl font-serif font-bold text-slate-900 leading-[1.1] mb-8">
+              <h2 className="text-5xl lg:text-6xl font-serif font-bold text-gray-900 leading-[1.05] mb-10 tracking-tighter">
                 {headline.split(' ').slice(0, -1).join(' ')}{' '}
-                <span className="relative inline-block">
+                <span className="italic font-light text-gray-400">
                   {headline.split(' ').slice(-1)}
-                  <svg className="absolute -bottom-2 left-0 w-full h-2" viewBox="0 0 100 10" preserveAspectRatio="none">
-                    <path d="M0 5 Q 50 10 100 5" stroke={accentColor} strokeWidth="6" fill="none" />
-                  </svg>
                 </span>
               </h2>
 
-              <p className="text-lg lg:text-xl text-slate-600 leading-relaxed mb-10">
+              <p className="text-xl text-gray-600 leading-relaxed mb-12 font-medium">
                 {description}
               </p>
 
-              {/* Professional Merit Grid */}
-              <div className="grid sm:grid-cols-2 gap-4 mb-10 text-left">
+              {/* Professional Merit Bento Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
                 {coreValues.map((item: any, idx: number) => {
                   const Icon = IconMap[item.icon] || AcademicCapIcon;
                   return (
-                    <div key={idx} className="flex items-center gap-4 p-4 rounded-xl bg-white shadow-sm border border-slate-100 group hover:border-slate-200 transition-all">
-                      <div className="p-2 rounded-lg bg-slate-50 group-hover:bg-white transition-colors">
+                    <motion.div 
+                      key={idx} 
+                      whileHover={{ y: -5 }}
+                      className="p-6 bg-white border border-gray-100 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] flex flex-col gap-4"
+                    >
+                      <div className="w-10 h-10 flex items-center justify-center bg-gray-50 text-gray-900">
                         <Icon className="w-5 h-5" style={{ color: primaryColor }} />
                       </div>
-                      <h4 className="font-bold text-slate-900 text-xs lg:text-sm leading-tight">{item.title}</h4>
-                    </div>
+                      <h4 className="font-black text-gray-900 text-[11px] uppercase tracking-widest leading-tight">
+                        {item.title}
+                      </h4>
+                    </motion.div>
                   );
                 })}
               </div>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+              <div className="flex flex-col sm:flex-row items-center gap-6">
                 <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full sm:w-auto px-8 py-4 rounded-full text-white font-bold text-base shadow-lg flex items-center justify-center gap-3 transition-all"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-full sm:w-auto px-10 py-5 text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-2xl transition-all"
                   style={{ backgroundColor: primaryColor }}
                 >
-                  Schedule a Private Tour
-                  <ArrowRightIcon className="w-5 h-5" />
+                  Book Private Tour
                 </motion.button>
-                <button className="w-full sm:w-auto px-8 py-4 rounded-full bg-white border border-slate-200 text-slate-700 font-bold text-base hover:bg-slate-50 transition-colors">
-                  View Prospectus
+                <button className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-gray-900 transition-colors flex items-center gap-3 group">
+                  Institutional Prospectus
+                  <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
             </motion.div>
           </div>
 
-          {/* RIGHT: THE VISUAL COLUMN - Fixed Alignment & Constraints */}
-          <div className="w-full lg:w-7/12 flex items-center justify-center relative min-h-[500px] lg:min-h-[600px]">
-            
-            <div className="relative w-full max-w-[500px] aspect-square lg:aspect-[4/5]">
+          {/* RIGHT: THE PRECISION VISUAL (Col Span 7) */}
+          <div className="lg:col-span-7">
+            <div className="relative grid grid-cols-12 grid-rows-12 h-[500px] lg:h-[700px]">
               
-              {/* Main Center Image - Constrained within parent */}
+              {/* Main Architectural Image */}
               <motion.div 
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
-                className="relative w-full h-full rounded-[2.5rem] overflow-hidden shadow-2xl z-20 border-[10px] border-white"
+                viewport={{ once: true }}
+                className="col-start-1 col-end-10 row-start-1 row-end-11 relative overflow-hidden bg-gray-100 border-[12px] border-white shadow-2xl z-20"
               >
                 <Image 
                   src={storeFormData.bannerUrl || "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2040&auto=format&fit=crop"}
@@ -123,50 +124,46 @@ const SchoolSection = ({ storeFormData }: any) => {
                   fill
                   className="object-cover"
                   loader={customLoader}
-                  onError={handleImageError}
                 />
               </motion.div>
 
-              {/* Top-Left Accent - Anchored to the main box */}
+              {/* Secondary Detail Image (Inset) */}
               <motion.div 
-                initial={{ opacity: 0, x: -30 }}
+                initial={{ opacity: 0, x: 40 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-                className="absolute -top-6 -left-6 lg:-top-12 lg:-left-12 w-32 h-32 lg:w-48 lg:h-48 rounded-2xl overflow-hidden shadow-xl z-30 border-4 border-white -rotate-6 hidden sm:block"
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                className="col-start-8 col-end-13 row-start-6 row-end-13 relative overflow-hidden border-[12px] border-white shadow-2xl z-30 bg-gray-200"
               >
-                <Image src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80" alt="Student" fill className="object-cover" loader={customLoader} onError={handleImageError} />
+                <Image 
+                  src="https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&q=80" 
+                  alt="Classroom" 
+                  fill 
+                  className="object-cover" 
+                  loader={customLoader} 
+                />
               </motion.div>
 
-              {/* Bottom-Right Accent - Anchored to the main box */}
+              {/* Floating Trust Metric Card */}
               <motion.div 
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="absolute -bottom-6 -right-6 lg:-bottom-10 lg:-right-10 w-40 h-32 lg:w-56 lg:h-44 rounded-2xl overflow-hidden shadow-xl z-30 border-4 border-white rotate-3 hidden sm:block"
+                viewport={{ once: true }}
+                transition={{ delay: 0.4 }}
+                className="absolute left-[-10%] bottom-10 z-40 bg-white p-8 shadow-2xl border border-gray-50 hidden xl:block max-w-[200px]"
               >
-                <Image src="https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&q=80" alt="Classroom" fill className="object-cover" loader={customLoader} onError={handleImageError} />
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: accentColor }} />
+                  <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">Certified Excellence</span>
+                </div>
+                <p className="text-3xl font-serif font-bold text-gray-900 tracking-tighter">100%</p>
+                <p className="text-[10px] text-gray-500 font-medium mt-1 leading-relaxed">
+                  Compliance with Global Pedagogy Standards for 2026.
+                </p>
               </motion.div>
 
-              {/* Trust Badge - Positioned relative to the main image corner */}
-              <motion.div 
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 4, repeat: Infinity }}
-                className="absolute -right-4 top-10 lg:right-[-20%] lg:top-1/4 z-40 bg-white/95 backdrop-blur-sm p-4 rounded-xl shadow-lg flex items-center gap-3 border border-slate-100"
-              >
-                <div className="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-md" style={{ backgroundColor: accentColor }}>
-                  <CheckBadgeIcon className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-900 uppercase tracking-tighter">Accredited</p>
-                  <p className="text-[9px] text-slate-400 font-bold uppercase">Excellence</p>
-                </div>
-              </motion.div>
-
-              {/* Background Glow */}
-              <div 
-                className="absolute inset-0 rounded-full blur-[80px] lg:blur-[120px] opacity-20 -z-10 scale-110" 
-                style={{ backgroundColor: primaryColor }}
-              />
+              {/* Decorative Geometric Accent */}
+              <div className="absolute top-10 right-0 w-32 h-32 border-r-2 border-t-2 border-gray-100 -z-10" />
             </div>
           </div>
 
