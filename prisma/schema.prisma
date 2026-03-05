@@ -438,6 +438,7 @@ model Company {
   domainVerified            Boolean                   @default(false)
   candidates                candidate[]
   examCategories            ExamCategory[]
+  modules                   Module[]
 
   @@index([userId])
 }
@@ -2997,10 +2998,62 @@ model Course {
   assignmentSubmission AssignmentSubmission[]
 
   CourseEducatorAssignment CourseEducatorAssignment[]
+  modules                  Module[]
 
   @@index([companyId])
   @@index([departmentId])
   @@index([status])
+}
+
+// --- NEW MODELS ---
+
+// Represents the "Curriculum" structure (Chapters/Units)
+model Module {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  order       Int // To sequence modules: 1, 2, 3...
+
+  courseId String @db.ObjectId
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  lessons Lesson[]
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId])
+  @@index([companyId])
+}
+
+// Represents the "Lesson Plan" and actual instructional content
+model Lesson {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String? // Student-facing description
+  content     String? // The actual lesson body (HTML/Markdown)
+  videoUrl    String?
+  duration    Int? // Estimated time in minutes
+  order       Int // Sequence within the module
+
+  // Teacher-Specific "Lesson Plan" fields
+  teacherNotes String? // Internal notes for the educator
+  objectives   String[] // Learning goals
+
+  moduleId String @db.ObjectId
+  module   Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  // Link assignments directly to a lesson
+  assignments CourseAssignment[]
+  materials   CourseMaterial[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([moduleId])
 }
 
 enum CourseStatus {
@@ -3178,6 +3231,8 @@ model CourseAssignment {
   updatedAt                 DateTime?                  @updatedAt
   Grade                     Grade[]
   courseAssignmentQuestions CourseAssignmentQuestion[]
+  lesson                    Lesson?                    @relation(fields: [lessonId], references: [id])
+  lessonId                  String?                    @db.ObjectId
 
   @@index([courseId])
   @@index([companyId])
@@ -3783,6 +3838,8 @@ model CourseMaterial {
   updatedAt    DateTime?          @updatedAt
   Educator     Educator?          @relation(fields: [educatorId], references: [id])
   educatorId   String?            @db.ObjectId
+  lesson       Lesson?            @relation(fields: [lessonId], references: [id])
+  lessonId     String?            @db.ObjectId
 
   @@index([courseId, type])
   @@index([uploadedById])

@@ -22,8 +22,25 @@ import {
 } from '@heroicons/react/24/outline';
 
 import CourseFormModal from './CourseFormModal'; // Import the new modal component
+import { useRouter } from 'next/navigation';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
+
+// Updated Type Definitions
+export type LessonType = {
+  id: string;
+  title: string;
+  duration?: number;
+  order: number;
+};
+
+export type ModuleType = {
+  id: string;
+  title: string;
+  order: number;
+  lessons: LessonType[];
+};
+
 
 // --- Type Definitions (matching API response) ---
 export type AcademicLevelOption = {
@@ -68,6 +85,7 @@ export type CourseType = {
   educators: CourseEducator[]; // NEW: Array of assigned educators with roles
   createdAt: string;
   updatedAt: string;
+  modules?: ModuleType[];
 };
 
 interface CoursesClientProps {
@@ -91,12 +109,16 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
   const [editingCourse, setEditingCourse] = useState<CourseType | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showCurriculumModal, setShowCurriculumModal] = useState(false);
+  const [selectedCourseForCurriculum, setSelectedCourseForCurriculum] = useState<CourseType | null>(null);
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
   });
+
+  const router = useRouter();
 
   // --- Data Fetching and Management ---
   const fetchCoursesAndDependencies = useCallback(async () => {
@@ -478,6 +500,23 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
+                        {/* Inside the table row map, next to PencilIcon */}
+                        <button
+                          onClick={() => {
+                            //navigate to curriculum page
+                            setSelectedCourseForCurriculum(course);
+                            router.push(`/admin/${companyId}/courses/${course.id}/courseCurriculum`);
+
+                          }}
+                          className="p-2 text-green-600 hover:bg-green-50 rounded-full transition-colors group relative"
+                          title="Manage Curriculum"
+                        >
+                          <AcademicCapIcon className="h-5 w-5" />
+                          {/* Tooltip for clarity */}
+                          <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs p-1 rounded">
+                            Curriculum
+                          </span>
+                        </button>
                         <button
                           onClick={() => { setEditingCourse(course); setShowFormModal(true); }}
                           className="p-2 rounded-full text-indigo-600 hover:bg-indigo-50 hover:text-indigo-800 transition-colors duration-200"
