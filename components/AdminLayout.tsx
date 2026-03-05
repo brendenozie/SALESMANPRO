@@ -81,7 +81,7 @@ export default function AdminLayout({ children, params }: {
   // This early return for specific roles might still be needed if they have a
   // unique layout that is NOT the standard admin layout but also NOT the POS layout.
   // If these roles should see the standard admin layout on non-POS pages, you can remove this block.
-  if (userRole === 'JUNIOR' ) {
+  if (userRole === 'JUNIOR' || userRole === 'SCHOOL_DRIVER' || userRole === 'STORE_DRIVER') {
     return (
       <main className="flex-1 pt-20 lg:pt-0 overflow-auto">
         {children}
