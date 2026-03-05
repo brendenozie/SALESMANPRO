@@ -527,7 +527,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
     //   );
     // }
 
-    if (userRole === 'SCHOOL_DRIVER_STORE_DRIVER') {
+    if (userRole === 'SCHOOL_DRIVER') {
       return (
         <DriverShiftClientDashboard
           companyId={companyId}
@@ -536,7 +536,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
       );
     }
 
-    if (userRole === 'SCHOOL_DRIVER') {
+    if (userRole === 'STORE_DRIVER') {
       return (
         <StoreDriverDashboard
           companyId={companyId}
