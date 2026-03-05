@@ -182,6 +182,12 @@ function CourseCommanderCard({ course, teacherUserId, today }: any) {
               <div className='min-h-[11rem] col-span-2 sm:col-span-4 grid grid-cols-2 sm:grid-cols-4 gap-3'>
                 <QuickAction 
                   icon={IdentificationIcon} 
+                  label="Curriculum"
+                  onClick={() => handleAction('course-curriculum')}
+                  color="indigo"
+                />
+                <QuickAction 
+                  icon={IdentificationIcon} 
                   label="Attendance" 
                   onClick={() => handleAction('take-course-attendance')} 
                   color="indigo"
@@ -234,7 +240,15 @@ function CourseCommanderCard({ course, teacherUserId, today }: any) {
                   onClick={() => handleAction('send-message')} 
                   color="cyan"
                 />
+                <QuickAction 
+                  icon={SparklesIcon} 
+                  label="Engagement"
+                  onClick={() => handleAction('course-engagement')}
+                  color=""
+                />
               </div>
+              <div className="col-span-2 text-center text-slate-400 italic text-xs">Select an action to manage this course.</div>
+              
             </>
           : <div className="col-span-4 text-center text-slate-400 italic min-h-[11rem]">No classroom schedules available.</div>
     }

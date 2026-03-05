@@ -54,7 +54,7 @@ export const GET = withApiHandler(async (request, context) => {
                 },
               },
               // Handouts/PDFs for the lesson
-              CourseMaterial: {
+              materials: {
                 select: {
                   id: true,
                   title: true,
