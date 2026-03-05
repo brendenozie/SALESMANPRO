@@ -909,6 +909,13 @@ export default function AdminExamsOverviewPage({ initialExamCategories, initialE
                             </Link>
                           </div>
                         )}
+                        <Link 
+                          href={`/admin/${companyId}/exams/${exam.id}/grades?courseId=${exam.courseId}&classroomId=${exam.classroomId || ''}`}
+                          className="flex items-center gap-2 px-3 py-2 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition-colors"
+                        >
+                          <UsersIcon className="h-5 w-5" />
+                          <span>Manage Grades</span>
+                        </Link>
                         <button
                           onClick={() => { setEditingExam(exam); setShowFormModal(true); setError(null); }}
                           className="text-indigo-600 hover:text-indigo-900 flex items-center"

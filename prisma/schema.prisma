@@ -3234,6 +3234,8 @@ model CourseAssignment {
   lesson                    Lesson?                    @relation(fields: [lessonId], references: [id])
   lessonId                  String?                    @db.ObjectId
 
+  weight Float @default(10) // e.g., this assignment is 10% of the total grade
+
   @@index([courseId])
   @@index([companyId])
   @@index([status])
@@ -3699,6 +3701,7 @@ model Exam {
   classroom   Classroom? @relation(fields: [classroomId], references: [id])
 
   grades Grade[] // Grades associated with this exam
+  weight Float   @default(50) // e.g., this exam is 50% of the total grade
 
   createdAt      DateTime?     @default(now())
   updatedAt      DateTime?     @updatedAt
@@ -3971,6 +3974,10 @@ model Grade {
   gradeValue  String? // e.g., "A", "B+", "Pass"
   gradeStatus GradeStatus? // Enum: PASSED, FAILED, PENDING
   comments    String?
+
+  // NEW: Track which period this grade belongs to
+  term String // e.g., "Term 1", "Spring 2026"
+  year String // e.g., "2026"
 
   recordedById String?   @db.ObjectId // Educator who recorded this grade
   recordedBy   Educator? @relation("recordedBy", fields: [recordedById], references: [id])
