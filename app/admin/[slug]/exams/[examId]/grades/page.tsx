@@ -1,5 +1,6 @@
 import React from "react";
 import ExamGradesClient from "./ExamGradesClient"; // Ensure correct import path
+import { cookies } from "next/headers";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -12,14 +13,19 @@ interface PageProps {
 
 export default async function ExamGradesPage({ params }: PageProps) {
   const { slug: companyId, examId } = await params;
+   const cookieHeader = (await cookies()).toString();
 
+   console.log({companyId,examId});
   let initialData: any = null;
   let fetchError = false;
 
   try {
     // 1. Fetch Exam Details (to get courseId and classroomId)
-    const examRes = await fetch(`${apiBaseUrl}/admin/course-assignments/${examId}`, {
+    const examRes = await fetch(`${apiBaseUrl}/admin/exams/${examId}`, {
       next: { revalidate: 60 },
+      headers: {
+        cookie: cookieHeader,
+      },
     });
     
     if (!examRes.ok) throw new Error("Failed to fetch assignment details");
@@ -29,7 +35,9 @@ export default async function ExamGradesPage({ params }: PageProps) {
     // We pass classroomId and courseId to find who should be in this list
     const gradesRes = await fetch(
       `${apiBaseUrl}/admin/grades/eligible?examId=${examId}&classroomId=${examData.classroomId || ""}`,
-      { next: { revalidate: 0 } } // Don't cache grades usually
+      { next: { revalidate: 0 },headers: {
+        cookie: cookieHeader,
+      }, } // Don't cache grades usually
     );
 
     if (gradesRes.ok) {
@@ -53,7 +61,7 @@ export default async function ExamGradesPage({ params }: PageProps) {
       <div className="p-8 text-center text-rose-600 bg-rose-50 rounded-xl border border-rose-100">
         <h2 className="text-xl font-bold">Grade Loading Error</h2>
         <p className="mt-2 text-sm">Could not initialize grading sheet. Please check if the assignment exists.</p>
-        <button onClick={() => window.location.reload()} className="mt-4 text-indigo-600 font-bold underline">Retry</button>
+        {/* <button onClick={() => window.location.reload()} className="mt-4 text-indigo-600 font-bold underline">Retry</button> */}
       </div>
     );
   }

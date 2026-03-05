@@ -1,6 +1,7 @@
 // app/admin/[slug]/exams/[examId]/questions/page.tsx
 import React from "react";
 import ExamQuestionsManagerPage, { ExamDetailsForQuestions, ExamQuestionData } from "./ExamQuestionsManagerPage";
+import { cookies } from "next/headers";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -101,6 +102,7 @@ const generateSampleQuestionData = (examId: string): {
 
 export default async function ExamQuestionsPage({ params }: PageProps) {
   const { slug: companyId, examId } = await params;
+   const cookieHeader = (await cookies()).toString();
 
   let initialExamDetails: ExamDetailsForQuestions | null = null;
   let initialQuestions: ExamQuestionData[] = [];
@@ -109,7 +111,9 @@ export default async function ExamQuestionsPage({ params }: PageProps) {
   try {
     // Fetch exam details
     const examRes = await fetch(`${apiBaseUrl}/admin/exams/${examId}`, {
-      next: { revalidate: 60 },
+      next: { revalidate: 60 },headers: {
+        cookie: cookieHeader,
+      },
     });
     if (examRes.ok) {
       const examData = await examRes.json();
@@ -129,7 +133,9 @@ export default async function ExamQuestionsPage({ params }: PageProps) {
 
     // Fetch exam questions
     const questionsRes = await fetch(`${apiBaseUrl}/admin/exam-questions?examId=${encodeURIComponent(examId)}`, {
-      next: { revalidate: 60 },
+      next: { revalidate: 60 },headers: {
+        cookie: cookieHeader,
+      },
     });
     if (questionsRes.ok) {
       initialQuestions = (await questionsRes.json()) as ExamQuestionData[];

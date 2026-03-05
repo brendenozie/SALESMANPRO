@@ -26,7 +26,7 @@ export default function ExamGradesClient({ examId, courseId, classroomId, compan
   useEffect(() => {
     const loadData = async () => {
       // Query students based on Course or Classroom
-      const res = await fetch(`/api/exams/${examId}/eligible-students?classroomId=${classroomId}`);
+      const res = await fetch(`/api/exams/${examId}/eligible-students?classroomId=${classroomId}`,{credentials: 'include'}); // Ensure cookies are sent for auth
       const data = await res.json();
       if (data.success) {
         setStudents(data.data.map((s: any) => ({
@@ -63,6 +63,7 @@ export default function ExamGradesClient({ examId, courseId, classroomId, compan
 
       const res = await fetch(`/api/grades/bulk`, {
         method: 'POST',
+        
         body: JSON.stringify({ grades: gradesToSave }),
       });
 
