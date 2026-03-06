@@ -157,10 +157,10 @@ export default function AcademicYearsClient({ years, companyId }: any) {
 
   const toggleTermActive = async (yearId: string, termId: string) => {
     const res = await fetch(`/api/admin/academic-terms/${termId}/activate`, {
-      method: "PUT",
+      method: "PATCH",
       body: JSON.stringify({ companyId, academicYearId: yearId })
     });
-    
+
     const result = await res.json();
     if (result.success) {
       startTransition(() => {
