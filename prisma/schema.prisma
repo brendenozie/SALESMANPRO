@@ -2686,11 +2686,11 @@ model Term {
   startDate DateTime
   endDate   DateTime
 
-  termNumber Int
+  termNumber Int // 1, 2, 3, etc. - useful for ordering
 
   academicYear AcademicYear @relation(fields: [academicYearId], references: [id])
 
-  // events        CalendarEvent[]
+  isActive Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

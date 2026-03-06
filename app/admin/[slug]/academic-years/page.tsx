@@ -20,13 +20,17 @@ export type AcademicYear = {
  terms:Term[]
 }
 
-interface PageProps{
- params:Promise<{companyId:string}>
+// interface PageProps{
+//  params:Promise<{companyId:string}>
+// }
+interface PageProps {
+  params:Promise<{ slug: string }>
 }
+
 
 export default async function Page({params}:PageProps){
 
- const { companyId } = await params
+ const { slug: companyId } = await params
 
  const cookieHeader = (await cookies()).toString()
 
@@ -44,7 +48,8 @@ export default async function Page({params}:PageProps){
 
   if(res.ok){
    const data = await res.json()
-   years = data.data || []
+   console.log("Fetched Academic Years →", data); 
+   years = data || []
   }
 
  }catch(e){

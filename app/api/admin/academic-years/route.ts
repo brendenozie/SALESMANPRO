@@ -53,16 +53,19 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const { name, startDate, endDate, companyId } = body;
+    const { name, yearStart, yearEnd, companyId } = body;
 
     if (!companyId)
       return formatResponse(false, null, "Company ID required", 400);
 
+    if (!name || !yearStart || !yearEnd)
+      return formatResponse(false, null, "Missing fields", 400);
+
     const academicYear = await prisma.academicYear.create({
       data: {
         name,
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
+        startDate: new Date(yearStart),
+        endDate: new Date(yearEnd),
         companyId,
       },
     });
@@ -71,6 +74,7 @@ export async function POST(req: Request) {
 
     return formatResponse(true, academicYear, "Academic Year created", 201);
   } catch (error) {
+    console.error("Academic Year Error:", error);
     return formatResponse(false, null, "Failed to create academic year", 500);
   }
 }
