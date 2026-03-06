@@ -3,6 +3,8 @@ import React from "react";
 import AdminExamsOverviewPage, { ExamData, CourseOption, EducatorOption, AcademicLevelOption } from "./AdminExamsOverviewPage";
 import { cookies } from "next/headers";
 import { ClassRoomOption } from "../students/StudentsClient";
+import { AcademicYear } from "../academic-terms/page";
+import { Term } from "../academic-years/page";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -58,7 +60,7 @@ const generateSampleExamData = (companyId: string): {
       id: 'EXM001',
       title: 'Mathematics Midterm Exam',
       description: 'Covers Chapters 1-5.',
-      course:{ id: 'CRS003', title: 'Algebra', academicLevels: [{ id: 'AL003', name: 'Grade 9' }] },
+      course: { id: 'CRS003', title: 'Algebra', academicLevels: [{ id: 'AL003', name: 'Grade 9' }] },
       examCategoryId: 'CAT001',
       courseId: 'CRS003',
       courseTitle: 'Algebra',
@@ -84,13 +86,15 @@ const generateSampleExamData = (companyId: string): {
       companyId: companyId,
       createdAt: new Date('2025-06-01').toISOString(),
       updatedAt: new Date('2025-06-01').toISOString(),
+      academicYearId: null,
+      termId: null
     },
     {
       id: 'EXM002',
       title: 'English Essay Final Draft',
       description: 'Submission deadline via LMS.',
       examCategoryId: 'CAT005',
-      course:{ id: 'CRS002', title: 'English Language', academicLevels: [{ id: 'AL002', name: 'Grade 8' }] },
+      course: { id: 'CRS002', title: 'English Language', academicLevels: [{ id: 'AL002', name: 'Grade 8' }] },
       courseId: 'CRS002',
       courseTitle: 'English Language',
       courseAcademicLevels: [{ id: 'AL002', name: 'Grade 8' }],
@@ -115,13 +119,15 @@ const generateSampleExamData = (companyId: string): {
       companyId: companyId,
       createdAt: new Date('2025-06-05').toISOString(),
       updatedAt: new Date('2025-06-05').toISOString(),
+      academicYearId: null,
+      termId: null
     },
     {
       id: 'EXM003',
       title: 'Science Unit 2 Test',
       description: 'Covering cell biology and photosynthesis.',
       examCategoryId: 'CAT003',
-      course:{ id: 'CRS005', title: 'Science', academicLevels: [{ id: 'AL002', name: 'Grade 8' }] },
+      course: { id: 'CRS005', title: 'Science', academicLevels: [{ id: 'AL002', name: 'Grade 8' }] },
       courseId: 'CRS005',
       courseTitle: 'Science',
       classroomId: 'CRM002',
@@ -146,13 +152,15 @@ const generateSampleExamData = (companyId: string): {
       companyId: companyId,
       createdAt: new Date('2025-06-10').toISOString(),
       updatedAt: new Date('2025-06-26').toISOString(),
+      academicYearId: null,
+      termId: null
     },
     {
       id: 'EXM004',
       title: 'Physics Final Exam',
       description: 'Comprehensive exam covering all topics.',
       examCategoryId: 'CAT002',
-      course:{ id: 'CRS006', title: 'Physics', academicLevels: [{ id: 'AL005', name: 'Grade 11' }] },
+      course: { id: 'CRS006', title: 'Physics', academicLevels: [{ id: 'AL005', name: 'Grade 11' }] },
       courseId: 'CRS006',
       courseTitle: 'Physics',
       classroomId: 'CRM003',
@@ -177,6 +185,8 @@ const generateSampleExamData = (companyId: string): {
       companyId: companyId,
       createdAt: new Date('2025-06-20').toISOString(),
       updatedAt: new Date('2025-06-20').toISOString(),
+      academicYearId: null,
+      termId: null
     },
   ];
 
@@ -204,8 +214,33 @@ export default async function ExamsManagerPage({ params }: PageProps) {
   let allAcademicLevels: AcademicLevelOption[] = [];
   let allClassRooms: ClassRoomOption[] = [];
   let fetchError: boolean = false;
+  
+  // let activeYear: AcademicYear | null = null;
+  // let activeTerm: Term | null = null;
+
+  let activeYearId: string | null = null;
+  let activeTermId: string | null = null;
+  let academicYears: AcademicYear[] = [];
 
   try {
+
+    const sessionRes = await fetch(
+      `${apiBaseUrl}/admin/academic-years/session?companyId=${companyId}`,
+      {
+      headers:{ cookie: cookieHeader },
+      next:{ revalidate:60 }
+      }
+    )
+
+    if(sessionRes.ok){
+      const sessionData = (await sessionRes.json()).data;
+      console.log("Academic session data:", sessionData);
+
+      academicYears = sessionData.academicYears
+      activeYearId = sessionData.activeAcademicYearId
+      activeTermId = sessionData.activeTermId
+    }
+
     
     const resExamCategories = await fetch(`${apiBaseUrl}/admin/exam-categories?schoolId=${encodeURIComponent(companyId)}`, {
       headers: { cookie: cookieHeader },
@@ -318,6 +353,9 @@ export default async function ExamsManagerPage({ params }: PageProps) {
       allAcademicLevels={allAcademicLevels}
       allClassRooms={allClassRooms}
       companyId={companyId}
+      activeAcademicYearId={activeYearId}
+      activeTermId={activeTermId}
+      academicYears={academicYears}
     />
   );
 }

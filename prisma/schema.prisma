@@ -2671,6 +2671,7 @@ model AcademicYear {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  exams     Exam[]
 
   @@index([companyId])
   @@index([isActive])
@@ -2694,6 +2695,7 @@ model Term {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  exams     Exam[]
 
   @@index([companyId])
   @@index([academicYearId])
@@ -2932,6 +2934,7 @@ model AcademicLevel {
   updatedAt      DateTime?       @updatedAt
   classrooms     Classroom[]
   classSchedules ClassSchedule[]
+  exams          Exam[]
 
   @@unique([companyId, name]) // A company cannot have two academic levels with the same name
   @@index([companyId, sortOrder]) // For efficient querying and ordering
@@ -3734,6 +3737,15 @@ model Exam {
   durationMinutes Int? // Duration of the exam once started (in minutes)
   autoGrade       Boolean        @default(false) // Whether the exam can be automatically graded (e.g., for MCQs)
   questions       ExamQuestion[] // Relation to ExamQuestion model
+
+  academicLevelId String?        @db.ObjectId
+  academicLevel   AcademicLevel? @relation(fields: [academicLevelId], references: [id])
+
+  academicYearId String?       @db.ObjectId
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
+
+  termId String? @db.ObjectId
+  term   Term?   @relation(fields: [termId], references: [id])
 
   // Link to Company for multi-tenancy
   company   Company @relation(fields: [companyId], references: [id])

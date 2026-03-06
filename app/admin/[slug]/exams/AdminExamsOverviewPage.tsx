@@ -22,6 +22,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link'; // For linking to exam questions page
 import { ClassRoomOption } from '../students/StudentsClient';
+import { AcademicYear } from '../academic-years/page';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -37,6 +38,8 @@ export type ExamData = {
   courseAcademicLevels: { id: string; name: string; sortOrder?: number }[];
   classroomId: string | null;
   classroom: { id: string; name: string; academicLevelId: string } | null;
+  academicYearId: string | null;
+  termId: string | null;
   date: string; // YYYY-MM-DD
   startTime: string | null; // HH:MM
   endTime: string | null; // HH:MM
@@ -84,6 +87,9 @@ interface AdminExamsOverviewPageProps {
   allAcademicLevels: AcademicLevelOption[]; // Passed but not directly used in this component's logic, mainly for CourseOption types
   allClassRooms: ClassRoomOption[];
   companyId: string;
+  activeAcademicYearId: string | null;
+  activeTermId: string | null;
+  academicYears: AcademicYear[];
 }
 
 // --- Exam Form Modal Component ---
@@ -96,12 +102,15 @@ type ExamFormModalProps = {
   allEducators: EducatorOption[];
   allClassRooms: ClassRoomOption[];
   companyId: string;
+  academicYears: AcademicYear[];
+  activeAcademicYearId: string | null;
+  activeTermId: string | null;
   isLoading: boolean;
   error: string | null;
   resetError: () => void;
 };
 
-const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave, allExamCategories, allCourses, allEducators, allClassRooms, companyId, isLoading, error, resetError }) => {
+const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave, allExamCategories, allCourses, allEducators, allClassRooms, companyId, isLoading, error, resetError, academicYears, activeAcademicYearId, activeTermId }) => {
   const [formData, setFormData] = useState<Omit<ExamData, 'courseTitle' | 'courseAcademicLevels' | 'createdByEducatorName' | 'createdByEducatorEmail' | 'totalQuestions' | 'totalSubmissions' | 'createdAt' | 'updatedAt'>>(
     examData ? {
       ...examData,
@@ -130,6 +139,8 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave
       durationMinutes: null,
       autoGrade: false,
       companyId: companyId,
+      academicYearId: activeAcademicYearId,
+      termId: activeTermId,
     }
   );
 
@@ -388,7 +399,7 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave
 
 
 // --- Main AdminExamsOverviewPage Component ---
-export default function AdminExamsOverviewPage({ initialExamCategories, initialExams, allCourses, allEducators, allClassRooms, companyId }: AdminExamsOverviewPageProps) {
+export default function AdminExamsOverviewPage({ initialExamCategories, initialExams, allCourses, allEducators, allClassRooms, companyId, activeAcademicYearId, activeTermId, academicYears }: AdminExamsOverviewPageProps) {
   const [exams, setExams] = useState<ExamData[]>(initialExams);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterExamCategory, setFilterExamCategory] = useState('All');
@@ -401,6 +412,10 @@ export default function AdminExamsOverviewPage({ initialExamCategories, initialE
   const [editingExam, setEditingExam] = useState<ExamData | null>(null);
   const [isLoading, setIsLoading] = useState(false); // For API operations
   const [error, setError] = useState<string | null>(null);
+
+  const [selectedYear, setSelectedYear] = useState(activeAcademicYearId);
+  const [selectedTerm, setSelectedTerm] = useState(activeTermId);
+  const [academicYearOptions, setAcademicYearOptions] = useState(academicYears);
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -464,13 +479,16 @@ export default function AdminExamsOverviewPage({ initialExamCategories, initialE
       const matchesSearch = exam.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             exam.courseTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             exam.createdByEducatorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            (exam.location || '').toLowerCase().includes(searchTerm.toLowerCase());
+                            (exam.location || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            (exam.classroom ? exam.classroom.name.toLowerCase().includes(searchTerm.toLowerCase()) : false);
 
       const matchesCourse = filterCourse === 'All' || exam.courseId === filterCourse;
       const matchesClass = filterClass === 'All' || exam.classroomId === filterClass;
       const matchesEducator = filterEducator === 'All' || exam.createdByEducatorId === filterEducator;
       const matchesType = filterType === 'All' || exam.type === filterType;
       const matchesCategory = filterExamCategory === 'All' || exam.examCategoryId === filterExamCategory;
+      const matchesYear = selectedYear === 'All' || exam.academicYearId === selectedYear;
+      const matchesTerm = selectedTerm === 'All' || exam.termId === selectedTerm;
 
       // Determine dynamic status for filtering
       const examDate = new Date(exam.date);
@@ -479,7 +497,7 @@ export default function AdminExamsOverviewPage({ initialExamCategories, initialE
       const currentExamStatus = examDate.getTime() < now.getTime() ? 'Completed' : 'Upcoming';
       const matchesStatus = filterStatus === 'All' || currentExamStatus === filterStatus;
 
-      return matchesSearch && matchesCourse && matchesClass && matchesEducator && matchesType && matchesCategory && matchesStatus;
+      return matchesSearch && matchesCourse && matchesClass && matchesEducator && matchesType && matchesCategory && matchesStatus && matchesYear && matchesTerm;
     }).sort((a, b) => {
       // Sort upcoming exams first by date (ascending), then completed exams by date (descending)
       const dateA = new Date(a.date).getTime();
@@ -502,7 +520,7 @@ export default function AdminExamsOverviewPage({ initialExamCategories, initialE
       }
       return 0; // Should not reach here if logic is sound
     }) : [];
-  }, [exams, searchTerm, filterCourse, filterClass, filterEducator, filterType, filterExamCategory, filterStatus]);
+  }, [exams, searchTerm, filterCourse, filterClass, filterEducator, filterType, filterExamCategory, filterStatus, selectedYear, selectedTerm]);
 
 
   // Calculate overview stats
@@ -764,6 +782,30 @@ export default function AdminExamsOverviewPage({ initialExamCategories, initialE
           </div>
           <div className="flex-shrink-0">
             <select
+              value={selectedYear||'All'}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            >
+              <option value="All">All Academic Years</option>
+              {academicYearOptions.map(year => (
+                <option key={year.id} value={year.id}>{year.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex-shrink-0">
+            <select
+              value={selectedTerm||'All'}
+              onChange={(e) => setSelectedTerm(e.target.value)}
+              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            >
+              <option value="All">All Terms</option>
+              {academicYearOptions.find(year => year.id === selectedYear)?.terms.map(term => (
+                <option key={term.id} value={term.id}>{term.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex-shrink-0">
+            <select
               value={filterCourse}
               onChange={(e) => setFilterCourse(e.target.value)}
               className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -950,6 +992,11 @@ export default function AdminExamsOverviewPage({ initialExamCategories, initialE
           allCourses={allCourses}
           allClassRooms={allClassRooms}
           allEducators={allEducators}
+          
+          academicYears={academicYearOptions}
+          activeAcademicYearId={activeAcademicYearId}
+          activeTermId={activeTermId}
+  
           companyId={companyId}
           isLoading={isLoading}
           error={error}
