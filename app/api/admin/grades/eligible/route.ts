@@ -8,12 +8,13 @@ import { formatResponse } from "@/lib/formatResponse";
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const examId = searchParams.get('examId');
+    // const examId = searchParams.get('examId');
+    // const courseAssignmentId = searchParams.get('assignmentId');
     const classroomId = searchParams.get('classroomId');
 
-    if (!examId) {
-      return NextResponse.json({ success: false, error: "Missing examId" }, { status: 400 });
-    }
+    // if (!examId) {
+    //   return NextResponse.json({ success: false, error: "Missing examId" }, { status: 400 });
+    // }
 
     // 1. Get the assignment details to find the courseId if classroomId is missing
     // const assignment = await prisma.courseAssignment.findUnique({

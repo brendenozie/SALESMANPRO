@@ -16,10 +16,12 @@ import {
   MapPinIcon,
   UserCircleIcon,
   ClipboardDocumentListIcon,
+  UsersIcon,
 } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ClassRoomOption } from '../students/StudentFormModal';
 import { AcademicYear } from '../academic-years/page';
+import Link from 'next/link'; // For linking to exam questions page
 
 
 const apiBaseUrl =
@@ -487,6 +489,14 @@ export default function AssignmentsPageClient({
                                   <ClipboardDocumentListIcon className="h-5 w-5" />
                                 </button>
                               </div>
+                              
+                              <Link 
+                                href={`/admin/${companyId}/assignments/${a.id}/grades?courseId=${a.courseId}&classroomId=${a.classroomId || ''}`}
+                                className="flex items-center gap-2 px-3 py-2 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition-colors"
+                              >
+                                <UsersIcon className="h-5 w-5" />
+                                <span>Manage Grades</span>
+                              </Link>
                               <button 
                                 onClick={() => { setEditingAssignment(a); setShowModal(true); }}
                                 className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"

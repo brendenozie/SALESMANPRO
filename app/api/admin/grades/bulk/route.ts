@@ -16,7 +16,11 @@ export const POST = withApiHandler(async (request, context) => {
           where: {
             studentId: g.studentId,
             courseId: g.courseId,
-            examId: g.examId
+            // courseAssignmentId: g.assignmentId  
+            OR: [
+              { courseAssignmentId: g.assignmentId },
+              { examId: g.examId }
+            ]          
           }
         });
 
