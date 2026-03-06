@@ -2657,6 +2657,48 @@ model WishlistItem {
   @@index([marketplaceListingId])
 }
 
+model AcademicYear {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  companyId String @db.ObjectId
+
+  name      String // "2025 Academic Year"
+  startDate DateTime
+  endDate   DateTime
+
+  isActive Boolean @default(false)
+
+  terms Term[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([isActive])
+}
+
+model Term {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  companyId      String @db.ObjectId
+  academicYearId String @db.ObjectId
+
+  name      String // "Term 1"
+  startDate DateTime
+  endDate   DateTime
+
+  termNumber Int
+
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id])
+
+  // events        CalendarEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([academicYearId])
+}
+
 // HeadTeacher Profile Model (one-to-one with User)
 model HeadTeacher {
   id String @id @default(auto()) @map("_id") @db.ObjectId
@@ -3993,7 +4035,7 @@ model Grade {
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
-  @@index([studentId])
+  @@index([studentId, courseId, examId]) // For efficient lookup of a student's grade for a specific course/exam
   @@index([courseId])
   @@index([examId])
   @@index([recordedById])

@@ -6,21 +6,33 @@ import { formatResponse } from "@/lib/formatResponse";
 
 export const POST = withApiHandler(async (request, context) => {
   const { grades } = await request.json(); // Array of { studentId, examId, score, etc. }
-  const companyId = context.user?.companyId;
+  // const companyId = context.user?.companyId;
 
   // Optimized Database Transaction
-  const operations = grades.map((g: any) => 
-    prisma.grade.upsert({
-      where: {
-        // Assuming a unique constraint on student + exam
-        studentId_examId: { studentId: g.studentId, examId: g.examId }
-      },
-      update: { score: g.score },
-      create: { ...g, companyId }
-    })
-  );
+  await prisma.$transaction(async (tx) => {
+    await Promise.all(
+      grades.map(async (g: any) => {
+        const existing = await tx.grade.findFirst({
+          where: {
+            studentId: g.studentId,
+            courseId: g.courseId,
+            examId: g.examId
+          }
+        });
 
-  await prisma.$transaction(operations);
+        if (existing) {
+          await tx.grade.update({
+            where: { id: existing.id },
+            data: { score: g.score }
+          });
+        } else {
+          await tx.grade.create({
+            data: { ...g, companyId: g.companyId }
+          });
+        }
+      })
+    );
+  });
 
   return formatResponse(true, null, "All grades updated", 200);
 }, { requireAuth: true });

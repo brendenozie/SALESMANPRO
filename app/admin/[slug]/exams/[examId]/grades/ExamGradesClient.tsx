@@ -18,29 +18,29 @@ interface StudentGradeRow {
   status: 'idle' | 'saving' | 'saved' | 'error';
 }
 
-export default function ExamGradesClient({ examId, courseId, classroomId, companyId, examTitle }: { examId: string, courseId: string, classroomId?: string, companyId?: string, examTitle?: string }) {
-  const [students, setStudents] = useState<StudentGradeRow[]>([]);
+export default function ExamGradesClient({ examId, courseId, classroomId, companyId, examTitle,initialStudents  }: { examId: string, courseId: string, classroomId?: string, companyId?: string, examTitle?: string, initialStudents: StudentGradeRow[] }) {
+  const [students, setStudents] = useState<StudentGradeRow[]>(initialStudents);
   const [isBulkSaving, setIsBulkSaving] = useState(false);
 
   // 1. Fetch eligible students and existing grades
-  useEffect(() => {
-    const loadData = async () => {
-      // Query students based on Course or Classroom
-      const res = await fetch(`/api/exams/${examId}/eligible-students?classroomId=${classroomId}`,{credentials: 'include'}); // Ensure cookies are sent for auth
-      const data = await res.json();
-      if (data.success) {
-        setStudents(data.data.map((s: any) => ({
-          studentId: s.id,
-          name: s.name,
-          admissionNumber: s.admissionNumber,
-          currentScore: s.existingGrade?.score || '',
-          gradeId: s.existingGrade?.id,
-          status: 'idle'
-        })));
-      }
-    };
-    loadData();
-  }, [examId, classroomId]);
+  // useEffect(() => {
+  //   const loadData = async () => {
+  //     // Query students based on Course or Classroom
+  //     const res = await fetch(`/api/exams/${examId}/eligible-students?classroomId=${classroomId}`,{credentials: 'include'}); // Ensure cookies are sent for auth
+  //     const data = await res.json();
+  //     if (data.success) {
+  //       setStudents(data.data.map((s: any) => ({
+  //         studentId: s.id,
+  //         name: s.name,
+  //         admissionNumber: s.admissionNumber,
+  //         currentScore: s.existingGrade?.score || '',
+  //         gradeId: s.existingGrade?.id,
+  //         status: 'idle'
+  //       })));
+  //     }
+  //   };
+  //   loadData();
+  // }, [examId, classroomId]);
 
   // 2. Handle Individual Input Change
   const handleScoreChange = (index: number, value: string) => {
@@ -58,12 +58,17 @@ export default function ExamGradesClient({ examId, courseId, classroomId, compan
         studentId: s.studentId,
         examId: examId,
         courseId: courseId,
+        companyId: companyId,
+        term: "Fall", // You might want to make this dynamic
+        year: new Date().getFullYear(), // Or get from context
         score: parseFloat(s.currentScore as string) || 0,
       }));
 
-      const res = await fetch(`/api/grades/bulk`, {
+      const res = await fetch(`/api/admin/grades/bulk`, {
         method: 'POST',
-        
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ grades: gradesToSave }),
       });
 
@@ -108,7 +113,7 @@ export default function ExamGradesClient({ examId, courseId, classroomId, compan
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {students.map((student, idx) => (
+            {students && students.length > 0 && students.map((student, idx) => (
               <tr key={student.studentId}>
                 <td className="px-6 py-4 font-medium text-gray-900">{student.name}</td>
                 <td className="px-6 py-4 text-gray-500">{student.admissionNumber}</td>

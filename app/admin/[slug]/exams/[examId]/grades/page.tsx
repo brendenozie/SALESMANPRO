@@ -1,67 +1,72 @@
 import React from "react";
-import ExamGradesClient from "./ExamGradesClient"; // Ensure correct import path
+import ExamGradesClient from "./ExamGradesClient";
 import { cookies } from "next/headers";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
-  params: Promise<{
+  params: {
     slug: string; // companyId
     examId: string;
-  }>;
+  };
+  searchParams: {
+    courseId?: string;
+    classroomId?: string;
+  };
 }
 
-export default async function ExamGradesPage({ params }: PageProps) {
-  const { slug: companyId, examId } = await params;
-   const cookieHeader = (await cookies()).toString();
+export default async function ExamGradesPage({ params, searchParams }: PageProps) {
+  const { slug: companyId, examId } = params;
+  const { courseId, classroomId } = searchParams;
 
-   console.log({companyId,examId});
+  const cookieHeader = (await cookies()).toString();
+
+  console.log({
+    companyId,
+    examId,
+    courseId,
+    classroomId,
+  });
+
   let initialData: any = null;
-  let fetchError = false;
 
   try {
-    // 1. Fetch Exam Details (to get courseId and classroomId)
-    const examRes = await fetch(`${apiBaseUrl}/admin/exams/${examId}`, {
-      next: { revalidate: 60 },
-      headers: {
-        cookie: cookieHeader,
-      },
-    });
-    
-    if (!examRes.ok) throw new Error("Failed to fetch assignment details");
-    const examData = (await examRes.json()).data;
-
-    // 2. Fetch Eligible Students & Existing Grades
-    // We pass classroomId and courseId to find who should be in this list
+    // Fetch Eligible Students & Existing Grades
     const gradesRes = await fetch(
-      `${apiBaseUrl}/admin/grades/eligible?examId=${examId}&classroomId=${examData.classroomId || ""}`,
-      { next: { revalidate: 0 },headers: {
-        cookie: cookieHeader,
-      }, } // Don't cache grades usually
+      `${apiBaseUrl}/admin/grades/eligible?examId=${examId}&courseId=${courseId || ""}&classroomId=${classroomId || ""}`,
+      {
+        cache: "no-store",
+        headers: {
+          cookie: cookieHeader,
+        },
+      }
     );
 
     if (gradesRes.ok) {
-      initialData = await gradesRes.json();
+      initialData = (await gradesRes.json()).data;
     }
-    
+
+    console.log("Initial Data →", initialData);
+
     return (
       <ExamGradesClient
         examId={examId}
-        courseId={examData.courseId}
-        classroomId={examData.classroomId}
+        courseId={courseId || ""}
+        classroomId={classroomId}
         companyId={companyId}
-        // initialStudents={initialData?.data || []}
-        examTitle={examData.title}
+        initialStudents={initialData || []}
+        examTitle={initialData?.exam?.title || "Exam"}
       />
     );
-
   } catch (err: any) {
     console.error("[ExamGradesPage] Error →", err.message);
+
     return (
       <div className="p-8 text-center text-rose-600 bg-rose-50 rounded-xl border border-rose-100">
         <h2 className="text-xl font-bold">Grade Loading Error</h2>
-        <p className="mt-2 text-sm">Could not initialize grading sheet. Please check if the assignment exists.</p>
-        {/* <button onClick={() => window.location.reload()} className="mt-4 text-indigo-600 font-bold underline">Retry</button> */}
+        <p className="mt-2 text-sm">
+          Could not initialize grading sheet. Please check if the exam exists.
+        </p>
       </div>
     );
   }

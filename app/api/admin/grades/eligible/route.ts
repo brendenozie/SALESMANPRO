@@ -16,20 +16,20 @@ export async function GET(req: NextRequest) {
     }
 
     // 1. Get the assignment details to find the courseId if classroomId is missing
-    const assignment = await prisma.courseAssignment.findUnique({
-      where: { id: examId },
-      select: { courseId: true, classroomId: true }
-    });
+    // const assignment = await prisma.courseAssignment.findUnique({
+    //   where: { id: examId },
+    //   select: { courseId: true, classroomId: true }
+    // });
 
-    if (!assignment) {
-      return NextResponse.json({ success: false, error: "Assignment not found" }, { status: 404 });
-    }
+    // if (!assignment) {
+    //   return NextResponse.json({ success: false, error: "Assignment not found" }, { status: 404 });
+    // }
 
     // 2. Fetch all students belonging to the classroom OR course
     // / 2. Determine target group (Specific Classroom OR all students in the Course)
         // We prioritize the classroomId from the query string, then the assignment's classroomId, 
         // then fall back to the course.
-        const targetClassroomId = classroomId || assignment.classroomId;
+        const targetClassroomId = classroomId;// || assignment.classroomId;
     
          // We don't use 'include' here because if a student was deleted, Prisma will crash.
             const studentMappings = await prisma.studentAcademicLevel.findMany({
