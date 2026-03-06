@@ -8,8 +8,8 @@ import { formatResponse } from "@/lib/formatResponse";
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    // const examId = searchParams.get('examId');
-    // const courseAssignmentId = searchParams.get('assignmentId');
+    const examId = searchParams.get('examId');
+    const courseAssignmentId = searchParams.get('assignmentId');
     const classroomId = searchParams.get('classroomId');
 
     // if (!examId) {
@@ -57,14 +57,16 @@ export async function GET(req: NextRequest) {
                 user: { select: { name: true, email: true } },
                 parent: { select: { user: { select: { name: true, email: true } } } },
                 admissionNumber: true,
-                //  grades: {
-                //     where: { examId: examId },
-                //     select: {
-                //       id: true,
-                //       score: true,
-                //     },
-                //     take: 1, 
-                //   }
+                Grade: {
+                  where: {
+                    OR: [
+                      { examId: null }, // Include students with no grade record for this exam
+                      { examId: examId }, // Replace with actual examId to include existing grades
+                      { courseAssignmentId: null }, // Include students with a grade record but no examId yet
+                      { courseAssignmentId: courseAssignmentId }, // Include students with a grade record but no score yet
+                    ]
+                  },
+                },
               },
               orderBy: {
                 user: { name: "asc" },
@@ -100,7 +102,7 @@ export async function GET(req: NextRequest) {
       id: student.id,
       name: student.user.name,
       admissionNumber: student.admissionNumber,
-      existingGrade: "B"//student.grades[0] || null
+      existingGrade: student.Grade[0] || null
     }));
 
     return NextResponse.json({ success: true, data: formattedData });

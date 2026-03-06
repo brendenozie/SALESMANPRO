@@ -4038,8 +4038,8 @@ model Grade {
   comments    String?
 
   // NEW: Track which period this grade belongs to
-  term String // e.g., "Term 1", "Spring 2026"
-  year String // e.g., "2026"
+  term String? // e.g., "Term 1", "Spring 2026"
+  year String? // e.g., "2026"
 
   recordedById String?   @db.ObjectId // Educator who recorded this grade
   recordedBy   Educator? @relation("recordedBy", fields: [recordedById], references: [id])
@@ -4049,13 +4049,14 @@ model Grade {
 
   // NEW FIELD: Link to the academic level the student was in when this grade was recorded
   // This is crucial for historical reporting by academic level.
-  academicLevelAtTimeOfGradingId String        @db.ObjectId
-  academicLevelAtTimeOfGrading   AcademicLevel @relation("gradesEarned", fields: [academicLevelAtTimeOfGradingId], references: [id])
+  academicLevelAtTimeOfGradingId String?        @db.ObjectId
+  academicLevelAtTimeOfGrading   AcademicLevel? @relation("gradesEarned", fields: [academicLevelAtTimeOfGradingId], references: [id])
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
   @@index([studentId, courseId, examId]) // For efficient lookup of a student's grade for a specific course/exam
+  @@index([studentId, courseId, courseAssignmentId]) // For efficient lookup of a student's grade for a specific course assignment
   @@index([courseId])
   @@index([examId])
   @@index([recordedById])
