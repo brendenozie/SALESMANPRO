@@ -49,6 +49,8 @@ export const GET = withApiHandler(async (req: Request) => {
         updatedAt: true,
         classroomId: true,
         isPublished: true,
+        academicYearId: true,
+        termId: true,
         course: {
           select: {
             title: true,
@@ -72,6 +74,8 @@ export const GET = withApiHandler(async (req: Request) => {
     courseTitle: a.course?.title || "N/A",
     courseInstructorName: a.course?.CourseEducatorAssignment?.[0]?.educator?.user?.name || "N/A",
     totalSubmissions: a._count.submissions,
+    academicYearId: a.academicYearId,
+    termId: a.termId,
     questionCount: a._count.courseAssignmentQuestions,
     createdByName: a.createdBy?.user?.name,
     createdByEmail: a.createdBy?.user?.email,
@@ -110,6 +114,8 @@ export const POST = withApiHandler(async (req: Request) => {
         status: status || "Draft",
         dueDate: dueDate ? new Date(dueDate) : new Date(),
         maxGrade: maxGrade ? parseFloat(maxGrade) : 0,
+        academicYearId: body.academicYearId || null,
+        termId: body.termId || null,
         isOnline: !!isOnline,
         durationMinutes: durationMinutes ? parseInt(durationMinutes) : null,
         autoGrade: !!autoGrade,

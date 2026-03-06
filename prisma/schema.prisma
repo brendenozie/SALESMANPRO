@@ -2669,9 +2669,10 @@ model AcademicYear {
 
   terms Term[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  exams     Exam[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  exams             Exam[]
+  courseAssignments CourseAssignment[]
 
   @@index([companyId])
   @@index([isActive])
@@ -2693,9 +2694,10 @@ model Term {
 
   isActive Boolean @default(true)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  exams     Exam[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  exams             Exam[]
+  courseAssignments CourseAssignment[]
 
   @@index([companyId])
   @@index([academicYearId])
@@ -3248,6 +3250,12 @@ model CourseAssignment {
   maxGrade Float? // NEW: Added maxGrade to match API. Using Float for flexibility (e.g., 100.0, 85.5)
   courseId String @db.ObjectId
   course   Course @relation(fields: [courseId], references: [id])
+
+  academicYearId String?       @db.ObjectId
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
+
+  termId String? @db.ObjectId
+  term   Term?   @relation(fields: [termId], references: [id])
 
   classroomId String?    @db.ObjectId
   classroom   Classroom? @relation(fields: [classroomId], references: [id])
