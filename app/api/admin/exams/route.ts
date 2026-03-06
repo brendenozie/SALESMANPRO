@@ -55,6 +55,8 @@ function transformExamResponse(exam: any) {
     createdByEducatorEmail: exam.createdByEducator?.user?.email || 'N/A',
     isOnline: exam.isOnline,
     durationMinutes: exam.durationMinutes,
+    academicYearId: exam.academicYearId,
+    termId: exam.termId,
     autoGrade: exam.autoGrade,
     totalQuestions: exam._count.questions,
     totalSubmissions: exam._count.submissions,
@@ -160,7 +162,7 @@ async function createExam(request: Request) {
   const {
     companyId, title, description, courseId, date, startTime, endTime, location,
     notes, type, totalPoints, isPublished, createdByEducatorId, isOnline,
-    durationMinutes, autoGrade, classroomId,examCategoryId
+    durationMinutes, autoGrade, classroomId,examCategoryId, academicYearId, termId
   } = body;
 
   // Basic validation
@@ -214,6 +216,8 @@ async function createExam(request: Request) {
         date: parsedDate,
         startTime: parsedStartTime,
         endTime: parsedEndTime,
+        academicYearId: academicYearId || null,
+        termId: termId || null,
         location,
         notes,
         type,
