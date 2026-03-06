@@ -4,16 +4,16 @@ import { NextResponse } from "next/server";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { yearId: string; termId: string } }
+  { params }: { params: { termId: string } }
 ) {
   try {
-    const { companyId } = await req.json();
+    const { companyId, academicYearId } = await req.json();
 
     const [deactivated, activated] = await prisma.$transaction([
       // 1. Deactivate all terms for this specific year and company
       prisma.term.updateMany({
         where: {
-          academicYearId: params.yearId,
+          academicYearId: academicYearId,
           companyId: companyId,
           isActive: true,
         },

@@ -37,13 +37,13 @@ export async function GET(req: Request) {
       await cacheSet(cacheKey, academicYears, 60);
     } catch (e) {}
 
-    const response = NextResponse.json(academicYears);
-    response.headers.set(
-      "Cache-Control",
-      "public, s-maxage=60, stale-while-revalidate=120"
-    );
+    // const response = NextResponse.json(academicYears);
+    // response.headers.set(
+    //   "Cache-Control",
+    //   "public, s-maxage=60, stale-while-revalidate=120"
+    // );
 
-    return response;
+    return formatResponse(true, academicYears, "Fetched academic years", 200);
   } catch (error) {
     return formatResponse(false, null, "Failed to fetch academic years", 500);
   }

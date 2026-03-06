@@ -160,6 +160,7 @@ export default function AcademicYearsClient({ years, companyId }: any) {
       method: "PUT",
       body: JSON.stringify({ companyId, academicYearId: yearId })
     });
+    
     const result = await res.json();
     if (result.success) {
       startTransition(() => {

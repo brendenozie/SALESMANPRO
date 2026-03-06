@@ -40,13 +40,13 @@ export async function GET(req: Request) {
       await cacheSet(cacheKey, terms, 60);
     } catch (e) {}
 
-    const response = NextResponse.json(terms);
-    response.headers.set(
-      "Cache-Control",
-      "public, s-maxage=60, stale-while-revalidate=120"
-    );
+    // const response = NextResponse.json(terms);
+    // response.headers.set(
+    //   "Cache-Control",
+    //   "public, s-maxage=60, stale-while-revalidate=120"
+    // );
 
-    return response;
+    return formatResponse(true, terms, "Fetched terms", 200);
   } catch (error) {
     return formatResponse(false, null, "Failed to fetch terms", 500);
   }
@@ -70,8 +70,8 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json({ success: true, data: newTerm });
+    return formatResponse(true, newTerm, "Term created", 201);
   } catch (error) {
-    return NextResponse.json({ success: false, error: "Failed to create term" }, { status: 500 });
+    return formatResponse(false, null, "Failed to create term", 500);
   }
 }
