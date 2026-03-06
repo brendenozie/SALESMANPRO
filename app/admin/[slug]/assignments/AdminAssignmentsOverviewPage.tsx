@@ -19,6 +19,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ClassRoomOption } from '../students/StudentFormModal';
+import { AcademicYear } from '../academic-years/page';
 
 
 const apiBaseUrl =
@@ -47,6 +48,8 @@ export interface AssignmentData {
   type: 'QUIZ' | 'UNIT_TEST' | 'MIDTERM' | 'FINAL' | 'ASSIGNMENT_BASED' | 'PRACTICE' | 'OTHER';
   totalPoints: number;
   isPublished: boolean;
+  academicYearId: string | null;
+  termId: string | null;
   createdById: string | null;
   createdByEmail: string | null;
   createdByName: string | null;
@@ -86,6 +89,9 @@ interface Props {
   allEducators: EducatorOption[];
   allAcademicLevels: AcademicLevelOption[];
   allClassRooms: any[];
+  academicYears: AcademicYear[];
+  activeAcademicYearId: string | null;
+  activeTermId: string | null;
 }
 
 export default function AssignmentsPageClient({
@@ -94,7 +100,10 @@ export default function AssignmentsPageClient({
   allCourses,
   allEducators,
   allAcademicLevels,
-  allClassRooms
+  allClassRooms,
+  academicYears,
+  activeAcademicYearId,
+  activeTermId
 }: Props) {
   const [assignments, setAssignments] = useState<AssignmentData[]>(initialAssignments || []);
   const [isLoading, setIsLoading] = useState(false);
@@ -109,6 +118,11 @@ export default function AssignmentsPageClient({
   const [showModal, setShowModal] = useState(false);
   const [editingAssignment, setEditingAssignment] = useState<AssignmentData | null>(null);
 
+  
+  const [selectedYear, setSelectedYear] = useState(activeAcademicYearId);
+  const [selectedTerm, setSelectedTerm] = useState(activeTermId);
+  const [academicYearOptions, setAcademicYearOptions] = useState(academicYears);
+
   // --- Logic & Fetching (Simplified for space, keep your original logic) ---
     
     const filteredAssignments = useMemo(() => {
@@ -122,6 +136,8 @@ export default function AssignmentsPageClient({
         const matchesClass = filterClass === 'All' || assignment.classroomId === filterClass;
         const matchesEducator = filterEducator === 'All' || assignment.createdById === filterEducator;
         const matchesType = filterType === 'All' || assignment.type === filterType;
+        const matchesYear = selectedYear === 'All' || assignment.academicYearId === selectedYear;
+        const matchesTerm = selectedTerm === 'All' || assignment.termId === selectedTerm;
   
         // Determine dynamic status for filtering
         const assignmentDate = new Date(assignment.dueDate);
@@ -130,7 +146,7 @@ export default function AssignmentsPageClient({
         const currentExamStatus = assignmentDate.getTime() < now.getTime() ? 'Completed' : 'Upcoming';
         const matchesStatus = filterStatus === 'All' || currentExamStatus === filterStatus;
   
-        return matchesSearch && matchesCourse && matchesClass && matchesEducator && matchesType && matchesStatus;
+        return matchesSearch && matchesCourse && matchesClass && matchesEducator && matchesType && matchesStatus && matchesYear && matchesTerm;
       }).sort((a, b) => {
         // Sort upcoming exams first by date (ascending), then completed exams by date (descending)
         const dateA = new Date(a.dueDate).getTime();
@@ -153,7 +169,7 @@ export default function AssignmentsPageClient({
         }
         return 0; // Should not reach here if logic is sound
       }) : [];
-    }, [assignments, searchTerm, filterCourse, filterClass, filterEducator, filterType, filterStatus]);
+    }, [assignments, searchTerm, filterCourse, filterClass, filterEducator, filterType, filterStatus, selectedYear, selectedTerm]);
   
     
     const uniqueAssignmentsTypes = useMemo(() => Array.from(assignments && assignments.length > 0 ? new Set(assignments.map(e => e.type)) : []).sort(), [assignments]);
@@ -294,6 +310,35 @@ export default function AssignmentsPageClient({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+          </div>
+          <div className="flex-shrink-0">
+              <select
+                value={selectedYear || 'All'}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSelectedYear(value === 'All' ? null : value);
+                  setSelectedTerm('All'); // Reset term filter when academic year changes
+                }}
+                className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              >
+                <option value="All">All Academic Years</option>
+                {academicYearOptions.map(year => (
+                  <option key={year.id} value={year.id}>{year.name}</option>
+                ))}
+              </select>
+          </div>
+          <div className="flex-shrink-0">
+              <select
+                 value={selectedTerm||'All'}
+                  onChange={(e) => setSelectedTerm(e.target.value)}
+                className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                disabled={!selectedYear}
+              >
+                <option value="All">All Terms</option>
+                {academicYearOptions.find(year => year.id === selectedYear)?.terms.map(term => (
+                  <option key={term.id} value={term.id}>{term.name}</option>
+                ))}
+              </select>
           </div>
           <div className="flex-shrink-0">
             <select
@@ -494,6 +539,9 @@ export default function AssignmentsPageClient({
             allClassRooms={allClassRooms}
             companyId={companyId}
             isLoading={isLoading}
+            academicYears={academicYears}
+            activeAcademicYearId={activeAcademicYearId}
+            termId={activeTermId}
             error={error}
             resetError={() => setError(null)}
           />
@@ -529,6 +577,9 @@ type AssignmentFormModalProps = {
   allCourses: CourseOption[];
   allEducators: EducatorOption[];
   allClassRooms: ClassRoomOption[];
+  academicYears: AcademicYear[];
+  activeAcademicYearId: string | null;
+  termId: string | null;
   companyId: string;
   isLoading: boolean;
   error: string | null;
@@ -537,7 +588,7 @@ type AssignmentFormModalProps = {
 
 const AssignmentFormModal: React.FC<AssignmentFormModalProps> = ({ 
   assignmentData, onClose, onSave, allCourses, allEducators, allClassRooms, 
-  companyId, isLoading, error, resetError 
+  companyId, isLoading, error, resetError, academicYears, activeAcademicYearId, termId
 }) => {
   const [formData, setFormData] = useState<Omit<AssignmentData, 'courseTitle' | 'courseAcademicLevels' | 'createdByName' | 'createdByEmail' | 'totalQuestions' | 'totalSubmissions' | 'createdAt' | 'updatedAt'>>(
     assignmentData ? {
@@ -571,6 +622,8 @@ const AssignmentFormModal: React.FC<AssignmentFormModalProps> = ({
       courseInstructorName: '',
       status: 'Upcoming',
       maxGrade: 100,
+      academicYearId: activeAcademicYearId,
+      termId: termId,
       // createdByName: null,
     }
   );

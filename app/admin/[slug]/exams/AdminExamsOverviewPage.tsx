@@ -783,7 +783,10 @@ export default function AdminExamsOverviewPage({ initialExamCategories, initialE
           <div className="flex-shrink-0">
             <select
               value={selectedYear||'All'}
-              onChange={(e) => setSelectedYear(e.target.value)}
+              onChange={(e) => {
+                setSelectedYear(e.target.value);
+                setSelectedTerm('All'); // Reset term selection when year changes
+              }}
               className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             >
               <option value="All">All Academic Years</option>

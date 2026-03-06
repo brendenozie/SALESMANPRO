@@ -3,6 +3,7 @@ import React from "react";
 import AdminAssignmentsOverviewPage, { AssignmentData, CourseOption, EducatorOption, AcademicLevelOption } from "./AdminAssignmentsOverviewPage";
 import { cookies } from "next/headers";
 import { ClassRoomOption } from "../students/StudentsClient";
+import { AcademicYear } from "../academic-years/page";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -57,7 +58,8 @@ const generateSampleExamData = (companyId: string): {
       id: 'EXM001',
       title: 'Mathematics Midterm Exam',
       description: 'Covers Chapters 1-5.',
-
+      academicYearId: null,
+      termId: null,
       course: { id: 'CRS003', title: 'Algebra', academicLevels: [{ id: 'AL003', name: 'Grade 9' }] },
       courseId: 'CRS003',
       courseTitle: 'Algebra',
@@ -103,6 +105,8 @@ const generateSampleExamData = (companyId: string): {
       endTime: null, // No specific end time for submission
       location: 'Online Submission',
       notes: 'Ensure proper formatting.',
+      academicYearId: null,
+      termId: null,
       type: 'ASSIGNMENT_BASED',
       totalPoints: 50,
       isPublished: false,
@@ -137,6 +141,8 @@ const generateSampleExamData = (companyId: string): {
       endTime: `${dummyTime}12:00:00.000Z`,
       location: 'Lab 2',
       notes: '',
+      academicYearId: null,
+      termId: null,
       type: 'UNIT_TEST',
       totalPoints: 100,
       isPublished: true,
@@ -171,6 +177,8 @@ const generateSampleExamData = (companyId: string): {
       endTime: `${dummyTime}12:00:00.000Z`,
       location: 'Lecture Hall 1',
       notes: 'Bring scientific calculator.',
+      academicYearId: null,
+      termId: null,
       type: 'FINAL',
       totalPoints: 100,
       isPublished: false,
@@ -207,8 +215,30 @@ export default async function ExamsManagerPage({ params }: PageProps) {
   let allAcademicLevels: AcademicLevelOption[] = [];
   let allClassRooms: ClassRoomOption[] = [];
   let fetchError: boolean = false;
+ let activeYearId: string | null = null;
+  let activeTermId: string | null = null;
+  let academicYears: AcademicYear[] = [];
 
   try {
+
+    const sessionRes = await fetch(
+      `${apiBaseUrl}/admin/academic-years/session?companyId=${companyId}`,
+      {
+      headers:{ cookie: cookieHeader },
+      next:{ revalidate:60 }
+      }
+    )
+
+    if(sessionRes.ok){
+      const sessionData = (await sessionRes.json()).data;
+      console.log("Academic session data:", sessionData);
+
+      academicYears = sessionData.academicYears
+      activeYearId = sessionData.activeAcademicYearId
+      activeTermId = sessionData.activeTermId
+    }
+
+    
     // Fetch exams
     const examsRes = await fetch(`${apiBaseUrl}/admin/course-assignments?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
@@ -312,6 +342,9 @@ export default async function ExamsManagerPage({ params }: PageProps) {
       allAcademicLevels={allAcademicLevels}
       allClassRooms={allClassRooms}
       companyId={companyId}
+      activeAcademicYearId={activeYearId}
+      activeTermId={activeTermId}
+      academicYears={academicYears}
     />
   );
 }
