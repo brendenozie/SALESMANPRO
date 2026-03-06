@@ -1,55 +1,77 @@
-import prisma from "@/server/db/prismadb";
-import { cacheDel } from "@/lib/cache";
-import { formatResponse } from "@/lib/formatResponse";
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import { NextResponse } from "next/server";
+import prisma from "@/server/db/prismadb";
+import { formatResponse } from "@/lib/formatResponse";
 
-// PATCH: Update existing term
-export async function PATCH(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+
+  const companyId = searchParams.get("companyId");
+  const academicYearId = searchParams.get("academicYearId");
+
+  if (!companyId)
+    return formatResponse(false, null, "Company ID is required", 400);
+
+  const cacheKey = `admin:terms:${companyId}:${academicYearId || "all"}`;
+
   try {
-    const body = await req.json();
-    
-    const updatedTerm = await prisma.term.update({
-      where: { id: params.id },
-      data: {
-        name: body.name,
-        startDate: body.startDate ? new Date(body.startDate) : undefined,
-        endDate: body.endDate ? new Date(body.endDate) : undefined,
-        termNumber: body.termNumber ? parseInt(body.termNumber) : undefined,
-        // If the body contains companyId, ensure we're targeting the right one
-        // companyId: body.companyId 
+    const cached = await cacheGet(cacheKey);
+    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
+  } catch (e) {}
+
+  try {
+    const terms = await prisma.term.findMany({
+      where: {
+        companyId,
+        ...(academicYearId ? { academicYearId } : {}),
       },
+      include: {
+        academicYear: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: { startDate: "asc" },
     });
 
-    // Invalidate the cache so the frontend sees the changes immediately
-    await cacheDel(`admin:terms:${updatedTerm.companyId}:all`);
+    try {
+      await cacheSet(cacheKey, terms, 60);
+    } catch (e) {}
 
-    return formatResponse(true, updatedTerm, "Term updated successfully", 200);
-  } catch (error: any) {
-    console.error("[TERM_PATCH_ERROR]:", error);
-    return formatResponse(false, null, error.message || "Update failed", 500);
+    const response = NextResponse.json(terms);
+    response.headers.set(
+      "Cache-Control",
+      "public, s-maxage=60, stale-while-revalidate=120"
+    );
+
+    return response;
+  } catch (error) {
+    return formatResponse(false, null, "Failed to fetch terms", 500);
   }
 }
 
-// DELETE: Remove a term
-export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+// POST: Create a new term
+export async function POST(req: Request) {
   try {
-    // We delete the term and return its data to know which company cache to clear
-    const term = await prisma.term.delete({
-      where: { id: params.id },
+    const body = await req.json();
+    const { name, startDate, endDate, termNumber, academicYearId, companyId } = body;
+
+    const newTerm = await prisma.term.create({
+      data: {
+        name,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        termNumber: parseInt(termNumber),
+        academicYearId,
+        companyId,
+        isActive: false, // Default to false on creation
+      },
     });
 
-    // Clear cache for this company's terms
-    await cacheDel(`admin:terms:${term.companyId}:all`);
-
-    return formatResponse(true, term, "Term deleted successfully", 200);
-  } catch (error: any) {
-    console.error("[TERM_DELETE_ERROR]:", error);
-    return formatResponse(false, null, error.message || "Delete failed", 500);
+    return NextResponse.json({ success: true, data: newTerm });
+  } catch (error) {
+    return NextResponse.json({ success: false, error: "Failed to create term" }, { status: 500 });
   }
 }

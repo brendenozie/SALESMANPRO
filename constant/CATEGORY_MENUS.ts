@@ -369,7 +369,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: ClipboardDocumentListIcon,
       subItems: [
         { label: "Academic Years", href: `/admin/${adminSlug}/academic-years` },
-        { label: "Terms/Semesters", href: `/admin/${adminSlug}/terms` },
+        // { label: "Terms/Semesters", href: `/admin/${adminSlug}/terms` },
         { label: "Departments", href: `/admin/${adminSlug}/departments` },
         { label: "Categories", href: `/admin/${adminSlug}/categories` },
         { label: "Academic Levels", href: `/admin/${adminSlug}/academic-levels` },

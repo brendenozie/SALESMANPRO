@@ -3,18 +3,9 @@
 import React, { useState, useTransition } from "react";
 import toast from "react-hot-toast";
 import { 
-  CalendarDaysIcon, 
-  PlusIcon, 
-  PencilSquareIcon, 
-  CheckCircleIcon, 
-  ChevronDownIcon, 
-  ChevronUpIcon,
-  HashtagIcon,
-  CalendarIcon,
-  CheckBadgeIcon,
-  TrashIcon,
-  ArrowPathIcon,
-  AcademicCapIcon
+  CalendarDaysIcon, PlusIcon, PencilSquareIcon, CheckCircleIcon, 
+  ChevronDownIcon, ChevronUpIcon, HashtagIcon, CalendarIcon, 
+  ArrowPathIcon, AcademicCapIcon, TrashIcon
 } from "@heroicons/react/24/outline";
 import { CheckBadgeIcon as CheckBadgeSolid } from "@heroicons/react/24/solid";
 
@@ -36,45 +27,118 @@ export default function AcademicYearsClient({ years, companyId }: any) {
     termNumber: "" 
   });
 
+  
+  // Delete Confirmation State
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  // --- DELETE LOGIC ---
+  const handleDeleteYear = async (id: string) => {
+    if (confirmDeleteId !== id) {
+      setConfirmDeleteId(id);
+      return;
+    }
+
+    const res = await fetch(`/api/admin/academic-years/${id}`, { method: "DELETE" });
+    const result = await res.json();
+    if (result.success) {
+      startTransition(() => {
+        setData(data.filter((y: any) => y.id !== id));
+        setConfirmDeleteId(null);
+      });
+      toast.success("Academic year removed");
+    } else {
+      toast.error(result.message || "Could not delete year");
+      setConfirmDeleteId(null);
+    }
+  };
+
+  const handleDeleteTerm = async (yearId: string, termId: string) => {
+    if (confirmDeleteId !== termId) {
+      setConfirmDeleteId(termId);
+      return;
+    }
+
+    const res = await fetch(`/api/admin/academic-terms/${termId}`, { method: "DELETE" });
+    const result = await res.json();
+    if (result.success) {
+      startTransition(() => {
+        setData(data.map((year: any) => {
+          if (year.id === yearId) {
+            return { ...year, terms: year.terms.filter((t: any) => t.id !== termId) };
+          }
+          return year;
+        }));
+        setConfirmDeleteId(null);
+      });
+      toast.success("Term deleted");
+    } else {
+      setConfirmDeleteId(null);
+    }
+  };
+  
   // --- Academic Year Logic ---
   const handleYearSubmit = async () => {
     if (!yearForm.name || !yearForm.startDate || !yearForm.endDate) {
       return toast.error("Please fill all year fields");
     }
 
-    startTransition(async () => {
-      const isEditing = !!editingYearId;
-      const res = await fetch(isEditing ? `/api/academic-years/${editingYearId}` : `/api/academic-years`, {
-        method: isEditing ? "PATCH" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...yearForm, companyId }),
-      });
-      const result = await res.json();
-      if (result.success) {
-        toast.success(isEditing ? "Year updated" : "Year created");
+    const isEditing = !!editingYearId;
+    const res = await fetch(isEditing ? `/api/admin/academic-years/${editingYearId}` : `/api/admin/academic-years`, {
+      method: isEditing ? "PATCH" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...yearForm, companyId }),
+    });
+    
+    const result = await res.json();
+    if (result.success) {
+      toast.success(isEditing ? "Year updated" : "Year created");
+      startTransition(() => {
         setData(isEditing 
           ? data.map((y: any) => (y.id === editingYearId ? { ...result.data, terms: y.terms } : y))
-          : [result.data, ...data]
+          : [{ ...result.data, terms: [] }, ...data]
         );
         setYearForm({ name: "", startDate: "", endDate: "" });
         setEditingYearId(null);
-      }
+      });
+    }
+  };
+
+  const toggleYearActive = async (yearId: string) => {
+    const res = await fetch(`/api/admin/academic-years/${yearId}/activate`, {
+      method: "PATCH",
+      body: JSON.stringify({ companyId })
     });
+    const result = await res.json();
+    if (result.success) {
+      startTransition(() => {
+        setData(data.map((y: any) => ({ ...y, isActive: y.id === yearId })));
+      });
+      toast.success("Active session updated");
+    }
   };
 
   // --- Term Logic ---
   const handleTermSubmit = async (yearId: string) => {
-    if (!termForm.name || !termForm.termNumber) return toast.error("Missing term details");
+    // Check all fields required by your Prisma Term model
+    if (!termForm.name || !termForm.termNumber || !termForm.startDate || !termForm.endDate) {
+      return toast.error("Please fill all term fields including dates");
+    }
 
-    startTransition(async () => {
-      const isEditing = !!editingTermId;
-      const res = await fetch(isEditing ? `/api/terms/${editingTermId}` : `/api/terms`, {
-        method: isEditing ? "PATCH" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...termForm, academicYearId: yearId, companyId }),
-      });
-      const result = await res.json();
-      if (result.success) {
+    const isEditing = !!editingTermId;
+    const res = await fetch(isEditing ? `/api/admin/academic-terms/${editingTermId}` : `/api/admin/academic-terms`, {
+      method: isEditing ? "PATCH" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        ...termForm, 
+        termNumber: parseInt(termForm.termNumber), 
+        academicYearId: yearId, 
+        companyId 
+      }),
+    });
+    
+    const result = await res.json();
+    if (result.success) {
+      startTransition(() => {
         setData(data.map((year: any) => {
           if (year.id === yearId) {
             const updatedTerms = isEditing 
@@ -86,9 +150,31 @@ export default function AcademicYearsClient({ years, companyId }: any) {
         }));
         setTermForm({ name: "", startDate: "", endDate: "", termNumber: "" });
         setEditingTermId(null);
-        toast.success("Term saved successfully");
-      }
+      });
+      toast.success("Term saved successfully");
+    }
+  };
+
+  const toggleTermActive = async (yearId: string, termId: string) => {
+    const res = await fetch(`/api/admin/academic-terms/${termId}/activate`, {
+      method: "PUT",
+      body: JSON.stringify({ companyId, academicYearId: yearId })
     });
+    const result = await res.json();
+    if (result.success) {
+      startTransition(() => {
+        setData(data.map((year: any) => {
+          if (year.id === yearId) {
+            return {
+              ...year,
+              terms: year.terms.map((t: any) => ({ ...t, isActive: t.id === termId }))
+            };
+          }
+          return year;
+        }));
+      });
+      toast.success("Term activated");
+    }
   };
 
   return (
@@ -103,18 +189,12 @@ export default function AcademicYearsClient({ years, companyId }: any) {
             </div>
             <div>
               <h1 className="text-3xl font-extrabold tracking-tight text-slate-800">School Calendar</h1>
-              <p className="text-slate-500 font-medium">Manage academic sessions and terms</p>
+              <p className="text-slate-500 font-medium tracking-tight">Manage academic sessions and sequential terms</p>
             </div>
-          </div>
-          
-          {/* Quick Year Toggle (Active Badge) */}
-          <div className="bg-white px-5 py-2.5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-3">
-            <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse" />
-            <span className="text-sm font-bold text-slate-600 uppercase tracking-wider">System Live</span>
           </div>
         </header>
 
-        {/* Academic Year Form Card */}
+        {/* Year Form */}
         <section className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 p-8 mb-12">
           <div className="flex items-center gap-2 mb-6">
             <CalendarDaysIcon className="w-6 h-6 text-indigo-600" />
@@ -125,30 +205,30 @@ export default function AcademicYearsClient({ years, companyId }: any) {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-500 ml-1">Session Name</label>
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Session Name</label>
               <input
                 value={yearForm.name}
                 onChange={(e) => setYearForm({ ...yearForm, name: e.target.value })}
                 placeholder="e.g. 2025/2026 Session"
-                className="w-full p-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 transition-all text-slate-800 placeholder:text-slate-400 font-medium"
+                className="w-full p-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-500 ml-1">Start Date</label>
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Start Date</label>
               <input
                 type="date"
                 value={yearForm.startDate}
                 onChange={(e) => setYearForm({ ...yearForm, startDate: e.target.value })}
-                className="w-full p-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
+                className="w-full p-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-500 ml-1">End Date</label>
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">End Date</label>
               <input
                 type="date"
                 value={yearForm.endDate}
                 onChange={(e) => setYearForm({ ...yearForm, endDate: e.target.value })}
-                className="w-full p-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
+                className="w-full p-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold"
               />
             </div>
           </div>
@@ -170,39 +250,57 @@ export default function AcademicYearsClient({ years, companyId }: any) {
           </div>
         </section>
 
-        {/* Academic Years List */}
+        {/* List */}
         <div className="space-y-6">
-          {data.map((year: any) => (
+          {data && data.length > 0 && data.map((year: any) => (
             <div 
               key={year.id} 
-              className={`bg-white rounded-[2rem] border-2 transition-all duration-500 overflow-hidden ${
-                year.isActive ? 'border-indigo-500 shadow-2xl shadow-indigo-100/50' : 'border-transparent shadow-md'
+              className={`bg-white rounded-[2.5rem] border-2 transition-all duration-500 overflow-hidden ${
+                year.isActive ? 'border-indigo-500 shadow-2xl shadow-indigo-100/50' : 'border-transparent shadow-md hover:shadow-lg'
               }`}
             >
-              {/* Year Card Header */}
               <div className="p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="flex items-start gap-5">
-                  <div className={`p-4 rounded-2xl ${year.isActive ? 'bg-indigo-600' : 'bg-slate-100'}`}>
+                <div className="flex items-center gap-5">
+                  <div className={`p-5 rounded-[1.5rem] ${year.isActive ? 'bg-indigo-600 shadow-lg shadow-indigo-200' : 'bg-slate-100'}`}>
                     <CalendarIcon className={`w-8 h-8 ${year.isActive ? 'text-white' : 'text-slate-500'}`} />
                   </div>
                   <div>
                     <div className="flex items-center gap-3 mb-1">
                       <h3 className="text-2xl font-black text-slate-800">{year.name}</h3>
                       {year.isActive && (
-                        <span className="bg-emerald-100 text-emerald-700 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest border border-emerald-200">
-                          Active
+                        <span className="bg-emerald-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter shadow-sm shadow-emerald-200">
+                          Active Now
                         </span>
                       )}
                     </div>
-                    <p className="text-slate-500 font-semibold flex items-center gap-2">
-                      {new Date(year.startDate).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
-                      <span className="text-slate-300">→</span>
-                      {new Date(year.endDate).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
+                    <p className="text-slate-400 font-bold flex items-center gap-2 italic">
+                      {new Date(year.startDate).toDateString()} — {new Date(year.endDate).toDateString()}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
+                  {/* Delete Year Button */}
+                  <button
+                    onClick={() => handleDeleteYear(year.id)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold transition-all ${
+                      confirmDeleteId === year.id 
+                      ? 'bg-red-500 text-white animate-pulse' 
+                      : 'text-slate-300 hover:text-red-500 hover:bg-red-50'
+                    }`}
+                  >
+                    {confirmDeleteId === year.id ? 'Confirm?' : <TrashIcon className="w-6 h-6" />}
+                  </button>
+
+                  {!year.isActive && (
+                    <button 
+                      onClick={() => toggleYearActive(year.id)}
+                      className="p-3 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all"
+                      title="Set as Active Session"
+                    >
+                      <CheckCircleIcon className="w-7 h-7" />
+                    </button>
+                  )}
                   <button
                     onClick={() => { setEditingYearId(year.id); setYearForm({ name: year.name, startDate: year.startDate.split('T')[0], endDate: year.endDate.split('T')[0] }); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                     className="p-3 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
@@ -211,102 +309,116 @@ export default function AcademicYearsClient({ years, companyId }: any) {
                   </button>
                   <button
                     onClick={() => setExpandedYearId(expandedYearId === year.id ? null : year.id)}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all ${
-                      expandedYearId === year.id 
-                      ? 'bg-slate-800 text-white' 
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-sm ${
+                      expandedYearId === year.id ? 'bg-slate-900 text-white shadow-slate-300' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
                     <HashtagIcon className="w-5 h-5" />
                     {year.terms?.length || 0} Terms
-                    {expandedYearId === year.id ? <ChevronUpIcon className="w-4 h-4 ml-2" /> : <ChevronDownIcon className="w-4 h-4 ml-2" />}
+                    {expandedYearId === year.id ? <ChevronUpIcon className="w-4 h-4 ml-1" /> : <ChevronDownIcon className="w-4 h-4 ml-1" />}
                   </button>
                 </div>
               </div>
 
-              {/* Terms Detail Section */}
+              {/* Term Management Detail */}
               {expandedYearId === year.id && (
-                <div className="bg-slate-50/80 border-t border-slate-100 p-8 animate-in slide-in-from-top-4 duration-300">
-                  <div className="max-w-4xl">
-                    <h4 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-6">Term Management</h4>
-                    
-                    {/* Term Creation Form */}
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-10">
-                      <div className="md:col-span-2">
+                <div className="bg-slate-50/50 border-t border-slate-100 p-8 animate-in slide-in-from-top-4 duration-300">
+                  <div className="max-w-5xl mx-auto">
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                      
+                      {/* Left: Term Form */}
+                      <div className="lg:col-span-1 space-y-4">
+                        <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-4">Add / Edit Term</h4>
                         <input
-                          placeholder="Term Name (e.g. Fall Semester)"
+                          placeholder="Term Name"
                           value={termForm.name}
                           onChange={(e) => setTermForm({...termForm, name: e.target.value})}
-                          className="w-full p-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium"
+                          className="w-full p-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-sm"
                         />
-                      </div>
-                      <input
-                        type="number"
-                        placeholder="No."
-                        value={termForm.termNumber}
-                        onChange={(e) => setTermForm({...termForm, termNumber: e.target.value})}
-                        className="w-full p-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-center"
-                      />
-                      <div className="md:col-span-2 flex gap-2">
-                        <button
-                          onClick={() => handleTermSubmit(year.id)}
-                          className="flex-1 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
-                        >
-                          <PlusIcon className="w-5 h-5 stroke-[3]" />
-                          {editingTermId ? "Update" : "Add"}
-                        </button>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="number"
+                            placeholder="Order No."
+                            value={termForm.termNumber}
+                            onChange={(e) => setTermForm({...termForm, termNumber: e.target.value})}
+                            className="w-full p-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-sm"
+                          />
+                          <button
+                            onClick={() => handleTermSubmit(year.id)}
+                            className="bg-indigo-600 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-700 transition-all"
+                          >
+                            {editingTermId ? "Update" : "Save"}
+                          </button>
+                        </div>
+                        <input
+                          type="date"
+                          value={termForm.startDate}
+                          onChange={(e) => setTermForm({...termForm, startDate: e.target.value})}
+                          className="w-full p-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-sm"
+                        />
+                        <input
+                          type="date"
+                          value={termForm.endDate}
+                          onChange={(e) => setTermForm({...termForm, endDate: e.target.value})}
+                          className="w-full p-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-sm"
+                        />
                         {editingTermId && (
-                           <button onClick={() => setEditingTermId(null)} className="p-4 text-slate-400 hover:text-slate-600">
-                             <ArrowPathIcon className="w-6 h-6" />
-                           </button>
+                           <button onClick={() => { setEditingTermId(null); setTermForm({name:"", termNumber:"", startDate:"", endDate:""}); }} className="w-full text-slate-400 font-bold text-xs uppercase">Cancel Edit</button>
                         )}
                       </div>
-                    </div>
 
-                    {/* Terms List */}
-                    <div className="grid grid-cols-1 gap-4">
-                      {year.terms?.map((term: any) => (
-                        <div key={term.id} className="group bg-white p-5 rounded-2xl border border-slate-200 flex items-center justify-between hover:shadow-lg hover:shadow-slate-200/50 transition-all">
-                          <div className="flex items-center gap-5">
-                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg ${
-                              term.isActive ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'
-                            }`}>
-                              {term.termNumber}
-                            </div>
-                            <div>
-                              <p className="font-extrabold text-slate-800 text-lg">{term.name}</p>
-                              <p className="text-sm font-medium text-slate-400 italic">Sequential Term Order</p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-4">
-                            {term.isActive ? (
-                              <div className="flex items-center gap-2 text-emerald-600 font-black text-sm uppercase mr-4">
-                                <CheckBadgeSolid className="w-6 h-6" />
-                                Active
+                      {/* Right: Terms List */}
+                      <div className="lg:col-span-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {year.terms?.map((term: any) => (
+                            <div key={term.id} className="bg-white p-6 rounded-3xl border border-slate-200 flex items-center justify-between hover:border-indigo-200 transition-all shadow-sm">
+                              <div className="flex items-center gap-4">
+                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg ${term.isActive ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-100' : 'bg-slate-100 text-slate-400'}`}>
+                                  {term.termNumber}
+                                </div>
+                                <div>
+                                  <p className="font-black text-slate-800">{term.name}</p>
+                                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
+                                    {new Date(term.startDate).toLocaleDateString()} — {new Date(term.endDate).toLocaleDateString()}
+                                  </p>
+                                </div>
                               </div>
-                            ) : (
-                              <button className="text-sm font-bold text-slate-400 hover:text-indigo-600 px-4 py-2 hover:bg-indigo-50 rounded-xl transition-all">
-                                Set Active
-                              </button>
-                            )}
-                            <button 
-                              onClick={() => {
-                                setEditingTermId(term.id);
-                                setTermForm({ 
-                                  name: term.name, 
-                                  termNumber: term.termNumber.toString(),
-                                  startDate: "", // Add if your model requires
-                                  endDate: "" 
-                                });
-                              }}
-                              className="p-2 text-slate-300 hover:text-slate-600 transition-colors"
-                            >
-                              <PencilSquareIcon className="w-5 h-5" />
-                            </button>
-                          </div>
+                              <div className="flex items-center gap-2">
+                                {!term.isActive && (
+                                  <button onClick={() => toggleTermActive(year.id, term.id)} className="p-2 text-slate-300 hover:text-emerald-500 transition-colors">
+                                    <CheckCircleIcon className="w-6 h-6" />
+                                  </button>
+                                )}
+                                {term.isActive && <CheckBadgeSolid className="w-6 h-6 text-emerald-500 mr-2" />}
+                                {/* Delete Term Button */}
+                                <button 
+                                  onClick={() => handleDeleteTerm(year.id, term.id)}
+                                  className={`p-2 transition-all rounded-lg ${
+                                    confirmDeleteId === term.id ? 'bg-red-500 text-white' : 'text-slate-300 hover:text-red-500'
+                                  }`}
+                                >
+                                  {confirmDeleteId === term.id ? <CheckCircleIcon className="w-5 h-5" /> : <TrashIcon className="w-5 h-5" />}
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    setEditingTermId(term.id);
+                                    setTermForm({ 
+                                      name: term.name, 
+                                      termNumber: term.termNumber.toString(),
+                                      startDate: term.startDate.split('T')[0],
+                                      endDate: term.endDate.split('T')[0]
+                                    });
+                                  }}
+                                  className="p-2 text-slate-300 hover:text-indigo-600 transition-colors"
+                                >
+                                  <PencilSquareIcon className="w-5 h-5" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      </div>
+
                     </div>
                   </div>
                 </div>
