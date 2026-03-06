@@ -30,6 +30,9 @@ export async function PATCH(
       }),
     ]);
 
+    // Invalidate cache for all terms of this academic year
+    await cacheDel(`admin:terms:${companyId}:all`);
+
     return NextResponse.json({ success: true, data: activated });
   } catch (error) {
     console.error("TERM_ACTIVATE_ERROR", error);

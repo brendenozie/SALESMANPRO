@@ -22,6 +22,9 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       }),
     ]);
 
+    // Invalidate cache for all years of this company
+    await cacheDel(`admin:academicYears:${companyId}:all`);
+
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ success: false }, { status: 500 });
