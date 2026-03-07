@@ -25,44 +25,7 @@ interface StudentGradeRow {
   status: 'idle' | 'saving' | 'saved' | 'error';
 }
 
-const downloadPDF = () => {
-  const doc = new jsPDF();
-  
-  // 1. Add Header & Branding
-  doc.setFontSize(20);
-  doc.setTextColor(79, 70, 229); // Indigo-600
-  doc.text(examTitle || 'Exam Report', 14, 22);
-  
-  doc.setFontSize(10);
-  doc.setTextColor(100);
-  doc.text(`Academic Year: ${academicYearId || '2025/2026'} | Date: ${new Date().toLocaleDateString()}`, 14, 30);
-  
-  // 2. Add Summary Stats
-  const scores = students.map(s => Number(s.currentScore)).filter(s => !isNaN(s));
-  const avg = scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2) : '0';
-  
-  doc.setDrawColor(240);
-  doc.line(14, 35, 196, 35);
-  doc.text(`Total Students: ${students.length}    |    Class Average: ${avg}%`, 14, 42);
 
-  // 3. Generate Table
-  autoTable(doc, {
-    startY: 50,
-    head: [['Student Name', 'Admission No.', 'Score (%)', 'Grade']],
-    body: students.map(s => [
-      s.name, 
-      s.admissionNumber, 
-      s.currentScore || '0', 
-      calculateGrade(Number(s.currentScore)) // Reusing your existing logic
-    ]),
-    headStyles: { fillStyle: 'f3f4f6', textColor: [31, 41, 55], fontStyle: 'bold' },
-    alternateRowStyles: { fillStyle: 'f9fafb' },
-    margin: { top: 50 },
-  });
-
-  // 4. Save the File
-  doc.save(`${examTitle?.replace(/\s+/g, '_')}_Grades.pdf`);
-};
 
 export default function ExamGradesClient({ examId, courseId, classroomId, companyId, examTitle,initialStudents, academicYearId, termId }: { examId: string, courseId: string, classroomId?: string, companyId?: string, examTitle?: string, initialStudents: StudentGradeRow[], academicYearId?: string, termId?: string }) {
   const [students, setStudents] = useState<StudentGradeRow[]>(initialStudents);
@@ -165,6 +128,54 @@ const bulkAutoFill = (value: number) => {
   if (count > 0) {
     // You could trigger your showToast state here with a custom message
   }
+};
+
+const downloadPDF = () => {
+  const doc = new jsPDF();
+  
+  // 1. Add Header & Branding
+  doc.setFontSize(20);
+  doc.setTextColor(79, 70, 229); // Indigo-600
+  doc.text(examTitle || 'Exam Report', 14, 22);
+  
+  doc.setFontSize(10);
+  doc.setTextColor(100);
+  doc.text(`Academic Year: ${academicYearId || '2025/2026'} | Date: ${new Date().toLocaleDateString()}`, 14, 30);
+  
+  // 2. Add Summary Stats
+  const scores = students.map(s => Number(s.currentScore)).filter(s => !isNaN(s));
+  const avg = scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2) : '0';
+  
+  doc.setDrawColor(240);
+  doc.line(14, 35, 196, 35);
+  doc.text(`Total Students: ${students.length}    |    Class Average: ${avg}%`, 14, 42);
+
+  // 3. Generate Table
+  autoTable(doc, {
+    startY: 50,
+    head: [['Student Name', 'Admission No.', 'Score (%)', 'Grade']],
+    body: students.map(s => [
+      s.name, 
+      s.admissionNumber, 
+      s.currentScore || '0', 
+      calculateGrade(Number(s.currentScore)) // Reusing your existing logic
+    ]),
+    headStyles: { fillColor: [243, 244, 246], textColor: [31, 41, 55], fontStyle: 'bold' },
+    alternateRowStyles: { fillColor: [249, 250, 251] },
+    margin: { top: 50 },
+  });
+
+  // 4. Save the File
+  doc.save(`${examTitle?.replace(/\s+/g, '_')}_Grades.pdf`);
+};
+
+const calculateGrade = (score: number): string => {
+  if (score >= 90) return 'A+';
+  if (score >= 80) return 'A';
+  if (score >= 60) return 'B';
+  if (score >= 50) return 'C';
+  if (score >= 40) return 'D';
+  return 'F'; // Default grade for scores below 40
 };
 
 return (

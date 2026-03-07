@@ -4059,8 +4059,8 @@ model Grade {
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
-  @@unique([studentId, courseId, examId])
-  @@unique([studentId, courseId, courseAssignmentId])
+  // @@unique([studentId, courseId, examId])
+  // @@unique([studentId, courseId, courseAssignmentId])
   @@index([studentId, courseId, examId]) // For efficient lookup of a student's grade for a specific course/exam
   @@index([studentId, courseId, courseAssignmentId]) // For efficient lookup of a student's grade for a specific course assignment
   @@index([courseId])
