@@ -12,12 +12,14 @@ interface PageProps {
   searchParams: {
     courseId?: string;
     classroomId?: string;
+    academicYearId?: string;
+    termId?: string;
   };
 }
 
 export default async function ExamGradesPage({ params, searchParams }: PageProps) {
   const { slug: companyId, examId } = params;
-  const { courseId, classroomId } = searchParams;
+  const { courseId, classroomId, academicYearId, termId } = searchParams;
 
   const cookieHeader = (await cookies()).toString();
 
@@ -26,6 +28,8 @@ export default async function ExamGradesPage({ params, searchParams }: PageProps
     examId,
     courseId,
     classroomId,
+    academicYearId,
+    termId,
   });
 
   let initialData: any = null;
@@ -56,6 +60,8 @@ export default async function ExamGradesPage({ params, searchParams }: PageProps
         companyId={companyId}
         initialStudents={initialData || []}
         examTitle={initialData?.exam?.title || "Exam"}
+        academicYearId={academicYearId}
+        termId={termId}
       />
     );
   } catch (err: any) {

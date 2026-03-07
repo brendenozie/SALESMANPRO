@@ -2673,6 +2673,7 @@ model AcademicYear {
   updatedAt         DateTime           @updatedAt
   exams             Exam[]
   courseAssignments CourseAssignment[]
+  grades            Grade[]
 
   @@index([companyId])
   @@index([isActive])
@@ -2698,6 +2699,7 @@ model Term {
   updatedAt         DateTime           @updatedAt
   exams             Exam[]
   courseAssignments CourseAssignment[]
+  grades            Grade[]
 
   @@index([companyId])
   @@index([academicYearId])
@@ -4037,9 +4039,11 @@ model Grade {
   gradeStatus GradeStatus? // Enum: PASSED, FAILED, PENDING
   comments    String?
 
-  // NEW: Track which period this grade belongs to
-  term String? // e.g., "Term 1", "Spring 2026"
-  year String? // e.g., "2026"
+  academicYearId String?       @db.ObjectId
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
+
+  termId String? @db.ObjectId
+  term   Term?   @relation(fields: [termId], references: [id])
 
   recordedById String?   @db.ObjectId // Educator who recorded this grade
   recordedBy   Educator? @relation("recordedBy", fields: [recordedById], references: [id])
@@ -4055,6 +4059,8 @@ model Grade {
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
+  @@unique([studentId, courseId, examId])
+  @@unique([studentId, courseId, courseAssignmentId])
   @@index([studentId, courseId, examId]) // For efficient lookup of a student's grade for a specific course/exam
   @@index([studentId, courseId, courseAssignmentId]) // For efficient lookup of a student's grade for a specific course assignment
   @@index([courseId])
