@@ -955,7 +955,7 @@ export default function AdminExamsOverviewPage({ initialExamCategories, initialE
                           </div>
                         )}
                         <Link 
-                          href={`/admin/${companyId}/exams/${exam.id}/grades?courseId=${exam.courseId}&classroomId=${exam.classroomId || ''}`}
+                          href={`/admin/${companyId}/exams/${exam.id}/grades?courseId=${exam.courseId}&classroomId=${exam.classroomId || ''}&educatorId=${exam.createdByEducatorId}&academicYearId=${exam.academicYearId}&termId=${exam.termId}`}
                           className="flex items-center gap-2 px-3 py-2 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition-colors"
                         >
                           <UsersIcon className="h-5 w-5" />
