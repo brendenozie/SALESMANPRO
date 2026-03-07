@@ -17,7 +17,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 interface StudentGradeRow {
-  studentId: string;
+  id: string;
   name: string;
   admissionNumber: string;
   currentScore: number | string;
@@ -56,7 +56,7 @@ export default function ExamGradesClient({ examId, courseId, classroomId, compan
       updatedStudents[index].status = "saving";
 
       return {
-        studentId: s.studentId,
+        studentId: s.id,
         examId,
         courseId,
         companyId,
@@ -296,7 +296,7 @@ return (
               const scoreColor = scoreNum >= 50 ? 'text-green-600' : scoreNum > 0 ? 'text-red-500' : 'text-gray-400';
               
               return (
-                <tr key={student.studentId}
+                <tr key={student.id}
                     className={`group transition-all duration-700 ${
                       student.status === 'saved' ? 'bg-green-50/50' : 'hover:bg-indigo-50/30'
                     }`}>
