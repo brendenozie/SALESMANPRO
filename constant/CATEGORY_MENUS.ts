@@ -733,8 +733,9 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
 
   "Dashboards": [
       {label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon,  },
-      { label: "Categories", href: `/dashboards/cated`, icon: ClipboardDocumentListIcon },      
-      { label: "Locations", href: `/dashboards/locat`, icon: ClipboardDocumentListIcon },
+      { label: "Categories", href: `/admin/${adminSlug}/cated`, icon: ClipboardDocumentListIcon },
+      { label: "Site Categories", href: `/admin/${adminSlug}/site-categories`, icon: ClipboardDocumentListIcon },      
+      { label: "Locations", href: `/admin/${adminSlug}/locat`, icon: ClipboardDocumentListIcon },
       {
         label: "Users",  href: `/admin/${adminSlug}/saas-users`, icon: UsersIcon,  },
         {
