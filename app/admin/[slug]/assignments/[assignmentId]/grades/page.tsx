@@ -55,7 +55,7 @@ export default async function AssignmentsGradesPage({ params, searchParams }: Pa
         classroomId={classroomId}
         companyId={companyId}
         initialStudents={initialData || []}
-        examTitle={initialData?.exam?.title || "Exam"}
+        examTitle={initialData?.exam?.title || "Assignment Grades"}
       />
     );
   } catch (err: any) {
