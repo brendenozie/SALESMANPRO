@@ -102,7 +102,7 @@ export const POST = withApiHandler(async (req: Request) => {
   const body = await req.json();
   const { 
     courseId, companyId, title, description, dueDate, maxGrade, createdById, type, status, isOnline, classroomId,
-    durationMinutes, autoGrade 
+    durationMinutes, autoGrade, academicYearId, termId
   } = body;
 
   try {
@@ -114,8 +114,10 @@ export const POST = withApiHandler(async (req: Request) => {
         status: status || "Draft",
         dueDate: dueDate ? new Date(dueDate) : new Date(),
         maxGrade: maxGrade ? parseFloat(maxGrade) : 0,
-        academicYearId: body.academicYearId || null,
-        termId: body.termId || null,
+        // academicYearId: academicYearId || null,
+        // termId: termId || null,
+        academicYear: academicYearId ? { connect: { id: academicYearId } } : undefined,
+        term: termId ? { connect: { id: termId } } : undefined,
         isOnline: !!isOnline,
         durationMinutes: durationMinutes ? parseInt(durationMinutes) : null,
         autoGrade: !!autoGrade,

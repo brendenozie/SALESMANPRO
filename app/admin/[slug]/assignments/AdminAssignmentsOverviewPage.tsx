@@ -230,6 +230,8 @@ export default function AssignmentsPageClient({
       ...assignmentData,
       course: undefined,
       classroom: undefined,
+      academicYearId: activeAcademicYearId,
+      termId: activeTermId,
     };
 
     await fetch(url, {
