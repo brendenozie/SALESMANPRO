@@ -46,8 +46,6 @@ export default async function AssignmentsGradesPage({ params, searchParams }: Pa
       initialData = (await gradesRes.json()).data;
     }
 
-    console.log("Initial Data →", initialData);
-
     return (
       <AssignmentsGradesClient
         assignmentId={assignmentId}
