@@ -37,6 +37,7 @@ const getCourses = async (request: Request) => {
         take: 1,
         select: {
           academicLevel: { select: { id: true, name: true } },
+          classRoom: { select: { id: true, name: true } },
         },
       },
     },
@@ -53,6 +54,8 @@ const getCourses = async (request: Request) => {
 
   const academicLevelId =
     student.StudentAcademicLevel[0]?.academicLevel?.id ?? null;
+
+  const classRoomId = student.StudentAcademicLevel[0]?.classRoom?.id ?? null;
 
   let courses: any[] = [];
   if (academicLevelId) {

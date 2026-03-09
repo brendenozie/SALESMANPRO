@@ -1,4 +1,4 @@
-import AcademicYearsClient from "./AcademicYearsClient"
+import TermsManagerClient from "./TermsManagerClient"
 import { cookies } from "next/headers"
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api"
@@ -52,8 +52,8 @@ export default async function Page({params}:PageProps){
  }
 
  return(
-  <AcademicYearsClient
-   years={years}
+  <TermsManagerClient
+//    years={years}
    companyId={companyId}
   />
  )
