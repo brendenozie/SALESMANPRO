@@ -107,14 +107,31 @@ model Notification {
 }
 
 model CompanyCategory {
-  id      String    @id @default(auto()) @map("_id") @db.ObjectId
-  name    String
-  icon    String?
-  image   String?
-  status  String
-  Company Company[]
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  icon     String?
+  image    String?
+  status   String
+  variants Variant[]
 
-  @@index([status])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companies Company[]
+}
+
+model Variant {
+  id                  String          @id @default(auto()) @map("_id") @db.ObjectId
+  name                String
+  link                String
+  description         String?
+  tag                 String?         @default("Standard")
+  desktopPreviewImage String?
+  mobilePreviewImage  String?
+  categoryId          String          @db.ObjectId
+  category            CompanyCategory @relation(fields: [categoryId], references: [id])
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
 }
 
 // Category model with self-relations for hierarchy (categories & subcategories)
