@@ -39,10 +39,10 @@ export default function SiteCategoriesClient({ initialData }: { initialData: any
 
   const handleSave = async (payload: any) => {
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/site-categories`, {
+      const res = await fetch(`${apiBaseUrl}${selectedForEdit ? `/admin/site-categories/${selectedForEdit.id}` : '/admin/site-categories'}`, {
         method: selectedForEdit ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...payload }),
+        body: JSON.stringify({ ...payload, id: selectedForEdit?.id }),
       });
   
       if (res.ok) {
@@ -58,6 +58,28 @@ export default function SiteCategoriesClient({ initialData }: { initialData: any
   const handleEdit = (cat: any) => {
     setSelectedForEdit(cat);
     setIsModalOpen(true);
+  };
+
+  // Inside SiteCategoriesClient.tsx
+  const toggleStatus = async (id: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    
+    try {
+      const res = await fetch(`${apiBaseUrl}/admin/site-categories/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (res.ok) {
+        // Refresh the local state or re-fetch
+        setCategories(prev => prev.map(cat => 
+          cat.id === id ? { ...cat, status: newStatus } : cat
+        ));
+      }
+    } catch (error) {
+      console.error("Status toggle failed:", error);
+    }
   };
 
   return (
@@ -88,7 +110,19 @@ export default function SiteCategoriesClient({ initialData }: { initialData: any
               className="p-6 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
             >
               <div className="flex items-center gap-5">
-                <span className="text-4xl bg-indigo-50 p-4 rounded-2xl ring-1 ring-indigo-100">{cat.icon}</span>
+                {/* <span className="text-4xl bg-indigo-50 p-4 rounded-2xl ring-1 ring-indigo-100">{cat.icon}</span> */}
+                {/* Industry Icon with Status Indicator */}
+                <div className="relative">
+                  <span className={`text-4xl p-4 rounded-2xl block transition-opacity ${cat.status === 'inactive' ? 'opacity-40 grayscale' : 'bg-indigo-50'}`}>
+                    {cat.icon}
+                  </span>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); toggleStatus(cat.id, cat.status); }}
+                    className={`absolute -top-2 -right-2 h-6 w-6 rounded-full border-2 border-white shadow-sm flex items-center justify-center transition-colors ${cat.status === 'active' ? 'bg-green-500' : 'bg-gray-400'}`}
+                  >
+                    <div className="h-2 w-2 bg-white rounded-full" />
+                  </button>
+                </div>
                 <div>
                   <h3 className="text-xl font-bold text-gray-900">{cat.name}</h3>
                   <p className="text-sm text-gray-400 font-semibold uppercase tracking-wider">{cat.variants?.length || 0} Variants Available</p>

@@ -32,6 +32,36 @@ export const GET = withApiHandler(async (request) => {
   return formatResponse(true, categories, "Fetched", 200);
 });
 
+// Inside your existing POST handler
+export const POST = withApiHandler(async (request) => {
+  const body = await request.json();
+  const { name, icon, variants, status = "active" } = body;
+
+  const category = await prisma.companyCategory.create({
+    data: {
+      name,
+      icon,
+      status,
+      variants: {
+        create: variants.map((v: any) => ({
+          name: v.name,
+          link: v.link,
+          description: v.description,
+          tag: v.tag || "Standard",
+          desktopPreviewImage: v.desktopPreviewImage,
+          mobilePreviewImage: v.mobilePreviewImage,
+        }))
+      }
+    },
+    include: { variants: true }
+  });
+
+  // Purge the cache
+  await cacheDel(`admin:companycategory:all`);
+  
+  return formatResponse(true, category, "Category Created", 201);
+});
+
 // const SITE_CATEGORIES: any[] = [
 //   { 
 //     name: "E-commerce", 
@@ -351,28 +381,28 @@ export const GET = withApiHandler(async (request) => {
 //   return formatResponse(true, null, "Site categories seeded", 201);
 // });
 
-export const POST = withApiHandler(async (request) => {
-  const body = await request.json();
-  const { name, icon, variants } = body;
+// export const POST = withApiHandler(async (request) => {
+//   const body = await request.json();
+//   const { name, icon, variants } = body;
 
-  const category = await prisma.companyCategory.create({
-    data: {
-      name,
-      icon,
-      status: "active",
-      variants: {
-        create: variants.map((v: any) => ({
-          name: v.name,
-          link: v.link,
-          description: v.description,
-          tag: v.tag,
-          desktopPreviewImage: v.desktopPreviewImage,
-          mobilePreviewImage: v.mobilePreviewImage,
-        }))
-      }
-    }
-  });
+//   const category = await prisma.companyCategory.create({
+//     data: {
+//       name,
+//       icon,
+//       status: "active",
+//       variants: {
+//         create: variants.map((v: any) => ({
+//           name: v.name,
+//           link: v.link,
+//           description: v.description,
+//           tag: v.tag,
+//           desktopPreviewImage: v.desktopPreviewImage,
+//           mobilePreviewImage: v.mobilePreviewImage,
+//         }))
+//       }
+//     }
+//   });
 
-  await cacheDel(`admin:companycategory:*`);
-  return formatResponse(true, category, "Category Created", 201);
-});
+//   await cacheDel(`admin:companycategory:*`);
+//   return formatResponse(true, category, "Category Created", 201);
+// });

@@ -11,6 +11,9 @@ import {
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
 // Import your helpers (ensure these are exported from your client page or a utils file)
 // For this block, I'm assuming they are available or defined in the same scope.
 
@@ -73,6 +76,47 @@ async function compressImage(file: File, maxMb: number = 0.5): Promise<File> {
     };
     reader.onerror = (error) => reject(error);
   });
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Upload helper for getting signed URLs and uploading files
+////////////////////////////////////////////////////////////////////////////////
+async function uploadFile(files: File[], type: "image" | "video" | "book") {
+  console.log("Uploading files:", files);
+  
+  console.log("Starting upload for : ", type);
+
+  if (!files?.length) return [];
+  console.log("Starting upload for : ", type);
+
+  const uploads = files.map(async (file, index) => {
+    // 1. Request signed URL from your backend
+    // const res = await fetch(
+    //   `${API_URL}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}`
+    // );
+
+    const res = await fetch(
+      `${apiBaseUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
+    );
+
+    if (!res.ok) throw new Error("Failed to get signed URL");
+    const { uploadUrl, publicUrl } = await res.json();
+
+    // 2. Upload directly to S3 via PUT request
+    const uploadRes = await fetch(uploadUrl, {
+      method: "PUT",
+      body: file,
+    });
+    if (!uploadRes.ok) throw new Error("Upload failed");
+
+    // 3. Return the public CloudFront/S3 URL
+    return {
+      // The original index is not needed here as we will re-index later
+      url: publicUrl,
+    };
+  });
+
+  return Promise.all(uploads);
 }
 
 
