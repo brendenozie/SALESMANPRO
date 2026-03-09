@@ -114,6 +114,19 @@ export default async function EditStorePage({
     `${apiBaseUrl}/admin/locations`,
     { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } }
   );
+
+  
+  const resSiteCategories = await fetch(`${apiBaseUrl}/site-categories?limit=100`, {
+    cache: 'no-store',
+    headers: { Cookie: cookieHeader },
+  });
+
+  const dataSiteCategories = await resSiteCategories.json();
+
+  const siteCategories = dataSiteCategories.data || [];
+
+  console.log(siteCategories);
+
   const locationData = await locationRes.json();
   const availableLocations: ILocation[] = locationData.data?.data || [];
 
@@ -257,6 +270,7 @@ export default async function EditStorePage({
 
   return (
     <CreateStoreForm
+      siteCategories={siteCategories}
       availableCategories={availableCategories}
       availableLocations={availableLocations}
       initialData={storeFormData}

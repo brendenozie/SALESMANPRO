@@ -34,6 +34,7 @@ interface Category {
 }
 
 export interface CategorySelectProps {
+  siteCategories: any[]; // New prop for site categories
   category: string;
   variant?: string | null | undefined;
   handleChange: (e: ChangeEvent<HTMLSelectElement>) => void;
@@ -643,6 +644,7 @@ const PreviewSkeleton = () => (
 // } from "@heroicons/react/24/solid";
 
 export default function CategoryStep({
+  siteCategories,
   category,
   variant,
   handleChange,
@@ -651,16 +653,16 @@ export default function CategoryStep({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
   
-  const selectedCategory = SITE_CATEGORIES.find((c) => c.name === category);
-  const selectedTemplate = selectedCategory?.variants.find((v) => v.name === variant);
+  const selectedCategory = siteCategories.find((c) => c.name === category);
+  const selectedTemplate = selectedCategory?.variants.find((v: any) => v.name === variant);
 
   const filteredCategories = useMemo(
-    () => SITE_CATEGORIES.filter((c) => c.name.toLowerCase().includes(search.toLowerCase())),
+    () => siteCategories.filter((c) => c.name.toLowerCase().includes(search.toLowerCase())),
     [search]
   );
 
   const handleIndustrySelect = (catName: string) => {
-    const cat = SITE_CATEGORIES.find(c => c.name === catName);
+    const cat = siteCategories.find(c => c.name === catName);
     handleChange({ target: { name: 'category', value: catName } } as any);
     if (cat) {
       handleChange({ target: { name: 'variant', value: cat.variants[0].name } } as any);
@@ -741,7 +743,7 @@ export default function CategoryStep({
               </div>
 
               <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
-                {selectedCategory.variants.map((v) => {
+                {selectedCategory.variants.map((v: any) => {
                   const isSelected = v.name === variant;
                   return (
                     <button

@@ -1064,6 +1064,7 @@ export interface StepConfig {
   render: (
     form: StoreForm,
     handlers: Handlers,
+    siteCategories: any[],
     availableCategories: IProductCategory[],
     allLocs: ILocation[], 
     selectedLocationsForDisplay: SelectedLocation[],

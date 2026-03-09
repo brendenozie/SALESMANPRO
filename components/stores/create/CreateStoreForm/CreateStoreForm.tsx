@@ -61,6 +61,7 @@ export interface SelectedLocation {
 }
 
 type Props = {  
+  siteCategories: any[];
   availableCategories: IProductCategory[];
   availableLocations: ILocation[];
   initialData?: Partial<StoreForm> & { id: string };
@@ -139,6 +140,7 @@ const getAllDescendantIds = (
 
 
 export default function CreateStoreForm({
+  siteCategories,
   availableCategories,
   availableLocations,
   initialData,
@@ -1375,6 +1377,8 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [aiStatus, setAiStatus] = useState("");
 
+  // const getSiteCategories 
+
   // Constants
   const AI_GENERATION_DELAY_MS = 1000;
 
@@ -1814,6 +1818,7 @@ const StepContent = useMemo(() => {
     const content = step.render(
       form,
       handlers,
+      siteCategories,
       availableCategories,
       availableLocations,
       selectedLocationsForDisplay,
@@ -1933,6 +1938,7 @@ const StepContent = useMemo(() => {
   allSteps,
   form,
   handlers,
+  siteCategories,
   availableCategories,
   availableLocations,
   selectedLocationsForDisplay,

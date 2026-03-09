@@ -130,7 +130,7 @@ export default function CategoryFormModal({ isOpen, onClose, onSave, initialData
     variantName: '',
     link: '',
     description: '',
-    previewImage: '',
+    desktopPreviewImage: '',
     tag: 'New'
   });
 
@@ -142,7 +142,7 @@ export default function CategoryFormModal({ isOpen, onClose, onSave, initialData
         variantName: initialData.variants?.[0]?.name || '',
         link: initialData.variants?.[0]?.link || '',
         description: initialData.variants?.[0]?.description || '',
-        previewImage: initialData.variants?.[0]?.previewImage || '',
+        desktopPreviewImage: initialData.variants?.[0]?.desktopPreviewImage || '',
         tag: initialData.variants?.[0]?.tag || 'New'
       });
     }
@@ -163,7 +163,7 @@ export default function CategoryFormModal({ isOpen, onClose, onSave, initialData
       // @ts-ignore - assuming uploadFile is available globally or imported
       const [{ url }] = await uploadFile([compressedFile], "image");
       
-      setFormData(prev => ({ ...prev, previewImage: url }));
+      setFormData(prev => ({ ...prev, desktopPreviewImage: url }));
       console.log("✅ Optimized Image Uploaded:", url);
     } catch (error) {
       console.error("Upload failed:", error);
@@ -185,7 +185,7 @@ export default function CategoryFormModal({ isOpen, onClose, onSave, initialData
           name: formData.variantName,
           link: formData.link,
           description: formData.description,
-          previewImage: formData.previewImage,
+          desktopPreviewImage: formData.desktopPreviewImage,
           tag: formData.tag
         }
       ]
@@ -277,7 +277,7 @@ export default function CategoryFormModal({ isOpen, onClose, onSave, initialData
               <div 
                 onClick={() => fileInputRef.current?.click()}
                 className={`group relative h-48 w-full rounded-[2rem] border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all ${
-                  formData.previewImage ? 'border-indigo-200 bg-indigo-50/20' : 'border-gray-200 bg-gray-50 hover:border-indigo-400 hover:bg-white'
+                  formData.desktopPreviewImage ? 'border-indigo-200 bg-indigo-50/20' : 'border-gray-200 bg-gray-50 hover:border-indigo-400 hover:bg-white'
                 }`}
               >
                 {uploading ? (
@@ -285,9 +285,9 @@ export default function CategoryFormModal({ isOpen, onClose, onSave, initialData
                     <div className="h-8 w-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
                     <span className="text-xs font-black text-indigo-600 uppercase tracking-tighter">Optimizing...</span>
                   </div>
-                ) : formData.previewImage ? (
+                ) : formData.desktopPreviewImage ? (
                   <>
-                    <img src={formData.previewImage} className="absolute inset-0 w-full h-full object-cover rounded-[2rem] opacity-40 group-hover:opacity-20 transition-opacity" />
+                    <img src={formData.desktopPreviewImage} className="absolute inset-0 w-full h-full object-cover rounded-[2rem] opacity-40 group-hover:opacity-20 transition-opacity" />
                     <div className="z-10 flex flex-col items-center gap-1">
                       <CheckIcon className="h-8 w-8 text-indigo-600 bg-white rounded-full p-1 shadow-md" />
                       <span className="text-xs font-bold text-indigo-900 bg-white/80 px-3 py-1 rounded-full">Change Screenshot</span>

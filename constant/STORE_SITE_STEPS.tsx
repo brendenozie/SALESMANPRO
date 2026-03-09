@@ -29,7 +29,7 @@ export const storeSteps: StepConfig[] = [
   {
     key: 'businesscategory',
     title: 'Business Category',
-    render: (f, h) => <CategorySelect {...f} handleChange={h.handleChange} />,
+    render: (f, h, siteCategories) => <CategorySelect {...f} handleChange={h.handleChange} siteCategories={siteCategories} />,
   },
   {
     key: 'basic',
@@ -60,7 +60,7 @@ export const storeSteps: StepConfig[] = [
   {
     key: 'categories',
     title: 'Categories',
-    render: (f, h, cats,allLocs, selectedLocationsForDisplay,  selectedCategoriesArray,
+    render: (f, h, site,cats,allLocs, selectedLocationsForDisplay,  selectedCategoriesArray,
         dispatch) => (
       <CategoryAccordion
         category={f.category}
@@ -430,7 +430,7 @@ export const locationsSteps: StepConfig[] = [
   {
     key: 'storeLocations', // NEW KEY
     title: 'Store Locations', // NEW TITLE
-    render: (f, h, cats, allLocs, selectedLocationsForDisplay) => ( // NEW: allLocs parameter
+    render: (f, h,site, cats, allLocs, selectedLocationsForDisplay) => ( // NEW: allLocs parameter
       <LocationSelectionAccordion
         availableLocations={allLocs} // Pass all available locations
         selectedLocations={selectedLocationsForDisplay} // Pass currently selected locations
