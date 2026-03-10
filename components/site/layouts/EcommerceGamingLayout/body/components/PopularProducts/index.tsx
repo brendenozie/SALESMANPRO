@@ -55,7 +55,7 @@ export default function DailyBestSells({ id }: { id: string }) {
           <div>
             <span className="text-red-600 font-mono text-xs tracking-[0.5em] uppercase mb-2 block">Hot_Drops_Detected</span>
             <h2 className="text-4xl md:text-6xl font-black italic text-white uppercase tracking-tighter">
-              DAILY <span className="text-red-600">BEST SELLS</span>
+              POPULAR <span className="text-red-600"> SELLS</span>
             </h2>
           </div>
           
