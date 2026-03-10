@@ -1,175 +1,155 @@
 'use client';
 
 import { MinusIcon, PlusIcon, StarIcon, TrashIcon } from '@heroicons/react/24/solid';
-import React from 'react';
+import React, { useState } from 'react';
 import { MarketListingForm } from '@/types/typings';
 import { motion } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
-import classNames from 'classnames';
+import QuickViewModal from '@/components/site/QuickViewModal';
 
 interface ProductCardProps {
   product: MarketListingForm;
 }
 
-const loader = ({ src }: { src: string }) => {
-  return src;
-}
-
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
   const { storeFormData } = useStoreContext();
-  const { slug } = storeFormData || {};
   
-  const primary = storeFormData?.themeSettings?.primaryColor || '#10B981';
-  const secondary = storeFormData?.themeSettings?.secondaryColor || '#3B82F6';
+  const primary = storeFormData?.themeSettings?.primaryColor || '#6366f1';
+  const secondary = storeFormData?.themeSettings?.secondaryColor || '#f43f5e';
 
-  const getQuantity = (id: string) => cart.find((item : MarketListingForm) => item.id === id)?.quantity || 0;
-  const quantity = getQuantity(product.id);
-
+  const quantity = cart.find((item: MarketListingForm) => item.id === product.id)?.quantity || 0;
   const { name, images, finalPrice, sellingPrice } = product;
-  const rating = 4.5; // Example static value
-  const reviews = 149; // Example static value
 
-  const discount =
-    sellingPrice && finalPrice != null && sellingPrice > finalPrice
-      ? Math.round(((sellingPrice - finalPrice) / sellingPrice) * 100)
-      : null;
+  const discount = sellingPrice && finalPrice && sellingPrice > finalPrice
+    ? Math.round(((sellingPrice - finalPrice) / sellingPrice) * 100)
+    : null;
     
-  const rawImage = images && images.length > 0 ? images[0] : null;
-  const imageSrc =
-    typeof rawImage === 'string' && rawImage.trim() !== ''
-      ? rawImage
-      : 'https://via.placeholder.com/300';
+  const imageSrc = images?.[0] || 'https://via.placeholder.com/300';
+  const [showQuickView, setShowQuickView] = useState(false);
 
   return (
+    <>
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="relative flex flex-col bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden group border border-gray-100"
+      initial={{ opacity: 0, y: 15 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="relative flex flex-col bg-white dark:bg-gray-900 rounded-[2rem] shadow-sm hover:shadow-2xl dark:shadow-none dark:hover:bg-gray-800/50 transition-all duration-500 overflow-hidden group border border-slate-100 dark:border-gray-800"
     >
-      {/* Product Image Section */}
-      <Link
-        href={`/ecommerce/products/${product.id}`}
-        className="block relative h-72 w-full overflow-hidden" // Taller image section
-      >
-        {images && images.length > 0 && (
-          <Image
-            src={imageSrc}
-            alt={name}
-            fill
-            loader={loader}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover object-center transition-transform duration-500 group-hover:scale-105" // Subtler, more elegant zoom
-            priority
-          />
-        )}
-        {/* Discount Badge */}
-        {discount !== null && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
-            className="absolute top-4 left-4 z-10 text-white text-xs md:text-sm font-bold px-3 py-1 rounded-full shadow-lg"
+      {/* Image Section */}
+      <Link href={`/ecommerce/products/${product.id}`} className="block relative h-72 w-full overflow-hidden">
+        <Image
+          src={imageSrc}
+          alt={name}
+          fill
+          className="object-cover transition-transform duration-700 group-hover:scale-110"
+          sizes="(max-width: 768px) 100vw, 33vw"
+          loader={({ src }) => src}
+        />
+        
+        {discount && (
+          <div 
+            className="absolute top-4 left-4 z-10 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg uppercase tracking-wider"
             style={{ backgroundColor: secondary }}
           >
-            -{discount}% OFF
-          </motion.div>
+            {discount}% OFF
+          </div>
         )}
-        {/* View Details Overlay on Hover */}
-        <div className="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-          <motion.span
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-white text-sm md:text-lg font-semibold px-6 py-2 rounded-full backdrop-blur-sm"
-            style={{ backgroundColor: `rgba(255,255,255,0.1)` }}
-          >
-            View Details
-          </motion.span>
-        </div>
+
+        {/* New Hover Trigger */}
+          <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20 backdrop-blur-[2px]">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setShowQuickView(true);
+              }}
+              className="bg-white text-black text-[10px] font-black uppercase tracking-widest px-6 py-2.5 rounded-full shadow-2xl hover:bg-indigo-600 hover:text-white transition-all"
+            >
+              Quick View
+            </button>
+          </div>
       </Link>
 
-      {/* Product Details and Actions */}
-      <div className="p-6 flex flex-col justify-between flex-grow">
-        {/* Product Title and Rating */}
-        <div className="flex flex-col mb-3">
-          <h4 className="text-xl font-extrabold text-gray-900 truncate" title={name}>
+      {/* Content Section */}
+      <div className="p-6 flex flex-col flex-grow">
+        <div className="mb-4">
+          <h4 className="text-lg font-bold text-slate-900 dark:text-white truncate mb-1">
             {name}
           </h4>
-          <div className="mt-1 flex items-center gap-1 text-yellow-500 text-sm">
-            <StarIcon className="w-4 h-4" />
-            <span className="font-semibold">{rating.toFixed(1)}</span>
-            <span className="text-gray-500 ml-1 text-xs">({reviews} reviews)</span>
+          <div className="flex items-center gap-1.5">
+            <div className="flex text-amber-400">
+              {[...Array(5)].map((_, i) => (
+                <StarIcon key={i} className={`w-3 h-3 ${i < 4 ? 'fill-current' : 'opacity-30'}`} />
+              ))}
+            </div>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">4.8 Rating</span>
           </div>
         </div>
 
-        {/* Price Section */}
-        <div className="flex items-baseline gap-2 mb-4">
-          <span
-            className="text-2xl font-extrabold"
-            style={{ color: primary }}
-          >
-            {(finalPrice ?? 0).toFixed(2)}
+        <div className="flex items-center gap-3 mb-6">
+          <span className="text-2xl font-black text-slate-900 dark:text-white">
+            ${(finalPrice ?? 0).toFixed(2)}
           </span>
-          {sellingPrice && finalPrice && sellingPrice > finalPrice && (
-            <span className="text-base line-through text-gray-400">
-              {sellingPrice.toFixed(2)}
+          {sellingPrice && sellingPrice > (finalPrice ?? 0) && (
+            <span className="text-sm line-through text-slate-400">
+              ${sellingPrice.toFixed(2)}
             </span>
           )}
         </div>
 
-        {/* Cart Actions */}
-        {quantity > 0 ? (
-          <div className="flex items-center justify-between mt-auto">
-            <div className="flex items-center space-x-2">
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => decreaseQuantity(product.id)}
-                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-all duration-200"
+        {/* Cart Logic */}
+        <div className="mt-auto">
+          {quantity > 0 ? (
+            <div className="flex items-center justify-between bg-slate-50 dark:bg-gray-800 p-1 rounded-xl border border-slate-100 dark:border-gray-700">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => decreaseQuantity(product.id)}
+                  className="p-2 hover:bg-white dark:hover:bg-gray-700 rounded-lg transition-colors text-slate-600 dark:text-gray-300"
+                >
+                  {quantity === 1 ? <TrashIcon className="h-4 w-4 text-rose-500" /> : <MinusIcon className="h-4 w-4" />}
+                </button>
+                <span className="text-sm font-black dark:text-white">{quantity}</span>
+                <button
+                  onClick={() => addToCart(product)}
+                  className="p-2 hover:bg-white dark:hover:bg-gray-700 rounded-lg transition-colors text-slate-600 dark:text-gray-300"
+                >
+                  <PlusIcon className="h-4 w-4" />
+                </button>
+              </div>
+              <button
+                onClick={() => removeFromCart(product.id)}
+                className="pr-3 text-[10px] font-black uppercase text-rose-500 hover:text-rose-600 transition-colors"
               >
-                {quantity === 1 ? (
-                  <TrashIcon className="h-5 w-5 text-red-500" />
-                ) : (
-                  <MinusIcon className="h-5 w-5 text-gray-600" />
-                )}
-              </motion.button>
-              <span className="text-lg text-gray-800 font-bold">{quantity}</span>
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => addToCart(product)}
-                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-all duration-200"
-              >
-                <PlusIcon className="h-5 w-5 text-gray-600" />
-              </motion.button>
+                Clear
+              </button>
             </div>
+          ) : (
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => removeFromCart(product.id)}
-              className="text-sm font-medium text-red-600 hover:text-red-800 transition-colors"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => addToCart(product)}
+              className="w-full py-3 rounded-xl text-white font-black text-sm uppercase tracking-widest shadow-lg transition-all"
+              style={{ backgroundColor: primary }}
             >
-              Remove
+              Add To Cart
             </motion.button>
-          </div>
-        ) : (
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => addToCart(product)}
-            className="mt-auto w-full py-3 rounded-lg text-white font-semibold text-base shadow-lg transition-all duration-300 hover:shadow-xl"
-            style={{
-              // background: `linear-gradient(135deg, ${primary}, ${secondary})`,
-              backgroundColor: primary,
-            }}
-          >
-            Add to Cart
-          </motion.button>
-        )}
+          )}
+        </div>
       </div>
     </motion.div>
+
+          {/* The Modal */}
+ {showQuickView &&         
+    <QuickViewModal 
+      isOpen={showQuickView} 
+      onClose={() => setShowQuickView(false)} 
+      product={product} 
+      primaryColor={primary} 
+    />}
+    </>
   );
 };
 

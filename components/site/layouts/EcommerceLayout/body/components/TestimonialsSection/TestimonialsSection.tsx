@@ -3,149 +3,135 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Testimonial } from '@/types/typings';
+import { useStoreContext } from '@/contexts/StoreContext';
+import { StarIcon } from '@heroicons/react/24/solid';
+import { ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
 
 const sampletestimonials = [
-    {
-      authorName: 'Johnathon',
-      quote: 'The products exceeded my expectations! The quality is incredible and the style is unmatched. I will definitely be a returning customer.',
-      avatarUrl: 'https://placehold.co/100x100/FFF?text=J',
-    },
-    {
-      authorName: 'Alina',
-      quote: 'I am so happy with my purchase. The shoes are comfortable and stylish, and the delivery was incredibly fast. Highly recommended!',
-      avatarUrl: 'https://placehold.co/100x100/FFF?text=A',
-    },
-    {
-      authorName: 'Mikey',
-      quote: 'Fantastic experience from start to finish. The customer support was excellent, and the product arrived exactly as described. Love my new shoes!',
-      avatarUrl: 'https://placehold.co/100x100/FFF?text=M',
-    },
-  ];
+  {
+    authorName: 'Johnathon',
+    quote: 'The products exceeded my expectations! The quality is incredible and the style is unmatched. I will definitely be a returning customer.',
+    avatarUrl: 'https://i.pravatar.cc/150?u=john',
+  },
+  {
+    authorName: 'Alina',
+    quote: 'I am so happy with my purchase. The shoes are comfortable and stylish, and the delivery was incredibly fast. Highly recommended!',
+    avatarUrl: 'https://i.pravatar.cc/150?u=alina',
+  },
+  {
+    authorName: 'Mikey',
+    quote: 'Fantastic experience from start to finish. The customer support was excellent, and the product arrived exactly as described. Love my new shoes!',
+    avatarUrl: 'https://i.pravatar.cc/150?u=mikey',
+  },
+];
 
-  interface TestimonialsSectionProps {
-    testimonials?: Testimonial[] | null;
-  }
-  
+interface TestimonialsSectionProps {
+  testimonials?: Testimonial[] | null;
+}
 
-// Main App component containing the "Testimonials" section
-export default function TestimonialsSection( { testimonials = sampletestimonials }: TestimonialsSectionProps) {
+export default function TestimonialsSection({ testimonials = sampletestimonials }: TestimonialsSectionProps) {
+  const { storeFormData } = useStoreContext();
+  const primary = storeFormData?.themeSettings?.primaryColor || '#6366f1';
+
+  const displayTestimonials = testimonials && testimonials.length > 0 ? testimonials : sampletestimonials;
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-zinc-900 font-sans p-8 flex items-center justify-center">
-      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-16">
-        <motion.h2
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-16"
-        >
-          Testimonials
-        </motion.h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-          {testimonials?.map((testimonial, index) => (
+    <section className="py-24 bg-white dark:bg-black transition-colors duration-300 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        
+        {/* Header Section */}
+        <div className="flex flex-col items-center text-center mb-20">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            className="flex items-center gap-2 mb-4 px-4 py-1.5 rounded-full bg-slate-50 dark:bg-gray-900 border border-slate-100 dark:border-gray-800"
+          >
+            <ChatBubbleLeftIcon className="w-4 h-4 text-slate-400" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+              Community Voices
+            </span>
+          </motion.div>
+          
+          <motion.h2
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tighter"
+          >
+            Loved by <span className="italic font-serif font-light" style={{ color: primary }}>Thousands</span>.
+          </motion.h2>
+        </div>
+
+        {/* Testimonials Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
+          {displayTestimonials.map((t, idx) => (
             <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 40 }}
+              key={idx}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: index * 0.2, ease: 'easeOut' }}
+              transition={{ duration: 0.8, delay: idx * 0.1 }}
               viewport={{ once: true }}
-              className="flex flex-col items-center p-6 bg-white dark:bg-zinc-800 rounded-2xl shadow-lg transition-shadow duration-300"
+              className="relative flex flex-col p-10 bg-slate-50 dark:bg-gray-900/50 rounded-[3rem] border border-slate-100 dark:border-gray-800/50 group hover:bg-white dark:hover:bg-gray-900 hover:shadow-2xl transition-all duration-500"
             >
-              <div className="w-24 h-24 mb-4">
-                <img
-                  src={testimonial.avatarUrl || 'https://placehold.co/100x100/FFF?text=User'}
-                  alt={testimonial.authorName || 'author' }
-                  className="rounded-full w-full h-full object-cover border-4 border-red-500"
-                />
+              {/* Star Rating */}
+              <div className="flex gap-0.5 mb-6">
+                {[...Array(5)].map((_, i) => (
+                  <StarIcon key={i} className="w-4 h-4" style={{ color: primary }} />
+                ))}
               </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                {testimonial.authorName}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm italic">
-                "{testimonial.quote}"
+
+              {/* Quote */}
+              <p className="text-lg md:text-xl font-medium text-slate-700 dark:text-gray-300 leading-relaxed mb-10 italic">
+                “{t.quote}”
               </p>
+
+              {/* Author Info */}
+              <div className="mt-auto flex items-center gap-4">
+                <div className="relative w-12 h-12 overflow-hidden rounded-2xl bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700">
+                  <img
+                    src={t.avatarUrl || `https://ui-avatars.com/api/?name=${t.authorName}&background=random`}
+                    alt={t.authorName || 'Customer Avatar'}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                    {t.authorName}
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest">
+                    Verified Customer
+                  </span>
+                </div>
+              </div>
+
+              {/* Floating Decoration */}
+              <div 
+                className="absolute top-10 right-10 opacity-5 group-hover:opacity-10 transition-opacity"
+                style={{ color: primary }}
+              >
+                <ChatBubbleLeftIcon className="w-12 h-12" />
+              </div>
             </motion.div>
           ))}
         </div>
-      </section>
-    </div>
+
+        {/* Bottom Trust Signal */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          className="mt-20 flex flex-col items-center justify-center gap-4"
+        >
+          <div className="flex -space-x-3">
+             {[1, 2, 3, 4, 5].map((i) => (
+               <div key={i} className="w-10 h-10 rounded-full border-2 border-white dark:border-black bg-slate-200 overflow-hidden">
+                 <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="user" />
+               </div>
+             ))}
+          </div>
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">
+            Join 50,000+ Happy Shoppers
+          </p>
+        </motion.div>
+      </div>
+    </section>
   );
 }
-
-// 'use client';
-
-// import React from 'react';
-// import { motion } from 'framer-motion';
-// import { useStoreContext } from '@/contexts/StoreContext';
-// import Section from '../Section/Section';
-// import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
-// import { Testimonial } from '@/types/typings';
-
-// interface TestimonialsSectionProps {
-//   testimonials: Testimonial[];
-// }
-
-// export default function TestimonialsSection({ testimonials }: TestimonialsSectionProps) {
-//   const { storeFormData } = useStoreContext();
-//   const { themeSettings = {} } = storeFormData || {};
-//   const primary = themeSettings?.primaryColor || '#f97316';
-//   const secondary = themeSettings?.secondaryColor || '#3b82f6';
-
-//   if (!testimonials || testimonials.length === 0) return null;
-
-//   const cardVariants = {
-//     hidden: { opacity: 0, y: 20 },
-//     visible: (idx: number) => ({
-//       opacity: 1,
-//       y: 0,
-//       transition: { delay: idx * 0.2, duration: 0.6, ease: 'easeOut' },
-//     }),
-//   };
-
-//   return (
-//     <Section title="What Our Customers Say">
-//       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-//         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-//           {testimonials.map((t, idx) => (
-//             <motion.div
-//               key={idx}
-//               custom={idx}
-//               initial="hidden"
-//               whileInView="visible"
-//               viewport={{ once: true, amount: 0.3 }}
-//               variants={cardVariants}
-//               whileHover={{ scale: 1.02 }}
-//               className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden"
-//             >
-//               {/* Top Gradient Accent */}
-//               <div
-//                 className="h-1 w-full"
-//                 style={{
-//                   background: `linear-gradient(90deg, ${primary}, ${secondary})`,
-//                 }}
-//               />
-
-//               <div className="p-6 flex flex-col h-full">
-//                 {/* Quote Icon */}
-//                 <div className="flex items-center mb-4 text-primary">
-//                   <ChatBubbleLeftRightIcon className="h-6 w-6" style={{ color: primary }} />
-//                 </div>
-
-//                 {/* Quote Text */}
-//                 <p className="flex-grow text-lg italic text-gray-700 dark:text-gray-200 h-12 overflow-clip">
-//                   “{t.quote}”
-//                 </p>
-
-//                 {/* Author */}
-//                 <p className="mt-6 text-sm font-medium text-gray-500 dark:text-gray-400 text-right">
-//                   — {t.authorName}
-//                 </p>
-//               </div>
-//             </motion.div>
-//           ))}
-//         </div>
-//       </div>
-//     </Section>
-//   );
-// }

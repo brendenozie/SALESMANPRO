@@ -4,36 +4,48 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import * as OutlineIcons from '@heroicons/react/24/outline';
 import { ICoreValue } from '@/types/typings';
+import { useStoreContext } from '@/contexts/StoreContext';
 
-
-// MetricCard component to display a single feature
 const MetricCard = ({
   title,
   description,
   Icon,
+  primaryColor,
 }: {
   title: string;
   description: string;
   Icon: (props: React.ComponentProps<'svg'>) => JSX.Element;
+  primaryColor: string;
 }) => {
   return (
     <motion.div
-      whileHover={{ scale: 1.05 }}
-      initial={{ opacity: 0, y: 40 }}
+      initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, ease: 'easeOut' }}
+      whileHover={{ y: -8 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
       viewport={{ once: true }}
-      className="flex flex-col items-center text-center space-y-2 p-6 bg-white dark:bg-zinc-800 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1"
+      className="relative flex flex-col items-center text-center p-8 bg-white dark:bg-gray-900 rounded-[2.5rem] border border-slate-100 dark:border-gray-800 shadow-sm hover:shadow-2xl dark:shadow-none transition-all duration-500"
     >
-      <div className="p-4 bg-red-100 dark:bg-red-900 rounded-full mb-4">
-        <Icon className="w-12 h-12 text-red-600" />
+      {/* Icon Circle */}
+      <div 
+        className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-500 group-hover:rotate-12"
+        style={{ backgroundColor: `${primaryColor}15` }} // 15% opacity of primary
+      >
+        <Icon className="w-8 h-8" style={{ color: primaryColor }} />
       </div>
-      <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+
+      <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-wider mb-2">
         {title}
       </h3>
-      <p className="text-gray-600 dark:text-gray-400 text-base font-medium">
+      <p className="text-slate-500 dark:text-gray-400 text-sm font-medium leading-relaxed">
         {description}
       </p>
+      
+      {/* Decorative Bottom Line */}
+      <div 
+        className="absolute bottom-6 w-8 h-1 rounded-full opacity-20"
+        style={{ backgroundColor: primaryColor }}
+      />
     </motion.div>
   );
 };
@@ -42,61 +54,79 @@ interface MetricCardProps {
   coreValues: ICoreValue[];
 }
 
-// Main section
 export default function MetricsSection({ coreValues }: MetricCardProps) {
+  const { storeFormData } = useStoreContext();
+  const primary = storeFormData?.themeSettings?.primaryColor || '#6366f1';
 
-  const CoreValues = [
+  const defaultValues = [
     {
-      id: '68ba95433e05e5090f8bb781',
-      companyId: '68b597b7de9bdd2ba7479f34',
-      title: 'Secure Payment',
-      description: 'Secure on every order',
+      id: '1',
+      title: 'Secure Payments',
+      description: 'Encrypted transactions for your peace of mind and data safety.',
       icon: 'ShieldCheckIcon',
     },
     {
-      id: '68ba95433e05e5090f8bb782',
-      companyId: '68b597b7de9bdd2ba7479f34',
-      title: '24/7 Support',
-      description: 'Contact us 24 hrs a day',
-      icon: 'PhoneIcon',
+      id: '2',
+      title: 'Premium Support',
+      description: 'Dedicated lifestyle experts available to assist you 24/7.',
+      icon: 'UserIcon',
     },
     {
-      id: '68ba95433e05e5090f8bb783',
-      companyId: '68b597b7de9bdd2ba7479f34',
-      title: 'Fast Delivery',
-      description: 'Fast delivery on your doorstep',
+      id: '3',
+      title: 'Express Delivery',
+      description: 'Speedy, tracked shipping on all orders across the globe.',
       icon: 'TruckIcon',
     },
   ];
-  const coreValuesToUse = coreValues && coreValues.length > 0 ? coreValues : CoreValues;
+
+  const coreValuesToUse = coreValues && coreValues.length > 0 ? coreValues : defaultValues;
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-zinc-900 font-sans p-8 flex items-center justify-center">
-      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4">
-          Why Choose Us?
-        </h2>
-        <p className="text-lg text-gray-700 dark:text-gray-300 mb-16 max-w-2xl mx-auto">
-          We're committed to providing the best experience with our top-tier service.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-          {coreValuesToUse.map((value: ICoreValue) => {
+    <section className="relative py-24 bg-[#fafaf9] dark:bg-black overflow-hidden transition-colors duration-300">
+      {/* Background Accents */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none opacity-30 dark:opacity-10">
+        <div className="absolute top-0 left-1/4 w-64 h-64 bg-indigo-200 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-rose-200 rounded-full blur-[120px]" />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <motion.span 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-gray-500 mb-4 block"
+          >
+            The Retail Standard
+          </motion.span>
+          <motion.h2 
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter mb-6"
+          >
+            Elevating Your <span className="italic font-serif font-light" style={{ color: primary }}>Shopping</span> Experience
+          </motion.h2>
+          <p className="text-slate-500 dark:text-gray-400 text-lg">
+            We combine high-end service with seamless technology to ensure every interaction with our brand is world-class.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+          {coreValuesToUse.map((value) => {
             const iconKey = (value.icon ?? 'SparklesIcon') as string;
-            const Icon =
-              ((OutlineIcons as any)[iconKey] || OutlineIcons.SparklesIcon) as (
-                props: React.ComponentProps<'svg'>
-              ) => JSX.Element;
+            const Icon = ((OutlineIcons as any)[iconKey] || OutlineIcons.SparklesIcon);
+
             return (
               <MetricCard
                 key={value.id}
                 title={value.title}
                 description={value.description || ''}
                 Icon={Icon}
+                primaryColor={primary}
               />
             );
           })}
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }
