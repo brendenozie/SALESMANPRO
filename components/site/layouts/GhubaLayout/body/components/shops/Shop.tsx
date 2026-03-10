@@ -63,7 +63,7 @@ const Shop = ({ addToCart,category, shopItems }:any) => {
                   width={300}
                   height={300}
                   loader = {loaderProp}
-                  src={imageError ? load.src : item.cover}
+                  src={imageError ? load.src : item.images[0]}
                   alt={`Product image of ${item.title}`}
                   className="w-full h-64 object-cover rounded-xl"
                   onError={() => setImageError(true)}

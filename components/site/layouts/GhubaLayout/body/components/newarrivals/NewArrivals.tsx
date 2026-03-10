@@ -35,7 +35,7 @@ const NewArrivals = ({ productItems, addToCart }:any) => {
   }, []);
 
   const settings = {
-    dots: true,
+    dots: false,
     infinite: true,
     speed: 500,
     autoplay: true,
@@ -102,7 +102,7 @@ const NewArrivals = ({ productItems, addToCart }:any) => {
                 width={300}
                 height={300}
                 loader = {loaderProp}
-                src={imageError ? load.src : product.cover}
+                src={imageError ? load.src : product.images[0]}
                 alt={`Product image of ${product.title}`}
                 className="w-full h-56 object-cover rounded-t-2xl group-hover:scale-105 transition-transform duration-300"
                 onError={() => setImageError(true)}

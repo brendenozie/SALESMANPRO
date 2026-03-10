@@ -18,7 +18,7 @@ const loaderProp = ({ src, width, quality }) => {
 
 const Dcard = ({ productItems, addToCart }) => {
   const settings = {
-    dots: true,
+    dots: false,
     infinite: true,
     slidesToShow: 3,
     slidesToScroll: 1,
@@ -49,7 +49,7 @@ const Dcard = ({ productItems, addToCart }) => {
               width={300}
               height={300}
               loader = {loaderProp}
-              src={imageError ? load.src : value.image}
+              src={imageError ? load.src : value.images[0]}
               alt={`Product image of ${value.title}`}
               className="w-full h-[380px] object-cover transform transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
               onError={() => setImageError(true)}

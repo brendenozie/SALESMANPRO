@@ -37,7 +37,7 @@ const CustomNextArrow = (props) => (
 
 const TopCate = ({ categories }) => {
   const settings = {
-    dots: true,
+    dots: false,
     infinite: true,
     slidesToShow: 3,
     slidesToScroll: 1,
@@ -102,7 +102,7 @@ function CategoryCard({ value, index }) {
             width={300}
             height={300}
             loader = {loaderProp}
-            src={imageError ? load.src : value.cover}
+            src={imageError ? load.src : value.image}
             alt={`Product image of ${value.name}`}
             className="w-full h-96 object-cover rounded-2xl transition-transform duration-700 group-hover:scale-110 group-hover:rotate-2"
             onError={() => setImageError(true)}
@@ -110,7 +110,7 @@ function CategoryCard({ value, index }) {
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent dark:from-white/80 dark:to-transparent transition-opacity duration-500 group-hover:opacity-90"></div>
 
-        <div className="absolute inset-0 group-hover:bg-white/10 dark:group-hover:bg-black/10 backdrop-blur-md transition duration-500"></div>
+        {/* <div className="absolute inset-0 group-hover:bg-white/10 dark:group-hover:bg-black/10 backdrop-blur-md transition duration-500"></div> */}
 
         <div className="absolute bottom-4 left-4 right-4 bg-white/70 dark:bg-black/70 backdrop-blur-lg p-4 rounded-xl shadow-md transition-colors duration-500 group-hover:bg-white/80 dark:group-hover:bg-black/80">
           <div className="flex flex-wrap gap-2">

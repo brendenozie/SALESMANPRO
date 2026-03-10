@@ -84,7 +84,7 @@ const FlashCard = ({ productItems, addToCart }) => {
                 width={300}
                 height={300}
                 loader = {loaderProp}
-                src={imageError ? load.src : product.cover}
+                src={imageError ? load.src : product.images[0]}
                 alt={`Product image of ${product.title}`}
                 className="w-full h-56 object-cover rounded-t-2xl group-hover:scale-105 transition-transform duration-300"
                 onError={() => setImageError(true)}
