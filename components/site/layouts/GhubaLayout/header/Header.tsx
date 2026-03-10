@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, { useState, useEffect } from "react";
 import logo from "@/assets/shop.png";
@@ -18,17 +18,28 @@ import {
   MapPinIcon
 } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { debounce } from "lodash";
-import { usePathname } from 'next/navigation';
 import { useStateContext } from "@/contexts/ContextProvider";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
-//  location, setLocation, locationName, setLocationName,
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+
 const Header = () => {
-  const {user, isDarkMode, setMode, cart, isCartOpen, setIsCartOpen,isOpen, setIsOpen, onClose, onUpdate } = useStateContext();
+  // Extracting all necessary states and setters from your Context
+  const { 
+    user, 
+    isDarkMode, 
+    setMode, 
+    cart, 
+    isCartOpen, 
+    setIsCartOpen, 
+    isOpen, 
+    setIsOpen 
+  } = useStateContext();
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
+  const path = usePathname();
 
   useEffect(() => {
     const handleScroll = () => setIsSticky(window.scrollY > 100);
@@ -36,36 +47,18 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const path = usePathname();
-  // bail out on /stores or any deeper stores route
-  // if (path.startsWith('/stores')) return null;  
-  // if (path.startsWith('/admin')) return null;
-  // if (path.startsWith('/agent')) return null;
-  // if (path.startsWith('/clients')) return null;
-  // if (path.startsWith('/site')) return null;
-  if (path.startsWith('/ghuba/profile')) return null;
-  if (path.startsWith('/shop/profile')) return null;
-  
-  if(path.includes('/shop/profile')) return null;
-  if (path.includes('/ghuba/profile')) return null;
-  // if (path.startsWith('/dashboards')) return null;
-  // if (path.startsWith('/play')) return null;
-  // if (path.startsWith('/doctor')) return null;
-  // if (path.startsWith('/patient')) return null;
-  
+  // Define routes where the header should be hidden
+  const hiddenPaths = ['/ghuba/profile', '/shop/profile'];
+  if (hiddenPaths.some(p => path.includes(p))) return null;
+
   return (
     <header className="w-full bg-gradient-to-r from-gray-100 via-gray-50 to-gray-200 dark:from-gray-800 dark:via-gray-700 dark:to-gray-900 shadow-md transition-colors duration-300">
-      <TopBar location={""} setLocation={function (value: React.SetStateAction<string>): void {
-        throw new Error("Function not implemented.");
-      } } locationName={""} setLocationName={function (value: React.SetStateAction<string>): void {
-        throw new Error("Function not implemented.");
-      } } isOpen={false} setIsOpen={function (value: React.SetStateAction<boolean>): void {
-        throw new Error("Function not implemented.");
-      } } onClose={function (): void {
-        throw new Error("Function not implemented.");
-      } } onUpdate={function (): void {
-        throw new Error("Function not implemented.");
-      } }/>
+      <TopBar 
+        locationName="Nairobi, KE" // This can be dynamic if you add location to context
+        isOpen={isOpen} 
+        setIsOpen={setIsOpen} 
+      />
+      
       <nav
         className={`sticky top-0 z-50 bg-gradient-to-b from-white via-gray-50 to-white dark:from-black dark:via-gray-900 dark:to-black bg-opacity-90 backdrop-blur-md transition-all duration-300 ${
           isSticky ? "shadow-2xl" : "shadow-none"
@@ -80,27 +73,28 @@ const Header = () => {
               loading="lazy"
             />
           </a>
-          <SearchBar location={""} setLocation={function (value: React.SetStateAction<string>): void {
-            throw new Error("Function not implemented.");
-          } } locationName={""} setLocationName={function (value: React.SetStateAction<string>): void {
-            throw new Error("Function not implemented.");
-          } } />
-          {/* setLocationName */}
+
+          <SearchBar />
+
           <NavIcons
             user={user}
             cart={cart}
-            isMobileMenuOpen={isMobileMenuOpen}
-            setIsMobileMenuOpen={setIsMobileMenuOpen}
             isDarkMode={isDarkMode}
-            // setDarkMode={setMode}
-            isCartOpen={isCartOpen} setDarkMode={function (value: React.SetStateAction<string>): void {
-              throw new Error("Function not implemented.");
-            } } setIsCartOpen={function (value: React.SetStateAction<boolean>): void {
-              throw new Error("Function not implemented.");
-            } }            // setIsCartOpen={setIsCartOpen}
+            setMode={setMode}
+            isCartOpen={isCartOpen}
+            setIsCartOpen={setIsCartOpen}
           />
+          
+          {/* Mobile Burger Icon (Optional addition for UX) */}
+          <button className="md:hidden text-yellow-500" onClick={() => setIsMobileMenuOpen(true)}>
+             <div className="space-y-1">
+                <span className="block w-6 h-0.5 bg-current"></span>
+                <span className="block w-6 h-0.5 bg-current"></span>
+                <span className="block w-6 h-0.5 bg-current"></span>
+             </div>
+          </button>
         </div>
-        {/* Desktop Menu */}
+
         <DesktopMenu />
       </nav>
 
@@ -113,50 +107,40 @@ const Header = () => {
   );
 };
 
-export default Header;
+/* --- SUBCOMPONENTS --- */
 
-const SearchBar = ({location, setLocation, locationName, setLocationName}:{location: string, setLocation: React.Dispatch<React.SetStateAction<string>>, locationName: string, setLocationName: React.Dispatch<React.SetStateAction<string>>}) => {
+const SearchBar = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   const router = useRouter();
 
-  // Simulating API call to fetch search suggestions
   const fetchSuggestions = async (query: string) => {
+    if (!query) return;
     setLoading(true);
-    setError(null);
-
     try {
-      // Replace this URL with your actual API endpoint
       const response = await fetch(`${apiBaseUrl}/shop/products?search=${query}`);
       const data = await response.json();
-      
-      setSuggestions(data.products);
-      setIsDropdownVisible(data.products.length > 0);
+      setSuggestions(data.products || []);
+      setIsDropdownVisible((data.products || []).length > 0);
     } catch (err) {
-      setError("Failed to fetch suggestions.");
+      console.error("Search error:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Debounced version of the fetchSuggestions function
-  const debouncedFetchSuggestions = debounce(fetchSuggestions, 500);
+  const debouncedFetch = React.useMemo(() => debounce(fetchSuggestions, 500), []);
 
   useEffect(() => {
     if (searchTerm.trim() === "") {
       setSuggestions([]);
       setIsDropdownVisible(false);
     } else {
-      debouncedFetchSuggestions(searchTerm);
+      debouncedFetch(searchTerm);
     }
-
-    // Cleanup debounced function on unmount
-    return () => debouncedFetchSuggestions.cancel();
-  }, [searchTerm]);
+  }, [searchTerm, debouncedFetch]);
 
   return (
     <div className="relative w-1/2 hidden md:flex items-center">
@@ -167,45 +151,22 @@ const SearchBar = ({location, setLocation, locationName, setLocationName}:{locat
         className="w-full pl-10 pr-4 py-2 border rounded-full focus:ring-4 focus:ring-yellow-400 focus:outline-none text-gray-700 dark:text-gray-200 dark:bg-gray-800 shadow-md"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        onFocus={() => setIsDropdownVisible(suggestions.length > 0)}
-        onBlur={() => setTimeout(() => setIsDropdownVisible(false), 200)} // Delay to allow clicking suggestions
+        onBlur={() => setTimeout(() => setIsDropdownVisible(false), 200)}
       />
       <button 
-        onClick={() => router.push(`/ghuba/productlist?location=${location}`)} 
+        onClick={() => router.push(`/ghuba/productlist`)} 
         className="absolute right-3 text-yellow-400 text-xs hover:underline"
       >
-        🔍 View Nearby Deals
+        🔍 Nearby Deals
       </button>
-      {/* Loading Spinner */}
-      {loading && (
-        <div className="absolute top-full right-4 mt-2 text-yellow-400 animate-spin">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeDasharray="31.4" strokeDashoffset="31.4">
-              <animate attributeName="stroke-dashoffset" from="31.4" to="0" dur="1s" repeatCount="indefinite"/>
-            </circle>
-          </svg>
-        </div>
-      )}
-      
-      {/* Error message */}
-      {error && <div className="absolute top-full mt-2 text-red-600">{error}</div>}
 
-      {/* Dropdown for suggestions */}
-      {isDropdownVisible && !loading && !error && (
-        <motion.ul
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          className="absolute top-full mt-2 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden z-50"
-        >
-          {suggestions.map((item: { id: string; title: string }, index) => (
+      {isDropdownVisible && (
+        <motion.ul className="absolute top-full mt-2 w-full bg-white dark:bg-gray-800 border rounded-lg shadow-lg z-50 overflow-hidden">
+          {suggestions.map((item: any) => (
             <li
-              key={index}
-              className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-black dark:text-white cursor-pointer transition"
-              onMouseDown={() => {
-                // setSearchTerm(item);
-                router.push(`/ghuba/product/${item.id}`);
-              }} // Set input value on click
+              key={item.id}
+              className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm"
+              onMouseDown={() => router.push(`/ghuba/product/${item.id}`)}
             >
               {item.title}
             </li>
@@ -216,73 +177,100 @@ const SearchBar = ({location, setLocation, locationName, setLocationName}:{locat
   );
 };
 
-const TopBar = ({location, setLocation, locationName, setLocationName, isOpen, setIsOpen, onClose, onUpdate}:{location: string, setLocation: React.Dispatch<React.SetStateAction<string>>, locationName: string, setLocationName: React.Dispatch<React.SetStateAction<string>>, isOpen: boolean, setIsOpen: React.Dispatch<React.SetStateAction<boolean>>, onClose: () => void, onUpdate: () => void}) => (
-  <div className="bg-yellow-400 text-black text-sm py-2 hidden md:block animate-fadeIn dark:bg-yellow-500">
+const TopBar = ({ locationName, isOpen, setIsOpen }: any) => (
+  <div className="bg-yellow-400 text-black text-sm py-2 hidden md:block dark:bg-yellow-500">
     <div className="container mx-auto flex justify-between px-6">
       <div className="flex space-x-6">
-        <span className="flex items-center space-x-2">
-          <i className="fa fa-phone"></i>
-          <span>+254 732 771 353</span>
-        </span>
-        <span className="flex items-center space-x-2">
-          <i className="fa fa-envelope"></i>
-          <span>support@salesmanpro.site</span>
-        </span>
+        <span>+254 732 771 353</span>
+        <span>support@salesmanpro.site</span>
       </div>
       <div className="flex space-x-6">
-        <span className="flex items-center space-x-2 cursor-pointer" onClick={() => {setIsOpen(!isOpen)}}>
-          <MapPinIcon className="w-4 h-4 text-gray-800 dark:text-white" />
-          <span>{locationName}</span>
+        <span className="flex items-center space-x-2 cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
+          <MapPinIcon className="w-4 h-4" />
+          <span>{locationName || "Select Location"}</span>
         </span>
-        <span className="hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer">FAQs</span>
-        <span className="hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer">Need Help?</span>
+        <span className="cursor-pointer">FAQs</span>
       </div>
     </div>
   </div>
 );
 
-const NavIcons = ({
-  user,
-  cart,
-  isMobileMenuOpen,
-  setIsMobileMenuOpen,
-  isDarkMode,
-  setDarkMode,
-  isCartOpen,
-  setIsCartOpen
-}: {user: any, cart: any[], isMobileMenuOpen: boolean, setIsMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>, isDarkMode: boolean, setDarkMode: React.Dispatch<React.SetStateAction<string>>, isCartOpen: boolean, setIsCartOpen: React.Dispatch<React.SetStateAction<boolean>>}) => {
+const NavIcons = ({ user, cart, isDarkMode, setMode, isCartOpen, setIsCartOpen }: any) => {
   const router = useRouter();
-  const [isMounted, setIsMounted] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setIsMounted(true); // Ensures hydration-safe rendering
-  }, []);
-
-  
-  const handleProfileClick = () => {
-    if (user) {
-      router.push("/ghuba/profile");
-    }
-  };
+  useEffect(() => setMounted(true), []);
 
   return (
     <div className="flex items-center space-x-6">
-      {user && <UserIcon onClick={handleProfileClick} className="w-6 h-6 text-yellow-400 cursor-pointer hover:text-yellow-300 transition-transform transform hover:scale-125" />}
-      <motion.div onClick={() => setIsCartOpen(!isCartOpen)} className="relative cursor-pointer">
-        <ShoppingBagIcon className="w-6 h-6 text-yellow-400 hover:text-yellow-300 transition-transform transform hover:scale-125" />
-        {isMounted && cart.length > 0 && (
-          <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center animate-bounce">
+      {user && (
+        <UserIcon 
+          onClick={() => router.push("/ghuba/profile")} 
+          className="w-6 h-6 text-yellow-400 cursor-pointer hover:scale-125 transition-transform" 
+        />
+      )}
+      <div onClick={() => setIsCartOpen(!isCartOpen)} className="relative cursor-pointer">
+        <ShoppingBagIcon className="w-6 h-6 text-yellow-400 hover:scale-125 transition-transform" />
+        {mounted && cart.length > 0 && (
+          <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center animate-bounce">
             {cart.length}
           </span>
         )}
-      </motion.div>
-      <button
-        onClick={() => setDarkMode(isDarkMode ? "Light" : "Dark")}
-        className="text-yellow-400 hover:text-yellow-300 transition-transform transform hover:scale-125"
-        aria-label="Toggle Dark Mode"
-      >
+      </div>
+      <button onClick={() => setMode(isDarkMode ? "Light" : "Dark")} className="text-yellow-400">
         {isDarkMode ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />}
       </button>
+    </div>
+  );
+};
+
+const DesktopMenu = () => (
+  <ul className="hidden md:flex items-center space-x-6 text-orange-500 dark:text-yellow-400 font-medium justify-center pb-2">
+    {menuItems.map(({ name, icon, link }) => (
+      <li key={name} className="relative group">
+        <a href={link} className="flex items-center px-4 py-2 transition-all rounded-lg hover:bg-yellow-500 hover:text-white">
+          {icon} {name}
+        </a>
+      </li>
+    ))}
+  </ul>
+);
+
+const BottomNav = () => {
+  const router = useRouter();
+  const items = [
+    { name: "Home", icon: HomeIcon, link: "/" },
+    { name: "Products", icon: DocumentTextIcon, link: "/ghuba/productlist" },
+    { name: "Categories", icon: DocumentDuplicateIcon, link: "/ghuba/categories" },
+    { name: "Orders", icon: TruckIcon, link: "/ghuba/orderTracking" },
+    { name: "Profile", icon: UserIcon, link: "/ghuba/profile" },
+  ];
+
+  return (
+    <div className="fixed bottom-0 left-0 w-full bg-white dark:bg-black border-t flex justify-around py-3 shadow-lg md:hidden z-50">
+      {items.map(({ name, icon: Icon, link }) => (
+        <button key={name} onClick={() => router.push(link)} className="flex flex-col items-center text-gray-500 dark:text-gray-400">
+          <Icon className="w-6 h-6" />
+          <span className="text-[10px] mt-1">{name}</span>
+        </button>
+      ))}
+    </div>
+  );
+};
+
+const MobileMenu = ({ setIsMobileMenuOpen }: any) => {
+  const router = useRouter();
+  return (
+    <div className="fixed inset-0 bg-white dark:bg-black flex flex-col items-center justify-center space-y-8 z-[60]">
+      <button onClick={() => setIsMobileMenuOpen(false)} className="absolute top-6 right-6">
+        <XMarkIcon className="w-8 h-8 text-yellow-500" />
+      </button>
+      {menuItems.map(({ name, icon, link }) => (
+        <button key={name} onClick={() => { router.push(link); setIsMobileMenuOpen(false); }} className="text-2xl flex items-center space-x-4">
+           <span className="w-8 h-8 text-yellow-500">{icon}</span>
+           <span>{name}</span>
+        </button>
+      ))}
     </div>
   );
 };
@@ -292,122 +280,388 @@ const menuItems = [
   { name: "All Products", icon: <DocumentTextIcon className="w-5 h-5 mr-2" />, link: "/ghuba/productlist" },
   { name: "All Categories", icon: <DocumentDuplicateIcon className="w-5 h-5 mr-2" />, link: "/ghuba/categories" },
   { name: "My Shop", icon: <BuildingLibraryIcon className="w-5 h-5 mr-2" />, link: "/stores" },
-  { name: "Track My Order", icon: <TruckIcon className="w-5 h-5 mr-2" />, link: "/ghuba/orderTracking" },
+  { name: "Track Order", icon: <TruckIcon className="w-5 h-5 mr-2" />, link: "/ghuba/orderTracking" },
   { name: "Contact", icon: <PhoneIcon className="w-5 h-5 mr-2" />, link: "/ghuba/contact" },
 ];
 
-const DesktopMenu = () => (
-  <ul className="hidden md:flex items-center space-x-6 text-orange-500 dark:text-yellow-400 font-medium justify-end">
-    {menuItems.map(({ name, icon, link }) => (
-      <li key={name} className="relative group">
-        <a
-          href={link}
-          className="flex items-center px-4 py-2 transition-all duration-300 rounded-lg hover:bg-yellow-500 hover:text-white hover:shadow-md"
-        >
-          {icon}
-          {name}
-        </a>
-        {/* Underline Effect */}
-        <span className="absolute left-0 bottom-0 w-0 h-1 bg-yellow-500 transition-all duration-300 group-hover:w-full"></span>
-      </li>
-    ))}
-  </ul>
-);
+export default Header;
+// "use client"
 
-const BottomNav = () => {
-  const router = useRouter();
-  const menuItems = [
-    { name: "Home", icon: HomeIcon, link: "/" },
-    { name: "Products", icon: DocumentTextIcon, link: "/ghuba/productlist" },
-    { name: "Categories", icon: DocumentDuplicateIcon, link: "/ghuba/categories" },
-    { name: "Orders", icon: TruckIcon, link: "/ghuba/orderTracking" },
-    { name: "Profile", icon: UserIcon, link: "/ghuba/profile" },
-  ];
-
-  return (
-    <div className="fixed bottom-0 left-0 w-full bg-white dark:bg-black border-t border-gray-300 dark:border-gray-700 flex justify-around py-3 shadow-lg md:hidden z-50">
-      {menuItems.map(({ name, icon: Icon, link }) => (
-        <button
-          key={name}
-          onClick={() => router.push(link)}
-          className="flex flex-col items-center text-gray-700 dark:text-gray-300 hover:text-yellow-500 transition-all"
-        >
-          <Icon className="w-6 h-6" />
-          <span className="text-xs mt-1">{name}</span>
-        </button>
-      ))}
-    </div>
-  );
-};
-
-
-// "use client";
-
-// import React from "react";
-// import { useRouter } from "next/navigation";
+// import React, { useState, useEffect } from "react";
+// import logo from "@/assets/shop.png";
 // import {
+//   ShoppingBagIcon,
+//   XMarkIcon,
+//   UserIcon,
+//   MagnifyingGlassIcon,
+//   MoonIcon,
+//   SunIcon,
 //   HomeIcon,
 //   DocumentTextIcon,
 //   DocumentDuplicateIcon,
+//   BuildingLibraryIcon,
 //   TruckIcon,
-//   UserIcon,
-//   XMarkIcon,
+//   PhoneIcon,
+//   MapPinIcon
 // } from "@heroicons/react/24/outline";
+// import { motion } from "framer-motion";
+// import { useRouter } from "next/navigation";
+// import { debounce } from "lodash";
+// import { usePathname } from 'next/navigation';
+// import { useStateContext } from "@/contexts/ContextProvider";
 
-// ICON TYPE FIX
-type IconType =
-  | React.ComponentType<React.SVGProps<SVGSVGElement>>
-  | React.ForwardRefExoticComponent<
-      React.SVGProps<SVGSVGElement> & React.RefAttributes<SVGSVGElement>
-    >;
+// const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+// //  location, setLocation, locationName, setLocationName,
+// const Header = () => {
+//   const {user, isDarkMode, setMode, cart, isCartOpen, setIsCartOpen,isOpen, setIsOpen, onClose, onUpdate } = useStateContext();
+//   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+//   const [isSticky, setIsSticky] = useState(false);
 
-interface MenuItem {
-  name: string;
-  icon: IconType;
-  link: string;
-}
+//   useEffect(() => {
+//     const handleScroll = () => setIsSticky(window.scrollY > 100);
+//     window.addEventListener("scroll", handleScroll);
+//     return () => window.removeEventListener("scroll", handleScroll);
+//   }, []);
 
-const MobileMenu = ({
-  setIsMobileMenuOpen,
-}: {
-  setIsMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
-}) => {
-  const router = useRouter();
+//   const path = usePathname();
+//   // bail out on /stores or any deeper stores route
+//   // if (path.startsWith('/stores')) return null;  
+//   // if (path.startsWith('/admin')) return null;
+//   // if (path.startsWith('/agent')) return null;
+//   // if (path.startsWith('/clients')) return null;
+//   // if (path.startsWith('/site')) return null;
+//   if (path.startsWith('/ghuba/profile')) return null;
+//   if (path.startsWith('/shop/profile')) return null;
+  
+//   if(path.includes('/shop/profile')) return null;
+//   if (path.includes('/ghuba/profile')) return null;
+//   // if (path.startsWith('/dashboards')) return null;
+//   // if (path.startsWith('/play')) return null;
+//   // if (path.startsWith('/doctor')) return null;
+//   // if (path.startsWith('/patient')) return null;
+  
+//   return (
+//     <header className="w-full bg-gradient-to-r from-gray-100 via-gray-50 to-gray-200 dark:from-gray-800 dark:via-gray-700 dark:to-gray-900 shadow-md transition-colors duration-300">
+//       <TopBar location={""} setLocation={function (value: React.SetStateAction<string>): void {
+//         throw new Error("Function not implemented.");
+//       } } locationName={""} setLocationName={function (value: React.SetStateAction<string>): void {
+//         throw new Error("Function not implemented.");
+//       } } isOpen={false} setIsOpen={function (value: React.SetStateAction<boolean>): void {
+//         throw new Error("Function not implemented.");
+//       } } onClose={function (): void {
+//         throw new Error("Function not implemented.");
+//       } } onUpdate={function (): void {
+//         throw new Error("Function not implemented.");
+//       } }/>
+//       <nav
+//         className={`sticky top-0 z-50 bg-gradient-to-b from-white via-gray-50 to-white dark:from-black dark:via-gray-900 dark:to-black bg-opacity-90 backdrop-blur-md transition-all duration-300 ${
+//           isSticky ? "shadow-2xl" : "shadow-none"
+//         }`}
+//       >
+//         <div className="container mx-auto flex items-center justify-between px-6 py-4">
+//           <a href="/">
+//             <img
+//               src={logo.src}
+//               alt="Logo"
+//               className="w-32 transition-transform transform hover:scale-110"
+//               loading="lazy"
+//             />
+//           </a>
+//           <SearchBar location={""} setLocation={function (value: React.SetStateAction<string>): void {
+//             throw new Error("Function not implemented.");
+//           } } locationName={""} setLocationName={function (value: React.SetStateAction<string>): void {
+//             throw new Error("Function not implemented.");
+//           } } />
+//           {/* setLocationName */}
+//           <NavIcons
+//             user={user}
+//             cart={cart}
+//             isMobileMenuOpen={isMobileMenuOpen}
+//             setIsMobileMenuOpen={setIsMobileMenuOpen}
+//             isDarkMode={isDarkMode}
+//             // setDarkMode={setMode}
+//             isCartOpen={isCartOpen} setDarkMode={function (value: React.SetStateAction<string>): void {
+//               throw new Error("Function not implemented.");
+//             } } setIsCartOpen={function (value: React.SetStateAction<boolean>): void {
+//               throw new Error("Function not implemented.");
+//             } }            // setIsCartOpen={setIsCartOpen}
+//           />
+//         </div>
+//         {/* Desktop Menu */}
+//         <DesktopMenu />
+//       </nav>
 
-  const mobileMenuItems: MenuItem[] = [
-    { name: "Home", icon: HomeIcon, link: "/" },
-    { name: "Products", icon: DocumentTextIcon, link: "/ghuba/productlist" },
-    { name: "Categories", icon: DocumentDuplicateIcon, link: "/ghuba/categories" },
-    { name: "Orders", icon: TruckIcon, link: "/ghuba/orderTracking" },
-    { name: "Profile", icon: UserIcon, link: "/ghuba/profile" },
-  ];
+//       {isMobileMenuOpen && (
+//         <MobileMenu setIsMobileMenuOpen={setIsMobileMenuOpen} />
+//       )}
+      
+//       <BottomNav />
+//     </header>
+//   );
+// };
 
-  return (
-    <div className="fixed top-0 left-0 w-full h-full bg-white dark:bg-black flex flex-col items-center justify-center space-y-6 z-50">
-      <button
-        onClick={() => setIsMobileMenuOpen(false)}
-        className="absolute top-4 right-6"
-      >
-        <XMarkIcon className="w-6 h-6" />
-      </button>
+// export default Header;
 
-      {mobileMenuItems.map(({ name, icon: Icon, link }) => (
-        <button
-          key={name}
-          onClick={() => router.push(link)}
-          className="text-2xl flex items-center space-x-2"
-        >
-          <Icon className="w-6 h-6" />
-          <span>{name}</span>
-        </button>
-      ))}
-    </div>
-  );
-};
+// const SearchBar = ({location, setLocation, locationName, setLocationName}:{location: string, setLocation: React.Dispatch<React.SetStateAction<string>>, locationName: string, setLocationName: React.Dispatch<React.SetStateAction<string>>}) => {
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [suggestions, setSuggestions] = useState([]);
+//   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+//   const [loading, setLoading] = useState(false);
+//   const [error, setError] = useState<string | null>(null);
 
-// const MobileMenu = ({ setIsMobileMenuOpen }: { setIsMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>> }) => {
 //   const router = useRouter();
-//   const mobileMenuItems = [
+
+//   // Simulating API call to fetch search suggestions
+//   const fetchSuggestions = async (query: string) => {
+//     setLoading(true);
+//     setError(null);
+
+//     try {
+//       // Replace this URL with your actual API endpoint
+//       const response = await fetch(`${apiBaseUrl}/shop/products?search=${query}`);
+//       const data = await response.json();
+      
+//       setSuggestions(data.products);
+//       setIsDropdownVisible(data.products.length > 0);
+//     } catch (err) {
+//       setError("Failed to fetch suggestions.");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Debounced version of the fetchSuggestions function
+//   const debouncedFetchSuggestions = debounce(fetchSuggestions, 500);
+
+//   useEffect(() => {
+//     if (searchTerm.trim() === "") {
+//       setSuggestions([]);
+//       setIsDropdownVisible(false);
+//     } else {
+//       debouncedFetchSuggestions(searchTerm);
+//     }
+
+//     // Cleanup debounced function on unmount
+//     return () => debouncedFetchSuggestions.cancel();
+//   }, [searchTerm]);
+
+//   return (
+//     <div className="relative w-1/2 hidden md:flex items-center">
+//       <MagnifyingGlassIcon className="absolute left-3 text-yellow-400 w-5 h-5" />
+//       <input
+//         type="text"
+//         placeholder="Search products..."
+//         className="w-full pl-10 pr-4 py-2 border rounded-full focus:ring-4 focus:ring-yellow-400 focus:outline-none text-gray-700 dark:text-gray-200 dark:bg-gray-800 shadow-md"
+//         value={searchTerm}
+//         onChange={(e) => setSearchTerm(e.target.value)}
+//         onFocus={() => setIsDropdownVisible(suggestions.length > 0)}
+//         onBlur={() => setTimeout(() => setIsDropdownVisible(false), 200)} // Delay to allow clicking suggestions
+//       />
+//       <button 
+//         onClick={() => router.push(`/ghuba/productlist?location=${location}`)} 
+//         className="absolute right-3 text-yellow-400 text-xs hover:underline"
+//       >
+//         🔍 View Nearby Deals
+//       </button>
+//       {/* Loading Spinner */}
+//       {loading && (
+//         <div className="absolute top-full right-4 mt-2 text-yellow-400 animate-spin">
+//           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+//             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeDasharray="31.4" strokeDashoffset="31.4">
+//               <animate attributeName="stroke-dashoffset" from="31.4" to="0" dur="1s" repeatCount="indefinite"/>
+//             </circle>
+//           </svg>
+//         </div>
+//       )}
+      
+//       {/* Error message */}
+//       {error && <div className="absolute top-full mt-2 text-red-600">{error}</div>}
+
+//       {/* Dropdown for suggestions */}
+//       {isDropdownVisible && !loading && !error && (
+//         <motion.ul
+//           initial={{ opacity: 0, y: -10 }}
+//           animate={{ opacity: 1, y: 0 }}
+//           exit={{ opacity: 0, y: -10 }}
+//           className="absolute top-full mt-2 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden z-50"
+//         >
+//           {suggestions.map((item: { id: string; title: string }, index) => (
+//             <li
+//               key={index}
+//               className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-black dark:text-white cursor-pointer transition"
+//               onMouseDown={() => {
+//                 // setSearchTerm(item);
+//                 router.push(`/ghuba/product/${item.id}`);
+//               }} // Set input value on click
+//             >
+//               {item.title}
+//             </li>
+//           ))}
+//         </motion.ul>
+//       )}
+//     </div>
+//   );
+// };
+
+// const TopBar = ({location, setLocation, locationName, setLocationName, isOpen, setIsOpen, onClose, onUpdate}:{location: string, setLocation: React.Dispatch<React.SetStateAction<string>>, locationName: string, setLocationName: React.Dispatch<React.SetStateAction<string>>, isOpen: boolean, setIsOpen: React.Dispatch<React.SetStateAction<boolean>>, onClose: () => void, onUpdate: () => void}) => (
+//   <div className="bg-yellow-400 text-black text-sm py-2 hidden md:block animate-fadeIn dark:bg-yellow-500">
+//     <div className="container mx-auto flex justify-between px-6">
+//       <div className="flex space-x-6">
+//         <span className="flex items-center space-x-2">
+//           <i className="fa fa-phone"></i>
+//           <span>+254 732 771 353</span>
+//         </span>
+//         <span className="flex items-center space-x-2">
+//           <i className="fa fa-envelope"></i>
+//           <span>support@salesmanpro.site</span>
+//         </span>
+//       </div>
+//       <div className="flex space-x-6">
+//         <span className="flex items-center space-x-2 cursor-pointer" onClick={() => {setIsOpen(!isOpen)}}>
+//           <MapPinIcon className="w-4 h-4 text-gray-800 dark:text-white" />
+//           <span>{locationName}</span>
+//         </span>
+//         <span className="hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer">FAQs</span>
+//         <span className="hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer">Need Help?</span>
+//       </div>
+//     </div>
+//   </div>
+// );
+
+// const NavIcons = ({
+//   user,
+//   cart,
+//   isMobileMenuOpen,
+//   setIsMobileMenuOpen,
+//   isDarkMode,
+//   setDarkMode,
+//   isCartOpen,
+//   setIsCartOpen
+// }: {user: any, cart: any[], isMobileMenuOpen: boolean, setIsMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>, isDarkMode: boolean, setDarkMode: React.Dispatch<React.SetStateAction<string>>, isCartOpen: boolean, setIsCartOpen: React.Dispatch<React.SetStateAction<boolean>>}) => {
+//   const router = useRouter();
+//   const [isMounted, setIsMounted] = useState(false);
+
+//   useEffect(() => {
+//     setIsMounted(true); // Ensures hydration-safe rendering
+//   }, []);
+
+  
+//   const handleProfileClick = () => {
+//     if (user) {
+//       router.push("/ghuba/profile");
+//     }
+//   };
+
+//   return (
+//     <div className="flex items-center space-x-6">
+//       {user && <UserIcon onClick={handleProfileClick} className="w-6 h-6 text-yellow-400 cursor-pointer hover:text-yellow-300 transition-transform transform hover:scale-125" />}
+//       <motion.div onClick={() => setIsCartOpen(!isCartOpen)} className="relative cursor-pointer">
+//         <ShoppingBagIcon className="w-6 h-6 text-yellow-400 hover:text-yellow-300 transition-transform transform hover:scale-125" />
+//         {isMounted && cart.length > 0 && (
+//           <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center animate-bounce">
+//             {cart.length}
+//           </span>
+//         )}
+//       </motion.div>
+//       <button
+//         onClick={() => setDarkMode(isDarkMode ? "Light" : "Dark")}
+//         className="text-yellow-400 hover:text-yellow-300 transition-transform transform hover:scale-125"
+//         aria-label="Toggle Dark Mode"
+//       >
+//         {isDarkMode ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />}
+//       </button>
+//     </div>
+//   );
+// };
+
+// const menuItems = [
+//   { name: "Home", icon: <HomeIcon className="w-5 h-5 mr-2" />, link: "/" },
+//   { name: "All Products", icon: <DocumentTextIcon className="w-5 h-5 mr-2" />, link: "/ghuba/productlist" },
+//   { name: "All Categories", icon: <DocumentDuplicateIcon className="w-5 h-5 mr-2" />, link: "/ghuba/categories" },
+//   { name: "My Shop", icon: <BuildingLibraryIcon className="w-5 h-5 mr-2" />, link: "/stores" },
+//   { name: "Track My Order", icon: <TruckIcon className="w-5 h-5 mr-2" />, link: "/ghuba/orderTracking" },
+//   { name: "Contact", icon: <PhoneIcon className="w-5 h-5 mr-2" />, link: "/ghuba/contact" },
+// ];
+
+// const DesktopMenu = () => (
+//   <ul className="hidden md:flex items-center space-x-6 text-orange-500 dark:text-yellow-400 font-medium justify-end">
+//     {menuItems.map(({ name, icon, link }) => (
+//       <li key={name} className="relative group">
+//         <a
+//           href={link}
+//           className="flex items-center px-4 py-2 transition-all duration-300 rounded-lg hover:bg-yellow-500 hover:text-white hover:shadow-md"
+//         >
+//           {icon}
+//           {name}
+//         </a>
+//         {/* Underline Effect */}
+//         <span className="absolute left-0 bottom-0 w-0 h-1 bg-yellow-500 transition-all duration-300 group-hover:w-full"></span>
+//       </li>
+//     ))}
+//   </ul>
+// );
+
+// const BottomNav = () => {
+//   const router = useRouter();
+//   const menuItems = [
+//     { name: "Home", icon: HomeIcon, link: "/" },
+//     { name: "Products", icon: DocumentTextIcon, link: "/ghuba/productlist" },
+//     { name: "Categories", icon: DocumentDuplicateIcon, link: "/ghuba/categories" },
+//     { name: "Orders", icon: TruckIcon, link: "/ghuba/orderTracking" },
+//     { name: "Profile", icon: UserIcon, link: "/ghuba/profile" },
+//   ];
+
+//   return (
+//     <div className="fixed bottom-0 left-0 w-full bg-white dark:bg-black border-t border-gray-300 dark:border-gray-700 flex justify-around py-3 shadow-lg md:hidden z-50">
+//       {menuItems.map(({ name, icon: Icon, link }) => (
+//         <button
+//           key={name}
+//           onClick={() => router.push(link)}
+//           className="flex flex-col items-center text-gray-700 dark:text-gray-300 hover:text-yellow-500 transition-all"
+//         >
+//           <Icon className="w-6 h-6" />
+//           <span className="text-xs mt-1">{name}</span>
+//         </button>
+//       ))}
+//     </div>
+//   );
+// };
+
+
+// // "use client";
+
+// // import React from "react";
+// // import { useRouter } from "next/navigation";
+// // import {
+// //   HomeIcon,
+// //   DocumentTextIcon,
+// //   DocumentDuplicateIcon,
+// //   TruckIcon,
+// //   UserIcon,
+// //   XMarkIcon,
+// // } from "@heroicons/react/24/outline";
+
+// // ICON TYPE FIX
+// type IconType =
+//   | React.ComponentType<React.SVGProps<SVGSVGElement>>
+//   | React.ForwardRefExoticComponent<
+//       React.SVGProps<SVGSVGElement> & React.RefAttributes<SVGSVGElement>
+//     >;
+
+// interface MenuItem {
+//   name: string;
+//   icon: IconType;
+//   link: string;
+// }
+
+// const MobileMenu = ({
+//   setIsMobileMenuOpen,
+// }: {
+//   setIsMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+// }) => {
+//   const router = useRouter();
+
+//   const mobileMenuItems: MenuItem[] = [
 //     { name: "Home", icon: HomeIcon, link: "/" },
 //     { name: "Products", icon: DocumentTextIcon, link: "/ghuba/productlist" },
 //     { name: "Categories", icon: DocumentDuplicateIcon, link: "/ghuba/categories" },
@@ -417,11 +671,19 @@ const MobileMenu = ({
 
 //   return (
 //     <div className="fixed top-0 left-0 w-full h-full bg-white dark:bg-black flex flex-col items-center justify-center space-y-6 z-50">
-//       <button onClick={() => setIsMobileMenuOpen(false)} className="absolute top-4 right-6">
+//       <button
+//         onClick={() => setIsMobileMenuOpen(false)}
+//         className="absolute top-4 right-6"
+//       >
 //         <XMarkIcon className="w-6 h-6" />
 //       </button>
-//       {mobileMenuItems.map(({ name, icon: Icon, link }: { name: string; icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; link: string }) => (
-//         <button key={name} onClick={() => router.push(link)} className="text-2xl flex items-center space-x-2">
+
+//       {mobileMenuItems.map(({ name, icon: Icon, link }) => (
+//         <button
+//           key={name}
+//           onClick={() => router.push(link)}
+//           className="text-2xl flex items-center space-x-2"
+//         >
 //           <Icon className="w-6 h-6" />
 //           <span>{name}</span>
 //         </button>
@@ -429,3 +691,28 @@ const MobileMenu = ({
 //     </div>
 //   );
 // };
+
+// // const MobileMenu = ({ setIsMobileMenuOpen }: { setIsMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>> }) => {
+// //   const router = useRouter();
+// //   const mobileMenuItems = [
+// //     { name: "Home", icon: HomeIcon, link: "/" },
+// //     { name: "Products", icon: DocumentTextIcon, link: "/ghuba/productlist" },
+// //     { name: "Categories", icon: DocumentDuplicateIcon, link: "/ghuba/categories" },
+// //     { name: "Orders", icon: TruckIcon, link: "/ghuba/orderTracking" },
+// //     { name: "Profile", icon: UserIcon, link: "/ghuba/profile" },
+// //   ];
+
+// //   return (
+// //     <div className="fixed top-0 left-0 w-full h-full bg-white dark:bg-black flex flex-col items-center justify-center space-y-6 z-50">
+// //       <button onClick={() => setIsMobileMenuOpen(false)} className="absolute top-4 right-6">
+// //         <XMarkIcon className="w-6 h-6" />
+// //       </button>
+// //       {mobileMenuItems.map(({ name, icon: Icon, link }: { name: string; icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; link: string }) => (
+// //         <button key={name} onClick={() => router.push(link)} className="text-2xl flex items-center space-x-2">
+// //           <Icon className="w-6 h-6" />
+// //           <span>{name}</span>
+// //         </button>
+// //       ))}
+// //     </div>
+// //   );
+// // };

@@ -1,132 +1,129 @@
+'use client';
+
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import Link from 'next/link';
+import { ArrowRightIcon, BoltIcon } from '@heroicons/react/24/solid';
 
 interface TrendingProps {
   promotions?: any;
   themeSettings?: any;
 }
 
-// Dummy data for a trending shoe/product
 const dummyTrendingProduct = {
     title: 'THE RUSH V.2',
     description: 'Engineered for speed and urban performance. Experience feather-light comfort and unparalleled energy return. Your new personal best starts now.',
     ctaText: 'Shop The Rush',
-    ctaLink: '/trending/rush',
-    bannerUrl: "https://images.unsplash.com/photo-1543163521-1bf537d8a1e8?auto=format&fit=crop&w=800&q=80", // A dynamic, fast-looking sneaker image
-    bgColor: '#FF5733', // Vibrant Accent Color (e.g., Orange/Red)
-    textColor: '#1f2937', // Dark contrast text
+    ctaLink: '/products',
+    bannerUrl: "https://images.unsplash.com/photo-1543163521-1bf537d8a1e8?auto=format&fit=crop&w=800&q=80",
+    accentColor: '#FF5733', 
 };
-
-const defaultProduct = dummyTrendingProduct; // Using dummy data as the structure guide
-
-// Custom animation variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { 
-    opacity: 1, 
-    transition: { 
-        staggerChildren: 0.1,
-        when: "beforeChildren" 
-    } 
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 50 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.17, 0.55, 0.55, 1] } }, // Custom ease for bounce/snap
-};
-
 
 export default function TrendingPromotion({ promotions, themeSettings }: TrendingProps) {
+    const product = promotions?.[2] || dummyTrendingProduct;
+    const primaryColor = themeSettings?.primaryColor || product.accentColor || '#ef4444';
     
-    // Use the third promotion item or fallback data
-    const product = promotions?.[2] || defaultProduct;
-    
-    // Theme colors
-    const bgColor = product.bgColor || themeSettings?.primaryColor || '#F7F7F7';
-    const accentColor = product.themeSecondary || '#FF5733';
-    const textColor = product.textColor || '#1f2937';
+    // Parallax effect for the background text
+    const { scrollYProgress } = useScroll();
+    const xMove = useTransform(scrollYProgress, [0, 1], [0, -200]);
 
+    const containerVariants = {
+      hidden: { opacity: 0 },
+      visible: { 
+        opacity: 1, 
+        transition: { staggerChildren: 0.15, delayChildren: 0.2 } 
+      },
+    };
+
+    const itemVariants = {
+      hidden: { opacity: 0, y: 30 },
+      visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } },
+    };
 
     return (
-        <div className="min-h-[80vh] bg-white dark:bg-zinc-900 font-sans flex items-center justify-center p-4 lg:p-8">
-            <motion.section 
+        <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-white dark:bg-black py-20">
+            {/* --- Kinetic Background Text --- */}
+            <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden whitespace-nowrap flex items-center">
+                <motion.h2 
+                    style={{ x: xMove, WebkitTextStroke: `2px ${primaryColor}20` }}
+                    className="text-[25vw] font-black uppercase leading-none opacity-10 dark:opacity-20 text-transparent"
+                >
+                    {product.title.split(' ')[0]} {product.title.split(' ')[0]}
+                </motion.h2>
+            </div>
+
+            <motion.div 
+                variants={containerVariants}
                 initial="hidden"
                 whileInView="visible"
-                viewport={{ once: true, amount: 0.3 }}
-                variants={containerVariants}
-                className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between p-8 relative rounded-[2rem] shadow-4xl overflow-hidden border border-gray-100"
-                // style={{ backgroundColor: bgColor }}
+                viewport={{ once: true, amount: 0.2 }}
+                className="relative z-10 w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
             >
-                
-                {/* --- Background Kinetic Title (Captivating & Engaging) --- */}
-                <div 
-                    className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center opacity-10 dark:opacity-5"
-                    style={{ color: accentColor }}
-                >
-                    <motion.h2 
-                        initial={{ scale: 1.1, opacity: 0 }}
-                        whileInView={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: 0.5, duration: 1.5, ease: 'easeOut' }}
-                        className="text-[15vw] font-black uppercase leading-none transform -rotate-2"
-                        style={{ WebkitTextStroke: `1px ${accentColor}` }}
-                    >
-                        {product.title.split(' ')[0]}
-                    </motion.h2>
-                </div>
-
-
-                {/* --- Left side with the image (Visually Appealing) --- */}
+                {/* --- Left side: Image with dynamic hover --- */}
                 <motion.div
                     variants={itemVariants}
-                    className="w-full lg:w-1/2 flex justify-center items-center mb-12 lg:mb-0 relative z-10"
+                    className="relative order-2 lg:order-1 flex justify-center"
                 >
-                    <img
+                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent to-transparent group-hover:from-primary/10 transition-all duration-500 rounded-full blur-3xl" />
+                    <motion.img
                         src={product.bannerUrl}
                         alt={product.title}
-                        // Aggressive positioning and hover for dynamic feel
-                        className={`w-full max-w-lg transform -rotate-12 transition-all duration-700 ease-out hover:rotate-3 hover:scale-[1.3] drop-shadow-2xl`}
-                        style={{ maxWidth: '400px' }}
+                        whileHover={{ rotate: 0, scale: 1.1, y: -20 }}
+                        initial={{ rotate: -12 }}
+                        className="w-full max-w-[500px] drop-shadow-[0_35px_35px_rgba(0,0,0,0.3)] dark:drop-shadow-[0_35px_35px_rgba(255,255,255,0.05)] cursor-crosshair transition-all duration-700 ease-out"
                     />
                 </motion.div>
 
-                {/* --- Right side with text and CTA (Intuitive) --- */}
-                <div className="w-full lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left p-4 relative z-10">
-                    
-                    <motion.div variants={itemVariants} className="mb-4">
-                        <span className="text-sm font-semibold uppercase tracking-[0.3em]" style={{ color: accentColor }}>
-                            🔥 {product.title.split(' ')[0]}
+                {/* --- Right side: Content --- */}
+                <div className="order-1 lg:order-2 flex flex-col items-center lg:items-start text-center lg:text-left">
+                    <motion.div variants={itemVariants} className="flex items-center gap-2 mb-6">
+                        <span 
+                            className="px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-[0.2em] flex items-center gap-2"
+                            style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}
+                        >
+                            <BoltIcon className="w-4 h-4 animate-pulse" />
+                            Trending Now
                         </span>
                     </motion.div>
 
-                    <motion.div variants={itemVariants} className="mb-6">
-                        <h1 className="text-5xl md:text-8xl font-black mb-4 leading-none tracking-tighter" style={{ color: textColor }}>
-                            {product.title}
-                        </h1>
-                    </motion.div>
+                    <motion.h1 
+                        variants={itemVariants}
+                        className="text-6xl md:text-9xl font-black mb-8 leading-[0.85] tracking-tighter text-gray-900 dark:text-white uppercase italic"
+                    >
+                        {product.title.split(' ').map((word: string, i: number) => (
+                            <span key={i} className="block last:text-transparent last:stroke-current" style={{ WebkitTextStroke: i === 1 ? `2px currentColor` : 'none' }}>
+                                {word}
+                            </span>
+                        ))}
+                    </motion.h1>
                     
-                    <motion.div variants={itemVariants} className="mb-8 max-w-md">
-                        <p className="text-lg md:text-xl font-medium" style={{ color: textColor }}>
-                            {product.description}
-                        </p>
-                    </motion.div>
+                    <motion.p 
+                        variants={itemVariants}
+                        className="text-lg md:text-xl text-gray-500 dark:text-zinc-400 max-w-md mb-10 font-medium leading-relaxed"
+                    >
+                        {product.description}
+                    </motion.p>
 
                     <motion.div variants={itemVariants}>
-                        <Link href={product.ctaLink} passHref>
+                        <Link href={product.ctaLink}>
                             <button
-                                className="inline-flex items-center text-white font-bold text-lg md:text-xl py-4 px-10 rounded-full shadow-lg transition-all duration-300 transform hover:scale-[1.05] hover:shadow-xl"
-                                style={{ backgroundColor: accentColor }}
+                                className="group relative inline-flex items-center justify-center text-white font-black text-lg py-5 px-12 rounded-2xl transition-all duration-500 hover:shadow-[0_0_40px_-10px] overflow-hidden"
+                                style={{ 
+                                  backgroundColor: primaryColor,
+                                  boxShadow: `0 20px 40px -15px ${primaryColor}60`
+                                }}
                             >
-                                {product.ctaText}
-                                <svg className="w-6 h-6 ml-2 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7-7 7"></path>
-                                </svg>
+                                <span className="relative z-10 flex items-center gap-3">
+                                    {product.ctaText}
+                                    <ArrowRightIcon className="w-6 h-6 transition-transform duration-300 group-hover:translate-x-2" />
+                                </span>
+                                {/* Hover Gloss Effect */}
+                                <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                             </button>
                         </Link>
                     </motion.div>
                 </div>
-            </motion.section>
-        </div>
+            </motion.div>
+        </section>
     );
 }

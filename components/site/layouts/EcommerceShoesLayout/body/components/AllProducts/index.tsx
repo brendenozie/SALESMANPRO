@@ -1,9 +1,8 @@
 'use client';
 
-import { useStateContext } from '@/contexts/ContextProvider';
-import { useStoreContext } from '@/contexts/StoreContext';
-import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
-import React from 'react';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { ArrowRightIcon, Squares2X2Icon, ListBulletIcon } from '@heroicons/react/24/outline';
 import ProductCard from '../ProductCard';
 import { MarketListingForm } from '@/types/typings';
 
@@ -13,258 +12,91 @@ interface AllProductsProps {
 }
 
 export default function AllProducts({ martketplaceListings, themeSettings }: AllProductsProps) {
-
+  const [activeCategory, setActiveCategory] = useState('All');
+  
   const primary = themeSettings?.primaryColor || '#f97316';
-  const secondary = themeSettings?.secondaryColor || '#3b82f6';
+  const categories = ['All', 'Sneakers', 'Running', 'Casual', 'Formal'];
 
+  // Simplified fallback data
+  const dummyProducts: Partial<MarketListingForm>[] = Array(8).fill(null).map((_, i) => ({
+    id: `dummy-${i}`,
+    name: ['Nike Air Force 1', 'Red Runner', 'Classic Black', 'Blue Sky'][i % 4],
+    finalPrice: 99.99 + (i * 10),
+    sellingPrice: 120.00 + (i * 10),
+    images: ['https://via.placeholder.com/400'],
+    category: "Men's Shoes",
+    status: 'ACTIVE',
+  }));
 
-  // Fallback dummy products that match the MarketListingForm structure
-  const dummyProducts: MarketListingForm[] = [
-    {
-      id: '1',
-      name: 'Nike Air Force 1 LV5',
-      // slug: { current: 'nike-air-force-1-lv5' },
-      category: "Men's Shoes",
-      images: [{ _key: 'img1', url: 'https://via.placeholder.com/300' }],
-      finalPrice: 99.95,
-      sellingPrice: 119.95,
-      duration: undefined,
-      productCategoryId: '',
-      subCategory: undefined,
-      tags: [],
-      option: [],
-      color: [],
-      size: [],
-      weight: [],
-      material: [],
-      quantity: 0,
-      buyingPrice: 0,
-      pricingTiers: [],
-      isAvailable: false,
-      isOnOffer: false,
-      isFlashDeal: false,
-      isNewArrival: false,
-      isDiscounted: false,
-      isFeatured: false,
-      bedrooms: [],
-      studios: [],
-      features: [],
-      bookingSlots: [],
-      requiredClientInfo: [],
-      amenities: [],
-      delivery: false,
-      paymentOption: '',
-      status: 'ACTIVE',
-      location: null
-    },
-    {
-      id: '2',
-      name: 'Red Runner Sneakers',
-      // slug: { current: 'red-runner-sneakers' },
-      category: "Men's Shoes",
-      images: [{ _key: 'img2', url: 'https://via.placeholder.com/300' }],
-      finalPrice: 159.95,
-      sellingPrice: 180.00,
-      duration: undefined,
-      productCategoryId: '',
-      subCategory: undefined,
-      tags: [],
-      option: [],
-      color: [],
-      size: [],
-      weight: [],
-      material: [],
-      quantity: 0,
-      buyingPrice: 0,
-      pricingTiers: [],
-      isAvailable: false,
-      isOnOffer: false,
-      isFlashDeal: false,
-      isNewArrival: false,
-      isDiscounted: false,
-      isFeatured: false,
-      bedrooms: [],
-      studios: [],
-      features: [],
-      bookingSlots: [],
-      requiredClientInfo: [],
-      amenities: [],
-      delivery: false,
-      paymentOption: '',
-      status: 'ACTIVE',
-      location: null
-    },
-    {
-      id: '3',
-      name: 'Classic Black Trainers',
-      // slug: { current: 'classic-black-trainers' },
-      category: "Men's Shoes",
-      images: [{ _key: 'img3', url: 'https://via.placeholder.com/300' }],
-      finalPrice: 110.00,
-      sellingPrice: 180.00,
-      duration: undefined,
-      productCategoryId: '',
-      subCategory: undefined,
-      tags: [],
-      option: [],
-      color: [],
-      size: [],
-      weight: [],
-      material: [],
-      quantity: 0,
-      buyingPrice: 0,
-      pricingTiers: [],
-      isAvailable: false,
-      isOnOffer: false,
-      isFlashDeal: false,
-      isNewArrival: false,
-      isDiscounted: false,
-      isFeatured: false,
-      bedrooms: [],
-      studios: [],
-      features: [],
-      bookingSlots: [],
-      requiredClientInfo: [],
-      amenities: [],
-      delivery: false,
-      paymentOption: '',
-      status: 'ACTIVE',
-      location: null
-    },
-    {
-      id: '4',
-      name: 'Blue Sky Trainers',
-      // slug: { current: 'blue-sky-trainers' },
-      category: "Men's Shoes",
-      images: [{ _key: 'img4', url: 'https://via.placeholder.com/300' }],
-      finalPrice: 135.00,
-      sellingPrice: 180.00,
-      duration: undefined,
-      productCategoryId: '',
-      subCategory: undefined,
-      tags: [],
-      option: [],
-      color: [],
-      size: [],
-      weight: [],
-      material: [],
-      quantity: 0,
-      buyingPrice: 0,
-      pricingTiers: [],
-      isAvailable: false,
-      isOnOffer: false,
-      isFlashDeal: false,
-      isNewArrival: false,
-      isDiscounted: false,
-      isFeatured: false,
-      bedrooms: [],
-      studios: [],
-      features: [],
-      bookingSlots: [],
-      requiredClientInfo: [],
-      amenities: [],
-      delivery: false,
-      paymentOption: '',
-      status: 'ACTIVE',
-      location: null
-    },
-    {
-      id: '5',
-      name: 'Gray Casual Loafers',
-      // slug: { current: 'gray-casual-loafers' },
-      category: "Men's Shoes",
-      images: [{ _key: 'img5', url: 'https://via.placeholder.com/300' }],
-      finalPrice: 85.00,
-      sellingPrice: 95.00,
-      duration: undefined,
-      productCategoryId: '',
-      subCategory: undefined,
-      tags: [],
-      option: [],
-      color: [],
-      size: [],
-      weight: [],
-      material: [],
-      quantity: 0,
-      buyingPrice: 0,
-      pricingTiers: [],
-      isAvailable: false,
-      isOnOffer: false,
-      isFlashDeal: false,
-      isNewArrival: false,
-      isDiscounted: false,
-      isFeatured: false,
-      bedrooms: [],
-      studios: [],
-      features: [],
-      bookingSlots: [],
-      requiredClientInfo: [],
-      amenities: [],
-      delivery: false,
-      paymentOption: '',
-      status: 'ACTIVE',
-      location: null
-    },
-    {
-      id: '6',
-      name: 'High-Top Sneakers',
-      // slug: { current: 'high-top-sneakers' },
-      category: "Men's Shoes",
-      images: [{ _key: 'img6', url: 'https://via.placeholder.com/300' }],
-      finalPrice: 165.00,
-      sellingPrice: 180.00,
-      duration: undefined,
-      productCategoryId: '',
-      subCategory: undefined,
-      tags: [],
-      option: [],
-      color: [],
-      size: [],
-      weight: [],
-      material: [],
-      quantity: 0,
-      buyingPrice: 0,
-      pricingTiers: [],
-      isAvailable: false,
-      isOnOffer: false,
-      isFlashDeal: false,
-      isNewArrival: false,
-      isDiscounted: false,
-      isFeatured: false,
-      bedrooms: [],
-      studios: [],
-      features: [],
-      bookingSlots: [],
-      requiredClientInfo: [],
-      amenities: [],
-      delivery: false,
-      paymentOption: '',
-      status: 'ACTIVE',
-      location: null
-    },
-  ];
-
-  const productsToShow = martketplaceListings && martketplaceListings?.length > 0 ? martketplaceListings : dummyProducts;
-
+  const productsToShow = martketplaceListings && martketplaceListings.length > 0 
+    ? martketplaceListings 
+    : (dummyProducts as MarketListingForm[]);
 
   return (
-    <section className="py-12 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4">
+    <section className="py-20 bg-white dark:bg-zinc-950 transition-colors duration-500">
+      <div className="max-w-7xl mx-auto px-6">
+        
         {/* Section Header */}
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">AllProducts</h2>
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
+          <div className="space-y-1">
+            <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white uppercase tracking-tighter">
+              Explore <span className="text-transparent" style={{ WebkitTextStroke: '1px currentColor' }}>All Gear</span>
+            </h2>
+            <p className="text-gray-500 dark:text-zinc-500 text-sm font-medium">
+              Showing {productsToShow.length} premium listings
+            </p>
+          </div>
+
+          {/* Category Tabs */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`px-5 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+                  activeCategory === cat 
+                  ? 'bg-gray-900 text-white dark:bg-white dark:text-black shadow-lg' 
+                  : 'bg-gray-100 text-gray-500 dark:bg-zinc-900 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-800'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* View Controls (Visual Only) */}
+        <div className="flex justify-end mb-8 gap-4 border-b border-gray-100 dark:border-zinc-900 pb-4">
+           <button className="p-2 text-gray-900 dark:text-white bg-gray-100 dark:bg-zinc-900 rounded-lg">
+             <Squares2X2Icon className="w-5 h-5" />
+           </button>
+           <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors">
+             <ListBulletIcon className="w-5 h-5" />
+           </button>
+        </div>
+
+        {/* Products Grid */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10"
+        >
+          {productsToShow.map((product: MarketListingForm) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </motion.div>
+
+        {/* Bottom CTA */}
+        <div className="mt-20 flex justify-center">
           <button 
-          onClick={() => window.location.href = `/ecommerceshoes/products`}
-          className="flex items-center text-green-600 font-semibold hover:underline">
-            See All <ArrowRightCircleIcon className="w-6 h-6 ml-2" />
+            onClick={() => window.location.href = `/products`}
+            className="group flex items-center gap-3 px-10 py-5 rounded-2xl border-2 border-gray-900 dark:border-white text-gray-900 dark:text-white font-black uppercase text-sm tracking-widest hover:bg-gray-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-300"
+          >
+            Load More Products
+            <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-2" />
           </button>
         </div>
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {productsToShow.map((product : MarketListingForm) => (
-              <ProductCard key={product.id} product={product} primary={primary} />
-          ))}
-        </div>
+
       </div>
     </section>
   );

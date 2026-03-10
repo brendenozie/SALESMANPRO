@@ -1,174 +1,162 @@
-import { MinusIcon, PlusIcon, StarIcon, TrashIcon } from '@heroicons/react/24/solid';
-import React from 'react';
-import { MarketListingForm } from '@/types/typings';
+'use client';
 
-import { motion } from 'framer-motion';
+import { MinusIcon, PlusIcon, StarIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import React, { useState } from 'react';
+import { MarketListingForm } from '@/types/typings';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
-import Image from 'next/image'; // Import Next.js Image component
+import Image from 'next/image';
 
-// Loader for Next.js image optimization
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-interface ProductCardProps {
-  product: MarketListingForm;
-  primary?: string; // Optional prop, as themeSettings will provide it
-}
+// Mock sizes - in a real app, these would come from product.variants or product.sizes
+const AVAILABLE_SIZES = ['7', '8', '9', '10', '11', '12'];
 
-const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
+  const [isSelectingSize, setIsSelectingSize] = useState(false);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  
   const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
   const { storeFormData } = useStoreContext();
-  const { slug } = storeFormData || {};
   
-  // Default colors, overridden by theme settings
-  const primary = storeFormData?.themeSettings?.primaryColor || '#10B981'; // Default: Emerald
-  const secondary = storeFormData?.themeSettings?.secondaryColor || '#3B82F6'; // Default: Blue
+  const primary = storeFormData?.themeSettings?.primaryColor || '#10B981';
+  const secondary = storeFormData?.themeSettings?.secondaryColor || '#3B82F6';
 
-  const getQuantity = (id: string) => cart.find((item: any) => item.id === id)?.quantity || 0;
-  const quantity = getQuantity(product.id);
+  const quantity = cart.find((item: any) => item.id === product.id)?.quantity || 0;
 
-  const { name, images, finalPrice, sellingPrice } = product;
-  const rating = 4.5; // Example static value
-  const reviews = 149; // Example static value
-
-  const discount =
-    sellingPrice && finalPrice != null && sellingPrice > finalPrice
-      ? Math.round(((sellingPrice - finalPrice) / sellingPrice) * 100)
-      : null;
-
-  // ✅ Safe image source (no empty strings)
-  // ✅ Safe image source (handles non-string values)
-  const rawImage = images && images.length > 0 ? images[0] : null;
-  const imageSrc =
-    typeof rawImage === 'string' && rawImage.trim() !== ''
-      ? rawImage
-      : 'https://via.placeholder.com/300';
-      
+  const handleAddToCart = () => {
+    // If the product requires a size and we haven't picked one, show selector
+    if (!selectedSize) {
+      setIsSelectingSize(true);
+      return;
+    }
+    // Add to cart with the selected size meta-data
+    addToCart({ ...product, selectedSize });
+    setIsSelectingSize(false);
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="relative flex flex-col bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group border border-gray-100"
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="relative flex flex-col bg-white dark:bg-slate-900 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden group border border-gray-100 dark:border-slate-800"
     >
-      {/* Discount Badge */}
-      {discount !== null && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3 }}
-          className="absolute top-3 left-3 z-10 text-white text-sm font-bold px-3 py-1 rounded-lg shadow-md"
-          style={{ backgroundColor: secondary }}
-        >
-          -{discount}% OFF
-        </motion.div>
-      )}
+      {/* Quick Add Size Overlay */}
+      <AnimatePresence>
+        {isSelectingSize && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-30 bg-white/90 dark:bg-slate-900/95 backdrop-blur-md p-6 flex flex-col"
+          >
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-xs font-black uppercase tracking-widest text-gray-400">Select Size</span>
+              <button onClick={() => setIsSelectingSize(false)} className="p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full">
+                <XMarkIcon className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
 
-      {/* Product Image */}
-      <Link
-        href={`/ecommerceshoes/products/${product.id}`}
-        className="block relative h-64 w-full overflow-hidden"
-      >
+            <div className="grid grid-cols-3 gap-2 mb-6">
+              {AVAILABLE_SIZES.map((size) => (
+                <button
+                  key={size}
+                  onClick={() => setSelectedSize(size)}
+                  className={`py-3 rounded-xl border-2 text-sm font-bold transition-all ${
+                    selectedSize === size 
+                    ? 'border-gray-900 bg-gray-900 text-white dark:border-white dark:bg-white dark:text-gray-900' 
+                    : 'border-gray-100 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-500 text-gray-600 dark:text-slate-400'
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+
+            <button
+              disabled={!selectedSize}
+              onClick={handleAddToCart}
+              className="mt-auto w-full py-4 rounded-2xl text-white font-black text-sm uppercase tracking-widest shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: primary }}
+            >
+              Confirm & Add
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Image Section */}
+      <Link href={`/ecommerceshoes/products/${product.id}`} className="block relative h-64 bg-gray-50 dark:bg-slate-800/50">
         <Image
-          src={imageSrc}
-          alt={name || 'Product image'}
+          src={(product.images?.[0] as any)?.url || product.images?.[0] || 'https://via.placeholder.com/300'}
+          alt={product.name}
           loader={loader}
           fill
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          className="object-cover object-center transition-transform duration-500 group-hover:scale-110"
-          priority
+          className="object-contain p-8 transition-transform duration-700 group-hover:scale-110"
         />
-
-        {/* Image Overlay on Hover */}
-        <div className="absolute inset-0 bg-black bg-opacity-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-          <motion.span
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-white text-md font-semibold px-4 py-2 rounded-full"
-            style={{ backgroundColor: `rgba(0,0,0,0.5)` }}
-          >
-            View Details
-          </motion.span>
-        </div>
       </Link>
 
-      {/* Product Details */}
-      <div className="p-5 flex flex-col justify-between flex-grow">
-        <h4 className="text-xl font-bold text-gray-900 mb-2 truncate" title={name}>
-          {name}
-        </h4>
-
-        {/* Price */}
-        <div className="mt-2 flex items-baseline gap-2">
-          <span
-            className="text-3xl font-extrabold"
-            style={{ color: primary }}
-          >
-            {(finalPrice ?? 0).toFixed(2)}
-          </span>
-          {sellingPrice && finalPrice && sellingPrice > finalPrice && (
-            <span className="text-base line-through text-gray-500">
-              {sellingPrice.toFixed(2)}
+      {/* Details Section */}
+      <div className="p-6 flex flex-col flex-grow">
+        <div className="flex justify-between items-start mb-2">
+          <h4 className="text-lg font-bold text-gray-900 dark:text-white truncate">{product.name}</h4>
+          {selectedSize && (
+            <span className="text-[10px] font-bold px-2 py-0.5 bg-gray-100 dark:bg-slate-800 rounded text-gray-500">
+              Size: {selectedSize}
             </span>
           )}
         </div>
 
-        {/* Rating */}
-        <div className="mt-2 flex items-center gap-1 text-yellow-500 text-sm">
-          <StarIcon className="w-5 h-5" />
-          <span className="font-semibold">{rating.toFixed(1)}</span>
-          <span className="text-gray-500 ml-1">({reviews} reviews)</span>
+        <div className="flex items-center gap-1 text-yellow-500 mb-4">
+          <StarIcon className="w-4 h-4" />
+          <span className="text-xs font-bold text-gray-900 dark:text-white">4.5</span>
         </div>
 
-        {/* Cart Actions */}
-        {quantity > 0 ? (
-          <div className="mt-5 flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => decreaseQuantity(product.id)}
-                className="p-2 bg-gray-100 rounded-full hover:bg-red-100 transition-all duration-200 shadow-sm"
+        <div className="text-2xl font-black mb-6" style={{ color: primary }}>
+          ${(product.finalPrice ?? 0).toFixed(2)}
+        </div>
+
+        {/* Footer Actions */}
+        <div className="mt-auto">
+          <AnimatePresence mode="wait">
+            {quantity > 0 ? (
+              <motion.div 
+                key="qty"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex items-center justify-between bg-gray-100 dark:bg-slate-800 p-1.5 rounded-2xl"
               >
-                {quantity === 1 ? (
-                  <TrashIcon className="h-5 w-5 text-red-500" />
-                ) : (
-                  <MinusIcon className="h-5 w-5 text-gray-600" />
-                )}
-              </motion.button>
-              <span className="text-lg text-gray-800 font-bold">{quantity}</span>
+                <div className="flex items-center">
+                  <button onClick={() => decreaseQuantity(product.id)} className="p-2.5 rounded-xl hover:bg-white dark:hover:bg-slate-700 shadow-sm transition-all">
+                    {quantity === 1 ? <TrashIcon className="h-5 w-5 text-red-500" /> : <MinusIcon className="h-5 w-5 text-gray-600 dark:text-slate-300" />}
+                  </button>
+                  <span className="w-10 text-center font-black dark:text-white">{quantity}</span>
+                  <button onClick={() => addToCart(product)} className="p-2.5 rounded-xl hover:bg-white dark:hover:bg-slate-700 shadow-sm transition-all">
+                    <PlusIcon className="h-5 w-5 text-gray-600 dark:text-slate-300" />
+                  </button>
+                </div>
+                <button onClick={() => { setSelectedSize(null); removeFromCart(product.id); }} className="px-4 text-[10px] font-black uppercase text-gray-400 hover:text-red-500 transition-colors">
+                  Reset
+                </button>
+              </motion.div>
+            ) : (
               <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => addToCart(product)}
-                className="p-2 bg-gray-100 rounded-full hover:bg-green-100 transition-all duration-200 shadow-sm"
+                key="add"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleAddToCart}
+                className="w-full py-4 rounded-2xl text-white font-black text-sm uppercase tracking-widest shadow-xl shadow-black/10 transition-all"
+                style={{ background: `linear-gradient(135deg, ${primary}, ${secondary})` }}
               >
-                <PlusIcon className="h-5 w-5 text-gray-600" />
+                {isSelectingSize ? 'Picking...' : 'Add to Cart'}
               </motion.button>
-            </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => removeFromCart(product.id)}
-              className="text-sm font-medium text-red-600 hover:text-red-800 transition-colors"
-            >
-              Remove
-            </motion.button>
-          </div>
-        ) : (
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => addToCart(product)}
-            className="mt-5 w-full py-3 rounded-lg text-white font-semibold text-lg shadow-md transition-all duration-300 hover:shadow-lg"
-            style={{
-              background: `linear-gradient(135deg, ${primary}, ${secondary})`,
-            }}
-          >
-            Add to Cart
-          </motion.button>
-        )}
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </motion.div>
   );

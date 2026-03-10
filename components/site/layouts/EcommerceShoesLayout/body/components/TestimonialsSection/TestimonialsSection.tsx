@@ -1,11 +1,10 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { StarIcon } from '@heroicons/react/24/solid';
-import { useStore } from '@/contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
 import { Testimonial } from '@/types/typings';
-import Image from 'next/image';
 import Section from '@/components/site/Section/Section';
 
 const sampleTestimonials: Testimonial[] = [
@@ -30,70 +29,97 @@ interface TestimonialsSectionProps {
     testimonials?: Testimonial[] | null;
 }
 
-export default function TestimonialsSection({ testimonials = sampleTestimonials }: TestimonialsSectionProps) {
-    const store = useStore();
-    const primaryColor = store?.storeFormData?.themeSettings?.primaryColor || '#f97316';
+export default function TestimonialsSection({ testimonials }: TestimonialsSectionProps) {
+    const { storeFormData } = useStoreContext();
+    const primaryColor = storeFormData?.themeSettings?.primaryColor || '#f97316';
+    const list = testimonials && testimonials.length > 0 ? testimonials : sampleTestimonials;
 
-    const list = testimonials || sampleTestimonials;
+    // Parallax effect for the background text
+    const { scrollYProgress } = useScroll();
+    const xMove = useTransform(scrollYProgress, [0, 1], [-100, 100]);
 
     return (
-        <Section 
-            title="Trusted by Pros, Loved by All" 
-            // subtitle="Join thousands of happy runners and trendsetters."
-        >
-            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                {/* Decorative Background Element */}
-                <div 
-                    className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full opacity-[0.03] pointer-events-none"
-                    style={{ color: primaryColor }}
+        <Section className="relative overflow-hidden bg-white dark:bg-black py-24">
+            {/* Kinetic Background Layer */}
+            <div className="absolute top-1/2 left-0 -translate-y-1/2 w-full pointer-events-none opacity-[0.03] dark:opacity-[0.05] overflow-hidden whitespace-nowrap">
+                <motion.span 
+                    style={{ x: xMove }}
+                    className="text-[25vw] font-black uppercase tracking-tighter inline-block"
                 >
-                    <span className="text-[20rem] font-black whitespace-nowrap select-none">TRUSTED BY PROS</span>
+                    Real Results Real Results
+                </motion.span>
+            </div>
+
+            <div className="relative max-w-7xl mx-auto px-6 z-10">
+                {/* Trust Score Header */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                             <div className="flex">
+                                {[...Array(5)].map((_, i) => (
+                                    <StarIcon key={i} className="w-5 h-5 text-yellow-400" />
+                                ))}
+                             </div>
+                             <span className="text-sm font-bold uppercase tracking-widest text-gray-400">4.9/5 Rating</span>
+                        </div>
+                        <h2 className="text-5xl md:text-7xl font-black text-gray-900 dark:text-white uppercase leading-[0.85] italic tracking-tighter">
+                            Trusted <br /> By <span className="text-transparent" style={{ WebkitTextStroke: `1px ${primaryColor}` }}>The Pros.</span>
+                        </h2>
+                    </div>
+                    <div className="hidden lg:block max-w-xs text-right">
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest leading-relaxed">
+                            Join 50,000+ athletes who switched to elite performance footwear this year.
+                        </p>
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+                {/* Testimonials Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {list.map((t, idx) => (
                         <motion.div
                             key={idx}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.5, delay: idx * 0.1 }}
-                            className="flex flex-col bg-white dark:bg-zinc-800/50 backdrop-blur-sm p-8 rounded-3xl border border-gray-100 dark:border-zinc-700 shadow-sm hover:shadow-xl transition-all duration-300 group"
+                            transition={{ duration: 0.7, delay: idx * 0.1 }}
+                            className="relative flex flex-col bg-gray-50 dark:bg-zinc-900/40 p-10 rounded-[2.5rem] border border-gray-100 dark:border-zinc-800 transition-all duration-500 hover:-translate-y-2 group"
                         >
-                            {/* Star Rating & Quote Icon */}
-                            <div className="flex justify-between items-start mb-6">
-                                <div className="flex gap-0.5">
-                                    {[...Array(5)].map((_, i) => (
-                                        <StarIcon key={i} className="w-5 h-5" style={{ color: primaryColor }} />
-                                    ))}
-                                </div>
-                                <div className="opacity-10 group-hover:opacity-30 transition-opacity">
-                                    <svg width="35" height="25" viewBox="0 0 35 25" fill="currentColor">
-                                        <path d="M11.25 0L15 3.75C11.25 7.5 9.375 11.25 9.375 15H15V25H0V15C0 7.5 3.75 2.5 11.25 0ZM31.25 0L35 3.75C31.25 7.5 29.375 11.25 29.375 15H35V25H20V15C20 7.5 23.75 2.5 31.25 0Z" />
-                                    </svg>
-                                </div>
+                            {/* Decorative Quote Icon */}
+                            <div className="absolute top-10 right-10 opacity-[0.05] dark:opacity-[0.1] group-hover:scale-110 transition-transform duration-500">
+                                <svg width="45" height="35" viewBox="0 0 35 25" fill="currentColor">
+                                    <path d="M11.25 0L15 3.75C11.25 7.5 9.375 11.25 9.375 15H15V25H0V15C0 7.5 3.75 2.5 11.25 0ZM31.25 0L35 3.75C31.25 7.5 29.375 11.25 29.375 15H35V25H20V15C20 7.5 23.75 2.5 31.25 0Z" />
+                                </svg>
                             </div>
 
-                            {/* Quote Text */}
-                            <p className="flex-grow text-lg font-medium leading-relaxed text-gray-800 dark:text-zinc-200">
-                                {t.quote}
-                            </p>
+                            {/* Quote Content */}
+                            <div className="flex-grow mb-10">
+                                <p className="text-xl font-bold leading-tight text-gray-900 dark:text-white italic">
+                                    "{t.quote}"
+                                </p>
+                            </div>
 
-                            {/* Author Profile */}
-                            <div className="mt-8 flex items-center gap-4">
-                                <div className="relative w-12 h-12 overflow-hidden rounded-full border-2 p-0.5" style={{ borderColor: primaryColor }}>
+                            {/* Author Info */}
+                            <div className="flex items-center gap-4 pt-8 border-t border-gray-200/50 dark:border-zinc-800/50">
+                                <div className="relative w-14 h-14">
                                     <img
-                                        src={t.avatarUrl || `https://ui-avatars.com/api/?name=${t.authorName}`}
-                                        alt={t.authorName || 'Anonymous'}
-                                        className="w-full h-full rounded-full object-cover"
+                                        src={t.avatarUrl || `https://ui-avatars.com/api/?name=${t.authorName}&background=random`}
+                                        alt={t.authorName}
+                                        className="w-full h-full rounded-2xl object-cover grayscale group-hover:grayscale-0 transition-all duration-500 shadow-lg"
                                     />
+                                    {/* Verified Badge */}
+                                    <div 
+                                        className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] text-white shadow-sm"
+                                        style={{ backgroundColor: primaryColor }}
+                                    >
+                                        ✓
+                                    </div>
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-gray-900 dark:text-white leading-tight">
+                                    <h4 className="font-black uppercase text-sm tracking-tighter text-gray-900 dark:text-white leading-none mb-1">
                                         {t.authorName}
                                     </h4>
-                                    <p className="text-xs uppercase tracking-widest text-gray-500 dark:text-zinc-500 font-semibold">
-                                        Verified Buyer
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                        Verified Athlete
                                     </p>
                                 </div>
                             </div>

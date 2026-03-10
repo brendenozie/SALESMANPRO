@@ -146,11 +146,11 @@ export default function Footer() {
         </div>
 
         {/* SalesmanPro Attribution */}
-        <div className="mt-12 flex items-center justify-center gap-2 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-500">
+        <div className="mt-12 flex items-center justify-center gap-2 opacity-40 hover:opacity-100 transition-all duration-500">
           <span className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">Platform by</span>
           <a 
             href="https://salesmanpro.site" 
-            className="text-[9px] font-black uppercase tracking-[0.3em] text-orange-600"
+            className="text-[14px] font-black uppercase tracking-[0.3em] text-orange-600"
           >
             SalesmanPro.site
           </a>
