@@ -12,8 +12,11 @@ import {
   CheckBadgeIcon,
   ArrowLeftIcon,  
   RectangleGroupIcon,
+  ChevronLeftIcon,
+  ComputerDesktopIcon, 
   DevicePhoneMobileIcon,
-  ComputerDesktopIcon
+  ArrowTopRightOnSquareIcon, 
+  MagnifyingGlassPlusIcon
 } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 import PreviewModal from "../PreviewModal/PreviewModal";
@@ -670,181 +673,201 @@ export default function CategoryStep({
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-4 lg:p-12 min-h-[700px]">
-      <AnimatePresence mode="wait">
-        {!selectedCategory ? (
-          /* STEP 1: MINIMALIST DISCOVERY */
-          <motion.div
-            key="step1"
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-12"
-          >
-            <header className="text-center space-y-4">
-              <h2 className="text-5xl font-black text-gray-900 tracking-tight">
-                Pick your <span className="text-indigo-600">Industry.</span>
-              </h2>
-              <p className="text-gray-500 text-xl max-w-xl mx-auto">
-                We'll tailor your experience based on your business type.
-              </p>
-              
-              <div className="relative max-w-lg mx-auto mt-8">
-                <MagnifyingGlassIcon className="absolute left-5 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="What's your business? (e.g. Agency, Store...)"
-                  className="w-full bg-white ring-2 ring-gray-100 rounded-2xl pl-14 pr-6 py-5 shadow-2xl shadow-indigo-100/50 focus:ring-4 focus:ring-indigo-500/10 border-none transition-all text-lg"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-            </header>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-              {filteredCategories.map((cat) => (
-                <motion.button
-                  key={cat.name}
-                  whileHover={{ y: -8, shadow: "0 25px 50px -12px rgba(99, 102, 241, 0.25)" }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleIndustrySelect(cat.name)}
-                  className="bg-white p-8 rounded-[2.5rem] border border-gray-50 shadow-sm hover:border-indigo-200 transition-all flex flex-col items-center text-center group"
-                >
-                  <span className="text-5xl mb-6 group-hover:scale-110 transition-transform">{cat.icon}</span>
-                  <span className="font-extrabold text-gray-800 text-lg uppercase tracking-tight">{cat.name}</span>
-                </motion.button>
-              ))}
-            </div>
-          </motion.div>
-        ) : (
-          /* STEP 2: SPLIT-SCREEN REFINEMENT */
-          <motion.div
-            key="step2"
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex flex-col lg:flex-row gap-8 lg:h-[700px]"
-          >
-            {/* LEFT: CONTROLS (Scrollable Sidebar) */}
-            <div className="lg:w-1/3 flex flex-col h-full bg-white rounded-[3rem] p-8 shadow-xl border border-gray-50">
-              <button 
-                onClick={() => handleChange({ target: { name: 'category', value: "" } } as any)}
-                className="flex items-center gap-2 text-gray-400 font-bold hover:text-indigo-600 transition-colors mb-8 group"
-              >
-                <ArrowLeftIcon className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-                Change Industry
-              </button>
-
-              <div className="mb-8">
-                <div className="flex items-center gap-4 mb-2">
-                  <span className="text-4xl">{selectedCategory.icon}</span>
-                  <h2 className="text-2xl font-black text-gray-900 leading-none">{selectedCategory.name}</h2>
+    <>
+      <div className="max-w-7xl mx-auto p-4 lg:p-12 min-h-[700px]">
+        <AnimatePresence mode="wait">
+          {!selectedCategory ? (
+            /* STEP 1: MINIMALIST DISCOVERY */
+            <motion.div
+              key="step1"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-12"
+            >
+              <header className="text-center space-y-4">
+                <h2 className="text-5xl font-black text-gray-900 tracking-tight">
+                  Pick your <span className="text-indigo-600">Industry.</span>
+                </h2>
+                <p className="text-gray-500 text-xl max-w-xl mx-auto">
+                  We'll tailor your experience based on your business type.
+                </p>
+                
+                <div className="relative max-w-lg mx-auto mt-8">
+                  <MagnifyingGlassIcon className="absolute left-5 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="What's your business? (e.g. Agency, Store...)"
+                    className="w-full bg-white ring-2 ring-gray-100 rounded-2xl pl-14 pr-6 py-5 shadow-2xl shadow-indigo-100/50 focus:ring-4 focus:ring-indigo-500/10 border-none transition-all text-lg"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
                 </div>
-                <p className="text-gray-400 text-sm font-medium italic">Available Styles:</p>
-              </div>
+              </header>
 
-              <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
-                {selectedCategory.variants.map((v: any) => {
-                  const isSelected = v.name === variant;
-                  return (
-                    <button
-                      key={v.name}
-                      onClick={() => handleChange({ target: { name: 'variant', value: v.name } } as any)}
-                      className={`w-full group text-left p-5 rounded-3xl border-2 transition-all ${
-                        isSelected 
-                          ? "bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-200" 
-                          : "bg-gray-50 border-transparent hover:border-indigo-100"
-                      }`}
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className={`font-black text-lg leading-tight ${isSelected ? 'text-white' : 'text-gray-900'}`}>{v.name}</p>
-                          <p className={`text-xs mt-1 font-bold uppercase tracking-wider ${isSelected ? 'text-indigo-200' : 'text-indigo-500'}`}>
-                            {v.tag || 'Standard'}
-                          </p>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                {filteredCategories.map((cat) => (
+                  <motion.button
+                    key={cat.name}
+                    whileHover={{ y: -8, shadow: "0 25px 50px -12px rgba(99, 102, 241, 0.25)" }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleIndustrySelect(cat.name)}
+                    className="bg-white p-8 rounded-[2.5rem] border border-gray-50 shadow-sm hover:border-indigo-200 transition-all flex flex-col items-center text-center group"
+                  >
+                    <span className="text-5xl mb-6 group-hover:scale-110 transition-transform">{cat.icon}</span>
+                    <span className="font-extrabold text-gray-800 text-lg uppercase tracking-tight">{cat.name}</span>
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          ) : (
+          
+            /* STEP 2: PERSPECTIVE REFINEMENT */
+            <motion.div
+              key="step2"
+              className="flex flex-col lg:flex-row gap-8 lg:h-[650px] items-center" // Reduced height
+            >
+              {/* LEFT: MINIMALIST SIDEBAR */}
+              <div className="lg:w-1/3 w-full flex flex-col h-full bg-slate-50/50 rounded-[2.5rem] p-8 border border-slate-200/60">
+                <button 
+                  onClick={() => handleChange({ target: { name: 'category', value: "" } } as any)}
+                  className="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase tracking-widest hover:text-indigo-600 transition-colors mb-8"
+                >
+                  <ChevronLeftIcon className="h-4 w-4" />
+                  Back
+                </button>
+
+                <div className="mb-8">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-3xl p-3 bg-white rounded-2xl shadow-sm">{selectedCategory.icon}</span>
+                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">{selectedCategory.name}</h2>
+                  </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+                  {selectedCategory.variants.map((v: any) => {
+                    const isSelected = v.name === variant;
+                    return (
+                      <button
+                        key={v.name}
+                        onClick={() => handleChange({ target: { name: 'variant', value: v.name } } as any)}
+                        className={`w-full group text-left p-5 rounded-3xl transition-all duration-300 ${
+                          isSelected 
+                            ? "bg-white shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] border-2 border-indigo-500" 
+                            : "hover:bg-white/50 border-2 border-transparent"
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className={`font-bold ${isSelected ? 'text-indigo-600' : 'text-slate-700'}`}>{v.name}</p>
+                            <p className="text-[10px] uppercase font-black tracking-tighter text-slate-400">{v.tag || 'Standard'}</p>
+                          </div>
+                          {isSelected && <SparklesIcon className="h-4 w-4 text-indigo-500 animate-spin-slow" />}
                         </div>
-                        {isSelected && <SparklesIcon className="h-5 w-5 text-white animate-pulse" />}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+                      </button>
+                    );
+                  })}
+                </div>
 
-              <div className="mt-8 pt-6 border-t border-gray-100">
                 <button 
                   onClick={() => setIsModalOpen(true)}
-                  className="w-full py-5 bg-gray-900 text-white rounded-2xl font-black flex items-center justify-center gap-3 hover:bg-black transition-all"
+                  className="mt-6 w-full py-4 bg-slate-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-600 transition-all shadow-xl shadow-slate-200"
                 >
-                  <EyeIcon className="h-5 w-5 text-indigo-400" />
-                  Full Site Preview
-                </button>
-              </div>
-            </div>
-
-            {/* RIGHT: THE STAGE (Visual Preview) */}
-            <div className="lg:w-2/3 flex flex-col gap-6">
-              {/* Preview Mode Toggles */}
-              <div className="flex justify-center bg-gray-100 p-1.5 rounded-2xl self-center">
-                <button 
-                  onClick={() => setPreviewMode('desktop')}
-                  className={`px-6 py-2 rounded-xl flex items-center gap-2 font-bold text-sm transition-all ${previewMode === 'desktop' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500'}`}
-                >
-                  <ComputerDesktopIcon className="h-4 w-4" /> Desktop
-                </button>
-                <button 
-                  onClick={() => setPreviewMode('mobile')}
-                  className={`px-6 py-2 rounded-xl flex items-center gap-2 font-bold text-sm transition-all ${previewMode === 'mobile' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500'}`}
-                >
-                  <DevicePhoneMobileIcon className="h-4 w-4" /> Mobile
+                  <MagnifyingGlassPlusIcon className="h-5 w-5" />
+                  Preview Live Site
                 </button>
               </div>
 
-              {/* The Cinematic Preview Frame */}
-              <div className="flex-1 relative flex items-center justify-center">
-                <motion.div 
-                  animate={{ 
-                    width: previewMode === 'desktop' ? '100%' : '320px',
-                    height: previewMode === 'desktop' ? '100%' : '90%'
-                  }}
-                  className="relative bg-white rounded-[3rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] border-[12px] border-gray-900 overflow-hidden"
-                >
-                  {/* Fake Scrollbar indicator */}
-                  <div className="absolute right-1 top-20 bottom-20 w-1 bg-gray-100 rounded-full z-10 opacity-50" />
-                  
-                  <motion.div 
-                    className="w-full cursor-s-resize"
-                    whileHover={{ y: "-60%" }}
-                    transition={{ duration: 12, ease: "linear" }}
+              {/* RIGHT: THE 3D PERSPECTIVE STAGE */}
+              <div className="lg:w-2/3 w-full h-full flex flex-col relative perspective-1000">
+                {/* MODE TOGGLE (Floating) */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 z-30 flex bg-white/80 backdrop-blur-md p-1 rounded-2xl border border-slate-200 shadow-xl">
+                  <button 
+                    onClick={() => setPreviewMode('desktop')}
+                    className={`px-6 py-2 rounded-xl flex items-center gap-2 font-bold text-xs transition-all ${previewMode === 'desktop' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50'}`}
                   >
-                    <img 
-                      src={selectedTemplate?.desktopPreviewImage || "/path-to-default.jpg"} 
-                      alt="Preview" 
-                      className="w-full h-auto"
+                    <ComputerDesktopIcon className="h-4 w-4" /> Desktop
+                  </button>
+                  <button 
+                    onClick={() => setPreviewMode('mobile')}
+                    className={`px-6 py-2 rounded-xl flex items-center gap-2 font-bold text-xs transition-all ${previewMode === 'mobile' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50'}`}
+                  >
+                    <DevicePhoneMobileIcon className="h-4 w-4" /> Mobile
+                  </button>
+                </div>
+
+                {/* CINEMATIC FRAME */}
+                <div className="flex-1 flex items-center justify-center pt-12">
+                  <motion.div 
+                    animate={{ 
+                      // rotateX: previewMode === 'desktop' ? 12 : 0,
+                      // rotateY: previewMode === 'desktop' ? -10 : 0,
+                      scale: previewMode === 'desktop' ? 0.95 : 1,
+                      width: previewMode === 'desktop' ? '100%' : '300px'
+                    }}
+                    transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                    className="relative aspect-video max-h-full bg-white rounded-[2rem] shadow-[20px_40px_80px_-20px_rgba(0,0,0,0.25)] border-[10px] border-white overflow-hidden group"
+                  >
+                    {/* Scroll Progress Bar */}
+                    <motion.div 
+                        className="absolute top-0 left-0 h-1 bg-indigo-500 z-50"
+                        style={{ width: '0%' }}
+                        whileHover={{ width: '100%', transition: { duration: 8 } }}
                     />
+
+                    {/* The Image Wrapper with Bottom Fade */}
+                    <div className="relative w-full h-full overflow-hidden">
+                        <motion.div 
+                            className="w-full"
+                            whileHover={{ y: "-65%" }}
+                            transition={{ duration: 8, ease: "easeInOut" }}
+                        >
+                            <img 
+                                src={selectedTemplate?.desktopPreviewImage} 
+                                alt="Preview" 
+                                className="w-full h-auto object-top"
+                            />
+                        </motion.div>
+
+                        {/* VIGNETTE & MASK (This kills the "too long" feeling) */}
+                        <div className="absolute inset-0 pointer-events-none ring-1 ring-inset ring-black/5 rounded-[1.5rem]" />
+                        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-white via-white/40 to-transparent z-10" />
+                    </div>
+
+                    {/* Hover Hint */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
+                        <div className="bg-slate-900/80 backdrop-blur px-4 py-2 rounded-full text-white text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+                            <SparklesIcon className="h-3 w-3" />
+                            Auto-Scanning Preview
+                        </div>
+                    </div>
                   </motion.div>
+                </div>
 
-                  {/* Info Overlay at the bottom */}
-                  <div className="absolute bottom-0 inset-x-0 p-8 bg-gradient-to-t from-white via-white/90 to-transparent">
-                    <h3 className="text-xl font-black text-gray-900 uppercase tracking-tighter">
-                      {selectedTemplate?.name}
-                    </h3>
-                    <p className="text-gray-500 text-sm font-medium mt-1">
-                      {selectedTemplate?.description || "Hover to explore the flow."}
-                    </p>
-                  </div>
-                </motion.div>
+                {/* Background Glow */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 w-[120%] h-[120%] bg-indigo-50/50 rounded-full blur-[120px]" />
               </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      <PreviewModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        url={selectedTemplate?.link || ""}
-        name={selectedTemplate?.name || ""}
-      />
-    </div>
+        <PreviewModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          url={selectedTemplate?.link || ""}
+          name={selectedTemplate?.name || ""}
+        />
+      </div>
+      <style>
+        {
+        `/* Custom scrollbar for variant list */
+            .perspective-1000 {
+                perspective: 1000px;
+              }
+         `
+          }
+      </style>
+    </>
   );
 }
 // export default function CategoryStep({
