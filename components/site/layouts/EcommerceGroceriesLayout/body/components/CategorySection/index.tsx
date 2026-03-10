@@ -4,28 +4,50 @@ import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { IStoreCategory, StoreForm } from "@/types/typings";
+import { IStoreCategory, ISubcategory, StoreForm } from "@/types/typings";
 import {
   ArrowRightIcon,
   SparklesIcon,
   ChevronRightIcon,
+  TagIcon,
 } from "@heroicons/react/24/outline";
 
 const customLoader = ({ src, width, quality }: any) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-// Helper to get a grocery-friendly image if none exists
 const getImageUrl = (cat: any) => {
   return cat.imageUrl || cat.image || "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=800";
 };
+
+/* -------------------------------------------------------------------------- */
+/* Sub-Component: Subcategory Tag */
+/* -------------------------------------------------------------------------- */
+function SubcategoryTag({ sub, index }: { sub: ISubcategory; index: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      transition={{ delay: index * 0.03 }}
+    >
+      <Link href={`/ecommerce/products?subcategory=${sub.slug || sub.name}`}>
+        <div className="group flex items-center gap-3 bg-white border border-gray-100 px-5 py-4 rounded-2xl hover:border-green-600 hover:shadow-md transition-all duration-300">
+          <div className="h-8 w-8 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-600 transition-colors">
+            <TagIcon className="h-4 w-4 text-green-600 group-hover:text-white" />
+          </div>
+          <span className="text-sm font-bold text-gray-700 group-hover:text-green-600 transition-colors">
+            {sub.name}
+          </span>
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
 
 /* -------------------------------------------------------------------------- */
 /* Sub-Component: The Bento Card */
 /* -------------------------------------------------------------------------- */
 function CategoryBentoCard({ cat, index }: { cat: IStoreCategory; index: number }) {
   const [isHovered, setIsHovered] = useState(false);
-  
-  // Create a "Featured" look for every 3rd item (Bento Logic)
   const isLarge = index === 0 || index === 3;
 
   return (
@@ -41,10 +63,9 @@ function CategoryBentoCard({ cat, index }: { cat: IStoreCategory; index: number 
       onMouseLeave={() => setIsHovered(false)}
     >
       <Link href={`/ecommerce/products?category=${cat.categoryId}`} className="block h-full w-full">
-        {/* Image with subtle zoom */}
         <Image
           src={getImageUrl(cat)}
-          alt={cat.displayName}
+          alt={cat.displayName || 'Category Image'}
           fill
           loader={customLoader}
           className={`object-cover transition-transform duration-1000 ease-out ${
@@ -52,29 +73,26 @@ function CategoryBentoCard({ cat, index }: { cat: IStoreCategory; index: number 
           }`}
         />
 
-        {/* Dynamic Overlays */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
         
-        {/* Glass-morphic Badge for Item Count */}
         <div className="absolute top-6 left-6 z-20">
           <div className="backdrop-blur-md bg-white/10 border border-white/20 px-3 py-1 rounded-full text-[10px] font-bold text-white uppercase tracking-widest">
-            {cat.subcategories?.length || 0} Collections
+            {cat.subcategories?.length || 0} Varieties
           </div>
         </div>
 
-        {/* Content Section */}
         <div className="absolute bottom-0 left-0 w-full p-8 z-20">
           <div className="flex items-end justify-between">
             <div>
               <motion.h3 
                 animate={{ x: isHovered ? 10 : 0 }}
-                className={`${isLarge ? 'text-4xl' : 'text-xl'} font-black text-white leading-tight`}
+                className={`${isLarge ? 'text-4xl' : 'text-xl'} font-black text-white leading-tight uppercase`}
               >
                 {cat.displayName}
               </motion.h3>
               {isLarge && (
                 <p className="text-white/60 text-sm mt-2 max-w-[250px] line-clamp-2">
-                  Explore our premium hand-picked selection of fresh {cat.displayName.toLowerCase()} products.
+                  Farm-to-table excellence. Explore our premium selection of fresh {cat.displayName?.toLowerCase() || 'products'}.
                 </p>
               )}
             </div>
@@ -85,12 +103,9 @@ function CategoryBentoCard({ cat, index }: { cat: IStoreCategory; index: number 
           </div>
         </div>
 
-        {/* Interactive "Flash" Light Effect on Hover */}
         <div 
           className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
-          style={{
-            background: 'radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 70%)'
-          }}
+          style={{ background: 'radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 70%)' }}
         />
       </Link>
     </motion.div>
@@ -109,9 +124,21 @@ export default function CategoriesSectionV6({ store }: { store: StoreForm | null
       .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   }, [store]);
 
+  const isFew = categories.length > 0 && categories.length <= 3;
+
+  const subcategoriesForGrid = useMemo(() => {
+    if (!isFew) return [];
+    let list: ISubcategory[] = [];
+    categories.forEach((cat) => {
+      if (cat.subcategories) {
+        list.push(...cat.subcategories.filter((s) => s.visible ?? true));
+      }
+    });
+    return list.slice(0, 12);
+  }, [categories, isFew]);
+
   return (
     <section className="relative py-24 bg-white overflow-hidden">
-      {/* Background Decorative Element */}
       <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[600px] h-[600px] bg-green-50 rounded-full blur-3xl opacity-50" />
       
       <div className="container mx-auto px-6 max-w-7xl relative z-10">
@@ -122,33 +149,27 @@ export default function CategoriesSectionV6({ store }: { store: StoreForm | null
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
               className="inline-flex items-center gap-2 mb-4"
             >
-              <div className="h-[2px] w-12 bg-green-600" style={{ backgroundColor: primaryColor }} />
-              <span className="text-sm font-bold uppercase tracking-[0.3em] text-gray-400">Our Catalog</span>
+              <div className="h-[2px] w-12" style={{ backgroundColor: primaryColor }} />
+              <span className="text-sm font-bold uppercase tracking-[0.3em] text-gray-400">The Garden Market</span>
             </motion.div>
             
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
               className="text-5xl md:text-6xl font-black text-gray-900 leading-tight"
             >
-              Browse by <span className="italic font-light">Category</span>
+              Freshly <span className="italic font-light">Picked</span>
             </motion.h2>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-          >
+          <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}>
             <Link 
               href="/ecommerce/categories" 
               className="group flex items-center gap-3 text-lg font-bold text-gray-900 hover:text-green-600 transition-colors"
             >
-              View all 24+ Categories
+              All Departments
               <div className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 group-hover:border-green-600 group-hover:bg-green-600 group-hover:text-white transition-all">
                 <ChevronRightIcon className="h-5 w-5" />
               </div>
@@ -159,22 +180,31 @@ export default function CategoriesSectionV6({ store }: { store: StoreForm | null
         {/* Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:auto-rows-min">
           {categories.slice(0, 6).map((cat, idx) => (
-            <CategoryBentoCard 
-              key={cat.id || idx} 
-              cat={cat} 
-              index={idx} 
-            />
+            <CategoryBentoCard key={cat.id || idx} cat={cat} index={idx} />
           ))}
         </div>
 
-        {/* Mobile Swipe Indicator (Visible only on small screens) */}
-        <div className="mt-12 flex justify-center md:hidden">
-          <div className="flex gap-2">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className={`h-1 w-${i === 1 ? '8' : '2'} rounded-full bg-gray-200`} />
-            ))}
-          </div>
-        </div>
+        {/* Subcategory Grid Integration */}
+        <AnimatePresence>
+          {isFew && subcategoriesForGrid.length > 0 && (
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="mt-20 pt-20 border-t border-gray-100"
+            >
+              <div className="flex items-center justify-between mb-10">
+                <h4 className="text-xl font-black text-gray-900 uppercase tracking-tighter">
+                  Browse Specific <span className="text-green-600">Harvests</span>
+                </h4>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {subcategoriesForGrid.map((sub, idx) => (
+                  <SubcategoryTag key={sub.id || idx} sub={sub} index={idx} />
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );

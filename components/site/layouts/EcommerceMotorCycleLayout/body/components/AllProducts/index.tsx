@@ -2,7 +2,7 @@
 
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
-import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
+import { ArrowRightCircleIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import React from 'react';
 import ProductCard from '../ProductCard';
 
@@ -27,12 +27,16 @@ export default function AllProducts( { id, marketplaceListings, themeSettings }:
     <section className="py-12 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4">
         {/* Section Header */}
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">AllProducts</h2>
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+          <div>
+            <span className="text-xs font-bold tracking-[0.2em] text-gray-400 uppercase">Curated Selection</span>
+            <h2 className="text-4xl md:text-5xl font-serif text-gray-900 mt-2">The Whole Collection</h2>
+          </div>
           <button 
-          onClick={() => window.location.href = `/ecommerce/products`}
-          className="flex items-center text-green-600 font-semibold hover:underline">
-            See All <ArrowRightCircleIcon className="w-6 h-6 ml-2" />
+            onClick={() => window.location.href = `/ecommerce/products`}
+            className="group flex items-center gap-2 text-sm font-bold tracking-widest uppercase pb-1 border-b-2 border-black"
+          >
+            Explore All <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
         {/* Products Grid */}

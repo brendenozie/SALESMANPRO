@@ -39,7 +39,7 @@ export default function DailyBestSells({ id }: { id: string }) {
               Limited Offers
             </span>
             <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter text-gray-900 leading-[0.8]">
-              Daily Best <br /> <span className="text-outline" style={{ WebkitTextStroke: '1px #111', color: 'transparent' }}>Performance</span>
+              Popular <br /> <span className="text-outline" style={{ WebkitTextStroke: '1px #111', color: 'transparent' }}>Performance</span>
             </h2>
           </div>
 
