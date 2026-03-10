@@ -67,7 +67,7 @@ export default function RoomSection({ store, themeSettings }: RoomSectionProps) 
 
       return {
         name: match?.displayName || roomType.defaultName,
-        img: (match as any)?.imageUrl || (match as any)?.image || roomType.defaultImg,
+        img: (match as any)?.imageUrl || (match as any)?.image || match?.category?.image || roomType.defaultImg,
         href: `/furnitureecommerce/products?category=${safeSlug(match?.categoryId || match?.displayName || roomType.id)}`,
         isDynamic: !!match,
         tag: roomType.tag

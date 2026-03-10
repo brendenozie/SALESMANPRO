@@ -6,15 +6,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { 
   HeartIcon, 
-  ArrowRightIcon, 
   StarIcon, 
   MinusIcon, 
   PlusIcon, 
-  TrashIcon 
-} from '@heroicons/react/24/solid';
+  TrashIcon,
+  ArrowRightIcon
+} from '@heroicons/react/24/outline'; // Switched to outline for premium feel
 
 import { CubeIcon, SwatchIcon } from '@heroicons/react/24/outline';
-
 import { MarketListingForm } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -26,13 +25,10 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
+  const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
 
-  const primary = storeFormData?.themeSettings?.primaryColor || '#10B981';
-  const secondary = storeFormData?.themeSettings?.secondaryColor || '#3B82F6';
-  const { slug } = storeFormData || {};
-
+  const primary = storeFormData?.themeSettings?.primaryColor || '#ef4444';
   const quantity = cart.find((item: MarketListingForm) => item.id === product.id)?.quantity || 0;
 
   const discount =
@@ -40,139 +36,118 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       ? Math.round(((product.sellingPrice - product.finalPrice) / product.sellingPrice) * 100)
       : null;
 
-  const rating = 4.5;
-  const reviews = 149;
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      whileHover={{ y: -5 }}
-      className="group relative bg-white border border-stone-100 rounded-none md:rounded-sm shadow-sm hover:shadow-xl transition-all duration-500"
+      className="group relative bg-white dark:bg-zinc-950 transition-colors duration-500 overflow-hidden"
     >
-      {/* ----------------------- IMAGE SECTION ----------------------- */}
-      <div className="relative aspect-[4/5] overflow-hidden bg-stone-100">
+      {/* --- IMAGE SECTION --- */}
+      <div className="relative aspect-[3/4] overflow-hidden bg-zinc-100 dark:bg-zinc-900">
         <Link href={`/ecommerce/products/${product.id}`}>
           <Image
-            src={product.images[0] || ""}
+            src={product.images[0] || "https://unsplash.com/photos/6VhPY27jdps?q=80&w=1000&auto=format&fit=crop"}
             alt={product.name}
             loader={loader}
             fill
-            className="object-cover transition-transform duration-700 group-hover:scale-105"
+            className="object-cover transition-transform duration-1000 group-hover:scale-110"
           />
         </Link>
 
         {/* STATUS BADGES */}
-        <div className="absolute top-4 left-4 flex flex-col gap-2">
+        <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-10">
           {product.isNewArrival && (
-            <span className="bg-stone-900 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider">
-              New In
+            <span className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-[9px] font-black px-2 py-1 uppercase tracking-[0.2em]">
+              New Arrival
             </span>
           )}
-
           {discount !== null && (
-            <span
-              className="text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider rounded-sm"
-              style={{ backgroundColor: secondary }}
-            >
-              -{discount}% OFF
+            <span className="bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white text-[9px] font-black px-2 py-1 uppercase tracking-[0.2em] border border-zinc-100 dark:border-zinc-700">
+              -{discount}%
             </span>
           )}
         </div>
 
-        {/* HOVER ACTION BUTTONS */}
-        <div className="absolute right-4 top-4 flex flex-col gap-2 translate-x-12 group-hover:translate-x-0 transition-transform duration-300">
-          <button className="p-2 bg-white text-stone-800 rounded-full shadow-md hover:bg-stone-900 hover:text-white transition-colors">
-            <HeartIcon className="w-5 h-5" />
-          </button>
+        {/* HEART BUTTON (TOP RIGHT) */}
+        <button className="absolute top-4 right-4 z-10 p-2.5 rounded-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md text-zinc-900 dark:text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <HeartIcon className="w-4 h-4" />
+        </button>
 
-          <Link
-            href={`/ecommerce/products/${product.id}`}
-            className="p-2 bg-white text-stone-800 rounded-full shadow-md hover:bg-stone-900 hover:text-white transition-colors"
-          >
-            <ArrowRightIcon className="w-5 h-5" />
-          </Link>
-        </div>
-
-        {/* QUICK VIEW / ADD TO CART */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-black/50 to-transparent">
+        {/* QUICK ADD OVERLAY */}
+        <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out z-20">
           {quantity === 0 ? (
             <button
-              onClick={() => addToCart(product)}
-              className="w-full bg-white text-stone-900 font-medium py-3 hover:bg-stone-900 hover:text-white transition-colors"
+              onClick={() => addToCart({...product, finalPrice: product.finalPrice || product.sellingPrice})}
+              className="w-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-[10px] font-black uppercase tracking-[0.2em] py-4 transition-all hover:bg-zinc-800 dark:hover:bg-zinc-200 shadow-2xl"
             >
-              Add to Cart
+              Add to Collection
             </button>
           ) : (
-            <div className="flex items-center justify-between bg-white rounded-md p-2 shadow-md">
+            <div className="flex items-center justify-between bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-1 shadow-2xl">
               <button
                 onClick={() => decreaseQuantity(product.id)}
-                className="p-2 bg-stone-100 rounded-full hover:bg-stone-200"
+                className="p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
               >
-                {quantity === 1 ? (
-                  <TrashIcon className="h-4 w-4 text-red-600" />
-                ) : (
-                  <MinusIcon className="h-4 w-4 text-stone-600" />
-                )}
+                {quantity === 1 ? <TrashIcon className="h-4 w-4" /> : <MinusIcon className="h-4 w-4" />}
               </button>
-
-              <span className="font-bold text-stone-900">{quantity}</span>
-
+              <span className="text-[11px] font-black dark:text-white">{quantity}</span>
               <button
-                onClick={() => addToCart(product)}
-                className="p-2 bg-stone-100 rounded-full hover:bg-stone-200"
+                onClick={() => addToCart({...product, finalPrice: product.finalPrice || product.sellingPrice})}
+                className="p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
               >
-                <PlusIcon className="h-4 w-4 text-stone-600" />
+                <PlusIcon className="h-4 w-4" />
               </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* ----------------------- DETAILS SECTION ----------------------- */}
-      <div className="p-5">
-        {/* TITLE + PRICE */}
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="text-lg font-serif font-medium text-stone-900 line-clamp-1">{product.name}</h3>
-
-          <div className="flex flex-col items-end">
+      {/* --- DETAILS SECTION --- */}
+      <div className="py-6 space-y-3">
+        <div className="flex justify-between items-start">
+          <div className="space-y-1">
+            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
+              {product.material?.[0] || 'Atelier Series'}
+            </h3>
+            <Link href={`/ecommerce/products/${product.id}`}>
+              <h2 className="text-lg font-light tracking-tighter text-zinc-900 dark:text-white group-hover:opacity-60 transition-opacity">
+                {product.name}
+              </h2>
+            </Link>
+          </div>
+          
+          <div className="text-right">
             {discount !== null ? (
-              <>
-                <span className="text-sm text-stone-400 line-through">${product.sellingPrice}</span>
-                <span className="text-lg font-bold text-orange-700">${product.finalPrice}</span>
-              </>
+              <div className="flex flex-col items-end">
+                <span className="text-[10px] text-zinc-400 line-through tracking-tighter">${product.sellingPrice}</span>
+                <span className="text-base font-bold text-zinc-900 dark:text-white">${product.finalPrice}</span>
+              </div>
             ) : (
-              <span className="text-lg font-bold text-stone-900">${product.sellingPrice}</span>
+              <span className="text-base font-bold text-zinc-900 dark:text-white">${product.sellingPrice}</span>
             )}
           </div>
         </div>
 
-        {/* RATING */}
-        <div className="flex items-center gap-1 text-yellow-500 text-xs">
-          <StarIcon className="w-4 h-4" />
-          <span>{rating}</span>
-          <span className="text-stone-400 ml-1">({reviews})</span>
+        {/* METRICS & SPECS */}
+        <div className="flex items-center justify-between pt-4 border-t border-zinc-100 dark:border-zinc-900">
+          <div className="flex items-center gap-4">
+             {product.dimensions && (
+               <div className="flex items-center gap-1.5 text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
+                 <CubeIcon className="w-3.5 h-3.5" />
+                 <span>{product.dimensions}</span>
+               </div>
+             )}
+             <div className="flex items-center gap-1 text-[9px] font-bold text-zinc-900 dark:text-white">
+                <StarIcon className="w-3 h-3 fill-current" />
+                <span>4.8</span>
+             </div>
+          </div>
+          
+          <Link href={`/ecommerce/products/${product.id}`} className="opacity-0 group-hover:opacity-100 transition-opacity">
+             <ArrowRightIcon className="w-4 h-4 text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors" />
+          </Link>
         </div>
-
-        {/* FURNITURE DETAILS */}
-        <div className="flex items-center gap-4 text-xs text-stone-500 mt-3 py-3 border-t border-stone-100">
-          {product.dimensions && (
-            <div className="flex items-center gap-1">
-              <CubeIcon className="w-4 h-4" />
-              <span>{product.dimensions}</span>
-            </div>
-          )}
-          {product.material?.length > 0 && (
-            <div className="flex items-center gap-1">
-              <SwatchIcon className="w-4 h-4" />
-              <span>{product.material[0]}</span>
-            </div>
-          )}
-        </div>
-
-        {/* DESCRIPTION */}
-        <p className="text-sm text-stone-500 line-clamp-2 mt-2">{product.description}</p>
       </div>
     </motion.div>
   );

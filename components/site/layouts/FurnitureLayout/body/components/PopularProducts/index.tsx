@@ -3,136 +3,143 @@
 import useSWR from 'swr';
 import ProductCard from '../ProductCard';
 import { SkeletonGrid } from '../SkeletonGrid/SkeletonGrid';
-import { ArrowRightCircleIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'; // Added Chevron icons
+import { 
+  ArrowRightIcon, 
+  ChevronLeftIcon, 
+  ChevronRightIcon 
+} from '@heroicons/react/24/outline';
 import { createCachedFetcher } from '@/lib/swrCachedFetcher';
-
-// Import Slick components and styles
+import { useStoreContext } from '@/contexts/StoreContext';
 import Slider from 'react-slick';
+
+// Standard Slick CSS imports (ensure these are in your global CSS or here)
 import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css'; 
-// Note: You might need to adjust the paths/import for slick.css/slick-theme.css 
-// based on your project's CSS setup if the imports above don't work globally.
+import 'slick-carousel/slick/slick-theme.css';
+import { motion } from 'framer-motion';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-// --- Custom Arrow Components for Slick ---
-// We'll use these to style the navigation arrows with Heroicons and Tailwind
 const PrevArrow = ({ onClick }: { onClick?: () => void }) => (
   <button 
-    className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white p-2 rounded-full shadow-lg border border-gray-200 hidden sm:block md:hidden"
+    className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-zinc-900 p-3 rounded-full shadow-xl border border-zinc-100 dark:border-zinc-800 transition-transform active:scale-90"
     onClick={onClick}
-    aria-label="Previous"
   >
-    <ChevronLeftIcon className="w-6 h-6 text-gray-700" />
+    <ChevronLeftIcon className="w-5 h-5 text-zinc-900 dark:text-white" />
   </button>
 );
 
 const NextArrow = ({ onClick }: { onClick?: () => void }) => (
   <button 
-    className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white p-2 rounded-full shadow-lg border border-gray-200 hidden sm:block md:hidden"
+    className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-zinc-900 p-3 rounded-full shadow-xl border border-zinc-100 dark:border-zinc-800 transition-transform active:scale-90"
     onClick={onClick}
-    aria-label="Next"
   >
-    <ChevronRightIcon className="w-6 h-6 text-gray-700" />
+    <ChevronRightIcon className="w-5 h-5 text-zinc-900 dark:text-white" />
   </button>
 );
 
-
-export default function DailyBestSells({ id }: { id: string }) {
+export default function WeeklyProducts({ id }: { id: string }) {
+  const { storeFormData } = useStoreContext();
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#ef4444';
+  
   const url = `${apiBaseUrl}/site/productsByFlag?companyId=${id}&flag=isOnOffer&limit=8`;
   const cacheKey = `products-${id}-isOnOffer`;
-  const fallbackKey = `swr-cache:${cacheKey}:${url}`;
-
   const fetcher = createCachedFetcher(cacheKey);
 
-  const fallbackData =
-    typeof window !== 'undefined'
-      ? (() => {
-          try {
-            return JSON.parse(localStorage.getItem(fallbackKey) || 'null');
-          } catch {
-            return null;
-          }
-        })()
-      : null;
-
   const { data, error, isLoading } = useSWR(url, fetcher, {
-    fallbackData: fallbackData || undefined,
     revalidateOnFocus: true,
     dedupingInterval: 30000,
-    refreshInterval: 120000,
   });
 
-  // --- React Slick Configuration ---
   const settings = {
-    // Show one card at a time on small screens
     slidesToShow: 1,
     slidesToScroll: 1,
-    arrows: true, // Show arrows for navigation
-    dots: true, // Show pagination dots
-    infinite: false, // Don't loop the products
-    // Custom arrows are only shown on small screens (md:hidden)
+    arrows: true,
+    dots: true,
+    infinite: false,
     nextArrow: <NextArrow />, 
     prevArrow: <PrevArrow />,
-    // Responsive settings to switch to grid on desktop
     responsive: [
       {
-        breakpoint: 768, // md breakpoint in Tailwind
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-        }
-      },
-      {
-        breakpoint: 640, // sm breakpoint in Tailwind
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-          // Added centerPadding and centerMode for a 'peek' effect on very small screens
-          centerMode: true,
-          centerPadding: '20px', 
-        }
+        breakpoint: 768,
+        settings: { slidesToShow: 1, centerMode: true, centerPadding: '40px' }
       }
     ]
   };
 
   if (isLoading) return <SkeletonGrid count={8} />;
-  if (error) return <div className="text-center text-gray-500"></div>;
-  if (!data?.data?.length)
-    return <div className="text-center text-gray-500"></div>;
+  if (error || !data?.data?.length) return null;
 
   return (
-    <section className="py-8 sm:py-12 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Popular Products</h2>
-          <button 
-          onClick={() => window.location.href = `/furnitureecommerce/products?filter=onOffer`}
-          className="flex items-center text-green-600 font-semibold text-sm sm:text-base hover:underline transition duration-150 ease-in-out">
-            See All <ArrowRightCircleIcon className="w-5 h-5 ml-1 sm:w-6 sm:h-6 sm:ml-2" />
+    <section className="py-24 bg-zinc-50 dark:bg-zinc-950 transition-colors duration-500">
+      <div className="max-w-[1800px] mx-auto px-6 md:px-12">
+        
+        {/* --- Section Header --- */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="h-[1px] w-8" style={{ backgroundColor: primaryColor }} />
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 dark:text-zinc-500">
+                Curated Selection
+              </span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">
+              Popular <span className="font-serif italic font-light text-zinc-400">Products</span>
+            </h2>
+          </div>
+
+          <button
+            onClick={() => { window.location.href = `/products?filter=onOffer`; }}
+            className="group flex items-center gap-4 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-900 dark:text-white hover:opacity-70 transition-all"
+          >
+            Explore All 
+            <span className="p-2 border border-zinc-200 dark:border-zinc-800 rounded-full group-hover:translate-x-1 transition-transform">
+              <ArrowRightIcon className="w-4 h-4" />
+            </span>
           </button>
         </div>
 
-        {/* --- Responsive Product Display --- */}
-        
-        {/* 1. Mobile Carousel (Visible below md) */}
-        <div className="md:hidden relative px-4"> 
-          <Slider {...settings}>
+        {/* --- Carousel: Mobile --- */}
+        <div className="md:hidden relative px-2 mb-10"> 
+          <Slider {...settings} className="product-slider">
             {data.data.map((product: any) => (
-              <div key={product.id} className="px-1 outline-none">
+              <div key={product.id} className="px-2 outline-none">
                 <ProductCard product={product} />
               </div>
             ))}
           </Slider>
         </div>
 
-        {/* 2. Desktop Grid (Visible at md and above) */}
-        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* --- Grid: Desktop --- */}
+        <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-y-16 gap-x-8">
           {data.data.map((product: any) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
+
+        {/* --- Bottom Progress Indicator (Visual only) --- */}
+        <div className="mt-20 hidden md:block">
+           <div className="h-[1px] w-full bg-zinc-200 dark:bg-zinc-900 relative">
+              <motion.div 
+                initial={{ width: 0 }}
+                whileInView={{ width: '30%' }}
+                className="absolute top-0 left-0 h-[1px]"
+                style={{ backgroundColor: primaryColor }}
+              />
+           </div>
+        </div>
       </div>
+
+      <style jsx global>{`
+        .product-slider .slick-dots li button:before {
+          color: ${primaryColor};
+          font-size: 8px;
+          opacity: 0.2;
+        }
+        .product-slider .slick-dots li.slick-active button:before {
+          color: ${primaryColor};
+          opacity: 1;
+        }
+      `}</style>
     </section>
   );
 }
