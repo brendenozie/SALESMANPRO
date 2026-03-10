@@ -143,7 +143,7 @@ export default function QuickViewModal({ isOpen, onClose, product, primaryColor 
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
-                      addToCart({...product });
+                      addToCart({...product, finalPrice: product.finalPrice ?? product.sellingPrice});
                       onClose();
                     }}
                     className="flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl text-white font-black text-xs uppercase tracking-[0.15em] shadow-xl transition-all"

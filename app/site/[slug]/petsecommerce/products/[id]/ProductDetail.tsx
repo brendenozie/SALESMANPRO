@@ -110,7 +110,7 @@ export function ProductDetail({
 
   const handleAddToCart = () => {
     // include variants in payload
-    addToCart({ ...product,  }); //selectedVariants
+    addToCart({...product, finalPrice: product.finalPrice ?? product.sellingPrice}); //selectedVariants
   };
 
   const handleDecreaseQuantity = () => decreaseQuantity(product.id);
