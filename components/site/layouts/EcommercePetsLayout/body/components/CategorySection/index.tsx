@@ -1,190 +1,173 @@
 'use client';
 
-import React, { useMemo } from 'react';
-import { motion } from 'framer-motion';
-import Image from 'next/image';
-import Link from 'next/link';
-// Using Hero Icons as per your saved preference
+import React, { useMemo, useRef } from "react";
+import { motion, Variants, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { StoreForm, IStoreCategory, ISubcategory } from "@/types/typings";
 import { 
-  ArrowUpRightIcon, 
-  SparklesIcon,
-  TagIcon,
-  ShoppingBagIcon
-} from '@heroicons/react/24/solid';
-import { IStoreCategory, StoreForm } from '@/types/typings';
+  ChevronLeftIcon, 
+  ChevronRightIcon, 
+  SparklesIcon, 
+  ArrowRightIcon,
+  RectangleGroupIcon 
+} from "@heroicons/react/24/outline";
+
+const customLoader = ({ src, width, quality }: any) =>
+  `${src}?w=${width}&q=${quality || 75}`;
+
+function safeSlug(value?: string, fallback = "category") {
+  if (!value) return fallback;
+  return String(value).toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9-_]/g, "");
+}
+
+function resolveCategoryTheme(index: number) {
+  const themes = [
+    { bg: "bg-sky-50", iconBg: "bg-sky-100", text: "text-sky-600", accent: "bg-sky-400" },
+    { bg: "bg-rose-50", iconBg: "bg-rose-100", text: "text-rose-600", accent: "bg-rose-400" },
+    { bg: "bg-amber-50", iconBg: "bg-amber-100", text: "text-amber-600", accent: "bg-amber-400" },
+    { bg: "bg-indigo-50", iconBg: "bg-indigo-100", text: "text-indigo-600", accent: "bg-indigo-400" },
+  ];
+  return themes[index % themes.length];
+}
 
 /* -------------------------------------------------------------------------- */
-/* Components */
+/* Subcategory Component */
 /* -------------------------------------------------------------------------- */
 
-const CategoryBentoCard = ({ 
-  cat, 
-  className, 
-  index,
-  primaryColor
-}: { 
-  cat: any; 
-  className?: string; 
-  index: number;
-  primaryColor: string;
-}) => {
+function SubcategoryPill({ sub, index }: { sub: ISubcategory; index: number }) {
+  const theme = resolveCategoryTheme(index);
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.7, delay: index * 0.1, ease: [0.23, 1, 0.32, 1] }}
-      className={`relative group overflow-hidden rounded-[3rem] bg-slate-100 ${className}`}
+      transition={{ delay: index * 0.05 }}
     >
-      <Link href={`/products?category=${cat.id}`} className="block w-full h-full relative">
-        {/* Main Category Image */}
-        <Image
-          src={cat.imageUrl || "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=800&q=80"}
-          alt={cat.displayName}          
-          loader={({ src }) => `${src}?w=600&q=80`}
-          fill
-          className="object-cover transition-transform duration-[2s] group-hover:scale-110"
-          sizes="(max-width: 768px) 100vw, 50vw"
-        />
-        
-        {/* Soft Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
-
-        {/* Floating Tag (Visible on Hover) */}
-        <div className="absolute top-6 right-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-          <div className="bg-white/20 backdrop-blur-md p-3 rounded-2xl border border-white/30">
-            <ArrowUpRightIcon className="w-5 h-5 text-white" />
-          </div>
-        </div>
-
-        {/* Content Box */}
-        <div className="absolute bottom-0 left-0 w-full p-8 md:p-10">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-               <span 
-                className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white/90"
-                style={{ backgroundColor: `${primaryColor}CC` }}
-              >
-                {cat.subCount || 0} Collections
-              </span>
+      <Link href={`/ecommerce/products?subcategory=${sub.slug || sub.name}`}>
+        <div className="group relative bg-white border border-slate-100 p-5 rounded-[2rem] transition-all duration-500 hover:shadow-xl hover:shadow-slate-200/50 hover:border-transparent overflow-hidden">
+          <div className="relative flex items-center justify-between z-10">
+            <span className="font-black text-sm text-slate-700 group-hover:text-slate-900 transition-colors">
+              {sub.name}
+            </span>
+            <div className={`w-9 h-9 rounded-2xl ${theme.bg} flex items-center justify-center -rotate-45 group-hover:rotate-0 transition-transform duration-500`}>
+              <ArrowRightIcon className={`h-4 w-4 ${theme.text}`} />
             </div>
-            
-            <h3 className="text-3xl md:text-4xl font-black text-white leading-tight">
-              {cat.displayName}
-            </h3>
-            
-            <p className="text-white/60 text-sm font-medium max-w-[200px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
-              Discover curated essentials for your {cat.displayName.toLowerCase()}
-            </p>
           </div>
+          {/* Subtle Hover Background Fill */}
+          <div className={`absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-500 opacity-5 ${theme.accent}`} />
         </div>
-
-        {/* Animated Accent Circle */}
-        <div 
-          className="absolute -bottom-12 -right-12 w-32 h-32 rounded-full blur-3xl opacity-0 group-hover:opacity-40 transition-opacity"
-          style={{ backgroundColor: primaryColor }}
-        />
       </Link>
     </motion.div>
   );
-};
+}
 
-export default function CategorySection({ store }: { store: StoreForm | null }) {
-  const primary = store?.themeSettings?.primaryColor || '#0EA5E9';
+/* -------------------------------------------------------------------------- */
+/* Main Section */
+/* -------------------------------------------------------------------------- */
 
-  const processedCategories = useMemo(() => {
-    return (store?.StoreCategory || [])
+export default function CategoriesSection({ store }: { store: StoreForm | null }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const primaryColor = store?.themeSettings?.primaryColor || '#0EA5E9';
+
+  const categoriesToShow = useMemo(() => {
+    return (store?.StoreCategory ?? [])
       .filter((c) => c.visible ?? true)
-      .slice(0, 5)
-      .map(cat => ({
-        ...cat,
-        subCount: cat.subcategories?.length || 0,
-        imageUrl: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=800&q=80"
-        //  cat.imageUrl || (cat as any).image || 
-      }));
+      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   }, [store]);
 
-  if (processedCategories.length === 0) return null;
+  // Logic to determine if we show the detailed subcategory grid
+  const isFew = categoriesToShow.length > 0 && categoriesToShow.length <= 2;
+
+  const subcategoriesForGrid = useMemo(() => {
+    if (!isFew) return [];
+    let list: ISubcategory[] = [];
+    categoriesToShow.forEach((cat) => {
+      if (cat.subcategories) {
+        list.push(...cat.subcategories.filter((s) => s.visible ?? true));
+      }
+    });
+    return list.slice(0, 12);
+  }, [categoriesToShow, isFew]);
+
+  const scroll = (direction: "left" | "right") => {
+    if (scrollRef.current) {
+      const { scrollLeft, clientWidth } = scrollRef.current;
+      const scrollTo = direction === "left" ? scrollLeft - clientWidth / 2 : scrollLeft + clientWidth / 2;
+      scrollRef.current.scrollTo({ left: scrollTo, behavior: "smooth" });
+    }
+  };
+
+  if (categoriesToShow.length === 0) return null;
 
   return (
-    <section className="py-24 bg-[#FDFCFB]">
+    <section className="relative bg-[#FDFCFB] py-32 overflow-hidden">
       <div className="container mx-auto px-6">
         
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
-          <div className="max-w-xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-[2px]" style={{ backgroundColor: primary }} />
-              <span className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">The Catalog</span>
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-3 mb-6">
+              <SparklesIcon className="h-6 w-6" style={{ color: primaryColor }} />
+              <span className="font-black text-[10px] uppercase tracking-[0.4em] text-slate-400">
+                {isFew ? "Curated Essentials" : "Browse by Species"}
+              </span>
             </div>
             <h2 className="text-5xl md:text-7xl font-black text-slate-900 leading-[0.9] tracking-tighter">
-              Shop by <br />
-              <span className="italic font-serif font-light" style={{ color: primary }}>Pet Kingdom</span>
+              {isFew ? "Tailored Just\nFor Them" : "Explore Our\nLittle Worlds"}
             </h2>
           </div>
-          
-          <Link href="/categories" className="group flex items-center gap-4 pb-2 border-b-2 border-slate-100 hover:border-slate-900 transition-all">
-            <span className="text-sm font-black uppercase tracking-widest">View All Species</span>
-            <ShoppingBagIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </Link>
+
+          {!isFew && (
+            <div className="flex gap-4">
+              <button onClick={() => scroll("left")} className="w-14 h-14 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shadow-sm hover:bg-slate-50 transition-all"><ChevronLeftIcon className="h-6 w-6" /></button>
+              <button onClick={() => scroll("right")} className="w-14 h-14 rounded-2xl text-white flex items-center justify-center shadow-lg transition-all" style={{ backgroundColor: primaryColor }}><ChevronRightIcon className="h-6 w-6" /></button>
+            </div>
+          )}
         </div>
 
-        {/* Bento Grid Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-auto md:h-[900px]">
-          
-          {/* Main Hero: Dog/Cat (Col 1-7) */}
-          <CategoryBentoCard 
-            index={0} 
-            cat={processedCategories[0]} 
-            primaryColor={primary}
-            className="md:col-span-7 md:row-span-2" 
-          />
+        {/* Categories Main Gallery */}
+        <div
+          ref={scrollRef}
+          className={`flex overflow-x-auto scrollbar-hide space-x-8 pb-4 -mx-4 px-4 ${isFew ? 'justify-start md:justify-center' : ''}`}
+        >
+          {categoriesToShow.map((cat, idx) => {
+             const theme = resolveCategoryTheme(idx);
+             return (
+               <Link key={cat.id || idx} href={`/ecommerce/products?category=${safeSlug(cat.displayName || cat.category?.name)}`} className="flex-shrink-0 group">
+                 <div className={`relative w-64 md:w-80 aspect-[4/5] rounded-[3.5rem] ${theme.bg} transition-all duration-700 group-hover:shadow-2xl group-hover:-translate-y-4 border-2 border-transparent group-hover:border-white overflow-hidden flex flex-col items-center justify-center p-10`}>
+                    <div className="relative w-40 h-40 mb-8 rounded-full transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-6">
+                      <Image 
+                        src={ cat.category?.image || "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400"} 
+                        alt="" fill loader={customLoader} className="object-contain" 
+                      />
+                    </div>
+                    <h3 className="text-2xl font-black text-slate-900">{cat.displayName}</h3>
+                 </div>
+               </Link>
+             )
+          })}
+        </div>
 
-          {/* Side Stack 1 (Col 8-12 Top) */}
-          {processedCategories[1] && (
-            <CategoryBentoCard 
-              index={1} 
-              cat={processedCategories[1]} 
-              primaryColor={primary}
-              className="md:col-span-5 md:row-span-1" 
-            />
-          )}
-
-          {/* Lower Grid (Col 8-12 Bottom Split) */}
-          <div className="md:col-span-5 md:row-span-1 grid grid-cols-2 gap-6">
-            {processedCategories.slice(2, 4).map((cat, i) => (
-              <CategoryBentoCard 
-                key={cat.id}
-                index={i + 2} 
-                cat={cat} 
-                primaryColor={primary}
-                className="col-span-1" 
-              />
-            ))}
-          </div>
-
-          {/* Full Width Small Feature if 5th exists */}
-          {processedCategories[4] && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              className="md:col-span-12 h-32 bg-slate-900 rounded-[2.5rem] flex items-center justify-between px-10 relative overflow-hidden group mt-4"
+        {/* SUBCATEGORY GRID (Conditional Functionality Restored) */}
+        <AnimatePresence>
+          {isFew && subcategoriesForGrid.length > 0 && (
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="mt-20 pt-20 border-t border-slate-100"
             >
-              <div className="relative z-10 flex items-center gap-6">
-                <TagIcon className="w-10 h-10 text-white/20" />
-                <h4 className="text-white text-2xl font-black">{processedCategories[4].displayName}</h4>
+              <div className="flex items-center gap-6 mb-12">
+                <span className="font-black text-[11px] uppercase tracking-[0.3em] text-slate-400 whitespace-nowrap">Specific Collections</span>
+                <div className="h-px flex-1 bg-gradient-to-r from-slate-100 to-transparent" />
               </div>
-              <Link 
-                href={`/products?category=${processedCategories[4].id}`}
-                className="relative z-10 px-8 py-3 bg-white rounded-full text-slate-900 font-bold text-sm hover:scale-105 transition-transform"
-              >
-                Browse Collection
-              </Link>
-              <div className="absolute top-0 right-0 w-64 h-full bg-gradient-to-l from-white/10 to-transparent skew-x-12 translate-x-32 group-hover:translate-x-20 transition-transform duration-700" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {subcategoriesForGrid.map((sub, idx) => (
+                  <SubcategoryPill key={sub.id || idx} sub={sub} index={idx} />
+                ))}
+              </div>
             </motion.div>
           )}
-
-        </div>
+        </AnimatePresence>
       </div>
     </section>
   );

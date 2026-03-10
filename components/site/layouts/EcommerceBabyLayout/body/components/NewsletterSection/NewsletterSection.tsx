@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import { motion, AnimatePresence, useSpring, useMotionValue } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence, useSpring, useMotionValue, useTransform } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
 // Using Hero Icons as requested
 import { 
@@ -9,12 +9,15 @@ import {
   CheckCircleIcon, 
   SparklesIcon,
   GiftIcon,
-  FaceSmileIcon // Using as a "Baby" placeholder icon
+  FaceSmileIcon,
+  HeartIcon
 } from '@heroicons/react/24/solid';
 
 export default function NewsletterSection() {
   const { storeFormData } = useStoreContext();
   const primary = storeFormData?.themeSettings?.primaryColor || '#F472B6';
+  const secondary = storeFormData?.themeSettings?.secondaryColor || '#3B82F6';
+  
   const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle');
   const [isHovering, setIsHovering] = useState(false);
   
@@ -22,10 +25,14 @@ export default function NewsletterSection() {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
-  // Smooth Spring Physics for the "Floating" feel
-  const springConfig = { damping: 20, stiffness: 150 };
+  // Smooth Spring Physics
+  const springConfig = { damping: 25, stiffness: 200 };
   const cursorX = useSpring(mouseX, springConfig);
   const cursorY = useSpring(mouseY, springConfig);
+
+  // Background Parallax Effect
+  const bgX = useTransform(mouseX, [0, 1000], [5, -5]);
+  const bgY = useTransform(mouseY, [0, 1000], [5, -5]);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -36,17 +43,17 @@ export default function NewsletterSection() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('loading');
-    setTimeout(() => setStatus('success'), 1500);
+    setTimeout(() => setStatus('success'), 2000);
   };
 
   return (
     <section 
-      className="relative py-20 px-6 overflow-hidden cursor-none" // Hide default cursor
+      className="relative py-28 px-6 overflow-hidden cursor-none"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
       onMouseMove={handleMouseMove}
     >
-      {/* --- CUSTOM FLOATING CURSOR --- */}
+      {/* --- CUSTOM INTERACTIVE CURSOR --- */}
       <AnimatePresence>
         {isHovering && (
           <motion.div
@@ -56,127 +63,158 @@ export default function NewsletterSection() {
             style={{
               translateX: cursorX,
               translateY: cursorY,
-              left: -20,
-              top: -20,
+              left: -24,
+              top: -24,
             }}
             className="pointer-events-none absolute z-50 flex items-center justify-center"
           >
-            {/* The "Bubble" around the icon */}
             <div 
-              className="w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-white"
-              style={{ backgroundColor: primary }}
+              className="w-12 h-12 rounded-full flex items-center justify-center shadow-2xl border-2 border-white/50 backdrop-blur-sm"
+              style={{ backgroundColor: `${primary}CC` }}
             >
-              <FaceSmileIcon className="w-6 h-6 text-white animate-bounce" />
+              <FaceSmileIcon className="w-6 h-6 text-white animate-pulse" />
             </div>
-            {/* Trail Effect */}
-            <div className="absolute inset-0 bg-pink-200 rounded-full blur-xl opacity-30 animate-pulse" />
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Soft Background "Cloud" */}
-      <div 
-        className="absolute inset-0 z-0 opacity-5"
-        style={{ 
-          background: `radial-gradient(circle at 70% 50%, ${primary}, transparent 70%)` 
-        }}
-      />
+      {/* Dynamic Ambient Background */}
+      <motion.div 
+        style={{ x: bgX, y: bgY }}
+        className="absolute inset-0 z-0 pointer-events-none opacity-20"
+      >
+        <div className="absolute top-1/2 left-1/4 w-[600px] h-[600px] rounded-full blur-[120px]" style={{ backgroundColor: primary }} />
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full blur-[100px]" style={{ backgroundColor: secondary }} />
+      </motion.div>
 
-      <div className="max-w-5xl mx-auto relative z-10">
-        <div 
-          className="relative bg-white rounded-[4rem] p-8 md:p-16 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.06)] border border-slate-50 overflow-hidden"
+      <div className="max-w-6xl mx-auto relative z-10">
+        <motion.div 
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="relative bg-white/80 dark:bg-zinc-900/80 backdrop-blur-2xl rounded-[5rem] p-10 md:p-20 shadow-[0_50px_100px_-30px_rgba(0,0,0,0.08)] border border-white dark:border-zinc-800 overflow-hidden"
         >
-          {/* Decorative Corner Icon */}
-          <div className="absolute -top-6 -right-6 opacity-10 rotate-12">
-            <GiftIcon className="w-32 h-32" style={{ color: primary }} />
+          {/* Decorative Corner Elements */}
+          <div className="absolute -top-10 -right-10 opacity-[0.03] dark:opacity-[0.05] -rotate-12 group">
+            <GiftIcon className="w-64 h-64" style={{ color: primary }} />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
             
-            {/* Left Side: Content */}
-            <div className="lg:col-span-3 space-y-6 text-left">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-50 border border-slate-100">
-                <SparklesIcon className="w-4 h-4" style={{ color: primary }} />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                  Member Benefits
+            {/* Left Side: Editorial Content */}
+            <div className="lg:col-span-7 space-y-8 text-left">
+              <div className="flex items-center gap-3">
+                <div className="flex -space-x-2">
+                  {[1, 2, 3].map((i) => (
+                    <img key={i} src={`https://i.pravatar.cc/100?u=${i + 40}`} className="w-8 h-8 rounded-full border-2 border-white" alt="avatar" />
+                  ))}
+                </div>
+                <span className="text-[11px] font-black uppercase tracking-[0.3em] text-zinc-400">
+                  Joined by 12,000+ Parents
                 </span>
               </div>
               
-              <h2 className="text-4xl md:text-5xl font-black text-slate-900 leading-[1.1]">
-                Every little bit of <span style={{ color: primary }}>love</span> helps.
+              <h2 className="text-5xl md:text-6xl font-black text-zinc-900 dark:text-white leading-none tracking-tighter">
+                Every little bit of <br />
+                <span className="relative inline-block mt-2">
+                  <span className="relative z-10 italic" style={{ color: primary }}>love</span>
+                  <motion.svg 
+                    viewBox="0 0 100 20" 
+                    className="absolute -bottom-2 left-0 w-full h-4 opacity-30"
+                    style={{ color: primary }}
+                  >
+                    <path d="M0 10 Q 25 20 50 10 T 100 10" fill="none" stroke="currentColor" strokeWidth="4" />
+                  </motion.svg>
+                </span> helps.
               </h2>
               
-              <p className="text-lg text-slate-500 font-medium max-w-md">
-                Sign up for <span className="text-slate-900 font-bold">15% off</span> your first order.
+              <p className="text-xl text-zinc-500 dark:text-zinc-400 font-medium max-w-lg leading-relaxed">
+                Join our village today and take <span className="text-zinc-900 dark:text-white font-black underline decoration-pink-300">15% OFF</span> your first nursery essential.
               </p>
 
-              <ul className="space-y-3">
-                {['Early Access to Sales', 'New Arrival Alerts', 'Parenting Tips'].map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-sm font-bold text-slate-400">
-                    <CheckCircleIcon className="w-5 h-5" style={{ color: primary }} />
-                    {item}
-                  </li>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {['Early VIP Access', 'Weekly Care Tips', 'Birthday Surprises', 'Exclusive Drops'].map((item) => (
+                  <div key={item} className="flex items-center gap-3 group">
+                    <div className="p-1 rounded-full bg-zinc-50 dark:bg-zinc-800 group-hover:scale-110 transition-transform">
+                      <CheckCircleIcon className="w-5 h-5" style={{ color: primary }} />
+                    </div>
+                    <span className="text-sm font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{item}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
 
-            {/* Right Side: Interactive Form */}
-            <div className="lg:col-span-2">
+            {/* Right Side: High-Engagement Form */}
+            <div className="lg:col-span-5 relative">
               <AnimatePresence mode="wait">
                 {status !== 'success' ? (
-                  <motion.form 
-                    key="form"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    onSubmit={handleSubmit}
-                    className="space-y-4"
+                  <motion.div 
+                    key="form-container"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.1 }}
                   >
-                    <div className="relative group cursor-text"> {/* Return cursor for inputs */}
-                      <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
-                        <EnvelopeOpenIcon className="h-5 w-5 text-slate-400" />
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                      <div className="relative group cursor-text">
+                        <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none z-10">
+                          <EnvelopeOpenIcon className="h-6 w-6 text-zinc-300 group-focus-within:text-zinc-900 transition-colors" />
+                        </div>
+                        <input
+                          type="email"
+                          required
+                          placeholder="hello@newmama.com"
+                          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border-2 border-transparent focus:border-zinc-200 dark:focus:border-zinc-700 focus:bg-white dark:focus:bg-zinc-800 rounded-[2.5rem] py-6 pl-16 pr-8 text-zinc-900 dark:text-white font-bold text-lg placeholder:text-zinc-300 dark:placeholder:text-zinc-600 outline-none transition-all shadow-inner"
+                        />
                       </div>
-                      <input
-                        type="email"
-                        required
-                        placeholder="mama@example.com"
-                        className="w-full bg-slate-50 border-2 border-transparent focus:border-slate-100 focus:bg-white rounded-[2rem] py-5 pl-14 pr-6 text-slate-900 font-medium placeholder:text-slate-300 outline-none transition-all shadow-inner"
-                      />
-                    </div>
 
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      type="submit"
-                      disabled={status === 'loading'}
-                      className="w-full py-5 rounded-[2rem] text-white font-black text-lg shadow-lg shadow-pink-200 transition-all flex items-center justify-center gap-3 cursor-pointer"
-                      style={{ backgroundColor: primary }}
-                    >
-                      {status === 'loading' ? (
-                        <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-                      ) : (
-                        <>Join the Village</>
-                      )}
-                    </motion.button>
-                  </motion.form>
+                      <motion.button
+                        whileHover={{ scale: 1.02, y: -4 }}
+                        whileTap={{ scale: 0.98 }}
+                        type="submit"
+                        disabled={status === 'loading'}
+                        className="relative w-full py-6 rounded-[2.5rem] text-white font-black text-xl shadow-2xl transition-all flex items-center justify-center gap-4 overflow-hidden group/btn"
+                        style={{ backgroundColor: primary }}
+                      >
+                        {status === 'loading' ? (
+                          <div className="w-7 h-7 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <>
+                            <HeartIcon className="w-6 h-6 group-hover/btn:animate-ping" />
+                            Join the Village
+                          </>
+                        )}
+                        {/* Shimmer Effect */}
+                        <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
+                      </motion.button>
+                    </form>
+                    <p className="mt-6 text-center text-xs font-bold text-zinc-400 uppercase tracking-widest">
+                      No spam, just soft things. Unsubscribe anytime.
+                    </p>
+                  </motion.div>
                 ) : (
                   <motion.div
                     key="success"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-center py-10 px-6 bg-emerald-50 rounded-[3rem] border border-emerald-100"
+                    initial={{ opacity: 0, rotate: -5 }}
+                    animate={{ opacity: 1, rotate: 0 }}
+                    className="text-center py-16 px-8 bg-zinc-900 rounded-[4rem] border border-zinc-800 shadow-3xl"
                   >
-                    <div className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl shadow-emerald-100">
-                      <CheckCircleIcon className="w-12 h-12 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-black text-emerald-900 mb-2">You're in!</h3>
+                    <motion.div 
+                      initial={{ scale: 0 }} 
+                      animate={{ scale: 1 }} 
+                      transition={{ type: "spring", bounce: 0.6 }}
+                      className="w-24 h-24 bg-gradient-to-tr from-emerald-400 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-emerald-500/20"
+                    >
+                      <SparklesIcon className="w-12 h-12 text-white" />
+                    </motion.div>
+                    <h3 className="text-3xl font-black text-white mb-3 tracking-tighter">Welcome Home!</h3>
+                    <p className="text-zinc-400 font-medium">Check your inbox for your 15% discount code.</p>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

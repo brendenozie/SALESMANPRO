@@ -74,7 +74,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
   );
 
   return (
-    <div className="space-y-12">
+    <div>
       <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
       <FeaturesBarSection/>
       <CategorySection store={pageData} />

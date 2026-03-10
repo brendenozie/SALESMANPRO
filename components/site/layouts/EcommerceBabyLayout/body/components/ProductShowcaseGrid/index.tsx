@@ -4,12 +4,13 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { StarIcon } from '@heroicons/react/24/solid';
+import { StarIcon, PlusIcon } from '@heroicons/react/24/solid';
 import { useStoreContext } from '@/contexts/StoreContext';
 
 const productColumns = [
   {
     title: 'Top Sells',
+    label: 'Popular Picks',
     products: [
       { name: 'Pink Hoodie', price: 2.00, oldPrice: 3.00, rating: 4, img: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4' },
       { name: 'Remote Control Car', price: 6.00, oldPrice: 7.00, rating: 4, img: 'https://images.unsplash.com/photo-1594787318286-3d835c1d207f' },
@@ -18,6 +19,7 @@ const productColumns = [
   },
   {
     title: 'Top Rated',
+    label: 'Parent Approved',
     products: [
       { name: 'Winter Hat for Baby', price: 7.40, oldPrice: 7.99, rating: 4, img: 'https://images.unsplash.com/photo-1522771935876-249711cd40f2' },
       { name: 'Kids Pampers', price: 3.00, oldPrice: 3.99, rating: 4, img: 'https://images.unsplash.com/photo-1617330780360-6060c4c4d57c' },
@@ -25,7 +27,8 @@ const productColumns = [
     ]
   },
   {
-    title: 'Trending Items',
+    title: 'Trending',
+    label: 'Viral Now',
     products: [
       { name: 'Puzzle Game', price: 28.50, oldPrice: 30.99, rating: 4, img: 'https://images.unsplash.com/photo-1585435557343-3b092031a831' },
       { name: 'Baby shampoo', price: 15.00, oldPrice: 19.90, rating: 4, img: 'https://images.unsplash.com/photo-1559599101-f09722fb4948' },
@@ -33,7 +36,8 @@ const productColumns = [
     ]
   },
   {
-    title: 'Recently Added',
+    title: 'New Arrivals',
+    label: 'Just In',
     products: [
       { name: 'Red Sneakers', price: 12.00, oldPrice: 15.00, rating: 5, img: 'https://images.unsplash.com/photo-1514989940723-e8e51635b782' },
       { name: 'Baby Stroller', price: 45.00, oldPrice: 50.00, rating: 5, img: 'https://images.unsplash.com/photo-1591339102716-4bc24f7c41bc' },
@@ -44,94 +48,107 @@ const productColumns = [
 
 export default function ProductShowcaseGrid() {
   const { storeFormData } = useStoreContext();
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#F472B6';
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#FF8FA3';
 
   return (
-    <section className="relative max-w-7xl mx-auto px-6 py-24 overflow-hidden">
-      {/* Ambient background glows */}
-      <div 
-        className="absolute top-1/4 -left-20 w-72 h-72 rounded-full blur-[120px] opacity-10 pointer-events-none"
-        style={{ backgroundColor: primaryColor }}
-      />
+    <section className="relative max-w-[1800px] mx-auto px-6 md:px-12 py-32 bg-white dark:bg-zinc-950 transition-colors">
+      
+      {/* Background flourish */}
+      <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-zinc-50/50 dark:from-zinc-900/20 to-transparent pointer-events-none" />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-12 gap-y-16">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-16 gap-y-20 relative z-10">
         {productColumns.map((column, idx) => (
           <motion.div 
             key={idx}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: idx * 0.1 }}
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: idx * 0.15 }}
             viewport={{ once: true }}
+            className="group/column"
           >
-            {/* Elegant Header */}
-            <div className="mb-10 relative">
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300 block mb-1">
-                Collection {idx + 1}
+            {/* Boutique Header */}
+            <div className="mb-14 space-y-2">
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 dark:text-zinc-500 block">
+                {column.label}
               </span>
-              <h3 className="text-2xl font-black text-slate-900 tracking-tight">
-                {column.title}
-              </h3>
-              <div 
-                className="mt-3 h-1.5 w-8 rounded-full" 
-                style={{ backgroundColor: primaryColor }}
-              />
+              <div className="flex items-center gap-4">
+                <h3 className="text-3xl font-black text-zinc-900 dark:text-white tracking-tighter">
+                  {column.title}
+                </h3>
+                <div 
+                  className="h-px flex-1 bg-zinc-100 dark:bg-zinc-800 transition-all group-hover/column:flex-[2]" 
+                />
+              </div>
             </div>
 
-            <div className="flex flex-col gap-8">
+            <div className="relative space-y-12">
+              {/* Vertical path line */}
+              <div className="absolute left-6 top-8 bottom-8 w-px bg-zinc-100 dark:bg-zinc-800 -z-10 group-hover/column:bg-zinc-200 transition-colors" />
+
               {column.products.map((product, pIdx) => (
-                <Link 
-                  key={pIdx} 
-                  href={`/product/${product.name.toLowerCase().replace(/ /g, '-')}`}
-                  className="group flex items-center gap-5"
-                >
-                  {/* Modern Image Container */}
-                  <div className="relative w-24 h-24 flex-shrink-0 bg-slate-50 rounded-[2rem] overflow-hidden p-3 transition-all duration-500 group-hover:bg-white group-hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] group-hover:-translate-y-1">
-                    <Image 
-                      src={product.img} 
-                      alt={product.name} 
-                      fill 
-                      className="object-contain transition-transform duration-700 group-hover:scale-110" 
-                      loader={({ src, width }) => `${src}?w=${width}&q=75`}
-                    />
-                  </div>
-
-                  {/* Info Section */}
-                  <div className="flex flex-col">
-                    <h4 className="text-sm font-black text-slate-600 group-hover:text-slate-900 transition-colors line-clamp-1">
-                      {product.name}
-                    </h4>
-                    
-                    {/* Star Rating */}
-                    <div className="flex items-center gap-0.5 my-1.5">
-                      {[...Array(5)].map((_, i) => (
-                        <StarIcon 
-                          key={i} 
-                          className={`h-3 w-3 ${i < product.rating ? 'text-amber-400' : 'text-slate-200'}`} 
+                <div key={pIdx} className="group relative">
+                  <Link 
+                    href={`/ecommerce/product/${product.name.toLowerCase().replace(/ /g, '-')}`}
+                    className="flex items-center gap-6"
+                  >
+                    {/* Artistic Image Container */}
+                    <div className="relative w-28 h-28 flex-shrink-0">
+                      <div className="absolute inset-0 bg-zinc-50 dark:bg-zinc-900 rounded-tr-[2.5rem] rounded-bl-[2.5rem] rounded-tl-lg rounded-br-lg transition-transform duration-500 group-hover:scale-105 group-hover:rotate-3 shadow-sm group-hover:shadow-xl" />
+                      <div className="relative h-full w-full p-4">
+                        <Image 
+                          src={product.img} 
+                          alt={product.name} 
+                          fill 
+                          className="object-contain p-2 transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-6" 
+                          loader={({ src, width }) => `${src}?w=${width}&q=80`}
                         />
-                      ))}
+                      </div>
                     </div>
 
-                    {/* Price with Boutique Styling */}
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-base font-black text-slate-900">
-                        ${product.price.toFixed(2)}
-                      </span>
-                      {product.oldPrice && (
-                        <span className="text-[10px] text-slate-300 line-through font-bold decoration-slate-300/50">
-                          ${product.oldPrice.toFixed(2)}
+                    {/* Product Details */}
+                    <div className="flex-1 space-y-1">
+                      <h4 className="text-sm font-black text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors leading-tight">
+                        {product.name}
+                      </h4>
+                      
+                      <div className="flex items-center gap-1">
+                        {[...Array(5)].map((_, i) => (
+                          <StarIcon 
+                            key={i} 
+                            className={`h-2.5 w-2.5 ${i < product.rating ? '' : 'text-zinc-200 dark:text-zinc-800'}`} 
+                            style={{ color: i < product.rating ? primaryColor : undefined }}
+                          />
+                        ))}
+                      </div>
+
+                      <div className="flex items-center gap-3 pt-1">
+                        <span className="text-lg font-black text-zinc-900 dark:text-white tracking-tight">
+                          ${product.price.toFixed(2)}
                         </span>
-                      )}
+                        {product.oldPrice && (
+                          <span className="text-xs text-zinc-300 dark:text-zinc-600 line-through font-bold">
+                            ${product.oldPrice.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </Link>
+                  </Link>
+
+                  {/* Quick Buy Action Button */}
+                  <button 
+                    className="absolute -right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white dark:bg-zinc-800 shadow-lg border border-zinc-50 dark:border-zinc-700 opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 flex items-center justify-center hover:text-white"
+                    style={{ '--hover-bg': primaryColor } as any}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = primaryColor}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ''}
+                  >
+                    <PlusIcon className="w-5 h-5" />
+                  </button>
+                </div>
               ))}
             </div>
           </motion.div>
         ))}
       </div>
-
-      {/* Subtle bottom decorative line */}
-      <div className="mt-20 w-full h-px bg-slate-100" />
     </section>
   );
 }

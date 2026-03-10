@@ -45,10 +45,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       whileHover={{ y: -8 }}
-      className="relative flex flex-col bg-white rounded-[2.5rem] p-4 transition-all duration-500 group border border-transparent hover:border-slate-100 hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)]"
+      className="relative flex flex-col bg-white dark:bg-zinc-900 rounded-[2.5rem] p-4 transition-all duration-500 group border border-transparent hover:border-slate-100 dark:hover:border-zinc-800 hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.4)]"
     >
       {/* --- IMAGE CONTAINER --- */}
-      <div className="relative h-64 w-full rounded-[2rem] overflow-hidden bg-[#F8FAFC]">
+      <div className="relative h-64 w-full rounded-[2rem] overflow-hidden bg-[#F8FAFC] dark:bg-zinc-800/50">
         <Link href={`/ecommerce/products/${product.id}`} className="block h-full w-full">
           <Image
             src={imageSrc}
@@ -72,16 +72,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </div>
 
         {/* Heart Action */}
-        <button className="absolute top-3 right-3 p-2.5 rounded-full bg-white/80 backdrop-blur-md text-slate-400 hover:text-pink-500 transition-colors shadow-sm">
+        <button className="absolute top-3 right-3 p-2.5 rounded-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md text-slate-400 dark:text-zinc-500 hover:text-pink-500 dark:hover:text-pink-400 transition-colors shadow-sm">
           <HeartIcon className="w-5 h-5" />
         </button>
 
-        {/* Quick Add Overlay (Only visible when quantity is 0) */}
+        {/* Quick Add Overlay */}
         {quantity === 0 && (
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => addToCart(product)}
-            className="absolute bottom-4 right-4 p-4 rounded-2xl bg-slate-900 text-white shadow-xl opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300"
+            className="absolute bottom-4 right-4 p-4 rounded-2xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-xl opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300"
           >
             <ShoppingBagIcon className="w-5 h-5" />
           </motion.button>
@@ -93,24 +93,24 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center gap-1 text-amber-400">
             <StarIcon className="w-4 h-4" />
-            <span className="text-xs font-bold text-slate-600">4.8</span>
+            <span className="text-xs font-bold text-slate-600 dark:text-zinc-400">4.8</span>
           </div>
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Organic Cotton</span>
+          <span className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest">Organic Cotton</span>
         </div>
 
         <Link href={`/ecommerce/products/${product.id}`}>
-          <h4 className="text-lg font-bold text-slate-800 line-clamp-1 group-hover:text-blue-600 transition-colors">
+          <h4 className="text-lg font-bold text-slate-800 dark:text-zinc-100 line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
             {name}
           </h4>
         </Link>
 
         <div className="mt-3 flex items-center justify-between">
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-slate-900">
+            <span className="text-2xl font-black text-slate-900 dark:text-white">
               ${(finalPrice ?? 0).toFixed(2)}
             </span>
             {discount && (
-              <span className="text-sm line-through text-slate-300 font-medium">
+              <span className="text-sm line-through text-slate-300 dark:text-zinc-600 font-medium">
                 ${sellingPrice?.toFixed(2)}
               </span>
             )}
@@ -125,27 +125,27 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                className="flex items-center justify-between bg-slate-50 p-1 rounded-2xl border border-slate-100"
+                className="flex items-center justify-between bg-slate-50 dark:bg-zinc-800/50 p-1 rounded-2xl border border-slate-100 dark:border-zinc-800"
               >
                 <div className="flex items-center gap-1">
                   <motion.button
                     whileTap={{ scale: 0.8 }}
                     onClick={() => decreaseQuantity(product.id)}
-                    className="p-3 rounded-xl bg-white shadow-sm hover:text-red-500 transition-colors"
+                    className="p-3 rounded-xl bg-white dark:bg-zinc-900 shadow-sm text-slate-600 dark:text-zinc-300 hover:text-red-500 transition-colors"
                   >
                     {quantity === 1 ? <TrashIcon className="h-4 w-4" /> : <MinusIcon className="h-4 w-4" />}
                   </motion.button>
-                  <span className="w-10 text-center font-black text-slate-700">{quantity}</span>
+                  <span className="w-10 text-center font-black text-slate-700 dark:text-zinc-200">{quantity}</span>
                   <motion.button
                     whileTap={{ scale: 0.8 }}
                     onClick={() => addToCart(product)}
-                    className="p-3 rounded-xl bg-white shadow-sm hover:text-blue-500 transition-colors"
+                    className="p-3 rounded-xl bg-white dark:bg-zinc-900 shadow-sm text-slate-600 dark:text-zinc-300 hover:text-blue-500 transition-colors"
                   >
                     <PlusIcon className="h-4 w-4" />
                   </motion.button>
                 </div>
                 <div className="pr-4">
-                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">In Cart</span>
+                  <span className="text-[10px] font-black uppercase text-slate-400 dark:text-zinc-500 tracking-tighter">In Cart</span>
                 </div>
               </motion.div>
             ) : (
