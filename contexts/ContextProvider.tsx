@@ -20,6 +20,7 @@ interface CartItem {
   title?: string;
   finalPrice: number;
   quantity: number;
+  selectedSize?: string | null;
   [key: string]: any; // allows extra fields
 }
 

@@ -7,7 +7,6 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import { 
   ArrowUpRightIcon, 
   EnvelopeIcon, 
-  PhoneIcon 
 } from '@heroicons/react/24/outline';
 
 const iconMapper: Record<string, React.ReactNode> = {
@@ -18,6 +17,7 @@ const iconMapper: Record<string, React.ReactNode> = {
 
 export default function Footer() {
   const { storeFormData } = useStoreContext();
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#ef4444';
   const {
     name = "BOUTIQUE",
     description,
@@ -26,28 +26,28 @@ export default function Footer() {
   } = storeFormData || {};
 
   return (
-    <footer className="bg-zinc-950 text-zinc-400 pt-24 pb-12 overflow-hidden border-t border-zinc-900">
+    <footer className="bg-white dark:bg-zinc-950 text-zinc-500 transition-colors duration-500 pt-24 pb-8 overflow-hidden border-t border-zinc-100 dark:border-zinc-900">
       <div className="max-w-[1800px] mx-auto px-6 md:px-12">
         
-        {/* Top Section: Branding & Newsletter */}
+        {/* --- Top Section: Branding & Newsletter --- */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-24">
           
-          {/* Brand Philosophy */}
-          <div className="lg:col-span-5 space-y-8">
-            <h2 className="text-white text-3xl font-light tracking-tighter uppercase italic">
-              {name} <span className="font-serif lowercase text-zinc-500">— the atelier</span>
+          <div className="lg:col-span-5 space-y-10">
+            <h2 className="text-zinc-900 dark:text-white text-4xl font-black tracking-tighter uppercase italic leading-none">
+              {name} <br />
+              <span className="font-serif lowercase font-light text-zinc-400 dark:text-zinc-600">— the atelier</span>
             </h2>
-            <p className="text-lg leading-relaxed max-w-md font-medium text-zinc-500">
+            <p className="text-base leading-relaxed max-w-sm font-medium text-zinc-500 dark:text-zinc-400">
               {description || "Curating a new standard of digital elegance. We believe in the intersection of architectural form and functional beauty."}
             </p>
             
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               {socialLinks.map((s, idx) => (
                 <motion.a
                   key={idx}
-                  whileHover={{ y: -3, color: '#fff' }}
+                  whileHover={{ y: -4, color: primaryColor, borderColor: primaryColor }}
                   href={s.url}
-                  className="p-3 border border-zinc-800 rounded-full transition-colors"
+                  className="p-3.5 border border-zinc-200 dark:border-zinc-800 rounded-full transition-all text-zinc-400 dark:text-zinc-500"
                 >
                   {iconMapper[String(s.channel).toLowerCase()] || null}
                 </motion.a>
@@ -55,92 +55,96 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Newsletter Concept */}
           <div className="lg:col-span-7 flex flex-col justify-end">
-            <div className="border-b border-zinc-800 pb-4 mb-8">
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 block mb-4">
-                Join the Inner Circle
+            <div className="border-b-2 border-zinc-100 dark:border-zinc-900 pb-6 mb-8 group focus-within:border-zinc-900 dark:focus-within:border-white transition-colors">
+              <span className="text-[9px] font-black uppercase tracking-[0.5em] text-zinc-400 dark:text-zinc-600 block mb-4">
+                Newsletter Access
               </span>
-              <div className="flex items-center justify-between group">
+              <div className="flex items-center justify-between">
                 <input 
                   type="email" 
-                  placeholder="Enter your email" 
-                  className="bg-transparent border-none outline-none text-2xl md:text-4xl font-light tracking-tighter text-white w-full placeholder:text-zinc-800"
+                  placeholder="SUBSCRIBE@EMAIL.COM" 
+                  className="bg-transparent border-none outline-none text-2xl md:text-5xl font-black tracking-tighter text-zinc-900 dark:text-white w-full placeholder:text-zinc-100 dark:placeholder:text-zinc-900 uppercase"
                 />
-                <button className="text-white transform group-hover:translate-x-2 transition-transform duration-500">
-                  <ArrowUpRightIcon className="w-10 h-10" />
+                <button 
+                  className="p-2 transition-transform duration-500 hover:rotate-45"
+                  style={{ color: primaryColor }}
+                >
+                  <ArrowUpRightIcon className="w-10 h-10 md:w-14 md:h-14 stroke-[1.5]" />
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Middle Section: Sitemap Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-12 py-12 border-t border-zinc-900">
+        {/* --- Middle Section: Grid --- */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-12 py-16 border-t border-zinc-100 dark:border-zinc-900">
           <div>
-            <h4 className="text-white text-[10px] font-black uppercase tracking-[0.3em] mb-8">Navigation</h4>
-            <ul className="space-y-4 text-sm font-medium">
-              <li><Link href="/shop" className="hover:text-white transition-colors">The Collection</Link></li>
-              <li><Link href="/categories" className="hover:text-white transition-colors">Categories</Link></li>
-              <li><Link href="/about" className="hover:text-white transition-colors">Our Story</Link></li>
+            <h4 className="text-zinc-900 dark:text-white text-[10px] font-black uppercase tracking-[0.3em] mb-8">Collections</h4>
+            <ul className="space-y-4 text-xs font-bold uppercase tracking-widest">
+              <li><Link href="/shop" className="hover:opacity-50 transition-opacity">Ready to Wear</Link></li>
+              <li><Link href="/categories" className="hover:opacity-50 transition-opacity">Limited Drop</Link></li>
+              <li><Link href="/about" className="hover:opacity-50 transition-opacity">Archives</Link></li>
             </ul>
           </div>
           <div>
-            <h4 className="text-white text-[10px] font-black uppercase tracking-[0.3em] mb-8">Client Care</h4>
-            <ul className="space-y-4 text-sm font-medium">
-              <li><Link href="/shipping" className="hover:text-white transition-colors">Shipping & Returns</Link></li>
-              <li><Link href="/help" className="hover:text-white transition-colors">FAQ</Link></li>
-              <li><Link href="/track" className="hover:text-white transition-colors">Track Order</Link></li>
+            <h4 className="text-zinc-900 dark:text-white text-[10px] font-black uppercase tracking-[0.3em] mb-8">Concierge</h4>
+            <ul className="space-y-4 text-xs font-bold uppercase tracking-widest">
+              <li><Link href="/shipping" className="hover:opacity-50 transition-opacity">Shipping</Link></li>
+              <li><Link href="/help" className="hover:opacity-50 transition-opacity">Assistance</Link></li>
+              <li><Link href="/track" className="hover:opacity-50 transition-opacity">Tracking</Link></li>
             </ul>
           </div>
           <div className="col-span-2">
-            <h4 className="text-white text-[10px] font-black uppercase tracking-[0.3em] mb-8">Contact</h4>
+            <h4 className="text-zinc-900 dark:text-white text-[10px] font-black uppercase tracking-[0.3em] mb-8">Location</h4>
             <div className="space-y-4">
-              <a href={`mailto:${contactEmail}`} className="flex items-center gap-3 text-lg text-zinc-500 hover:text-white transition-colors">
-                <EnvelopeIcon className="w-5 h-5" />
-                <span>{contactEmail || "concierge@store.com"}</span>
+              <a href={`mailto:${contactEmail}`} className="block text-xl md:text-2xl font-black text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors tracking-tighter uppercase">
+                {contactEmail || "concierge@atelier.com"}
               </a>
-              <p className="text-sm italic font-serif">Available Mon—Fri, 9am—6pm EST</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">EST. {new Date().getFullYear()} — Global Studio</p>
             </div>
           </div>
         </div>
 
-        {/* Massive Signature Brand Name */}
-        <div className="pt-12 select-none overflow-hidden">
+        {/* --- Massive Signature --- */}
+        <div className="pt-8 select-none overflow-hidden cursor-default group">
           <motion.h1 
             initial={{ y: "100%" }}
             whileInView={{ y: 0 }}
-            transition={{ duration: 1, ease: "circOut" }}
-            className="text-[18vw] leading-none font-black text-zinc-900 uppercase tracking-tighter flex justify-between items-baseline"
+            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+            className="text-[19vw] leading-[0.8] font-black uppercase tracking-tighter flex justify-between items-baseline text-zinc-100 dark:text-zinc-900 transition-colors duration-700 group-hover:text-zinc-200 dark:group-hover:text-zinc-800"
           >
             {name.split('').map((char, i) => (
-              <span key={i} className={i % 2 === 1 ? 'font-serif italic font-light' : ''}>{char}</span>
+              <span 
+                key={i} 
+                className={i % 2 === 1 ? 'font-serif italic font-light' : ''}
+                style={i % 2 === 0 ? { WebkitTextStroke: '1px rgba(0,0,0,0.05)' } : {}}
+              >
+                {char}
+              </span>
             ))}
           </motion.h1>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t border-zinc-900 flex flex-col md:flex-row justify-between gap-6">
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-700">
-            &copy; {new Date().getFullYear()} {name} Atelier. All Rights Reserved.
+        {/* --- Bottom Bar --- */}
+        <div className="mt-8 pt-8 border-t border-zinc-100 dark:border-zinc-900 flex flex-col md:flex-row justify-between gap-6 items-center">
+          <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-zinc-300 dark:text-zinc-700">
+            &copy; {name} Atelier / All Rights Reserved.
           </p>
-          <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest text-zinc-700">
-            <Link href="/privacy" className="hover:text-zinc-400">Privacy</Link>
-            <Link href="/terms" className="hover:text-zinc-400">Terms</Link>
-            <Link href="/cookies" className="hover:text-zinc-400">Cookies</Link>
+          
+          <div className="flex items-center gap-1.5 transition-opacity">
+            <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-zinc-400">Powered by</span>
+            <a href="https://salesmanpro.site" className="text-[12px] font-black uppercase tracking-[0.3em] text-orange-600">
+              SalesmanPro.site
+            </a>
+          </div>
+
+          <div className="flex gap-8 text-[9px] font-bold uppercase tracking-[0.3em] text-zinc-300 dark:text-zinc-700">
+            <Link href="/privacy" className="hover:text-zinc-900 dark:hover:text-white">Privacy</Link>
+            <Link href="/terms" className="hover:text-zinc-900 dark:hover:text-white">Terms</Link>
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-1.5 px-4 py-2 mt-4 justify-center">
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Powered by</span>
-          <a 
-            href="https://salesmanpro.site" 
-            className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-700 transition-colors"
-          >
-            SalesmanPro.site
-          </a>
-      </div>
-
     </footer>
   );
 }

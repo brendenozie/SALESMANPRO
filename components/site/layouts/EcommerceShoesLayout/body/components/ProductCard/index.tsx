@@ -34,7 +34,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
       return;
     }
     // Add to cart with the selected size meta-data
-    addToCart({ ...product, selectedSize });
+    addToCart({ ...product, finalPrice: (product.finalPrice || 0), selectedSize });
     setIsSelectingSize(false);
   };
 
@@ -135,7 +135,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                     {quantity === 1 ? <TrashIcon className="h-5 w-5 text-red-500" /> : <MinusIcon className="h-5 w-5 text-gray-600 dark:text-slate-300" />}
                   </button>
                   <span className="w-10 text-center font-black dark:text-white">{quantity}</span>
-                  <button onClick={() => addToCart(product)} className="p-2.5 rounded-xl hover:bg-white dark:hover:bg-slate-700 shadow-sm transition-all">
+                  <button onClick={() => addToCart({ ...product, finalPrice: (product.finalPrice || 0), selectedSize: selectedSize })} className="p-2.5 rounded-xl hover:bg-white dark:hover:bg-slate-700 shadow-sm transition-all">
                     <PlusIcon className="h-5 w-5 text-gray-600 dark:text-slate-300" />
                   </button>
                 </div>

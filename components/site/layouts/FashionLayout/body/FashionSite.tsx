@@ -21,6 +21,7 @@ import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 
 // Above-the-fold components - statically imported
 import CategoriesSection from './components/CategorySection';
+import FeaturesSection from './components/FeaturesSection';
 
 // Loading skeleton
 const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
@@ -324,37 +325,13 @@ const ProductCard = ({ item }: { item: MarketListingForm }) => {
   );
 };
 
-const Features = () => {
-  const features = [
-    { icon: TruckIcon, title: "Fast Delivery", desc: "Free shipping on orders over $200" },
-    { icon: ShieldCheckIcon, title: "Secure Payment", desc: "100% secure payment processing" },
-    { icon: TagIcon, title: "Best Prices", desc: "Guaranteed quality at best prices" },
-  ];
 
-  return (
-    <div className="py-12 bg-white border-b border-slate-100">
-      <div className="max-w-7xl mx-auto px-6 flex flex-wrap justify-around gap-8">
-        {features.map((f, i) => (
-          <div key={i} className="flex items-center gap-4">
-             <div className="p-3 bg-indigo-50 rounded-full text-indigo-600">
-               <f.icon className="w-6 h-6" />
-             </div>
-             <div>
-               <h4 className="font-bold text-slate-900">{f.title}</h4>
-               <p className="text-sm text-slate-500">{f.desc}</p>
-             </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 
   return (
     <div>
       <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
-      <Features />
+      <FeaturesSection />
       <CategoriesSection store={pageData} />
       <DynamicPopularProducts id={id} />
       <PromoSection promotions={promotions} />

@@ -35,7 +35,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart, cart } = useStateContext();
   const { storeFormData } = useStoreContext();
   
-  const primary = storeFormData?.themeSettings?.primaryColor || '#18181b';
+  const primary = storeFormData?.themeSettings?.primaryColor || '#ef4444';
   const quantity = cart.find((item: any) => item.id === id)?.quantity || 0;
 
   const discount =
@@ -50,42 +50,45 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       viewport={{ once: true }}
       className="group flex flex-col bg-white dark:bg-zinc-950"
     >
-      {/* IMAGE AREA */}
-      <div className="relative aspect-[4/5] overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+      {/* --- IMAGE & INTERACTION AREA --- */}
+      <div className="relative aspect-[3/4] overflow-hidden bg-zinc-100 dark:bg-zinc-900 rounded-2xl">
         <Link href={`/ecommerce/products/${id}`} className="block w-full h-full">
           <Image
             src={img}
             alt={name}
             fill
             loader={loader}
-            className="object-cover transition-transform duration-1000 group-hover:scale-105"
+            className="object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
           />
         </Link>
 
-        {/* TOP BADGES */}
+        {/* Floating Badges */}
         <div className="absolute top-4 left-4 flex flex-col gap-2 pointer-events-none">
           {isNewArrival && (
-            <span className="bg-white/90 backdrop-blur text-zinc-900 text-[10px] font-black px-3 py-1 uppercase tracking-[0.2em] shadow-sm">
-              New
+            <span className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md text-zinc-900 dark:text-white text-[9px] font-black px-2.5 py-1 uppercase tracking-[0.2em] rounded-sm">
+              New Drop
             </span>
           )}
           {isDiscounted && discount && (
-            <span className="bg-zinc-900 text-white text-[10px] font-black px-3 py-1 uppercase tracking-[0.2em]">
+            <span 
+              className="text-white text-[9px] font-black px-2.5 py-1 uppercase tracking-[0.2em] rounded-sm"
+              style={{ backgroundColor: primary }}
+            >
               -{discount}%
             </span>
           )}
         </div>
 
-        {/* WISHLIST BUTTON */}
-        <button className="absolute top-4 right-4 p-2.5 bg-white/80 backdrop-blur-md rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 hover:bg-white text-zinc-900">
+        {/* Heart / Wishlist (Hero Icon) */}
+        <button className="absolute top-4 right-4 p-2.5 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 hover:scale-110 active:scale-95 dark:text-white">
           <HeartIcon className="w-4 h-4" />
         </button>
 
-        {/* QUICK ADD - SLIDE UP OVERLAY */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[0.22, 1, 0.36, 1]">
+        {/* --- QUICK ACTION OVERLAY --- */}
+        <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[0.16, 1, 0.3, 1]">
           <button
-            onClick={() => addToCart(product)}
-            className="w-full py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-2 hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors shadow-2xl"
+            onClick={() => addToCart({...product, finalPrice: finalPrice || sellingPrice})}
+            className="w-full py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-2 hover:brightness-110 transition-all shadow-2xl rounded-xl"
           >
             {quantity > 0 ? (
               <>
@@ -102,16 +105,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </div>
       </div>
 
-      {/* INFO AREA */}
-      <div className="pt-6 pb-2 flex flex-col items-center text-center">
+      {/* --- DETAILS AREA --- */}
+      <div className="pt-6 pb-2 px-2 flex flex-col items-center text-center">
         {brand && (
-          <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-[0.3em] mb-2">
+          <p className="text-[9px] text-zinc-400 font-black uppercase tracking-[0.4em] mb-2">
             {brand}
           </p>
         )}
         
         <Link href={`/ecommerce/products/${id}`}>
-          <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-100 hover:text-zinc-500 transition-colors mb-2 tracking-tight leading-snug max-w-[200px] mx-auto">
+          <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 hover:opacity-60 transition-opacity mb-2 tracking-tight leading-tight uppercase max-w-[220px]">
             {name}
           </h3>
         </Link>
@@ -122,25 +125,25 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               <span className="text-sm font-black text-zinc-900 dark:text-white">
                 ${finalPrice}
               </span>
-              <span className="text-xs text-zinc-400 line-through font-medium">
+              <span className="text-[11px] text-zinc-400 line-through font-bold">
                 ${sellingPrice}
               </span>
             </>
           ) : (
-            <span className="text-sm font-black text-zinc-900 dark:text-white tracking-wide">
+            <span className="text-sm font-black text-zinc-900 dark:text-white tracking-widest">
               ${sellingPrice}
             </span>
           )}
         </div>
 
-        {/* SUBTLE INDICATOR IF IN CART */}
+        {/* Status Dot */}
         <AnimatePresence>
           {quantity > 0 && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              className="mt-3 w-1.5 h-1.5 rounded-full"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0 }}
+              className="mt-4 w-1 h-1 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.1)]"
               style={{ backgroundColor: primary }}
             />
           )}
