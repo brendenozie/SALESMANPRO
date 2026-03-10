@@ -8,7 +8,8 @@ import { IStoreCategory, ISubcategory, StoreForm } from "@/types/typings";
 import {
   ArrowUpRightIcon,
   SparklesIcon,
-  Squares2X2Icon
+  Squares2X2Icon,
+  ChevronRightIcon
 } from "@heroicons/react/24/outline";
 
 const FALLBACK_IMAGE_URL = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2000&auto=format&fit=crop";
@@ -37,6 +38,42 @@ const cardVariants: Variants = {
 /* Sub-Components */
 /* -------------------------------------------------------------------------- */
 
+function SubcategoryPill({ sub, index }: { sub: ISubcategory; index: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -10 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.05 }}
+    >
+      <Link href={`/ecommerce/products?subcategory=${sub.slug || sub.name}`}>
+        <div className="group relative bg-white/5 border border-white/10 p-6 rounded-3xl transition-all duration-500 hover:bg-white/10 hover:border-white/20 overflow-hidden">
+          <div className="relative flex items-center justify-between z-10">
+            <div>
+               <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-1 block">Series {index + 1}</span>
+               <span className="font-black text-lg text-white uppercase tracking-tighter">
+                {sub.name}
+              </span>
+            </div>
+            <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-500">
+              <ChevronRightIcon className="h-5 w-5" />
+            </div>
+          </div>
+          {/* Audio Waveform Decor */}
+          <div className="absolute bottom-0 right-10 flex gap-1 opacity-10 group-hover:opacity-30 transition-opacity">
+            {[...Array(5)].map((_, i) => (
+              <div 
+                key={i} 
+                className="w-1 bg-white rounded-full animate-pulse" 
+                style={{ height: `${Math.random() * 20 + 10}px`, animationDelay: `${i * 0.2}s` }} 
+              />
+            ))}
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
+
 function CategoryPortal({ cat, index }: { cat: IStoreCategory; index: number }) {
   const [hovered, setHovered] = useState(false);
   const imageUrl = (cat as any).imageUrl || (cat as any).image || FALLBACK_IMAGE_URL;
@@ -46,16 +83,13 @@ function CategoryPortal({ cat, index }: { cat: IStoreCategory; index: number }) 
       variants={cardVariants}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="relative h-[450px] w-full group cursor-pointer"
+      className="relative h-[500px] w-full group cursor-pointer"
     >
       <Link href={`/ecommerce/products?category=${cat.categoryId}`} className="block h-full w-full">
-        {/* The "Frame" */}
-        <div className="relative h-full w-full overflow-hidden rounded-[2rem] border border-white/10 bg-[#0a0a0a]">
-          
-          {/* Background Image with Parallax Effect */}
+        <div className="relative h-full w-full overflow-hidden rounded-[3rem] border border-white/10 bg-[#0a0a0a]">
           <motion.div 
-            animate={{ scale: hovered ? 1.1 : 1, opacity: hovered ? 0.6 : 0.4 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
+            animate={{ scale: hovered ? 1.05 : 1, opacity: hovered ? 0.7 : 0.5 }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             className="absolute inset-0 h-full w-full"
           >
             <Image
@@ -63,38 +97,35 @@ function CategoryPortal({ cat, index }: { cat: IStoreCategory; index: number }) 
               alt={cat.displayName || "Category"}
               fill
               loader={customLoader}
-              className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+              className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000"
             />
           </motion.div>
 
-          {/* Gradient Wash */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
 
-          {/* Content */}
-          <div className="absolute inset-0 p-8 flex flex-col justify-end">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="h-px w-8 bg-primary-color" style={{ backgroundColor: 'var(--primary-color)' }} />
-              <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/50">Collection {index + 1}</span>
+          <div className="absolute inset-0 p-10 flex flex-col justify-end">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="h-[2px] w-10 bg-white" />
+              <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-white/40">Portal 0{index + 1}</span>
             </div>
             
-            <h3 className="text-3xl font-black text-white tracking-tighter uppercase italic leading-none mb-4 transition-transform duration-500 group-hover:-translate-y-2">
+            <h3 className="text-4xl font-black text-white tracking-tighter uppercase italic leading-none mb-6">
               {cat.displayName}
             </h3>
 
             <div className="overflow-hidden">
                <motion.div 
                  animate={{ y: hovered ? 0 : 40 }}
-                 className="flex items-center justify-between text-white/60"
+                 className="flex items-center justify-between text-white"
                >
-                 <span className="text-xs font-medium uppercase tracking-widest">Explore Series</span>
-                 <ArrowUpRightIcon className="w-5 h-5 text-white" />
+                 <span className="text-[10px] font-black uppercase tracking-widest border-b border-white/50 pb-1">Enter Frequency</span>
+                 <ArrowUpRightIcon className="w-6 h-6" />
                </motion.div>
             </div>
           </div>
 
-          {/* Glass Accent Piece */}
-          <div className="absolute top-6 right-6 h-12 w-12 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-             <Squares2X2Icon className="w-5 h-5 text-white" />
+          <div className="absolute top-8 right-8 h-14 w-14 rounded-full bg-white/5 backdrop-blur-2xl border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+             <Squares2X2Icon className="w-6 h-6 text-white" />
           </div>
         </div>
       </Link>
@@ -106,43 +137,52 @@ function CategoryPortal({ cat, index }: { cat: IStoreCategory; index: number }) 
 /* Main Section */
 /* -------------------------------------------------------------------------- */
 
-export default function CategoriesSectionV5({ store }: { store: StoreForm | null }) {
+export default function CategoriesSectionAudiophile({ store }: { store: StoreForm | null }) {
   const categories = useMemo(() => {
     return (store?.StoreCategory ?? [])
       .filter((c) => c.visible ?? true)
       .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   }, [store]);
 
+  const isFew = categories.length > 0 && categories.length <= 2;
+
+  const subcategoriesForGrid = useMemo(() => {
+    if (!isFew) return [];
+    let list: ISubcategory[] = [];
+    categories.forEach((cat) => {
+      if (cat.subcategories) {
+        list.push(...cat.subcategories.filter((s) => s.visible ?? true));
+      }
+    });
+    return list.slice(0, 8);
+  }, [categories, isFew]);
+
+  const primaryColor = store?.themeSettings?.primaryColor || '#FFFFFF';
+
   return (
     <section className="relative bg-[#050505] py-32 overflow-hidden">
-      {/* Abstract Background Shapes */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-color/10 blur-[150px] rounded-full -translate-y-1/2 translate-x-1/2" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary-color/5 blur-[150px] rounded-full translate-y-1/2 -translate-x-1/2" />
-
       <div className="container mx-auto max-w-7xl px-6 relative z-10">
         
-        {/* Header Logic */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
-          <div className="max-w-xl">
+        {/* Editorial Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-12">
+          <div className="max-w-2xl">
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
-              className="flex items-center gap-3 mb-4"
+              className="flex items-center gap-4 mb-6"
             >
-              <div className="p-2 rounded-lg bg-white/5 border border-white/10">
-                <SparklesIcon className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-xs font-bold tracking-[.4em] uppercase text-white/40">The Catalog</span>
+              <SparklesIcon className="w-5 h-5 text-white/40" />
+              <span className="text-xs font-bold tracking-[.5em] uppercase text-white/30">Premium Audio Modules</span>
             </motion.div>
 
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              className="text-5xl md:text-7xl font-black text-white tracking-tighter leading-none"
+              className="text-6xl md:text-8xl font-black text-white tracking-tighter leading-[0.85] uppercase italic"
             >
-              CHOOSE YOUR <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white/50 to-white/10">
-                VIBRATION.
+              Select Your <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white/40 to-transparent">
+                Sonic Path.
               </span>
             </motion.h2>
           </div>
@@ -150,36 +190,58 @@ export default function CategoriesSectionV5({ store }: { store: StoreForm | null
           <motion.p 
              initial={{ opacity: 0 }}
              whileInView={{ opacity: 1 }}
-             className="text-white/40 text-lg max-w-xs border-l border-white/10 pl-6"
+             className="text-white/30 text-xl font-light max-w-xs leading-relaxed italic"
           >
-            Engineering excellence across every category. Select a collection to begin your journey.
+            Precision tuned categories for the discerning listener. Pure sound, zero compromise.
           </motion.p>
         </div>
 
-        {/* The Grid */}
+        {/* Categories Grid */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 ${isFew ? 'lg:flex lg:justify-center' : ''}`}
         >
           {categories.map((cat, idx) => (
-            <CategoryPortal key={cat.id} cat={cat} index={idx} />
+            <div key={cat.id} className={isFew ? 'w-full lg:w-[450px]' : ''}>
+                <CategoryPortal cat={cat} index={idx} />
+            </div>
           ))}
         </motion.div>
 
-        {/* View All Button - Unique Style */}
+        {/* Subcategory Grid (Functional Integration) */}
+        <AnimatePresence>
+          {isFew && subcategoriesForGrid.length > 0 && (
+            <motion.div 
+              initial={{ opacity: 0, y: 60 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="mt-32 pt-32 border-t border-white/5"
+            >
+              <div className="flex items-center gap-8 mb-16">
+                <span className="font-black text-xs uppercase tracking-[0.6em] text-white/20 whitespace-nowrap">Dive into Detail</span>
+                <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {subcategoriesForGrid.map((sub, idx) => (
+                  <SubcategoryPill key={sub.id || idx} sub={sub} index={idx} />
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Footer Link */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          className="mt-24 flex justify-center"
+          className="mt-32 flex justify-center"
         >
-          <Link href="/ecommerce/categories" className="group relative px-12 py-5 rounded-full border border-white/10 hover:border-white/40 transition-all overflow-hidden">
-            <div className="absolute inset-0 bg-white translate-y-[101%] group-hover:translate-y-0 transition-transform duration-500 ease-out" />
-            <span className="relative z-10 text-white group-hover:text-black font-bold uppercase tracking-widest text-sm flex items-center gap-3">
-              Browse Full Universe
-              <ArrowUpRightIcon className="w-4 h-4" />
+          <Link href="/ecommerce/categories" className="group relative px-16 py-6 rounded-full border border-white/10 transition-all">
+            <div className="absolute inset-0 bg-white scale-y-0 group-hover:scale-y-100 transition-transform duration-500 origin-bottom rounded-full" />
+            <span className="relative z-10 text-white group-hover:text-black font-black uppercase tracking-[0.2em] text-xs flex items-center gap-4">
+              Explore Full Universe <ArrowUpRightIcon className="w-5 h-5" />
             </span>
           </Link>
         </motion.div>
