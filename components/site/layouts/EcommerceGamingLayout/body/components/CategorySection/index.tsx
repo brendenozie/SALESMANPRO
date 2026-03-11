@@ -64,11 +64,11 @@ function SubcategoryPill({ sub, index }: { sub: ISubcategory; index: number }) {
       transition={{ delay: index * 0.05 }}
     >
       <Link href={`/ecommerce/products?subcategory=${sub.slug || sub.name}`}>
-        <div className="group relative bg-zinc-900 border border-white/10 p-4 transition-all duration-300 hover:border-red-600 hover:bg-zinc-800">
+        <div className="group relative bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 p-4 transition-all duration-300 hover:border-red-600 dark:hover:border-red-600 hover:bg-white dark:hover:bg-zinc-800">
           <div className="relative flex items-center justify-between z-10 skew-x-[12deg]">
             <div className="flex flex-col">
               <span className="text-[8px] font-mono text-red-500/50 uppercase tracking-tighter">Sub_Module_{index + 1}</span>
-              <span className="font-black text-sm text-white uppercase tracking-tighter">
+              <span className="font-black text-sm text-zinc-900 dark:text-white uppercase tracking-tighter transition-colors">
                 {sub.name}
               </span>
             </div>
@@ -76,7 +76,6 @@ function SubcategoryPill({ sub, index }: { sub: ISubcategory; index: number }) {
               <ChevronRightIcon className="h-4 w-4 text-red-600 group-hover:text-white" />
             </div>
           </div>
-          {/* Scanning line effect */}
           <div className="absolute inset-0 w-full h-[1px] bg-red-600/30 top-0 group-hover:top-full transition-all duration-500 pointer-events-none" />
         </div>
       </Link>
@@ -96,10 +95,10 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
 
   return (
     <motion.div variants={itemVariants} className="group relative">
-      <Link href={`/ecommerce/products?category=${catSlug}`} className="block relative h-[450px] w-full overflow-hidden bg-zinc-900 border border-white/5 transition-all">
+      <Link href={`/ecommerce/products?category=${catSlug}`} className="block relative h-[450px] w-full overflow-hidden bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-white/5 transition-all">
         
         <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-red-600 z-20 group-hover:w-12 group-hover:h-12 transition-all duration-300" />
-        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-white/20 z-20" />
+        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-zinc-400 dark:border-white/20 z-20" />
 
         <Image
           src={imageUrl}
@@ -107,10 +106,11 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
           fill
           loader={customLoader}
           onError={() => setImgError(true)}
-          className="object-cover opacity-50 grayscale group-hover:grayscale-0 group-hover:scale-110 group-hover:opacity-70 transition-all duration-700"
+          className="object-cover opacity-60 dark:opacity-50 grayscale group-hover:grayscale-0 group-hover:scale-110 group-hover:opacity-100 dark:group-hover:opacity-70 transition-all duration-700"
         />
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+        {/* Gradient Overlay adjusted for light mode */}
+        <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-transparent to-transparent dark:from-black dark:via-black/20 dark:to-transparent" />
         
         <div className="absolute inset-0 p-8 flex flex-col justify-end">
           <div className="flex items-center gap-3 mb-4">
@@ -125,8 +125,8 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
           </h3>
 
           <div className="mt-4 flex items-center justify-between overflow-hidden">
-            <div className="h-[1px] flex-1 bg-white/10 group-hover:bg-red-600/50 transition-colors" />
-            <div className="pl-4 flex items-center gap-2 text-xs font-black text-gray-400 group-hover:text-white transition-colors">
+            <div className="h-[1px] flex-1 bg-white/20 dark:bg-white/10 group-hover:bg-red-600/50 transition-colors" />
+            <div className="pl-4 flex items-center gap-2 text-xs font-black text-gray-300 dark:text-gray-400 group-hover:text-white transition-colors">
               ENTER SITE <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
           </div>
@@ -147,7 +147,6 @@ export default function CategoriesSectionGaming({ store }: { store: StoreForm | 
       .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   }, [store]);
 
-  // Restored logic for subcategories
   const isFew = categoriesToShow.length > 0 && categoriesToShow.length <= 2;
 
   const subcategoriesForGrid = useMemo(() => {
@@ -162,8 +161,9 @@ export default function CategoriesSectionGaming({ store }: { store: StoreForm | 
   }, [categoriesToShow, isFew]);
 
   return (
-    <section className="relative py-32 bg-black overflow-hidden">
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+    <section className="relative py-32 bg-zinc-50 dark:bg-black transition-colors duration-500 overflow-hidden">
+      {/* Texture visible in both modes */}
+      <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.03] pointer-events-none" 
            style={{ backgroundImage: `url("https://www.transparenttextures.com/patterns/carbon-fibre.png")` }} />
       
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-full bg-gradient-to-b from-red-600/20 via-transparent to-red-600/20" />
@@ -187,7 +187,7 @@ export default function CategoriesSectionGaming({ store }: { store: StoreForm | 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-5xl md:text-7xl font-black italic tracking-tighter text-white uppercase"
+              className="text-5xl md:text-7xl font-black italic tracking-tighter text-zinc-900 dark:text-white uppercase transition-colors"
             >
               CHOOSE YOUR <span className="text-red-600">CLASS</span>
             </motion.h2>
@@ -199,7 +199,7 @@ export default function CategoriesSectionGaming({ store }: { store: StoreForm | 
             viewport={{ once: true }}
             className="hidden lg:block text-right"
           >
-            <p className="text-gray-500 font-mono text-xs uppercase tracking-widest leading-relaxed">
+            <p className="text-zinc-500 dark:text-gray-500 font-mono text-xs uppercase tracking-widest leading-relaxed">
               System Ready // Filter Active <br />
               Select collection to deploy.
             </p>
@@ -208,7 +208,7 @@ export default function CategoriesSectionGaming({ store }: { store: StoreForm | 
 
         {/* Categories Grid */}
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-0 border-r border-b border-white/5"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-0 border-r border-b border-zinc-200 dark:border-white/5"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -219,13 +219,13 @@ export default function CategoriesSectionGaming({ store }: { store: StoreForm | 
           ))}
         </motion.div>
 
-        {/* Subcategory "Dive Deeper" Section (Restored Functionality) */}
+        {/* Subcategory Section */}
         <AnimatePresence>
           {isFew && subcategoriesForGrid.length > 0 && (
             <motion.div 
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
-              className="mt-20 pt-20 border-t border-red-600/20"
+              className="mt-20 pt-20 border-t border-zinc-200 dark:border-red-600/20"
             >
               <div className="flex items-center gap-6 mb-12">
                 <span className="font-black text-[11px] uppercase tracking-[0.4em] text-red-600 whitespace-nowrap animate-pulse">
@@ -249,7 +249,7 @@ export default function CategoriesSectionGaming({ store }: { store: StoreForm | 
             viewport={{ once: true }}
             className="mt-20 flex justify-center"
         >
-          <Link href={`/ecommerce/categories`} className="group relative px-12 py-5 bg-white text-black font-black uppercase tracking-tighter italic text-xl hover:bg-red-600 hover:text-white transition-all overflow-hidden">
+          <Link href={`/ecommerce/categories`} className="group relative px-12 py-5 bg-zinc-900 dark:bg-white text-white dark:text-black font-black uppercase tracking-tighter italic text-xl hover:bg-red-600 hover:text-white transition-all overflow-hidden shadow-xl">
             <span className="relative z-10 flex items-center gap-3">
               ACCESS ALL MODULES <ArrowRightIcon className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
             </span>

@@ -31,10 +31,14 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
   const displayTestimonials = testimonials && testimonials.length > 0 ? testimonials : sampletestimonials;
 
   return (
-    <section className="relative py-24 bg-black overflow-hidden border-t border-white/5">
-      {/* Background HUD Graphics */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-           style={{ backgroundImage: `linear-gradient(90deg, #FF003C 1px, transparent 1px), linear-gradient(#FF003C 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
+    <section className="relative py-24 bg-white dark:bg-black overflow-hidden border-t border-zinc-200 dark:border-white/5 transition-colors duration-500">
+      {/* Background HUD Graphics - Adapts to light/dark via opacity and currentColor */}
+      <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.03] pointer-events-none" 
+           style={{ 
+             backgroundImage: `linear-gradient(90deg, #FF003C 1px, transparent 1px), linear-gradient(#FF003C 1px, transparent 1px)`, 
+             backgroundSize: '60px 60px' 
+           }} 
+      />
       
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         {/* Section Header */}
@@ -45,12 +49,12 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
             className="flex items-center gap-2 px-4 py-1 border border-red-600/30 bg-red-600/5 mb-6"
           >
             <ChatBubbleBottomCenterIcon className="w-4 h-4 text-red-600" />
-            <span className="font-mono text-[10px] tracking-[0.4em] text-red-500 uppercase font-black">
+            <span className="font-mono text-[10px] tracking-[0.4em] text-red-600 dark:text-red-500 uppercase font-black">
               Field_Intelligence
             </span>
           </motion.div>
           
-          <h2 className="text-5xl md:text-7xl font-black italic text-white uppercase tracking-tighter text-center">
+          <h2 className="text-5xl md:text-7xl font-black italic text-zinc-900 dark:text-white uppercase tracking-tighter text-center transition-colors">
             OPERATOR <span className="text-red-600">FEEDBACK</span>
           </h2>
           <div className="h-1 w-24 bg-red-600 mt-4 skew-x-[-20deg]" />
@@ -65,10 +69,10 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
-              className="group relative p-8 bg-zinc-900/50 border border-white/5 hover:border-red-600/50 transition-all duration-500 flex flex-col"
+              className="group relative p-8 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 hover:border-red-600/50 transition-all duration-500 flex flex-col shadow-sm hover:shadow-xl dark:shadow-none"
             >
               {/* Card HUD Elements */}
-              <div className="absolute top-0 right-0 p-2 font-mono text-[8px] text-white/10 group-hover:text-red-600/30 transition-colors">
+              <div className="absolute top-0 right-0 p-2 font-mono text-[8px] text-zinc-400 dark:text-white/10 group-hover:text-red-600/30 transition-colors font-bold">
                 LOG_ID: 00{index + 1}
               </div>
               
@@ -81,15 +85,15 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
 
               {/* Quote Text */}
               <blockquote className="relative mb-10">
-                <span className="absolute -top-4 -left-4 text-6xl text-white/[0.03] font-serif leading-none group-hover:text-red-600/10 transition-colors">“</span>
-                <p className="relative z-10 text-zinc-400 text-lg font-medium leading-relaxed italic group-hover:text-zinc-200 transition-colors">
+                <span className="absolute -top-4 -left-4 text-6xl text-zinc-900/[0.05] dark:text-white/[0.03] font-serif leading-none group-hover:text-red-600/10 transition-colors">“</span>
+                <p className="relative z-10 text-zinc-600 dark:text-zinc-400 text-lg font-medium leading-relaxed italic group-hover:text-zinc-900 dark:group-hover:text-zinc-200 transition-colors">
                   {t.quote}
                 </p>
               </blockquote>
 
               {/* Author Info Pane */}
-              <div className="mt-auto flex items-center gap-4 pt-6 border-t border-white/5">
-                <div className="relative w-12 h-12 overflow-hidden bg-black border border-white/10 group-hover:border-red-600 transition-colors">
+              <div className="mt-auto flex items-center gap-4 pt-6 border-t border-zinc-200 dark:border-white/5">
+                <div className="relative w-12 h-12 overflow-hidden bg-zinc-200 dark:bg-black border border-zinc-300 dark:border-white/10 group-hover:border-red-600 transition-colors">
                   <img
                     src={t.avatarUrl || 'https://placehold.co/100x100/111/FFF?text=User'}
                     alt={t.authorName || 'operator'}
@@ -99,23 +103,23 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
                 </div>
                 
                 <div className="text-left">
-                  <h3 className="text-sm font-black text-white uppercase tracking-widest group-hover:text-red-500 transition-colors">
+                  <h3 className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest group-hover:text-red-600 transition-colors">
                     {t.authorName}
                   </h3>
-                  <p className="text-[10px] font-mono text-zinc-600 uppercase">
+                  <p className="text-[10px] font-mono text-zinc-500 dark:text-zinc-600 uppercase font-bold">
                     Verified_Citizen
                   </p>
                 </div>
               </div>
 
               {/* Corner Reticle decoration */}
-              <div className="absolute bottom-0 right-0 w-8 h-8 border-b border-r border-white/5 group-hover:border-red-600 transition-all" />
+              <div className="absolute bottom-0 right-0 w-8 h-8 border-b border-r border-zinc-200 dark:border-white/5 group-hover:border-red-600 transition-all" />
             </motion.div>
           ))}
         </div>
 
         {/* Bottom Status Bar */}
-        <div className="mt-20 flex items-center justify-between py-4 border-b border-white/5 font-mono text-[9px] text-zinc-600 uppercase tracking-widest">
+        <div className="mt-20 flex items-center justify-between py-4 border-b border-zinc-200 dark:border-white/5 font-mono text-[9px] text-zinc-400 dark:text-zinc-600 uppercase tracking-widest font-bold">
           <span>Signal: Encrypted</span>
           <div className="flex gap-4">
             <span className="flex items-center gap-1">

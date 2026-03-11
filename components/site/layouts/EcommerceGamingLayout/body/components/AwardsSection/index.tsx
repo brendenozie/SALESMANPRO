@@ -29,7 +29,6 @@ const loader = ({ src, width }: { src: string; width: number }) => `${src}?w=${w
 
 export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
   const { storeFormData } = useStoreContext();
-  const accent = '#FF003C'; // Empire Red
 
   // Gaming-themed fallback data
   const defaultAwards = [
@@ -42,10 +41,10 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
   const awardsToDisplay = awards && awards.length > 0 ? awards : defaultAwards;
 
   return (
-    <section className="relative py-24 bg-zinc-950 overflow-hidden">
+    <section className="relative py-24 bg-white dark:bg-zinc-950 overflow-hidden transition-colors duration-500">
       {/* Background HUD Graphics */}
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-red-600/50 to-transparent" />
-      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-red-600/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-red-600/10 dark:bg-red-600/5 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         {/* Header Section */}
@@ -53,15 +52,15 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
           <div className="max-w-2xl">
             <div className="flex items-center gap-2 mb-4">
               <span className="w-8 h-[2px] bg-red-600" />
-              <span className="font-mono text-xs tracking-[0.5em] text-red-500 uppercase font-black">
+              <span className="font-mono text-xs tracking-[0.5em] text-red-600 dark:text-red-500 uppercase font-black">
                 Achievements_Unlocked
               </span>
             </div>
-            <h2 className="text-4xl md:text-6xl font-black italic text-white uppercase tracking-tighter leading-none">
+            <h2 className="text-4xl md:text-6xl font-black italic text-zinc-900 dark:text-white uppercase tracking-tighter leading-none transition-colors">
               RECOGNIZED FOR <span className="text-red-600">DOMINANCE</span>
             </h2>
           </div>
-          <p className="text-zinc-500 font-mono text-[10px] uppercase max-w-[200px] text-right hidden md:block">
+          <p className="text-zinc-500 font-mono text-[10px] uppercase max-w-[200px] text-right hidden md:block font-bold">
             Verified by global industry leaders // High performance standards met.
           </p>
         </div>
@@ -81,11 +80,11 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
               <motion.div
                 key={idx}
                 variants={cardVariants}
-                className="group relative bg-zinc-900/50 border border-white/5 hover:border-red-600/50 transition-all duration-500 p-8 flex flex-col items-center justify-center min-h-[220px] overflow-hidden"
+                className="group relative bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 hover:border-red-600/50 transition-all duration-500 p-8 flex flex-col items-center justify-center min-h-[220px] overflow-hidden shadow-sm hover:shadow-xl"
               >
                 {/* Tactical Card Decorations */}
                 <div className="absolute top-0 right-0 w-2 h-2 bg-red-600/20" />
-                <div className="absolute bottom-2 left-2 font-mono text-[8px] text-white/5 tracking-widest">
+                <div className="absolute bottom-2 left-2 font-mono text-[8px] text-zinc-400 dark:text-white/5 tracking-widest font-bold">
                   SECTOR_{idx + 101}
                 </div>
 
@@ -101,12 +100,12 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                         className="object-contain grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500"
                       />
                     ) : (
-                      <TrophyIcon className="w-full h-full text-zinc-800 group-hover:text-red-600 transition-colors" />
+                      <TrophyIcon className="w-full h-full text-zinc-300 dark:text-zinc-800 group-hover:text-red-600 transition-colors" />
                     )}
                   </div>
                   
                   <div className="text-center">
-                    <h3 className="text-sm font-black italic text-zinc-400 group-hover:text-white uppercase tracking-widest transition-colors leading-tight">
+                    <h3 className="text-sm font-black italic text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white uppercase tracking-widest transition-colors leading-tight">
                       {label}
                     </h3>
                   </div>
@@ -114,18 +113,18 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
 
                 {/* Hover Glow Effect */}
                 <div className="absolute inset-0 bg-gradient-to-br from-red-600/0 via-transparent to-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute bottom-0 left-0 w-full h-[1px] bg-white/5 group-hover:bg-red-600 transition-all duration-500" />
+                <div className="absolute bottom-0 left-0 w-full h-[1px] bg-zinc-200 dark:bg-white/5 group-hover:bg-red-600 transition-all duration-500" />
               </motion.div>
             );
           })}
         </motion.div>
 
         {/* Bottom Ticker/Status Line */}
-        <div className="mt-12 flex items-center justify-center gap-4 py-4 border-y border-white/5">
+        <div className="mt-12 flex items-center justify-center gap-4 py-4 border-y border-zinc-200 dark:border-white/5 transition-colors">
           <div className="flex gap-2">
             {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 bg-red-600" />)}
           </div>
-          <span className="font-mono text-[10px] text-zinc-600 uppercase tracking-[0.3em]">
+          <span className="font-mono text-[10px] text-zinc-500 dark:text-zinc-600 uppercase tracking-[0.3em] font-bold">
             Elite Tier Certification Active
           </span>
           <div className="flex gap-2">
