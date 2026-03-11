@@ -112,7 +112,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                 >
                    <div className="h-[2px] w-8 bg-red-600" />
                    <span className="text-red-500 font-black tracking-widest text-sm uppercase italic">
-                     {slide.subline}
+                     {slide.badgeText}
                    </span>
                 </motion.div>
 
@@ -126,7 +126,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                 </motion.h1>
 
                 <p className="text-gray-400 text-lg max-w-md font-medium leading-relaxed">
-                  {slide.badgeText}
+                  {slide.subline}
                 </p>
 
                 <div className="flex items-center gap-6 pt-4">
