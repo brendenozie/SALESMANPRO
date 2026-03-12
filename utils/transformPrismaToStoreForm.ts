@@ -174,6 +174,7 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
   StoreCategory: raw.StoreCategory?.map((sc: any) => ({
     id: sc.categoryId,
     displayName: sc.displayName ?? sc.category.name,
+    image: sc.image ?? sc.category.image ?? undefined,
     icon: sc.icon ?? undefined,
     subcategories: Array.isArray(sc.subcategories)
       ? sc.subcategories

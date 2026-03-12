@@ -257,6 +257,7 @@ if (paymentSettingsData) {
               create: data.StoreCategory.map((sc) => ({
                 displayName: sc.displayName,
                 icon: sc.icon,
+                image: sc.image,
                 sortOrder: sc.sortOrder,
                 visible: sc.visible,
                 subcategories: sc.subcategories,

@@ -278,6 +278,7 @@ if (paymentSettingsData) {
             create: StoreCategory.map((sc: any) => ({
               displayName: sc.displayName,
               icon: sc.icon,
+              image: sc.image,
               sortOrder: sc.sortOrder ?? 0,
               categoryId: sc.categoryId,
               subcategories: sc.subcategories,

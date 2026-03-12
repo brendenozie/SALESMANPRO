@@ -21,6 +21,7 @@ const createEmptyParent = (parentData: IProductCategory): IStoreCategory => ({
     categoryId: parentData.id,
     displayName: parentData.name,
     icon: parentData.icon,
+    image: parentData.image,
     subcategories: [],
     allBrands: [],
     sortOrder: 0,
@@ -46,6 +47,7 @@ export function categoryReducer(state: SelectedState, action: CategoryAction): S
           ...createEmptyParent(parent),
           subcategories: [...parent.subcategories || []],
           allBrands: [...(parent.allBrands || [])],
+          image: parent.image || "https://images.unsplash.com/photo-1595113316349-9fa4ee24f884?auto=format&fit=crop&w=800&q=80", // Fallback image
         };
       }
       return newState;
@@ -77,7 +79,8 @@ export function categoryReducer(state: SelectedState, action: CategoryAction): S
               id: subId,
               name: subcategory.name,
               slug: subcategory.slug,
-              tempId: subcategory.tempId
+              tempId: subcategory.tempId,
+              image: parentData.image || "https://images.unsplash.com/photo-1595113316349-9fa4ee24f884?auto=format&fit=crop&w=800&q=80",
             }
           ];
         }
@@ -159,6 +162,7 @@ export function categoryReducer(state: SelectedState, action: CategoryAction): S
                     ...createEmptyParent(parent),
                     subcategories: matchedSubs || [],
                     allBrands: matchedBrands,
+                    image: parent.image || "https://images.unsplash.com/photo-1595113316349-9fa4ee24f884?auto=format&fit=crop&w=800&q=80", // Fallback image
                 };
             }
         }

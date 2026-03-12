@@ -201,6 +201,7 @@ model StoreCategory {
 
   displayName String?
   icon        String?
+  image       String?
   sortOrder   Int     @default(0)
   visible     Boolean @default(true)
 

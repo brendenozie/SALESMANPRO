@@ -368,6 +368,7 @@ export interface ISubcategory {
   icon?: string | null;
   visible?: boolean;
   tempId?: string;
+  image?: string | null;
   _id?: any;
 }
 
@@ -409,6 +410,7 @@ export interface IStoreCategory {
   categoryId: string | null;
   displayName?: string | null;
   icon?: string | null;
+  image?: string | null;
   sortOrder: number;
   visible: boolean;
   createdAt?: Date | null;

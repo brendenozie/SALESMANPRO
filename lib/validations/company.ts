@@ -105,6 +105,7 @@ const storeCategorySchema = z.object({
   categoryId: z.string(), // This is the ID of the ProductCategory
   displayName: z.string().optional(),
   icon: z.string().optional(),
+  image: z.string().optional(),
   sortOrder: z.number().optional(),
   visible: z.boolean().optional(),
   subcategories: z.any().optional(),

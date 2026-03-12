@@ -87,7 +87,7 @@ const cardVariants: Variants = {
 function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
   const theme = resolveCategoryTheme(index);
   const catSlug = safeSlug(cat.displayName || "category");
-  const imageUrl = cat.icon || cat.category?.image || "https://images.unsplash.com/photo-1595113316349-9fa4ee24f884?auto=format&fit=crop&w=800&q=80";
+  const imageUrl = cat.image || cat.category?.image || "https://images.unsplash.com/photo-1595113316349-9fa4ee24f884?auto=format&fit=crop&w=800&q=80";
 
   return (
     <motion.div variants={cardVariants} className="flex-shrink-0 group">
@@ -155,7 +155,7 @@ export default function CategoriesSectionV5({ store }: { store: StoreForm | null
       .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   }, [store]);
 
-  const isFew = categoriesToShow.length > 0 && categoriesToShow.length <= 2;
+  const isFew = categoriesToShow.length > 0 && categoriesToShow.length <= 4;
 
   const subcategoriesForGrid = useMemo(() => {
     if (!isFew) return [];
