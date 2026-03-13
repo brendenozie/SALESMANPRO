@@ -9,9 +9,9 @@ const VERCEL_TOKEN = process.env.VERCEL_TOKEN;
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID;
 const VERCEL_TEAM_ID = process.env.VERCEL_TEAM_ID;
 
-if (!VERCEL_TOKEN || !VERCEL_PROJECT_ID) {
-  throw new Error("Missing Vercel environment configuration");
-}
+// if (!VERCEL_TOKEN || !VERCEL_PROJECT_ID) {
+//   throw new Error("Missing Vercel environment configuration");
+// }
 
 const domainSchema = z.object({
   domain: z
