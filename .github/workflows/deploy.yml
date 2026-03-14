@@ -31,9 +31,10 @@ jobs:
             git pull origin main
 
             echo "📦 Installing dependencies..."
-            # Using --legacy-peer-deps can sometimes reduce memory overhead during install
-            #npm install --legacy-peer-deps
-            npm ci
+            echo "🧹 Cleaning up node_modules..."
+            rm -rf node_modules
+            echo "📦 Installing clean dependencies..."
+            npm install --frozen-lockfile
 
             echo "🏗️ Building Next.js app..."
             # Explicitly setting the memory limit here as well
