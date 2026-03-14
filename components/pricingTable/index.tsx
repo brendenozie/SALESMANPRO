@@ -120,6 +120,18 @@ export default function PricingSectionRedesign() {
 
   // State to manage the collapse/expand feature on mobile
   const [isFeaturesExpanded, setIsFeaturesExpanded] = useState<{ [key: string]: boolean }>({});
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const checkViewport = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+
+    checkViewport(); // run on mount
+    window.addEventListener("resize", checkViewport);
+
+    return () => window.removeEventListener("resize", checkViewport);
+  }, []);
 
     useEffect(() => {
     const fetchPlans = async () => {
@@ -283,7 +295,7 @@ export default function PricingSectionRedesign() {
                   {/* Detailed Feature List - Visible on Desktop, Collapsible on Mobile */}
                   <Motion.div
                     initial={false}
-                    animate={isFeaturesExpanded[plan.id] || window.innerWidth >= 768 ? "open" : "collapsed"} // Animate based on state or viewport width
+                    animate={isDesktop || isFeaturesExpanded[plan.id] ? "open" : "collapsed"} // Animate based on state or viewport width
                     variants={{
                       open: { height: "auto", opacity: 1 },
                       collapsed: { height: 0, opacity: 0.5 },
