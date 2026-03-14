@@ -32,7 +32,8 @@ jobs:
 
             echo "📦 Installing dependencies..."
             # Using --legacy-peer-deps can sometimes reduce memory overhead during install
-            npm install --legacy-peer-deps
+            #npm install --legacy-peer-deps
+            npm ci
 
             echo "🏗️ Building Next.js app..."
             # Explicitly setting the memory limit here as well
