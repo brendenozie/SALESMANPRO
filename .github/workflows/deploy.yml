@@ -32,7 +32,7 @@ jobs:
             if [ ! -d ".git" ]; then
               echo "🚀 Repository not found. Cloning for the first time..."
               # REPLACE 'username/repo' with your actual repo path
-              git clone https://github.com/your-username/your-repo-name.git .
+              git clone https://github.com/brendenozie/SALESMANPRO.git .
             else
               echo "📥 Pulling latest code..."
               git fetch --all
