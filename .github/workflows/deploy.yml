@@ -1,4 +1,4 @@
-name: Auto Deploy Next.js to VPS (Build & Sync)
+name: Auto Deploy Next.js to VPS (Build on Server)
 
 on:
   push:
@@ -13,19 +13,24 @@ jobs:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 📦 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "npm"
+      - name: 🔐 Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      - name: 📦 Install Dependencies
-        run: npm ci
+      - name: 🚀 Deploy & Build on VPS
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+            cd /var/www/app
 
-      - name: 🏗️ Build Next.js App
-        run: npm run build
-        env:
-          # ALL your environment variables go here so they are baked into the build
+            echo "📥 Pulling latest code..."
+            git pull origin main
+
+            echo "📝 Creating .env file..."
+            cat <<EOT > .env
+            # ALL your environment variables go here so they are baked into the build
           NODE_ENV: production
           NEXT_PUBLIC_BASE_URL: https://salesmanpro.site
           NEXT_PUBLIC_API_URL: https://salesmanpro.site/api
@@ -92,35 +97,16 @@ jobs:
           SENTRY_ENVIRONMENT: production
           SENTRY_TRACES_SAMPLE_RATE: 0.2
 
-      - name: 🔐 Setup SSH Key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+            EOT
 
-      - name: 🚀 Sync Files to VPS
-        run: |
-          # Syncs only the necessary production files
-          # --delete ensures old files on the VPS are removed
-          rsync -avz --delete -e "ssh -i ~/.ssh/id_ed25519" \
-            .next/ \
-            public/ \
-            package.json \
-            package-lock.json \
-            next.config.mjs \
-            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/app/
+            echo "📦 Installing dependencies..."
+            npm install # Using 'install' here to ensure devDeps for the build
 
-      - name: 🔄 Refresh VPS & Restart PM2
-        run: |
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
-            cd /var/www/app
-            
-            echo "📦 Installing production dependencies..."
-            npm ci --omit=dev
-            
+            echo "🏗️ Building Next.js app on VPS..."
+            npm run build
+
             echo "🔁 Restarting Next.js server..."
             pm2 restart my-app-dev || pm2 start npm --name "my-app-dev" -- start
-            
+
             echo "🎉 Deployment successful!"
           EOF
