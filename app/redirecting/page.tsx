@@ -7,9 +7,9 @@ import { encode } from "next-auth/jwt"; // You might need to install `next-auth/
 
 const JWT_SECRET = process.env.NEXT_PUBLIC_NEXTAUTH_SECRET!;
 
-if (!JWT_SECRET) {
-  throw new Error("NEXT_PUBLIC_NEXTAUTH_SECRET is not set!");
-}
+// if (!JWT_SECRET) {
+//   throw new Error("NEXT_PUBLIC_NEXTAUTH_SECRET is not set!");
+// }
 
 // A simple utility to encode the token on the client.
 // NOTE: This exposes your JWT logic slightly, but is a common pattern for this problem.

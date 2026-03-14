@@ -69,7 +69,7 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   // We explicitly pass the secret and handle both secure and non-secure cookie names
   const session = await getToken({ 
     req: request,
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: process.env.NEXTAUTH_SECRET || process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
     // This ensures it works on both localhost (http) and production (https)
     cookieName: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token'
   });
