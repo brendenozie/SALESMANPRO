@@ -1,4 +1,4 @@
-name: Auto Deploy Next.js to VPS
+name: Auto Deploy Next.js to VPS (Build & Sync)
 
 on:
   push:
@@ -17,6 +17,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: "npm"
 
       - name: 📦 Install Dependencies
         run: npm ci
@@ -24,6 +25,7 @@ jobs:
       - name: 🏗️ Build Next.js App
         run: npm run build
         env:
+          # ALL your environment variables go here so they are baked into the build
           NODE_ENV: production
           NEXT_PUBLIC_BASE_URL: https://salesmanpro.site
           NEXT_PUBLIC_API_URL: https://salesmanpro.site/api
@@ -97,22 +99,28 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      - name: 🚀 Deploy to VPS
+      - name: 🚀 Sync Files to VPS
+        run: |
+          # Syncs only the necessary production files
+          # --delete ensures old files on the VPS are removed
+          rsync -avz --delete -e "ssh -i ~/.ssh/id_ed25519" \
+            .next/ \
+            public/ \
+            package.json \
+            package-lock.json \
+            next.config.mjs \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/app/
+
+      - name: 🔄 Refresh VPS & Restart PM2
         run: |
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
-
-            echo "🔐 Changing to project directory..."
             cd /var/www/app
-
-            echo "📥 Pulling latest code..."
-            git pull origin main
-
+            
             echo "📦 Installing production dependencies..."
             npm ci --omit=dev
-
+            
             echo "🔁 Restarting Next.js server..."
             pm2 restart my-app-dev || pm2 start npm --name "my-app-dev" -- start
-
+            
             echo "🎉 Deployment successful!"
-
           EOF
