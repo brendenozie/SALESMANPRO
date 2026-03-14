@@ -31,13 +31,17 @@ jobs:
             git pull origin main
 
             echo "📦 Installing dependencies..."
-            npm ci
+            # Using --legacy-peer-deps can sometimes reduce memory overhead during install
+            npm install --legacy-peer-deps
 
             echo "🏗️ Building Next.js app..."
+            # Explicitly setting the memory limit here as well
+            export NODE_OPTIONS="--max-old-space-size=6144"
             npm run build
 
             echo "🔁 Restarting Next.js server..."
-            pm2 restart my-app-dev || pm2 start "npm start" --name my-app-dev
+            #pm2 restart my-app-dev || pm2 start "npm start" --name my-app-dev
+            pm2 restart my-app-dev --update-env || pm2 start npm --name "my-app-dev" --node-args="--max-old-space-size=2048" -- start
 
             echo "🎉 Deployment successful!"
           EOF
