@@ -1,6 +1,6 @@
 import crypto from "crypto";
 
-const MASTER_KEY = Buffer.from(process.env.MASTER_ENCRYPTION_KEY || "", "hex"); 
+const MASTER_KEY = Buffer.from(process.env.MASTER_ENCRYPTION_KEY || process.env.NEXT_PUBLIC_MASTER_ENCRYPTION_KEY, "hex"); 
 // Must be 32 bytes (256 bit)
 
 if (MASTER_KEY.length !== 32) {
