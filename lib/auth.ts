@@ -13,10 +13,13 @@ import { randomBytes, randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import { decode, encode } from "next-auth/jwt";
 
-const baseUrl = process.env.NEXTAUTH_URL || "https://salesmanpro.site";
+const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_NEXTAUTH_URL || "https://salesmanpro.site";
 // ⚠️ IMPORTANT: This secret MUST be the *exact same*
 // environment variable as your auth app.
-const aSharedSecret = process.env.NEXTAUTH_SECRET;
+const aSharedSecret = process.env.NEXTAUTH_SECRET || process.env.NEXT_PUBLIC_NEXTAUTH_SECRET;
+
+const googleClientId = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET;
 
 if (!aSharedSecret) {
   throw new Error("NEXTAUTH_SECRET is not set!");
@@ -256,8 +259,8 @@ export const authOptions: NextAuthOptions = {
 
     // ✅ OAuth Providers
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET!,
       // authorization: {
       //   params: {
       //     redirect_uri: `https://auth.salesmanpro.site/api/auth/callback/google`,
