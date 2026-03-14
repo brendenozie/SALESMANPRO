@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthSession } from "@/lib/auth"; // adjust this import path
 import { encode } from "next-auth/jwt";
 
+const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET || process.env.NEXT_PUBLIC_NEXTAUTH_SECRET;
+
 export async function GET(req: NextRequest) {
   const target = req.nextUrl.searchParams.get("target") || "https://salesmanpro.site";
 
@@ -29,7 +31,7 @@ export async function GET(req: NextRequest) {
       // include id as `sub` for compatibility
       sub: userId,
     };
-    const token = await encode({ token: tokenPayload, secret: process.env.NEXTAUTH_SECRET! });
+    const token = await encode({ token: tokenPayload, secret: NEXTAUTH_SECRET! });
     return NextResponse.redirect(`${target}?auth=success&token=${token}`);
 
 

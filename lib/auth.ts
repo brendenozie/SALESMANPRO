@@ -21,9 +21,9 @@ const aSharedSecret = process.env.NEXTAUTH_SECRET || process.env.NEXT_PUBLIC_NEX
 const googleClientId = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET;
 
-if (!aSharedSecret) {
-  throw new Error("NEXTAUTH_SECRET is not set!");
-}
+// if (!aSharedSecret) {
+//   throw new Error("NEXTAUTH_SECRET is not set!");
+// }
 
 // ✅ Utility: find existing user by email
 async function findExistingUserByEmail(email: string) {
@@ -107,7 +107,7 @@ export const authOptions: NextAuthOptions = {
               // Decode the token using the shared secret
               const decodedToken = await decode({
                 token: credentials.token,
-                secret: aSharedSecret,
+                secret: aSharedSecret!,
               });
     
               if (!decodedToken || !decodedToken.email) {
