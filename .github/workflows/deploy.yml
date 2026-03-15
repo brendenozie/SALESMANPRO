@@ -31,10 +31,9 @@ jobs:
             git pull origin main
 
             echo "📦 Installing dependencies..."
-            echo "🧹 Cleaning up node_modules..."
-            rm -rf node_modules
-            echo "📦 Installing clean dependencies..."
-            npm install --frozen-lockfile
+            # Using --legacy-peer-deps can sometimes reduce memory overhead during install
+            #npm install --legacy-peer-deps
+            npm ci
 
             echo "🏗️ Building Next.js app..."
             # Explicitly setting the memory limit here as well
@@ -42,8 +41,9 @@ jobs:
             npm run build
 
             echo "🔁 Restarting Next.js server..."
-            #pm2 restart my-app-dev || pm2 start "npm start" --name my-app-dev
-            pm2 restart my-app-dev --update-env || pm2 start npm --name "my-app-dev" --node-args="--max-old-space-size=2048" -- start
+            pm2 restart my-app-dev || pm2 start "npm start" --name my-app-dev
+            #pm2 restart my-app-dev --update-env || pm2 start npm --name "my-app-dev" --node-args="--max-old-space-size=2048" -- start
+            
 
             echo "🎉 Deployment successful!"
           EOF
