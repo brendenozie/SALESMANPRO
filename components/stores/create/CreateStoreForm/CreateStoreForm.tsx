@@ -1837,7 +1837,7 @@ const StepContent = useMemo(() => {
       seo: { 
         label: "Optimize SEO", 
         section: "seo", 
-        color: "from-indigo-500 to-purple-500",
+        color: "from-gray-500 to-gray-700",
         desc: "Let AI write high-ranking titles and meta descriptions."
       },
       pricing: { 
@@ -1913,17 +1913,17 @@ const StepContent = useMemo(() => {
         {allSteps.map((s: any, i: number) => (
           <div
             key={s.key}
-            className="group p-5 border rounded-xl bg-white hover:border-indigo-300 hover:shadow-sm transition-all cursor-pointer"
+            className="group p-5 border rounded-xl bg-white hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer"
             onClick={() => setStepIndex(i)}
           >
             <div className="flex justify-between items-center mb-3">
               <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs">
+                <span className="w-6 h-6 rounded-full bg-gray-50 text-gray-600 flex items-center justify-center text-xs">
                   {i + 1}
                 </span>
                 {s.title}
               </h3>
-              <span className="text-sm font-medium text-indigo-500 group-hover:underline">Edit Step ➔</span>
+              <span className="text-sm font-medium text-gray-500 group-hover:underline">Edit Step ➔</span>
             </div>
             <div className="text-gray-600 text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
               {renderReviewContent(s.key, form)}
@@ -1962,7 +1962,7 @@ const StepContent = useMemo(() => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-indigo-700 to-purple-800 bg-opacity-95 backdrop-blur-md"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-gray-900 to-black bg-opacity-95 backdrop-blur-md"
       >
         <motion.div
           initial={{ y: -50, opacity: 0 }}
@@ -1977,9 +1977,9 @@ const StepContent = useMemo(() => {
         >
           {/* Advanced Spinner: Concentric Circles */}
           <div className="relative w-16 h-16 mb-6">
-            <div className="absolute inset-0 border-4 border-t-4 border-indigo-200 rounded-full animate-spin-slow"></div>
-            <div className="absolute inset-2 border-4 border-r-4 border-indigo-400 rounded-full animate-spin-medium"></div>
-            <div className="absolute inset-4 border-4 border-b-4 border-indigo-600 rounded-full animate-spin-fast"></div>
+            <div className="absolute inset-0 border-4 border-t-4 border-gray-300 rounded-full animate-spin-slow"></div>
+            <div className="absolute inset-2 border-4 border-r-4 border-gray-400 rounded-full animate-spin-medium"></div>
+            <div className="absolute inset-4 border-4 border-b-4 border-gray-600 rounded-full animate-spin-fast"></div>
           </div>
 
           <p className="text-2xl font-bold text-gray-900 mb-2 leading-snug">
@@ -2002,7 +2002,7 @@ const StepContent = useMemo(() => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 bg-opacity-95 backdrop-blur-md"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-600 to-gray-600 bg-opacity-95 backdrop-blur-md"
       >
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
@@ -2026,7 +2026,7 @@ const StepContent = useMemo(() => {
               repeat: Infinity,
               ease: "easeInOut",
             }}
-            className="w-20 h-20 mb-6 flex items-center justify-center bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"
+            className="w-20 h-20 mb-6 flex items-center justify-center bg-gradient-to-r from-gray-500 to-gray-500 rounded-full"
           >
             <SparklesIcon className="w-12 h-12 text-white" />
           </motion.div>
@@ -2069,7 +2069,7 @@ const StepContent = useMemo(() => {
     )}
 
     {/* Mobile Top Bar with Step Info - REMAINS FOR MOBILE CONTEXT */}
-    <div className="md:hidden bg-indigo-600 text-white py-2 px-4 flex justify-between items-center shadow-sm sticky top-0 z-30">
+    <div className="md:hidden bg-gray-600 text-white py-2 px-4 flex justify-between items-center shadow-sm sticky top-0 z-30">
       <span className="font-medium text-sm">
         Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}
       </span>
@@ -2086,7 +2086,7 @@ const StepContent = useMemo(() => {
       }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
     >
-      <h2 className="text-xl font-semibold mb-6 text-indigo-700">
+      <h2 className="text-xl font-semibold mb-6 text-gray-700">
         Setup Wizard
       </h2>
       <nav className="flex flex-col gap-4 overflow-y-auto">
@@ -2101,7 +2101,7 @@ const StepContent = useMemo(() => {
                 ${completed ? "bg-green-100 text-green-800" : ""}
                 ${
                   active
-                    ? "bg-indigo-100 text-indigo-800 font-medium shadow-inner"
+                    ? "bg-gray-100 text-gray-800 font-medium shadow-inner"
                     : "hover:bg-gray-100 text-gray-700"
                 }`}
             >
@@ -2111,8 +2111,8 @@ const StepContent = useMemo(() => {
                       completed
                         ? "bg-green-600 text-white"
                         : active
-                        ? "bg-indigo-600 text-white"
-                        : "bg-indigo-200 text-indigo-700"
+                        ? "bg-gray-600 text-white"
+                        : "bg-gray-200 text-gray-700"
                     }`}
               >
                 {completed ? <CheckCircleIcon className="w-4 h-4" /> : i + 1}
@@ -2156,7 +2156,7 @@ const StepContent = useMemo(() => {
         <div className="relative mb-4">
           <div className="h-2 bg-gray-200 rounded-full">
             <div
-              className="h-full bg-indigo-600 rounded-full transition-all duration-300"
+              className="h-full bg-gray-600 rounded-full transition-all duration-300"
               style={{ width: `${percent}%` }}
             />
           </div>
@@ -2168,7 +2168,7 @@ const StepContent = useMemo(() => {
                 className={`w-3 h-3 rounded-full focus:outline-none
                       ${
                         i <= stepIndex
-                          ? "bg-indigo-600"
+                          ? "bg-gray-600"
                           : "bg-white border border-gray-300"
                       }`}
               />
@@ -2205,7 +2205,7 @@ const StepContent = useMemo(() => {
           <button
             type="button"
             onClick={next}
-            className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 text-sm"
+            className="px-4 py-2 rounded-md bg-gray-600 text-white hover:bg-gray-700 text-sm"
           >
             Continue →
           </button>
