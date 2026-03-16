@@ -15,9 +15,11 @@ jobs:
 
       - name: Install SSH key
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_KEY }}" > ~/.ssh/id_ed25519
+          install -m 0700 -d ~/.ssh
+          # Use 'printf' to preserve newlines in the private key
+          printf '%s\n' "${{ secrets.VPS_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
+          # Add the host to known_hosts to prevent the "Host verification" hang
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
       - name: 🚀 Deploy to VPS
