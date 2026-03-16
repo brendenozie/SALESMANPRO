@@ -45,7 +45,7 @@ module.exports = {
   },
   experimental: {
     workerThreads: false, // Disable worker threads to reduce memory usage
-    cpus: 2, // Limit to 2 CPU cores to prevent excessive memory usage
+    cpus: 1, // Limit to 1 CPU core to prevent excessive memory usage
   },
 //   async headers() {
 //     return [
