@@ -1,9 +1,9 @@
-name: 🚀 Auto Deploy Next.js to VPS
+name: 🚀 Auto Deploy SalesmanPro to VPS
 
 on:
   push:
     branches:
-      - main # Deploy when pushing to main branch
+      - main
 
 jobs:
   deploy:
@@ -13,44 +13,42 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # - name: Install SSH key
-      #   run: |
-      #     mkdir -p ~/.ssh
-      #     echo "${{ secrets.VPS_KEY }}" > ~/.ssh/id_ed25519
-      #     chmod 600 ~/.ssh/id_ed25519
-      #     ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+      - name: Install SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_KEY_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
       - name: 🚀 Deploy to VPS
-        uses: appleboy/ssh-action@v0.1.5
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+            # Load NVM/Node paths (Critical for non-root users)
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
-          script: |
-            #ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+            echo "🔐 Changing to project directory..."
+            cd /var/www/salesmanpro
 
-              echo "🔐 Changing to project directory..."
-              cd /var/www/salesmanpro
+            echo "📥 Pulling latest code..."
+            git pull origin main
 
-              echo "📥 Pulling latest code..."
-              git pull origin main
+            echo "📦 Installing dependencies..."
+            # 'npm ci' is faster and more reliable for production
+            npm ci
 
-              echo "📦 Installing dependencies..."
-              # Using --legacy-peer-deps can sometimes reduce memory overhead during install
-              #npm install --legacy-peer-deps
-              npm ci
+            echo "🏗️ Building Next.js app..."
+            # Leveraging your 8GB RAM capacity
+            export NODE_OPTIONS="--max-old-space-size=6144"
+            npm run build
 
-              echo "🏗️ Building Next.js app..."
-              # Explicitly setting the memory limit here as well
-              export NODE_OPTIONS="--max-old-space-size=6144"
-              npm run build
+            echo "🔁 Reloading Server..."
+            # Using reload instead of restart for zero-downtime
+            # This looks for the name defined in your ecosystem.config.js
+            pm2 reload ecosystem.config.js || pm2 start ecosystem.config.js
+            
+            # Save the PM2 state to ensure it persists after a reboot
+            pm2 save
 
-              echo "🔁 Restarting Next.js server..."
-              pm2 reload salesmanpro --update-env || pm2 start npm --name "salesmanpro" --node-args="--max-old-space-size=6144" -- start
-              #pm2 restart my-app-dev || pm2 start "npm start" --name my-app-dev
-              #pm2 restart my-app-dev --update-env || pm2 start npm --name "my-app-dev" --node-args="--max-old-space-size=2048" -- start
-              
-
-              echo "🎉 Deployment successful!"
-              EOF
+            echo "🎉 Deployment successful!"
+          EOF
