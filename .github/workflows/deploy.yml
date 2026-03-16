@@ -37,7 +37,7 @@ jobs:
 
             echo "🏗️ Building Next.js app..."
             # Explicitly setting the memory limit here as well
-            export NEXT_PRIVATE_MAX_WORKER_THREADS=1
+            export NEXT_PRIVATE_MAX_WORKER_THREADS=2
             export NODE_OPTIONS="--max-old-space-size=4096"
             npm run build
 
