@@ -41,7 +41,8 @@ jobs:
             npm run build
 
             echo "🔁 Restarting Next.js server..."
-            pm2 restart my-app-dev || pm2 start "npm start" --name my-app-dev
+            pm2 reload salesmanpro --update-env || pm2 start npm --name "salesmanpro" --node-args="--max-old-space-size=6144" -- start
+            #pm2 restart my-app-dev || pm2 start "npm start" --name my-app-dev
             #pm2 restart my-app-dev --update-env || pm2 start npm --name "my-app-dev" --node-args="--max-old-space-size=2048" -- start
             
 
