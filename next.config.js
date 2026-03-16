@@ -11,7 +11,6 @@ module.exports = {
     ignoreBuildErrors: true,  // disables heavy type checking during build
   },
   productionBrowserSourceMaps: false,
-  output: "standalone",
   env: {
     DATABASE_URL: process.env.DATABASE_URL ?? "",
   },
