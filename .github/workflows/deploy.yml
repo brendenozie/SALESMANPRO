@@ -25,7 +25,7 @@ jobs:
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
 
             echo "🔐 Changing to project directory..."
-            cd /var/www/app
+            cd /var/www/salesmanpro
 
             echo "📥 Pulling latest code..."
             git pull origin main

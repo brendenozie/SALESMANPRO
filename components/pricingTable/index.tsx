@@ -219,7 +219,7 @@ export default function PricingSectionRedesign() {
             variants={containerVariants}
             viewport={{ once: true, amount: 0.2 }}
           >
-            {plans.map((plan) => (
+            {plans && plans.length > 0 && plans.map((plan) => (
               <Motion.div
                 key={plan.id}
                 className={`relative flex flex-col w-72 md:w-auto p-8 rounded-3xl transition-all duration-500
