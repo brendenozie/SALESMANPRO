@@ -13,38 +13,44 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+      # - name: Install SSH key
+      #   run: |
+      #     mkdir -p ~/.ssh
+      #     echo "${{ secrets.VPS_KEY }}" > ~/.ssh/id_ed25519
+      #     chmod 600 ~/.ssh/id_ed25519
+      #     ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
       - name: 🚀 Deploy to VPS
-        run: |
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_KEY }}
 
-            echo "🔐 Changing to project directory..."
-            cd /var/www/salesmanpro
+          script: |
+            #ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
 
-            echo "📥 Pulling latest code..."
-            git pull origin main
+              echo "🔐 Changing to project directory..."
+              cd /var/www/salesmanpro
 
-            echo "📦 Installing dependencies..."
-            # Using --legacy-peer-deps can sometimes reduce memory overhead during install
-            #npm install --legacy-peer-deps
-            npm ci
+              echo "📥 Pulling latest code..."
+              git pull origin main
 
-            echo "🏗️ Building Next.js app..."
-            # Explicitly setting the memory limit here as well
-            export NODE_OPTIONS="--max-old-space-size=6144"
-            npm run build
+              echo "📦 Installing dependencies..."
+              # Using --legacy-peer-deps can sometimes reduce memory overhead during install
+              #npm install --legacy-peer-deps
+              npm ci
 
-            echo "🔁 Restarting Next.js server..."
-            pm2 reload salesmanpro --update-env || pm2 start npm --name "salesmanpro" --node-args="--max-old-space-size=6144" -- start
-            #pm2 restart my-app-dev || pm2 start "npm start" --name my-app-dev
-            #pm2 restart my-app-dev --update-env || pm2 start npm --name "my-app-dev" --node-args="--max-old-space-size=2048" -- start
-            
+              echo "🏗️ Building Next.js app..."
+              # Explicitly setting the memory limit here as well
+              export NODE_OPTIONS="--max-old-space-size=6144"
+              npm run build
 
-            echo "🎉 Deployment successful!"
-          EOF
+              echo "🔁 Restarting Next.js server..."
+              pm2 reload salesmanpro --update-env || pm2 start npm --name "salesmanpro" --node-args="--max-old-space-size=6144" -- start
+              #pm2 restart my-app-dev || pm2 start "npm start" --name my-app-dev
+              #pm2 restart my-app-dev --update-env || pm2 start npm --name "my-app-dev" --node-args="--max-old-space-size=2048" -- start
+              
+
+              echo "🎉 Deployment successful!"
+              EOF
