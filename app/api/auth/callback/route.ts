@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthSession } from "@/lib/auth"; // adjust this import path
 import { encode } from "next-auth/jwt";
 
-const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET || process.env.NEXT_PUBLIC_NEXTAUTH_SECRET;
+const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET!;
 
 export async function GET(req: NextRequest) {
   const target = req.nextUrl.searchParams.get("target") || "https://salesmanpro.site";

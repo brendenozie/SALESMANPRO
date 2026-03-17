@@ -3,6 +3,7 @@
 import { getToken } from "next-auth/jwt";
 import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 import { getClientIp } from "./lib/readIP";
+import { getAuthSession } from "./lib/auth";
 
 // Your app’s main host
 const PRIMARY_HOST = "salesmanpro.site";
@@ -67,12 +68,14 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   const isLocalNetwork = isPrivateIp(clientIp);
 
   // We explicitly pass the secret and handle both secure and non-secure cookie names
-  const session = await getToken({ 
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET || process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
-    // This ensures it works on both localhost (http) and production (https)
-    cookieName: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token'
-  });
+  // const session = await getToken({ 
+  //   req: request,
+  //   secret: process.env.NEXTAUTH_SECRET || process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
+  //   // This ensures it works on both localhost (http) and production (https)
+  //   cookieName: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token'
+  // });
+
+  const session = await getAuthSession();
 
   // 1. PREVENT REDIRECT LOOPS
   // Only redirect to login if we are NOT already there and NOT in an auth API call
