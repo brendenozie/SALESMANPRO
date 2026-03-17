@@ -259,8 +259,8 @@ export const authOptions: NextAuthOptions = {
 
     // ✅ OAuth Providers
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET!,
+      clientId: googleClientId,
+      clientSecret: googleClientSecret,
       // authorization: {
       //   params: {
       //     redirect_uri: `https://auth.salesmanpro.site/api/auth/callback/google`,
