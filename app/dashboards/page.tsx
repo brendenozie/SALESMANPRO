@@ -5,13 +5,10 @@ import { motion } from 'framer-motion';
 import {
   BuildingStorefrontIcon,
   ArrowRightIcon,
-  Squares2X2Icon,
-  ChartBarIcon,
-  UserGroupIcon,
-  Cog6ToothIcon,
   ArrowLeftOnRectangleIcon,
   PlusIcon
 } from '@heroicons/react/24/outline';
+import fit1 from "@/assets/fit1.png";
 import { useSession, signOut } from 'next-auth/react';
 
 const WelcomePage = () => {
@@ -39,10 +36,20 @@ const WelcomePage = () => {
       {/* Top Bar */}
       <nav className="max-w-7xl mx-auto flex justify-between items-center mb-12">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 bg-black rounded flex items-center justify-center text-white">
-            <Squares2X2Icon className="w-5 h-5" />
-          </div>
-          <span className="font-bold tracking-tight text-lg text-orange-500">SalesmanPro</span>
+          {/* Brand */}
+              <div className="flex items-center gap-2 group">
+                <div className="relative">
+                  <img
+                    src={fit1.src}
+                    alt="Logo"
+                    className="w-8 h-8 md:w-9 md:h-9 object-contain group-hover:rotate-12 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-orange-500/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <span className="text-xl font-black tracking-tighter text-slate-900 dark:text-white transition-colors">
+                  Salesman<span className="text-orange-600">Pro</span>
+                </span>
+              </div>
         </div>
         <button 
           onClick={() => signOut({ callbackUrl: '/' })}
