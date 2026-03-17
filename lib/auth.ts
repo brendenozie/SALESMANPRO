@@ -292,42 +292,36 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
 
     async redirect({ url, baseUrl }) {
-      // 1. Define your Hub and Auth domains clearly
       const HUB_URL = "https://salesmanpro.site";
-      const AUTH_HOST = new URL(baseUrl).hostname; // auth.salesmanpro.site
+      const AUTH_HOST = new URL(baseUrl).hostname;
 
-      // 2. Resolve the absolute destination URL
-      // This helps us analyze where the user *wants* to go
       const finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
 
       try {
         const targetUrlObj = new URL(finalRedirectUrl);
         const targetHost = targetUrlObj.hostname;
 
-        // 3. Logic for Main Hub (The "Home Base")
         const mainHubDomains = ["salesmanpro.site", "www.salesmanpro.site"];
-        
-        // If they are heading to the Hub OR if they are at the root of the Auth server
-        if (mainHubDomains.includes(targetHost) || (targetHost === AUTH_HOST && targetUrlObj.pathname === "/")) {
-          // ✅ FIX: We return the HUB_URL, not baseUrl
-          return `${HUB_URL}/dashboards`;
-        }
 
-        // 4. Logic for Internal Auth Redirects (e.g., /settings on auth server)
-        // Only stay on auth.salesmanpro.site if it's a specific internal page that isn't the root
-        if (finalRedirectUrl.startsWith(baseUrl) && targetUrlObj.pathname !== "/") {
+        // ✅ 1. INTERNAL auth routes (safe, session exists)
+        if (targetHost === AUTH_HOST && targetUrlObj.pathname !== "/") {
           return finalRedirectUrl;
         }
 
-        // 5. Logic for Tenants (subdomain.salesmanpro.site or customdomain.com)
-        // We go to the Auth Server's handover route to generate the token
+        // ✅ 2. EVERYTHING ELSE (hub, tenants, custom domains)
+        // MUST go through handover to preserve session
         const handoverUrl = new URL("/api/auth/callback", baseUrl);
-        handoverUrl.searchParams.set("target", finalRedirectUrl);
-        
+
+        // 👉 If going to root hub, upgrade to /dashboards
+        if (mainHubDomains.includes(targetHost)) {
+          handoverUrl.searchParams.set("target", `${HUB_URL}/dashboards`);
+        } else {
+          handoverUrl.searchParams.set("target", finalRedirectUrl);
+        }
+
         return handoverUrl.toString();
 
       } catch (error) {
-        // If the URL is broken, send them to the Hub Dashboard as a safe default
         return `${HUB_URL}/dashboards`;
       }
     },
