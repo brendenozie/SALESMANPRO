@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
         sub: (session.user as any).id 
       },
       secret: process.env.NEXTAUTH_SECRET!,
+      maxAge: 30 * 24 * 60 * 60, // Matches your session maxAge (e.g., 30 days)
     });
 
     const destination = new URL(target);
