@@ -5,7 +5,11 @@ import { getAuthSession } from "@/lib/auth";
 import { encode } from "next-auth/jwt";
 
 export async function GET(req: NextRequest) {
-  const target = req.nextUrl.searchParams.get("target") || "https://salesmanpro.site";
+  // 1. Get target and ensure it's an absolute URL to prevent `new URL()` crashes
+  const rawTarget = req.nextUrl.searchParams.get("target") || "https://salesmanpro.site";
+  const target = rawTarget.startsWith("http") 
+    ? rawTarget 
+    : `https://salesmanpro.site${rawTarget.startsWith('/') ? '' : '/'}${rawTarget}`;
 
   try {
     const session = await getAuthSession();
@@ -14,16 +18,24 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(`${target}?auth=failed`);
     }
 
-    // ✅ SECURE: Encoding happens on the server where the secret is safe
-    const token = await encode({
-      token: { 
-        ...session.user, 
-        id: (session.user as any).id,
-        sub: (session.user as any).id 
-      },
-      secret: process.env.NEXTAUTH_SECRET!,
+    // 2. YOUR ORIGINAL SAFE PAYLOAD BUILDER
+    // This strips out complex objects and ensures `id` is a string
+    const userId = String((session.user as any)?.id ?? (session.user?.email ?? ""));
+    const tokenPayload = {
+      name: session.user?.name,
+      email: session.user?.email,
+      image: session.user?.image,
+      id: userId,     // Required by NextAuth JWT
+      sub: userId,    // Required for standard JWT compatibility
+    };
+
+    // 3. Encode safely
+    const token = await encode({ 
+      token: tokenPayload, 
+      secret: process.env.NEXTAUTH_SECRET! 
     });
 
+    // 4. Build the final URL securely
     const destination = new URL(target);
     destination.searchParams.set("auth_token", token);
     destination.searchParams.set("auth", "success");
@@ -31,10 +43,46 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(destination.toString());
 
   } catch (err) {
-    console.error("Critical Handover Error:", err);
+    console.error("Auth Handover Error:", err);
+    // Safe fallback if anything fails
     return NextResponse.redirect(`${target}?auth=error`);
   }
 }
+// import { NextRequest, NextResponse } from "next/server";
+// import { getAuthSession } from "@/lib/auth";
+// import { encode } from "next-auth/jwt";
+
+// export async function GET(req: NextRequest) {
+//   const target = req.nextUrl.searchParams.get("target") || "https://salesmanpro.site";
+
+//   try {
+//     const session = await getAuthSession();
+
+//     if (!session) {
+//       return NextResponse.redirect(`${target}?auth=failed`);
+//     }
+
+//     // ✅ SECURE: Encoding happens on the server where the secret is safe
+//     const token = await encode({
+//       token: { 
+//         ...session.user, 
+//         id: (session.user as any).id,
+//         sub: (session.user as any).id 
+//       },
+//       secret: process.env.NEXTAUTH_SECRET!,
+//     });
+
+//     const destination = new URL(target);
+//     destination.searchParams.set("auth_token", token);
+//     destination.searchParams.set("auth", "success");
+
+//     return NextResponse.redirect(destination.toString());
+
+//   } catch (err) {
+//     console.error("Critical Handover Error:", err);
+//     return NextResponse.redirect(`${target}?auth=error`);
+//   }
+// }
 // import { NextRequest, NextResponse } from "next/server";
 // import { getAuthSession } from "@/lib/auth"; // adjust this import path
 // import { encode } from "next-auth/jwt";
