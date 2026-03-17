@@ -67,7 +67,7 @@ const WelcomePage = () => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
           >
-            <span className="text-sm font-bold text-orange-500 tracking-widest uppercase">Console v3.0</span>
+            
             <h1 className="text-5xl md:text-6xl font-black mt-4 mb-6 tracking-tight leading-none">
               {greeting},<br />
               <span className="text-slate-400">{userName}.</span>

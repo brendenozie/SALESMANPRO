@@ -291,6 +291,46 @@ export const authOptions: NextAuthOptions = {
   // ✅ AUTO-LINK OAUTH LOGINS HERE
   callbacks: {
 
+    async redirect({ url, baseUrl }) {
+      // 1. Define your Hub and Auth domains clearly
+      const HUB_URL = "https://salesmanpro.site";
+      const AUTH_HOST = new URL(baseUrl).hostname; // auth.salesmanpro.site
+
+      // 2. Resolve the absolute destination URL
+      // This helps us analyze where the user *wants* to go
+      const finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
+
+      try {
+        const targetUrlObj = new URL(finalRedirectUrl);
+        const targetHost = targetUrlObj.hostname;
+
+        // 3. Logic for Main Hub (The "Home Base")
+        const mainHubDomains = ["salesmanpro.site", "www.salesmanpro.site"];
+        
+        // If they are heading to the Hub OR if they are at the root of the Auth server
+        if (mainHubDomains.includes(targetHost) || (targetHost === AUTH_HOST && targetUrlObj.pathname === "/")) {
+          // ✅ FIX: We return the HUB_URL, not baseUrl
+          return `${HUB_URL}/dashboards`;
+        }
+
+        // 4. Logic for Internal Auth Redirects (e.g., /settings on auth server)
+        // Only stay on auth.salesmanpro.site if it's a specific internal page that isn't the root
+        if (finalRedirectUrl.startsWith(baseUrl) && targetUrlObj.pathname !== "/") {
+          return finalRedirectUrl;
+        }
+
+        // 5. Logic for Tenants (subdomain.salesmanpro.site or customdomain.com)
+        // We go to the Auth Server's handover route to generate the token
+        const handoverUrl = new URL("/api/auth/callback", baseUrl);
+        handoverUrl.searchParams.set("target", finalRedirectUrl);
+        
+        return handoverUrl.toString();
+
+      } catch (error) {
+        // If the URL is broken, send them to the Hub Dashboard as a safe default
+        return `${HUB_URL}/dashboards`;
+      }
+    },
     // async redirect({ url, baseUrl }) {
     //     // Define your Main Hub clearly
     //     const HUB_URL = "https://salesmanpro.site"; 
@@ -333,41 +373,41 @@ export const authOptions: NextAuthOptions = {
     //     }
     //   },
 
-    async redirect({ url, baseUrl }) {
-      // 1. Resolve the absolute destination URL
-      const finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
+    // async redirect({ url, baseUrl }) {
+    //   // 1. Resolve the absolute destination URL
+    //   const finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
 
-      try {
-        const targetHost = new URL(finalRedirectUrl).hostname;
-        const baseHost = new URL(baseUrl).hostname; // e.g., auth.salesmanpro.site or salesmanpro.site
+    //   try {
+    //     const targetHost = new URL(finalRedirectUrl).hostname;
+    //     const baseHost = new URL(baseUrl).hostname; // e.g., auth.salesmanpro.site or salesmanpro.site
 
-        // 2. Define your "Main Hub" domains
-        const mainHubDomains = ["salesmanpro.site", "www.salesmanpro.site"];
+    //     // 2. Define your "Main Hub" domains
+    //     const mainHubDomains = ["salesmanpro.site", "www.salesmanpro.site"];
 
-        // 3. Logic for Main Hub
-        if (mainHubDomains.includes(targetHost)) {
-          // Force them to the dashboards page on the hub
-          return `${baseUrl}/dashboards`;
-        }
+    //     // 3. Logic for Main Hub
+    //     if (mainHubDomains.includes(targetHost)) {
+    //       // Force them to the dashboards page on the hub
+    //       return `${baseUrl}/dashboards`;
+    //     }
 
-        // 4. Logic for Internal Auth Redirects
-        // If it's just going back to the auth server itself (e.g., /settings)
-        if (finalRedirectUrl.startsWith(baseUrl)) {
-          return finalRedirectUrl;
-        }
+    //     // 4. Logic for Internal Auth Redirects
+    //     // If it's just going back to the auth server itself (e.g., /settings)
+    //     if (finalRedirectUrl.startsWith(baseUrl)) {
+    //       return finalRedirectUrl;
+    //     }
 
-        // 5. Logic for Tenants (Subdomains/Custom Domains)
-        // Send them to your handover route to pass the session token safely
-        const handoverUrl = new URL("/api/auth/callback", baseUrl);
-        handoverUrl.searchParams.set("target", finalRedirectUrl);
+    //     // 5. Logic for Tenants (Subdomains/Custom Domains)
+    //     // Send them to your handover route to pass the session token safely
+    //     const handoverUrl = new URL("/api/auth/callback", baseUrl);
+    //     handoverUrl.searchParams.set("target", finalRedirectUrl);
         
-        return handoverUrl.toString();
+    //     return handoverUrl.toString();
 
-      } catch (error) {
-        // Fallback if URL parsing fails
-        return baseUrl;
-      }
-    },
+    //   } catch (error) {
+    //     // Fallback if URL parsing fails
+    //     return baseUrl;
+    //   }
+    // },
 
     // async redirect({ url, baseUrl }) {
     //   // The `url` parameter is the destination URL after a successful login.
