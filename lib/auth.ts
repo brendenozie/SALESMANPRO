@@ -13,13 +13,13 @@ import { randomBytes, randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import { decode, encode } from "next-auth/jwt";
 
-const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_NEXTAUTH_URL || "https://salesmanpro.site";
+const baseUrl = process.env.NEXTAUTH_URL!;// || process.env.NEXT_PUBLIC_NEXTAUTH_URL;
 // ⚠️ IMPORTANT: This secret MUST be the *exact same*
 // environment variable as your auth app.
-const aSharedSecret = process.env.NEXTAUTH_SECRET || process.env.NEXT_PUBLIC_NEXTAUTH_SECRET;
+const aSharedSecret = process.env.NEXTAUTH_SECRET!;// || process.env.NEXT_PUBLIC_NEXTAUTH_SECRET!;
 
-const googleClientId = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET;
+const googleClientId = process.env.GOOGLE_CLIENT_ID!;// || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET!;// || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET!;
 
 // if (!aSharedSecret) {
 //   throw new Error("NEXTAUTH_SECRET is not set!");
@@ -259,8 +259,8 @@ export const authOptions: NextAuthOptions = {
 
     // ✅ OAuth Providers
     GoogleProvider({
-      clientId: googleClientId,
-      clientSecret: googleClientSecret,
+      clientId: googleClientId!,
+      clientSecret: googleClientSecret!,
       // authorization: {
       //   params: {
       //     redirect_uri: `https://auth.salesmanpro.site/api/auth/callback/google`,
@@ -348,8 +348,10 @@ export const authOptions: NextAuthOptions = {
         origin = window.location.origin;
       }
 
+      //is origin or baseUrl the parent domain of salesmanpro.site? This is important for determining if the user should be an ADMIN or USER
+      // user might be coming from salesmanpro.site or from a tenant domain like tenant1.salesmanpro.site and if so they should be a USER not an ADMIN
       const isSalesmanPro = origin.includes("salesmanpro.site") || baseUrl.includes("salesmanpro.site");
-
+      
       const existingUser = await prisma.user.findUnique({
         where: { email: user.email },
       });
