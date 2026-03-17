@@ -4,16 +4,16 @@ module.exports = {
       name: 'salesmanpro',
       script: 'node_modules/.bin/next',
       args: 'start',
-      instances: 2, // Start with 2 instead of 'max' to stabilize RAM
-      exec_mode: 'cluster',
+      instances: 2,           // Back to 2 instances for better performance
+      exec_mode: 'cluster',   // Cluster mode is fine now that we have RAM room
       env: {
         NODE_ENV: 'production',
         PORT: 3000,
       },
-      max_memory_restart: '2G', // Give it a bit more room to breathe
-      error_file: './logs/err.log',
-      out_file: './logs/out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss'
+      // Set this higher so PM2 stops killing the app during startup spikes
+      max_memory_restart: '4G', 
+      restart_delay: 5000,    // 5-second buffer between restarts
+      exp_backoff_restart_delay: 100
     },
   ],
 };
