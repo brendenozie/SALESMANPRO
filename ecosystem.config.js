@@ -1,5 +1,3 @@
-const { kill } = require("process");
-
 module.exports = {
   apps: [
     {
@@ -18,7 +16,7 @@ module.exports = {
       exp_backoff_restart_delay: 100,
       max_restarts: 10,       // Limit restarts to prevent infinite loops
       autorestart: true,     // Keep this true to allow PM2 to manage restarts
-      kill_timeout: 10000,     // 10 seconds to allow graceful shutdowns
+      kill_timeout: 3000,   // Give the app more time to shut down gracefully
     },
   ],
 };
