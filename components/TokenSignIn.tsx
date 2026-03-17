@@ -36,6 +36,7 @@ export default function TokenSignIn() {
       // } else {
       //   console.error("Token sign-in FAILED:", result?.error);
       // }
+      console.log("Token sign-in result:", result);
 
       // Remove token from URL no matter what:
       // router.replace(window.location.pathname, { scroll: false });
