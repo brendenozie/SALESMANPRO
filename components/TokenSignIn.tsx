@@ -31,14 +31,27 @@ export default function TokenSignIn() {
         redirect: false,
       });
 
-      if (result?.ok) {
-        console.log("Token sign-in successful!");
-      } else {
-        console.error("Token sign-in FAILED:", result?.error);
-      }
+      // if (result?.ok) {
+      //   console.log("Token sign-in successful!");
+      // } else {
+      //   console.error("Token sign-in FAILED:", result?.error);
+      // }
 
       // Remove token from URL no matter what:
-      router.replace(window.location.pathname, { scroll: false });
+      // router.replace(window.location.pathname, { scroll: false });
+      if (result?.ok) {
+        console.log("Token sign-in successful!");
+        
+        // 1. Clear the URL params
+        router.replace(window.location.pathname, { scroll: false });
+        
+        // 2. IMPORTANT: Force Next.js to re-run the Server Component (RootLayout)
+        // This ensures 'const session = await getAuthSession()' gets the new cookie
+        router.refresh(); 
+      } else {
+        console.error("Token sign-in FAILED:", result?.error);
+        router.replace(window.location.pathname, { scroll: false });
+      }
     };
 
     run();
