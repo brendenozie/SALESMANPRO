@@ -550,7 +550,6 @@ export const authOptions: NextAuthOptions = {
       //   return null;
       // }
 
-
       if (session.user) {
         Object.assign(session.user, {
           id: token.id as string,
