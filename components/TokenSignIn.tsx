@@ -50,7 +50,7 @@ export default function TokenSignIn() {
         router.refresh(); 
       } else {
         console.error("Token sign-in FAILED:", result?.error);
-        router.replace(window.location.pathname, { scroll: false });
+        // router.replace(window.location.pathname, { scroll: false });
       }
     };
 

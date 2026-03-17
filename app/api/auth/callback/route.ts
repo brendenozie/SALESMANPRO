@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthSession } from "@/lib/auth";
 import { encode } from "next-auth/jwt";
 
+const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET!;
+
 export async function GET(req: NextRequest) {
   const rawTarget =
     req.nextUrl.searchParams.get("target") ||
@@ -26,7 +28,7 @@ export async function GET(req: NextRequest) {
         id: (session.user as any).id,
         sub: (session.user as any).id 
       },
-      secret: process.env.NEXTAUTH_SECRET!,
+      secret: NEXTAUTH_SECRET,
       maxAge: 30 * 24 * 60 * 60, // Matches your session maxAge (e.g., 30 days)
     });
 
