@@ -292,40 +292,82 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
 
     async redirect({ url, baseUrl }) {
-      // 1. Resolve the absolute destination URL
-      const finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
+        // Define your Main Hub clearly
+        const HUB_URL = "https://salesmanpro.site"; 
+        const AUTH_HOST = new URL(baseUrl).hostname; // auth.salesmanpro.site
 
-      try {
-        const targetHost = new URL(finalRedirectUrl).hostname;
-        const baseHost = new URL(baseUrl).hostname; // e.g., auth.salesmanpro.site or salesmanpro.site
+        // 1. Resolve the absolute destination URL
+        const finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
 
-        // 2. Define your "Main Hub" domains
-        const mainHubDomains = ["salesmanpro.site", "www.salesmanpro.site"];
+        try {
+          const targetUrlObj = new URL(finalRedirectUrl);
+          const targetHost = targetUrlObj.hostname;
 
-        // 3. Logic for Main Hub
-        if (mainHubDomains.includes(targetHost)) {
-          // Force them to the dashboards page on the hub
-          return `${baseUrl}/dashboards`;
+          // 2. Define your "Main Hub" domains
+          const mainHubDomains = ["salesmanpro.site", "www.salesmanpro.site"];
+
+          /**
+           * LOGIC A: If the target is the Auth Server itself OR the Main Hub
+           * We FORCE them to the dashboards page on the Main Hub.
+           * This prevents them from landing on auth.salesmanpro.site/anything
+           */
+          if (targetHost === AUTH_HOST || mainHubDomains.includes(targetHost)) {
+            return `${HUB_URL}/dashboards`;
+          }
+
+          /**
+           * LOGIC B: If the target is a Tenant (subdomain.salesmanpro.site or customdomain.com)
+           * We use the Handover route to sync the session safely.
+           */
+          const handoverUrl = new URL("/api/auth/callback", baseUrl);
+          handoverUrl.searchParams.set("target", finalRedirectUrl);
+          
+          return handoverUrl.toString();
+
+        } catch (error) {
+          /**
+           * FALLBACK: If anything goes wrong or the URL is weird,
+           * NEVER return baseUrl (auth). Always send to the Hub Dashboard.
+           */
+          return `${HUB_URL}/dashboards`;
         }
+      },
 
-        // 4. Logic for Internal Auth Redirects
-        // If it's just going back to the auth server itself (e.g., /settings)
-        if (finalRedirectUrl.startsWith(baseUrl)) {
-          return finalRedirectUrl;
-        }
+    // async redirect({ url, baseUrl }) {
+    //   // 1. Resolve the absolute destination URL
+    //   const finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
 
-        // 5. Logic for Tenants (Subdomains/Custom Domains)
-        // Send them to your handover route to pass the session token safely
-        const handoverUrl = new URL("/api/auth/callback", baseUrl);
-        handoverUrl.searchParams.set("target", finalRedirectUrl);
+    //   try {
+    //     const targetHost = new URL(finalRedirectUrl).hostname;
+    //     const baseHost = new URL(baseUrl).hostname; // e.g., auth.salesmanpro.site or salesmanpro.site
+
+    //     // 2. Define your "Main Hub" domains
+    //     const mainHubDomains = ["salesmanpro.site", "www.salesmanpro.site"];
+
+    //     // 3. Logic for Main Hub
+    //     if (mainHubDomains.includes(targetHost)) {
+    //       // Force them to the dashboards page on the hub
+    //       return `${baseUrl}/dashboards`;
+    //     }
+
+    //     // 4. Logic for Internal Auth Redirects
+    //     // If it's just going back to the auth server itself (e.g., /settings)
+    //     if (finalRedirectUrl.startsWith(baseUrl)) {
+    //       return finalRedirectUrl;
+    //     }
+
+    //     // 5. Logic for Tenants (Subdomains/Custom Domains)
+    //     // Send them to your handover route to pass the session token safely
+    //     const handoverUrl = new URL("/api/auth/callback", baseUrl);
+    //     handoverUrl.searchParams.set("target", finalRedirectUrl);
         
-        return handoverUrl.toString();
+    //     return handoverUrl.toString();
 
-      } catch (error) {
-        // Fallback if URL parsing fails
-        return baseUrl;
-      }
-    },
+    //   } catch (error) {
+    //     // Fallback if URL parsing fails
+    //     return baseUrl;
+    //   }
+    // },
 
     // async redirect({ url, baseUrl }) {
     //   // The `url` parameter is the destination URL after a successful login.
