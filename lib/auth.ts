@@ -292,52 +292,88 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
 
     async redirect({ url, baseUrl }) {
-      // The `url` parameter is the destination URL after a successful login.
-      // It's already the `callbackUrl` you passed to `signIn`.
-      
-      // `url` might be a relative path (e.g., "/dashboard").
-      // Check if the URL is relative.
-      const isRelative = url.startsWith("/");
-      
-      // If it's relative, combine it with the baseUrl to make it absolute.
-      // Otherwise, the `url` is already the absolute `callbackUrl` from the client.
-      const finalRedirectUrl = isRelative ? `${baseUrl}${url}` : url;
+      // 1. Resolve the absolute destination URL
+      const finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
 
-      // The problem is that after the first login, the session isn't available
-      // yet to generate a token inside the redirect callback.
-      // The better pattern is to just return the URL and have the
-      // client-side handle the token.
-      
-      // For your cross-domain authentication, you need to append the token.
-      // Instead of getting the session here, we will redirect to an
-      // intermediary page on your auth domain that will have the session.
-      
-      // 1. Redirect to a page on your auth domain, like `/redirecting`
-      // const tempRedirect = new URL("/redirecting", baseUrl);
-      
-      // 2. Pass the final destination (the tenant URL) as a query parameter.
-      // tempRedirect.searchParams.set("callbackUrl", finalRedirectUrl);
+      try {
+        const targetHost = new URL(finalRedirectUrl).hostname;
+        const baseHost = new URL(baseUrl).hostname; // e.g., auth.salesmanpro.site or salesmanpro.site
 
-      // Let next-auth handle the session creation, then send the user to this temp page.
-      // This works because by the time the user hits "/redirecting", the session cookie is set.
-      // if (finalRedirectUrl.startsWith(baseUrl)) {
-        // It's an internal redirect, just go there.
-        // return finalRedirectUrl;
-      // } else {
-         // It's an external redirect, go via the temp page.
-        // return tempRedirect.toString();
-      // }
-      // const finalRedirectUrl = isRelative ? `${baseUrl}${url}` : url;
+        // 2. Define your "Main Hub" domains
+        const mainHubDomains = ["salesmanpro.site", "www.salesmanpro.site"];
 
-      // If it's internal, just go there
-      if (finalRedirectUrl.startsWith(baseUrl)) return finalRedirectUrl;
+        // 3. Logic for Main Hub
+        if (mainHubDomains.includes(targetHost)) {
+          // Force them to the dashboards page on the hub
+          return `${baseUrl}/dashboards`;
+        }
 
-      // If it's cross-domain, send them to your SERVER-SIDE handover route
-      const handoverUrl = new URL("/api/auth/callback", baseUrl); // Points to your route.ts
-      handoverUrl.searchParams.set("target", finalRedirectUrl);
-      return handoverUrl.toString();
-      
+        // 4. Logic for Internal Auth Redirects
+        // If it's just going back to the auth server itself (e.g., /settings)
+        if (finalRedirectUrl.startsWith(baseUrl)) {
+          return finalRedirectUrl;
+        }
+
+        // 5. Logic for Tenants (Subdomains/Custom Domains)
+        // Send them to your handover route to pass the session token safely
+        const handoverUrl = new URL("/api/auth/callback", baseUrl);
+        handoverUrl.searchParams.set("target", finalRedirectUrl);
+        
+        return handoverUrl.toString();
+
+      } catch (error) {
+        // Fallback if URL parsing fails
+        return baseUrl;
+      }
     },
+
+    // async redirect({ url, baseUrl }) {
+    //   // The `url` parameter is the destination URL after a successful login.
+    //   // It's already the `callbackUrl` you passed to `signIn`.
+      
+    //   // `url` might be a relative path (e.g., "/dashboard").
+    //   // Check if the URL is relative.
+    //   const isRelative = url.startsWith("/");
+      
+    //   // If it's relative, combine it with the baseUrl to make it absolute.
+    //   // Otherwise, the `url` is already the absolute `callbackUrl` from the client.
+    //   const finalRedirectUrl = isRelative ? `${baseUrl}${url}` : url;
+
+    //   // The problem is that after the first login, the session isn't available
+    //   // yet to generate a token inside the redirect callback.
+    //   // The better pattern is to just return the URL and have the
+    //   // client-side handle the token.
+      
+    //   // For your cross-domain authentication, you need to append the token.
+    //   // Instead of getting the session here, we will redirect to an
+    //   // intermediary page on your auth domain that will have the session.
+      
+    //   // 1. Redirect to a page on your auth domain, like `/redirecting`
+    //   // const tempRedirect = new URL("/redirecting", baseUrl);
+      
+    //   // 2. Pass the final destination (the tenant URL) as a query parameter.
+    //   // tempRedirect.searchParams.set("callbackUrl", finalRedirectUrl);
+
+    //   // Let next-auth handle the session creation, then send the user to this temp page.
+    //   // This works because by the time the user hits "/redirecting", the session cookie is set.
+    //   // if (finalRedirectUrl.startsWith(baseUrl)) {
+    //     // It's an internal redirect, just go there.
+    //     // return finalRedirectUrl;
+    //   // } else {
+    //      // It's an external redirect, go via the temp page.
+    //     // return tempRedirect.toString();
+    //   // }
+    //   // const finalRedirectUrl = isRelative ? `${baseUrl}${url}` : url;
+
+    //   // If it's internal, just go there
+    //   if (finalRedirectUrl.startsWith(baseUrl)) return finalRedirectUrl;
+
+    //   // If it's cross-domain, send them to your SERVER-SIDE handover route
+    //   const handoverUrl = new URL("/api/auth/callback", baseUrl); // Points to your route.ts
+    //   handoverUrl.searchParams.set("target", finalRedirectUrl);
+    //   return handoverUrl.toString();
+      
+    // },
     
 
     async signIn({ user, account, profile, credentials }) {

@@ -18,10 +18,12 @@ export const POST = withApiHandler(async (req) => {
 
   const results: Record<string, any> = {};
   const errors: Record<string, string> = {};
+  
+  // 1. Generate ONE restoreId for the entire operation
+  const restoreId = crypto.randomUUID();
 
   for (const modelName of Object.keys(body)) {
-    const prismaKey =  modelName.charAt(0).toLowerCase() + modelName.slice(1);
-
+    const prismaKey = modelName.charAt(0).toLowerCase() + modelName.slice(1);
     const modelClient = (prisma as any)[prismaKey];
 
     if (!modelClient) {
@@ -30,16 +32,13 @@ export const POST = withApiHandler(async (req) => {
     }
 
     const records = body[modelName];
-
     if (!Array.isArray(records)) continue;
 
     try {
-      // Clear collection first
+      // 2. Clear collection
       await modelClient.deleteMany();
 
       const batchSize = 500;
-
-      const restoreId = crypto.randomUUID();
 
       for (let i = 0; i < records.length; i += batchSize) {
         const batch = records.slice(i, i + batchSize);
@@ -48,32 +47,100 @@ export const POST = withApiHandler(async (req) => {
           data: batch,
         });
 
+        // Track progress for the current model
         setProgress(restoreId, {
           currentModel: modelName,
           total: records.length,
           completed: Math.min(i + batchSize, records.length),
         });
-
       }
 
       results[modelName] = `${records.length} restored`;
-          
-      return Response.json({
-        success: true,
-        restoreId,
-      });
 
     } catch (err: any) {
       errors[modelName] = err.message;
+      // Optional: break; if you want to stop the whole process on first error
     }
   }
 
+  // 3. Move the return OUTSIDE the loop so all models process
   return Response.json({
-    success: true,
+    success: Object.keys(errors).length === 0, // Success if no errors occurred
+    restoreId,
     restored: results,
-    errors,
+    errors: Object.keys(errors).length > 0 ? errors : undefined,
   });
 });
+
+// export const POST = withApiHandler(async (req) => {
+//   verifyBackupSecret(req);
+//   const body = await req.json();
+
+//   if (!body || typeof body !== "object") {
+//     return Response.json(
+//       { success: false, message: "Invalid backup file" },
+//       { status: 400 }
+//     );
+//   }
+
+//   const results: Record<string, any> = {};
+//   const errors: Record<string, string> = {};
+
+//   for (const modelName of Object.keys(body)) {
+//     const prismaKey =  modelName.charAt(0).toLowerCase() + modelName.slice(1);
+
+//     const modelClient = (prisma as any)[prismaKey];
+
+//     if (!modelClient) {
+//       errors[modelName] = "Model not found";
+//       continue;
+//     }
+
+//     const records = body[modelName];
+
+//     if (!Array.isArray(records)) continue;
+
+//     try {
+//       // Clear collection first
+//       await modelClient.deleteMany();
+
+//       const batchSize = 500;
+
+//       const restoreId = crypto.randomUUID();
+
+//       for (let i = 0; i < records.length; i += batchSize) {
+//         const batch = records.slice(i, i + batchSize);
+
+//         await modelClient.createMany({
+//           data: batch,
+//         });
+
+//         setProgress(restoreId, {
+//           currentModel: modelName,
+//           total: records.length,
+//           completed: Math.min(i + batchSize, records.length),
+//         });
+
+//       }
+
+//       results[modelName] = `${records.length} restored`;
+          
+//       return Response.json({
+//         success: true,
+//         restoreId,
+//       });
+
+//     } catch (err: any) {
+//       errors[modelName] = err.message;
+//     }
+//   }
+
+//   return Response.json({
+//     success: true,
+//     restored: results,
+//     errors,
+//   });
+// });
 
 // import prisma from "@/server/db/prismadb";
 // import { withApiHandler } from "@/lib/hooks/withApiHandler";

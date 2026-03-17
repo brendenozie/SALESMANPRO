@@ -869,7 +869,7 @@ export default function StoresPage() {
                     </div>
                     <button
                         onClick={handleCreate}
-                        className="inline-flex items-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl hover:scale-105 transform transition-all duration-300 mt-4 sm:mt-0"
+                        className="inline-flex items-center bg-gradient-to-r from-orange-400 to-orange-500 text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl hover:scale-105 transform transition-all duration-300 mt-4 sm:mt-0"
                     >
                         <PlusIcon className="h-5 w-5 mr-2" />
                         <span className="font-semibold">Create New Store</span>

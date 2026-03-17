@@ -700,7 +700,7 @@ enum PolicyType {
 
 model Locations {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
+  name      String?  @default("")
   Company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId
 
