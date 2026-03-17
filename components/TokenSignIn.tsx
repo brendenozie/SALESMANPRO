@@ -13,12 +13,16 @@ export default function TokenSignIn() {
   useEffect(() => {
     const token = searchParams.get("auth_token");
 
+    console.log("TokenSignIn component mounted. URL token:", token);
+
     // Run when session is not authenticated or still loading (no session cookie yet)
     const readyForTokenLogin =
       (status === "unauthenticated" || status === "loading") &&
       !isSigningIn &&
       token;
 
+    console.log("TokenSignIn - readyForTokenLogin:", readyForTokenLogin, "Session status:", status);
+    
     if (!readyForTokenLogin) return;
 
     setIsSigningIn(true);
