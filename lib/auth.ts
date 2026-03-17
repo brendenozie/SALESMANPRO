@@ -333,7 +333,7 @@ export const authOptions: NextAuthOptions = {
       if (finalRedirectUrl.startsWith(baseUrl)) return finalRedirectUrl;
 
       // If it's cross-domain, send them to your SERVER-SIDE handover route
-      const handoverUrl = new URL("/auth/callback", baseUrl); // Points to your route.ts
+      const handoverUrl = new URL("/api/auth/callback", baseUrl); // Points to your route.ts
       handoverUrl.searchParams.set("target", finalRedirectUrl);
       return handoverUrl.toString();
       

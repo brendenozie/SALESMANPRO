@@ -1,4 +1,4 @@
-// File: /app/auth/callback/route.ts
+// File: /app/api/auth/callback/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthSession } from "@/lib/auth";
