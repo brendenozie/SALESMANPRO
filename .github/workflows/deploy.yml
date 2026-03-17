@@ -39,6 +39,10 @@ jobs:
             # 'npm ci' is faster and more reliable for production
             npm ci
 
+            # 1. Free up RAM for the build
+            echo "📉 Scaling down PM2 to 1 instance..."
+            pm2 scale salesmanpro 1
+
             echo "🏗️ Building Next.js app..."
             # Leveraging your 8GB RAM capacity
             export NODE_OPTIONS="--max-old-space-size=6144"
@@ -48,6 +52,9 @@ jobs:
             # Using reload instead of restart for zero-downtime
             # This looks for the name defined in your ecosystem.config.js
             pm2 reload ecosystem.config.js || pm2 start ecosystem.config.js
+
+            # 2. Scale back up to 2 instances now that build is done
+            pm2 scale salesmanpro 2
             
             # Save the PM2 state to ensure it persists after a reboot
             pm2 save

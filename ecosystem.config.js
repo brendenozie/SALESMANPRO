@@ -1,3 +1,5 @@
+const { kill } = require("process");
+
 module.exports = {
   apps: [
     {
@@ -13,7 +15,10 @@ module.exports = {
       // Set this higher so PM2 stops killing the app during startup spikes
       max_memory_restart: '4G', 
       restart_delay: 5000,    // 5-second buffer between restarts
-      exp_backoff_restart_delay: 100
+      exp_backoff_restart_delay: 100,
+      max_restarts: 10,       // Limit restarts to prevent infinite loops
+      autorestart: true,     // Keep this true to allow PM2 to manage restarts
+      kill_timeout: 10000,     // 10 seconds to allow graceful shutdowns
     },
   ],
 };

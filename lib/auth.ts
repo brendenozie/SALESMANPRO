@@ -313,20 +313,30 @@ export const authOptions: NextAuthOptions = {
       // intermediary page on your auth domain that will have the session.
       
       // 1. Redirect to a page on your auth domain, like `/redirecting`
-      const tempRedirect = new URL("/redirecting", baseUrl);
+      // const tempRedirect = new URL("/redirecting", baseUrl);
       
       // 2. Pass the final destination (the tenant URL) as a query parameter.
-      tempRedirect.searchParams.set("callbackUrl", finalRedirectUrl);
+      // tempRedirect.searchParams.set("callbackUrl", finalRedirectUrl);
 
       // Let next-auth handle the session creation, then send the user to this temp page.
       // This works because by the time the user hits "/redirecting", the session cookie is set.
-      if (finalRedirectUrl.startsWith(baseUrl)) {
+      // if (finalRedirectUrl.startsWith(baseUrl)) {
         // It's an internal redirect, just go there.
-        return finalRedirectUrl;
-      } else {
+        // return finalRedirectUrl;
+      // } else {
          // It's an external redirect, go via the temp page.
-        return tempRedirect.toString();
-      }
+        // return tempRedirect.toString();
+      // }
+      // const finalRedirectUrl = isRelative ? `${baseUrl}${url}` : url;
+
+      // If it's internal, just go there
+      if (finalRedirectUrl.startsWith(baseUrl)) return finalRedirectUrl;
+
+      // If it's cross-domain, send them to your SERVER-SIDE handover route
+      const handoverUrl = new URL("/auth/callback", baseUrl); // Points to your route.ts
+      handoverUrl.searchParams.set("target", finalRedirectUrl);
+      return handoverUrl.toString();
+      
     },
     
 
