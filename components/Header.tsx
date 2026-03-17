@@ -1,130 +1,93 @@
 "use client";
+
 import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { Bars4Icon, XMarkIcon } from "@heroicons/react/24/solid";
-import fit1 from "@/assets/fit1.png"; // Assuming this is the logo
+import { Bars3BottomRightIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import fit1 from "@/assets/fit1.png";
 import { useOnClickOutside } from "usehooks-ts";
 import classNames from "classnames";
-import { motion as Motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Header = () => {
   const { data: session } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [dark, setDark] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
 
   useOnClickOutside(navRef, () => setMenuOpen(false));
 
   useEffect(() => {
-    const handleScroll = () => setDark(window.scrollY >= 80);
+    const handleScroll = () => setScrolled(window.scrollY >= 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const toggleMenu = () => setMenuOpen((prev) => !prev);
-
   const navLinks = [
-    { name: "Home", href: "/" },
     { name: "Features", href: "#features" },
+    { name: "Solutions", href: "#solutions" },
     { name: "Pricing", href: "#pricing" },
-    { name: "Contact", href: "#contact" },
   ];
 
-  const handleGoogleSignIn = () => {
-    const authUrl = new URL("https://auth.salesmanpro.site/signin");
-    authUrl.searchParams.set("callbackUrl", window.location.origin);
-    window.location.href = authUrl.toString();
+  const handleAuth = (type: "signin" | "signup") => {
+    const url = new URL(`https://auth.salesmanpro.site/${type}`);
+    url.searchParams.set("callbackUrl", window.location.origin);
+    window.location.href = url.toString();
   };
 
-  const handleRegister = () => {
-    const registerUrl = new URL("https://auth.salesmanpro.site/signup");
-    registerUrl.searchParams.set("callbackUrl", window.location.origin);
-    window.location.href = registerUrl.toString();
-  }
-
   return (
-    <header
-      className={classNames(
-        "fixed top-0 left-0 w-full z-50 transition-all duration-300",
-        dark ? "bg-white/80 shadow-lg backdrop-blur-md" : "bg-transparent"
-      )}
-    >
-      <div className="flex items-center justify-between max-w-7xl mx-auto px-6 sm:px-8 min-h-[5rem] md:min-h-[6rem]">
-        {/* Logo */}
-        <Motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Link href="/" aria-label="Home" className="flex items-center gap-3">
+    <header className="fixed top-0 left-0 w-full z-[100] px-4 sm:px-8 pt-4 pointer-events-none">
+      <div
+        className={classNames(
+          "max-w-7xl mx-auto transition-all duration-500 pointer-events-auto",
+          "flex items-center justify-between px-6 py-3 rounded-2xl border",
+          scrolled
+            ? "bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl shadow-2xl border-white/20 dark:border-slate-800/50 py-3"
+            : "bg-transparent border-transparent py-5"
+        )}
+      >
+        {/* Brand */}
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="relative">
             <img
               src={fit1.src}
-              alt="SalesmanPro Logo"
-              className="w-10 h-10 md:w-12 md:h-12 object-contain cursor-pointer transition-transform duration-300 hover:scale-110"
+              alt="Logo"
+              className="w-8 h-8 md:w-9 md:h-9 object-contain group-hover:rotate-12 transition-transform duration-300"
             />
-            <span className="text-2xl font-bold text-slate-900 tracking-tight">
-              Salesman<span className="text-orange-600">Pro</span>
-            </span>
-          </Link>
-        </Motion.div>
+            <div className="absolute inset-0 bg-orange-500/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+          <span className="text-xl font-black tracking-tighter text-slate-900 dark:text-white transition-colors">
+            Salesman<span className="text-orange-600">Pro</span>
+          </span>
+        </Link>
 
-        {/* Navigation */}
-        <nav
-          ref={navRef}
-          className={classNames(
-            "fixed lg:static top-0 right-0 h-screen lg:h-auto w-60 lg:w-auto bg-gray-900 lg:bg-transparent flex flex-col lg:flex-row items-start lg:items-center gap-6 px-6 lg:px-0 py-8 lg:py-0",
-            menuOpen ? "translate-x-0 opacity-100" : "translate-x-full opacity-0",
-            "lg:translate-x-0 lg:opacity-100 transition-all duration-500 ease-in-out"
-          )}
-        >
-          {/* Close Button (Mobile Only) */}
-          <button
-            aria-label="Close menu"
-            onClick={toggleMenu}
-            className="absolute top-4 right-4 lg:hidden text-gray-500 hover:text-white"
-          >
-            <XMarkIcon className="h-7 w-7" />
-          </button>
+        {/* Desktop Navigation */}
+        <nav className="hidden lg:flex items-center gap-1 bg-slate-100/50 dark:bg-slate-800/40 p-1 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
+          {navLinks.map((link) => (
+            <Link
+              key={link.name}
+              href={link.href}
+              className="px-4 py-1.5 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all"
+            >
+              {link.name}
+            </Link>
+          ))}
+        </nav>
 
-          {/* Navigation Links */}
-          <ul className="flex flex-col lg:flex-row gap-8 font-medium text-lg lg:text-sm">
-            {navLinks.map((item) => (
-              <li key={item.name} onClick={() => setMenuOpen(false)}>
-                <Link
-                  href={item.href}
-                  className={classNames(
-                    "relative group transition-all duration-300 text-gray-600 hover:text-red-600" 
-                  )}
-                >
-                  {item.name}
-                  <span
-                    className={classNames(
-                      "absolute bottom-0 left-0 w-0 group-hover:w-full h-[3px] rounded-full transition-all duration-300",
-                      dark ? "bg-red-600" : "bg-white"
-                    )}
-                  ></span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-
-          {/* Call-to-Action Buttons */}
-          <div className="mt-8 lg:mt-0 flex flex-col lg:flex-row gap-4 lg:ml-8">
+        {/* Actions */}
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2">
             {!session ? (
               <>
                 <button
-                  onClick={handleGoogleSignIn}                  
-                  className={classNames(
-                    "py-2 px-5 rounded-full text-base font-bold transition-all duration-300 border text-gray-800 border-gray-300 hover:bg-gray-100",
-                    // dark ? "text-gray-800 border-gray-300 hover:bg-gray-100" : "text-white border-white hover:bg-white hover:text-gray-900"
-                  )}
+                  onClick={() => handleAuth("signin")}
+                  className="px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-orange-600 transition-colors"
                 >
                   Log In
                 </button>
                 <button
-                  onClick={handleRegister}
-                  className="py-2.5 px-6 rounded-full text-base font-bold text-white bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 shadow-lg hover:scale-105 transition-all duration-300"
+                  onClick={() => handleAuth("signup")}
+                  className="px-5 py-2.5 text-sm font-bold text-white bg-slate-900 dark:bg-white dark:text-slate-900 rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all"
                 >
                   Get Started
                 </button>
@@ -132,28 +95,71 @@ const Header = () => {
             ) : (
               <Link
                 href="/dashboards"
-                className="py-2.5 px-6 rounded-full text-base font-bold text-white bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 shadow-lg hover:scale-105 transition-all duration-300"
+                className="px-5 py-2.5 text-sm font-bold text-white bg-orange-600 rounded-xl shadow-lg shadow-orange-200 dark:shadow-none hover:bg-orange-700 transition-all"
               >
-                Dashboard
+                Go to Dashboard
               </Link>
             )}
           </div>
-        </nav>
 
-        {/* Mobile Menu Toggle */}
-        <Motion.button
-          aria-label="Open menu"
-          className={classNames(
-            "lg:hidden p-2 rounded-lg transition-colors duration-300 text-gray-900 bg-white/50"
-          )}
-          onClick={toggleMenu}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <Bars4Icon className="h-7 w-7" />
-        </Motion.button>
+          {/* Mobile Toggle */}
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="lg:hidden p-2 text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 rounded-xl"
+          >
+            {menuOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3BottomRightIcon className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="absolute top-24 left-4 right-4 p-6 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-2xl lg:hidden pointer-events-auto"
+          >
+            <div className="flex flex-col gap-4">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => setMenuOpen(false)}
+                  className="text-2xl font-bold text-slate-900 dark:text-white hover:text-orange-600 transition-colors"
+                >
+                  {link.name}
+                </Link>
+              ))}
+              <hr className="border-slate-100 dark:border-slate-800 my-2" />
+              {!session ? (
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={() => handleAuth("signin")}
+                    className="w-full py-4 text-center font-bold text-slate-600 dark:text-slate-400"
+                  >
+                    Log In
+                  </button>
+                  <button
+                    onClick={() => handleAuth("signup")}
+                    className="w-full py-4 text-center font-bold text-white bg-orange-600 rounded-2xl"
+                  >
+                    Get Started
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  href="/dashboards"
+                  className="w-full py-4 text-center font-bold text-white bg-orange-600 rounded-2xl"
+                >
+                  Dashboard
+                </Link>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 };

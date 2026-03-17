@@ -1,186 +1,133 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   BuildingStorefrontIcon,
   ArrowRightIcon,
-  SparklesIcon,
+  Squares2X2Icon,
+  ChartBarIcon,
+  UserGroupIcon,
+  Cog6ToothIcon,
   ArrowLeftOnRectangleIcon,
-  RocketLaunchIcon,
-  ShieldCheckIcon,
-  LightBulbIcon
+  PlusIcon
 } from '@heroicons/react/24/outline';
 import { useSession, signOut } from 'next-auth/react';
 
-// --- Redesigned Welcome Page ---
-
 const WelcomePage = () => {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const [greeting, setGreeting] = useState('');
-  const userName = session?.user?.name?.split(' ')[0] || 'Partner';
+  const userName = session?.user?.name?.split(' ')[0] || 'Admin';
 
   useEffect(() => {
     const hour = new Date().getHours();
-    if (hour < 12) setGreeting("Good morning");
-    else if (hour < 18) setGreeting("Good afternoon");
-    else setGreeting("Good evening");
+    if (hour < 12) setGreeting("Good Morning");
+    else if (hour < 18) setGreeting("Good Afternoon");
+    else setGreeting("Good Evening");
   }, []);
 
-  const features = [
-    { title: "Smart Inventory", desc: "Stock management made simple", icon: <SparklesIcon className="w-5 h-5" /> },
-    { title: "Global Reach", desc: "Sell anywhere, anytime", icon: <RocketLaunchIcon className="w-5 h-5" /> },
-    { title: "Secure Payments", desc: "Enterprise-grade safety", icon: <ShieldCheckIcon className="w-5 h-5" /> },
+  const launchActions = [
+    { title: "My Stores", desc: "Access your active locations", icon: <BuildingStorefrontIcon />, color: "text-blue-600", bg: "bg-blue-50", href: "/stores" },
+    //for placeholder purposes only - these features are not yet implemented
+    // { title: "Analytics", desc: "Performance overview", icon: <ChartBarIcon />, color: "text-emerald-600", bg: "bg-emerald-50", href: "/#" },
+    // { title: "Team", desc: "Manage permissions", icon: <UserGroupIcon />, color: "text-purple-600", bg: "bg-purple-50", href: "/#" },
+    // { title: "Settings", desc: "Global configuration", icon: <Cog6ToothIcon />, color: "text-slate-600", bg: "bg-slate-50", href: "/#" },
   ];
 
-  if (status === "loading") return (
-    <div className="flex items-center justify-center min-h-screen bg-slate-50">
-      <motion.div 
-        animate={{ rotate: 360 }} 
-        transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-        className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full" 
-      />
-    </div>
-  );
-
   return (
-    <div className="min-h-screen bg-[#f8fafc] overflow-hidden relative font-sans selection:bg-indigo-100">
-      
-      {/* Abstract Background Decor */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-200/40 rounded-full blur-[120px] -z-10" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-200/40 rounded-full blur-[120px] -z-10" />
-
-      {/* Navigation */}
-      <nav className="flex justify-between items-center px-6 py-6 max-w-7xl mx-auto">
-        <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex items-center space-x-2"
-        >
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-indigo-200 shadow-lg">
-            <BuildingStorefrontIcon className="w-6 h-6 text-white" />
+    <div className="min-h-screen bg-[#fafafa] text-slate-900 font-sans p-4 md:p-8">
+      {/* Top Bar */}
+      <nav className="max-w-7xl mx-auto flex justify-between items-center mb-12">
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 bg-black rounded flex items-center justify-center text-white">
+            <Squares2X2Icon className="w-5 h-5" />
           </div>
-          <span className="text-xl font-bold tracking-tight text-slate-800">StoreCentral</span>
-        </motion.div>
-
-        <motion.button
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
+          <span className="font-bold tracking-tight text-lg text-orange-500">SalesmanPro</span>
+        </div>
+        <button 
           onClick={() => signOut({ callbackUrl: '/' })}
-          className="group flex items-center space-x-2 px-4 py-2 text-sm font-medium text-slate-600 hover:text-red-600 transition-colors"
+          className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500"
         >
-          <span>Sign Out</span>
-          <ArrowLeftOnRectangleIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-        </motion.button>
+          <ArrowLeftOnRectangleIcon className="w-6 h-6" />
+        </button>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-6 pt-12 pb-24 grid lg:grid-cols-2 gap-16 items-center">
+      <main className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-8">
         
-        {/* Left Side: Content */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 text-xs font-bold uppercase tracking-wider mb-6">
-            <LightBulbIcon className="w-4 h-4" />
-            <span>Ready to launch</span>
-          </div>
-          
-          <h1 className="text-5xl lg:text-7xl font-extrabold text-slate-900 leading-[1.1] mb-6">
-            {greeting}, <span className="text-indigo-600">{userName}.</span>
-          </h1>
-          
-          <p className="text-lg text-slate-600 mb-10 max-w-lg leading-relaxed">
-            Welcome to your new commerce command center. We've built a powerful space for you to manage your stores, track growth, and connect with customers effortlessly.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => window.location.href = '/stores'}
-              className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-semibold shadow-2xl shadow-slate-200 flex items-center group"
-            >
-              Enter My Stores
-              <ArrowRightIcon className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-            </motion.button>
+        {/* Left: Perspective & Hero */}
+        <div className="lg:col-span-5 flex flex-col justify-center">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+          >
+            <span className="text-sm font-bold text-orange-500 tracking-widest uppercase">Console v3.0</span>
+            <h1 className="text-5xl md:text-6xl font-black mt-4 mb-6 tracking-tight leading-none">
+              {greeting},<br />
+              <span className="text-slate-400">{userName}.</span>
+            </h1>
+            <p className="text-lg text-slate-500 mb-8 max-w-sm leading-relaxed">
+              Your ecosystem is ready. Select a module below to begin managing your commerce operations.
+            </p>
             
-            <button className="px-8 py-4 text-slate-600 font-semibold hover:bg-slate-100 rounded-2xl transition-colors">
-              Watch Walkthrough
+            <button 
+              onClick={() => window.location.href = '/stores'}
+              className="flex items-center gap-3 bg-black text-white px-6 py-4 rounded-xl font-bold hover:bg-slate-800 transition-all group"
+            >
+              <PlusIcon className="w-5 h-5" />
+              Launch New Store
+              <ArrowRightIcon className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
             </button>
-          </div>
-
-          <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-8">
-            {features.map((f, i) => (
-              <motion.div 
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 + (i * 0.1) }}
-                className="flex flex-col space-y-2"
-              >
-                <div className="text-indigo-600">{f.icon}</div>
-                <h3 className="font-bold text-slate-800">{f.title}</h3>
-                <p className="text-sm text-slate-500">{f.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Right Side: Visual Element */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, delay: 0.2 }}
-          className="relative hidden lg:block"
-        >
-          {/* Main "Glass" Card */}
-          <div className="relative z-10 bg-white/40 backdrop-blur-xl border border-white/60 p-8 rounded-[2.5rem] shadow-2xl overflow-hidden">
-             <div className="flex items-center justify-between mb-8">
-                <div className="flex space-x-2">
-                    <div className="w-3 h-3 rounded-full bg-red-400" />
-                    <div className="w-3 h-3 rounded-full bg-amber-400" />
-                    <div className="w-3 h-3 rounded-full bg-emerald-400" />
-                </div>
-                <div className="h-6 w-32 bg-slate-200/50 rounded-full animate-pulse" />
-             </div>
-             
-             <div className="space-y-6">
-                <div className="h-32 w-full bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 flex flex-col justify-end">
-                    <div className="h-4 w-24 bg-white/30 rounded mb-2" />
-                    <div className="h-8 w-40 bg-white/50 rounded" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="h-24 bg-white/60 rounded-2xl border border-slate-100" />
-                    <div className="h-24 bg-white/60 rounded-2xl border border-slate-100" />
-                </div>
-                <div className="h-40 bg-white/60 rounded-2xl border border-slate-100 flex items-center justify-center">
-                    <BuildingStorefrontIcon className="w-12 h-12 text-slate-200" />
-                </div>
-             </div>
-          </div>
-
-          {/* Floating Accents */}
-          <motion.div 
-            animate={{ y: [0, -20, 0] }}
-            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-            className="absolute top-[-20px] right-[-20px] bg-white p-4 rounded-2xl shadow-xl z-20 border border-slate-50"
-          >
-            <SparklesIcon className="w-8 h-8 text-yellow-500" />
           </motion.div>
+        </div>
 
-          <motion.div 
-            animate={{ y: [0, 20, 0] }}
-            transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }}
-            className="absolute bottom-[20px] left-[-40px] bg-white px-6 py-4 rounded-2xl shadow-xl z-20 border border-slate-50 flex items-center space-x-3"
-          >
-            <div className="w-3 h-3 bg-green-500 rounded-full animate-ping" />
-            <span className="font-bold text-slate-700">System Live</span>
-          </motion.div>
-        </motion.div>
-
+        {/* Right: Bento Grid of Actions */}
+        <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {launchActions.map((action, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1 }}
+              whileHover={{ y: -5, boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)" }}
+              onClick={() => window.location.href = action.href}
+              className="group cursor-pointer bg-white border border-slate-200 p-8 rounded-[2rem] flex flex-col justify-between min-h-[220px] transition-all"
+            >
+              <div className={`w-14 h-14 ${action.bg} ${action.color} rounded-2xl flex items-center justify-center mb-4`}>
+                {React.cloneElement(action.icon as React.ReactElement, { className: "w-8 h-8" })}
+              </div>
+              <div>
+                <h3 className="text-xl font-bold mb-1 group-hover:text-orange-500 transition-colors">{action.title}</h3>
+                <p className="text-slate-500 text-sm leading-relaxed">
+                  {action.desc}
+                </p>
+              </div>
+            </motion.div>
+          ))}
+          
+          {/* Status Tile */}
+          <div className="sm:col-span-2 bg-indigo-600 rounded-[2rem] p-8 text-white flex flex-col sm:flex-row justify-between items-center gap-6">
+            <div>
+              <h4 className="text-xl font-bold tracking-tight">System Status: Optimal</h4>
+              <p className="text-indigo-100 text-sm">All subdomains and custom gateways are operational.</p>
+            </div>
+            <div className="flex -space-x-2">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="w-10 h-10 rounded-full border-2 border-indigo-600 bg-indigo-400 flex items-center justify-center text-xs font-bold">
+                  U{i}
+                </div>
+              ))}
+              <div className="w-10 h-10 rounded-full border-2 border-indigo-600 bg-white text-orange-500 flex items-center justify-center text-xs font-bold">
+                +12
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
+
+      {/* Subtle Background Detail */}
+      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+        <div className="absolute top-[10%] left-[5%] w-[500px] h-[500px] bg-indigo-50 rounded-full blur-3xl opacity-50" />
+      </div>
     </div>
   );
 };

@@ -459,7 +459,7 @@ const PreviewSkeleton = () => (
 //               className="text-3xl sm:text-4xl font-extrabold text-gray-900 flex flex-col sm:flex-row items-center justify-center gap-2"
 //             >
 //               <SparklesIcon className="h-7 w-7 text-indigo-500 flex-shrink-0" />
-//               Choose Your <span className="text-indigo-600">Perfect Template</span>
+//               Choose Your <span className="text-orange-500">Perfect Template</span>
 //             </motion.h2>
 //             <p className="mt-2 text-md sm:text-lg text-gray-600 flex items-center justify-center">
 //               <InformationCircleIcon className="h-5 w-5 text-indigo-500 mr-2 flex-shrink-0" />
@@ -484,7 +484,7 @@ const PreviewSkeleton = () => (
             
 //             <h3 className="text-lg sm:text-xl font-bold text-gray-800 flex justify-between items-center">
 //               Business Categories 
-//               <span className="text-indigo-600 font-semibold text-sm bg-indigo-100 px-3 py-1 rounded-full">
+//               <span className="text-orange-500 font-semibold text-sm bg-indigo-100 px-3 py-1 rounded-full">
 //                 {filteredCategories.length} Available
 //               </span>
 //             </h3>
@@ -537,7 +537,7 @@ const PreviewSkeleton = () => (
 //                 className="p-4 sm:p-6 bg-indigo-50 rounded-2xl shadow-inner border border-indigo-200 mt-8" 
 //               >
 //                 <h3 className="text-xl font-bold text-indigo-800 mb-4 flex items-center">
-//                   <ChevronRightIcon className="h-6 w-6 mr-2 text-indigo-600 flex-shrink-0" />
+//                   <ChevronRightIcon className="h-6 w-6 mr-2 text-orange-500 flex-shrink-0" />
 //                   Template Variants for <span className='text-indigo-900 ml-1'>{selectedCategory.name}</span>:
 //                 </h3>
                 
@@ -603,7 +603,7 @@ const PreviewSkeleton = () => (
 //                     className="mt-6 p-4 bg-white rounded-xl shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-gray-200"
 //                   >
 //                     <p className="text-sm text-gray-700">
-//                       <strong className="text-indigo-600">Variant Focus:</strong> {selectedTemplate.description}
+//                       <strong className="text-orange-500">Variant Focus:</strong> {selectedTemplate.description}
 //                     </p>
                     
 //                     {/* Preview Button - Full width on mobile, consistent style */}
@@ -687,7 +687,7 @@ export default function CategoryStep({
             >
               <header className="text-center space-y-4">
                 <h2 className="text-5xl font-black text-gray-900 tracking-tight">
-                  Pick your <span className="text-indigo-600">Industry.</span>
+                  Pick your <span className="text-orange-500">Industry.</span>
                 </h2>
                 <p className="text-gray-500 text-xl max-w-xl mx-auto">
                   We'll tailor your experience based on your business type.
@@ -731,7 +731,7 @@ export default function CategoryStep({
               <div className="lg:w-1/3 w-full flex flex-col h-full bg-slate-50/50 rounded-[2.5rem] p-8 border border-slate-200/60">
                 <button 
                   onClick={() => handleChange({ target: { name: 'category', value: "" } } as any)}
-                  className="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase tracking-widest hover:text-indigo-600 transition-colors mb-8"
+                  className="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase tracking-widest hover:text-orange-500 transition-colors mb-8"
                 >
                   <ChevronLeftIcon className="h-4 w-4" />
                   Back
@@ -759,7 +759,7 @@ export default function CategoryStep({
                       >
                         <div className="flex justify-between items-center">
                           <div>
-                            <p className={`font-bold ${isSelected ? 'text-indigo-600' : 'text-slate-700'}`}>{v.name}</p>
+                            <p className={`font-bold ${isSelected ? 'text-orange-500' : 'text-slate-700'}`}>{v.name}</p>
                             <p className="text-[10px] uppercase font-black tracking-tighter text-slate-400">{v.tag || 'Standard'}</p>
                           </div>
                           {isSelected && <SparklesIcon className="h-4 w-4 text-indigo-500 animate-spin-slow" />}
@@ -914,7 +914,7 @@ export default function CategoryStep({
 //           >
 //             <div className="text-center max-w-2xl mx-auto space-y-4">
 //               <h2 className="text-4xl font-black text-gray-900 tracking-tight">
-//                 What are we <span className="text-indigo-600">building?</span>
+//                 What are we <span className="text-orange-500">building?</span>
 //               </h2>
 //               <p className="text-gray-500 text-lg">Select your industry to see tailored templates.</p>
               
@@ -959,7 +959,7 @@ export default function CategoryStep({
 //             <div className="space-y-8">
 //               <button 
 //                 onClick={resetSelection}
-//                 className="flex items-center gap-2 text-indigo-600 font-bold hover:text-indigo-800 transition-colors group"
+//                 className="flex items-center gap-2 text-orange-500 font-bold hover:text-indigo-800 transition-colors group"
 //               >
 //                 <ArrowLeftIcon className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
 //                 Back to Industries
@@ -1030,7 +1030,7 @@ export default function CategoryStep({
 //                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-indigo-900/10 backdrop-blur-[2px]">
 //                     <button 
 //                       onClick={() => setIsModalOpen(true)}
-//                       className="bg-white text-indigo-600 px-6 py-3 rounded-full font-bold shadow-2xl flex items-center gap-2 hover:scale-105 transition-transform"
+//                       className="bg-white text-orange-500 px-6 py-3 rounded-full font-bold shadow-2xl flex items-center gap-2 hover:scale-105 transition-transform"
 //                     >
 //                       <EyeIcon className="h-5 w-5" /> Expand View
 //                     </button>
@@ -1059,7 +1059,7 @@ export default function CategoryStep({
               
 //               {/* Hover Hint */}
 //               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-lg flex items-center gap-2 group-hover:hidden transition-all">
-//                 <span className="text-xs font-bold text-indigo-600 uppercase tracking-widest">Hover to scroll</span>
+//                 <span className="text-xs font-bold text-orange-500 uppercase tracking-widest">Hover to scroll</span>
 //               </div>
 //             </div>
 //             <div className="relative">
@@ -1131,7 +1131,7 @@ export default function CategoryStep({
       <header className="mb-10 text-left">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
           <h2 className="text-4xl font-black text-gray-900 tracking-tight">
-            Design your <span className="text-indigo-600">Vision.</span>
+            Design your <span className="text-orange-500">Vision.</span>
           </h2>
           <p className="text-gray-500 mt-2 text-lg">Select a category and refine your style.</p>
         </motion.div>
@@ -1235,7 +1235,7 @@ export default function CategoryStep({
               <div className="flex-1 relative group cursor-pointer" onClick={() => setIsModalOpen(true)}>
                 {selectedTemplate ? (
                   <div className="p-8">
-                    <div className="flex items-center gap-2 mb-4 text-indigo-600">
+                    <div className="flex items-center gap-2 mb-4 text-orange-500">
                       <SparklesIcon className="h-5 w-5" />
                       <span className="text-xs font-bold uppercase tracking-tighter">Live Concept</span>
                     </div>
