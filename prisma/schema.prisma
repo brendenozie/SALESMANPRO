@@ -458,8 +458,18 @@ model Company {
   examCategories            ExamCategory[]
   modules                   Module[]
 
+  // sslStatus     SslStatus @default(PENDING)
+  sslError String?
+
   @@index([userId])
 }
+
+// enum SslStatus {
+//   PENDING
+//   ISSUING
+//   ACTIVE
+//   FAILED
+// }
 
 enum CategoryStatus {
   ACTIVE
