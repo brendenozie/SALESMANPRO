@@ -77,7 +77,7 @@ const WelcomePage = () => {
             </p>
             
             <button 
-              onClick={() => window.location.href = '/stores'}
+              onClick={() => window.location.href = '/stores/create'}
               className="flex items-center gap-3 bg-black text-white px-6 py-4 rounded-xl font-bold hover:bg-slate-800 transition-all group"
             >
               <PlusIcon className="w-5 h-5" />
