@@ -1,4 +1,4 @@
-// File: /app/auth/callback/route.ts
+// File: /app/api/auth/handover/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthSession } from "@/lib/auth";
@@ -8,8 +8,7 @@ const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET!;
 
 export async function GET(req: NextRequest) {
   const rawTarget =
-    req.nextUrl.searchParams.get("target") ||
-    "https://salesmanpro.site";
+    req.nextUrl.searchParams.get("target") || "https://salesmanpro.site";
 
   // ✅ IMPORTANT: decode URL-encoded target
   const target = decodeURIComponent(rawTarget);
@@ -23,10 +22,10 @@ export async function GET(req: NextRequest) {
 
     // ✅ SECURE: Encoding happens on the server where the secret is safe
     const token = await encode({
-      token: { 
-        ...session.user, 
+      token: {
+        ...session.user,
         id: (session.user as any).id,
-        sub: (session.user as any).id 
+        sub: (session.user as any).id,
       },
       secret: NEXTAUTH_SECRET,
       maxAge: 30 * 24 * 60 * 60, // Matches your session maxAge (e.g., 30 days)
@@ -37,7 +36,6 @@ export async function GET(req: NextRequest) {
     destination.searchParams.set("auth", "success");
 
     return NextResponse.redirect(destination.toString());
-
   } catch (err) {
     console.error("Critical Handover Error:", err);
     return NextResponse.redirect(`${target}?auth=error`);
@@ -60,7 +58,6 @@ export async function GET(req: NextRequest) {
 //       return NextResponse.redirect(`${target}?auth=failed`);
 //     }
 
-    
 //     // Optionally, you could sign a short-lived token for cross-domain auth
 //     // Example: `${target}/auth/success?token=${token}`
 //     // Build a plain object payload compatible with next-auth's JWT type
@@ -77,7 +74,6 @@ export async function GET(req: NextRequest) {
 //     };
 //     const token = await encode({ token: tokenPayload, secret: NEXTAUTH_SECRET! });
 //     return NextResponse.redirect(`${target}?auth=success&token=${token}`);
-
 
 //     // return NextResponse.redirect(`${target}?auth=success`);
 //   } catch (err) {

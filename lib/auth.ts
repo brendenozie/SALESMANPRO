@@ -13,13 +13,13 @@ import { randomBytes, randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import { decode, encode } from "next-auth/jwt";
 
-const baseUrl = process.env.NEXTAUTH_URL!;// || process.env.NEXT_PUBLIC_NEXTAUTH_URL;
+const baseUrl = process.env.NEXTAUTH_URL!; // || process.env.NEXT_PUBLIC_NEXTAUTH_URL;
 // ⚠️ IMPORTANT: This secret MUST be the *exact same*
 // environment variable as your auth app.
-const aSharedSecret = process.env.NEXTAUTH_SECRET!;// || process.env.NEXT_PUBLIC_NEXTAUTH_SECRET!;
+const aSharedSecret = process.env.NEXTAUTH_SECRET!; // || process.env.NEXT_PUBLIC_NEXTAUTH_SECRET!;
 
-const googleClientId = process.env.GOOGLE_CLIENT_ID!;// || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!;
-const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET!;// || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET!;
+const googleClientId = process.env.GOOGLE_CLIENT_ID!; // || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET!; // || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET!;
 
 // if (!aSharedSecret) {
 //   throw new Error("NEXTAUTH_SECRET is not set!");
@@ -37,7 +37,8 @@ async function findUserByLoginCode(loginCode: string) {
     where: { loginCode },
     include: { user: true },
   });
-  if (student) return { user: student.user, role: student.levelStatus || "STUDENT" };
+  if (student)
+    return { user: student.user, role: student.levelStatus || "STUDENT" };
 
   const educator = await prisma.educator.findUnique({
     where: { loginCode },
@@ -73,7 +74,15 @@ async function findUserByLoginCode(loginCode: string) {
 }
 
 // ✅ Default user creation (OAuth signups only)
-async function createDefaultUser({ email, name, image }: { email: string; name?: string; image?: string }) {
+async function createDefaultUser({
+  email,
+  name,
+  image,
+}: {
+  email: string;
+  name?: string;
+  image?: string;
+}) {
   return prisma.user.create({
     data: {
       email,
@@ -88,59 +97,68 @@ export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
-          // An ID for this custom provider
-          id: "token-signin",
-          name: "Token Sign-In",
-          credentials: {
-            token: { label: "Token", type: "text" },
-          },
-          async authorize(credentials) {
-            if (!credentials?.token) {
-              console.error("Authorize: No token provided.");
-              return null;
-            }
-            
-            // 🚨 CRITICAL DEBUGGING LINE: Log the received token's length
-            console.log(`Authorize: Token received. Length: ${credentials.token.length}.`);
-    
-            try {
-              // Decode the token using the shared secret
-              const decodedToken = await decode({
-                token: credentials.token,
-                secret: aSharedSecret!,
-              });
-    
-              if (!decodedToken || !decodedToken.email) {
-                console.error("Authorize: Token decoding failed or no email/data found.");
-                // Log the result of the decode attempt if it failed without an exception
-                console.log("Decoded Result (if available):", decodedToken);
-                return null;
-              }
-              
-              // 🚀 SUCCESS: Log the email/user ID to confirm decoding worked
-              console.log(`Token Sign-In SUCCESS for email: ${decodedToken.email}`);
-    
-              // The decoded token is trusted. Return it as the user object.
-              // Note: Since this token comes from the other app, we trust its contents and skip a DB lookup here.
-              return {
-                id: decodedToken.id as string,
-                name: decodedToken.name,
-                email: decodedToken.email,
-                image: decodedToken.image,
-                role: decodedToken.role, // Pass through your custom properties
-                // ... add other properties from your token
-              };
-            } catch (error) {
-              // ❌ FAILURE: The error here is usually due to Expiration or Secret Mismatch
-              console.error("-----------------------------------------------");
-              console.error("TOKEN AUTHORIZATION FAILED! Reason:", (error as Error).message);
-              console.error("Full Error Object:", error);
-              console.error("Action needed: Check NEXTAUTH_SECRET on both domains.");
-              console.error("-----------------------------------------------");
-              return null;
-            }
-          },
-        }),
+      // An ID for this custom provider
+      id: "token-signin",
+      name: "Token Sign-In",
+      credentials: {
+        token: { label: "Token", type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.token) {
+          console.error("Authorize: No token provided.");
+          return null;
+        }
+
+        // 🚨 CRITICAL DEBUGGING LINE: Log the received token's length
+        console.log(
+          `Authorize: Token received. Length: ${credentials.token.length}.`,
+        );
+
+        try {
+          // Decode the token using the shared secret
+          const decodedToken = await decode({
+            token: credentials.token,
+            secret: aSharedSecret!,
+          });
+
+          if (!decodedToken || !decodedToken.email) {
+            console.error(
+              "Authorize: Token decoding failed or no email/data found.",
+            );
+            // Log the result of the decode attempt if it failed without an exception
+            console.log("Decoded Result (if available):", decodedToken);
+            return null;
+          }
+
+          // 🚀 SUCCESS: Log the email/user ID to confirm decoding worked
+          console.log(`Token Sign-In SUCCESS for email: ${decodedToken.email}`);
+
+          // The decoded token is trusted. Return it as the user object.
+          // Note: Since this token comes from the other app, we trust its contents and skip a DB lookup here.
+          return {
+            id: decodedToken.id as string,
+            name: decodedToken.name,
+            email: decodedToken.email,
+            image: decodedToken.image,
+            role: decodedToken.role, // Pass through your custom properties
+            // ... add other properties from your token
+          };
+        } catch (error) {
+          // ❌ FAILURE: The error here is usually due to Expiration or Secret Mismatch
+          console.error("-----------------------------------------------");
+          console.error(
+            "TOKEN AUTHORIZATION FAILED! Reason:",
+            (error as Error).message,
+          );
+          console.error("Full Error Object:", error);
+          console.error(
+            "Action needed: Check NEXTAUTH_SECRET on both domains.",
+          );
+          console.error("-----------------------------------------------");
+          return null;
+        }
+      },
+    }),
     // CredentialsProvider({
     //   // An ID for this custom provider
     //   id: "token-signin",
@@ -153,7 +171,7 @@ export const authOptions: NextAuthOptions = {
     //       console.error("Authorize: No token provided.");
     //       return null;
     //     }
-        
+
     //     try {
     //       // Decode the token using the shared secret
     //       const decodedToken = await decode({
@@ -196,16 +214,30 @@ export const authOptions: NextAuthOptions = {
         const userFoundInDb = await findExistingUserByEmail(credentials.email);
         if (!userFoundInDb || !userFoundInDb.password) return null;
 
-        const passwordMatch = await bcrypt.compare(credentials.password, userFoundInDb.password);
+        const passwordMatch = await bcrypt.compare(
+          credentials.password,
+          userFoundInDb.password,
+        );
         if (!passwordMatch) return null;
 
         // ✅ Role detection logic
-        let determinedRole: string | undefined = userFoundInDb.role || undefined;
-        const studentCheck = await prisma.student.findUnique({ where: { userId: userFoundInDb.id } });
-        const educatorCheck = await prisma.educator.findUnique({ where: { userId: userFoundInDb.id } });
-        const consumerCheck = await prisma.consumer.findUnique({ where: { userId: userFoundInDb.id } });
-        const salesAgentCheck = await prisma.salesAgent.findUnique({ where: { userId: userFoundInDb.id } });
-        const clientCheck = await prisma.client.findUnique({ where: { userId: userFoundInDb.id } });
+        let determinedRole: string | undefined =
+          userFoundInDb.role || undefined;
+        const studentCheck = await prisma.student.findUnique({
+          where: { userId: userFoundInDb.id },
+        });
+        const educatorCheck = await prisma.educator.findUnique({
+          where: { userId: userFoundInDb.id },
+        });
+        const consumerCheck = await prisma.consumer.findUnique({
+          where: { userId: userFoundInDb.id },
+        });
+        const salesAgentCheck = await prisma.salesAgent.findUnique({
+          where: { userId: userFoundInDb.id },
+        });
+        const clientCheck = await prisma.client.findUnique({
+          where: { userId: userFoundInDb.id },
+        });
 
         if (studentCheck) determinedRole = "STUDENT";
         else if (consumerCheck) determinedRole = "CONSUMER";
@@ -223,7 +255,8 @@ export const authOptions: NextAuthOptions = {
           username: userFoundInDb.username ?? undefined,
           bio: userFoundInDb.bio ?? undefined,
           address: userFoundInDb.address ?? undefined,
-          profilePicture: (userFoundInDb.profilePicture ?? userFoundInDb.image) ?? undefined,
+          profilePicture:
+            userFoundInDb.profilePicture ?? userFoundInDb.image ?? undefined,
         };
       },
     }),
@@ -237,9 +270,15 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.loginCode) return null;
-        if (credentials.loginCode.length !== 6 || !/^\d+$/.test(credentials.loginCode)) return null;
+        if (
+          credentials.loginCode.length !== 6 ||
+          !/^\d+$/.test(credentials.loginCode)
+        )
+          return null;
 
-        const loginCodeResult = await findUserByLoginCode(credentials.loginCode);
+        const loginCodeResult = await findUserByLoginCode(
+          credentials.loginCode,
+        );
         if (!loginCodeResult || !loginCodeResult.user) return null;
 
         const user = loginCodeResult.user;
@@ -252,7 +291,7 @@ export const authOptions: NextAuthOptions = {
           username: user.username ?? undefined,
           bio: user.bio ?? undefined,
           address: user.address ?? undefined,
-          profilePicture: (user.profilePicture ?? user.image) ?? undefined,
+          profilePicture: user.profilePicture ?? user.image ?? undefined,
         };
       },
     }),
@@ -285,12 +324,12 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60,
     updateAge: 24 * 60 * 60,
-    generateSessionToken: () => randomUUID?.() ?? randomBytes(32).toString("hex"),
+    generateSessionToken: () =>
+      randomUUID?.() ?? randomBytes(32).toString("hex"),
   },
 
   // ✅ AUTO-LINK OAUTH LOGINS HERE
   callbacks: {
-
     async redirect({ url, baseUrl }) {
       const HUB_URL = "https://salesmanpro.site";
       const AUTH_HOST = new URL(baseUrl).hostname;
@@ -310,7 +349,7 @@ export const authOptions: NextAuthOptions = {
 
         // ✅ 2. EVERYTHING ELSE (hub, tenants, custom domains)
         // MUST go through handover to preserve session
-        const handoverUrl = new URL("/api/auth/callback", baseUrl);
+        const handoverUrl = new URL("/api/auth/handover", baseUrl);
 
         // 👉 If going to root hub, upgrade to /dashboards
         if (mainHubDomains.includes(targetHost)) {
@@ -320,14 +359,13 @@ export const authOptions: NextAuthOptions = {
         }
 
         return handoverUrl.toString();
-
       } catch (error) {
         return `${HUB_URL}/dashboards`;
       }
     },
     // async redirect({ url, baseUrl }) {
     //     // Define your Main Hub clearly
-    //     const HUB_URL = "https://salesmanpro.site"; 
+    //     const HUB_URL = "https://salesmanpro.site";
     //     const AUTH_HOST = new URL(baseUrl).hostname; // auth.salesmanpro.site
 
     //     // 1. Resolve the absolute destination URL
@@ -353,9 +391,9 @@ export const authOptions: NextAuthOptions = {
     //        * LOGIC B: If the target is a Tenant (subdomain.salesmanpro.site or customdomain.com)
     //        * We use the Handover route to sync the session safely.
     //        */
-    //       const handoverUrl = new URL("/api/auth/callback", baseUrl);
+    //       const handoverUrl = new URL("/api/auth/handover", baseUrl);
     //       handoverUrl.searchParams.set("target", finalRedirectUrl);
-          
+
     //       return handoverUrl.toString();
 
     //     } catch (error) {
@@ -392,9 +430,9 @@ export const authOptions: NextAuthOptions = {
 
     //     // 5. Logic for Tenants (Subdomains/Custom Domains)
     //     // Send them to your handover route to pass the session token safely
-    //     const handoverUrl = new URL("/api/auth/callback", baseUrl);
+    //     const handoverUrl = new URL("/api/auth/handover", baseUrl);
     //     handoverUrl.searchParams.set("target", finalRedirectUrl);
-        
+
     //     return handoverUrl.toString();
 
     //   } catch (error) {
@@ -406,11 +444,11 @@ export const authOptions: NextAuthOptions = {
     // async redirect({ url, baseUrl }) {
     //   // The `url` parameter is the destination URL after a successful login.
     //   // It's already the `callbackUrl` you passed to `signIn`.
-      
+
     //   // `url` might be a relative path (e.g., "/dashboard").
     //   // Check if the URL is relative.
     //   const isRelative = url.startsWith("/");
-      
+
     //   // If it's relative, combine it with the baseUrl to make it absolute.
     //   // Otherwise, the `url` is already the absolute `callbackUrl` from the client.
     //   const finalRedirectUrl = isRelative ? `${baseUrl}${url}` : url;
@@ -419,14 +457,14 @@ export const authOptions: NextAuthOptions = {
     //   // yet to generate a token inside the redirect callback.
     //   // The better pattern is to just return the URL and have the
     //   // client-side handle the token.
-      
+
     //   // For your cross-domain authentication, you need to append the token.
     //   // Instead of getting the session here, we will redirect to an
     //   // intermediary page on your auth domain that will have the session.
-      
+
     //   // 1. Redirect to a page on your auth domain, like `/redirecting`
     //   // const tempRedirect = new URL("/redirecting", baseUrl);
-      
+
     //   // 2. Pass the final destination (the tenant URL) as a query parameter.
     //   // tempRedirect.searchParams.set("callbackUrl", finalRedirectUrl);
 
@@ -445,12 +483,11 @@ export const authOptions: NextAuthOptions = {
     //   if (finalRedirectUrl.startsWith(baseUrl)) return finalRedirectUrl;
 
     //   // If it's cross-domain, send them to your SERVER-SIDE handover route
-    //   const handoverUrl = new URL("/api/auth/callback", baseUrl); // Points to your route.ts
+    //   const handoverUrl = new URL("/api/auth/handover", baseUrl); // Points to your route.ts
     //   handoverUrl.searchParams.set("target", finalRedirectUrl);
     //   return handoverUrl.toString();
-      
+
     // },
-    
 
     async signIn({ user, account, profile, credentials }) {
       // Skip if not OAuth
@@ -461,7 +498,7 @@ export const authOptions: NextAuthOptions = {
       // Determine the origin (which domain the request came from)
       // Use Next.js server headers() because NextAuth's signIn callback type does not provide `req`
       let origin = "";
-      
+
       if (typeof window === "undefined") {
         // We're on the server – use process.env or baseUrl fallback
         origin = baseUrl;
@@ -472,8 +509,10 @@ export const authOptions: NextAuthOptions = {
 
       //is origin or baseUrl the parent domain of salesmanpro.site? This is important for determining if the user should be an ADMIN or USER
       // user might be coming from salesmanpro.site or from a tenant domain like tenant1.salesmanpro.site and if so they should be a USER not an ADMIN
-      const isSalesmanPro = origin.includes("salesmanpro.site") || baseUrl.includes("salesmanpro.site");
-      
+      const isSalesmanPro =
+        origin.includes("salesmanpro.site") ||
+        baseUrl.includes("salesmanpro.site");
+
       const existingUser = await prisma.user.findUnique({
         where: { email: user.email },
       });
@@ -539,7 +578,7 @@ export const authOptions: NextAuthOptions = {
         },
       });
 
-      if(!isSalesmanPro) {
+      if (!isSalesmanPro) {
         const company = await prisma.company.findFirst({
           where: { domain: origin.replace("www.", "") },
         });
@@ -552,11 +591,11 @@ export const authOptions: NextAuthOptions = {
               companyId: company.id,
               userId: user.id,
             },
-            include: { user: true }
+            include: { user: true },
           });
         }
       }
-    
+
       return true;
     },
 
@@ -578,7 +617,6 @@ export const authOptions: NextAuthOptions = {
     },
 
     async session({ session, token }) {
-      
       // if (!token.isActive) {
       //   // ⛔ immediately invalidate session
       //   return null;
@@ -601,7 +639,7 @@ export const authOptions: NextAuthOptions = {
     },
   },
 
-  secret: aSharedSecret,//process.env.NEXTAUTH_SECRET,
+  secret: aSharedSecret, //process.env.NEXTAUTH_SECRET,
   pages: {
     signIn: "/signin",
   },
