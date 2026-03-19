@@ -33,7 +33,7 @@ jobs:
           # EOL
 
           # Add GitHub to known_hosts
-          # ssh-keyscan -p 443 ssh.github.com >> ~/.ssh/known_hosts
+          ssh-keyscan -p 443 ssh.github.com >> ~/.ssh/known_hosts
 
       - name: 🚀 Deploy to VPS
         run: |
@@ -59,7 +59,7 @@ jobs:
             # git log origin/main -1 --oneline
 
             echo "📥 Pulling latest code..."
-            ssh -T -p 443 git@ssh.github.com
+            # ssh -T -p 443 git@ssh.github.com
             git pull origin main
 
             echo "📦 Installing dependencies..."
