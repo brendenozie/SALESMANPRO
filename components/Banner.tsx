@@ -123,12 +123,14 @@ export default function Banner() {
       </div>
 
       {/* Headline */}
-      <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.1] mb-6">
-        Create your online store <br className="md:block" />
-        <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-yellow-400">
-          in minutes, not months.
-        </span>
-      </h1>
+      <h1 className="text-4xl md:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.2] md:leading-[1.1] mb-6">
+          {/* Use a Hero Icon here for a small visual 'spark' if needed */}
+          Create your online store 
+          <br className="hidden md:block" /> 
+          <span className="block mt-2 md:mt-0 text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-500">
+            in minutes, not months.
+          </span>
+        </h1>
 
 
       <p className="text-lg md:text-xl text-slate-500 mb-10 max-w-2xl mx-auto leading-relaxed">
