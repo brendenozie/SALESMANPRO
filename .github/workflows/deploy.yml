@@ -22,22 +22,9 @@ jobs:
           # Add the host to known_hosts to prevent the "Host verification" hang
           ssh-keyscan -p 24 -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-          # # Ensure SSH config exists
-          # mkdir -p ~/.ssh
-
-          # cat >> ~/.ssh/config << 'EOL'
-          # Host github.com
-          #   Hostname ssh.github.com
-          #   Port 443
-          #   User git
-          # EOL
-
-          # Add GitHub to known_hosts
-          # ssh-keyscan -p 443 >> ~/.ssh/known_hosts
-
       - name: 🚀 Deploy to VPS
         run: |
-          ssh -T -p 24 ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          ssh -p 24 ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
             # Load NVM/Node paths (Critical for non-root users)
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
@@ -45,21 +32,7 @@ jobs:
             echo "🔐 Changing to project directory..."
             cd /var/www/salesmanpro
 
-            # echo "📍 Current branch:"
-            #git branch
-
-            # echo "🔍 Git status:"
-            #git status
-
-            # echo "📌 Latest commit:"
-            # git log -1 --oneline
-
-            # echo "🌐 Remote commit:"
-            git fetch origin
-            # git log origin/main -1 --oneline
-
             echo "📥 Pulling latest code..."
-            # ssh -T -p 443 git@ssh.github.com
             git pull origin main
 
             echo "📦 Installing dependencies..."
@@ -71,9 +44,6 @@ jobs:
             pm2 scale salesmanpro 1
 
             echo "🏗️ Building Next.js app..."
-            echo "🧹 Cleaning old build..."
-            #rm -rf .next
-
             # Leveraging your 8GB RAM capacity
             export NODE_OPTIONS="--max-old-space-size=6144"
             npm run build
