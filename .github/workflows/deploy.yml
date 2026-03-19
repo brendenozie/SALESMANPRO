@@ -33,11 +33,11 @@ jobs:
           # EOL
 
           # Add GitHub to known_hosts
-          ssh-keyscan -p 443 ssh.github.com >> ~/.ssh/known_hosts
+          ssh-keyscan -p 443 >> ~/.ssh/known_hosts
 
       - name: 🚀 Deploy to VPS
         run: |
-          ssh -p 24 ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          ssh -T -p 24 ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
             # Load NVM/Node paths (Critical for non-root users)
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
