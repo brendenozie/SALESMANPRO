@@ -1,13 +1,12 @@
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { verifyBackupSecret } from "@/lib/verifyBackupSecret";
-import { encrypt } from "@/lib/crypto";
 
-export const runtime = "nodejs"; // IMPORTANT (must not be edge)
+export const runtime = "nodejs";
 
 export const GET = withApiHandler(async (req) => {
   verifyBackupSecret(req);
-  
+
   const encoder = new TextEncoder();
 
   const models = Object.keys(
@@ -16,23 +15,38 @@ export const GET = withApiHandler(async (req) => {
 
   const stream = new ReadableStream({
     async start(controller) {
-      controller.enqueue(encoder.encode("{\n"));
+      const errorMap: Record<string, string> = {};
 
+      // META
+      controller.enqueue(
+        encoder.encode(
+          JSON.stringify({
+            meta: {
+              version: "v1",
+              timestamp: Date.now(),
+            },
+            data: {},
+          }).replace(/}$/, ", \"data\": {")
+        )
+      );
+
+      // MODELS
       for (let i = 0; i < models.length; i++) {
         const modelName = models[i];
-        const prismaKey = modelName.charAt(0).toLowerCase() + modelName.slice(1);
+        const prismaKey =
+          modelName.charAt(0).toLowerCase() + modelName.slice(1);
 
         const modelClient = (prisma as any)[prismaKey];
-
         if (!modelClient) continue;
 
         controller.enqueue(
-          encoder.encode(`"${modelName}": [\n`)
+          encoder.encode(`"${modelName}":[`)
         );
 
         const batchSize = 1000;
         let skip = 0;
-        let batch: any[];
+        let batch: any[] = [];
+        let first = true;
 
         try {
           do {
@@ -41,49 +55,45 @@ export const GET = withApiHandler(async (req) => {
               take: batchSize,
             });
 
-            for (let j = 0; j < batch.length; j++) {
-              const json = JSON.stringify(batch[j]);
-              
-              // const encrypted = encrypt(json);
-              // controller.enqueue(encoder.encode(encrypted));
+            for (const record of batch) {
+              try {
+                // sanitize
+                const clean = sanitize(record);
 
-              controller.enqueue(
-                encoder.encode(json)
-              );
+                const json = JSON.stringify(clean);
 
-              if (
-                j !== batch.length - 1 ||
-                batch.length === batchSize
-              ) {
-                controller.enqueue(
-                  encoder.encode(",\n")
-                );
+                if (!first) {
+                  controller.enqueue(encoder.encode(","));
+                }
+
+                controller.enqueue(encoder.encode(json));
+                first = false;
+              } catch {
+                // skip bad row
               }
             }
 
             skip += batchSize;
           } while (batch.length === batchSize);
-        } catch (error: any) {
-          controller.enqueue(
-            encoder.encode(
-              `{"__error":"${error.message}"}`
-            )
-          );
+        } catch (err: any) {
+          errorMap[modelName] = err.message;
         }
 
-        controller.enqueue(encoder.encode("\n]"));
+        controller.enqueue(encoder.encode("]"));
 
         if (i !== models.length - 1) {
-          controller.enqueue(encoder.encode(",\n"));
+          controller.enqueue(encoder.encode(","));
         }
       }
 
-      controller.enqueue(encoder.encode("\n}"));
+      // CLOSE DATA + ADD ERRORS
+      controller.enqueue(
+        encoder.encode(`}, "errors": ${JSON.stringify(errorMap)}}`)
+      );
+
       controller.close();
     },
   });
-
-  
 
   return new Response(stream, {
     headers: {
@@ -92,6 +102,126 @@ export const GET = withApiHandler(async (req) => {
     },
   });
 });
+
+// --------- SANITIZER (migration-safe)
+function sanitize(record: any) {
+  const cleaned: any = {};
+
+  for (const key in record) {
+    const value = record[key];
+
+    if (value === null) continue; // drop nulls
+    if (value === undefined) continue;
+
+    // Fix Prisma JSON weirdness
+    if (
+      typeof value === "object" &&
+      value !== null &&
+      value.create
+    ) {
+      continue;
+    }
+
+    cleaned[key] = value;
+  }
+
+  return cleaned;
+}
+// import prisma from "@/server/db/prismadb";
+// import { withApiHandler } from "@/lib/hooks/withApiHandler";
+// import { verifyBackupSecret } from "@/lib/verifyBackupSecret";
+// import { encrypt } from "@/lib/crypto";
+
+// export const runtime = "nodejs"; // IMPORTANT (must not be edge)
+
+// export const GET = withApiHandler(async (req) => {
+//   verifyBackupSecret(req);
+  
+//   const encoder = new TextEncoder();
+
+//   const models = Object.keys(
+//     (prisma as any)._runtimeDataModel.models
+//   );
+
+//   const stream = new ReadableStream({
+//     async start(controller) {
+//       controller.enqueue(encoder.encode("{\n"));
+
+//       for (let i = 0; i < models.length; i++) {
+//         const modelName = models[i];
+//         const prismaKey = modelName.charAt(0).toLowerCase() + modelName.slice(1);
+
+//         const modelClient = (prisma as any)[prismaKey];
+
+//         if (!modelClient) continue;
+
+//         controller.enqueue(
+//           encoder.encode(`"${modelName}": [\n`)
+//         );
+
+//         const batchSize = 1000;
+//         let skip = 0;
+//         let batch: any[];
+
+//         try {
+//           do {
+//             batch = await modelClient.findMany({
+//               skip,
+//               take: batchSize,
+//             });
+
+//             for (let j = 0; j < batch.length; j++) {
+//               const json = JSON.stringify(batch[j]);
+              
+//               // const encrypted = encrypt(json);
+//               // controller.enqueue(encoder.encode(encrypted));
+
+//               controller.enqueue(
+//                 encoder.encode(json)
+//               );
+
+//               if (
+//                 j !== batch.length - 1 ||
+//                 batch.length === batchSize
+//               ) {
+//                 controller.enqueue(
+//                   encoder.encode(",\n")
+//                 );
+//               }
+//             }
+
+//             skip += batchSize;
+//           } while (batch.length === batchSize);
+//         } catch (error: any) {
+//           controller.enqueue(
+//             encoder.encode(
+//               `{"__error":"${error.message}"}`
+//             )
+//           );
+//         }
+
+//         controller.enqueue(encoder.encode("\n]"));
+
+//         if (i !== models.length - 1) {
+//           controller.enqueue(encoder.encode(",\n"));
+//         }
+//       }
+
+//       controller.enqueue(encoder.encode("\n}"));
+//       controller.close();
+//     },
+//   });
+
+  
+
+//   return new Response(stream, {
+//     headers: {
+//       "Content-Type": "application/json",
+//       "Content-Disposition": `attachment; filename=backup-${Date.now()}.json`,
+//     },
+//   });
+// });
+
 // import { NextResponse } from "next/server";
 // import prisma from "@/server/db/prismadb";
 // import { withApiHandler } from "@/lib/hooks/withApiHandler";
