@@ -124,7 +124,7 @@ export default function Banner() {
 
       {/* Headline */}
       <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.1] mb-6">
-        Build your online store <br className="hidden md:block" />
+        Create your online store <br className="hidden md:block" />
         <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-yellow-400">
           in minutes, not months.
         </span>
