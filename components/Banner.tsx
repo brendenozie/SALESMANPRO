@@ -152,7 +152,9 @@ export default function Banner() {
                     )}
        
         
-        <button className="w-full sm:w-auto px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-full font-semibold text-lg hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center justify-center gap-2">
+        <button 
+        onClick={() => window.open("https://www.youtube.com/watch?v=Wr-FUeEvWoc", "_blank")}        
+        className="w-full sm:w-auto px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-full font-semibold text-lg hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center justify-center gap-2">
           <PlayCircleIcon className="w-5 h-5 text-slate-400" />
           Watch Demo
         </button>

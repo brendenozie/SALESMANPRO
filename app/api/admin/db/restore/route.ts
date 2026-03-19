@@ -9,77 +9,85 @@ export const POST = withApiHandler(async (req) => {
   verifyBackupSecret(req);
 
   const restoreId = crypto.randomUUID();
-
   const reader = req.body?.getReader();
-  if (!reader) {
-    return Response.json({ error: "No stream" }, { status: 400 });
-  }
+  if (!reader) return Response.json({ error: "No stream" }, { status: 400 });
 
+  // 1. READ STREAM INTO BUFFER
   let buffer = "";
-  const decoder = new TextDecoder();
+  const decoder = new TextEncoder();
+  const streamDecoder = new TextDecoder();
 
-  const results: Record<string, any> = {};
-  const errors: Record<string, string> = {};
-
-  let parsed: any = null;
-
-  // 🔥 Read full JSON safely (stream → string)
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
-    buffer += decoder.decode(value, { stream: true });
+    buffer += streamDecoder.decode(value, { stream: true });
   }
 
+  let parsed: any;
   try {
     parsed = JSON.parse(buffer);
   } catch {
-    return Response.json(
-      { error: "Invalid JSON backup" },
-      { status: 400 }
-    );
+    return Response.json({ error: "Invalid JSON backup" }, { status: 400 });
   }
 
   const data = parsed.data || {};
+  const modelsMeta = (prisma as any)._runtimeDataModel.models;
+  const results: Record<string, any> = {};
+  const errors: Record<string, string> = {};
 
+  // 2. PROCESS MODELS
   for (const modelName of Object.keys(data)) {
-    const prismaKey =
-      modelName.charAt(0).toLowerCase() + modelName.slice(1);
-
+    const meta = modelsMeta[modelName];
+    const prismaKey = modelName.charAt(0).toLowerCase() + modelName.slice(1);
     const modelClient = (prisma as any)[prismaKey];
-    if (!modelClient) {
-      errors[modelName] = "Model not found";
+
+    if (!modelClient || !meta) {
+      errors[modelName] = "Model not found in current schema";
       continue;
     }
 
     const records = data[modelName];
-    if (!Array.isArray(records)) continue;
+    if (!Array.isArray(records) || records.length === 0) continue;
 
     try {
+      // CLEAR EXISTING DATA
       await modelClient.deleteMany();
 
       const batchSize = 500;
+      let restoredCount = 0;
 
+      // 3. TRANSACTIONAL BATCH PROCESSING
       for (let i = 0; i < records.length; i += batchSize) {
         const batch = records.slice(i, i + batchSize);
 
-        // 🔥 Try bulk insert
+        // Sanitize every record in the batch based on DB schema
+        const sanitizedBatch = batch.map((rec) =>
+          sanitizeForRestore(rec, meta),
+        );
+
         try {
-          await modelClient.createMany({
-            data: batch,
+          // Attempt high-speed bulk insert
+          const result = await modelClient.createMany({
+            data: sanitizedBatch,
             skipDuplicates: true,
           });
-        } catch {
-          // 🔥 fallback row-by-row
-          for (const record of batch) {
+          restoredCount += result.count;
+        } catch (bulkErr) {
+          // FALLBACK: Row-by-row if the batch contains a poisoned record
+          console.error(
+            `Bulk insert failed for ${modelName}, falling back to individual creates...`,
+          );
+          for (const cleanRecord of sanitizedBatch) {
             try {
-              const clean = sanitizeForRestore(record);
-              await modelClient.create({ data: clean });
-            } catch (err: any) {
-              console.log("Skipped bad row:", err.message);
+              await modelClient.create({ data: cleanRecord });
+              restoredCount++;
+            } catch (rowErr: any) {
+              console.warn(`Skipping row in ${modelName}:`, rowErr.message);
             }
           }
         }
 
+        // Update progress tracking
         setProgress(restoreId, {
           currentModel: modelName,
           total: records.length,
@@ -87,7 +95,7 @@ export const POST = withApiHandler(async (req) => {
         });
       }
 
-      results[modelName] = `${records.length} restored`;
+      results[modelName] = `${restoredCount} restored`;
     } catch (err: any) {
       errors[modelName] = err.message;
     }
@@ -101,19 +109,70 @@ export const POST = withApiHandler(async (req) => {
   });
 });
 
-// --------- RESTORE SANITIZER
-function sanitizeForRestore(record: any) {
+/**
+ * SCHEMA-AWARE RESTORE SANITIZER
+ * Tuned specifically for Prisma + MongoDB
+ */
+function sanitizeForRestore(record: any, modelMeta: any) {
   const cleaned: any = {};
 
-  for (const key in record) {
-    const value = record[key];
+  for (const field of modelMeta.fields) {
+    // CRITICAL: Skip relation objects (e.g., "user": { ... })
+    // We only want scalar fields (e.g., "userId": "...")
+    if (field.kind !== "scalar") continue;
 
-    if (value === undefined) continue;
+    const key = field.name;
+    let value = record[key];
 
-    // Prevent null crashes on required fields
-    if (value === null) continue;
+    // Handle missing/null values for required fields
+    if (value === undefined || value === null) {
+      if (field.isRequired && !field.hasDefaultValue) {
+        if (field.type === "String") value = "";
+        else if (field.type === "Int" || field.type === "Float") value = 0;
+        else if (field.type === "Boolean") value = false;
+        else if (field.type === "DateTime") value = new Date();
+        else continue;
+      } else {
+        cleaned[key] = null;
+        continue;
+      }
+    }
 
-    cleaned[key] = value;
+    try {
+      switch (field.type) {
+        case "DateTime":
+          const d = new Date(value);
+          cleaned[key] = isNaN(d.getTime()) ? new Date() : d;
+          break;
+
+        case "Int":
+        case "Float":
+          cleaned[key] = Number(value);
+          break;
+
+        case "Boolean":
+          cleaned[key] =
+            typeof value === "string" ? value === "true" : Boolean(value);
+          break;
+
+        case "Json":
+          if (typeof value === "string") {
+            try {
+              cleaned[key] = JSON.parse(value);
+            } catch {
+              cleaned[key] = value;
+            }
+          } else {
+            cleaned[key] = value;
+          }
+          break;
+
+        default:
+          cleaned[key] = value;
+      }
+    } catch {
+      // Skip field if parsing fails
+    }
   }
 
   return cleaned;
@@ -138,7 +197,7 @@ function sanitizeForRestore(record: any) {
 
 //   const results: Record<string, any> = {};
 //   const errors: Record<string, string> = {};
-  
+
 //   // 1. Generate ONE restoreId for the entire operation
 //   const restoreId = crypto.randomUUID();
 
@@ -244,7 +303,7 @@ function sanitizeForRestore(record: any) {
 //       }
 
 //       results[modelName] = `${records.length} restored`;
-          
+
 //       return Response.json({
 //         success: true,
 //         restoreId,
