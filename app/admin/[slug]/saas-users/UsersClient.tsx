@@ -114,7 +114,7 @@ export default function UsersClient({
     if (filterPlan) newSearchParams.set("plan", filterPlan);
     if (filterRole) newSearchParams.set("role", filterRole);
     
-    router.push(`/admin/${companyId}/users?${newSearchParams.toString()}`);
+    router.push(`/admin/${companyId}/saas-users?${newSearchParams.toString()}`);
   }, [router, companyId, currentPage, searchTerm, filterStatus, filterPlan, filterRole]);
 
   // Handler for page change

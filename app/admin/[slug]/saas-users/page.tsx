@@ -48,7 +48,7 @@ export default async function UsersPage({ params, searchParams }: PageProps) {
 
   // Build the WHERE clause for the Prisma query
   const where: any = {
-    companyId: companyId,
+    // companyId: companyId,
     // search by name or email
     OR: [
       { name: { contains: searchTerm, mode: "insensitive" } },

@@ -124,11 +124,12 @@ export default function Banner() {
 
       {/* Headline */}
       <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.1] mb-6">
-        Launch your dream <br className="hidden md:block" />
+        Build your online store <br className="hidden md:block" />
         <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-yellow-400">
-          online universe.
+          in minutes, not months.
         </span>
       </h1>
+
 
       <p className="text-lg md:text-xl text-slate-500 mb-10 max-w-2xl mx-auto leading-relaxed">
         The all-in-one platform to build, market, and manage your store. 
