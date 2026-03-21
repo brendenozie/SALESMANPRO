@@ -330,39 +330,39 @@ export const authOptions: NextAuthOptions = {
 
   // ✅ AUTO-LINK OAUTH LOGINS HERE
   callbacks: {
-    async redirect({ url, baseUrl }) {
-      const HUB_URL = "https://salesmanpro.site";
-      const AUTH_HOST = new URL(baseUrl).hostname;
+    // async redirect({ url, baseUrl }) {
+    //   const HUB_URL = "https://salesmanpro.site";
+    //   const AUTH_HOST = new URL(baseUrl).hostname;
 
-      const finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
+    //   const finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
 
-      try {
-        const targetUrlObj = new URL(finalRedirectUrl);
-        const targetHost = targetUrlObj.hostname;
+    //   try {
+    //     const targetUrlObj = new URL(finalRedirectUrl);
+    //     const targetHost = targetUrlObj.hostname;
 
-        const mainHubDomains = ["salesmanpro.site", "www.salesmanpro.site"];
+    //     const mainHubDomains = ["salesmanpro.site", "www.salesmanpro.site"];
 
-        // ✅ 1. INTERNAL auth routes (safe, session exists)
-        if (targetHost === AUTH_HOST && targetUrlObj.pathname !== "/") {
-          return finalRedirectUrl;
-        }
+    //     // ✅ 1. INTERNAL auth routes (safe, session exists)
+    //     if (targetHost === AUTH_HOST && targetUrlObj.pathname !== "/") {
+    //       return finalRedirectUrl;
+    //     }
 
-        // ✅ 2. EVERYTHING ELSE (hub, tenants, custom domains)
-        // MUST go through handover to preserve session
-        const handoverUrl = new URL("/api/auth/handover", baseUrl);
+    //     // ✅ 2. EVERYTHING ELSE (hub, tenants, custom domains)
+    //     // MUST go through handover to preserve session
+    //     const handoverUrl = new URL("/api/auth/handover", baseUrl);
 
-        // 👉 If going to root hub, upgrade to /dashboards
-        if (mainHubDomains.includes(targetHost)) {
-          handoverUrl.searchParams.set("target", `${HUB_URL}/dashboards`);
-        } else {
-          handoverUrl.searchParams.set("target", finalRedirectUrl);
-        }
+    //     // 👉 If going to root hub, upgrade to /dashboards
+    //     if (mainHubDomains.includes(targetHost)) {
+    //       handoverUrl.searchParams.set("target", `${HUB_URL}/dashboards`);
+    //     } else {
+    //       handoverUrl.searchParams.set("target", finalRedirectUrl);
+    //     }
 
-        return handoverUrl.toString();
-      } catch (error) {
-        return `${HUB_URL}/dashboards`;
-      }
-    },
+    //     return handoverUrl.toString();
+    //   } catch (error) {
+    //     return `${HUB_URL}/dashboards`;
+    //   }
+    // },
     // async redirect({ url, baseUrl }) {
     //     // Define your Main Hub clearly
     //     const HUB_URL = "https://salesmanpro.site";
@@ -441,53 +441,52 @@ export const authOptions: NextAuthOptions = {
     //   }
     // },
 
-    // async redirect({ url, baseUrl }) {
-    //   // The `url` parameter is the destination URL after a successful login.
-    //   // It's already the `callbackUrl` you passed to `signIn`.
+    async redirect({ url, baseUrl }) {
+      // The `url` parameter is the destination URL after a successful login.
+      // It's already the `callbackUrl` you passed to `signIn`.
 
-    //   // `url` might be a relative path (e.g., "/dashboard").
-    //   // Check if the URL is relative.
-    //   const isRelative = url.startsWith("/");
+      // `url` might be a relative path (e.g., "/dashboard").
+      // Check if the URL is relative.
+      const isRelative = url.startsWith("/");
 
-    //   // If it's relative, combine it with the baseUrl to make it absolute.
-    //   // Otherwise, the `url` is already the absolute `callbackUrl` from the client.
-    //   const finalRedirectUrl = isRelative ? `${baseUrl}${url}` : url;
+      // If it's relative, combine it with the baseUrl to make it absolute.
+      // Otherwise, the `url` is already the absolute `callbackUrl` from the client.
+      const finalRedirectUrl = isRelative ? `${baseUrl}${url}` : url;
 
-    //   // The problem is that after the first login, the session isn't available
-    //   // yet to generate a token inside the redirect callback.
-    //   // The better pattern is to just return the URL and have the
-    //   // client-side handle the token.
+      // The problem is that after the first login, the session isn't available
+      // yet to generate a token inside the redirect callback.
+      // The better pattern is to just return the URL and have the
+      // client-side handle the token.
 
-    //   // For your cross-domain authentication, you need to append the token.
-    //   // Instead of getting the session here, we will redirect to an
-    //   // intermediary page on your auth domain that will have the session.
+      // For your cross-domain authentication, you need to append the token.
+      // Instead of getting the session here, we will redirect to an
+      // intermediary page on your auth domain that will have the session.
 
-    //   // 1. Redirect to a page on your auth domain, like `/redirecting`
-    //   // const tempRedirect = new URL("/redirecting", baseUrl);
+      // 1. Redirect to a page on your auth domain, like `/redirecting`
+      // const tempRedirect = new URL("/redirecting", baseUrl);
 
-    //   // 2. Pass the final destination (the tenant URL) as a query parameter.
-    //   // tempRedirect.searchParams.set("callbackUrl", finalRedirectUrl);
+      // 2. Pass the final destination (the tenant URL) as a query parameter.
+      // tempRedirect.searchParams.set("callbackUrl", finalRedirectUrl);
 
-    //   // Let next-auth handle the session creation, then send the user to this temp page.
-    //   // This works because by the time the user hits "/redirecting", the session cookie is set.
-    //   // if (finalRedirectUrl.startsWith(baseUrl)) {
-    //     // It's an internal redirect, just go there.
-    //     // return finalRedirectUrl;
-    //   // } else {
-    //      // It's an external redirect, go via the temp page.
-    //     // return tempRedirect.toString();
-    //   // }
-    //   // const finalRedirectUrl = isRelative ? `${baseUrl}${url}` : url;
+      // Let next-auth handle the session creation, then send the user to this temp page.
+      // This works because by the time the user hits "/redirecting", the session cookie is set.
+      // if (finalRedirectUrl.startsWith(baseUrl)) {
+      // It's an internal redirect, just go there.
+      // return finalRedirectUrl;
+      // } else {
+      // It's an external redirect, go via the temp page.
+      // return tempRedirect.toString();
+      // }
+      // const finalRedirectUrl = isRelative ? `${baseUrl}${url}` : url;
 
-    //   // If it's internal, just go there
-    //   if (finalRedirectUrl.startsWith(baseUrl)) return finalRedirectUrl;
+      // If it's internal, just go there
+      if (finalRedirectUrl.startsWith(baseUrl)) return finalRedirectUrl;
 
-    //   // If it's cross-domain, send them to your SERVER-SIDE handover route
-    //   const handoverUrl = new URL("/api/auth/handover", baseUrl); // Points to your route.ts
-    //   handoverUrl.searchParams.set("target", finalRedirectUrl);
-    //   return handoverUrl.toString();
-
-    // },
+      // If it's cross-domain, send them to your SERVER-SIDE handover route
+      const handoverUrl = new URL("/api/auth/handover", baseUrl); // Points to your route.ts
+      handoverUrl.searchParams.set("target", finalRedirectUrl);
+      return handoverUrl.toString();
+    },
 
     async signIn({ user, account, profile, credentials }) {
       // Skip if not OAuth
