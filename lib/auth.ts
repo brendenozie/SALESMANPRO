@@ -342,7 +342,7 @@ export const authOptions: NextAuthOptions = {
 
     //     const mainHubDomains = ["salesmanpro.site", "www.salesmanpro.site"];
 
-    //     // ✅ 1. INTERNAL auth routes (safe, session exists)
+    //     // ✅ 1. INTERNAL auth routes (safe, session exists)z
     //     if (targetHost === AUTH_HOST && targetUrlObj.pathname !== "/") {
     //       return finalRedirectUrl;
     //     }
@@ -483,7 +483,7 @@ export const authOptions: NextAuthOptions = {
       if (finalRedirectUrl.startsWith(baseUrl)) return finalRedirectUrl;
 
       // If it's cross-domain, send them to your SERVER-SIDE handover route
-      const handoverUrl = new URL("/api/auth/handover", baseUrl); // Points to your route.ts
+      const handoverUrl = new URL("/api/auth/callback", baseUrl); // Points to your route.ts
       handoverUrl.searchParams.set("target", finalRedirectUrl);
       return handoverUrl.toString();
     },
