@@ -37,7 +37,9 @@ jobs:
 
             echo "📦 Installing dependencies..."
             # 'npm ci' is faster and more reliable for production
-            npm ci
+            # npm ci
+            # 'ci' stands for Clean Install
+            npm ci 
 
             # 1. Free up RAM for the build
             echo "📉 Scaling down PM2 to 1 instance..."
