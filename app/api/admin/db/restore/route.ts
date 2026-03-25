@@ -5,6 +5,14 @@ import { setProgress } from "@/lib/restoreProgress";
 
 export const runtime = "nodejs";
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: "10mb", // Set this to the max size you expect (e.g., 20mb, 50mb)
+    },
+  },
+};
+
 export const POST = withApiHandler(async (req) => {
   verifyBackupSecret(req);
 
