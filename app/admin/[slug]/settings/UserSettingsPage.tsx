@@ -24,7 +24,7 @@ import { changePassword, deactivateAccount, logoutUser, updateNotificationPrefer
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
   
   // --- NEW: Derive CNAME Target and define A Record IP ---
-  const A_RECORD_IP = process.env.VPS_IP || '72.61.178.94'; // From your example: A 14400 72.61.178.94
+  const A_RECORD_IP = process.env.VPS_IP || '161.97.149.171'; // From your example: A 14400 161.97.149.171
   // For the CNAME value, I will use a placeholder derived from companyId as per your structure: 
   // --- END NEW DNS DEFINITIONS ---
 
