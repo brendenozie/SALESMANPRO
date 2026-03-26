@@ -1,6 +1,7 @@
 // File: lib/auth.ts
 
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { headers } from "next/headers";
 import { NextAuthOptions } from "next-auth";
 import { getServerSession } from "next-auth/next";
 import GoogleProvider from "next-auth/providers/google";
@@ -488,36 +489,49 @@ export const authOptions: NextAuthOptions = {
     //   return handoverUrl.toString();
     // },
 
-    async signIn({ user, account, profile, credentials }) {
-      // Skip if not OAuth
-      if (!account || account.provider === "credentials") return true;
+    //import { headers } from "next/headers";
+    //// ... other imports
 
+    async signIn({ user, account, profile }) {
+      // 1. Skip if not OAuth
+      if (!account || account.provider === "credentials") return true;
       if (!user.email) return false;
 
-      // Determine the origin (which domain the request came from)
-      // Use Next.js server headers() because NextAuth's signIn callback type does not provide `req`
-      let origin = "";
+      // 2. Determine the origin (Server-side)
+      const host = (await headers()).get("host") || ""; // e.g., "tenant1.salesmanpro.site"
+      // const isSalesmanPro = host === "salesmanpro.site" || host === "www.salesmanpro.site";
 
-      if (typeof window === "undefined") {
-        // We're on the server – use process.env or baseUrl fallback
-        origin = baseUrl;
-      } else {
-        // We're on the client
-        origin = window.location.origin;
-      }
+      // Removes the port (e.g., :3000) and the "www." prefix
+      const cleanHost = host.split(":")[0].replace(/^www\./, "");
 
-      //is origin or baseUrl the parent domain of salesmanpro.site? This is important for determining if the user should be an ADMIN or USER
-      // user might be coming from salesmanpro.site or from a tenant domain like tenant1.salesmanpro.site and if so they should be a USER not an ADMIN
-      const isSalesmanPro =
-        origin.includes("salesmanpro.site") ||
-        baseUrl.includes("salesmanpro.site");
+      // 1. Define your primary domains
+      const mainDomains = ["salesmanpro.site"];
 
+      // 2. Check for exact match + allow localhost to be ADMIN for testing
+      const isMainApp =
+        mainDomains.includes(cleanHost) ||
+        host.includes("localhost") ||
+        host.includes("127.0.0.1");
+
+      // 3. Assign role
+      const assignedRole = isMainApp ? "ADMIN" : "USER";
+
+      // 3. Look for existing user
       const existingUser = await prisma.user.findUnique({
         where: { email: user.email },
       });
 
       if (existingUser) {
-        // ✅ Check if this OAuth provider is already linked
+        // 1. ROLE ELEVATION LOGIC
+        // If an existing tenant-user logs into the main site, upgrade them to ADMIN
+        if (isMainApp && existingUser.role === "USER") {
+          await prisma.user.update({
+            where: { id: existingUser.id },
+            data: { role: "ADMIN" },
+          });
+        }
+
+        // Check if this specific account (provider + providerId) is already linked
         const existingAccount = await prisma.account.findUnique({
           where: {
             provider_providerAccountId: {
@@ -528,10 +542,10 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!existingAccount) {
-          // ✅ Link the new OAuth provider to the existing user
+          // ✅ LINK: The user exists but hasn't used this provider before
           await prisma.account.create({
             data: {
-              userId: existingUser.id,
+              userId: existingUser.id, // Use DB ID, not OAuth ID
               provider: account.provider,
               providerAccountId: account.providerAccountId,
               type: account.type,
@@ -545,21 +559,18 @@ export const authOptions: NextAuthOptions = {
             },
           });
         }
-
-        // ✅ Allow sign in — this fixes OAuthAccountNotLinked
         return true;
       }
 
-      // New OAuth signup → decide role based on origin
-      const assignedRole = isSalesmanPro ? "ADMIN" : "USER";
+      // 4. NEW USER PATH
+      // const assignedRole = isSalesmanPro ? "ADMIN" : "USER";
 
-      // ✅ If no existing user, create a new one
-      await prisma.user.create({
+      const newUser = await prisma.user.create({
         data: {
           email: user.email,
           name: user.name ?? "",
           image: user.image,
-          role: assignedRole, // Default role
+          role: assignedRole,
           accounts: {
             create: {
               provider: account.provider,
@@ -577,26 +588,138 @@ export const authOptions: NextAuthOptions = {
         },
       });
 
-      if (!isSalesmanPro) {
+      // 5. TENANT LOGIC
+      if (!isMainApp) {
+        // Extract domain (remove port if local dev)
+        const domain = host.split(":")[0].replace("www.", "");
+
         const company = await prisma.company.findFirst({
-          where: { domain: origin.replace("www.", "") },
+          where: { domain: domain },
         });
 
         if (company) {
-          const consumer = await prisma.consumer.upsert({
-            where: { userId: user.id },
+          await prisma.consumer.upsert({
+            where: { userId: newUser.id },
             update: {},
             create: {
               companyId: company.id,
-              userId: user.id,
+              userId: newUser.id,
             },
-            include: { user: true },
           });
         }
       }
 
       return true;
     },
+    // async signIn({ user, account, profile, credentials }) {
+    //   // Skip if not OAuth
+    //   if (!account || account.provider === "credentials") return true;
+
+    //   if (!user.email) return false;
+
+    //   // Determine the origin (which domain the request came from)
+    //   // Use Next.js server headers() because NextAuth's signIn callback type does not provide `req`
+    //   let origin = "";
+
+    //   if (typeof window === "undefined") {
+    //     // We're on the server – use process.env or baseUrl fallback
+    //     origin = baseUrl;
+    //   } else {
+    //     // We're on the client
+    //     origin = window.location.origin;
+    //   }
+
+    //   //is origin or baseUrl the parent domain of salesmanpro.site? This is important for determining if the user should be an ADMIN or USER
+    //   // user might be coming from salesmanpro.site or from a tenant domain like tenant1.salesmanpro.site and if so they should be a USER not an ADMIN
+    //   const isSalesmanPro =
+    //     origin.includes("salesmanpro.site") ||
+    //     baseUrl.includes("salesmanpro.site");
+
+    //   const existingUser = await prisma.user.findUnique({
+    //     where: { email: user.email },
+    //   });
+
+    //   if (existingUser) {
+    //     // ✅ Check if this OAuth provider is already linked
+    //     const existingAccount = await prisma.account.findUnique({
+    //       where: {
+    //         provider_providerAccountId: {
+    //           provider: account.provider,
+    //           providerAccountId: account.providerAccountId,
+    //         },
+    //       },
+    //     });
+
+    //     if (!existingAccount) {
+    //       // ✅ Link the new OAuth provider to the existing user
+    //       await prisma.account.create({
+    //         data: {
+    //           userId: existingUser.id,
+    //           provider: account.provider,
+    //           providerAccountId: account.providerAccountId,
+    //           type: account.type,
+    //           access_token: account.access_token,
+    //           refresh_token: account.refresh_token,
+    //           expires_at: account.expires_at,
+    //           token_type: account.token_type,
+    //           scope: account.scope,
+    //           id_token: account.id_token,
+    //           session_state: account.session_state,
+    //         },
+    //       });
+    //     }
+
+    //     // ✅ Allow sign in — this fixes OAuthAccountNotLinked
+    //     return true;
+    //   }
+
+    //   // New OAuth signup → decide role based on origin
+    //   const assignedRole = isSalesmanPro ? "ADMIN" : "USER";
+
+    //   // ✅ If no existing user, create a new one
+    //   await prisma.user.create({
+    //     data: {
+    //       email: user.email,
+    //       name: user.name ?? "",
+    //       image: user.image,
+    //       role: assignedRole, // Default role
+    //       accounts: {
+    //         create: {
+    //           provider: account.provider,
+    //           providerAccountId: account.providerAccountId,
+    //           type: account.type,
+    //           access_token: account.access_token,
+    //           refresh_token: account.refresh_token,
+    //           expires_at: account.expires_at,
+    //           token_type: account.token_type,
+    //           scope: account.scope,
+    //           id_token: account.id_token,
+    //           session_state: account.session_state,
+    //         },
+    //       },
+    //     },
+    //   });
+
+    //   if (!isSalesmanPro) {
+    //     const company = await prisma.company.findFirst({
+    //       where: { domain: origin.replace("www.", "") },
+    //     });
+
+    //     if (company) {
+    //       const consumer = await prisma.consumer.upsert({
+    //         where: { userId: user.id },
+    //         update: {},
+    //         create: {
+    //           companyId: company.id,
+    //           userId: user.id,
+    //         },
+    //         include: { user: true },
+    //       });
+    //     }
+    //   }
+
+    //   return true;
+    // },
 
     async jwt({ token, user }) {
       if (user) {
