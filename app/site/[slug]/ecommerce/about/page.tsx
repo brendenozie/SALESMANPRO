@@ -97,6 +97,7 @@ export default function AboutDesign() {
               alt="Artisans at work"
               fill
               className="object-cover transition-transform duration-1000 group-hover:scale-105"
+              loader={customLoader} 
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
             <div className="absolute bottom-10 left-10 text-white">
