@@ -1,7 +1,7 @@
 // File: lib/auth.ts
 
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { headers } from "next/headers";
+// import { headers } from "next/headers";
 import { NextAuthOptions } from "next-auth";
 import { getServerSession } from "next-auth/next";
 import GoogleProvider from "next-auth/providers/google";
@@ -94,7 +94,8 @@ async function createDefaultUser({
   });
 }
 
-export const authOptions: NextAuthOptions = {
+// export const authOptions: NextAuthOptions = {
+export const getAuthOptions = (reqHost?: string): NextAuthOptions => ({
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -498,7 +499,8 @@ export const authOptions: NextAuthOptions = {
       if (!user.email) return false;
 
       // 2. Determine the origin (Server-side)
-      const host = (await headers()).get("host") || ""; // e.g., "tenant1.salesmanpro.site"
+      // const host = (await headers()).get("host") || ""; // e.g., "tenant1.salesmanpro.site"
+      const host = reqHost || "";
       // const isSalesmanPro = host === "salesmanpro.site" || host === "www.salesmanpro.site";
 
       // Removes the port (e.g., :3000) and the "www." prefix
@@ -765,7 +767,7 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/signin",
   },
-};
+});
 
 // ✅ For Next.js App Router
-export const getAuthSession = () => getServerSession(authOptions);
+export const getAuthSession = () => getServerSession(getAuthOptions());
