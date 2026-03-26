@@ -289,7 +289,7 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
                     onClick={() => handleSocialSignUp(prov.id)}
                   >
                     <IconComponent className="mr-3 h-5 w-5" />
-                    Sign in with {prov.name}
+                    Sign up with {prov.name}
                   </button>
                 );
               })}
