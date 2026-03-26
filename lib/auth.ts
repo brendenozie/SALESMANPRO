@@ -302,6 +302,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
     GoogleProvider({
       clientId: googleClientId!,
       clientSecret: googleClientSecret!,
+      allowDangerousEmailAccountLinking: true,
       // authorization: {
       //   params: {
       //     redirect_uri: `https://auth.salesmanpro.site/api/auth/callback/google`,
