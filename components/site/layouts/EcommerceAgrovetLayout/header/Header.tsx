@@ -44,9 +44,9 @@ export default function AgrovetHeader() {
 
   const navLinks = [
     { label: 'Home', href: `/` },
-    { label: 'Seeds', href: `/ecommerce/products?cat=seeds` },
-    { label: 'Animal Health', href: `/ecommerce/products?cat=livestock` },
-    { label: 'Consultancy', href: `/services` },
+    { label: 'Seeds', href: `/agrovetecommerce/products?cat=seeds` },
+    { label: 'Animal Health', href: `/agrovetecommerce/products?cat=livestock` },
+    { label: 'Consultancy', href: `/agrovetecommerce/services` },
   ];
 
   const handleGoogleSignIn = () => {
@@ -111,7 +111,7 @@ export default function AgrovetHeader() {
             <div className="flex items-center gap-2 md:gap-4">
               {/* User Account */}
               <button 
-                onClick={user ? () => router.push('/ecommerce/profile') : handleGoogleSignIn}
+                onClick={user ? () => router.push('/agrovetecommerce/profile') : handleGoogleSignIn}
                 className="p-2.5 rounded-full text-slate-700 hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-slate-100"
               >
                 <UserIcon className="w-5 h-5" />
@@ -119,7 +119,7 @@ export default function AgrovetHeader() {
 
               {/* Cart Button - Styled as a Pill */}
               <button 
-                // onClick={() => router.push('/ecommerce/checkout')}
+                // onClick={() => router.push('/agrovetecommerce/checkout')}
                 onClick={() => setIsCartOpen(true)}
                 className="group flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 text-white shadow-xl shadow-slate-900/20 transition-all hover:scale-105 active:scale-95"
               >

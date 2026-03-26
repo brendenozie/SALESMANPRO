@@ -68,7 +68,7 @@ export default function Header() {
       window.location.href = url.toString();
       return;
     }
-    router.push(user.role === "admin" ? "/dashboards" : "/profile");
+    router.push(user.role === "admin" ? "/dashboards" : "/fitnessecommerce/profile");
   };
 
   return (

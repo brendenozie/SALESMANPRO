@@ -1,145 +1,163 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { ChevronRightIcon, ArrowRightCircleIcon } from '@heroicons/react/24/outline'; // Added for visual flow
-import Section from '@/components/site/Section/Section'; // Assuming this component exists
-import { useStore } from '@/contexts/StoreContext';
-import clsx from 'clsx';
-import { IStoreCategory } from '@/types/typings'; // Assuming your category type is defined here
+import React, { useMemo } from "react";
+import { motion, Variants } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { IStoreCategory } from "@/types/typings";
+import { useStore } from "@/contexts/StoreContext";
+import { 
+  ArrowLongRightIcon, 
+  HashtagIcon,
+  ShoppingBagIcon
+} from "@heroicons/react/24/outline";
 
-// --- Animation Variants ---
-const cardVariants = {
-    hidden: { opacity: 0, y: 20, scale: 0.95 },
-    visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 100, damping: 10 } },
+/* --- Animations: Smooth & Elegant --- */
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.15 } },
 };
-const containerVariants = {
-    visible: { transition: { staggerChildren: 0.07, delayChildren: 0.1 } },
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { duration: 0.8, ease: [0.25, 0.1, 0.25, 1] } 
+  },
 };
 
-const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-    `${src}?w=${width}&q=${quality || 75}`;
+const customLoader = ({ src, width }: { src: string; width: number }) => `${src}?w=${width}&q=80`;
 
-// =========================================================
-// --- CATEGORY CARD COMPONENT (Reimagined) ---
-// =========================================================
 
-const CategoryCard = ({ cat, storeSlug }: { cat: IStoreCategory, storeSlug: string }) => {
-    const hasImage = cat.icon && cat.icon.startsWith('http');
-    const categoryName = cat.displayName || cat.category?.name || 'Unknown Category';
-    const linkHref = `/site/${storeSlug}/ecommerce/products?category=${cat.id}`;
-    
-    // Choose a placeholder/default icon if no image is available
-    const defaultIcon = cat.icon || '📦'; 
+export default function FashionCategoriesPage() {
+  const store = useStore();
+  const categories = store?.storeFormData?.StoreCategory || [];
+  const storeSlug = store?.storeFormData?.slug;
 
-    return (
-        <motion.div variants={cardVariants}>
-            <Link
-                key={cat.id}
-                href={linkHref}
-                className={clsx(
-                    "group relative block rounded-2xl overflow-hidden transition-all duration-300 transform",
-                    hasImage 
-                        ? "shadow-xl hover:shadow-2xl h-72 md:h-80" // Large card for image categories
-                        : "bg-white dark:bg-gray-800 shadow-md hover:shadow-lg h-40 flex items-center justify-center p-6 border border-gray-100 dark:border-gray-700" // Smaller card for icon categories
-                )}
+  if (!storeSlug) return null;
+
+  return (
+    <main className="bg-white dark:bg-[#0a0a0a] min-h-screen pt-32 pb-24 overflow-hidden">
+      
+      {/* 1. EDITORIAL HEADER */}
+      <section className="max-w-7xl mx-auto px-6 mb-24">
+        <div className="flex flex-col md:flex-row items-baseline justify-between gap-8 border-b border-slate-200 dark:border-gray-800 pb-12">
+          <div className="max-w-2xl">
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-xs font-bold tracking-[0.3em] uppercase text-indigo-600 mb-4"
             >
-                {/* --- IMAGE CARD LAYOUT --- */}
-                {hasImage ? (
-                    <>
-                        <div className="absolute inset-0 w-full h-full">
-                            <Image
-                                src={cat.icon!}
-                                alt={categoryName}
-                                loader={imageLoader}
-                                fill
-                                sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 100vw"
-                                className="object-cover transition-transform duration-500 group-hover:scale-110"
-                            />
-                            {/* Gradient Overlay for Text Contrast and Effect */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-opacity duration-300 group-hover:from-black/80" />
-                        </div>
-                        
-                        {/* Text Content (Always white/bottom) */}
-                        <div className="absolute bottom-0 left-0 p-6 z-10 w-full text-white">
-                            <h3 className="text-2xl font-extrabold mb-1 line-clamp-1">
-                                {categoryName}
-                            </h3>
-                            <div className="flex items-center text-sm font-semibold opacity-80 group-hover:opacity-100 transition-opacity">
-                                Shop Now <ChevronRightIcon className="w-4 h-4 ml-1" />
-                            </div>
-                        </div>
-                    </>
-                ) : (
-                    /* --- ICON CARD LAYOUT (Fallback/Simpler) --- */
-                    <div className="text-center">
-                        <div className="w-16 h-16 mb-3 mx-auto rounded-full bg-blue-50 dark:bg-gray-700 flex items-center justify-center text-3xl text-blue-600 dark:text-blue-400">
-                            {defaultIcon.length > 2 ? <ArrowRightCircleIcon className="w-8 h-8"/> : <span>{defaultIcon}</span>}
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mt-2 line-clamp-1">
-                            {categoryName}
-                        </h3>
-                        <p className="text-sm text-blue-600 dark:text-blue-400 mt-1 flex items-center justify-center">
-                            View Products <ChevronRightIcon className="w-4 h-4 ml-1" />
-                        </p>
-                    </div>
-                )}
-            </Link>
-        </motion.div>
-    );
-};
-
-// =========================================================
-// --- MAIN CATEGORIES PAGE COMPONENT ---
-// =========================================================
-
-export default function CategoriesPage() {
-    const store = useStore();
-    const categories = store?.storeFormData?.StoreCategory || [];
-    const storeSlug = store?.storeFormData?.slug;
-
-    if (!storeSlug) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <p className="text-xl font-medium text-gray-600 dark:text-gray-300">Store not found</p>
-            </div>
-        );
-    }
-
-    // Separate categories into those with images and those without for a dynamic layout
-    const categoriesWithImages = categories.filter(cat => cat.icon && cat.icon.startsWith('http'));
-    const categoriesWithoutImages = categories.filter(cat => !cat.icon || !cat.icon.startsWith('http'));
-    
-    // Combine them, prioritizing image categories for visual impact
-    const sortedCategories = [...categoriesWithImages, ...categoriesWithoutImages];
-
-    return (
-        <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen pt-20 pb-16">
-            <Section 
-                title="Shop by Category"
-                // subtitle="Explore our curated collections of products and programs designed to help you thrive."
+              The 2026 Collection
+            </motion.p>
+            <motion.h1 
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="text-6xl md:text-8xl font-light tracking-tighter text-slate-900 dark:text-white leading-none"
             >
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {categories.length === 0 ? (
-                        <div className="py-12 text-center text-gray-500 dark:text-gray-400">
-                            <p>No categories available.</p>
-                        </div>
-                    ) : (
-                        <motion.div 
-                            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8" // Increased gap and refined grid
-                            variants={containerVariants}
-                            initial="hidden"
-                            animate="visible"
-                        >
-                            {sortedCategories.map((cat: IStoreCategory) => (
-                                <CategoryCard key={cat.id} cat={cat} storeSlug={storeSlug} />
-                            ))}
-                        </motion.div>
-                    )}
-                </div>
-            </Section>
+              Curated <br />
+              <span className="font-serif italic text-slate-400 dark:text-gray-600">Aesthetics</span>
+            </motion.h1>
+          </div>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="max-w-[280px] text-sm text-slate-500 dark:text-gray-400 leading-relaxed font-medium italic"
+          >
+            "Fashion is the armor to survive the reality of everyday life." — Explore our curated departments.
+          </motion.p>
         </div>
-    );
+      </section>
+
+      {/* 2. ALTERNATING LAYOUT GRID */}
+      <div className="max-w-7xl mx-auto px-6">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-y-24 gap-x-12"
+        >
+          {categories.map((cat, idx) => {
+            // Editorial Layout Logic: Alternating widths/heights
+            const isLarge = idx % 3 === 0;
+            const gridSpan = isLarge ? "lg:col-span-7" : "lg:col-span-5";
+            const marginTop = !isLarge && idx !== 0 ? "lg:mt-24" : "mt-0";
+
+            return (
+              <motion.div key={cat.id} variants={itemVariants} className={`${gridSpan} ${marginTop}`}>
+                <FashionCategoryCard cat={cat} storeSlug={storeSlug} index={idx} isLarge={isLarge} />
+              </motion.div>
+            );
+          })}
+        </motion.div>
+      </div>
+
+      {/* Empty State */}
+      {categories.length === 0 && (
+        <div className="text-center py-40">
+           <ShoppingBagIcon className="w-12 h-12 mx-auto text-slate-200 mb-4" />
+           <p className="font-serif italic text-slate-400">The showroom is currently being prepared.</p>
+        </div>
+      )}
+    </main>
+  );
+}
+
+/* --- The Card: "Editorial Frame" --- */
+function FashionCategoryCard({ cat, storeSlug, index, isLarge }: { cat: IStoreCategory; storeSlug: string; index: number; isLarge: boolean }) {
+  const isImageUrl = cat.image || cat.icon?.startsWith("http") || cat.icon?.startsWith("/");
+  const categoryName = cat.displayName || "Unlabeled";
+
+  return (
+    <Link href={`/${storeSlug}/fashionecommerce/products?category=${cat.id}`} className="group block">
+      <div className="relative flex flex-col gap-6">
+        
+        {/* Image Container with "Photo Frame" feel */}
+        <div className={`relative overflow-hidden bg-slate-100 dark:bg-gray-900 ${isLarge ? 'aspect-[4/5]' : 'aspect-square'}`}>
+          {isImageUrl ? (
+            <Image
+              src={cat.image || "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80"}
+              alt={categoryName}
+              loader={customLoader}
+              fill
+              className="object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105"
+            />
+          ) : (
+            <div className="h-full w-full flex items-center justify-center">
+               <HashtagIcon className="w-20 h-20 text-slate-200 dark:text-gray-800" />
+            </div>
+          )}
+          
+          {/* Subtle Overlay */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
+          
+          {/* Index Number (Editorial Detail) */}
+          <span className="absolute top-6 left-6 text-[10px] font-black text-white mix-blend-difference tracking-widest">
+            DEPT / 0{index + 1}
+          </span>
+        </div>
+
+        {/* Info Area: Minimal & Sophisticated */}
+        <div className="flex items-end justify-between border-b border-transparent group-hover:border-slate-200 dark:group-hover:border-gray-800 pb-4 transition-all">
+          <div className="space-y-1">
+            <h3 className="text-3xl font-light tracking-tighter text-slate-900 dark:text-white uppercase">
+              {categoryName}
+            </h3>
+            <p className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase">
+              {cat.subcategories?.length || 0} Collections
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 overflow-hidden">
+             <span className="text-[10px] font-black uppercase tracking-widest translate-x-12 group-hover:translate-x-0 transition-transform duration-500">
+               Discover
+             </span>
+             <ArrowLongRightIcon className="w-6 h-6" />
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
 }

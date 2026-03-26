@@ -1,145 +1,152 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { ChevronRightIcon, ArrowRightCircleIcon } from '@heroicons/react/24/outline'; // Added for visual flow
-import Section from '@/components/site/Section/Section'; // Assuming this component exists
-import { useStore } from '@/contexts/StoreContext';
-import clsx from 'clsx';
-import { IStoreCategory } from '@/types/typings'; // Assuming your category type is defined here
+import React from "react";
+import { motion, Variants } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { IStoreCategory } from "@/types/typings";
+import { useStore } from "@/contexts/StoreContext";
+import { 
+  Square3Stack3DIcon, 
+  ArrowRightIcon,
+  HomeIcon
+} from "@heroicons/react/24/outline";
 
-// --- Animation Variants ---
-const cardVariants = {
-    hidden: { opacity: 0, y: 20, scale: 0.95 },
-    visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 100, damping: 10 } },
+/* --- Animations: Calm & Structural --- */
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2 } },
 };
-const containerVariants = {
-    visible: { transition: { staggerChildren: 0.07, delayChildren: 0.1 } },
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.98, y: 20 },
+  visible: { 
+    opacity: 1, 
+    scale: 1, 
+    y: 0, 
+    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } 
+  },
 };
 
-const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-    `${src}?w=${width}&q=${quality || 75}`;
+const customLoader = ({ src }: { src: string }) => src;
 
-// =========================================================
-// --- CATEGORY CARD COMPONENT (Reimagined) ---
-// =========================================================
+export default function FurnitureCategoriesPage() {
+  const store = useStore();
+  const categories = store?.storeFormData?.StoreCategory || [];
+  const storeSlug = store?.storeFormData?.slug;
 
-const CategoryCard = ({ cat, storeSlug }: { cat: IStoreCategory, storeSlug: string }) => {
-    const hasImage = cat.icon && cat.icon.startsWith('http');
-    const categoryName = cat.displayName || cat.category?.name || 'Unknown Category';
-    const linkHref = `/site/${storeSlug}/ecommerce/products?category=${cat.id}`;
-    
-    // Choose a placeholder/default icon if no image is available
-    const defaultIcon = cat.icon || '📦'; 
+  if (!storeSlug) return null;
 
-    return (
-        <motion.div variants={cardVariants}>
-            <Link
-                key={cat.id}
-                href={linkHref}
-                className={clsx(
-                    "group relative block rounded-2xl overflow-hidden transition-all duration-300 transform",
-                    hasImage 
-                        ? "shadow-xl hover:shadow-2xl h-72 md:h-80" // Large card for image categories
-                        : "bg-white dark:bg-gray-800 shadow-md hover:shadow-lg h-40 flex items-center justify-center p-6 border border-gray-100 dark:border-gray-700" // Smaller card for icon categories
-                )}
-            >
-                {/* --- IMAGE CARD LAYOUT --- */}
-                {hasImage ? (
-                    <>
-                        <div className="absolute inset-0 w-full h-full">
-                            <Image
-                                src={cat.icon!}
-                                alt={categoryName}
-                                loader={imageLoader}
-                                fill
-                                sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 100vw"
-                                className="object-cover transition-transform duration-500 group-hover:scale-110"
-                            />
-                            {/* Gradient Overlay for Text Contrast and Effect */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-opacity duration-300 group-hover:from-black/80" />
-                        </div>
-                        
-                        {/* Text Content (Always white/bottom) */}
-                        <div className="absolute bottom-0 left-0 p-6 z-10 w-full text-white">
-                            <h3 className="text-2xl font-extrabold mb-1 line-clamp-1">
-                                {categoryName}
-                            </h3>
-                            <div className="flex items-center text-sm font-semibold opacity-80 group-hover:opacity-100 transition-opacity">
-                                Shop Now <ChevronRightIcon className="w-4 h-4 ml-1" />
-                            </div>
-                        </div>
-                    </>
-                ) : (
-                    /* --- ICON CARD LAYOUT (Fallback/Simpler) --- */
-                    <div className="text-center">
-                        <div className="w-16 h-16 mb-3 mx-auto rounded-full bg-blue-50 dark:bg-gray-700 flex items-center justify-center text-3xl text-blue-600 dark:text-blue-400">
-                            {defaultIcon.length > 2 ? <ArrowRightCircleIcon className="w-8 h-8"/> : <span>{defaultIcon}</span>}
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mt-2 line-clamp-1">
-                            {categoryName}
-                        </h3>
-                        <p className="text-sm text-blue-600 dark:text-blue-400 mt-1 flex items-center justify-center">
-                            View Products <ChevronRightIcon className="w-4 h-4 ml-1" />
-                        </p>
-                    </div>
-                )}
-            </Link>
+  return (
+    <main className="bg-[#fcfaf8] dark:bg-[#0c0c0c] min-h-screen pt-32 pb-24">
+      
+      {/* 1. MINIMAL ARCHITECTURAL HEADER */}
+      <header className="max-w-7xl mx-auto px-6 mb-20 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-center gap-2 mb-4 text-amber-700 dark:text-amber-500"
+        >
+          <HomeIcon className="w-4 h-4" />
+          <span className="text-[10px] font-bold tracking-[0.3em] uppercase">Interior curation</span>
         </motion.div>
-    );
-};
+        
+        <motion.h1 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-5xl md:text-7xl font-light tracking-tight text-slate-900 dark:text-white mb-6"
+        >
+          Design Your <span className="italic font-serif text-slate-400">Sanctuary</span>
+        </motion.h1>
+        
+        <div className="w-12 h-px bg-slate-300 dark:bg-gray-800 mx-auto" />
+      </header>
 
-// =========================================================
-// --- MAIN CATEGORIES PAGE COMPONENT ---
-// =========================================================
+      {/* 2. BENTO-STYLED CATEGORY GRID */}
+      <div className="max-w-7xl mx-auto px-6">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-4 auto-rows-[280px]"
+        >
+          {categories.map((cat, idx) => {
+            // Create a "Bento" feel by varying the span of cards
+            // Card 1: Large square, Card 2: Tall, Card 3: Wide, etc.
+            const spans = [
+              "md:col-span-2 md:row-span-2", // Large Square
+              "md:col-span-2 md:row-span-1", // Horizontal
+              "md:col-span-2 md:row-span-1", // Horizontal
+              "md:col-span-3 md:row-span-2", // Hero Wide
+              "md:col-span-3 md:row-span-2", // Hero Wide
+            ];
+            const currentSpan = spans[idx % spans.length];
 
-export default function CategoriesPage() {
-    const store = useStore();
-    const categories = store?.storeFormData?.StoreCategory || [];
-    const storeSlug = store?.storeFormData?.slug;
+            return (
+              <motion.div key={cat.id} variants={cardVariants} className={currentSpan}>
+                <FurnitureCategoryCard cat={cat} storeSlug={storeSlug} />
+              </motion.div>
+            );
+          })}
+        </motion.div>
+      </div>
 
-    if (!storeSlug) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <p className="text-xl font-medium text-gray-600 dark:text-gray-300">Store not found</p>
-            </div>
-        );
-    }
-
-    // Separate categories into those with images and those without for a dynamic layout
-    const categoriesWithImages = categories.filter(cat => cat.icon && cat.icon.startsWith('http'));
-    const categoriesWithoutImages = categories.filter(cat => !cat.icon || !cat.icon.startsWith('http'));
-    
-    // Combine them, prioritizing image categories for visual impact
-    const sortedCategories = [...categoriesWithImages, ...categoriesWithoutImages];
-
-    return (
-        <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen pt-20 pb-16">
-            <Section 
-                title="Shop by Category"
-                // subtitle="Explore our curated collections of products and programs designed to help you thrive."
-            >
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {categories.length === 0 ? (
-                        <div className="py-12 text-center text-gray-500 dark:text-gray-400">
-                            <p>No categories available.</p>
-                        </div>
-                    ) : (
-                        <motion.div 
-                            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8" // Increased gap and refined grid
-                            variants={containerVariants}
-                            initial="hidden"
-                            animate="visible"
-                        >
-                            {sortedCategories.map((cat: IStoreCategory) => (
-                                <CategoryCard key={cat.id} cat={cat} storeSlug={storeSlug} />
-                            ))}
-                        </motion.div>
-                    )}
-                </div>
-            </Section>
+      {categories.length === 0 && (
+        <div className="text-center py-20 opacity-50 font-serif italic">
+          Curating collections...
         </div>
-    );
+      )}
+    </main>
+  );
+}
+
+/* --- The Card: "Space & Form" --- */
+function FurnitureCategoryCard({ cat, storeSlug }: { cat: IStoreCategory; storeSlug: string }) {
+  const isImageUrl = cat.image || cat.icon?.startsWith("http") || cat.icon?.startsWith("/");
+  const categoryName = cat.displayName || "Unstructured";
+
+  return (
+    <Link 
+      href={`/${storeSlug}/furnitureecommerce/products?category=${cat.id}`} 
+      className="group relative h-full w-full block overflow-hidden rounded-xl bg-white dark:bg-[#151515] border border-slate-100 dark:border-gray-800 shadow-sm hover:shadow-2xl transition-all duration-500"
+    >
+      {/* Background Image with subtle parallax-ish zoom */}
+      <div className="absolute inset-0 z-0 transition-transform duration-1000 ease-out group-hover:scale-105">
+        {isImageUrl ? (
+          <Image
+            src={cat.image || cat.icon || "https://via.placeholder.com/600x800?text=No+Image"}
+            alt={categoryName}
+            loader={customLoader}
+            fill
+            className="object-cover brightness-[0.9] dark:brightness-[0.7] group-hover:brightness-100 transition-all"
+          />
+        ) : (
+          <div className="h-full w-full flex items-center justify-center bg-slate-50 dark:bg-gray-900">
+             <Square3Stack3DIcon className="w-12 h-12 text-slate-200 dark:text-gray-800" />
+          </div>
+        )}
+        {/* Soft Linear Gradient for readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-transparent" />
+      </div>
+
+      {/* Floating Content Label */}
+      <div className="absolute bottom-0 left-0 p-8 z-10 w-full flex items-end justify-between">
+        <div>
+           <p className="text-[10px] font-bold tracking-[0.2em] text-white/60 uppercase mb-1">
+             Explore Range
+           </p>
+           <h3 className="text-2xl md:text-3xl font-light tracking-tight text-white leading-none">
+             {categoryName}
+           </h3>
+        </div>
+        
+        <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300">
+           <ArrowRightIcon className="w-5 h-5" />
+        </div>
+      </div>
+
+      {/* Glassmorphism Border Effect on Hover */}
+      <div className="absolute inset-0 border-[0px] group-hover:border-[12px] border-white/5 transition-all duration-500 pointer-events-none" />
+    </Link>
+  );
 }

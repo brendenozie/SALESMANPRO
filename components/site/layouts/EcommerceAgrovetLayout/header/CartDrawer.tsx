@@ -133,7 +133,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
               </div>
 
               <button
-                onClick={() => {user ? router.push(`/ecommerce/checkout`) : handleGoogleSignIn() } }
+                onClick={() => {user ? router.push(`/agrovetecommerce/checkout`) : handleGoogleSignIn() } }
                 className="block w-full py-5 bg-gray-900 text-white text-center font-black uppercase tracking-[0.2em] text-xs hover:bg-amber-600 transition-all shadow-xl active:scale-[0.98]"
               >
                 Secure Checkout

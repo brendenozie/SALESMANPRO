@@ -57,10 +57,10 @@ export default function Footer() {
           <div className="lg:col-span-2 space-y-6">
             <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">Navigation</h3>
             <ul className="space-y-4 text-xs font-bold uppercase tracking-widest text-zinc-800 dark:text-zinc-300">
-              <li><Link href="/ecommerce/about" className="hover:text-zinc-400 transition-colors transition-all duration-300">About the Studio</Link></li>
-              <li><Link href="/ecommerce/contact" className="hover:text-zinc-400 transition-colors transition-all duration-300">Contact</Link></li>
-              <li><Link href="/ecommerce/privacy" className="hover:text-zinc-400 transition-colors transition-all duration-300">Privacy Policy</Link></li>
-              <li><Link href="/ecommerce/terms" className="hover:text-zinc-400 transition-colors transition-all duration-300">Terms</Link></li>
+              <li><Link href="/furnitureecommerce/about" className="hover:text-zinc-400 transition-colors transition-all duration-300">About the Studio</Link></li>
+              <li><Link href="/furnitureecommerce/contact" className="hover:text-zinc-400 transition-colors transition-all duration-300">Contact</Link></li>
+              <li><Link href="/furnitureecommerce/privacy" className="hover:text-zinc-400 transition-colors transition-all duration-300">Privacy Policy</Link></li>
+              <li><Link href="/furnitureecommerce/terms" className="hover:text-zinc-400 transition-colors transition-all duration-300">Terms</Link></li>
             </ul>
           </div>
 
@@ -68,10 +68,10 @@ export default function Footer() {
           <div className="lg:col-span-2 space-y-6">
             <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">Logistics</h3>
             <ul className="space-y-4 text-xs font-bold uppercase tracking-widest text-zinc-800 dark:text-zinc-300">
-              <li><Link href="/ecommerce/shipping" className="hover:text-zinc-400 transition-colors transition-all duration-300">White-Glove Shipping</Link></li>
-              <li><Link href="/ecommerce/returns" className="hover:text-zinc-400 transition-colors transition-all duration-300">Return Policy</Link></li>
-              <li><Link href="/ecommerce/track" className="hover:text-zinc-400 transition-colors transition-all duration-300">Track Shipment</Link></li>
-              <li><Link href="/ecommerce/help" className="hover:text-zinc-400 transition-colors transition-all duration-300">Support Center</Link></li>
+              <li><Link href="/furnitureecommerce/shipping" className="hover:text-zinc-400 transition-colors transition-all duration-300">White-Glove Shipping</Link></li>
+              <li><Link href="/furnitureecommerce/returns" className="hover:text-zinc-400 transition-colors transition-all duration-300">Return Policy</Link></li>
+              <li><Link href="/furnitureecommerce/track" className="hover:text-zinc-400 transition-colors transition-all duration-300">Track Shipment</Link></li>
+              <li><Link href="/furnitureecommerce/help" className="hover:text-zinc-400 transition-colors transition-all duration-300">Support Center</Link></li>
             </ul>
           </div>
 
@@ -109,8 +109,8 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} {name}. Built for permanence.
           </p>
           <div className="flex gap-8 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
-            <Link href="/ecommerce/faq" className="hover:text-zinc-900 dark:hover:text-white transition-colors">FAQ</Link>
-            <Link href="/ecommerce/sitemap.xml" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Sitemap</Link>
+            <Link href="/furnitureecommerce/faq" className="hover:text-zinc-900 dark:hover:text-white transition-colors">FAQ</Link>
+            <Link href="/furnitureecommerce/sitemap.xml" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Sitemap</Link>
           </div>
         </div>
       </div>

@@ -1,124 +1,134 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import React from "react";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import { 
+  SparklesIcon, 
+  PaintBrushIcon, 
+  GlobeEuropeAfricaIcon,
+  UserGroupIcon 
+} from "@heroicons/react/24/outline";
 
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.2, delayChildren: 0.3 }
+  }
+};
 
+const fadeInUp = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.25, 0.1, 0.25, 1] } }
+};
 
-export default function About() {
+const customLoader = ({ src, width }: { src: string; width: number }) => `${src}?w=${width}&q=80`;
+
+export default function FashionAboutPage() {
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="max-w-4xl mx-auto space-y-12"
-      >
-        {/* Our Story Section */}
-        <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
-            Our Story 📖
-          </h2>
-          <p className="mt-4 text-xl text-gray-600">
-            Welcome! We're so glad you're here. We started this store with a simple idea: to create a place where you can find unique, high-quality products that bring joy and inspiration to your everyday life.
-          </p>
-          <p className="mt-2 text-lg text-gray-500">
-            It all began with a big dream. We spent countless hours searching for products that were not only beautiful and functional but also had a story behind them. We wanted to connect you with artisans, creators, and brands that share our values of craftsmanship, sustainability, and authenticity. Every item in our collection is hand-picked with care, and we hope you'll feel the passion we pour into our work.
-          </p>
-        </div>
-
-        {/* Our Values Section */}
-        <div className="grid md:grid-cols-2 gap-8 items-center">
-          <div className="space-y-4">
-            <h2 className="text-3xl font-bold text-gray-900">
-              Our Values ✨
-            </h2>
-            <ul className="text-lg text-gray-600 space-y-3">
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">🌿</span>
-                <p>
-                  <strong>Conscious Curation:</strong> We're committed to sourcing from brands that prioritize ethical and sustainable practices. We care about where our products come from and how they're made.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">💎</span>
-                <p>
-                  <strong>Quality First:</strong> We believe in products that are built to last. We focus on durable materials and timeless designs so you can love your purchase for years to come.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">🤝</span>
-                <p>
-                  <strong>Exceptional Service:</strong> Your satisfaction is our top priority. We're here to help you every step of the way, from finding the perfect item to ensuring a smooth delivery.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">❤️</span>
-                <p>
-                  <strong>Community & Connection:</strong> We're grateful for every customer who supports our small business. We love seeing how you incorporate our products into your life.
-                </p>
-              </li>
-            </ul>
-          </div>
-          <div className="relative h-64 sm:h-80 md:h-96">
-            <img
-              src="https://images.unsplash.com/photo-1542435503-956c469947f6?fit=crop&w=800&q=80"
-              alt="Artisans at work, representing craftsmanship"
-              className="w-full h-full object-cover rounded-lg shadow-lg"
-            />
-          </div>
-        </div>
-
-        {/* Meet the Team Section */}
-        <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
-            Meet the Team 🧑‍🤝‍🧑
-          </h2>
-          <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Founder's Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1507003211169-0a7dd7803e20?fit=crop&w=300&q=80"
-                alt="Founder's profile picture"
-                className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-indigo-500"
-              />
-              <h3 className="mt-4 text-xl font-semibold text-gray-900">
-                [Founder's Name]
-              </h3>
-              <p className="text-indigo-600">Founder & Chief Curator</p>
-              <p className="mt-2 text-gray-500">
-                With an eye for detail and a passion for discovering hidden gems, [Founder's Name] is the heart of our store. They are always on the hunt for the next great find.
-              </p>
+    <main className="bg-[#fcfcfc] dark:bg-[#080808] min-h-screen pt-32 pb-24 text-slate-900 dark:text-white">
+      
+      {/* 1. EDITORIAL HERO: OVERLAPPING ELEMENTS */}
+      <section className="max-w-7xl mx-auto px-6 mb-40">
+        <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
+          <div className="lg:col-span-5 z-10">
+            <motion.div initial="hidden" animate="visible" variants={staggerContainer}>
+              <motion.span variants={fadeInUp} className="text-[10px] font-black uppercase tracking-[0.5em] text-indigo-600 block mb-6">
+                Our Philosophy
+              </motion.span>
+              <motion.h1 variants={fadeInUp} className="text-7xl md:text-9xl font-light tracking-tighter leading-[0.85] mb-8">
+                The Art of <br />
+                <span className="font-serif italic text-slate-400">Dressing.</span>
+              </motion.h1>
+              <motion.p variants={fadeInUp} className="text-lg text-slate-500 dark:text-gray-400 font-medium leading-relaxed max-w-md">
+                We believe that style is a silent language. Founded in Nairobi, our mission is to curate pieces that speak volumes without saying a word.
+              </motion.p>
             </motion.div>
+          </div>
 
-            {/* Team Member 1 Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
+          <div className="lg:col-span-7 relative">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8, rotate: 5 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              transition={{ duration: 1.2, ease: "easeOut" }}
+              className="relative aspect-[4/5] w-full max-w-lg ml-auto overflow-hidden shadow-2xl"
             >
-              <img
-                src="https://images.unsplash.com/photo-1544723795-3fb6469f5b80?fit=crop&w=300&q=80"
-                alt="Team member profile picture"
-                className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-indigo-500"
+              <Image 
+                src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=80" 
+                alt="Fashion Editorial" fill className="object-cover" loader={customLoader}
               />
-              <h3 className="mt-4 text-xl font-semibold text-gray-900">
-                [Team Member's Name]
-              </h3>
-              <p className="text-indigo-600">[Their Title]</p>
-              <p className="mt-2 text-gray-500">
-                As our Customer Experience Lead, [Team Member's Name] ensures every interaction you have with us is a positive one. They believe that great service is the key to building lasting relationships.
-              </p>
+              <div className="absolute inset-0 border-[20px] border-white/10 backdrop-blur-[2px]" />
+            </motion.div>
+            
+            {/* Floating "Badge" Element */}
+            <motion.div 
+              animate={{ y: [0, -20, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -bottom-10 -left-10 bg-white dark:bg-gray-900 p-8 shadow-xl hidden md:block"
+            >
+              <p className="text-4xl font-serif italic text-indigo-600">Est. 2026</p>
+              <p className="text-[10px] font-bold tracking-widest uppercase mt-2">Global Boutique</p>
             </motion.div>
           </div>
         </div>
-      </motion.div>
-    </section>
+      </section>
+
+      {/* 2. CORE VALUES: BENTO GLASS SECTION */}
+      <section className="max-w-7xl mx-auto px-6 py-24 border-t border-slate-100 dark:border-gray-900">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <ValueCard 
+            Icon={SparklesIcon} 
+            title="Quality First" 
+            desc="Sourced from the finest textiles, ensuring every garment lasts a lifetime."
+          />
+          <ValueCard 
+            Icon={GlobeEuropeAfricaIcon} 
+            title="Ethical Trace" 
+            desc="From Nairobi to the world, we ensure fair wages and sustainable production."
+          />
+          <ValueCard 
+            Icon={UserGroupIcon} 
+            title="Inclusivity" 
+            desc="Fashion is for everyone. We celebrate all silhouettes and identities."
+          />
+        </div>
+      </section>
+
+      {/* 3. THE "MANIFESTO" OVERLAY */}
+      <section className="relative h-[600px] mt-24 flex items-center justify-center overflow-hidden">
+        <Image 
+          src="https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=1920&q=80" 
+          alt="Background" fill className="object-cover brightness-50 grayscale" loader={customLoader}
+        />
+        <div className="relative z-10 text-center px-6 max-w-4xl">
+          <motion.h2 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            className="text-4xl md:text-6xl font-serif italic text-white leading-tight"
+          >
+            "Fashion fades, only style remains the same."
+          </motion.h2>
+          <div className="mt-8 h-px w-24 bg-white/50 mx-auto" />
+          <p className="mt-8 text-white/70 uppercase tracking-[0.4em] text-xs font-bold">The Avenue Manifesto</p>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function ValueCard({ Icon, title, desc }: { Icon: any, title: string, desc: string }) {
+  return (
+    <motion.div 
+      whileHover={{ y: -10 }}
+      className="p-10 bg-white dark:bg-[#0f0f0f] border border-slate-100 dark:border-gray-800 rounded-sm shadow-sm hover:shadow-xl transition-all duration-500"
+    >
+      <div className="w-12 h-12 mb-8 border-b-2 border-indigo-600 flex items-center">
+        <Icon className="w-6 h-6 text-slate-900 dark:text-white" />
+      </div>
+      <h3 className="text-xl font-light uppercase tracking-tighter mb-4">{title}</h3>
+      <p className="text-sm text-slate-500 dark:text-gray-400 leading-relaxed italic">{desc}</p>
+    </motion.div>
   );
 }

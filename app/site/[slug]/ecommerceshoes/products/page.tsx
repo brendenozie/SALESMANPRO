@@ -150,7 +150,7 @@ export default async function ProductListPage({ params, searchParams }: PageProp
     finalPrice: p.finalPrice || 0,
     sellingPrice: p.sellingPrice || 0,
     images: Array.isArray(p.images) ? p.images : [],
-    productCategoryId: p.productCategoryId,
+    productCategoryId: p.productCategoryId || '',
 
     // Fill in defaults for required fields
     category: "",

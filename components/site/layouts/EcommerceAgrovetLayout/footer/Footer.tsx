@@ -55,19 +55,19 @@ export default function RootFooter() {
             <div className="space-y-6">
               <h3 className="text-white font-black uppercase text-[10px] tracking-[0.3em]">Supply Chain</h3>
               <ul className="space-y-4 text-sm font-bold">
-                <li><Link href="/ecommerce/shop" className="hover:text-emerald-400 transition-colors">Agrochemicals</Link></li>
-                <li><Link href="/ecommerce/shop" className="hover:text-emerald-400 transition-colors">Certified Seeds</Link></li>
-                <li><Link href="/ecommerce/shop" className="hover:text-emerald-400 transition-colors">Animal Health</Link></li>
-                <li><Link href="/ecommerce/shop" className="hover:text-emerald-400 transition-colors">Bulk Equipment</Link></li>
+                <li><Link href="/agrovetecommerce/shop" className="hover:text-emerald-400 transition-colors">Agrochemicals</Link></li>
+                <li><Link href="/agrovetecommerce/shop" className="hover:text-emerald-400 transition-colors">Certified Seeds</Link></li>
+                <li><Link href="/agrovetecommerce/shop" className="hover:text-emerald-400 transition-colors">Animal Health</Link></li>
+                <li><Link href="/agrovetecommerce/shop" className="hover:text-emerald-400 transition-colors">Bulk Equipment</Link></li>
               </ul>
             </div>
             <div className="space-y-6">
               <h3 className="text-white font-black uppercase text-[10px] tracking-[0.3em]">Partnership</h3>
               <ul className="space-y-4 text-sm font-bold">
-                <li><Link href="/ecommerce/about" className="hover:text-emerald-400 transition-colors">Our Story</Link></li>
-                <li><Link href="/ecommerce/contact" className="hover:text-emerald-400 transition-colors">Vet Consultation</Link></li>
-                <li><Link href="/ecommerce/shipping" className="hover:text-emerald-400 transition-colors">Logistics</Link></li>
-                <li><Link href="/ecommerce/faq" className="hover:text-emerald-400 transition-colors">Help Desk</Link></li>
+                <li><Link href="/agrovetecommerce/about" className="hover:text-emerald-400 transition-colors">Our Story</Link></li>
+                <li><Link href="/agrovetecommerce/contact" className="hover:text-emerald-400 transition-colors">Vet Consultation</Link></li>
+                <li><Link href="/agrovetecommerce/shipping" className="hover:text-emerald-400 transition-colors">Logistics</Link></li>
+                <li><Link href="/agrovetecommerce/faq" className="hover:text-emerald-400 transition-colors">Help Desk</Link></li>
               </ul>
             </div>
             <div className="col-span-2 md:col-span-1 space-y-6 border-t border-slate-900 md:border-none pt-8 md:pt-0">
@@ -121,9 +121,9 @@ export default function RootFooter() {
             &copy; {new Date().getFullYear()} {name}. Built for the Modern Farmer.
           </p>
           <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest">
-            <Link href="/ecommerce/privacy" className="hover:text-emerald-500 transition-colors">Privacy</Link>
-            <Link href="/ecommerce/terms" className="hover:text-emerald-500 transition-colors">Terms</Link>
-            <Link href="/ecommerce/sitemap.xml" className="hover:text-emerald-500 transition-colors">Sitemap</Link>
+            <Link href="/agrovetecommerce/privacy" className="hover:text-emerald-500 transition-colors">Privacy</Link>
+            <Link href="/agrovetecommerce/terms" className="hover:text-emerald-500 transition-colors">Terms</Link>
+            <Link href="/agrovetecommerce/sitemap.xml" className="hover:text-emerald-500 transition-colors">Sitemap</Link>
           </div>
         </div>
       </div>

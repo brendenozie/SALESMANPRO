@@ -50,7 +50,7 @@ export default function Header() {
       let links = rawCategories.map((cat) => ({
         id: cat.id,
         label: cat.displayName || "Category",
-        href: `/${storeFormData.slug}/category/${cat.categoryId}`,
+        href: `/${storeFormData.slug}/furnitureecommerce/products?category=${cat.id}`,
       }));
   
       // 3. If fewer than required, pull subcategories
@@ -64,7 +64,7 @@ export default function Header() {
             links.push({
               id: sub.id,
               label: sub.name,
-              href: `/${storeFormData.slug}/subcategory/${sub.slug}`,
+              href: `/${storeFormData.slug}/furnitureecommerce/products?subcategory=${sub.slug}`,
             })
           );
         });
@@ -84,6 +84,17 @@ export default function Header() {
   
       return finalLinks;
     }, [storeFormData])
+
+    const handleUserAction = () => {
+      if (!user) {
+        const url = new URL("https://auth.salesmanpro.site/signin");
+        url.searchParams.set("callbackUrl", window.location.href);
+        window.location.href = url.toString();
+        return;
+      }
+      router.push(user.role === "admin" ? "/dashboards" : "/furnitureecommerce/profile");
+    };
+
 
   return (
     <>
@@ -139,7 +150,7 @@ export default function Header() {
               <div className="h-6 w-px bg-zinc-300 dark:bg-zinc-700 mx-2 hidden md:block" />
 
               <button 
-                onClick={() => router.push('/ecommerce/profile')}
+                onClick={() => handleUserAction()}
                 className="p-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
               >
                 <UserIcon className="w-5 h-5" />

@@ -48,7 +48,7 @@ export default function Header() {
     return categories.map((cat) => ({
       id: cat.id,
       label: cat.displayName,
-      href: `/${storeFormData?.slug}/category/${cat.categoryId}`,
+      href: `/${storeFormData?.slug}/fashionecommerce/products?categoryId=${cat.id}`,
     }));
   }, [storeFormData]);
 
@@ -59,7 +59,7 @@ export default function Header() {
       window.location.href = authUrl.toString();
       return;
     }
-    router.push(user.role?.toLowerCase() === 'admin' ? '/dashboards' : `/ecommerce/profile`);
+    router.push(user.role?.toLowerCase() === 'admin' ? '/dashboards' : `/fashionecommerce/profile`);
   };
 
   return (
@@ -217,9 +217,9 @@ export default function Header() {
               </button>
               
               <div className="flex gap-6 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-                <Link href="/shipping">Shipping</Link>
-                <Link href="/contact">Contact</Link>
-                <Link href="/legal">Legal</Link>
+                <Link href="/fashionecommerce/shipping">Shipping</Link>
+                <Link href="/fashionecommerce/contact">Contact</Link>
+                <Link href="/fashionecommerce/legal">Legal</Link>
               </div>
             </div>
           </motion.div>

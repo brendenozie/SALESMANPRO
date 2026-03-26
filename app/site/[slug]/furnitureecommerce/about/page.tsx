@@ -1,124 +1,143 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import React from "react";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import { 
+  HandRaisedIcon, 
+  PaintBrushIcon, 
+  HomeModernIcon,
+  SparklesIcon 
+} from "@heroicons/react/24/outline";
 
+const fadeInUp = {
+  hidden: { opacity: 0, y: 60 },
+  visible: { opacity: 1, y: 0, transition: { duration: 1, ease: [0.16, 1, 0.3, 1] } }
+};
 
+const customLoader = ({ src }: { src: string }) => src;
 
-export default function About() {
+export default function FurnitureAboutPage() {
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="max-w-4xl mx-auto space-y-12"
-      >
-        {/* Our Story Section */}
-        <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
-            Our Story 📖
-          </h2>
-          <p className="mt-4 text-xl text-gray-600">
-            Welcome! We're so glad you're here. We started this store with a simple idea: to create a place where you can find unique, high-quality products that bring joy and inspiration to your everyday life.
-          </p>
-          <p className="mt-2 text-lg text-gray-500">
-            It all began with a big dream. We spent countless hours searching for products that were not only beautiful and functional but also had a story behind them. We wanted to connect you with artisans, creators, and brands that share our values of craftsmanship, sustainability, and authenticity. Every item in our collection is hand-picked with care, and we hope you'll feel the passion we pour into our work.
-          </p>
-        </div>
-
-        {/* Our Values Section */}
-        <div className="grid md:grid-cols-2 gap-8 items-center">
-          <div className="space-y-4">
-            <h2 className="text-3xl font-bold text-gray-900">
-              Our Values ✨
-            </h2>
-            <ul className="text-lg text-gray-600 space-y-3">
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">🌿</span>
-                <p>
-                  <strong>Conscious Curation:</strong> We're committed to sourcing from brands that prioritize ethical and sustainable practices. We care about where our products come from and how they're made.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">💎</span>
-                <p>
-                  <strong>Quality First:</strong> We believe in products that are built to last. We focus on durable materials and timeless designs so you can love your purchase for years to come.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">🤝</span>
-                <p>
-                  <strong>Exceptional Service:</strong> Your satisfaction is our top priority. We're here to help you every step of the way, from finding the perfect item to ensuring a smooth delivery.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">❤️</span>
-                <p>
-                  <strong>Community & Connection:</strong> We're grateful for every customer who supports our small business. We love seeing how you incorporate our products into your life.
-                </p>
-              </li>
-            </ul>
-          </div>
-          <div className="relative h-64 sm:h-80 md:h-96">
-            <img
-              src="https://images.unsplash.com/photo-1542435503-956c469947f6?fit=crop&w=800&q=80"
-              alt="Artisans at work, representing craftsmanship"
-              className="w-full h-full object-cover rounded-lg shadow-lg"
-            />
-          </div>
-        </div>
-
-        {/* Meet the Team Section */}
-        <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
-            Meet the Team 🧑‍🤝‍🧑
-          </h2>
-          <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Founder's Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1507003211169-0a7dd7803e20?fit=crop&w=300&q=80"
-                alt="Founder's profile picture"
-                className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-indigo-500"
-              />
-              <h3 className="mt-4 text-xl font-semibold text-gray-900">
-                [Founder's Name]
-              </h3>
-              <p className="text-indigo-600">Founder & Chief Curator</p>
-              <p className="mt-2 text-gray-500">
-                With an eye for detail and a passion for discovering hidden gems, [Founder's Name] is the heart of our store. They are always on the hunt for the next great find.
-              </p>
-            </motion.div>
-
-            {/* Team Member 1 Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1544723795-3fb6469f5b80?fit=crop&w=300&q=80"
-                alt="Team member profile picture"
-                className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-indigo-500"
-              />
-              <h3 className="mt-4 text-xl font-semibold text-gray-900">
-                [Team Member's Name]
-              </h3>
-              <p className="text-indigo-600">[Their Title]</p>
-              <p className="mt-2 text-gray-500">
-                As our Customer Experience Lead, [Team Member's Name] ensures every interaction you have with us is a positive one. They believe that great service is the key to building lasting relationships.
+    <main className="bg-[#fcfaf8] dark:bg-[#0c0c0c] min-h-screen pt-32 pb-24 text-slate-900 dark:text-white">
+      
+      {/* 1. THE ARCHITECTURAL HERO */}
+      <section className="max-w-7xl mx-auto px-6 mb-32">
+        <div className="flex flex-col lg:flex-row items-center gap-16">
+          <div className="lg:w-1/2 space-y-8">
+            <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
+              <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-amber-700 dark:text-amber-500 block mb-4">
+                The Atelier Story
+              </span>
+              <h1 className="text-6xl md:text-8xl font-light tracking-tighter leading-[0.9] mb-6">
+                Space is the <br />
+                <span className="italic font-serif text-slate-400">Ultimate Luxury.</span>
+              </h1>
+              <p className="text-lg text-slate-500 dark:text-gray-400 leading-relaxed max-w-md font-light">
+                We don’t just build furniture; we curate the backdrop of your life’s most meaningful moments. Based in Nairobi, we blend global modernism with local soul.
               </p>
             </motion.div>
           </div>
+          
+          <div className="lg:w-1/2 relative">
+            {/* Main Image */}
+            <motion.div 
+              initial={{ clipPath: "inset(100% 0 0 0)" }}
+              animate={{ clipPath: "inset(0% 0 0 0)" }}
+              transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+              className="relative aspect-[3/4] w-full overflow-hidden rounded-sm shadow-2xl"
+            >
+              <Image 
+                src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1200&q=80" 
+                alt="Minimalist Interior" fill className="object-cover" loader={customLoader}
+              />
+            </motion.div>
+            
+            {/* Secondary Floating Image (The Parallax Effect) */}
+            <motion.div 
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.5, duration: 1 }}
+              className="absolute -bottom-12 -left-20 w-64 h-80 hidden xl:block shadow-2xl border-[12px] border-white dark:border-gray-900"
+            >
+              <Image 
+                src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=600&q=80" 
+                alt="Craftsmanship detail" fill className="object-cover" loader={customLoader}
+              />
+            </motion.div>
+          </div>
         </div>
-      </motion.div>
-    </section>
+      </section>
+
+      {/* 2. THE MATERIAL GRID (BENTO BOX) */}
+      <section className="bg-white dark:bg-[#111] py-32 px-6 border-y border-slate-100 dark:border-gray-900">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+            <div className="sticky top-40">
+              <h2 className="text-4xl font-light tracking-tight uppercase mb-6">Built to <span className="italic font-serif">Endure.</span></h2>
+              <p className="text-slate-500 dark:text-gray-400 max-w-sm font-light leading-relaxed">
+                Our materials are selected for their character, durability, and the way they age gracefully over decades.
+              </p>
+              
+              <div className="mt-12 space-y-6">
+                <MaterialItem label="Solid Oak" percent="01" />
+                <MaterialItem label="Italian Leather" percent="02" />
+                <MaterialItem label="Forged Steel" percent="03" />
+                <MaterialItem label="Organic Linen" percent="04" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
+                <div className="aspect-[4/5] relative rounded-xl overflow-hidden bg-slate-100">
+                   <Image src="https://images.unsplash.com/photo-1581539250439-c96689b516dd?auto=format&fit=crop&w=600&q=80" alt="Wood" fill className="object-cover" loader={customLoader} />
+                </div>
+                <div className="aspect-square relative rounded-xl overflow-hidden bg-slate-100">
+                   <Image src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=600&q=80" alt="Fabric" fill className="object-cover" loader={customLoader} />
+                </div>
+              </div>
+              <div className="space-y-4 pt-12">
+                <div className="aspect-square relative rounded-xl overflow-hidden bg-slate-100">
+                   <Image src="https://images.unsplash.com/photo-1540574163026-643ea20ade25?auto=format&fit=crop&w=600&q=80" alt="Design" fill className="object-cover" loader={customLoader} />
+                </div>
+                <div className="aspect-[4/5] relative rounded-xl overflow-hidden bg-slate-100">
+                   <Image src="https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=600&q=80" alt="Modern" fill className="object-cover" loader={customLoader} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. VALUES: MINIMAL ICONS */}
+      <section className="max-w-7xl mx-auto px-6 py-32">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 text-center">
+          <ValueIcon Icon={HandRaisedIcon} title="Handcrafted" />
+          <ValueIcon Icon={PaintBrushIcon} title="Custom Finishes" />
+          <ValueIcon Icon={HomeModernIcon} title="Modern Shapes" />
+          <ValueIcon Icon={SparklesIcon} title="Lifetime Care" />
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function MaterialItem({ label, percent }: { label: string; percent: string }) {
+  return (
+    <div className="flex items-center justify-between border-b border-slate-100 dark:border-gray-800 pb-4 group cursor-default">
+      <span className="text-xl font-light group-hover:italic group-hover:text-amber-700 transition-all">{label}</span>
+      <span className="text-[10px] font-bold text-slate-300">{percent}</span>
+    </div>
+  );
+}
+
+function ValueIcon({ Icon, title }: { Icon: any; title: string }) {
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <div className="w-16 h-16 rounded-full border border-slate-200 dark:border-gray-800 flex items-center justify-center text-amber-700 dark:text-amber-500">
+        <Icon className="w-6 h-6" />
+      </div>
+      <span className="text-xs font-bold uppercase tracking-widest">{title}</span>
+    </div>
   );
 }

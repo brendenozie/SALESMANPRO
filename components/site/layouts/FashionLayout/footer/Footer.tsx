@@ -82,17 +82,17 @@ export default function Footer() {
           <div>
             <h4 className="text-zinc-900 dark:text-white text-[10px] font-black uppercase tracking-[0.3em] mb-8">Collections</h4>
             <ul className="space-y-4 text-xs font-bold uppercase tracking-widest">
-              <li><Link href="/shop" className="hover:opacity-50 transition-opacity">Ready to Wear</Link></li>
-              <li><Link href="/categories" className="hover:opacity-50 transition-opacity">Limited Drop</Link></li>
-              <li><Link href="/about" className="hover:opacity-50 transition-opacity">Archives</Link></li>
+              <li><Link href="/fashionecommerce/products" className="hover:opacity-50 transition-opacity">Ready to Wear</Link></li>
+              <li><Link href="/fashionecommerce/categories" className="hover:opacity-50 transition-opacity">Limited Drop</Link></li>
+              <li><Link href="/fashionecommerce/about" className="hover:opacity-50 transition-opacity">Archives</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="text-zinc-900 dark:text-white text-[10px] font-black uppercase tracking-[0.3em] mb-8">Concierge</h4>
             <ul className="space-y-4 text-xs font-bold uppercase tracking-widest">
-              <li><Link href="/shipping" className="hover:opacity-50 transition-opacity">Shipping</Link></li>
-              <li><Link href="/help" className="hover:opacity-50 transition-opacity">Assistance</Link></li>
-              <li><Link href="/track" className="hover:opacity-50 transition-opacity">Tracking</Link></li>
+              <li><Link href="/fashionecommerce/shipping" className="hover:opacity-50 transition-opacity">Shipping</Link></li>
+              <li><Link href="/fashionecommerce/help" className="hover:opacity-50 transition-opacity">Assistance</Link></li>
+              <li><Link href="/fashionecommerce/track" className="hover:opacity-50 transition-opacity">Tracking</Link></li>
             </ul>
           </div>
           <div className="col-span-2">
@@ -140,8 +140,8 @@ export default function Footer() {
           </div>
 
           <div className="flex gap-8 text-[9px] font-bold uppercase tracking-[0.3em] text-zinc-300 dark:text-zinc-700">
-            <Link href="/privacy" className="hover:text-zinc-900 dark:hover:text-white">Privacy</Link>
-            <Link href="/terms" className="hover:text-zinc-900 dark:hover:text-white">Terms</Link>
+            <Link href="/fashionecommerce/privacy" className="hover:text-zinc-900 dark:hover:text-white">Privacy</Link>
+            <Link href="/fashionecommerce/terms" className="hover:text-zinc-900 dark:hover:text-white">Terms</Link>
           </div>
         </div>
       </div>

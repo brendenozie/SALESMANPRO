@@ -27,7 +27,7 @@ const imageLoader = ({ src, width, quality }: { src: string; width: number; qual
 // =========================================================
 
 const CategoryCard = ({ cat, storeSlug }: { cat: IStoreCategory, storeSlug: string }) => {
-    const hasImage = cat.icon && cat.icon.startsWith('http');
+    const hasImage = cat.image || (cat.icon && cat.icon.startsWith('http'));
     const categoryName = cat.displayName || cat.category?.name || 'Unknown Category';
     const linkHref = `/site/${storeSlug}/ecommerce/products?category=${cat.id}`;
     
@@ -51,7 +51,7 @@ const CategoryCard = ({ cat, storeSlug }: { cat: IStoreCategory, storeSlug: stri
                     <>
                         <div className="absolute inset-0 w-full h-full">
                             <Image
-                                src={cat.icon!}
+                                src={cat.image || "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"} // Fallback image
                                 alt={categoryName}
                                 loader={imageLoader}
                                 fill
