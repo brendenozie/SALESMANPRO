@@ -25,6 +25,10 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } },
 };
 
+const customLoader = ({ src, width, quality }:any) => {
+  return `${src}?w=${width}&q=${quality || 75}`;
+};
+
 /* -------------------------------------------------------------------------- */
 /* Components */
 /* -------------------------------------------------------------------------- */
@@ -169,7 +173,7 @@ export default function AboutDesign() {
                   className="p-6 bg-[#fafaf9] dark:bg-black rounded-3xl border border-slate-100 dark:border-gray-800 text-center"
                 >
                   <div className="relative w-24 h-24 mx-auto mb-4 rounded-2xl overflow-hidden ring-4 ring-indigo-500/20">
-                    <Image src={member.img} alt={member.name} fill className="object-cover" />
+                    <Image src={member.img} alt={member.name} fill className="object-cover" loader={customLoader} />
                   </div>
                   <h4 className="font-bold text-slate-900 dark:text-white">{member.name}</h4>
                   <p className="text-xs font-black uppercase text-indigo-600 dark:text-indigo-400 tracking-widest">{member.role}</p>
