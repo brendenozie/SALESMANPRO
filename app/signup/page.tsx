@@ -2,7 +2,6 @@
 import { getProviders, type ClientSafeProvider } from "next-auth/react";
 import { redirect } from "next/navigation";
 import SignUpClient from "./SignUpClient";
-import { authOptions, getAuthSession } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 

@@ -95,7 +95,7 @@ async function createDefaultUser({
 }
 
 // export const authOptions: NextAuthOptions = {
-export const getAuthOptions = (reqHost?: string): NextAuthOptions => ({
+export const authOptions = (reqHost?: string): NextAuthOptions => ({
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -770,4 +770,4 @@ export const getAuthOptions = (reqHost?: string): NextAuthOptions => ({
 });
 
 // ✅ For Next.js App Router
-export const getAuthSession = () => getServerSession(getAuthOptions());
+export const getAuthSession = () => getServerSession(authOptions());
