@@ -147,14 +147,14 @@ export default function DatabaseManagement() {
     try {
       setIsRestoring(true);
       setStatus(null);
-      const text = await file.text();
+      // const text = await file.text();
       const res = await fetch('/api/admin/db/restore', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-backup-secret': process.env.NEXT_PUBLIC_BACKUP_SECRET || '',
         },
-        body: text, 
+        body: file,//.stream().getReader().read().then(({ value }) => new TextDecoder().decode(value)), 
       });
       if (!res.ok) throw new Error('Local restore failed');
       setStatus({ type: 'success', msg: 'Database restored from local file!' });
