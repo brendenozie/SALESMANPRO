@@ -1,124 +1,156 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import React from "react";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import { 
+  WrenchScrewdriverIcon, 
+  SparklesIcon, 
+  ShieldCheckIcon, 
+  ClockIcon,
+  LifebuoyIcon,
+  VariableIcon
+} from "@heroicons/react/24/outline";
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.19, 1, 0.22, 1] } }
+};
 
 
+const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+    `${src}?w=${width}&q=${quality || 75}`;
 
-export default function About() {
+
+export default function WatchCraftsmanshipPage() {
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="max-w-4xl mx-auto space-y-12"
-      >
-        {/* Our Story Section */}
-        <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
-            Our Story 📖
-          </h2>
-          <p className="mt-4 text-xl text-gray-600">
-            Welcome! We're so glad you're here. We started this store with a simple idea: to create a place where you can find unique, high-quality products that bring joy and inspiration to your everyday life.
-          </p>
-          <p className="mt-2 text-lg text-gray-500">
-            It all began with a big dream. We spent countless hours searching for products that were not only beautiful and functional but also had a story behind them. We wanted to connect you with artisans, creators, and brands that share our values of craftsmanship, sustainability, and authenticity. Every item in our collection is hand-picked with care, and we hope you'll feel the passion we pour into our work.
-          </p>
-        </div>
+    <main className="bg-slate-950 min-h-screen pt-32 pb-24 text-white overflow-hidden">
+      
+      {/* 1. THE CRAFTSMANSHIP HERO */}
+      <section className="max-w-7xl mx-auto px-6 mb-40 relative">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+          <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
+            <div className="flex items-center gap-4 mb-8">
+              <div className="h-px w-12 bg-amber-500" />
+              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-amber-500">Since 2026</span>
+            </div>
+            
+            <h1 className="text-7xl md:text-9xl font-light tracking-tighter leading-[0.85] mb-10 uppercase">
+              Precision <br />
+              <span className="italic font-serif text-amber-500">Redefined.</span>
+            </h1>
+            
+            <p className="text-xl text-slate-400 font-medium leading-relaxed max-w-lg mb-10">
+              Watch Duka is Nairobi’s home for horological excellence. We believe a watch isn’t just a tool for time; it’s a legacy on your wrist.
+            </p>
 
-        {/* Our Values Section */}
-        <div className="grid md:grid-cols-2 gap-8 items-center">
-          <div className="space-y-4">
-            <h2 className="text-3xl font-bold text-gray-900">
-              Our Values ✨
-            </h2>
-            <ul className="text-lg text-gray-600 space-y-3">
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">🌿</span>
-                <p>
-                  <strong>Conscious Curation:</strong> We're committed to sourcing from brands that prioritize ethical and sustainable practices. We care about where our products come from and how they're made.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">💎</span>
-                <p>
-                  <strong>Quality First:</strong> We believe in products that are built to last. We focus on durable materials and timeless designs so you can love your purchase for years to come.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">🤝</span>
-                <p>
-                  <strong>Exceptional Service:</strong> Your satisfaction is our top priority. We're here to help you every step of the way, from finding the perfect item to ensuring a smooth delivery.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">❤️</span>
-                <p>
-                  <strong>Community & Connection:</strong> We're grateful for every customer who supports our small business. We love seeing how you incorporate our products into your life.
-                </p>
-              </li>
-            </ul>
+            <div className="grid grid-cols-2 gap-10 border-t border-white/10 pt-10">
+               <div>
+                  <p className="text-3xl font-light mb-1 italic">0.02mm</p>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Tolerance Level</p>
+               </div>
+               <div>
+                  <p className="text-3xl font-light mb-1 italic">180+</p>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Micro-Components</p>
+               </div>
+            </div>
+          </motion.div>
+
+          <div className="relative group">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 1.2 }}
+              className="relative aspect-[3/4] rounded-2xl overflow-hidden grayscale hover:grayscale-0 transition-all duration-1000 border border-white/10 shadow-2xl"
+            >
+              <Image 
+                src="https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&w=1200&q=80" 
+                alt="Watch Internals" fill className="object-cover scale-110 group-hover:scale-100 transition-transform duration-[3s]"
+                loader={imageLoader}
+              />
+            </motion.div>
+            
+            {/* Floating Detail Label */}
+            <div className="absolute -bottom-6 -left-6 bg-slate-900 border border-white/10 p-6 rounded-xl backdrop-blur-xl">
+               <p className="text-[10px] font-black uppercase tracking-widest text-amber-500 mb-2">Technical Insight</p>
+               <p className="text-sm font-medium text-white italic">"Tourbillon Alignment"</p>
+            </div>
           </div>
-          <div className="relative h-64 sm:h-80 md:h-96">
-            <img
-              src="https://images.unsplash.com/photo-1542435503-956c469947f6?fit=crop&w=800&q=80"
-              alt="Artisans at work, representing craftsmanship"
-              className="w-full h-full object-cover rounded-lg shadow-lg"
+        </div>
+      </section>
+
+      {/* 2. WATCH CARE GUIDE SECTION */}
+      <section className="bg-white text-slate-950 py-32 rounded-[4rem] mx-4">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-24">
+            <h2 className="text-5xl font-light tracking-tighter uppercase mb-6">The Care <span className="italic font-serif">Guide</span></h2>
+            <p className="text-slate-500 font-medium max-w-lg mx-auto italic">Maintenance is the heart of longevity. Follow our master watchmakers' advice to keep your timepiece ticking forever.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            <CareItem 
+              Icon={VariableIcon} 
+              title="Magnetic Shielding" 
+              desc="Avoid placing your watch near smartphones or speakers. Magnets can disrupt the hairspring’s rhythm." 
+            />
+            <CareItem 
+              Icon={LifebuoyIcon} 
+              title="Salt & Water" 
+              desc="Always rinse with fresh water after a swim in the ocean. Salt is the enemy of fine gaskets." 
+            />
+            <CareItem 
+              Icon={ClockIcon} 
+              title="The 4-Year Rule" 
+              desc="Mechanical movements require a full service every 4 years to replace oils and verify seals." 
             />
           </div>
-        </div>
 
-        {/* Meet the Team Section */}
-        <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
-            Meet the Team 🧑‍🤝‍🧑
-          </h2>
-          <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Founder's Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1507003211169-0a7dd7803e20?fit=crop&w=300&q=80"
-                alt="Founder's profile picture"
-                className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-indigo-500"
-              />
-              <h3 className="mt-4 text-xl font-semibold text-gray-900">
-                [Founder's Name]
-              </h3>
-              <p className="text-indigo-600">Founder & Chief Curator</p>
-              <p className="mt-2 text-gray-500">
-                With an eye for detail and a passion for discovering hidden gems, [Founder's Name] is the heart of our store. They are always on the hunt for the next great find.
-              </p>
-            </motion.div>
-
-            {/* Team Member 1 Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1544723795-3fb6469f5b80?fit=crop&w=300&q=80"
-                alt="Team member profile picture"
-                className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-indigo-500"
-              />
-              <h3 className="mt-4 text-xl font-semibold text-gray-900">
-                [Team Member's Name]
-              </h3>
-              <p className="text-indigo-600">[Their Title]</p>
-              <p className="mt-2 text-gray-500">
-                As our Customer Experience Lead, [Team Member's Name] ensures every interaction you have with us is a positive one. They believe that great service is the key to building lasting relationships.
-              </p>
-            </motion.div>
+          {/* Quick Care "Bento" */}
+          <div className="mt-20 grid grid-cols-1 lg:grid-cols-2 gap-6">
+             <div className="bg-slate-50 p-10 rounded-3xl flex items-start gap-8">
+                <WrenchScrewdriverIcon className="w-12 h-12 text-slate-400 shrink-0" />
+                <div>
+                  <h4 className="text-xl font-bold mb-2 uppercase tracking-tight">Winding Wisdom</h4>
+                  <p className="text-sm text-slate-500 leading-relaxed font-medium">Never wind your watch while wearing it. The angle can bend the winding stem. Always remove it from your wrist first.</p>
+                </div>
+             </div>
+             <div className="bg-slate-900 p-10 rounded-3xl flex items-start gap-8 text-white">
+                <ShieldCheckIcon className="w-12 h-12 text-amber-500 shrink-0" />
+                <div>
+                  <h4 className="text-xl font-bold mb-2 uppercase tracking-tight">Storage Secrets</h4>
+                  <p className="text-sm text-slate-400 leading-relaxed font-medium">Store in a cool, dry place. Nairobi's humidity can vary—use a watch box to maintain a consistent environment.</p>
+                </div>
+             </div>
           </div>
         </div>
-      </motion.div>
-    </section>
+      </section>
+
+      {/* 3. THE PHILOSOPHY SECTION */}
+      <section className="py-40 text-center max-w-4xl mx-auto px-6">
+         <motion.div 
+           initial={{ opacity: 0 }}
+           whileInView={{ opacity: 1 }}
+           className="space-y-10"
+         >
+           <h3 className="text-4xl md:text-6xl font-light leading-tight italic font-serif">
+             "We don't sell watches. We curate the moments you spend wearing them."
+           </h3>
+           <div className="h-px w-24 bg-amber-500 mx-auto" />
+           <p className="text-xs font-black uppercase tracking-[0.5em] text-slate-500">Brenden Odhiambo — Founder</p>
+         </motion.div>
+      </section>
+    </main>
+  );
+}
+
+function CareItem({ Icon, title, desc }: { Icon: any, title: string, desc: string }) {
+  return (
+    <div className="group">
+      <div className="w-14 h-14 rounded-full border border-slate-200 flex items-center justify-center mb-8 group-hover:bg-slate-950 group-hover:text-white transition-all duration-500">
+        <Icon className="w-7 h-7" />
+      </div>
+      <h3 className="text-2xl font-light uppercase mb-4 tracking-tighter">{title}</h3>
+      <p className="text-slate-500 font-medium leading-relaxed text-sm">{desc}</p>
+    </div>
   );
 }

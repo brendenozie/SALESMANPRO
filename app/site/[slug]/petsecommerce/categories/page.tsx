@@ -1,145 +1,225 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { ChevronRightIcon, ArrowRightCircleIcon } from '@heroicons/react/24/outline'; // Added for visual flow
-import Section from '@/components/site/Section/Section'; // Assuming this component exists
-import { useStore } from '@/contexts/StoreContext';
-import clsx from 'clsx';
-import { IStoreCategory } from '@/types/typings'; // Assuming your category type is defined here
+import React, { useMemo } from "react";
+import { motion, Variants } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { IStoreCategory, ISubcategory } from "@/types/typings";
+import { useStore } from "@/contexts/StoreContext";
+import { 
+  HeartIcon, 
+  SparklesIcon, 
+  TagIcon,
+  FingerPrintIcon,
+  ChevronRightIcon
+} from "@heroicons/react/24/solid";
 
-// --- Animation Variants ---
-const cardVariants = {
-    hidden: { opacity: 0, y: 20, scale: 0.95 },
-    visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 100, damping: 10 } },
-};
-const containerVariants = {
-    visible: { transition: { staggerChildren: 0.07, delayChildren: 0.1 } },
-};
+/* --- 1. THEME & STYLE HELPERS (High Energy Palette) --- */
+const FALLBACK_PET_IMAGE = "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&w=800&q=80";
 
-const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-    `${src}?w=${width}&q=${quality || 75}`;
-
-// =========================================================
-// --- CATEGORY CARD COMPONENT (Reimagined) ---
-// =========================================================
-
-const CategoryCard = ({ cat, storeSlug }: { cat: IStoreCategory, storeSlug: string }) => {
-    const hasImage = cat.icon && cat.icon.startsWith('http');
-    const categoryName = cat.displayName || cat.category?.name || 'Unknown Category';
-    const linkHref = `/site/${storeSlug}/ecommerce/products?category=${cat.id}`;
-    
-    // Choose a placeholder/default icon if no image is available
-    const defaultIcon = cat.icon || '📦'; 
-
-    return (
-        <motion.div variants={cardVariants}>
-            <Link
-                key={cat.id}
-                href={linkHref}
-                className={clsx(
-                    "group relative block rounded-2xl overflow-hidden transition-all duration-300 transform",
-                    hasImage 
-                        ? "shadow-xl hover:shadow-2xl h-72 md:h-80" // Large card for image categories
-                        : "bg-white dark:bg-gray-800 shadow-md hover:shadow-lg h-40 flex items-center justify-center p-6 border border-gray-100 dark:border-gray-700" // Smaller card for icon categories
-                )}
-            >
-                {/* --- IMAGE CARD LAYOUT --- */}
-                {hasImage ? (
-                    <>
-                        <div className="absolute inset-0 w-full h-full">
-                            <Image
-                                src={cat.icon!}
-                                alt={categoryName}
-                                loader={imageLoader}
-                                fill
-                                sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 100vw"
-                                className="object-cover transition-transform duration-500 group-hover:scale-110"
-                            />
-                            {/* Gradient Overlay for Text Contrast and Effect */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-opacity duration-300 group-hover:from-black/80" />
-                        </div>
-                        
-                        {/* Text Content (Always white/bottom) */}
-                        <div className="absolute bottom-0 left-0 p-6 z-10 w-full text-white">
-                            <h3 className="text-2xl font-extrabold mb-1 line-clamp-1">
-                                {categoryName}
-                            </h3>
-                            <div className="flex items-center text-sm font-semibold opacity-80 group-hover:opacity-100 transition-opacity">
-                                Shop Now <ChevronRightIcon className="w-4 h-4 ml-1" />
-                            </div>
-                        </div>
-                    </>
-                ) : (
-                    /* --- ICON CARD LAYOUT (Fallback/Simpler) --- */
-                    <div className="text-center">
-                        <div className="w-16 h-16 mb-3 mx-auto rounded-full bg-blue-50 dark:bg-gray-700 flex items-center justify-center text-3xl text-blue-600 dark:text-blue-400">
-                            {defaultIcon.length > 2 ? <ArrowRightCircleIcon className="w-8 h-8"/> : <span>{defaultIcon}</span>}
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mt-2 line-clamp-1">
-                            {categoryName}
-                        </h3>
-                        <p className="text-sm text-blue-600 dark:text-blue-400 mt-1 flex items-center justify-center">
-                            View Products <ChevronRightIcon className="w-4 h-4 ml-1" />
-                        </p>
-                    </div>
-                )}
-            </Link>
-        </motion.div>
-    );
+const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
+  return `${src}?w=${width}&q=${quality || 75}`;
 };
 
-// =========================================================
-// --- MAIN CATEGORIES PAGE COMPONENT ---
-// =========================================================
+function resolvePetStyle(index: number) {
+  const themes = [
+    { accent: "text-orange-500", bg: "bg-orange-50", border: "hover:border-orange-200", shadow: "shadow-orange-100", label: "Bark & Run" },
+    { accent: "text-indigo-500", bg: "bg-indigo-50", border: "hover:border-indigo-200", shadow: "shadow-indigo-100", label: "Purr & Nap" },
+    { accent: "text-emerald-500", bg: "bg-emerald-50", border: "hover:border-emerald-200", shadow: "shadow-emerald-100", label: "Healthy Feathers" },
+    { accent: "text-rose-500", bg: "bg-rose-50", border: "hover:border-rose-200", shadow: "shadow-rose-100", label: "Pocket Pals" },
+  ];
+  const icons = [
+    <FingerPrintIcon className="w-6 h-6 rotate-12" key="1" />,
+    <SparklesIcon className="w-6 h-6 -rotate-12" key="2" />,
+    <HeartIcon className="w-6 h-6" key="3" />,
+    <TagIcon className="w-6 h-6" key="4" />,
+  ];
+  return { theme: themes[index % themes.length], icon: icons[index % icons.length] };
+}
 
-export default function CategoriesPage() {
-    const store = useStore();
-    const categories = store?.storeFormData?.StoreCategory || [];
-    const storeSlug = store?.storeFormData?.slug;
+/* --- 2. ANIMATIONS (Playful & Quick) --- */
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+};
 
-    if (!storeSlug) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <p className="text-xl font-medium text-gray-600 dark:text-gray-300">Store not found</p>
+const itemVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.9, rotate: -2 },
+  visible: { 
+    opacity: 1, 
+    scale: 1, 
+    rotate: 0,
+    transition: { type: "spring", stiffness: 150, damping: 12 } 
+  },
+};
+
+/* --- 3. SUBCOMPONENTS --- */
+
+function PetCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; index: number; storeSlug: string }) {
+  const { theme } = resolvePetStyle(index);
+  const isImageUrl = cat.image || cat.icon?.startsWith("http") || cat.icon?.startsWith("/");
+
+  return (
+    <motion.div variants={itemVariants} className="group h-full">
+      <Link href={`/site/${storeSlug}/petsecommerce/products?category=${cat.id}`} className="block h-full">
+        <div className={`relative h-[460px] w-full overflow-hidden rounded-[2rem] bg-white transition-all duration-500 hover:shadow-2xl ${theme.shadow} hover:-translate-y-2`}>
+          
+          {/* Angled Image Container */}
+          <div className="h-3/5 w-full relative overflow-hidden clip-path-mypoly">
+            <style jsx>{`
+              .clip-path-mypoly {
+                clip-path: polygon(0 0, 100% 0, 100% 85%, 0% 100%);
+              }
+            `}</style>
+            <Image
+              src={isImageUrl ? cat.image || cat.icon || FALLBACK_PET_IMAGE : FALLBACK_PET_IMAGE}
+              alt={cat.displayName || ""}
+              fill
+              className="object-cover transition-transform duration-700 group-hover:scale-110"
+                loader={customLoader}
+            />
+            <div className={`absolute inset-0 bg-gradient-to-t from-${theme.accent.split('-')[1]}-900/40 to-transparent`} />
+          </div>
+
+          <div className="p-8">
+            <span className={`inline-block px-3 py-1 rounded-lg ${theme.bg} ${theme.accent} text-[10px] font-black uppercase tracking-widest mb-4`}>
+              {theme.label}
+            </span>
+            
+            <h3 className="text-3xl font-black text-slate-800 mb-2 tracking-tight group-hover:text-indigo-600 transition-colors">
+              {cat.displayName}
+            </h3>
+            
+            <div className="flex items-center gap-2 text-slate-400 font-bold text-xs">
+               <FingerPrintIcon className="w-4 h-4 opacity-30" />
+               <span>{cat.subcategories?.length || 0} Specialties</span>
             </div>
-        );
-    }
+          </div>
 
-    // Separate categories into those with images and those without for a dynamic layout
-    const categoriesWithImages = categories.filter(cat => cat.icon && cat.icon.startsWith('http'));
-    const categoriesWithoutImages = categories.filter(cat => !cat.icon || !cat.icon.startsWith('http'));
-    
-    // Combine them, prioritizing image categories for visual impact
-    const sortedCategories = [...categoriesWithImages, ...categoriesWithoutImages];
-
-    return (
-        <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen pt-20 pb-16">
-            <Section 
-                title="Shop by Category"
-                // subtitle="Explore our curated collections of products and programs designed to help you thrive."
-            >
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {categories.length === 0 ? (
-                        <div className="py-12 text-center text-gray-500 dark:text-gray-400">
-                            <p>No categories available.</p>
-                        </div>
-                    ) : (
-                        <motion.div 
-                            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8" // Increased gap and refined grid
-                            variants={containerVariants}
-                            initial="hidden"
-                            animate="visible"
-                        >
-                            {sortedCategories.map((cat: IStoreCategory) => (
-                                <CategoryCard key={cat.id} cat={cat} storeSlug={storeSlug} />
-                            ))}
-                        </motion.div>
-                    )}
-                </div>
-            </Section>
+          <div className={`absolute bottom-6 right-8 w-12 h-12 rounded-full ${theme.bg} ${theme.accent} flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0`}>
+             <ChevronRightIcon className="w-6 h-6" />
+          </div>
         </div>
-    );
+      </Link>
+    </motion.div>
+  );
+}
+
+function PetSubTile({ sub, index, storeSlug }: { sub: ISubcategory; index: number; storeSlug: string }) {
+  const { theme, icon } = resolvePetStyle(index);
+
+  return (
+    <motion.div variants={itemVariants}>
+      <Link href={`/site/${storeSlug}/petsecommerce/products?subcategory=${sub.id}`}>
+        <div className={`group relative p-6 rounded-[1.5rem] bg-white border border-slate-100 transition-all hover:bg-slate-50 ${theme.border} hover:shadow-lg`}>
+          <div className="flex items-center gap-5">
+            <div className={`h-14 w-14 flex items-center justify-center rounded-2xl ${theme.bg} ${theme.accent} group-hover:rotate-12 transition-transform`}>
+              {icon}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-black text-slate-800 truncate">{sub.name}</h4>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Premium Care</p>
+            </div>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
+
+/* --- 4. MAIN PAGE --- */
+
+export default function PetsDukaCategoriesPage() {
+  const store = useStore();
+  const rawCategories = store?.storeFormData?.StoreCategory || [];
+  const storeSlug = store?.storeFormData?.slug;
+
+  const categories = useMemo(() => {
+    return [...rawCategories].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  }, [rawCategories]);
+
+  const isNicheStore = categories.length > 0 && categories.length <= 2;
+
+  const elevatedSubs = useMemo(() => {
+    if (!isNicheStore) return [];
+    return categories.flatMap(cat => cat.subcategories || []).slice(0, 12);
+  }, [categories, isNicheStore]);
+
+  if (!storeSlug) return null;
+
+  return (
+    <main className="bg-[#fcfcfd] min-h-screen py-32 overflow-hidden relative">
+      {/* Playful Background Elements */}
+      <div className="absolute top-10 right-10 w-64 h-64 bg-indigo-50 rounded-full blur-[100px] -z-10" />
+      <div className="absolute bottom-20 left-10 w-96 h-96 bg-orange-50 rounded-full blur-[120px] -z-10" />
+
+      <div className="container relative z-10 mx-auto max-w-7xl px-6">
+        {/* Dynamic Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
+          <div className="max-w-2xl">
+            <motion.div 
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              className="inline-flex items-center gap-2 mb-4 bg-indigo-600 text-white px-4 py-1.5 rounded-full shadow-lg shadow-indigo-200"
+            >
+              <SparklesIcon className="w-4 h-4" />
+              <span className="text-[11px] font-black uppercase tracking-widest">The Pet Paradise</span>
+            </motion.div>
+            
+            <motion.h2 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="text-5xl md:text-7xl font-black text-slate-900 leading-[1] tracking-tighter"
+            >
+              {isNicheStore ? (
+                <>Happy Tails <br /> <span className="text-orange-500 italic font-serif font-light">Start Here.</span></>
+              ) : (
+                <>Your Pet's <br /> <span className="text-indigo-600 italic font-serif font-light">World, Curated.</span></>
+              )}
+            </motion.h2>
+          </div>
+
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-lg text-slate-500 font-bold max-w-xs border-l-4 border-orange-400 pl-6 leading-relaxed"
+          >
+            "From nutrition to playtime, we provide only the best for your furry, feathered, or scaled family members."
+          </motion.p>
+        </div>
+
+        {/* Dynamic Grid */}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className={`grid grid-cols-1 gap-8 ${isNicheStore ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-3'}`}
+        >
+          {isNicheStore ? (
+             elevatedSubs.map((sub, idx) => (
+              <PetSubTile key={sub.id} sub={sub} index={idx} storeSlug={storeSlug} />
+            ))
+          ) : (
+            categories.map((cat, idx) => (
+              <PetCategoryCard key={cat.id} cat={cat} index={idx} storeSlug={storeSlug} />
+            ))
+          )}
+
+          {/* Veterinarian CTA Card */}
+          <motion.div variants={itemVariants} className="lg:col-span-1 bg-slate-900 rounded-[2rem] p-10 text-white flex flex-col justify-between group overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-125 transition-transform">
+                 <FingerPrintIcon className="w-40 h-40" />
+              </div>
+              <h4 className="text-3xl font-black leading-tight relative z-10">Ask our <br /> <span className="text-emerald-400">Pet Experts.</span></h4>
+              <div className="relative z-10">
+                <p className="text-sm text-slate-400 mb-6 font-medium">Get personalized advice on nutrition and wellness.</p>
+                <Link href="/consult" className="font-black text-xs uppercase tracking-widest text-emerald-400 flex items-center gap-2 group-hover:text-white transition-colors">
+                  Talk to a Vet <ChevronRightIcon className="w-4 h-4" />
+                </Link>
+              </div>
+          </motion.div>
+        </motion.div>
+      </div>
+    </main>
+  );
 }

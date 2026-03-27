@@ -47,7 +47,7 @@ export default function Header() {
 
   const handleUserAction = () => {
     if (!user) return handleGoogleSignIn();
-    router.push(user.role?.toLowerCase() === 'admin' ? '/dashboards' : `/ecommerce/profile`);
+    router.push(user.role?.toLowerCase() === 'admin' ? '/dashboards' : `/watchecommerce/profile`);
   };
 
   const handleGoogleSignIn = () => {
@@ -58,8 +58,8 @@ export default function Header() {
 
   const navLinks = [
     { label: 'Home', href: `/` },
-    { label: 'Shop', href: `/ecommerce/products` },
-    { label: 'Categories', href: `/ecommerce/categories` },
+    { label: 'Shop', href: `/watchecommerce/products` },
+    { label: 'Categories', href: `/watchecommerce/categories` },
   ];
 
   return (

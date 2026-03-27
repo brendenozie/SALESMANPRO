@@ -135,9 +135,9 @@ export default function Footer() {
           </div>
           
           <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest">
-            <Link href="#" className="hover:text-amber-500 transition-colors">Privacy</Link>
-            <Link href="#" className="hover:text-amber-500 transition-colors">Terms</Link>
-            <Link href="#" className="hover:text-amber-500 transition-colors">Sitemap</Link>
+            <Link href="/cakeecommerce/privacy" className="hover:text-amber-500 transition-colors">Privacy</Link>
+            <Link href="/cakeecommerce/terms" className="hover:text-amber-500 transition-colors">Terms</Link>
+            <Link href="/cakeecommerce/sitemap" className="hover:text-amber-500 transition-colors">Sitemap</Link>
           </div>
         </div>
       </div>

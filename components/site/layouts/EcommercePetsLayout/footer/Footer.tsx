@@ -90,7 +90,7 @@ export default function Footer() {
               <ul className="space-y-4 text-sm font-medium">
                 {['About', 'Contact', 'Privacy Policy', 'Terms of Service'].map((link) => (
                   <li key={link}>
-                    <Link href={`/ecommerce/${link.toLowerCase().replace(/ /g, '-')}`} className="hover:text-white hover:translate-x-1 transition-all inline-block">
+                    <Link href={`/petsecommerce/${link.toLowerCase().replace(/ /g, '-')}`} className="hover:text-white hover:translate-x-1 transition-all inline-block">
                       {link}
                     </Link>
                   </li>
@@ -102,7 +102,7 @@ export default function Footer() {
               <ul className="space-y-4 text-sm font-medium">
                 {['Help Center', 'Returns', 'Shipping', 'Track Order'].map((link) => (
                   <li key={link}>
-                    <Link href={`/ecommerce/${link.toLowerCase().replace(/ /g, '-')}`} className="hover:text-white hover:translate-x-1 transition-all inline-block">
+                    <Link href={`/petsecommerce/${link.toLowerCase().replace(/ /g, '-')}`} className="hover:text-white hover:translate-x-1 transition-all inline-block">
                       {link}
                     </Link>
                   </li>
@@ -154,8 +154,8 @@ export default function Footer() {
           </p>
           
           <div className="flex items-center gap-8">
-            <Link href="/ecommerce/faq" className="text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">FAQ</Link>
-            <Link href="/ecommerce/support" className="text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">Support</Link>
+            <Link href="/petsecommerce/faq" className="text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">FAQ</Link>
+            <Link href="/petsecommerce/support" className="text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">Support</Link>
             {/* Payment Icons Placeholder */}
             <div className="flex gap-2 opacity-30 grayscale">
               <div className="w-8 h-5 bg-zinc-800 rounded-sm" />

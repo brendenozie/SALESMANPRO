@@ -1,124 +1,154 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import React from "react";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import { 
+  HeartIcon, 
+  SunIcon, 
+  ShieldCheckIcon, 
+  HandRaisedIcon 
+} from "@heroicons/react/24/solid";
 
+const fadeInUp = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
+};
 
+const customLoader = ({ src, width, quality }: { src: string, width: number, quality?: number }) => {
+  return `${src}?w=${width}&q=${quality || 75}`;
+};
 
-export default function About() {
+export default function BabyAboutPage() {
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="max-w-4xl mx-auto space-y-12"
-      >
-        {/* Our Story Section */}
-        <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
-            Our Story 📖
-          </h2>
-          <p className="mt-4 text-xl text-gray-600">
-            Welcome! We're so glad you're here. We started this store with a simple idea: to create a place where you can find unique, high-quality products that bring joy and inspiration to your everyday life.
-          </p>
-          <p className="mt-2 text-lg text-gray-500">
-            It all began with a big dream. We spent countless hours searching for products that were not only beautiful and functional but also had a story behind them. We wanted to connect you with artisans, creators, and brands that share our values of craftsmanship, sustainability, and authenticity. Every item in our collection is hand-picked with care, and we hope you'll feel the passion we pour into our work.
-          </p>
-        </div>
+    <main className="bg-[#fffdfb] min-h-screen pt-32 pb-24 text-slate-800 overflow-hidden">
+      
+      {/* 1. THE "DREAMY" HERO */}
+      <section className="max-w-7xl mx-auto px-6 mb-32 relative">
+        {/* Floating Decorative Blobs */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-rose-100/50 rounded-full blur-[100px] -z-10" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-blue-100/50 rounded-full blur-[100px] -z-10" />
 
-        {/* Our Values Section */}
-        <div className="grid md:grid-cols-2 gap-8 items-center">
-          <div className="space-y-4">
-            <h2 className="text-3xl font-bold text-gray-900">
-              Our Values ✨
-            </h2>
-            <ul className="text-lg text-gray-600 space-y-3">
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">🌿</span>
-                <p>
-                  <strong>Conscious Curation:</strong> We're committed to sourcing from brands that prioritize ethical and sustainable practices. We care about where our products come from and how they're made.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">💎</span>
-                <p>
-                  <strong>Quality First:</strong> We believe in products that are built to last. We focus on durable materials and timeless designs so you can love your purchase for years to come.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">🤝</span>
-                <p>
-                  <strong>Exceptional Service:</strong> Your satisfaction is our top priority. We're here to help you every step of the way, from finding the perfect item to ensuring a smooth delivery.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">❤️</span>
-                <p>
-                  <strong>Community & Connection:</strong> We're grateful for every customer who supports our small business. We love seeing how you incorporate our products into your life.
-                </p>
-              </li>
-            </ul>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-rose-50 text-rose-500 mb-6">
+              <HeartIcon className="w-4 h-4" />
+              <span className="text-[10px] font-black uppercase tracking-widest">Made with Love</span>
+            </div>
+            
+            <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] mb-8 text-slate-900">
+              Big Joys for <br />
+              <span className="text-rose-400 italic">Little People.</span>
+            </h1>
+            
+            <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-md mb-8">
+              Baby Duka was born in Nairobi from a simple realization: every milestone, from the first wiggle to the first step, deserves the gentlest touch.
+            </p>
+
+            <div className="flex items-center gap-6">
+               <div className="flex -space-x-3">
+                 {[1,2,3].map(i => (
+                   <div key={i} className="w-12 h-12 rounded-full border-4 border-white overflow-hidden bg-slate-100">
+                     <Image src={`https://i.pravatar.cc/150?u=${i+10}`} alt="Parent" width={48} height={48} loader={customLoader} />
+                   </div>
+                 ))}
+               </div>
+               <p className="text-sm font-bold text-slate-400 uppercase tracking-tighter">Trusted by 5,000+ <br /> Kenyan Parents</p>
+            </div>
+          </motion.div>
+
+          <div className="relative">
+            <motion.div 
+              initial={{ scale: 0.8, opacity: 0, rotate: -5 }}
+              animate={{ scale: 1, opacity: 1, rotate: 0 }}
+              transition={{ duration: 1.2 }}
+              className="relative aspect-square rounded-[4rem] overflow-hidden shadow-2xl border-[16px] border-white"
+            >
+              <Image 
+                src="https://images.unsplash.com/photo-1515488764276-beab7607c1e6?auto=format&fit=crop&w=1200&q=80" 
+                alt="Happy Baby" fill className="object-cover" loader={customLoader}
+              />
+            </motion.div>
+            
+            {/* Floating "Cloud" Stat */}
+            <motion.div 
+              animate={{ y: [0, -15, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -bottom-10 -right-10 bg-white p-8 rounded-[3rem] shadow-xl text-center"
+            >
+              <p className="text-4xl font-black text-blue-400">100%</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Cotton Soft</p>
+            </motion.div>
           </div>
-          <div className="relative h-64 sm:h-80 md:h-96">
-            <img
-              src="https://images.unsplash.com/photo-1542435503-956c469947f6?fit=crop&w=800&q=80"
-              alt="Artisans at work, representing craftsmanship"
-              className="w-full h-full object-cover rounded-lg shadow-lg"
+        </div>
+      </section>
+
+      {/* 2. OUR PROMISE: THE ROUNDED BENTO */}
+      <section className="bg-white py-32 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl font-black tracking-tight text-slate-900 mb-4">The Baby Duka Promise</h2>
+            <div className="w-16 h-1.5 bg-rose-200 mx-auto rounded-full" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <PromiseCard 
+              Icon={ShieldCheckIcon} 
+              title="Safety Certified" 
+              desc="Every toy and garment undergoes rigorous safety testing. If it’s not safe for our kids, it’s not for yours."
+              color="bg-blue-50 text-blue-500"
+            />
+            <PromiseCard 
+              Icon={SunIcon} 
+              title="Organic Growth" 
+              desc="We prioritize organic fibers and eco-friendly dyes to keep baby's skin healthy and the planet happy."
+              color="bg-amber-50 text-amber-500"
+            />
+            <PromiseCard 
+              Icon={HandRaisedIcon} 
+              title="Nurturing Care" 
+              desc="Our team is made of parents. We provide advice and products that we use in our own nurseries."
+              color="bg-rose-50 text-rose-500"
             />
           </div>
         </div>
+      </section>
 
-        {/* Meet the Team Section */}
-        <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
-            Meet the Team 🧑‍🤝‍🧑
-          </h2>
-          <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Founder's Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1507003211169-0a7dd7803e20?fit=crop&w=300&q=80"
-                alt="Founder's profile picture"
-                className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-indigo-500"
-              />
-              <h3 className="mt-4 text-xl font-semibold text-gray-900">
-                [Founder's Name]
-              </h3>
-              <p className="text-indigo-600">Founder & Chief Curator</p>
-              <p className="mt-2 text-gray-500">
-                With an eye for detail and a passion for discovering hidden gems, [Founder's Name] is the heart of our store. They are always on the hunt for the next great find.
-              </p>
-            </motion.div>
-
-            {/* Team Member 1 Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1544723795-3fb6469f5b80?fit=crop&w=300&q=80"
-                alt="Team member profile picture"
-                className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-indigo-500"
-              />
-              <h3 className="mt-4 text-xl font-semibold text-gray-900">
-                [Team Member's Name]
-              </h3>
-              <p className="text-indigo-600">[Their Title]</p>
-              <p className="mt-2 text-gray-500">
-                As our Customer Experience Lead, [Team Member's Name] ensures every interaction you have with us is a positive one. They believe that great service is the key to building lasting relationships.
-              </p>
-            </motion.div>
+      {/* 3. THE "NURSERY" MANIFESTO */}
+      <section className="max-w-5xl mx-auto px-6 py-32 text-center relative">
+        <div className="relative z-10">
+          <motion.h3 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            className="text-3xl md:text-5xl font-serif italic text-slate-800 leading-snug"
+          >
+            "In the end, it’s the small things that leave the biggest footprints on our hearts."
+          </motion.h3>
+          <div className="mt-12 flex justify-center gap-4">
+             <div className="w-3 h-3 rounded-full bg-rose-200" />
+             <div className="w-3 h-3 rounded-full bg-blue-200" />
+             <div className="w-3 h-3 rounded-full bg-amber-200" />
           </div>
         </div>
-      </motion.div>
-    </section>
+        
+        {/* Playful background element */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full border-[40px] border-slate-50 rounded-full -z-0" />
+      </section>
+    </main>
+  );
+}
+
+function PromiseCard({ Icon, title, desc, color }: { Icon: any, title: string, desc: string, color: string }) {
+  return (
+    <motion.div 
+      whileHover={{ scale: 1.02 }}
+      className="p-10 rounded-[4rem] bg-[#fffdfb] border-2 border-slate-50 flex flex-col items-center text-center group transition-all hover:shadow-xl"
+    >
+      <div className={`w-20 h-20 rounded-full ${color} flex items-center justify-center mb-8 shadow-inner`}>
+        <Icon className="w-10 h-10" />
+      </div>
+      <h3 className="text-2xl font-black text-slate-900 mb-4">{title}</h3>
+      <p className="text-slate-500 font-medium leading-relaxed">{desc}</p>
+    </motion.div>
   );
 }

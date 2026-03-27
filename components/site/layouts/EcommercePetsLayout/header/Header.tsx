@@ -40,7 +40,7 @@ export default function Header() {
   const handleUserAction = () => {
     if (!user) return handleGoogleSignIn();
     if (user.role?.toLowerCase() === 'admin') router.push('/dashboards');
-    else router.push(`/ecommerce/profile`);
+    else router.push(`/petsecommerce/profile`);
   };
 
   const handleSignOut = () => signOut({ callbackUrl: `/` });
@@ -63,9 +63,9 @@ export default function Header() {
   }, []);
 
   const navLinks = [
-    { label: 'Shop', href: `/ecommerce/products` },
-    { label: 'Categories', href: `/ecommerce/categories` },
-    { label: 'Our Story', href: `/about` },
+    { label: 'Shop', href: `/petsecommerce/products` },
+    { label: 'Categories', href: `/petsecommerce/categories` },
+    { label: 'Our Story', href: `/petsecommerce/about` },
   ];
 
   return (

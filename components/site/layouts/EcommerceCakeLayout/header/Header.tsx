@@ -41,15 +41,15 @@ export default function Header() {
   }, []);
 
   const navLinks = [
-    { label: 'Menu', href: `/ecommerce/categories` },
-    { label: 'Breads', href: `/ecommerce/products?category=breads` },
-    { label: 'Cakes', href: `/ecommerce/products?category=cakes` },
-    { label: 'Croissant', href: `/ecommerce/products?category=croissant` },
+    { label: 'Menu', href: `/cakeecommerce/categories` },
+    { label: 'Breads', href: `/cakeecommerce/products?category=breads` },
+    { label: 'Cakes', href: `/cakeecommerce/products?category=cakes` },
+    { label: 'Croissant', href: `/cakeecommerce/products?category=croissant` },
   ];
 
   const handleUserAction = () => {
     if (!user) return handleGoogleSignIn();
-    router.push(user.role?.toLowerCase() === 'admin' ? '/dashboards' : `/ecommerce/profile`);
+    router.push(user.role?.toLowerCase() === 'admin' ? '/dashboards' : `/cakeecommerce/profile`);
   };
 
   const handleGoogleSignIn = () => {

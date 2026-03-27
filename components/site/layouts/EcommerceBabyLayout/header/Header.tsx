@@ -65,7 +65,7 @@ export default function Header() {
   const handleUserAction = () => {
     if (!user) return handleGoogleSignIn();
     if (user.role?.toLowerCase() === 'admin') router.push('/dashboards');
-    else router.push(`/ecommerce/profile`);
+    else router.push(`/babyecommerce/profile`);
   };
 
   const handleGoogleSignIn = () => {
@@ -118,7 +118,7 @@ style={{ backgroundColor: primaryColor }}
 <div className="flex items-center space-x-6">
 
 <Link
-href="/ecommerce/track-order"
+href="/babyecommerce/track-order"
 className="hover:underline flex items-center space-x-1"
 >
 <TruckIcon className="h-4 w-4"/>
@@ -276,7 +276,7 @@ className="rounded-xl border border-gray-200 dark:border-gray-700"
 <nav className="flex items-center">
 
 <Link
-href="/ecommerce/categories"
+href="/babyecommerce/products"
 className="py-4 pr-6 text-sm font-bold text-gray-800 dark:text-gray-200 border-r border-gray-100 dark:border-gray-800 mr-6 hover:text-gray-600 dark:hover:text-white"
 >
 
@@ -288,7 +288,7 @@ All Categories
 
 <Link
 key={cat.id}
-href={`/ecommerce/categories/${cat.category?.name?.toLowerCase()}`}
+href={`/babyecommerce/products?categories=${cat.category?.name?.toLowerCase()}`}
 className="py-4 px-4 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
 >
 
@@ -305,7 +305,7 @@ className="py-4 px-4 text-sm font-semibold text-gray-600 dark:text-gray-300 hove
 <FireIcon className="h-5 w-5 text-orange-500"/>
 
 <Link
-href="/ecommerce/products?filter=hot-deals"
+href="/babyecommerce/products?filter=hot-deals"
 className="hover:text-orange-600"
 >
 
@@ -361,7 +361,7 @@ className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full"
 <div className="flex-grow overflow-y-auto p-4">
 
 <Link
-href="/ecommerce/products?filter=hot-deals"
+href="/babyecommerce/products?filter=hot-deals"
 onClick={() => setIsDrawerOpen(false)}
 className="flex items-center space-x-3 p-3 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-600 font-bold mb-4"
 >
@@ -381,7 +381,7 @@ Shop Categories
 
 <Link
 key={cat.id}
-href={`/ecommerce/categories/${cat.category?.name}`}
+href={`/babyecommerce/products?categories=${cat.category?.name}`}
 onClick={() => setIsDrawerOpen(false)}
 className="block p-3 text-base font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg"
 >

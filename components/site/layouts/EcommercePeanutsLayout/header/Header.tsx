@@ -50,9 +50,9 @@ export default function PeanutHeader() {
   }, []);
 
   const navLinks = [
-    { label: 'The Roastery', href: `/ecommerce/products` },
-    { label: 'Bundles', href: `/ecommerce/categories` },
-    { label: 'Our Story', href: `/` },
+    { label: 'The Roastery', href: `/peanutecommerce/products` },
+    { label: 'Bundles', href: `/peanutecommerce/categories` },
+    { label: 'Our Story', href: `/peanutecommerce/about` },
   ];
 
   const handleGoogleSignIn = () => {
@@ -136,7 +136,7 @@ export default function PeanutHeader() {
             <div className="hidden sm:block">
                 {user ? (
                 <button
-                    onClick={() => router.push('/ecommerce/profile')}
+                    onClick={() => router.push('/peanutecommerce/profile')}
                     className="p-2 rounded-full hover:bg-amber-100/50 transition-colors text-[#3E2723]"
                 >
                     <UserIcon className="h-5 w-5 stroke-[2.5]" />
@@ -156,7 +156,7 @@ export default function PeanutHeader() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsCartOpen(true)}
-              // onClick={() => cart.length > 0 && router.push(`/ecommerce/checkout`)}
+              // onClick={() => cart.length > 0 && router.push(`/peanutecommerce/checkout`)}
               className="flex items-center gap-3 bg-[#3E2723] text-white px-4 py-2 md:px-6 md:py-3 rounded-full shadow-lg shadow-amber-900/20"
             >
               <ShoppingBagIcon className="h-5 w-5" />

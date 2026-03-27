@@ -61,7 +61,7 @@ export default function Footer() {
             <ul className="space-y-4 text-sm font-bold">
               {['About', 'Contact', 'Privacy', 'Terms'].map((item) => (
                 <li key={item}>
-                  <Link href={`/ecommerce/${item.toLowerCase()}`} className="hover:text-[#F3A852] transition-colors uppercase tracking-widest text-[11px]">
+                  <Link href={`/peanutecommerce/${item.toLowerCase()}`} className="hover:text-[#F3A852] transition-colors uppercase tracking-widest text-[11px]">
                     {item}
                   </Link>
                 </li>
@@ -75,7 +75,7 @@ export default function Footer() {
             <ul className="space-y-4 text-sm font-bold">
               {['Help Center', 'Returns', 'Shipping', 'Track Order'].map((item) => (
                 <li key={item}>
-                  <Link href={`/ecommerce/${item.replace(' ', '-').toLowerCase()}`} className="hover:text-[#F3A852] transition-colors uppercase tracking-widest text-[11px]">
+                  <Link href={`/peanutecommerce/${item.replace(' ', '-').toLowerCase()}`} className="hover:text-[#F3A852] transition-colors uppercase tracking-widest text-[11px]">
                     {item}
                   </Link>
                 </li>
@@ -106,7 +106,7 @@ export default function Footer() {
           </p>
           
           <div className="flex items-center gap-8">
-            <Link href="/sitemap.xml" className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 hover:text-white transition-colors">Sitemap</Link>
+            <Link href="/peanutecommerce/sitemap.xml" className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-500 hover:text-white transition-colors">Sitemap</Link>
             <div className="flex gap-2">
                <div className="w-12 h-8 rounded bg-white/5 border border-white/10 flex items-center justify-center text-[8px] font-bold text-stone-600 italic">VISA</div>
                <div className="w-12 h-8 rounded bg-white/5 border border-white/10 flex items-center justify-center text-[8px] font-bold text-stone-600 italic">AMEX</div>

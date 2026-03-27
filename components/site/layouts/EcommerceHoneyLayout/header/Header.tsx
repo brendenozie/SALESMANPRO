@@ -57,9 +57,8 @@ export default function Header() {
 
   const navLinks = [
     { label: 'Home', href: `/` },
-    { label: 'Pages', href: `#` },
-    { label: 'Blog', href: `#` },
-    { label: 'Products', href: `/ecommerce/products` },
+    { label: 'Products', href: `/honeyecommerce/products` },
+    { label: 'Varieties', href: `/honeyecommerce/categories` },
   ];
 
   return (
@@ -124,7 +123,7 @@ export default function Header() {
 
             {/* Login/Contact Button - Styled after the gold buttons in your assets */}
             <button
-              onClick={user ? () => router.push('/ecommerce/profile') : handleGoogleSignIn}
+              onClick={user ? () => router.push('/honeyecommerce/profile') : handleGoogleSignIn}
               className="hidden md:block bg-[#bc9c64] text-white px-8 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-black transition-all"
             >
               {user ? 'Account' : 'Contact'}

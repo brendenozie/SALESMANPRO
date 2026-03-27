@@ -1,124 +1,151 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import React from "react";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import { 
+  BeakerIcon, 
+  SparklesIcon, 
+  HeartIcon, 
+  GlobeAltIcon 
+} from "@heroicons/react/24/outline";
 
+const fadeInUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
+};
 
-
-export default function About() {
+export default function CakeFlavorProfilePage() {
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="max-w-4xl mx-auto space-y-12"
-      >
-        {/* Our Story Section */}
-        <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
-            Our Story 📖
-          </h2>
-          <p className="mt-4 text-xl text-gray-600">
-            Welcome! We're so glad you're here. We started this store with a simple idea: to create a place where you can find unique, high-quality products that bring joy and inspiration to your everyday life.
-          </p>
-          <p className="mt-2 text-lg text-gray-500">
-            It all began with a big dream. We spent countless hours searching for products that were not only beautiful and functional but also had a story behind them. We wanted to connect you with artisans, creators, and brands that share our values of craftsmanship, sustainability, and authenticity. Every item in our collection is hand-picked with care, and we hope you'll feel the passion we pour into our work.
-          </p>
-        </div>
+    <main className="bg-[#fffcf9] min-h-screen pt-32 pb-24 text-slate-900 overflow-hidden">
+      
+      {/* 1. THE SENSORY HERO */}
+      <section className="max-w-7xl mx-auto px-6 mb-32 relative">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
+            <div className="flex items-center gap-3 mb-6">
+              <span className="h-px w-8 bg-amber-400" />
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-600">The Alchemy of Cake</span>
+            </div>
+            
+            <h1 className="text-6xl md:text-8xl font-serif italic leading-[0.9] mb-8">
+              Flavor is our <br />
+              <span className="font-sans font-black text-slate-900 not-italic">Obsession.</span>
+            </h1>
+            
+            <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-md italic">
+              "We don't just bake; we compose. From the first note of Madagascar vanilla to the lingering finish of Kenyan sea salt."
+            </p>
+          </motion.div>
 
-        {/* Our Values Section */}
-        <div className="grid md:grid-cols-2 gap-8 items-center">
-          <div className="space-y-4">
-            <h2 className="text-3xl font-bold text-gray-900">
-              Our Values ✨
-            </h2>
-            <ul className="text-lg text-gray-600 space-y-3">
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">🌿</span>
-                <p>
-                  <strong>Conscious Curation:</strong> We're committed to sourcing from brands that prioritize ethical and sustainable practices. We care about where our products come from and how they're made.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">💎</span>
-                <p>
-                  <strong>Quality First:</strong> We believe in products that are built to last. We focus on durable materials and timeless designs so you can love your purchase for years to come.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">🤝</span>
-                <p>
-                  <strong>Exceptional Service:</strong> Your satisfaction is our top priority. We're here to help you every step of the way, from finding the perfect item to ensuring a smooth delivery.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">❤️</span>
-                <p>
-                  <strong>Community & Connection:</strong> We're grateful for every customer who supports our small business. We love seeing how you incorporate our products into your life.
-                </p>
-              </li>
-            </ul>
+          <div className="relative">
+            {/* Main Visual: The Texture Shot */}
+            <motion.div 
+              initial={{ clipPath: "inset(0 100% 0 0)" }}
+              animate={{ clipPath: "inset(0 0% 0 0)" }}
+              transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+              className="relative aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl"
+            >
+              <Image 
+                src="https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=1200&q=80" 
+                alt="Cake Texture" fill className="object-cover" loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
+              />
+            </motion.div>
+            
+            {/* Floating Ingredient Tag */}
+            <motion.div 
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 4, repeat: Infinity }}
+              className="absolute -top-6 -right-6 bg-white p-6 rounded-2xl shadow-xl border border-amber-50"
+            >
+              <p className="text-[10px] font-black uppercase tracking-widest text-amber-600">Origin Grade</p>
+              <p className="text-lg font-serif italic text-slate-900">70% Dark Cacao</p>
+            </motion.div>
           </div>
-          <div className="relative h-64 sm:h-80 md:h-96">
-            <img
-              src="https://images.unsplash.com/photo-1542435503-956c469947f6?fit=crop&w=800&q=80"
-              alt="Artisans at work, representing craftsmanship"
-              className="w-full h-full object-cover rounded-lg shadow-lg"
+        </div>
+      </section>
+
+      {/* 2. THE FLAVOR PILLARS (The "Anatomy" Section) */}
+      <section className="bg-white py-32 border-y border-amber-50">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+            <Pillar 
+              Icon={GlobeAltIcon} 
+              title="Global Sourcing" 
+              desc="We source our butter from small Kenyan dairies and our chocolate from ethical fair-trade growers." 
+            />
+            <Pillar 
+              Icon={BeakerIcon} 
+              title="Precision Science" 
+              desc="Every recipe is balanced down to the gram for perfect moisture retention and crumb structure." 
+            />
+            <Pillar 
+              Icon={SparklesIcon} 
+              title="Artisanal Finish" 
+              desc="No mass-production. Every petal, swirl, and gold leaf flake is applied by hand in our Nairobi studio." 
+            />
+            <Pillar 
+              Icon={HeartIcon} 
+              title="Zero Compromise" 
+              desc="Real cream, real fruit, real eggs. We never use preservatives or artificial flavor enhancers." 
             />
           </div>
         </div>
+      </section>
 
-        {/* Meet the Team Section */}
-        <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
-            Meet the Team 🧑‍🤝‍🧑
-          </h2>
-          <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Founder's Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1507003211169-0a7dd7803e20?fit=crop&w=300&q=80"
-                alt="Founder's profile picture"
-                className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-indigo-500"
-              />
-              <h3 className="mt-4 text-xl font-semibold text-gray-900">
-                [Founder's Name]
-              </h3>
-              <p className="text-indigo-600">Founder & Chief Curator</p>
-              <p className="mt-2 text-gray-500">
-                With an eye for detail and a passion for discovering hidden gems, [Founder's Name] is the heart of our store. They are always on the hunt for the next great find.
-              </p>
-            </motion.div>
-
-            {/* Team Member 1 Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1544723795-3fb6469f5b80?fit=crop&w=300&q=80"
-                alt="Team member profile picture"
-                className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-indigo-500"
-              />
-              <h3 className="mt-4 text-xl font-semibold text-gray-900">
-                [Team Member's Name]
-              </h3>
-              <p className="text-indigo-600">[Their Title]</p>
-              <p className="mt-2 text-gray-500">
-                As our Customer Experience Lead, [Team Member's Name] ensures every interaction you have with us is a positive one. They believe that great service is the key to building lasting relationships.
-              </p>
-            </motion.div>
-          </div>
+      {/* 3. THE "TASTING NOTES" (Bento Style) */}
+      <section className="max-w-7xl mx-auto px-6 py-32">
+        <div className="text-center mb-20">
+          <h2 className="text-4xl font-serif italic mb-4">Our Signature Profiles</h2>
+          <p className="text-slate-400 font-bold text-xs uppercase tracking-[0.3em]">The Foundation of our Duka</p>
         </div>
-      </motion.div>
-    </section>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <FlavorBox 
+            title="The Velvet" 
+            notes="Cocoa, Buttermilk, Cream Cheese" 
+            img="https://images.unsplash.com/photo-1616692341456-d33347467171?auto=format&fit=crop&w=600&q=80"
+          />
+          <FlavorBox 
+            title="The Solstice" 
+            notes="Lemon Zest, Lavender, Honey" 
+            img="https://images.unsplash.com/photo-1519340333755-56e9c1d04579?auto=format&fit=crop&w=600&q=80"
+          />
+          <FlavorBox 
+            title="The Midnight" 
+            notes="Espresso, Salted Caramel, Ganache" 
+            img="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=600&q=80"
+          />
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function Pillar({ Icon, title, desc }: { Icon: any, title: string, desc: string }) {
+  return (
+    <div className="group">
+      <div className="w-12 h-12 rounded-full border border-amber-100 flex items-center justify-center text-amber-600 mb-6 group-hover:bg-amber-600 group-hover:text-white transition-all duration-500">
+        <Icon className="w-6 h-6" />
+      </div>
+      <h3 className="text-xl font-bold text-slate-900 mb-3">{title}</h3>
+      <p className="text-sm text-slate-500 leading-relaxed font-medium">{desc}</p>
+    </div>
+  );
+}
+
+function FlavorBox({ title, notes, img }: { title: string, notes: string, img: string }) {
+  return (
+    <motion.div 
+      whileHover={{ y: -10 }}
+      className="relative h-96 rounded-[2.5rem] overflow-hidden group shadow-sm"
+    >
+      <Image src={img} alt={title} fill className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700" loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`} />
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-60 group-hover:opacity-90" />
+      <div className="absolute bottom-0 p-10 text-white">
+        <h4 className="text-2xl font-serif italic mb-1">{title}</h4>
+        <p className="text-[10px] font-black uppercase tracking-widest text-amber-400">{notes}</p>
+      </div>
+    </motion.div>
   );
 }
