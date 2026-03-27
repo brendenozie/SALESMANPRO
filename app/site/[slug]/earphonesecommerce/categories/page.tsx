@@ -1,145 +1,197 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { ChevronRightIcon, ArrowRightCircleIcon } from '@heroicons/react/24/outline'; // Added for visual flow
-import Section from '@/components/site/Section/Section'; // Assuming this component exists
-import { useStore } from '@/contexts/StoreContext';
-import clsx from 'clsx';
-import { IStoreCategory } from '@/types/typings'; // Assuming your category type is defined here
+import React from "react";
+import { motion, Variants } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { IStoreCategory } from "@/types/typings";
+import { useStore } from "@/contexts/StoreContext";
+import { 
+  SpeakerWaveIcon, 
+  Battery50Icon, 
+  MusicalNoteIcon,
+  CpuChipIcon,
+  ArrowRightCircleIcon
+} from "@heroicons/react/24/outline";
 
-// --- Animation Variants ---
-const cardVariants = {
-    hidden: { opacity: 0, y: 20, scale: 0.95 },
-    visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 100, damping: 10 } },
-};
-const containerVariants = {
-    visible: { transition: { staggerChildren: 0.07, delayChildren: 0.1 } },
-};
+/* --- 1. THEME HELPERS (Studio Precision) --- */
+const FALLBACK_AUDIO = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80";
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
     `${src}?w=${width}&q=${quality || 75}`;
 
-// =========================================================
-// --- CATEGORY CARD COMPONENT (Reimagined) ---
-// =========================================================
+function resolveAudioStyle(index: number) {
+  const themes = [
+    { accent: "text-blue-400", glow: "shadow-blue-500/10", border: "group-hover:border-blue-500/30", label: "Active Noise Cancelling" },
+    { accent: "text-purple-400", glow: "shadow-purple-500/10", border: "group-hover:border-purple-500/30", label: "Audiophile Grade" },
+    { accent: "text-emerald-400", glow: "shadow-emerald-500/10", border: "group-hover:border-emerald-500/30", label: "Ultra-Portable" },
+  ];
+  return themes[index % themes.length];
+}
 
-const CategoryCard = ({ cat, storeSlug }: { cat: IStoreCategory, storeSlug: string }) => {
-    const hasImage = cat.icon && cat.icon.startsWith('http');
-    const categoryName = cat.displayName || cat.category?.name || 'Unknown Category';
-    const linkHref = `/site/${storeSlug}/ecommerce/products?category=${cat.id}`;
-    
-    // Choose a placeholder/default icon if no image is available
-    const defaultIcon = cat.icon || '📦'; 
-
-    return (
-        <motion.div variants={cardVariants}>
-            <Link
-                key={cat.id}
-                href={linkHref}
-                className={clsx(
-                    "group relative block rounded-2xl overflow-hidden transition-all duration-300 transform",
-                    hasImage 
-                        ? "shadow-xl hover:shadow-2xl h-72 md:h-80" // Large card for image categories
-                        : "bg-white dark:bg-gray-800 shadow-md hover:shadow-lg h-40 flex items-center justify-center p-6 border border-gray-100 dark:border-gray-700" // Smaller card for icon categories
-                )}
-            >
-                {/* --- IMAGE CARD LAYOUT --- */}
-                {hasImage ? (
-                    <>
-                        <div className="absolute inset-0 w-full h-full">
-                            <Image
-                                src={cat.icon!}
-                                alt={categoryName}
-                                loader={imageLoader}
-                                fill
-                                sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 100vw"
-                                className="object-cover transition-transform duration-500 group-hover:scale-110"
-                            />
-                            {/* Gradient Overlay for Text Contrast and Effect */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-opacity duration-300 group-hover:from-black/80" />
-                        </div>
-                        
-                        {/* Text Content (Always white/bottom) */}
-                        <div className="absolute bottom-0 left-0 p-6 z-10 w-full text-white">
-                            <h3 className="text-2xl font-extrabold mb-1 line-clamp-1">
-                                {categoryName}
-                            </h3>
-                            <div className="flex items-center text-sm font-semibold opacity-80 group-hover:opacity-100 transition-opacity">
-                                Shop Now <ChevronRightIcon className="w-4 h-4 ml-1" />
-                            </div>
-                        </div>
-                    </>
-                ) : (
-                    /* --- ICON CARD LAYOUT (Fallback/Simpler) --- */
-                    <div className="text-center">
-                        <div className="w-16 h-16 mb-3 mx-auto rounded-full bg-blue-50 dark:bg-gray-700 flex items-center justify-center text-3xl text-blue-600 dark:text-blue-400">
-                            {defaultIcon.length > 2 ? <ArrowRightCircleIcon className="w-8 h-8"/> : <span>{defaultIcon}</span>}
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mt-2 line-clamp-1">
-                            {categoryName}
-                        </h3>
-                        <p className="text-sm text-blue-600 dark:text-blue-400 mt-1 flex items-center justify-center">
-                            View Products <ChevronRightIcon className="w-4 h-4 ml-1" />
-                        </p>
-                    </div>
-                )}
-            </Link>
-        </motion.div>
-    );
+/* --- 2. ANIMATIONS (Pulse & Frequency) --- */
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.15 } },
 };
 
-// =========================================================
-// --- MAIN CATEGORIES PAGE COMPONENT ---
-// =========================================================
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 30, scale: 0.98 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    scale: 1, 
+    transition: { duration: 0.8, ease: [0.25, 1, 0.5, 1] } 
+  },
+};
 
-export default function CategoriesPage() {
-    const store = useStore();
-    const categories = store?.storeFormData?.StoreCategory || [];
-    const storeSlug = store?.storeFormData?.slug;
+/* --- 3. SUBCOMPONENTS --- */
 
-    if (!storeSlug) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <p className="text-xl font-medium text-gray-600 dark:text-gray-300">Store not found</p>
+function AudioCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; index: number; storeSlug: string }) {
+  const theme = resolveAudioStyle(index);
+
+  return (
+    <motion.div variants={itemVariants} className="group relative">
+      <Link href={`/site/${storeSlug}/earphonesecommerce/products?category=${cat.id}`} className="block">
+        <div className={`relative h-[580px] w-full overflow-hidden rounded-[2.5rem] bg-slate-900 border border-white/5 transition-all duration-700 ${theme.border} ${theme.glow}`}>
+          
+          {/* Waveform Decorative Background */}
+          <div className="absolute top-10 right-10 opacity-[0.05] group-hover:opacity-[0.15] transition-opacity duration-1000">
+             <SpeakerWaveIcon className="w-40 h-40 text-white" />
+          </div>
+
+          {/* Product Image: High Definition Focus */}
+          <div className="h-1/2 w-full relative overflow-hidden p-8">
+            <div className="relative h-full w-full rounded-3xl overflow-hidden">
+               <Image
+                src={cat.image || (cat.icon?.startsWith('http') ? cat.icon : FALLBACK_AUDIO)}
+                alt={cat.displayName || ""}
+                fill
+                className="object-contain transition-all duration-700 group-hover:scale-110 group-hover:rotate-2"
+                loader={imageLoader}
+               />
             </div>
-        );
-    }
+          </div>
 
-    // Separate categories into those with images and those without for a dynamic layout
-    const categoriesWithImages = categories.filter(cat => cat.icon && cat.icon.startsWith('http'));
-    const categoriesWithoutImages = categories.filter(cat => !cat.icon || !cat.icon.startsWith('http'));
-    
-    // Combine them, prioritizing image categories for visual impact
-    const sortedCategories = [...categoriesWithImages, ...categoriesWithoutImages];
+          {/* Content Section: Tech-Forward */}
+          <div className="p-10 pt-4">
+            <div className={`text-[9px] font-black uppercase tracking-[0.3em] ${theme.accent} mb-4 flex items-center gap-2`}>
+              <div className="w-1.5 h-1.5 rounded-full bg-current animate-ping" />
+              {theme.label}
+            </div>
+            
+            <h3 className="text-4xl font-bold text-white mb-4 tracking-tight">
+              {cat.displayName}
+            </h3>
+            
+            <p className="text-sm text-slate-400 font-medium leading-relaxed max-w-[220px] mb-8">
+              Engineered for clarity. Tuned for the streets of Nairobi.
+            </p>
 
-    return (
-        <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen pt-20 pb-16">
-            <Section 
-                title="Shop by Category"
-                // subtitle="Explore our curated collections of products and programs designed to help you thrive."
-            >
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {categories.length === 0 ? (
-                        <div className="py-12 text-center text-gray-500 dark:text-gray-400">
-                            <p>No categories available.</p>
-                        </div>
-                    ) : (
-                        <motion.div 
-                            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8" // Increased gap and refined grid
-                            variants={containerVariants}
-                            initial="hidden"
-                            animate="visible"
-                        >
-                            {sortedCategories.map((cat: IStoreCategory) => (
-                                <CategoryCard key={cat.id} cat={cat} storeSlug={storeSlug} />
-                            ))}
-                        </motion.div>
-                    )}
-                </div>
-            </Section>
+            <div className="flex items-center justify-between">
+               <div className="flex gap-4">
+                  <div className="flex flex-col">
+                     <span className="text-[10px] font-black text-slate-600 uppercase">Drivers</span>
+                     <span className="text-xs font-bold text-slate-300">Titanium</span>
+                  </div>
+                  <div className="w-px h-6 bg-white/10" />
+                  <div className="flex flex-col">
+                     <span className="text-[10px] font-black text-slate-600 uppercase">Latency</span>
+                     <span className="text-xs font-bold text-slate-300">40ms</span>
+                  </div>
+               </div>
+               
+               <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center text-white border border-white/10 group-hover:bg-white group-hover:text-slate-950 transition-all duration-500 group-hover:scale-110">
+                  <ArrowRightCircleIcon className="w-7 h-7" />
+               </div>
+            </div>
+          </div>
         </div>
-    );
+      </Link>
+    </motion.div>
+  );
+}
+
+/* --- 4. MAIN PAGE --- */
+
+export default function AudioCategoriesPage() {
+  const store = useStore();
+  const categories = store?.storeFormData?.StoreCategory || [];
+  const storeSlug = store?.storeFormData?.slug;
+
+  if (!storeSlug) return null;
+
+  return (
+    <main className="bg-black min-h-screen py-32 overflow-hidden relative">
+      {/* Background Ambience: Blue/Purple Studio Glow */}
+      <div className="absolute top-0 right-0 w-[700px] h-[700px] bg-blue-600/10 rounded-full blur-[180px] -z-10" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[150px] -z-10" />
+
+      <div className="container relative z-10 mx-auto max-w-7xl px-6">
+        
+        {/* Header: Immersive & Bold */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-24 gap-12">
+          <div className="max-w-3xl">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-3 mb-6"
+            >
+              <div className="w-2 h-2 rounded-full bg-blue-500" />
+              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-500 italic">Precision Audio Engineering</span>
+            </motion.div>
+            
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-7xl md:text-9xl font-black text-white leading-[0.8] tracking-tighter"
+            >
+              Pure Sound. <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Zero Noise.</span>
+            </motion.h1>
+          </div>
+
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md max-w-xs"
+          >
+             <MusicalNoteIcon className="w-8 h-8 text-blue-400 mb-4" />
+             <p className="text-sm text-slate-400 font-bold leading-relaxed">
+               "Experience 360° Spatial Audio designed for the modern Kenyan lifestyle."
+             </p>
+          </motion.div>
+        </div>
+
+        {/* Dynamic Grid */}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+        >
+          {categories.map((cat, idx) => (
+            <AudioCategoryCard key={cat.id} cat={cat} index={idx} storeSlug={storeSlug} />
+          ))}
+
+          {/* "Battery & Tech" Tech-Spec Card */}
+          <motion.div variants={itemVariants} className="lg:col-span-1 bg-gradient-to-br from-slate-800 to-slate-950 rounded-[2.5rem] p-12 text-white flex flex-col justify-between group overflow-hidden relative border border-white/10">
+              <div className="absolute bottom-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-all group-hover:scale-110">
+                <Battery50Icon className="w-64 h-64" />
+              </div>
+              
+              <div className="relative z-10">
+                <CpuChipIcon className="w-10 h-10 text-emerald-400 mb-8" />
+                <h4 className="text-3xl font-black leading-tight mb-4 uppercase italic">Hyper-Efficiency <br /> Processing</h4>
+                <p className="text-sm text-slate-400 font-medium">Up to 60 hours of playtime on a single 15-minute charge.</p>
+              </div>
+
+              <button className="relative z-10 mt-12 inline-flex items-center gap-3 font-black text-[10px] uppercase tracking-[0.3em] text-blue-400 hover:text-white transition-colors">
+                Explore the Tech <ArrowRightCircleIcon className="w-5 h-5" />
+              </button>
+          </motion.div>
+        </motion.div>
+      </div>
+    </main>
+  );
 }

@@ -66,18 +66,18 @@ export default function Footer() {
           <div className="lg:col-span-2 space-y-6">
             <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/50">Curations</h4>
             <ul className="space-y-4 text-sm font-medium">
-              <li><Link href="/ecommerce/about" className="hover:text-white transition-colors">The Story</Link></li>
-              <li><Link href="/ecommerce/contact" className="hover:text-white transition-colors">Atelier Access</Link></li>
-              <li><Link href="/ecommerce/products" className="hover:text-white transition-colors">The Library</Link></li>
+              <li><Link href="/flowersecommerce/about" className="hover:text-white transition-colors">The Story</Link></li>
+              <li><Link href="/flowersecommerce/contact" className="hover:text-white transition-colors">Atelier Access</Link></li>
+              <li><Link href="/flowersecommerce/products" className="hover:text-white transition-colors">The Library</Link></li>
             </ul>
           </div>
 
           <div className="lg:col-span-2 space-y-6">
             <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/50">Service</h4>
             <ul className="space-y-4 text-sm font-medium">
-              <li><Link href="/ecommerce/shipping" className="hover:text-white transition-colors">White Glove Delivery</Link></li>
-              <li><Link href="/ecommerce/returns" className="hover:text-white transition-colors">Care & Returns</Link></li>
-              <li><Link href="/ecommerce/faq" className="hover:text-white transition-colors">Enquiries</Link></li>
+              <li><Link href="/flowersecommerce/shipping" className="hover:text-white transition-colors">White Glove Delivery</Link></li>
+              <li><Link href="/flowersecommerce/returns" className="hover:text-white transition-colors">Care & Returns</Link></li>
+              <li><Link href="/flowersecommerce/faq" className="hover:text-white transition-colors">Enquiries</Link></li>
             </ul>
           </div>
 
@@ -95,8 +95,8 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex gap-8 text-[10px] font-bold uppercase tracking-[0.2em]">
-            <Link href="/ecommerce/privacy" className="hover:text-white transition-colors">Privacy</Link>
-            <Link href="/ecommerce/terms" className="hover:text-white transition-colors">Terms</Link>
+            <Link href="/flowersecommerce/privacy" className="hover:text-white transition-colors">Privacy</Link>
+            <Link href="/flowersecommerce/terms" className="hover:text-white transition-colors">Terms</Link>
           </div>
           
           <p className="text-[10px] font-medium tracking-[0.1em] text-slate-600">

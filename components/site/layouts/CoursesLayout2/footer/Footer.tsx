@@ -34,7 +34,7 @@ export default function MoriahFooter() {
           
           {/* --- Brand Column: 4/12 --- */}
           <div className="lg:col-span-4">
-            <Link href={`/${slug}`} className="group flex items-center gap-3 mb-8">
+            <Link href={`/`} className="group flex items-center gap-3 mb-8">
               <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-500">
                 <AcademicCapIcon className="w-6 h-6 text-white" />
               </div>
@@ -68,7 +68,7 @@ export default function MoriahFooter() {
               {['Home', 'Courses', 'Events', 'FAQs', 'Contact'].map((item) => (
                 <li key={item}>
                   <Link 
-                    href={item === 'Home' ? `/${slug}` : `/${slug}/${item.toLowerCase()}`}
+                    href={item === 'Home' ? `/${slug}` : `/${slug}/courses/${item.toLowerCase()}`}
                     className="text-sm hover:text-blue-500 transition-colors flex items-center group"
                   >
                     {item}
@@ -86,7 +86,7 @@ export default function MoriahFooter() {
               {StoreCategory?.map((cat: any) => (
                 <Link
                   key={cat.id}
-                  href={`/${slug}/category/${cat.id}`}
+                  href={`/${slug}/courses/category/${cat.id}`}
                   className="px-4 py-2 rounded-full border border-white/10 text-xs font-medium hover:bg-white/5 hover:border-white/30 transition-all"
                 >
                   {cat.displayName}

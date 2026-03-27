@@ -69,16 +69,16 @@ const Header = () => {
   // --- Navigation Items ---
   const navItems = [
     { label: 'Home', href: `/${slug}` },
-    { label: 'Blog', href: `/${slug}/blog` },
-    { label: 'About', href: `/${slug}/about` },
-    { label: 'Contact', href: `/${slug}/contact` },
+    { label: 'Blog', href: `/${slug}/blog/products` },
+    { label: 'About', href: `/${slug}/blog/about` },
+    { label: 'Contact', href: `/${slug}/blog/contact` },
   ];
 
   // --- Handlers ---
   const handleUserAction = () => {
     if (!user) return handleGoogleSignIn();
     if (user.role?.toLowerCase() === 'admin') router.push('/dashboards');
-    else router.push(`/${slug}/profile`);
+    else router.push(`/${slug}/blog/profile`);
   };
 
   const handleSignOut = () => signOut({ callbackUrl: `/${slug}` });

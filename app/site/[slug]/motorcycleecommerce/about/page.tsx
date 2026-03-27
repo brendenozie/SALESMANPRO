@@ -1,124 +1,187 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import { 
+  FireIcon, 
+  BoltIcon, 
+  ShieldCheckIcon,
+  AdjustmentsVerticalIcon,
+  AdjustmentsHorizontalIcon,
+  ChevronRightIcon,
+  ChartBarIcon,
+  VariableIcon
+} from "@heroicons/react/24/solid";
 
+const heavyEntry = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
+};
 
+const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+    `${src}?w=${width}&q=${quality || 75}`;
 
-export default function About() {
+export default function MotoManifestoPage() {
+  const [compareId, setCompareId] = useState("naked");
+
+  const specs = {
+    naked: { name: "The Street Brawler", engine: "900cc Parallel Twin", torque: "92 Nm", cooling: "Liquid", weight: "189kg", vibe: "Aggressive & Raw" },
+    tourer: { name: "The Horizon Chaser", engine: "1250cc Boxer", torque: "143 Nm", cooling: "Air/Liquid", weight: "249kg", vibe: "Refined & Rugged" },
+    supersport: { name: "The Apex Predator", engine: "998cc Inline-4", torque: "113 Nm", cooling: "Dual-Fan Liquid", weight: "172kg", vibe: "Precise & High-Rev" },
+  };
+
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="max-w-4xl mx-auto space-y-12"
-      >
-        {/* Our Story Section */}
-        <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
-            Our Story 📖
-          </h2>
-          <p className="mt-4 text-xl text-gray-600">
-            Welcome! We're so glad you're here. We started this store with a simple idea: to create a place where you can find unique, high-quality products that bring joy and inspiration to your everyday life.
-          </p>
-          <p className="mt-2 text-lg text-gray-500">
-            It all began with a big dream. We spent countless hours searching for products that were not only beautiful and functional but also had a story behind them. We wanted to connect you with artisans, creators, and brands that share our values of craftsmanship, sustainability, and authenticity. Every item in our collection is hand-picked with care, and we hope you'll feel the passion we pour into our work.
-          </p>
+    <main className="bg-zinc-950 text-white min-h-screen pt-32 pb-24 overflow-hidden selection:bg-orange-500">
+      
+      {/* 1. RIDER PROFILE (ABOUT US) - THE MANIFESTO */}
+      <section className="max-w-7xl mx-auto px-6 mb-40 relative">
+        <div className="absolute -top-20 left-1/2 -translate-x-1/2 text-[15rem] font-black text-white/[0.03] uppercase italic pointer-events-none select-none">
+          Legacy
         </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center relative z-10">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={heavyEntry}>
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-12 h-1 bg-orange-600" />
+              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-500">The Duka Philosophy</span>
+            </div>
+            
+            <h1 className="text-7xl md:text-9xl font-black tracking-tighter leading-[0.8] mb-12 uppercase italic">
+              Respect <br />
+              <span className="text-orange-500">The Road.</span>
+            </h1>
+            
+            <p className="text-xl text-zinc-400 font-medium leading-relaxed max-w-lg mb-12 border-l-4 border-zinc-800 pl-8">
+              We aren't just a dealership; we are a garage born from the red dust of the Rift Valley and the neon pulse of Nairobi. We build machines for those who seek the wind.
+            </p>
 
-        {/* Our Values Section */}
-        <div className="grid md:grid-cols-2 gap-8 items-center">
-          <div className="space-y-4">
-            <h2 className="text-3xl font-bold text-gray-900">
-              Our Values ✨
-            </h2>
-            <ul className="text-lg text-gray-600 space-y-3">
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">🌿</span>
-                <p>
-                  <strong>Conscious Curation:</strong> We're committed to sourcing from brands that prioritize ethical and sustainable practices. We care about where our products come from and how they're made.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">💎</span>
-                <p>
-                  <strong>Quality First:</strong> We believe in products that are built to last. We focus on durable materials and timeless designs so you can love your purchase for years to come.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">🤝</span>
-                <p>
-                  <strong>Exceptional Service:</strong> Your satisfaction is our top priority. We're here to help you every step of the way, from finding the perfect item to ensuring a smooth delivery.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">❤️</span>
-                <p>
-                  <strong>Community & Connection:</strong> We're grateful for every customer who supports our small business. We love seeing how you incorporate our products into your life.
-                </p>
-              </li>
-            </ul>
-          </div>
-          <div className="relative h-64 sm:h-80 md:h-96">
-            <img
-              src="https://images.unsplash.com/photo-1542435503-956c469947f6?fit=crop&w=800&q=80"
-              alt="Artisans at work, representing craftsmanship"
-              className="w-full h-full object-cover rounded-lg shadow-lg"
-            />
+            <div className="space-y-10">
+               <ManifestoPoint icon={<FireIcon/>} title="Fuel-First Engineering" desc="Every bike is tuned for local fuel grades and high-altitude performance." />
+               <ManifestoPoint icon={<ShieldCheckIcon/>} title="The Rider's Code" desc="Safety isn't an option. It's the foundation of every sale." />
+            </div>
+          </motion.div>
+
+          <div className="relative group">
+             <div className="relative aspect-[4/5] rounded-[3rem] overflow-hidden border-8 border-zinc-900 shadow-2xl">
+                <Image 
+                  src="https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=1200&q=80" 
+                  alt="Rider in Nairobi" fill className="object-cover transition-transform duration-[10s] group-hover:scale-110"
+                  loader={imageLoader}
+                />
+                {/* Visual "HUD" Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent opacity-60" />
+             </div>
+             
+             {/* Floating Spec Badge */}
+             <motion.div 
+               animate={{ y: [0, -10, 0] }}
+               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+               className="absolute -bottom-10 -left-10 bg-orange-600 p-8 rounded-3xl shadow-2xl border-4 border-zinc-950"
+             >
+                <BoltIcon className="w-10 h-10 text-zinc-950 mb-4" />
+                <p className="text-2xl font-black italic uppercase leading-none">High <br /> Voltage</p>
+             </motion.div>
           </div>
         </div>
+      </section>
 
-        {/* Meet the Team Section */}
-        <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
-            Meet the Team 🧑‍🤝‍🧑
-          </h2>
-          <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Founder's Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1507003211169-0a7dd7803e20?fit=crop&w=300&q=80"
-                alt="Founder's profile picture"
-                className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-indigo-500"
-              />
-              <h3 className="mt-4 text-xl font-semibold text-gray-900">
-                [Founder's Name]
-              </h3>
-              <p className="text-indigo-600">Founder & Chief Curator</p>
-              <p className="mt-2 text-gray-500">
-                With an eye for detail and a passion for discovering hidden gems, [Founder's Name] is the heart of our store. They are always on the hunt for the next great find.
-              </p>
-            </motion.div>
+      {/* 2. SPEC-CHECK COMPARISON TOOL */}
+      <section className="max-w-7xl mx-auto px-6">
+        <div className="bg-zinc-900 rounded-[4rem] p-10 md:p-24 border border-white/5 relative overflow-hidden shadow-2xl">
+          {/* Background Carbon Pattern */}
+          <div className="absolute inset-0 opacity-5 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
 
-            {/* Team Member 1 Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1544723795-3fb6469f5b80?fit=crop&w=300&q=80"
-                alt="Team member profile picture"
-                className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-indigo-500"
-              />
-              <h3 className="mt-4 text-xl font-semibold text-gray-900">
-                [Team Member's Name]
-              </h3>
-              <p className="text-indigo-600">[Their Title]</p>
-              <p className="mt-2 text-gray-500">
-                As our Customer Experience Lead, [Team Member's Name] ensures every interaction you have with us is a positive one. They believe that great service is the key to building lasting relationships.
-              </p>
-            </motion.div>
+          <div className="relative z-10 flex flex-col lg:flex-row gap-20">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-6">
+                <AdjustmentsHorizontalIcon className="w-6 h-6 text-orange-500" />
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500">Precision Tuning</span>
+              </div>
+              <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter mb-10">Spec-Check <br /> <span className="text-transparent" style={{ WebkitTextStroke: '2px #f97316' }}>Engine.</span></h2>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {Object.keys(specs).map((key) => (
+                  <button 
+                    key={key}
+                    onClick={() => setCompareId(key)}
+                    className={`p-8 rounded-2xl border-2 transition-all text-left group ${compareId === key ? 'border-orange-500 bg-orange-500/10' : 'border-white/5 bg-white/5 hover:border-white/10'}`}
+                  >
+                    <div className="flex justify-between items-center">
+                       <span className={`text-2xl font-black uppercase italic ${compareId === key ? 'text-white' : 'text-zinc-600'}`}>{(specs as any)[key].name}</span>
+                       <ChevronRightIcon className={`w-6 h-6 transition-transform ${compareId === key ? 'rotate-90 text-orange-500' : 'text-zinc-800'}`} />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Spec Output: Tactical Interface */}
+            <div className="w-full lg:w-[500px]">
+               <div className="bg-zinc-950 border-2 border-zinc-800 p-12 rounded-[3rem] relative shadow-inner">
+                  <div className="flex justify-between items-start mb-12">
+                     <div className="w-12 h-12 bg-orange-600/20 rounded-xl flex items-center justify-center">
+                        <ChartBarIcon className="w-6 h-6 text-orange-500" />
+                     </div>
+                     <div className="text-right">
+                        <p className="text-[10px] font-black uppercase text-zinc-600">Unit ID</p>
+                        <p className="font-mono text-orange-500">#MOTO-{(specs as any)[compareId].engine.split(' ')[0]}</p>
+                     </div>
+                  </div>
+
+                  <AnimatePresence mode="wait">
+                    <motion.div 
+                      key={compareId}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 1.05 }}
+                      className="space-y-8"
+                    >
+                       <SpecLine label="Displacement" value={(specs as any)[compareId].engine} />
+                       <SpecLine label="Peak Torque" value={(specs as any)[compareId].torque} />
+                       <SpecLine label="Thermal Mgmt" value={(specs as any)[compareId].cooling} />
+                       <SpecLine label="Curb Weight" value={(specs as any)[compareId].weight} />
+                       
+                       <div className="pt-10 border-t border-zinc-900">
+                          <p className="text-[9px] font-black uppercase text-zinc-600 mb-2">Machine Vibe</p>
+                          <p className="text-2xl font-black italic uppercase text-white tracking-widest">
+                            "{(specs as any)[compareId].vibe}"
+                          </p>
+                       </div>
+
+                       <button className="w-full py-6 bg-orange-600 text-zinc-950 rounded-2xl font-black text-xs uppercase tracking-[0.4em] hover:bg-white transition-all shadow-xl shadow-orange-900/20">
+                          Secure This Unit
+                       </button>
+                    </motion.div>
+                  </AnimatePresence>
+               </div>
+            </div>
           </div>
         </div>
-      </motion.div>
-    </section>
+      </section>
+    </main>
+  );
+}
+
+function ManifestoPoint({ icon, title, desc }: any) {
+  return (
+    <div className="flex gap-6 group">
+      <div className="w-14 h-14 rounded-2xl bg-zinc-900 text-orange-500 flex items-center justify-center shrink-0 border border-white/5 group-hover:bg-orange-600 group-hover:text-white transition-all duration-500">
+        {React.cloneElement(icon, { className: "w-7 h-7" })}
+      </div>
+      <div>
+        <h4 className="text-sm font-black uppercase tracking-[0.2em] mb-2">{title}</h4>
+        <p className="text-sm text-zinc-500 leading-relaxed">{desc}</p>
+      </div>
+    </div>
+  );
+}
+
+function SpecLine({ label, value }: any) {
+  return (
+    <div className="flex justify-between items-end border-b border-zinc-900 pb-4">
+      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{label}</p>
+      <p className="text-xl font-bold text-white italic">{value}</p>
+    </div>
   );
 }

@@ -65,18 +65,18 @@ export default function Footer() {
             <div className="space-y-6">
               <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#F3A852]">Atelier</h4>
               <ul className="space-y-4 text-sm font-light text-white/60">
-                <li><Link href="/about" className="hover:text-white transition-colors">The Brand</Link></li>
-                <li><Link href="/contact" className="hover:text-white transition-colors">Visit Us</Link></li>
-                <li><Link href="/help" className="hover:text-white transition-colors">Help Center</Link></li>
+                <li><Link href="/glassesecommerce/about" className="hover:text-white transition-colors">The Brand</Link></li>
+                <li><Link href="/glassesecommerce/contact" className="hover:text-white transition-colors">Visit Us</Link></li>
+                <li><Link href="/glassesecommerce/help" className="hover:text-white transition-colors">Help Center</Link></li>
               </ul>
             </div>
 
             <div className="space-y-6">
               <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#F3A852]">Service</h4>
               <ul className="space-y-4 text-sm font-light text-white/60">
-                <li><Link href="/shipping" className="hover:text-white transition-colors">Logistics</Link></li>
-                <li><Link href="/returns" className="hover:text-white transition-colors">Returns</Link></li>
-                <li><Link href="/track" className="hover:text-white transition-colors">Order Status</Link></li>
+                <li><Link href="/glassesecommerce/shipping" className="hover:text-white transition-colors">Logistics</Link></li>
+                <li><Link href="/glassesecommerce/returns" className="hover:text-white transition-colors">Returns</Link></li>
+                <li><Link href="/glassesecommerce/track" className="hover:text-white transition-colors">Order Status</Link></li>
               </ul>
             </div>
 
@@ -94,8 +94,8 @@ export default function Footer() {
         <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex flex-wrap justify-center md:justify-start gap-8 text-[10px] font-medium uppercase tracking-widest text-white/30">
             <span>&copy; {new Date().getFullYear()} {name}</span>
-            <Link href="/privacy" className="hover:text-white">Privacy</Link>
-            <Link href="/terms" className="hover:text-white">Terms</Link>
+            <Link href="/glassesecommerce/privacy" className="hover:text-white">Privacy</Link>
+            <Link href="/glassesecommerce/terms" className="hover:text-white">Terms</Link>
           </div>
 
           <div className="flex items-center gap-4 bg-white/5 px-6 py-3 rounded-full border border-white/5 backdrop-blur-sm">

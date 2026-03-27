@@ -31,7 +31,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* ── About & Logo ── */}
         <div className="space-y-4">
-          <Link href={`/${slug}`} className="inline-flex items-center space-x-2">
+          <Link href={`/`} className="inline-flex items-center space-x-2">
             <span className="text-2xl font-bold text-white">{name}</span>
           </Link>
           {description && (
@@ -61,7 +61,7 @@ export default function Footer() {
           <ul className="space-y-2">
             <li>
               <Link
-                href={`/${slug}`}
+                href={`/`}
                 className="flex items-center text-gray-400 hover:text-white transition-colors"
               >
                 <ChevronRightIcon className="h-4 w-4 mr-2" />
@@ -70,7 +70,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/${slug}/programs`}
+                href={`/${slug}/nonprofit/programs`}
                 className="flex items-center text-gray-400 hover:text-white transition-colors"
               >
                 <ChevronRightIcon className="h-4 w-4 mr-2" />
@@ -79,7 +79,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/${slug}/donate`}
+                href={`/${slug}/nonprofit/donate`}
                 className="flex items-center text-gray-400 hover:text-white transition-colors"
               >
                 <ChevronRightIcon className="h-4 w-4 mr-2" />
@@ -88,7 +88,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/${slug}/contact`}
+                href={`/${slug}/nonprofit/contact`}
                 className="flex items-center text-gray-400 hover:text-white transition-colors"
               >
                 <ChevronRightIcon className="h-4 w-4 mr-2" />
@@ -105,7 +105,7 @@ export default function Footer() {
             {StoreCategory?.map((cat : any) => (
               <li key={cat.id}>
                 <Link
-                  href={`/${slug}/category/${cat.id}`}
+                  href={`/${slug}/nonprofit/products?category=${cat.id}`}
                   className="flex items-center text-gray-400 hover:text-white transition-colors"
                 >
                   <ChevronRightIcon className="h-4 w-4 mr-2" />

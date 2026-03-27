@@ -43,8 +43,8 @@ export default function Header() {
 
   const navLinks = [
     { label: 'Home', href: `/` },
-    { label: 'Shop', href: `/ecommerce/products` },
-    { label: 'Categories', href: `/ecommerce/categories` },
+    { label: 'Shop', href: `/groceriesecommerce/products` },
+    { label: 'Categories', href: `/groceriesecommerce/categories` },
   ];
 
   const handleGoogleSignIn = () => {
@@ -120,7 +120,7 @@ export default function Header() {
             <div className="flex items-center gap-1 md:gap-2">
               {/* User Account */}
               <button
-                onClick={user ? () => router.push('/ecommerce/profile') : handleGoogleSignIn}
+                onClick={user ? () => router.push('/groceriesecommerce/profile') : handleGoogleSignIn}
                 className={`p-2.5 rounded-full transition-all active:scale-95 ${
                   scrolled ? 'text-gray-700 hover:bg-gray-100' : 'text-white hover:bg-white/10'
                 }`}

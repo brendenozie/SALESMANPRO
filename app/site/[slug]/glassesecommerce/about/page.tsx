@@ -1,124 +1,173 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import { 
+  EyeIcon, 
+  SparklesIcon, 
+  UserIcon, 
+  CheckBadgeIcon,
+  MagnifyingGlassIcon,
+  ChevronRightIcon
+} from "@heroicons/react/24/outline";
 
+const fadeInUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
+};
 
+const FALLBACK_GLASSES = "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?auto=format&fit=crop&w=800&q=80";
 
-export default function About() {
+const customLoader = ({ src }: { src: string }) => {
+  return src.startsWith("http") ? src : FALLBACK_GLASSES;
+};
+
+export default function GlassesAboutPage() {
+  const [activeFace, setActiveFace] = useState("Oval");
+
+  const faceShapes = [
+    { name: "Oval", rec: "Aviators & Geometric", desc: "The most versatile shape. Balanced proportions allow for almost any frame style.", icon: "loop" },
+    { name: "Round", rec: "Rectangular & Square", desc: "Strong angles help add definition and elongate the face silhouette.", icon: "◯" },
+    { name: "Square", rec: "Round & Oval", desc: "Softer, curved frames balance out a strong jawline and broad forehead.", icon: "□" },
+    { name: "Heart", rec: "Cat-Eye & Wayfarers", desc: "Frames that are wider at the top help balance a narrower chin.", icon: "♡" },
+  ];
+
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="max-w-4xl mx-auto space-y-12"
-      >
-        {/* Our Story Section */}
-        <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
-            Our Story 📖
-          </h2>
-          <p className="mt-4 text-xl text-gray-600">
-            Welcome! We're so glad you're here. We started this store with a simple idea: to create a place where you can find unique, high-quality products that bring joy and inspiration to your everyday life.
-          </p>
-          <p className="mt-2 text-lg text-gray-500">
-            It all began with a big dream. We spent countless hours searching for products that were not only beautiful and functional but also had a story behind them. We wanted to connect you with artisans, creators, and brands that share our values of craftsmanship, sustainability, and authenticity. Every item in our collection is hand-picked with care, and we hope you'll feel the passion we pour into our work.
-          </p>
-        </div>
+    <main className="bg-white text-slate-900 min-h-screen pt-32 pb-24 overflow-hidden">
+      
+      {/* 1. THE VISIONARY ABOUT SECTION */}
+      <section className="max-w-7xl mx-auto px-6 mb-40 relative">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+          <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-600 mb-8">
+              <EyeIcon className="w-4 h-4" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em]">Crafted in Nairobi</span>
+            </div>
+            
+            <h1 className="text-7xl md:text-9xl font-light tracking-tighter leading-[0.85] mb-10 uppercase">
+              See the <br />
+              <span className="italic font-serif text-blue-500">Unseen.</span>
+            </h1>
+            
+            <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-lg mb-12">
+              Glasses Duka was founded on a single principle: vision is a right, not a luxury. We combine Italian acetate with Japanese titanium to create frames that feel weightless.
+            </p>
 
-        {/* Our Values Section */}
-        <div className="grid md:grid-cols-2 gap-8 items-center">
-          <div className="space-y-4">
-            <h2 className="text-3xl font-bold text-gray-900">
-              Our Values ✨
-            </h2>
-            <ul className="text-lg text-gray-600 space-y-3">
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">🌿</span>
-                <p>
-                  <strong>Conscious Curation:</strong> We're committed to sourcing from brands that prioritize ethical and sustainable practices. We care about where our products come from and how they're made.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">💎</span>
-                <p>
-                  <strong>Quality First:</strong> We believe in products that are built to last. We focus on durable materials and timeless designs so you can love your purchase for years to come.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">🤝</span>
-                <p>
-                  <strong>Exceptional Service:</strong> Your satisfaction is our top priority. We're here to help you every step of the way, from finding the perfect item to ensuring a smooth delivery.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">❤️</span>
-                <p>
-                  <strong>Community & Connection:</strong> We're grateful for every customer who supports our small business. We love seeing how you incorporate our products into your life.
-                </p>
-              </li>
-            </ul>
+            <div className="grid grid-cols-2 gap-12 border-t border-slate-100 pt-10">
+               <div>
+                  <h4 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-2">Lenses</h4>
+                  <p className="text-lg font-bold">Ultra-Thin 1.67 Index</p>
+               </div>
+               <div>
+                  <h4 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-2">Coating</h4>
+                  <p className="text-lg font-bold">7-Layer Anti-Reflex</p>
+               </div>
+            </div>
+          </motion.div>
+
+          <div className="relative group">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, filter: "blur(20px)" }}
+              animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
+              transition={{ duration: 1.5 }}
+              className="relative aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl border-[1px] border-slate-100"
+            >
+              <Image 
+                src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=1200&q=80" 
+                alt="High Fashion Frames" fill className="object-cover transition-transform duration-[4s] group-hover:scale-105"
+                loader={customLoader}
+              />
+            </motion.div>
+            {/* The "Lens" Floating UI */}
+            <div className="absolute -top-10 -right-10 w-48 h-48 bg-blue-400/10 rounded-full blur-3xl -z-10" />
           </div>
-          <div className="relative h-64 sm:h-80 md:h-96">
-            <img
-              src="https://images.unsplash.com/photo-1542435503-956c469947f6?fit=crop&w=800&q=80"
-              alt="Artisans at work, representing craftsmanship"
-              className="w-full h-full object-cover rounded-lg shadow-lg"
+        </div>
+      </section>
+
+      {/* 2. THE FACE SHAPE GUIDE (Interactive Tool) */}
+      <section className="max-w-7xl mx-auto px-6">
+        <div className="bg-slate-950 rounded-[4rem] p-10 md:p-24 text-white relative overflow-hidden">
+          
+          {/* Subtle Grid Background */}
+          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+
+          <div className="relative z-10 flex flex-col lg:flex-row gap-20">
+            <div className="flex-1">
+              <h2 className="text-4xl md:text-6xl font-light uppercase tracking-tighter mb-8">Find Your <span className="italic font-serif text-blue-400">Perfect Frame.</span></h2>
+              <p className="text-slate-400 mb-12 max-w-md text-lg leading-relaxed">Selecting a frame is an art of geometry. Match your face shape to our curated recommendations.</p>
+              
+              <div className="flex flex-wrap gap-4">
+                {faceShapes.map((face) => (
+                  <button 
+                    key={face.name}
+                    onClick={() => setActiveFace(face.name)}
+                    className={`px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest transition-all ${activeFace === face.name ? 'bg-blue-500 text-white shadow-xl shadow-blue-500/20 scale-105' : 'bg-white/5 text-slate-500 hover:bg-white/10'}`}
+                  >
+                    {face.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="w-full lg:w-[450px]">
+              <AnimatePresence mode="wait">
+                <motion.div 
+                  key={activeFace}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-[3rem] h-full"
+                >
+                  <div className="text-6xl mb-8 opacity-20">{faceShapes.find(f => f.name === activeFace)?.icon}</div>
+                  <h3 className="text-3xl font-light mb-2 uppercase tracking-tight">{activeFace} Shape</h3>
+                  <div className="inline-block px-3 py-1 bg-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-lg mb-6">Recommended: {faceShapes.find(f => f.name === activeFace)?.rec}</div>
+                  <p className="text-slate-400 leading-relaxed font-medium mb-10">
+                    {faceShapes.find(f => f.name === activeFace)?.desc}
+                  </p>
+                  
+                  <button className="flex items-center gap-3 text-xs font-black uppercase tracking-[0.3em] text-white hover:text-blue-400 transition-colors">
+                    Shop {activeFace} Styles <ChevronRightIcon className="w-4 h-4" />
+                  </button>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. THE OPTICAL STANDARDS */}
+      <section className="py-40 max-w-7xl mx-auto px-6">
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
+            <StandardCard 
+               Icon={CheckBadgeIcon}
+               title="Certified Optics"
+               desc="Every lens is verified by our in-house optometrists for axis accuracy and PD alignment."
             />
-          </div>
-        </div>
+            <StandardCard 
+               Icon={SparklesIcon}
+               title="Acetate Mastery"
+               desc="We use bio-degradable acetate that is tumbled for 72 hours for a mirror-like finish."
+            />
+            <StandardCard 
+               Icon={MagnifyingGlassIcon}
+               title="Precision Fit"
+               desc="Complimentary frame adjustments for life at our Nairobi studio for the perfect grip."
+            />
+         </div>
+      </section>
+    </main>
+  );
+}
 
-        {/* Meet the Team Section */}
-        <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
-            Meet the Team 🧑‍🤝‍🧑
-          </h2>
-          <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Founder's Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1507003211169-0a7dd7803e20?fit=crop&w=300&q=80"
-                alt="Founder's profile picture"
-                className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-indigo-500"
-              />
-              <h3 className="mt-4 text-xl font-semibold text-gray-900">
-                [Founder's Name]
-              </h3>
-              <p className="text-indigo-600">Founder & Chief Curator</p>
-              <p className="mt-2 text-gray-500">
-                With an eye for detail and a passion for discovering hidden gems, [Founder's Name] is the heart of our store. They are always on the hunt for the next great find.
-              </p>
-            </motion.div>
-
-            {/* Team Member 1 Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1544723795-3fb6469f5b80?fit=crop&w=300&q=80"
-                alt="Team member profile picture"
-                className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-indigo-500"
-              />
-              <h3 className="mt-4 text-xl font-semibold text-gray-900">
-                [Team Member's Name]
-              </h3>
-              <p className="text-indigo-600">[Their Title]</p>
-              <p className="mt-2 text-gray-500">
-                As our Customer Experience Lead, [Team Member's Name] ensures every interaction you have with us is a positive one. They believe that great service is the key to building lasting relationships.
-              </p>
-            </motion.div>
-          </div>
-        </div>
-      </motion.div>
-    </section>
+function StandardCard({ Icon, title, desc }: { Icon: any, title: string, desc: string }) {
+  return (
+    <div className="group">
+       <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-900 mb-8 transition-all group-hover:bg-blue-500 group-hover:text-white group-hover:rotate-6">
+          <Icon className="w-6 h-6" />
+       </div>
+       <h4 className="text-xl font-bold mb-4 uppercase tracking-tight">{title}</h4>
+       <p className="text-sm text-slate-500 leading-relaxed font-medium">{desc}</p>
+    </div>
   );
 }

@@ -98,7 +98,7 @@ const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
               <li><Link href={`/${storeFormData.slug}#services`}>Services</Link></li>
               <li><Link href={`/${storeFormData.slug}#featured`}>Featured</Link></li>
               <li><Link href={`/${storeFormData.slug}#testimonials`}>Testimonials</Link></li>
-              <li><Link href={`/${storeFormData.slug}/contact`}>Contact Us</Link></li>
+              <li><Link href={`/${storeFormData.slug}//service-provider/about`}>Contact Us</Link></li>
             </ul>
           </div>
 

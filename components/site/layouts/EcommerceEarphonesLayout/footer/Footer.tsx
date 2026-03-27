@@ -73,7 +73,7 @@ export default function Footer() {
               <ul className="space-y-4">
                 {['About', 'Contact', 'Privacy Policy', 'Terms of Service'].map((item) => (
                   <li key={item}>
-                    <Link href={`/ecommerce/${item.toLowerCase().replace(/ /g, '-')}`} className="text-sm font-bold text-white/40 hover:text-white transition-colors">
+                    <Link href={`/earphonesecommerce/${item.toLowerCase().replace(/ /g, '-')}`} className="text-sm font-bold text-white/40 hover:text-white transition-colors">
                       {item}
                     </Link>
                   </li>
@@ -87,7 +87,7 @@ export default function Footer() {
               <ul className="space-y-4">
                 {['Help Center', 'Returns', 'Shipping', 'Track Order'].map((item) => (
                   <li key={item}>
-                    <Link href={`/ecommerce/${item.toLowerCase().replace(/ /g, '-')}`} className="text-sm font-bold text-white/40 hover:text-white transition-colors">
+                    <Link href={`/earphonesecommerce/${item.toLowerCase().replace(/ /g, '-')}`} className="text-sm font-bold text-white/40 hover:text-white transition-colors">
                       {item}
                     </Link>
                   </li>
@@ -134,7 +134,7 @@ export default function Footer() {
             </div>
             <div className="flex gap-4">
                {['Sitemap', 'FAQ', 'Support'].map(link => (
-                 <Link key={link} href={`/ecommerce/${link.toLowerCase()}`} className="text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-white transition-colors">
+                 <Link key={link} href={`/earphonesecommerce/${link.toLowerCase()}`} className="text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-white transition-colors">
                    {link}
                  </Link>
                ))}

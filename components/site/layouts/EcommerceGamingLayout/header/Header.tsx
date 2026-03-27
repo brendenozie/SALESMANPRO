@@ -37,7 +37,7 @@ export default function Header() {
 
   const handleUserAction = () => {
     if (!user) return handleGoogleSignIn();
-    router.push(user.role?.toLowerCase() === 'admin' ? '/dashboards' : `/ecommerce/profile`);
+    router.push(user.role?.toLowerCase() === 'admin' ? '/dashboards' : `/gamingecommerce/profile`);
   };
 
   const handleGoogleSignIn = () => {
@@ -54,8 +54,8 @@ export default function Header() {
 
   const navLinks = [
     { label: 'HOME', href: `/` },
-    { label: 'SHOP', href: `/ecommerce/products` },
-    { label: 'COLLECTIONS', href: `/ecommerce/categories` },
+    { label: 'SHOP', href: `/gamingecommerce/products` },
+    { label: 'COLLECTIONS', href: `/gamingecommerce/categories` },
   ];
 
   return (

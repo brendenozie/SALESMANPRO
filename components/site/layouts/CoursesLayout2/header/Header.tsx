@@ -39,15 +39,15 @@ export default function MoriahHeader() {
   const primaryColor = themeSettings?.primaryColor || '#1e40af';
 
   const handleUserAction = () => {
-    if (!user) return router.push(`/site/${slug}/courses/login`);
+    if (!user) return router.push(`/${slug}/courses/login`);
     user.role?.toLowerCase() === 'admin' ? router.push('/dashboards') : router.push(`/admin/${user.id}`);
   };
 
   const navLinks = [
-    { name: 'Programs', href: `/site/${slug}/courses` },
-    { name: 'Community', href: '#' },
-    { name: 'Success Stories', href: '#' },
-    { name: 'Contact', href: '#' },
+    { name: 'Programs', href: `/${slug}/courses` },
+    { name: 'Community', href: `/${slug}/courses/community` },
+    { name: 'Success Stories', href: `/${slug}/courses/success-stories` },
+    { name: 'Contact', href: `/${slug}/courses/contact` },
   ];
 
   return (
@@ -65,7 +65,7 @@ export default function MoriahHeader() {
           }`}
         >
           {/* --- Brand Architecture --- */}
-          <Link href={`/site/${slug}`} className="flex items-center gap-3 group">
+          <Link href={`/`} className="flex items-center gap-3 group">
             <div 
               className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-500 group-hover:shadow-lg"
               style={{ backgroundColor: storeFormData?.logoUrl ? 'transparent' : primaryColor }}

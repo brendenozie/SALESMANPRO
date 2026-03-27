@@ -34,19 +34,19 @@ export default function Footer() {
   // Define navigation links dynamically
   const navLinks = [
     { label: "Home", href: `/${slug}` },
-    { label: "Menu", href: `/${slug}/menu` },
-    { label: "Reserve", href: `/${slug}/reserve` },
-    { label: "About Us", href: `/${slug}/about` },
-    { label: "Contact", href: `/${slug}/contact` },
-    { label: "Gallery", href: `/${slug}/gallery` }, // Added Gallery link
+    { label: "Menu", href: `/${slug}/restaurent/products` },
+    { label: "Reserve", href: `/${slug}/restaurent/reserve` },
+    { label: "About Us", href: `/${slug}/restaurent/about` },
+    { label: "Contact", href: `/${slug}/#contact` },
+    { label: "Gallery", href: `/${slug}/restaurent/gallery` }, // Added Gallery link
   ];
 
   // Define sample menu categories (replace with actual data if available)
   const menuCategories = [
-    { label: "Appetizers", href: `/${slug}/menu#appetizers` },
-    { label: "Main Courses", href: `/${slug}/menu#main-courses` },
-    { label: "Desserts", href: `/${slug}/menu#desserts` },
-    { label: "Drinks", href: `/${slug}/menu#drinks` },
+    { label: "Appetizers", href: `/${slug}/restaurent/products?category=appetizers` },
+    { label: "Main Courses", href: `/${slug}/restaurent/products?category=main-courses` },
+    { label: "Desserts", href: `/${slug}/restaurent/products?category=desserts` },
+    { label: "Drinks", href: `/${slug}/restaurent/products?category=drinks` },
   ];
 
   return (
@@ -64,7 +64,7 @@ export default function Footer() {
             transition={{ duration: 0.5 }}
             className="space-y-6"
           >
-            <Link href={`/${slug}`} className="inline-flex items-center space-x-2">
+            <Link href={`/`} className="inline-flex items-center space-x-2">
               {/* You can use an Image component here if you have a dark-mode friendly logo */}
               <span
                 className="text-3xl font-extrabold text-white tracking-wide"
@@ -216,20 +216,20 @@ export default function Footer() {
           </p>
           <div className="flex flex-wrap justify-center space-x-4">
             <Link
-              href={`/${slug}/privacy`}
+              href={`/${slug}/restaurent/privacy`}
               className="hover:text-white transition-colors"
             >
               Privacy Policy
             </Link>
             <Link
-              href={`/${slug}/terms`}
+              href={`/${slug}/restaurent/terms`}
               className="hover:text-white transition-colors"
             >
               Terms of Service
             </Link>
             {/* Add more legal/utility links here */}
             <Link
-              href={`/${slug}/sitemap`}
+              href={`/${slug}/restaurent/sitemap`}
               className="hover:text-white transition-colors"
             >
               Sitemap

@@ -68,7 +68,7 @@ export default function Footer() {
               <ul className="space-y-4">
                 {['About', 'Contact', 'Privacy Policy', 'Terms'].map((item) => (
                   <li key={item}>
-                    <Link href={`/ecommerce/${item.toLowerCase().replace(' ', '-')}`} className="text-gray-600 font-bold hover:text-gray-900 transition-colors text-sm">
+                    <Link href={`/groceriesecommerce/${item.toLowerCase().replace(' ', '-')}`} className="text-gray-600 font-bold hover:text-gray-900 transition-colors text-sm">
                       {item}
                     </Link>
                   </li>
@@ -80,7 +80,7 @@ export default function Footer() {
               <ul className="space-y-4">
                 {['Help Center', 'Returns', 'Shipping', 'Track Order'].map((item) => (
                   <li key={item}>
-                    <Link href={`/ecommerce/${item.toLowerCase().replace(' ', '-')}`} className="text-gray-600 font-bold hover:text-gray-900 transition-colors text-sm">
+                    <Link href={`/groceriesecommerce/${item.toLowerCase().replace(' ', '-')}`} className="text-gray-600 font-bold hover:text-gray-900 transition-colors text-sm">
                       {item}
                     </Link>
                   </li>
@@ -117,7 +117,7 @@ export default function Footer() {
                 <div key={i} className="w-8 h-5 bg-gray-100 rounded-sm" />
               ))}
             </div>
-            <Link href="/ecommerce/sitemap.xml" className="text-xs font-bold text-gray-400 hover:text-gray-900 uppercase tracking-widest">
+            <Link href="/groceriesecommerce/sitemap.xml" className="text-xs font-bold text-gray-400 hover:text-gray-900 uppercase tracking-widest">
               Sitemap
             </Link>
           </div>

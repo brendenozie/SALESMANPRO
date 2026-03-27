@@ -1,124 +1,171 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import { 
+  WrenchScrewdriverIcon, 
+  CogIcon, 
+  BeakerIcon,
+  AdjustmentsHorizontalIcon,
+  CheckBadgeIcon,
+  ArrowRightIcon,
+  VariableIcon
+} from "@heroicons/react/24/solid";
+
+const gearSpin = {
+  animate: { rotate: 360, transition: { duration: 8, repeat: Infinity, ease: "linear" } }
+};
+
+const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+    `${src}?w=${width}&q=${quality || 75}`;
 
 
 
-export default function About() {
+export default function BikeServicePage() {
+  const [activeGeo, setActiveGeo] = useState("aero");
+
+  const geoData = {
+    aero: { title: "The Speedster", reach: "Long", stack: "Low", angle: "74°", desc: "Aggressive posture for maximum velocity on Nairobi's open tarmac." },
+    trail: { title: "The Climber", reach: "Mid", stack: "High", angle: "66°", desc: "Slack head-angle for stability on the rugged Karura Forest trails." },
+    city: { title: "The Commuter", reach: "Short", stack: "High", angle: "71°", desc: "Upright comfort for navigating the busy streets of Westlands." },
+  };
+
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="max-w-4xl mx-auto space-y-12"
-      >
-        {/* Our Story Section */}
-        <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
-            Our Story 📖
-          </h2>
-          <p className="mt-4 text-xl text-gray-600">
-            Welcome! We're so glad you're here. We started this store with a simple idea: to create a place where you can find unique, high-quality products that bring joy and inspiration to your everyday life.
-          </p>
-          <p className="mt-2 text-lg text-gray-500">
-            It all began with a big dream. We spent countless hours searching for products that were not only beautiful and functional but also had a story behind them. We wanted to connect you with artisans, creators, and brands that share our values of craftsmanship, sustainability, and authenticity. Every item in our collection is hand-picked with care, and we hope you'll feel the passion we pour into our work.
-          </p>
-        </div>
+    <main className="bg-white min-h-screen pt-32 pb-24 text-slate-900 overflow-hidden">
+      
+      {/* 1. PRO MAINTENANCE (ABOUT US) */}
+      <section className="max-w-7xl mx-auto px-6 mb-40">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+          <motion.div 
+            initial={{ opacity: 0, x: -30 }} 
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+          >
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-12 h-1 bg-red-600" />
+              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-400">Authorized Service Center</span>
+            </div>
+            
+            <h1 className="text-7xl md:text-8xl font-black tracking-tighter leading-[0.85] mb-10 uppercase italic">
+              Precision <br />
+              <span className="text-transparent" style={{ WebkitTextStroke: '2px #0f172a' }}>Mechanics.</span>
+            </h1>
+            
+            <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-lg mb-12">
+              Our workshop isn't a garage—it's a laboratory. From ultrasonic parts cleaning to laser-guided wheel trueing, we treat every bike like a world-tour machine.
+            </p>
 
-        {/* Our Values Section */}
-        <div className="grid md:grid-cols-2 gap-8 items-center">
-          <div className="space-y-4">
-            <h2 className="text-3xl font-bold text-gray-900">
-              Our Values ✨
-            </h2>
-            <ul className="text-lg text-gray-600 space-y-3">
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">🌿</span>
-                <p>
-                  <strong>Conscious Curation:</strong> We're committed to sourcing from brands that prioritize ethical and sustainable practices. We care about where our products come from and how they're made.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">💎</span>
-                <p>
-                  <strong>Quality First:</strong> We believe in products that are built to last. We focus on durable materials and timeless designs so you can love your purchase for years to come.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">🤝</span>
-                <p>
-                  <strong>Exceptional Service:</strong> Your satisfaction is our top priority. We're here to help you every step of the way, from finding the perfect item to ensuring a smooth delivery.
-                </p>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2 text-2xl">❤️</span>
-                <p>
-                  <strong>Community & Connection:</strong> We're grateful for every customer who supports our small business. We love seeing how you incorporate our products into your life.
-                </p>
-              </li>
-            </ul>
-          </div>
-          <div className="relative h-64 sm:h-80 md:h-96">
-            <img
-              src="https://images.unsplash.com/photo-1542435503-956c469947f6?fit=crop&w=800&q=80"
-              alt="Artisans at work, representing craftsmanship"
-              className="w-full h-full object-cover rounded-lg shadow-lg"
-            />
+            <div className="grid grid-cols-2 gap-8 py-10 border-t border-slate-100">
+               <ServiceStat icon={<WrenchScrewdriverIcon/>} label="Certified Techs" value="Level 3" />
+               <ServiceStat icon={<BeakerIcon/>} label="Diagnostics" value="Digital" />
+            </div>
+          </motion.div>
+
+          <div className="relative">
+             <div className="relative aspect-square rounded-[3rem] overflow-hidden bg-slate-100 border-[16px] border-slate-100 shadow-2xl">
+                <Image 
+                  src="https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?auto=format&fit=crop&w=1200&q=80" 
+                  alt="Bike Mechanic at Work" fill className="object-cover"
+                  loader={imageLoader}
+                />
+             </div>
+             {/* Rotating Gear Overlay */}
+             <motion.div 
+               variants={gearSpin} animate="animate"
+               className="absolute -bottom-10 -right-10 w-40 h-40 bg-red-600 rounded-full flex items-center justify-center text-white shadow-xl border-8 border-white"
+             >
+                <CogIcon className="w-20 h-20" />
+             </motion.div>
           </div>
         </div>
+      </section>
 
-        {/* Meet the Team Section */}
-        <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
-            Meet the Team 🧑‍🤝‍🧑
-          </h2>
-          <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Founder's Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1507003211169-0a7dd7803e20?fit=crop&w=300&q=80"
-                alt="Founder's profile picture"
-                className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-indigo-500"
-              />
-              <h3 className="mt-4 text-xl font-semibold text-gray-900">
-                [Founder's Name]
-              </h3>
-              <p className="text-indigo-600">Founder & Chief Curator</p>
-              <p className="mt-2 text-gray-500">
-                With an eye for detail and a passion for discovering hidden gems, [Founder's Name] is the heart of our store. They are always on the hunt for the next great find.
-              </p>
-            </motion.div>
+      {/* 2. BIKE GEOMETRY GUIDE (INTERACTIVE) */}
+      <section className="max-w-7xl mx-auto px-6">
+        <div className="bg-slate-900 rounded-[4rem] p-10 md:p-20 text-white relative overflow-hidden">
+          {/* Subtle Speed Lines */}
+          <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #fff 0, #fff 1px, transparent 0, transparent 40px)' }} />
 
-            {/* Team Member 1 Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1544723795-3fb6469f5b80?fit=crop&w=300&q=80"
-                alt="Team member profile picture"
-                className="w-32 h-32 mx-auto rounded-full object-cover border-4 border-indigo-500"
-              />
-              <h3 className="mt-4 text-xl font-semibold text-gray-900">
-                [Team Member's Name]
-              </h3>
-              <p className="text-indigo-600">[Their Title]</p>
-              <p className="mt-2 text-gray-500">
-                As our Customer Experience Lead, [Team Member's Name] ensures every interaction you have with us is a positive one. They believe that great service is the key to building lasting relationships.
-              </p>
-            </motion.div>
+          <div className="relative z-10 flex flex-col lg:flex-row gap-20">
+            <div className="flex-1">
+              <h2 className="text-5xl font-black italic uppercase tracking-tighter mb-8">Dial In Your <span className="text-red-600">Fit.</span></h2>
+              <p className="text-slate-400 mb-12 max-w-md">Geometry is the soul of the bike. Choose a riding style to see how the frame dimensions change your performance.</p>
+
+              <div className="space-y-4">
+                {Object.keys(geoData).map((key) => (
+                  <button 
+                    key={key}
+                    onClick={() => setActiveGeo(key)}
+                    className={`w-full p-8 rounded-2xl border-2 transition-all flex items-center justify-between group ${activeGeo === key ? 'border-red-600 bg-red-600/5' : 'border-white/5 bg-white/5 hover:border-white/20'}`}
+                  >
+                    <span className="text-2xl font-black uppercase italic tracking-tighter">{(geoData as any)[key].title}</span>
+                    <ArrowRightIcon className={`w-6 h-6 transition-transform ${activeGeo === key ? 'translate-x-0' : '-translate-x-4 opacity-0'}`} />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Geometry Data Visualization */}
+            <div className="w-full lg:w-[450px]">
+               <div className="bg-black/50 backdrop-blur-xl border border-white/10 p-10 rounded-[3rem] relative">
+                  <div className="flex items-center gap-3 mb-10">
+                     <VariableIcon className="w-6 h-6 text-red-600" />
+                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Live Blueprint Data</span>
+                  </div>
+
+                  <AnimatePresence mode="wait">
+                    <motion.div 
+                      key={activeGeo}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="space-y-10"
+                    >
+                       <div className="grid grid-cols-2 gap-8">
+                          <GeoMetric label="Reach" value={(geoData as any)[activeGeo].reach} />
+                          <GeoMetric label="Stack" value={(geoData as any)[activeGeo].stack} />
+                          <GeoMetric label="Head Angle" value={(geoData as any)[activeGeo].angle} />
+                          <GeoMetric label="Stability" value="High" />
+                       </div>
+                       
+                       <p className="text-sm text-slate-400 leading-relaxed pt-8 border-t border-white/5">
+                         {(geoData as any)[activeGeo].desc}
+                       </p>
+
+                       <button className="w-full py-5 bg-white text-slate-900 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all">
+                          Find My Size
+                       </button>
+                    </motion.div>
+                  </AnimatePresence>
+               </div>
+            </div>
           </div>
         </div>
-      </motion.div>
-    </section>
+      </section>
+    </main>
+  );
+}
+
+function ServiceStat({ icon, label, value }: any) {
+  return (
+    <div className="flex items-center gap-4">
+      <div className="w-10 h-10 rounded-lg bg-slate-900 text-white flex items-center justify-center">
+        {React.cloneElement(icon, { className: "w-5 h-5" })}
+      </div>
+      <div>
+        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{label}</p>
+        <p className="text-lg font-bold text-slate-900">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+function GeoMetric({ label, value }: any) {
+  return (
+    <div>
+      <p className="text-[10px] font-black uppercase tracking-widest text-slate-600 mb-2">{label}</p>
+      <p className="text-3xl font-black italic text-white tracking-tighter">{value}</p>
+    </div>
   );
 }

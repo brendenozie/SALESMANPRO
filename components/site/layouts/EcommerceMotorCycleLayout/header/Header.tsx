@@ -47,14 +47,14 @@ export default function Header() {
       authUrl.searchParams.set("callbackUrl", window.location.origin + pathname);
       window.location.href = authUrl.toString();
     } else {
-      router.push(user.role?.toLowerCase() === 'admin' ? '/dashboards' : `/ecommerce/profile`);
+      router.push(user.role?.toLowerCase() === 'admin' ? '/dashboards' : `/motorcycleecommerce/profile`);
     }
   }, [user, router, pathname]);
 
   const navLinks = [
-    { label: 'Showroom', href: `/ecommerce/products` },
-    { label: 'Series', href: `/ecommerce/categories` },
-    { label: 'Custom Shop', href: `/` },
+    { label: 'Showroom', href: `/motorcycleecommerce/products` },
+    { label: 'Series', href: `/motorcycleecommerce/categories` },
+    { label: 'Custom Shop', href: `/motorcycleecommerce/custom` },
   ];
 
   return (

@@ -114,7 +114,7 @@ export default function Header() {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <div className="flex items-center space-x-4">
-            <a href={`/site/${slug}`} className="flex items-center space-x-2">
+            <a href={`/`} className="flex items-center space-x-2">
               {logoUrl ? (
                 <img
                   src={logoUrl}
@@ -131,18 +131,18 @@ export default function Header() {
             {/* Desktop Nav */}
             <nav className="hidden lg:flex space-x-6 font-medium text-gray-700 dark:text-gray-200">
               <a
-                href={`/site/${slug}`}
+                href={`/`}
                 className="hover:underline"
               >
                 Home
               </a>
-              <a href={`/site/${slug}#programs`} className="hover:underline">
+              <a href={`/${slug}#programs`} className="hover:underline">
                 Programs
               </a>
-              <a href={`/site/${slug}#donate`} className="hover:underline">
+              <a href={`/${slug}#donate`} className="hover:underline">
                 Donate
               </a>
-              <a href={`/site/${slug}#contact`} className="hover:underline">
+              <a href={`/${slug}#contact`} className="hover:underline">
                 Contact
               </a>
             </nav>
@@ -210,10 +210,10 @@ export default function Header() {
       {mobileMenuOpen && (
         <div className="lg:hidden bg-white dark:bg-gray-800 px-4 py-4 shadow-md border-t">
           <div className="space-y-3">
-            <a href={`/site/${slug}`} className="block">Home</a>
-            <a href={`/site/${slug}#programs`} className="block">Programs</a>
-            <a href={`/site/${slug}#donate`} className="block">Donate</a>
-            <a href={`/site/${slug}#contact`} className="block">Contact</a>
+            <a href={`/`} className="block">Home</a>
+            <a href={`/#programs`} className="block">Programs</a>
+            <a href={`/#donate`} className="block">Donate</a>
+            <a href={`/#contact`} className="block">Contact</a>
 
             {/* Auth inside mobile menu */}
             <div className="pt-2 border-t">

@@ -74,7 +74,7 @@ export default function Footer() {
               {['Home', 'Courses', 'FAQs', 'Contact'].map((item) => (
                 <li key={item}>
                   <Link 
-                    href={item === 'Home' ? `/${slug}` : `/${slug}/${item.toLowerCase()}`}
+                    href={item === 'Home' ? `/` : `/${slug}/courses/${item.toLowerCase()}`}
                     className="group flex items-center text-gray-300 hover:text-white transition-all text-sm font-medium"
                   >
                     <ChevronRightIcon className="h-3 w-3 mr-2 opacity-0 -ml-5 group-hover:opacity-100 group-hover:ml-0 transition-all" style={{ color: primaryColor }} />
@@ -92,7 +92,7 @@ export default function Footer() {
               {StoreCategory?.slice(0, 4).map((cat: any) => (
                 <li key={cat.id}>
                   <Link
-                    href={`/${slug}/category/${cat.id}`}
+                    href={`/${slug}/courses/category/${cat.id}`}
                     className="group flex items-center text-gray-300 hover:text-white transition-all text-sm font-medium"
                   >
                     <ChevronRightIcon className="h-3 w-3 mr-2 opacity-0 -ml-5 group-hover:opacity-100 group-hover:ml-0 transition-all" style={{ color: primaryColor }} />

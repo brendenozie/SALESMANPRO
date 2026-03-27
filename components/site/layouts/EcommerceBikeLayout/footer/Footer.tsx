@@ -50,19 +50,19 @@ export default function Footer() {
             <div>
               <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-white mb-8">Navigation</h3>
               <ul className="space-y-4 text-xs tracking-wider">
-                <li><Link href="/about" className="hover:text-amber-600 transition-colors">The Atelier</Link></li>
-                <li><Link href="/collections" className="hover:text-amber-600 transition-colors">Collections</Link></li>
-                <li><Link href="/bespoke" className="hover:text-amber-600 transition-colors">Bespoke Service</Link></li>
-                <li><Link href="/contact" className="hover:text-amber-600 transition-colors">Private Viewing</Link></li>
+                <li><Link href="/bikeecommerce/about" className="hover:text-amber-600 transition-colors">The Atelier</Link></li>
+                <li><Link href="/bikeecommerce/collections" className="hover:text-amber-600 transition-colors">Collections</Link></li>
+                <li><Link href="/bikeecommerce/bespoke" className="hover:text-amber-600 transition-colors">Bespoke Service</Link></li>
+                <li><Link href="/bikeecommerce/contact" className="hover:text-amber-600 transition-colors">Private Viewing</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-white mb-8">Client Care</h3>
               <ul className="space-y-4 text-xs tracking-wider">
-                <li><Link href="/shipping" className="hover:text-amber-600 transition-colors">Insured Shipping</Link></li>
-                <li><Link href="/warranty" className="hover:text-amber-600 transition-colors">Lifetime Warranty</Link></li>
-                <li><Link href="/authentication" className="hover:text-amber-600 transition-colors">Authentication</Link></li>
-                <li><Link href="/faq" className="hover:text-amber-600 transition-colors">Collector FAQ</Link></li>
+                <li><Link href="/bikeecommerce/shipping" className="hover:text-amber-600 transition-colors">Insured Shipping</Link></li>
+                <li><Link href="/bikeecommerce/warranty" className="hover:text-amber-600 transition-colors">Lifetime Warranty</Link></li>
+                <li><Link href="/bikeecommerce/authentication" className="hover:text-amber-600 transition-colors">Authentication</Link></li>
+                <li><Link href="/bikeecommerce/faq" className="hover:text-amber-600 transition-colors">Collector FAQ</Link></li>
               </ul>
             </div>
           </div>
@@ -115,9 +115,9 @@ export default function Footer() {
           </div>
           
           <div className="flex gap-8 text-[10px] uppercase tracking-[0.2em] text-zinc-600">
-            <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
-            <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
-            <Link href="/cookies" className="hover:text-white transition-colors">Cookies</Link>
+            <Link href="/bikeecommerce/privacy" className="hover:text-white transition-colors">Privacy</Link>
+            <Link href="/bikeecommerce/terms" className="hover:text-white transition-colors">Terms</Link>
+            <Link href="/bikeecommerce/cookies" className="hover:text-white transition-colors">Cookies</Link>
           </div>
         </div>
       </div>

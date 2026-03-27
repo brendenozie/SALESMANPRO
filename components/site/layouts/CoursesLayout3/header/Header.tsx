@@ -187,7 +187,7 @@ export default function Header() {
   };
 
   const handleCourseLogin = () => {
-    router.push(`/site/${slug}/courses/login`);
+    router.push(`/${slug}/courses/login`);
   };
 
   const handleUserActionv1 = () => {
@@ -219,7 +219,7 @@ export default function Header() {
   };
 
   const selectCategory = (catId: string) => {
-    router.push(`/category/${catId}`);
+    router.push(`/courses/product?categoryId=${catId}`);
     setCategoriesOpen(false);
     setMobileMenuOpen(false);
   };
@@ -301,11 +301,11 @@ export default function Header() {
 
       {/* Desktop nav */}
       <nav className="hidden lg:flex items-center gap-6" aria-label="Main navigation">
-        <Link href={`/site/${slug}`} className="text-slate-700 dark:text-slate-200 hover:text-black dark:hover:text-white font-semibold transition-colors">Home</Link>
+        <Link href={`/`} className="text-slate-700 dark:text-slate-200 hover:text-black dark:hover:text-white font-semibold transition-colors">Home</Link>
         <Link href={`/courses`} className="text-slate-700 dark:text-slate-200 hover:text-black dark:hover:text-white font-semibold flex items-center gap-2">
           <BookOpenIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" /> Courses
         </Link>
-        <Link href={`/my-learning`} className="text-slate-700 dark:text-slate-200 hover:text-black dark:hover:text-white font-semibold flex items-center gap-2">
+        <Link href={`/admin/${user?.id}`} className="text-slate-700 dark:text-slate-200 hover:text-black dark:hover:text-white font-semibold flex items-center gap-2">
           <UserIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" /> My Learning
         </Link>
 
@@ -436,8 +436,8 @@ export default function Header() {
         className="lg:hidden bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 shadow-xl overflow-hidden"
       >
         <div className="px-4 py-6 space-y-4">
-          <Link href={`/site/${slug}`} className="block text-slate-700 dark:text-slate-200 font-semibold">Home</Link>
-          <Link href={`/courses`} className="block text-slate-700 dark:text-slate-200 font-semibold">Courses</Link>
+          <Link href={`/`} className="block text-slate-700 dark:text-slate-200 font-semibold">Home</Link>
+          <Link href={`/courses/products`} className="block text-slate-700 dark:text-slate-200 font-semibold">Courses</Link>
           
           <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
             {user ? (

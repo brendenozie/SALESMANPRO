@@ -43,7 +43,7 @@ export default function Header() {
   const handleUserAction = () => {
     if (!user) return handleGoogleSignIn();
     if (user.role?.toLowerCase() === 'admin') router.push('/dashboards');
-    else router.push(`/ecommerce/profile`);
+    else router.push(`/earphonesecommerce/profile`);
   };
 
   const handleGoogleSignIn = () => {
@@ -60,8 +60,8 @@ export default function Header() {
 
   const navLinks = [
     { label: 'Studio', href: `/` },
-    { label: 'Series', href: `/ecommerce/products` },
-    { label: 'Cores', href: `/ecommerce/categories` },
+    { label: 'Series', href: `/earphonesecommerce/products` },
+    { label: 'Cores', href: `/earphonesecommerce/categories` },
   ];
 
   return (

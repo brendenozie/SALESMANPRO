@@ -107,7 +107,7 @@ const UserMenu = ({ user, slug, primaryColor, handleSignOut, close }: any) => {
 const Header = ({ storeFormData }: { storeFormData: any }) => {
   const { data: session } = useSession();
   const user = session?.user;
-  const { cartItems } = useStateContext();
+  const { cart } = useStateContext();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -290,9 +290,9 @@ const Header = ({ storeFormData }: { storeFormData: any }) => {
                  isScrolled ? "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200" : "hover:bg-white/20 text-white"
               )}>
                 <ShoppingCartIcon className="w-5 h-5" />
-                {cartItems?.length > 0 && (
+                {cart?.length > 0 && (
                   <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white dark:ring-gray-900">
-                    {cartItems.length}
+                    {cart.length}
                   </span>
                 )}
               </button>

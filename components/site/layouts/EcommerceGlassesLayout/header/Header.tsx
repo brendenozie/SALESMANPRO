@@ -41,9 +41,9 @@ export default function Header() {
 
   const navLinks = [
     { label: 'Collection', href: `/` },
-    { label: 'Eyeglasses', href: `/ecommerce/products` },
-    { label: 'Sunglasses', href: `/ecommerce/categories` },
-    { label: 'Journal', href: `/about` },
+    { label: 'Eyeglasses', href: `/glassesecommerce/products` },
+    { label: 'Sunglasses', href: `/glassesecommerce/categories` },
+    { label: 'Journal', href: `/glassesecommerce/about` },
   ];
 
   const handleGoogleSignIn = () => {
@@ -112,7 +112,7 @@ export default function Header() {
 
             {user ? (
               <button 
-                onClick={() => router.push('/ecommerce/profile')} 
+                onClick={() => router.push('/glassesecommerce/profile')} 
                 className="flex items-center gap-2 group p-1"
               >
                 <div className="w-8 h-8 rounded-full bg-[#0D4C4F] flex items-center justify-center text-white transition-transform group-hover:scale-110">
@@ -207,7 +207,7 @@ export default function Header() {
                   </button>
                 ) : (
                    <button 
-                    onClick={() => router.push('/ecommerce/profile')}
+                    onClick={() => router.push('/glassesecommerce/profile')}
                     className="w-full py-5 border border-black text-black font-bold uppercase tracking-[0.2em] text-[10px]"
                   >
                     My Account

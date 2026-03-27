@@ -58,14 +58,14 @@ export default function Header() {
       authUrl.searchParams.set("callbackUrl", window.location.origin + pathname);
       window.location.href = authUrl.toString();
     } else {
-      router.push(user.role?.toLowerCase() === 'admin' ? '/dashboards' : `/ecommerce/profile`);
+      router.push(user.role?.toLowerCase() === 'admin' ? '/dashboards' : `/bikeecommerce/profile`);
     }
   }, [user, router, pathname]);
 
   const navLinks = [
-    { label: 'E-Mountain', href: `/ecommerce/products` },
-    { label: 'City Stealth', href: `/ecommerce/categories` },
-    { label: 'Support', href: `/contact` },
+    { label: 'E-Mountain', href: `/bikeecommerce/products` },
+    { label: 'City Stealth', href: `/bikeecommerce/categories` },
+    { label: 'Support', href: `/bikeecommerce/about` },
   ];
 
   return (

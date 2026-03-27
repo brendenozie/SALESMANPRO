@@ -1,145 +1,195 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { ChevronRightIcon, ArrowRightCircleIcon } from '@heroicons/react/24/outline'; // Added for visual flow
-import Section from '@/components/site/Section/Section'; // Assuming this component exists
-import { useStore } from '@/contexts/StoreContext';
-import clsx from 'clsx';
-import { IStoreCategory } from '@/types/typings'; // Assuming your category type is defined here
+import React from "react";
+import { motion, Variants } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { IStoreCategory } from "@/types/typings";
+import { useStore } from "@/contexts/StoreContext";
+import { 
+  ShieldCheckIcon, 
+  MapIcon, 
+  FlagIcon,
+  WrenchIcon,
+  ChevronRightIcon
+} from "@heroicons/react/24/outline";
 
-// --- Animation Variants ---
-const cardVariants = {
-    hidden: { opacity: 0, y: 20, scale: 0.95 },
-    visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 100, damping: 10 } },
-};
-const containerVariants = {
-    visible: { transition: { staggerChildren: 0.07, delayChildren: 0.1 } },
-};
+/* --- 1. THEME HELPERS (Performance Palette) --- */
+const FALLBACK_BIKE = "https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=800&q=80";
+
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
     `${src}?w=${width}&q=${quality || 75}`;
 
-// =========================================================
-// --- CATEGORY CARD COMPONENT (Reimagined) ---
-// =========================================================
 
-const CategoryCard = ({ cat, storeSlug }: { cat: IStoreCategory, storeSlug: string }) => {
-    const hasImage = cat.icon && cat.icon.startsWith('http');
-    const categoryName = cat.displayName || cat.category?.name || 'Unknown Category';
-    const linkHref = `/site/${storeSlug}/ecommerce/products?category=${cat.id}`;
-    
-    // Choose a placeholder/default icon if no image is available
-    const defaultIcon = cat.icon || '📦'; 
+function resolveBikeStyle(index: number) {
+  const themes = [
+    { accent: "text-red-600", bg: "bg-red-600", border: "group-hover:border-red-600/50", label: "Mountain & Trail" },
+    { accent: "text-blue-500", bg: "bg-blue-600", border: "group-hover:border-blue-500/50", label: "Road & Speed" },
+    { accent: "text-amber-500", bg: "bg-amber-600", border: "group-hover:border-amber-500/50", label: "Urban & Commute" },
+  ];
+  return themes[index % themes.length];
+}
 
-    return (
-        <motion.div variants={cardVariants}>
-            <Link
-                key={cat.id}
-                href={linkHref}
-                className={clsx(
-                    "group relative block rounded-2xl overflow-hidden transition-all duration-300 transform",
-                    hasImage 
-                        ? "shadow-xl hover:shadow-2xl h-72 md:h-80" // Large card for image categories
-                        : "bg-white dark:bg-gray-800 shadow-md hover:shadow-lg h-40 flex items-center justify-center p-6 border border-gray-100 dark:border-gray-700" // Smaller card for icon categories
-                )}
-            >
-                {/* --- IMAGE CARD LAYOUT --- */}
-                {hasImage ? (
-                    <>
-                        <div className="absolute inset-0 w-full h-full">
-                            <Image
-                                src={cat.icon!}
-                                alt={categoryName}
-                                loader={imageLoader}
-                                fill
-                                sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 100vw"
-                                className="object-cover transition-transform duration-500 group-hover:scale-110"
-                            />
-                            {/* Gradient Overlay for Text Contrast and Effect */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-opacity duration-300 group-hover:from-black/80" />
-                        </div>
-                        
-                        {/* Text Content (Always white/bottom) */}
-                        <div className="absolute bottom-0 left-0 p-6 z-10 w-full text-white">
-                            <h3 className="text-2xl font-extrabold mb-1 line-clamp-1">
-                                {categoryName}
-                            </h3>
-                            <div className="flex items-center text-sm font-semibold opacity-80 group-hover:opacity-100 transition-opacity">
-                                Shop Now <ChevronRightIcon className="w-4 h-4 ml-1" />
-                            </div>
-                        </div>
-                    </>
-                ) : (
-                    /* --- ICON CARD LAYOUT (Fallback/Simpler) --- */
-                    <div className="text-center">
-                        <div className="w-16 h-16 mb-3 mx-auto rounded-full bg-blue-50 dark:bg-gray-700 flex items-center justify-center text-3xl text-blue-600 dark:text-blue-400">
-                            {defaultIcon.length > 2 ? <ArrowRightCircleIcon className="w-8 h-8"/> : <span>{defaultIcon}</span>}
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mt-2 line-clamp-1">
-                            {categoryName}
-                        </h3>
-                        <p className="text-sm text-blue-600 dark:text-blue-400 mt-1 flex items-center justify-center">
-                            View Products <ChevronRightIcon className="w-4 h-4 ml-1" />
-                        </p>
-                    </div>
-                )}
-            </Link>
-        </motion.div>
-    );
+/* --- 2. ANIMATIONS (Kinetic Motion) --- */
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
 };
 
-// =========================================================
-// --- MAIN CATEGORIES PAGE COMPONENT ---
-// =========================================================
+const itemVariants: Variants = {
+  hidden: { opacity: 0, x: -20, skewX: -2 },
+  visible: { 
+    opacity: 1, 
+    x: 0, 
+    skewX: 0,
+    transition: { type: "spring", stiffness: 100, damping: 15 } 
+  },
+};
 
-export default function CategoriesPage() {
-    const store = useStore();
-    const categories = store?.storeFormData?.StoreCategory || [];
-    const storeSlug = store?.storeFormData?.slug;
+/* --- 3. SUBCOMPONENTS --- */
 
-    if (!storeSlug) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <p className="text-xl font-medium text-gray-600 dark:text-gray-300">Store not found</p>
+function BikeCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; index: number; storeSlug: string }) {
+  const theme = resolveBikeStyle(index);
+
+  return (
+    <motion.div variants={itemVariants} className="group relative">
+      <Link href={`/site/${storeSlug}/bikeecommerce/products?category=${cat.id}`} className="block">
+        <div className={`relative h-[650px] w-full overflow-hidden bg-white border-l-8 border-slate-100 transition-all duration-500 ${theme.border} group-hover:border-l-[16px]`}>
+          
+          {/* Subtle Speed Lines Pattern */}
+          <div className="absolute inset-0 opacity-[0.02] pointer-events-none z-10" 
+               style={{ backgroundImage: `repeatinglinear-gradient(45deg, #000 0, #000 1px, transparent 0, transparent 50%)`, backgroundSize: '10px 10px' }} />
+
+          {/* Asset Image: Wide Angle Focus */}
+          <div className="h-[70%] w-full relative overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-700">
+            <Image
+              src={cat.icon?.startsWith('http') ? cat.icon : FALLBACK_BIKE}
+              alt={cat.displayName || ""}
+              fill
+              className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                loader={imageLoader}
+            />
+            {/* Hard Angle Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
+          </div>
+
+          {/* Content Area: Mechanical & Bold */}
+          <div className="p-10 relative z-20">
+            <div className="flex items-center gap-3 mb-4">
+               <div className={`h-1 w-8 ${theme.bg}`} />
+               <span className={`text-[10px] font-black uppercase tracking-[0.3em] ${theme.accent}`}>
+                 {theme.label}
+               </span>
             </div>
-        );
-    }
+            
+            <h3 className="text-5xl font-black text-slate-900 mb-6 tracking-tighter uppercase italic">
+              {cat.displayName}
+            </h3>
+            
+            <div className="flex items-center justify-between">
+               <div className="flex flex-col">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Available Models</span>
+                  <span className="text-xl font-bold text-slate-900">{cat.subcategories?.length || 0}+ Series</span>
+               </div>
+               
+               <div className={`w-16 h-16 rounded-full border-2 border-slate-100 flex items-center justify-center text-slate-900 group-hover:bg-slate-900 group-hover:text-white transition-all duration-300 transform group-hover:rotate-[-45deg]`}>
+                  <ChevronRightIcon className="w-6 h-6" />
+               </div>
+            </div>
+          </div>
 
-    // Separate categories into those with images and those without for a dynamic layout
-    const categoriesWithImages = categories.filter(cat => cat.icon && cat.icon.startsWith('http'));
-    const categoriesWithoutImages = categories.filter(cat => !cat.icon || !cat.icon.startsWith('http'));
-    
-    // Combine them, prioritizing image categories for visual impact
-    const sortedCategories = [...categoriesWithImages, ...categoriesWithoutImages];
-
-    return (
-        <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen pt-20 pb-16">
-            <Section 
-                title="Shop by Category"
-                // subtitle="Explore our curated collections of products and programs designed to help you thrive."
-            >
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {categories.length === 0 ? (
-                        <div className="py-12 text-center text-gray-500 dark:text-gray-400">
-                            <p>No categories available.</p>
-                        </div>
-                    ) : (
-                        <motion.div 
-                            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8" // Increased gap and refined grid
-                            variants={containerVariants}
-                            initial="hidden"
-                            animate="visible"
-                        >
-                            {sortedCategories.map((cat: IStoreCategory) => (
-                                <CategoryCard key={cat.id} cat={cat} storeSlug={storeSlug} />
-                            ))}
-                        </motion.div>
-                    )}
-                </div>
-            </Section>
+          {/* Hover Accents */}
+          <div className={`absolute top-0 right-0 w-1 h-0 ${theme.bg} transition-all duration-500 group-hover:h-full`} />
         </div>
-    );
+      </Link>
+    </motion.div>
+  );
+}
+
+/* --- 4. MAIN PAGE --- */
+
+export default function BikeCategoriesPage() {
+  const store = useStore();
+  const categories = store?.storeFormData?.StoreCategory || [];
+  const storeSlug = store?.storeFormData?.slug;
+
+  if (!storeSlug) return null;
+
+  return (
+    <main className="bg-white min-h-screen py-32 overflow-hidden relative">
+      {/* Decorative Track Grid */}
+      <div className="absolute top-0 left-0 w-full h-full opacity-[0.01] pointer-events-none" 
+           style={{ backgroundImage: `linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)`, backgroundSize: '100px 100px' }} />
+
+      <div className="container relative z-10 mx-auto max-w-7xl px-6">
+        
+        {/* Header: Industrial & Kinetic */}
+        <div className="mb-32">
+          <motion.div 
+            initial={{ width: 0 }}
+            animate={{ width: "100px" }}
+            className="h-2 bg-slate-900 mb-10"
+          />
+          
+          <motion.h1 
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="text-8xl md:text-[12rem] font-black text-slate-900 leading-[0.75] tracking-tighter uppercase italic"
+          >
+            Own <br />
+            The <span className="text-transparent" style={{ WebkitTextStroke: '2px #0f172a' }}>Road.</span>
+          </motion.h1>
+          
+          <div className="mt-16 flex flex-col md:flex-row gap-12 md:items-center">
+             <p className="text-sm text-slate-500 font-bold uppercase tracking-[0.4em] max-w-sm">
+               "Nairobi’s premier destination for high-performance cycling and professional maintenance."
+             </p>
+             <div className="flex gap-8">
+                <div className="flex flex-col">
+                   <span className="text-3xl font-black italic">500+</span>
+                   <span className="text-[10px] font-bold text-slate-400 uppercase">Frames Sold</span>
+                </div>
+                <div className="flex flex-col">
+                   <span className="text-3xl font-black italic">24h</span>
+                   <span className="text-[10px] font-bold text-slate-400 uppercase">Pro Service</span>
+                </div>
+             </div>
+          </div>
+        </div>
+
+        {/* Dynamic Grid */}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 border-t border-slate-100"
+        >
+          {categories.map((cat, idx) => (
+            <BikeCategoryCard key={cat.id} cat={cat} index={idx} storeSlug={storeSlug} />
+          ))}
+
+          {/* "Service Lab" Specialty Card */}
+          <motion.div variants={itemVariants} className="lg:col-span-1 bg-slate-900 p-16 text-white flex flex-col justify-between group relative overflow-hidden">
+              {/* Mechanical Background Element */}
+              <div className="absolute -right-16 -bottom-16 opacity-5 group-hover:rotate-90 transition-transform duration-1000">
+                 <WrenchIcon className="w-80 h-80" />
+              </div>
+
+              <div className="relative z-10">
+                <div className="w-12 h-12 border-2 border-red-600 mb-10 flex items-center justify-center">
+                   <div className="w-4 h-4 bg-red-600 animate-pulse" />
+                </div>
+                <h4 className="text-5xl font-black italic mb-6 leading-none uppercase">The <br /> Service <br /> Lab</h4>
+                <p className="text-sm text-slate-400 font-medium leading-relaxed max-w-xs">Hydraulic bleeding, gear indexing, and full carbon frame diagnostics in the heart of Nairobi.</p>
+              </div>
+
+              <button className="relative z-10 mt-12 group flex items-center gap-4 text-xs font-black uppercase tracking-[0.4em] hover:text-red-500 transition-colors">
+                Book Maintenance <ChevronRightIcon className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+              </button>
+          </motion.div>
+        </motion.div>
+      </div>
+    </main>
+  );
 }

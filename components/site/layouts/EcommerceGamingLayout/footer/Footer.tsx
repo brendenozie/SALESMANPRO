@@ -64,7 +64,7 @@ export default function Footer() {
             <ul className="space-y-4 font-mono text-[11px] uppercase tracking-widest font-bold">
               {['About', 'Contact', 'Privacy Policy', 'Terms of Service'].map((item) => (
                 <li key={item}>
-                  <Link href={`/ecommerce/${item.toLowerCase().replace(' ', '-')}`} 
+                  <Link href={`/gamingecommerce/${item.toLowerCase().replace(' ', '-')}`} 
                         className="hover:text-red-600 dark:hover:text-red-500 hover:pl-2 transition-all duration-300 flex items-center gap-2 group">
                     <span className="opacity-0 group-hover:opacity-100 text-red-600">{'>'}</span> {item}
                   </Link>
@@ -81,7 +81,7 @@ export default function Footer() {
             <ul className="space-y-4 font-mono text-[11px] uppercase tracking-widest font-bold">
               {['Help Center', 'Returns', 'Shipping', 'Track Order'].map((item) => (
                 <li key={item}>
-                  <Link href={`/ecommerce/${item.toLowerCase().replace(' ', '-')}`} 
+                  <Link href={`/gamingecommerce/${item.toLowerCase().replace(' ', '-')}`} 
                         className="hover:text-red-600 dark:hover:text-red-500 hover:pl-2 transition-all duration-300 flex items-center gap-2 group">
                     <span className="opacity-0 group-hover:opacity-100 text-red-600">{'>'}</span> {item}
                   </Link>
@@ -128,8 +128,8 @@ export default function Footer() {
           <div className="flex items-center gap-6 font-mono text-[10px] uppercase tracking-widest text-zinc-500 dark:text-zinc-600 font-bold">
             <span>© {new Date().getFullYear()} {name} // HQ_COMMAND</span>
             <div className="hidden md:flex gap-4">
-              <Link href="/ecommerce/faq" className="hover:text-zinc-900 dark:hover:text-white transition-colors">FAQ</Link>
-              <Link href="/ecommerce/support" className="hover:text-zinc-900 dark:hover:text-white transition-colors">SUPPORT</Link>
+              <Link href="/gamingecommerce/faq" className="hover:text-zinc-900 dark:hover:text-white transition-colors">FAQ</Link>
+              <Link href="/gamingecommerce/support" className="hover:text-zinc-900 dark:hover:text-white transition-colors">SUPPORT</Link>
             </div>
           </div>
           

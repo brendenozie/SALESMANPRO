@@ -24,7 +24,7 @@ export default function Header() {
   const router = useRouter();
   const { storeFormData } = useStoreContext() || {};
   const { data: session } = useSession();
-  const user = session?.user as { id?: string; name?: string; image?: string } | undefined;
+  const user = session?.user as { id?: string; name?: string; image?: string;  role?: string;  } | undefined;
 
   const {
     name = 'St. Edwards Academy', // Default fallback
@@ -45,6 +45,11 @@ export default function Header() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+    const handleUserAction = () => {
+      if (!user) return router.push(`/${slug}/courses/login`);
+      user.role?.toLowerCase() === 'admin' ? router.push('/dashboards') : router.push(`/admin/${user.id}`);
+    };
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 pointer-events-none ${scrolled ? 'pt-2' : 'pt-6'}`}>
@@ -69,10 +74,10 @@ export default function Header() {
 
           {/* --- NAVIGATION --- */}
           <nav className="hidden lg:flex items-center gap-2 bg-slate-50/80 rounded-full p-1 border border-slate-100">
-            <Link href={`/site/${slug}`} className="px-5 py-2 text-[13px] font-bold text-slate-600 hover:text-slate-900 transition-all rounded-full hover:bg-white">
+            <Link href={`/`} className="px-5 py-2 text-[13px] font-bold text-slate-600 hover:text-slate-900 transition-all rounded-full hover:bg-white">
               Home
             </Link>
-            <Link href={`/courses`} className="flex items-center gap-2 px-5 py-2 text-[13px] font-bold text-slate-600 hover:text-slate-900 transition-all rounded-full hover:bg-white">
+            <Link href={`/courses/products`} className="flex items-center gap-2 px-5 py-2 text-[13px] font-bold text-slate-600 hover:text-slate-900 transition-all rounded-full hover:bg-white">
               <AcademicCapIcon className="w-4 h-4" /> Programs
             </Link>
             
@@ -92,7 +97,7 @@ export default function Header() {
             </div>
 
             <button 
-              onClick={() => router.push(`/site/${slug}/courses/login`)}
+              onClick={() => handleUserAction()}
               className="flex items-center gap-2 pl-1.5 pr-5 py-1.5 rounded-full bg-slate-900 text-white hover:bg-black transition-all shadow-lg active:scale-95"
             >
               <div className="w-8 h-8 rounded-full bg-slate-700 overflow-hidden ring-2 ring-white/10">

@@ -46,7 +46,7 @@ export default function Header() {
 
   const handleUserAction = () => {
     if (!user) return handleGoogleSignIn();
-    router.push(user.role?.toLowerCase() === 'admin' ? '/dashboards' : `/ecommerce/profile`);
+    router.push(user.role?.toLowerCase() === 'admin' ? '/dashboards' : `/flowersecommerce/profile`);
   };
 
   const handleGoogleSignIn = () => {
@@ -57,8 +57,8 @@ export default function Header() {
 
   const navLinks = [
     { label: 'Home', href: `/` },
-    { label: 'Shop', href: `/ecommerce/products` },
-    { label: 'Collections', href: `/ecommerce/categories` },
+    { label: 'Shop', href: `/flowersecommerce/products` },
+    { label: 'Collections', href: `/flowersecommerce/categories` },
   ];
 
   return (
@@ -121,7 +121,7 @@ export default function Header() {
             {/* Shopping Bag */}
             <button
               onClick={() => setIsCartOpen(true)}
-              // onClick={() => cart.length > 0 && (user ? router.push('/ecommerce/checkout') : handleGoogleSignIn())}
+              // onClick={() => cart.length > 0 && (user ? router.push('/flowersecommerce/checkout') : handleGoogleSignIn())}
               className="relative group p-1"
             >
               <ShoppingBagIcon className="h-5 w-5 text-slate-800 group-hover:text-rose-500 transition-colors stroke-[1.5]" />
