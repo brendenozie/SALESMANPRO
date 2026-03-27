@@ -170,30 +170,30 @@ export default function Header() {
 
   const handleGoogleSignIn = () => {
     const authUrl = new URL('https://auth.salesmanpro.site/signin');
-    authUrl.searchParams.set('callbackUrl', `${window.location.origin}/site/${slug}`);
+    authUrl.searchParams.set('callbackUrl', `${window.location.origin}/site`);
     window.location.href = authUrl.toString();
   };
 
   const handleGoogleSignUp = () => {
     const authUrl = new URL('https://auth.salesmanpro.site/signup');
-    authUrl.searchParams.set('callbackUrl', `${window.location.origin}/site/${slug}`);
+    authUrl.searchParams.set('callbackUrl', `${window.location.origin}/site`);
     window.location.href = authUrl.toString();
   };
 
   const handleCodeSignIn = () => {
     const authUrl = new URL('https://auth.salesmanpro.site/signin/code');
-    authUrl.searchParams.set('callbackUrl', `${window.location.origin}/site/${slug}`);
+    authUrl.searchParams.set('callbackUrl', `${window.location.origin}/site`);
     window.location.href = authUrl.toString();
   };
 
   const handleCourseLogin = () => {
-    router.push(`/${slug}/courses/login`);
+    router.push(`/courses/login`);
   };
 
   const handleUserActionv1 = () => {
       if (!user) return handleGoogleSignIn();
       if (user.role?.toLowerCase() === 'admin') router.push('/dashboards');
-      else router.push(`/profile`);
+      else router.push(`/courses/profile`);
     };
 
     const handleUserAction = () => {
@@ -212,7 +212,7 @@ export default function Header() {
   // ---------- Navigation helpers ----------
   const goToCourse = (slugOrPath: string) => {
     // slugOrPath might be full path or just slug
-    const path = slugOrPath.startsWith('/') ? slugOrPath : `/${slug}/courses/${slugOrPath}`;
+    const path = slugOrPath.startsWith('/') ? slugOrPath : `/courses/${slugOrPath}`;
     router.push(path);
     setSuggestions([]);
     setSearchOpen(false);
@@ -272,7 +272,7 @@ export default function Header() {
       {/* Logo */}
       <div
         className="flex items-center gap-3 cursor-pointer flex-shrink-0"
-        onClick={() => router.push(`/site/${slug}`)}
+        onClick={() => router.push(`/site`)}
         aria-label={`${name} home`}
       >
         {logoUrl ? (
@@ -563,7 +563,7 @@ export default function Header() {
 
 //   // Handlers
 //   const handleUserAction = () => {
-//     if (!user) return router.push(`/site/${slug}/courses/login`);
+//     if (!user) return router.push(`/site/courses/login`);
 //     user.role?.toLowerCase() === 'admin' ? router.push('/dashboards') : router.push('/profile');
 //   };
 
@@ -587,7 +587,7 @@ export default function Header() {
 //         <div className="relative flex items-center justify-between px-4 py-2 md:py-3 md:rounded-[2.5rem] bg-white/80 dark:bg-slate-900/90 border-b md:border border-white/20 shadow-2xl backdrop-blur-xl">
           
 //           {/* Left: Logo */}
-//           <div className="flex items-center gap-4 shrink-0 cursor-pointer" onClick={() => router.push(`/site/${slug}`)}>
+//           <div className="flex items-center gap-4 shrink-0 cursor-pointer" onClick={() => router.push(`/site`)}>
 //             {logoUrl ? (
 //               <Image src={logoUrl} alt={name} width={130} height={40} loader={loader} className="h-8 md:h-10 w-auto object-contain" />
 //             ) : (
@@ -599,7 +599,7 @@ export default function Header() {
 
 //           {/* Center: Nav Links */}
 //           <nav className="hidden lg:flex items-center bg-gray-100/50 dark:bg-white/5 rounded-full px-2 py-1 border border-black/5 dark:border-white/5">
-//             <NavLink href={`/site/${slug}`} label="Home" />
+//             <NavLink href={`/site`} label="Home" />
 //             <NavLink href={`/courses`} label="Courses" icon={<BookOpenIcon className="w-4 h-4" />} />
             
 //             <div className="relative group">
@@ -654,7 +654,7 @@ export default function Header() {
 //                       <div className="p-4 text-sm text-gray-500 animate-pulse">Searching for courses...</div>
 //                     ) : (
 //                       suggestions.map((s) => (
-//                         <div key={s.id} onClick={() => router.push(`/site/${slug}/courses/${s.slug ?? s.id}`)} className="p-3 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer border-b border-gray-100 dark:border-white/5 last:border-0">
+//                         <div key={s.id} onClick={() => router.push(`/site/courses/${s.slug ?? s.id}`)} className="p-3 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer border-b border-gray-100 dark:border-white/5 last:border-0">
 //                           <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{s.title}</p>
 //                         </div>
 //                       ))
@@ -702,7 +702,7 @@ export default function Header() {
 //               className="absolute top-full left-4 right-4 mt-2 bg-white dark:bg-slate-900 rounded-3xl border border-gray-200 dark:border-white/10 shadow-2xl p-4 lg:hidden"
 //             >
 //               <div className="flex flex-col gap-2">
-//                 <Link href={`/site/${slug}`} onClick={() => setMobileMenuOpen(false)} className="p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 font-semibold">Home</Link>
+//                 <Link href={`/site`} onClick={() => setMobileMenuOpen(false)} className="p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 font-semibold">Home</Link>
 //                 <Link href={`/courses`} onClick={() => setMobileMenuOpen(false)} className="p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 font-semibold">Courses</Link>
 //                 <div className="h-[1px] bg-gray-100 dark:bg-white/10 my-2" />
 //                 <p className="px-3 text-xs font-bold text-gray-400 uppercase">Contact</p>

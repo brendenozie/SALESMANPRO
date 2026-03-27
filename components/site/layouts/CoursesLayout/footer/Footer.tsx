@@ -66,7 +66,7 @@ export default function Footer() {
               {['Home', 'Courses', 'FAQs', 'Contact'].map((item) => (
                 <li key={item}>
                   <Link 
-                    href={`/${slug}${item === 'Home' ? '' : `/courses/${item.toLowerCase()}`}`}
+                    href={`${item === 'Home' ? '' : `/courses/${item.toLowerCase()}`}`}
                     className="group flex items-center text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                   >
                     <ChevronRightIcon className="h-3 w-3 mr-2 opacity-0 -ml-5 group-hover:opacity-100 group-hover:ml-0 transition-all" style={{ color: primaryColor }} />
@@ -84,7 +84,7 @@ export default function Footer() {
               {StoreCategory?.slice(0, 4).map((cat: any) => (
                 <li key={cat.id}>
                   <Link
-                    href={`/${slug}/courses/category/${cat.id}`}
+                    href={`/courses/products?category=${cat.id}`}
                     className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                   >
                     {cat.displayName}
@@ -125,7 +125,7 @@ export default function Footer() {
                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Admissions Active</span>
                 </div>
                 <p className="text-xs text-slate-500 leading-relaxed mb-4">Current response time for inquiries is under 24 hours.</p>
-                <Link href={`/${slug}/courses/contact`} className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2" style={{ color: primaryColor }}>
+                <Link href={`/courses/contact`} className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2" style={{ color: primaryColor }}>
                   Apply Now <ChevronRightIcon className="w-3 h-3" />
                 </Link>
              </div>

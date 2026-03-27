@@ -58,7 +58,7 @@ export default function Footer() {
               <ul className="space-y-4">
                 {['Programs', 'Trainers', 'Intelligence', 'Community'].map((item) => (
                   <li key={item}>
-                    <Link href={`/${item.toLowerCase()}`} className="text-white/40 hover:text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2 group">
+                    <Link href={`/fitness/${item.toLowerCase()}`} className="text-white/40 hover:text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2 group">
                       <div className="h-[1px] w-0 bg-orange-500 group-hover:w-3 transition-all" />
                       {item}
                     </Link>
@@ -90,9 +90,9 @@ export default function Footer() {
             <div className="space-y-6">
               <h5 className="text-orange-500 text-[10px] font-black uppercase tracking-[0.4em]">Compliance</h5>
               <ul className="space-y-4">
-                <li><Link href="/privacy" className="text-white/40 hover:text-white text-xs font-black uppercase tracking-widest transition-colors">Privacy</Link></li>
-                <li><Link href="/terms" className="text-white/40 hover:text-white text-xs font-black uppercase tracking-widest transition-colors">Terms</Link></li>
-                <li><Link href="/security" className="text-white/40 hover:text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2">
+                <li><Link href="/fitness/privacy" className="text-white/40 hover:text-white text-xs font-black uppercase tracking-widest transition-colors">Privacy</Link></li>
+                <li><Link href="/fitness/terms" className="text-white/40 hover:text-white text-xs font-black uppercase tracking-widest transition-colors">Terms</Link></li>
+                <li><Link href="/fitness/security" className="text-white/40 hover:text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2">
                   <ShieldCheckIcon className="h-3 w-3" /> Security
                 </Link></li>
               </ul>

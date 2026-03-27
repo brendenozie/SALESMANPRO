@@ -39,15 +39,15 @@ export default function MoriahHeader() {
   const primaryColor = themeSettings?.primaryColor || '#1e40af';
 
   const handleUserAction = () => {
-    if (!user) return router.push(`/${slug}/courses/login`);
+    if (!user) return router.push(`/courses/login`);
     user.role?.toLowerCase() === 'admin' ? router.push('/dashboards') : router.push(`/admin/${user.id}`);
   };
 
   const navLinks = [
-    { name: 'Programs', href: `/${slug}/courses` },
-    { name: 'Community', href: `/${slug}/courses/community` },
-    { name: 'Success Stories', href: `/${slug}/courses/success-stories` },
-    { name: 'Contact', href: `/${slug}/courses/contact` },
+    { name: 'Programs', href: `/courses` },
+    { name: 'Community', href: `/courses/community` },
+    { name: 'Success Stories', href: `/courses/success-stories` },
+    { name: 'Contact', href: `/courses/contact` },
   ];
 
   return (

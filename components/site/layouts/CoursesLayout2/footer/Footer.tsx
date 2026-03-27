@@ -68,7 +68,7 @@ export default function MoriahFooter() {
               {['Home', 'Courses', 'Events', 'FAQs', 'Contact'].map((item) => (
                 <li key={item}>
                   <Link 
-                    href={item === 'Home' ? `/${slug}` : `/${slug}/courses/${item.toLowerCase()}`}
+                    href={item === 'Home' ? `` : `/courses/${item.toLowerCase()}`}
                     className="text-sm hover:text-blue-500 transition-colors flex items-center group"
                   >
                     {item}
@@ -86,7 +86,7 @@ export default function MoriahFooter() {
               {StoreCategory?.map((cat: any) => (
                 <Link
                   key={cat.id}
-                  href={`/${slug}/courses/category/${cat.id}`}
+                  href={`/courses/products?category=${cat.id}`}
                   className="px-4 py-2 rounded-full border border-white/10 text-xs font-medium hover:bg-white/5 hover:border-white/30 transition-all"
                 >
                   {cat.displayName}

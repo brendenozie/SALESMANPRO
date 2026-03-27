@@ -52,7 +52,7 @@ export default function Header() {
     if (user.role?.toLowerCase() === "admin") {
       router.push("/dashboards");
     } else {
-      router.push(`/profile`);
+      router.push(`/travel/profile`);
     }
   };
 
@@ -63,11 +63,11 @@ export default function Header() {
   const secondary = themeSettings?.secondaryColor || "#047857";
 
   const navItems = [
-    { label: "Home", href: `/site/${slug}` },
-    { label: "Destinations", href: `/site/${slug}#destinations` },
-    { label: "Tours", href: `/site/${slug}#tours` },
-    { label: "About", href: `/site/${slug}#about` },
-    { label: "Contact", href: `/site/${slug}#contact` },
+    { label: "Home", href: `/` },
+    { label: "Destinations", href: `/#destinations` },
+    { label: "Tours", href: `/#tours` },
+    { label: "About", href: `/#about` },
+    { label: "Contact", href: `/#contact` },
   ];
 
   return (
@@ -78,7 +78,7 @@ export default function Header() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <Link href={`/site/${slug}`}>
+              <Link href={`/`}>
                 {logoUrl ? (
                   <Image
                     src={logoUrl}

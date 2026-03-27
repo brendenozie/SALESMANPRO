@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { EnvelopeIcon, PhoneIcon } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
-// import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaYoutube } from 'react-icons/fa';
 
 
 const getIcon = (channel: string) => {
@@ -61,23 +60,23 @@ export default function Footer() {
           <h3 className="text-xl font-semibold text-white mb-4">Quick Links</h3>
           <ul className="space-y-2 text-sm">
             <li>
-              <Link href={`/${slug}`} className="hover:text-white transition-colors">Home
+              <Link href={`/`} className="hover:text-white transition-colors">Home
               </Link>
             </li>
             <li>
-              <Link href={`/${slug}/services`} className="hover:text-white transition-colors">Services
+              <Link href={`/healthcare/services`} className="hover:text-white transition-colors">Services
               </Link>
             </li>
             <li>
-              <Link href={`/${slug}/doctors`} className="hover:text-white transition-colors">Doctors
+              <Link href={`/healthcare/doctors`} className="hover:text-white transition-colors">Doctors
               </Link>
             </li>
             <li>
-              <Link href={`/${slug}/about`}  className="hover:text-white transition-colors">About Us
+              <Link href={`/healthcare/about`}  className="hover:text-white transition-colors">About Us
               </Link>
             </li>
             <li>
-              <Link href={`/${slug}/contact`} className="hover:text-white transition-colors">Contact
+              <Link href={`/healthcare/contact`} className="hover:text-white transition-colors">Contact
               </Link>
             </li>
           </ul>
@@ -111,7 +110,7 @@ export default function Footer() {
               <ul className="space-y-2 text-sm">
                 {faqs.slice(0, 3).map((q: any, idx: number) => (
                   <li key={idx}>
-                    <Link href={`/${slug}/faqs`} className="hover:text-white transition-colors">{q.question}
+                    <Link href={`/healthcare/faqs`} className="hover:text-white transition-colors">{q.question}
                     </Link>
                   </li>
                 ))}

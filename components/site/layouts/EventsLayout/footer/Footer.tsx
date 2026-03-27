@@ -32,7 +32,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* About & Logo */}
         <div className="space-y-4">
-          <Link href={`/${slug}`} className="inline-flex items-center space-x-2">
+          <Link href={`/`} className="inline-flex items-center space-x-2">
             <span
               className="text-2xl font-extrabold text-white"
               style={{ textShadow: "1px 1px rgba(0,0,0,0.2)" }}
@@ -67,7 +67,7 @@ export default function Footer() {
           <ul className="space-y-3">
             <li>
               <Link
-                href={`/${slug}`}
+                href={`/`}
                 className="flex items-center text-gray-400 hover:text-white transition-colors"
               >
                 <HomeIcon className="h-5 w-5 mr-2" />
@@ -76,7 +76,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/${slug}/events`}
+                href={`/events/products`}
                 className="flex items-center text-gray-400 hover:text-white transition-colors"
               >
                 <TicketIcon className="h-5 w-5 mr-2" />
@@ -85,7 +85,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/${slug}/about`}
+                href={`/events/about`}
                 className="flex items-center text-gray-400 hover:text-white transition-colors"
               >
                 <InformationCircleIcon className="h-5 w-5 mr-2" />
@@ -94,7 +94,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/${slug}/contact`}
+                href={`/events/contact`}
                 className="flex items-center text-gray-400 hover:text-white transition-colors"
               >
                 <MapPinIcon className="h-5 w-5 mr-2" />
@@ -110,7 +110,7 @@ export default function Footer() {
           <ul className="space-y-3">
             <li>
               <Link
-                href={`/${slug}/host`}
+                href={`/events/host`}
                 className="flex items-center text-gray-400 hover:text-white transition-colors"
               >
                 <UserGroupIcon className="h-5 w-5 mr-2" />
@@ -119,7 +119,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/${slug}/pricing`}
+                href={`/events/pricing`}
                 className="flex items-center text-gray-400 hover:text-white transition-colors"
               >
                 <TagIcon className="h-5 w-5 mr-2" />
@@ -128,7 +128,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/${slug}/privacy`}
+                href={`/events/privacy`}
                 className="flex items-center text-gray-400 hover:text-white transition-colors"
               >
                 <ChevronRightIcon className="h-5 w-5 mr-2" />
@@ -137,7 +137,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/${slug}/terms`}
+                href={`/events/terms`}
                 className="flex items-center text-gray-400 hover:text-white transition-colors"
               >
                 <ChevronRightIcon className="h-5 w-5 mr-2" />
@@ -185,13 +185,13 @@ export default function Footer() {
           </p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <Link
-              href={`/${slug}/privacy`}
+              href={`/events/privacy`}
               className="hover:text-white transition-colors"
             >
               Privacy Policy
             </Link>
             <Link
-              href={`/${slug}/terms`}
+              href={`/events/terms`}
               className="hover:text-white transition-colors"
             >
               Terms of Service

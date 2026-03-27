@@ -136,7 +136,7 @@ const Footer: React.FC = () => {
                         {storeFormData?.StoreCategory.slice(0, 5).map((cat) => (
                             <li key={cat.id}>
                                 <NavLink
-                                    href={`/industries/${cat.categoryId}`}
+                                    href={`/media/industries/${cat.categoryId}`}
                                     className="text-gray-600 hover:text-indigo-600 transition-colors"
                                 >
                                     {cat.displayName}
@@ -162,7 +162,7 @@ const Footer: React.FC = () => {
                         </li>
                         <li>
                             <NavLink
-                                href={`/solutions`}
+                                href={`/media/solutions`}
                                 className="text-gray-600 hover:text-indigo-600 transition-colors"
                             >
                                 Solutions
@@ -170,7 +170,7 @@ const Footer: React.FC = () => {
                         </li>
                         <li>
                             <NavLink
-                                href={`/insights`}
+                                href={`/media/insights`}
                                 className="text-gray-600 hover:text-indigo-600 transition-colors"
                             >
                                 Insights
@@ -178,7 +178,7 @@ const Footer: React.FC = () => {
                         </li>
                         <li>
                             <NavLink
-                                href={`/about`}
+                                href={`/media/about`}
                                 className="text-gray-600 hover:text-indigo-600 transition-colors"
                             >
                                 About Us
@@ -186,7 +186,7 @@ const Footer: React.FC = () => {
                         </li>
                         <li>
                             <NavLink
-                                href={`/contact`}
+                                href={`/media/contact`}
                                 className="text-gray-600 hover:text-indigo-600 transition-colors"
                             >
                                 Contact
@@ -224,7 +224,7 @@ const Footer: React.FC = () => {
                     <ul className="space-y-3 text-sm">
                         <li>
                             <NavLink
-                                href={`/privacy`}
+                                href={`/media/privacy`}
                                 className="text-gray-600 hover:text-indigo-600 transition-colors"
                             >
                                 Privacy Policy
@@ -232,7 +232,7 @@ const Footer: React.FC = () => {
                         </li>
                         <li>
                             <NavLink
-                                href={`/terms`}
+                                href={`/media/terms`}
                                 className="text-gray-600 hover:text-indigo-600 transition-colors"
                             >
                                 Terms of Service

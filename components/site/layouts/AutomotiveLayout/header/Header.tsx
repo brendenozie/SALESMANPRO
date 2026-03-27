@@ -47,9 +47,9 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
   );
 
   const navItems = [
-    { label: "Inventory", href: "/listings" },
-    { label: "Collections", href: "/categories" },
-    { label: "Services", href: "/services" },
+    { label: "Inventory", href: "/automotive/listings" },
+    { label: "Collections", href: "/automotive/categories" },
+    { label: "Services", href: "/automotive/services" },
   ];
 
   return (
@@ -62,7 +62,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
           
           {/* 1. BRANDING */}
           <div className="flex items-center gap-12">
-            <Link href={`/site/${data.slug}`} className="relative group">
+            <Link href={`/`} className="relative group">
               {data.logoUrl ? (
                 <div className="relative h-10 w-32 transition-transform duration-500 group-hover:scale-110">
                   <Image
@@ -93,7 +93,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
               {navItems.map((item) => (
                 <Link
                   key={item.label}
-                  href={`/site/${data.slug}${item.href}`}
+                  href={`${item.href}`}
                   className="text-[11px] font-black uppercase tracking-[0.2em] text-white/60 hover:text-white transition-colors"
                 >
                   {item.label}
@@ -142,7 +142,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                 </button>
               ) : (
                 <button
-                  onClick={() => router.push(`/site/${data.slug}/automotive/profile`)}
+                  onClick={() => router.push(`//automotive/profile`)}
                   className="group flex items-center gap-3"
                 >
                   <div className="text-right">

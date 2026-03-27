@@ -47,7 +47,7 @@ export default function Header() {
   }, []);
 
     const handleUserAction = () => {
-      if (!user) return router.push(`/${slug}/courses/login`);
+      if (!user) return router.push(`/courses/login`);
       user.role?.toLowerCase() === 'admin' ? router.push('/dashboards') : router.push(`/admin/${user.id}`);
     };
 

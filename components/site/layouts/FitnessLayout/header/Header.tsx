@@ -55,9 +55,9 @@ export default function Header() {
   }, []);
 
   const navLinks = [
-    { name: "Programs", href: "#programs" },
-    { name: "Trainers", href: "#trainers" },
-    { name: "Membership", href: "#pricing" },
+    { name: "Programs", href: "/#programs" },
+    { name: "Trainers", href: "/#trainers" },
+    { name: "Membership", href: "/#pricing" },
     { name: "Contact", href: "#contact" },
   ];
 
@@ -68,7 +68,7 @@ export default function Header() {
       window.location.href = url.toString();
       return;
     }
-    router.push(user.role === "admin" ? "/dashboards" : "/fitnessecommerce/profile");
+    router.push(user.role === "admin" ? "/dashboards" : "/fitness/profile");
   };
 
   return (
@@ -82,7 +82,7 @@ export default function Header() {
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* LOGO SECTION */}
-        <Link href={`/${slug}`} className="relative z-10">
+        <Link href={`/`} className="relative z-10">
           {logoUrl ? (
             <Image
               src={logoUrl}
@@ -104,7 +104,7 @@ export default function Header() {
           {navLinks.map((link) => (
             <Link
               key={link.name}
-              href={`/${slug}${link.href}`}
+              href={`/${link.href}`}
               className="px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest text-gray-300 hover:text-white hover:bg-white/10 transition-all"
             >
               {link.name}
@@ -187,7 +187,7 @@ export default function Header() {
                   key={link.name}
                 >
                   <Link
-                    href={`/${slug}${link.href}`}
+                    href={`/${link.href}`}
                     onClick={() => setMobileOpen(false)}
                     className="text-4xl font-black text-white uppercase italic tracking-tighter hover:text-orange-500 transition-colors"
                   >

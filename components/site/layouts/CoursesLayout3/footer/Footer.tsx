@@ -43,7 +43,7 @@ export default function Footer() {
           
           {/* 1. Brand Identity (4 cols) */}
           <div className="lg:col-span-4 space-y-6">
-            <Link href={`/${slug}`} className="group flex items-center gap-2">
+            <Link href={``} className="group flex items-center gap-2">
               <span className="text-2xl font-black tracking-tighter transition-colors group-hover:text-gray-300">
                 {name}<span style={{ color: primaryColor }}>.</span>
               </span>
@@ -74,7 +74,7 @@ export default function Footer() {
               {['Home', 'Courses', 'FAQs', 'Contact'].map((item) => (
                 <li key={item}>
                   <Link 
-                    href={item === 'Home' ? `/` : `/${slug}/courses/${item.toLowerCase()}`}
+                    href={item === 'Home' ? `/` : `/courses/${item.toLowerCase()}`}
                     className="group flex items-center text-gray-300 hover:text-white transition-all text-sm font-medium"
                   >
                     <ChevronRightIcon className="h-3 w-3 mr-2 opacity-0 -ml-5 group-hover:opacity-100 group-hover:ml-0 transition-all" style={{ color: primaryColor }} />
@@ -92,7 +92,7 @@ export default function Footer() {
               {StoreCategory?.slice(0, 4).map((cat: any) => (
                 <li key={cat.id}>
                   <Link
-                    href={`/${slug}/courses/category/${cat.id}`}
+                    href={`/courses/category/${cat.id}`}
                     className="group flex items-center text-gray-300 hover:text-white transition-all text-sm font-medium"
                   >
                     <ChevronRightIcon className="h-3 w-3 mr-2 opacity-0 -ml-5 group-hover:opacity-100 group-hover:ml-0 transition-all" style={{ color: primaryColor }} />

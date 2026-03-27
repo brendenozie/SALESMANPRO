@@ -31,7 +31,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* ── About & Logo ── */}
         <div className="space-y-4">
-          <Link href={`/${slug}`} className="inline-flex items-center space-x-2">
+          <Link href={`/`} className="inline-flex items-center space-x-2">
             <span
               className="text-2xl font-extrabold text-white"
               style={{ textShadow: "1px 1px rgba(0,0,0,0.2)" }}
@@ -66,7 +66,7 @@ export default function Footer() {
           <ul className="space-y-3">
             <li>
               <Link
-                href={`/${slug}`}
+                href={`/`}
                 className="flex items-center text-gray-400 hover:text-white transition-colors"
               >
                 <HomeIcon className="h-5 w-5 mr-2" />
@@ -75,7 +75,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/${slug}/listings`}
+                href={`/realestate/listings`}
                 className="flex items-center text-gray-400 hover:text-white transition-colors"
               >
                 <BuildingOfficeIcon className="h-5 w-5 mr-2" />
@@ -84,7 +84,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/${slug}/about`}
+                href={`/realestate/about`}
                 className="flex items-center text-gray-400 hover:text-white transition-colors"
               >
                 <InformationCircleIcon className="h-5 w-5 mr-2" />
@@ -93,7 +93,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/${slug}/contact`}
+                href={`/realestate/contact`}
                 className="flex items-center text-gray-400 hover:text-white transition-colors"
               >
                 <BuildingStorefrontIcon className="h-5 w-5 mr-2" />
@@ -160,13 +160,13 @@ export default function Footer() {
           <p>© {new Date().getFullYear()} {name}. All rights reserved.</p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <Link
-              href={`/${slug}/privacy`}
+              href={`/realestate/privacy`}
               className="hover:text-white transition-colors"
             >
               Privacy Policy
             </Link>
             <Link
-              href={`/${slug}/terms`}
+              href={`/realestate/terms`}
               className="hover:text-white transition-colors"
             >
               Terms of Service

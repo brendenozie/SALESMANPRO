@@ -33,20 +33,20 @@ export default function Footer() {
 
   // Define navigation links dynamically
   const navLinks = [
-    { label: "Home", href: `/${slug}` },
-    { label: "Menu", href: `/${slug}/restaurent/products` },
-    { label: "Reserve", href: `/${slug}/restaurent/reserve` },
-    { label: "About Us", href: `/${slug}/restaurent/about` },
-    { label: "Contact", href: `/${slug}/#contact` },
-    { label: "Gallery", href: `/${slug}/restaurent/gallery` }, // Added Gallery link
+    { label: "Home", href: `` },
+    { label: "Menu", href: `/restaurent/products` },
+    { label: "Reserve", href: `/restaurent/reserve` },
+    { label: "About Us", href: `/restaurent/about` },
+    { label: "Contact", href: `/#contact` },
+    { label: "Gallery", href: `/restaurent/gallery` }, // Added Gallery link
   ];
 
   // Define sample menu categories (replace with actual data if available)
   const menuCategories = [
-    { label: "Appetizers", href: `/${slug}/restaurent/products?category=appetizers` },
-    { label: "Main Courses", href: `/${slug}/restaurent/products?category=main-courses` },
-    { label: "Desserts", href: `/${slug}/restaurent/products?category=desserts` },
-    { label: "Drinks", href: `/${slug}/restaurent/products?category=drinks` },
+    { label: "Appetizers", href: `/restaurent/products?category=appetizers` },
+    { label: "Main Courses", href: `/restaurent/products?category=main-courses` },
+    { label: "Desserts", href: `/restaurent/products?category=desserts` },
+    { label: "Drinks", href: `/restaurent/products?category=drinks` },
   ];
 
   return (
@@ -216,20 +216,20 @@ export default function Footer() {
           </p>
           <div className="flex flex-wrap justify-center space-x-4">
             <Link
-              href={`/${slug}/restaurent/privacy`}
+              href={`/restaurent/privacy`}
               className="hover:text-white transition-colors"
             >
               Privacy Policy
             </Link>
             <Link
-              href={`/${slug}/restaurent/terms`}
+              href={`/restaurent/terms`}
               className="hover:text-white transition-colors"
             >
               Terms of Service
             </Link>
             {/* Add more legal/utility links here */}
             <Link
-              href={`/${slug}/restaurent/sitemap`}
+              href={`/restaurent/sitemap`}
               className="hover:text-white transition-colors"
             >
               Sitemap

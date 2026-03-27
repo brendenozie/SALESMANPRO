@@ -57,7 +57,7 @@ export default function Header() {
     if (user.role?.toLowerCase() === "admin") {
       router.push("/dashboards");
     } else {
-      router.push(`/nonprofit/profile`);
+      router.push(`/healthcare/profile`);
     }
   };
 
@@ -76,12 +76,12 @@ export default function Header() {
   const secondary = themeSettings?.secondaryColor || DEFAULT_SECONDARY_COLOR;
 
   const navItems = [
-    { label: 'Home', href: `/site/${slug}` },
-    { label: 'Services', href: `/site/${slug}#services` },
-    { label: 'Doctors', href: `/site/${slug}#doctors` },
-    { label: 'About Us', href: `/site/${slug}#about` },
-    { label: 'FAQs', href: `/site/${slug}#faqs` },
-    { label: 'Contact', href: `/site/${slug}#contact` },
+    { label: 'Home', href: `/` },
+    { label: 'Services', href: `/#services` },
+    { label: 'Doctors', href: `/#doctors` },
+    { label: 'About Us', href: `/#about` },
+    { label: 'FAQs', href: `/#faqs` },
+    { label: 'Contact', href: `/#contact` },
   ];
 
   useEffect(() => {

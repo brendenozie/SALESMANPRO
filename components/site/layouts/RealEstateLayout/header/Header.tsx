@@ -161,7 +161,7 @@ export default function Header() {
           ].map((item) => (
             <Link
               key={item.label}
-              href={`/${slug}${item.path}`}
+              href={`/${item.path}`}
               className="relative text-gray-700 uppercase tracking-wide font-medium text-lg group hover:text-emerald-600"
             >
               {item.label}
