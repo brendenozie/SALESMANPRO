@@ -1,460 +1,367 @@
-// ----------------------
-// Client component (enhanced)
-// ----------------------
-
 /* eslint-disable react-hooks/rules-of-hooks */
 'use client';
 
-import React, { useMemo, useState, useRef, useEffect } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { StarIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/solid';
+import { 
+  StarIcon, 
+  PlusIcon, 
+  MinusIcon, 
+  ChevronRightIcon, 
+  ChevronLeftIcon,
+  ShieldCheckIcon,
+  MapPinIcon
+} from '@heroicons/react/24/solid';
+import { 
+  CpuChipIcon, 
+  BeakerIcon, 
+  FireIcon, 
+  WrenchIcon 
+} from '@heroicons/react/24/outline';
 import { useStateContext } from '@/contexts/ContextProvider';
 import ProductCard from '@/components/site/layouts/EcommerceLayout/body/components/ProductCard';
-import { MarketListingForm, StoreForm } from '@/types/typings';
-
-type ImageObj = { url: string };
+import { MarketListingForm } from '@/types/typings';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-function GallerySkeleton() {
-  return (
-    <div className="space-y-4">
-      <div className="w-full h-[420px] bg-gray-200 dark:bg-gray-700 rounded-2xl animate-pulse" />
-      <div className="flex gap-3 mt-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-export function ProductDetail({
-  product,
-  related,
-}: {
-  product: MarketListingForm;
-  related: MarketListingForm[];
-}) {
+export function ProductDetail({ product, related }: { product: MarketListingForm; related: MarketListingForm[] }) {
   const { addToCart, decreaseQuantity, cart } = useStateContext();
   const [mainIndex, setMainIndex] = useState(0);
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isSpecsOpen, setIsSpecsOpen] = useState(true);
 
-  // Loading states
-  const [mainLoaded, setMainLoaded] = useState(false);
-  const [thumbsLoaded, setThumbsLoaded] = useState<Record<number, boolean>>({});
-
-  // Touch/swipe refs
-  const touchStartX = useRef<number | null>(null);
-  const touchCurrentX = useRef<number | null>(null);
-
-  // Pinch-to-zoom refs
-  const lastPinchDistance = useRef<number | null>(null);
-  const [lightboxScale, setLightboxScale] = useState(1);
-  const [lightboxTranslate, setLightboxTranslate] = useState({ x: 0, y: 0 });
-  const dragging = useRef(false);
-
-  const primary = '#10B981';
-  const secondary = '#3B82F6';
-
+  const accentColor = '#F97316'; // Heavy Hazard Orange
   const quantity = useMemo(() => cart.find((c: any) => c.id === product.id)?.quantity || 0, [cart, product.id]);
+  const currentImages = (product.images as any[])?.length ? product.images : [{ url: '/placeholder-moto.png' }];
+  const currentImage = currentImages[mainIndex]?.url;
 
-  // --- Variant handling ---
-  // Expected product.variants shape (defensive):
-  // [{ name: 'Color', values: ['Red','Blue'], stocks: { 'Red|S': 10 }, imagesByVariant: { 'Red': [url1,url2] } }, ...]
-  // const variants = (product.variants as any[]) || [];
-  // const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>(() => {
-  //   const init: Record<string, string> = {};
-  //   (variants || []).forEach(v => {
-  //     if (v?.values?.length) init[v.name] = v.values[0];
-  //   });
-  //   return init;
-  // });
+  const [deposit, setDeposit] = useState((product.finalPrice || 0) * 0.3);
+  const [months, setMonths] = useState(18);
 
-  // compute stock for current selection if product.variantStocks exists or variant stocks map
-  // const computeStock = () => {
-  //   // try multiple places defensively
-  //   const stockMap = (product.variantStocks as Record<string, number>) || product.stocks || {};
-  //   if (!stockMap || Object.keys(stockMap).length === 0) return undefined;
-  //   const key = Object.values(selectedVariants).join('|');
-  //   return stockMap[key] ?? stockMap[Object.entries(selectedVariants).map(([k, v]) => `${k}:${v}`).join('|')] ?? undefined;
-  // };
-
-  const stockForSelection = 500 ;//computeStock();
-
-  // Variant-based images: look for images keyed by variant value
-  // product.imagesByVariant?: { Color: { Red: [imgObj], Blue: [...] }, Size: {...} }
-  // const variantImages = (product.imagesByVariant as Record<string, Record<string, ImageObj[]>>) || {};
-
-  const currentImages = useMemo(() => {
-    // prefer exact variant mapping e.g. imagesByVariant.Color.Red
-    // const colorVariantName = Object.keys(variantImages)[0];
-    // if (colorVariantName) {
-    //   const selectedValue = selectedVariants[colorVariantName];
-    //   const imgs = variantImages[colorVariantName]?.[selectedValue];
-    //   if (imgs && imgs.length) return imgs;
-    // }
-    // fallback to product.images
-    return (product.images as ImageObj[])?.length ? (product.images as ImageObj[]) : [{ url: '/placeholder-image.png' }];
-  }, [product.images]);//variantImages,selectedVariants
-
-  useEffect(() => {
-    // reset main index when images list changes
-    setMainIndex(0);
-  }, [currentImages]);
-
-  const currentImage = product.images[mainIndex]?.url || '/placeholder-image.png';
-
-  const handleAddToCart = () => {
-    // include variants in payload
-    addToCart({...product, finalPrice: product.finalPrice ?? product.sellingPrice}); //selectedVariants
-  };
-
-  const handleDecreaseQuantity = () => decreaseQuantity(product.id);
-
-  // --- Swipe handlers for gallery and lightbox navigation ---
-  const onTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 1) {
-      touchStartX.current = e.touches[0].clientX;
-      touchCurrentX.current = e.touches[0].clientX;
-    }
-    // start pinch tracking
-    if (e.touches.length === 2) {
-      const d = distance(e.touches[0], e.touches[1]);
-      lastPinchDistance.current = d;
-    }
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length === 1 && touchStartX.current != null) {
-      touchCurrentX.current = e.touches[0].clientX;
-    }
-    if (e.touches.length === 2) {
-      // pinch zoom handling
-      const d = distance(e.touches[0], e.touches[1]);
-      if (lastPinchDistance.current) {
-        const scaleChange = d / lastPinchDistance.current;
-        setLightboxScale(prev => Math.min(4, Math.max(1, prev * scaleChange)));
-      }
-      lastPinchDistance.current = d;
-    }
-  };
-
-  const onTouchEnd = () => {
-    if (touchStartX.current != null && touchCurrentX.current != null) {
-      const dx = touchCurrentX.current - touchStartX.current;
-      const threshold = 50; // px
-      if (dx > threshold) {
-        // swipe right -> previous
-        setMainIndex(i => Math.max(0, i - 1));
-      } else if (dx < -threshold) {
-        // swipe left -> next
-        setMainIndex(i => Math.min(currentImages.length - 1, i + 1));
-      }
-    }
-    touchStartX.current = null;
-    touchCurrentX.current = null;
-    lastPinchDistance.current = null;
-  };
-
-  // Helpers
-  function distance(a: React.Touch, b: React.Touch) {
-      const dx = a.clientX - b.clientX;
-      const dy = a.clientY - b.clientY;
-      return Math.sqrt(dx * dx + dy * dy);
-    }
-
-  // Lightbox pointer handlers for drag/pan
-  const lbStart = (e: React.PointerEvent) => {
-    (e.target as Element).setPointerCapture?.(e.pointerId);
-    dragging.current = true;
-  };
-  const lbMove = (e: React.PointerEvent) => {
-    if (!dragging.current) return;
-    setLightboxTranslate(prev => ({ x: prev.x + e.movementX, y: prev.y + e.movementY }));
-  };
-  const lbEnd = (e: React.PointerEvent) => {
-    (e.target as Element).releasePointerCapture?.(e.pointerId);
-    dragging.current = false;
-  };
-
-  // thumbnail load handler
-  const onThumbLoad = (idx: number) => setThumbsLoaded(s => ({ ...s, [idx]: true }));
-  const onMainLoad = () => setMainLoaded(true);
-
-  // Related carousel scroll
-  const relRef = useRef<HTMLDivElement | null>(null);
-  const scrollRelated = (dir: 'left' | 'right') => {
-    const el = relRef.current;
-    if (!el) return;
-    const amount = el.clientWidth * 0.7;
-    el.scrollBy({ left: dir === 'left' ? -amount : amount, behavior: 'smooth' });
-  };
-
-  // SEO title/description (best-effort client-side; server metadata preferred)
-  const title = `${product.name} — ${'Store'}`; //product.company?.name || 
-  const description = product.description || `${product.name} available now.`;
-
-  // Variants UI helper
-  // const handleVariantClick = (name: string, value: string) => setSelectedVariants(prev => ({ ...prev, [name]: value }));
+  const monthlyPayment = useMemo(() => {
+    const principal = (product.finalPrice || 0) - deposit;
+    const interest = 1.15; // 15% flat interest for example
+    return (principal * interest) / months;
+  }, [deposit, months, product.finalPrice]);
 
   return (
-    <>
+    <div className="bg-[#0A0A0A] text-zinc-100 min-h-screen font-sans selection:bg-orange-500">
       <Head>
-        <title>{title}</title>
-        <meta name="description" content={description} />
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        <meta property="og:image" content={currentImage} />
+        <title>{product.name} | Motorcycle Duka</title>
       </Head>
 
-      {/* Breadcrumb */}
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-sm text-gray-600 dark:text-gray-300 mt-8">
-        <ol className="flex items-center gap-2">
-          <li className="cursor-pointer hover:underline">Home</li>
-          <li>/</li>
-          <li className="cursor-pointer hover:underline">{product.productCategory?.name || 'Category'}</li>
-          <li>/</li>
-          <li className="font-semibold">{product.name}</li>
-        </ol>
-      </nav>
+      {/* HERO SECTION */}
+      <div className="relative pt-20 pb-12 overflow-hidden">
+        {/* Background "Speed" Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-orange-500/10 blur-[120px] rounded-full pointer-events-none" />
+        
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+          
+          {/* LEFT: CINEMATIC SHOWCASE */}
+          <div className="lg:col-span-7 space-y-8">
+            <div className="relative aspect-[16/10] group rounded-[2.5rem] bg-gradient-to-b from-zinc-900 to-black border border-zinc-800 p-8">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={mainIndex}
+                  initial={{ opacity: 0, scale: 0.9, rotateY: 10 }}
+                  animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+                  exit={{ opacity: 0, scale: 1.1, rotateY: -10 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  className="relative w-full h-full"
+                >
+                  <Image
+                    src={currentImage}
+                    alt={product.name}
+                    loader={loader}
+                    fill
+                    className="object-contain drop-shadow-[0_30px_60px_rgba(0,0,0,0.8)]"
+                    priority
+                  />
+                </motion.div>
+              </AnimatePresence>
 
-      <div className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-black text-gray-900 dark:text-gray-100 min-h-screen mt-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-          {/* Left: Gallery */}
-          <div className="lg:sticky lg:top-8">
-            {!mainLoaded && <GallerySkeleton />}
-
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentImage + '-' + mainIndex}
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: mainLoaded ? 1 : 0, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
-                transition={{ duration: 0.28 }}
-                className={`relative w-full aspect-[4/3] md:aspect-square rounded-2xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 ${mainLoaded ? '' : 'hidden'}`}
-                onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
-                onTouchEnd={onTouchEnd}
-                onPointerDown={lbStart}
-                onPointerMove={lbMove}
-                onPointerUp={lbEnd}
+              {/* Navigation Arrows */}
+              <button 
+                onClick={() => setMainIndex(prev => Math.max(0, prev - 1))}
+                className="absolute left-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-all opacity-0 group-hover:opacity-100"
               >
-                <Image
-                  src={currentImage}
-                  alt={product.name}
-                  loader={loader}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  className="object-contain"
-                  priority={true}
-                  onLoadingComplete={onMainLoad}
-                />
+                <ChevronLeftIcon className="w-6 h-6" />
+              </button>
+              <button 
+                onClick={() => setMainIndex(prev => Math.min(currentImages.length - 1, prev + 1))}
+                className="absolute right-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-all opacity-0 group-hover:opacity-100"
+              >
+                <ChevronRightIcon className="w-6 h-6" />
+              </button>
+            </div>
 
-                {/* open lightbox */}
-                <button
-                  aria-label="Open image viewer"
-                  className="absolute inset-0 w-full h-full"
-                  onClick={() => {
-                    setIsLightboxOpen(true);
-                    setLightboxScale(1);
-                    setLightboxTranslate({ x: 0, y: 0 });
-                  }}
-                />
-              </motion.div>
-            </AnimatePresence>
-
-            <div className="flex mt-4 gap-3 overflow-x-auto pb-2">
-              {currentImages.map((img: ImageObj, idx: number) => (
+            {/* Thumbnail Strip */}
+            <div className="flex gap-4 overflow-x-auto pb-4 px-2">
+              {currentImages.map((img: any, idx: number) => (
                 <button
                   key={idx}
                   onClick={() => setMainIndex(idx)}
-                  aria-label={`Show image ${idx + 1}`}
-                  className={`relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 transition-transform transform ${idx === mainIndex ? 'scale-105 ring-4 ring-offset-2' : 'ring-1'}`}
-                  style={idx === mainIndex ? { boxShadow: `0 6px 20px rgba(0,0,0,0.08)`, borderColor: primary } : {}}
+                  className={`relative min-w-[100px] h-20 rounded-2xl overflow-hidden border-2 transition-all ${
+                    idx === mainIndex ? 'border-orange-500 scale-105 shadow-[0_0_20px_rgba(249,115,22,0.3)]' : 'border-zinc-800 opacity-40'
+                  }`}
                 >
-                  <Image src={img.url} alt={`${product.name}-${idx}`} loader={loader} fill sizes="96px" className="object-cover" onLoadingComplete={() => onThumbLoad(idx)} />
-                  {!thumbsLoaded[idx] && <div className="absolute inset-0 bg-white/60 dark:bg-black/30 animate-pulse" />}
+                  <Image src={img.url} alt="thumbnail" fill className="object-cover" loader={loader} />
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Right: Details */}
-          <div className="space-y-6 p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700">
-            <div>
-              <h1 className="text-3xl lg:text-4xl font-extrabold leading-tight">{product.name}</h1>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-300">{"Store"}</p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="flex items-center">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <StarIcon key={i} className={`h-5 w-5 ${i < 4 ? 'text-yellow-400' : 'text-gray-300'}`} />
-                ))}
+          {/* RIGHT: THE SPECS SHEET */}
+          <div className="lg:col-span-5 space-y-10">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-orange-500/10 border border-orange-500/20 rounded-full text-orange-500 text-[10px] font-bold uppercase tracking-widest">
+                <FireIcon className="w-3 h-3" /> In Stock & Ready to Ride
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">(No reviews yet)</div>
-            </div>
-
-            <div className="flex items-end gap-4">
-              <div className="text-4xl font-extrabold" style={{ color: primary }}>
-                {product.finalPrice?.toFixed(2) ?? '0.00'}
-              </div>
-
-              {typeof product.sellingPrice === 'number' && product.sellingPrice > (product.finalPrice || 0) && (
-                <div className="flex items-center gap-2">
-                  <div className="text-lg line-through text-gray-500 dark:text-gray-400">{product.sellingPrice.toFixed(2)}</div>
-                  <div className="px-3 py-1 bg-red-500 text-white rounded-full text-sm font-semibold">-{Math.round(((product.sellingPrice - (product.finalPrice || 0)) / product.sellingPrice) * 100)}%</div>
+              <h1 className="text-6xl font-black italic tracking-tighter leading-none uppercase italic">
+                {product.name}
+              </h1>
+              <div className="flex items-center gap-6">
+                <div className="text-5xl font-black text-white">
+                  KSh {product.finalPrice?.toLocaleString()}
                 </div>
-              )}
+                {product.sellingPrice > product.finalPrice && (
+                  <div className="text-xl text-zinc-500 line-through">KSh {product.sellingPrice}</div>
+                )}
+              </div>
             </div>
 
-            <div className="text-gray-700 dark:text-gray-300 leading-relaxed">{product.description ?? 'No description available.'}</div>
-
-            {/* VARIANTS */}
-            {/* {variants && variants.length > 0 && (
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                {variants.map((v: any) => (
-                  <div key={v.name} className="mb-4">
-                    <div className="flex items-center justify-between">
-                      <div className="font-medium">{v.name}</div>
-                      <div className="text-sm text-gray-500">{v?.description ?? ''}</div>
-                    </div>
-                    <div className="mt-3 flex gap-2 flex-wrap">
-                      {v.values.map((val: string) => {
-                        const isSelected = selectedVariants[v.name] === val;
-                        const stockKey = Object.values({ ...selectedVariants, [v.name]: val }).join('|');
-                        const stock = (product.variantStocks as Record<string, number>)?.[stockKey];
-                        return (
-                          <button
-                            key={val}
-                            onClick={() => handleVariantClick(v.name, val)}
-                            className={`px-4 py-2 rounded-xl border transition ${isSelected ? 'bg-black text-white' : 'bg-white text-black border-gray-300'}`}
-                          >
-                            {val} {typeof stock === 'number' ? `· ${stock} left` : ''}
-                          </button>
-                        );
-                      })}
-                    </div>
+            {/* Tech Specs Bento Grid */}
+            <div className="grid grid-cols-2 gap-px bg-zinc-800 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl">
+              {[
+                { label: 'Engine', val: '150cc Air-Cooled', icon: <CpuChipIcon className="w-4 h-4" /> },
+                { label: 'Fuel Tank', val: '12.5 Liters', icon: <BeakerIcon className="w-4 h-4" /> },
+                { label: 'Max Torque', val: '11.5 Nm', icon: <FireIcon className="w-4 h-4" /> },
+                { label: 'Service', val: 'Free 1st Service', icon: <WrenchIcon className="w-4 h-4" /> },
+              ].map((s, i) => (
+                <div key={i} className="bg-[#0F0F0F] p-5 space-y-1">
+                  <div className="flex items-center gap-2 text-zinc-500 font-bold uppercase text-[10px] tracking-widest">
+                    {s.icon} {s.label}
                   </div>
-                ))}
-
-                {/* show selected stock (if available) */}
-                {/* {typeof stockForSelection === 'number' && <div className="text-sm text-gray-600">Stock for selected options: <strong>{stockForSelection}</strong></div>}
-              </div>
-            )} */} 
-
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              {quantity > 0 ? (
-                <div className="flex items-center gap-4">
-                  <motion.button whileTap={{ scale: 0.95 }} onClick={handleDecreaseQuantity} className="p-3 bg-gray-100 dark:bg-gray-700 rounded-full">
-                    <MinusIcon className="h-5 w-5 text-gray-700 dark:text-gray-200" />
-                  </motion.button>
-
-                  <div className="text-lg font-bold">{quantity}</div>
-
-                  <motion.button whileTap={{ scale: 0.95 }} onClick={handleAddToCart} className="p-3 bg-gray-100 dark:bg-gray-700 rounded-full">
-                    <PlusIcon className="h-5 w-5 text-gray-700 dark:text-gray-200" />
-                  </motion.button>
+                  <div className="text-lg font-black italic">{s.val}</div>
                 </div>
-              ) : (
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleAddToCart}
-                  className="w-full py-3 rounded-xl font-bold text-white text-lg shadow"
-                  style={{ background: `linear-gradient(135deg, ${primary}, ${secondary})` }}
-                >
-                  Add to Cart
-                </motion.button>
-              )}
+              ))}
             </div>
 
-            {/* Small meta area */}
-            <div className="flex items-center gap-4 text-sm text-gray-500">
-              <div>SKU: {product.id?.substring(0, 6).toUpperCase()}</div>
-              <div className="hidden sm:block">Category: {product.productCategory?.name ?? '—'}</div>
-              <div className="ml-auto">{''}</div>
-              {/* product.shippingInfo ?? */}
+            {/* Main Action Area */}
+            <div className="p-8 bg-gradient-to-br from-zinc-900 to-black rounded-[2.5rem] border border-zinc-800 space-y-6">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-bold text-zinc-400">Monthly Installments from</span>
+                <span className="text-xl font-black text-orange-500 underline decoration-2 underline-offset-4 cursor-pointer">KSh 4,500/mo</span>
+              </div>
+
+              <div className="flex gap-4">
+                {quantity > 0 ? (
+                  <div className="flex-1 flex items-center justify-between bg-zinc-800 p-2 rounded-2xl h-16">
+                    <button onClick={() => decreaseQuantity(product.id)} className="w-12 h-12 bg-zinc-700 rounded-xl flex items-center justify-center hover:bg-zinc-600">
+                      <MinusIcon className="w-5 h-5" />
+                    </button>
+                    <span className="text-2xl font-black italic">{quantity}</span>
+                    <button onClick={() => addToCart(product)} className="w-12 h-12 bg-orange-600 rounded-xl flex items-center justify-center hover:bg-orange-500">
+                      <PlusIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                ) : (
+                  <motion.button
+                    whileHover={{ scale: 1.02, x: 5 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => addToCart(product)}
+                    className="flex-1 h-16 bg-white text-black rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-3 transition-colors hover:bg-orange-500 hover:text-white"
+                  >
+                    Take it Home
+                    <ChevronRightIcon className="w-5 h-5" />
+                  </motion.button>
+                )}
+              </div>
+            </div>
+
+            {/* Confidence Badges */}
+            <div className="flex items-center justify-center gap-8 text-[10px] font-black uppercase text-zinc-500 tracking-widest">
+              <div className="flex items-center gap-2"><ShieldCheckIcon className="w-4 h-4 text-orange-500" /> Genuine Parts</div>
+              <div className="flex items-center gap-2"><MapPinIcon className="w-4 h-4 text-orange-500" /> Delivery Across Kenya</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+                {/* INTERACTIVE SALES ENGINE */}
+      <section className="max-w-7xl mx-auto px-6 py-20 grid grid-cols-1 lg:grid-cols-2 gap-12">
+        
+        {/* LOAN CALCULATOR */}
+        <div className="p-10 bg-gradient-to-br from-zinc-900 to-black rounded-[3rem] border border-zinc-800 relative overflow-hidden group">
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-orange-500/10 blur-[100px] rounded-full pointer-events-none" />
+          
+          <div className="relative space-y-8">
+            <div className="space-y-2">
+              <h3 className="text-3xl font-black italic uppercase tracking-tighter">Finance Your Machine</h3>
+              <p className="text-zinc-500 text-sm font-bold uppercase tracking-widest leading-none">Own it today, pay as you ride</p>
+            </div>
+
+            <div className="space-y-6">
+              {/* Deposit Slider */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-end">
+                  <span className="text-xs font-black uppercase text-zinc-400">Initial Deposit</span>
+                  <span className="text-xl font-black text-orange-500 italic">KSh {deposit.toLocaleString()} <span className="text-[10px] text-zinc-500 opacity-50">(30%)</span></span>
+                </div>
+                <input type="range" className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-orange-500" onChange={(e) => setDeposit(parseFloat(e.target.value))} />
+              </div>
+
+              {/* Duration Selection */}
+              <div className="space-y-4">
+                <span className="text-xs font-black uppercase text-zinc-400">Repayment Period</span>
+                <div className="grid grid-cols-3 gap-3">
+                  {[ '12 Months', '18 Months', '24 Months' ].map((m) => (
+                    <button
+                      key={m}
+                      onClick={() => setMonths(parseInt(m))}
+                      className={`py-2 rounded-2xl border transition-colors ${
+                        months === parseInt(m) ? 'bg-orange-500 text-white border-orange-500' : 'bg-zinc-800 text-zinc-400 border-zinc-800 hover:bg-zinc-700'
+                      }`}
+                    >
+                      {m}
+                    </button>
+                    
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-8 border-t border-zinc-800 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase text-zinc-500">Estimated Monthly</p>
+                <p className="text-4xl font-black italic text-white">KSh {monthlyPayment.toLocaleString()}</p>
+              </div>
+              <button className="h-14 px-8 bg-zinc-800 hover:bg-zinc-700 text-white rounded-2xl font-black uppercase text-xs tracking-widest transition-colors">
+                Get Pre-Approved
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Related products carousel */}
-        {related && related.length > 0 && (
-          <div className="bg-gray-50 dark:bg-gray-900 py-10">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold">You might also like</h2>
-                <div className="flex gap-2">
-                  <button className="px-3 py-2 rounded-md border" onClick={() => scrollRelated('left')}>‹</button>
-                  <button className="px-3 py-2 rounded-md border" onClick={() => scrollRelated('right')}>›</button>
-                </div>
-              </div>
-              <div ref={relRef} className="grid grid-flow-col auto-cols-[minmax(280px,1fr)] gap-6 overflow-x-auto pb-4 scroll-smooth">
-                {related.map(r => (
-                  <div key={r.id} className="min-w-[280px]">
-                    <ProductCard product={r as any} />
+        {/* TEST RIDE BOOKING */}
+        <div className="p-10 bg-orange-600 rounded-[3rem] text-white flex flex-col justify-between relative overflow-hidden">
+          {/* Decorative Tyre Mark */}
+          <div className="absolute top-0 right-0 w-64 h-full opacity-10 pointer-events-none rotate-12 translate-x-12 scale-150">
+            <svg viewBox="0 0 100 100" className="w-full h-full fill-white">
+              <path d="M10,0 L20,0 L20,100 L10,100 Z M40,0 L50,0 L50,100 L40,100 Z M70,0 L80,0 L80,100 L70,100 Z" />
+            </svg>
+          </div>
+
+          <div className="relative space-y-6">
+            <h3 className="text-4xl font-black italic uppercase tracking-tighter leading-none">Feel the <br />Power Firsthand.</h3>
+            <p className="text-orange-100 font-bold text-sm max-w-[280px]">Book a complimentary test ride at our Nairobi or Mombasa showroom.</p>
+          </div>
+
+          <form className="relative mt-12 space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <input 
+                type="text" 
+                placeholder="Preferred Date" 
+                className="bg-orange-700/50 border border-orange-400/30 rounded-2xl p-4 text-sm font-bold placeholder:text-orange-200 focus:outline-none focus:ring-2 ring-white/20"
+              />
+              <select className="bg-orange-700/50 border border-orange-400/30 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:ring-2 ring-white/20 appearance-none">
+                <option>Nairobi Showroom</option>
+                <option>Mombasa Branch</option>
+              </select>
+            </div>
+            <input 
+              type="tel" 
+              placeholder="WhatsApp Number" 
+              className="w-full bg-white text-black rounded-2xl p-4 text-sm font-black placeholder:text-zinc-400 focus:outline-none"
+            />
+            <button className="w-full h-16 bg-black text-white rounded-2xl font-black uppercase tracking-widest hover:bg-zinc-900 transition-transform active:scale-95">
+              Secure My Slot
+            </button>
+          </form>
+        </div>
+      </section>
+
+      {/* TECHNICAL BLUEPRINT (ACCORDION) */}
+      <div className="max-w-7xl mx-auto px-6 py-20">
+        <div className="max-w-3xl">
+          <button 
+            onClick={() => setIsSpecsOpen(!isSpecsOpen)}
+            className="group flex items-center gap-6 mb-10 w-full"
+          >
+            <h2 className="text-4xl font-black italic tracking-tighter uppercase leading-none">
+              The Blueprint
+            </h2>
+            <div className="flex-1 h-px bg-zinc-800 group-hover:bg-orange-500/50 transition-colors" />
+            <div className={`p-2 rounded-full border border-zinc-800 transition-transform ${isSpecsOpen ? 'rotate-45' : ''}`}>
+              <PlusIcon className="w-6 h-6" />
+            </div>
+          </button>
+
+          <AnimatePresence>
+            {isSpecsOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-12"
+              >
+                <div className="space-y-6">
+                  <h3 className="text-orange-500 font-black italic uppercase tracking-widest text-xs">Performance</h3>
+                  <div className="space-y-4">
+                    {[
+                      ['Cooling System', 'Natural Air Cooling'],
+                      ['Transmission', '5-Speed Constant Mesh'],
+                      ['Starter', 'Self & Kick Start'],
+                    ].map(([l, v]) => (
+                      <div key={l} className="flex justify-between border-b border-zinc-800 pb-2">
+                        <span className="text-zinc-500 text-sm font-bold">{l}</span>
+                        <span className="font-black text-sm">{v}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+                <div className="space-y-6">
+                  <h3 className="text-orange-500 font-black italic uppercase tracking-widest text-xs">Chassis & Safety</h3>
+                  <div className="space-y-4">
+                    {[
+                      ['Front Brake', '240mm Petal Disc'],
+                      ['Rear Brake', '130mm Drum'],
+                      ['Frame Type', 'Single Cradle Tubular'],
+                    ].map(([l, v]) => (
+                      <div key={l} className="flex justify-between border-b border-zinc-800 pb-2">
+                        <span className="text-zinc-500 text-sm font-bold">{l}</span>
+                        <span className="font-black text-sm">{v}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* RELATED MOTORCYCLES */}
+      {related.length > 0 && (
+        <section className="bg-zinc-900/50 py-24 border-t border-zinc-800">
+          <div className="max-w-7xl mx-auto px-6">
+            <h2 className="text-3xl font-black italic uppercase tracking-tighter mb-12">More Machines</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {related.map(r => (
+                <div key={r.id} className="group cursor-pointer">
+                  <div className="relative aspect-square bg-black rounded-[2rem] border border-zinc-800 overflow-hidden mb-4 p-6">
+                    <Image src={r.images[0]?.url || r.images[0]} alt={r.name} fill className="object-contain p-4 group-hover:scale-110 transition-transform duration-500" loader={loader} />
+                  </div>
+                  <h4 className="font-black uppercase italic text-sm group-hover:text-orange-500 transition-colors">{r.name}</h4>
+                  <p className="text-zinc-500 font-bold text-xs mt-1">KSh {r.finalPrice?.toLocaleString()}</p>
+                </div>
+              ))}
             </div>
           </div>
-        )}
-
-        {/* LIGHTBOX */}
-        <AnimatePresence>
-          {isLightboxOpen && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-              <div className="relative max-w-[1200px] w-full h-[80vh] flex items-center justify-center">
-                <div
-                  className="relative w-full h-full bg-black rounded-lg overflow-hidden touch-none"
-                  onTouchStart={onTouchStart}
-                  onTouchMove={onTouchMove}
-                  onTouchEnd={(e) => {
-                    onTouchEnd();
-                    // allow closing with a quick tap
-                    if (Math.abs((touchStartX.current || 0) - (touchCurrentX.current || 0)) < 6) {
-                      // do not close on pinch/drag
-                    }
-                  }}
-                >
-                  <motion.div
-                    style={{ transform: `translate(${lightboxTranslate.x}px, ${lightboxTranslate.y}px) scale(${lightboxScale})` }}
-                    className="absolute inset-0 flex items-center justify-center"
-                    onPointerDown={lbStart}
-                    onPointerMove={lbMove}
-                    onPointerUp={lbEnd}
-                  >
-                    <Image src={currentImage} alt={product.name} loader={loader} fill sizes="(max-width: 1200px) 100vw" className="object-contain" />
-                  </motion.div>
-
-                  <button className="absolute top-4 right-4 text-white bg-black/40 rounded-full px-3 py-2" onClick={() => setIsLightboxOpen(false)}>Close</button>
-
-                  {/* prev/next controls */}
-                  <button
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-black/30 rounded-full p-3"
-                    onClick={() => setMainIndex(i => Math.max(0, i - 1))}
-                    aria-label="Previous image"
-                  >
-                    ‹
-                  </button>
-                  <button
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-black/30 rounded-full p-3"
-                    onClick={() => setMainIndex(i => Math.min(currentImages.length - 1, i + 1))}
-                    aria-label="Next image"
-                  >
-                    ›
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </>
+        </section>
+      )}
+    </div>
   );
 }
