@@ -57,10 +57,10 @@ const Footer :React.FC<FooterProps> = ({ storeFormData }) => {
         <div>
           <h3 className="text-xl font-semibold text-white mb-4">Quick Links</h3>
           <ul className="space-y-2 text-sm">
-            <li><a href={`/about`} className="hover:text-white transition-colors">About</a></li>
-            <li><a href={`/contact`} className="hover:text-white transition-colors">Contact</a></li>
-            <li><a href={`/privacy`} className="hover:text-white transition-colors">Privacy Policy</a></li>
-            <li><a href={`/terms`} className="hover:text-white transition-colors">Terms of Service</a></li>
+            <li><a href={`/marketplace/about`} className="hover:text-white transition-colors">About</a></li>
+            <li><a href={`/marketplace/contact`} className="hover:text-white transition-colors">Contact</a></li>
+            <li><a href={`/marketplace/privacy`} className="hover:text-white transition-colors">Privacy Policy</a></li>
+            <li><a href={`/marketplace/terms`} className="hover:text-white transition-colors">Terms of Service</a></li>
           </ul>
         </div>
 
@@ -68,10 +68,10 @@ const Footer :React.FC<FooterProps> = ({ storeFormData }) => {
         <div>
           <h3 className="text-xl font-semibold text-white mb-4">Customer Care</h3>
           <ul className="space-y-2 text-sm">
-            <li><a href={`/help`} className="hover:text-white transition-colors">Help Center</a></li>
-            <li><a href={`/returns`} className="hover:text-white transition-colors">Returns</a></li>
-            <li><a href={`/shipping`} className="hover:text-white transition-colors">Shipping</a></li>
-            <li><a href={`/track`} className="hover:text-white transition-colors">Track Order</a></li>
+            <li><a href={`/marketplace/help`} className="hover:text-white transition-colors">Help Center</a></li>
+            <li><a href={`/marketplace/returns`} className="hover:text-white transition-colors">Returns</a></li>
+            <li><a href={`/marketplace/shipping`} className="hover:text-white transition-colors">Shipping</a></li>
+            <li><a href={`/marketplace/track`} className="hover:text-white transition-colors">Track Order</a></li>
           </ul>
         </div>
 

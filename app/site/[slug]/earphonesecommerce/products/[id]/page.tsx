@@ -50,7 +50,8 @@ export default async function ProductPage({ params }: PageProps) {
   });
 
   // Normalize images server-side to avoid runtime checks in client
-  const normalizeImages = (arr: any) => (arr && arr.length ? arr.map((i: any) => ({ url: i.url || '/placeholder-image.png' })) : [{ url: '/placeholder-image.png' }]);
+  const normalizeImages = (arr: any) => (arr && arr.length ? arr.map((i: any) => ({ url: i.url || (i ? i : 'https://via.placeholder.com/1200x800') })) : [{ url: 'https://via.placeholder.com/1200x800' }]);
+
 
   const productForClient: MarketListingForm = {
     ...product,

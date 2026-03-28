@@ -83,11 +83,11 @@ export default function Header() {
 
   // Nav links with slug
   const navLinks = [
-    { label: "Home", href: `/ecommerce` },
-    { label: "Shop", href: `/ecommerce/products` },
-    { label: "Categories", href: `/ecommerce/categories` },
-    { label: "Deals", href: `/ecommerce/deals` },
-    { label: "Contact", href: `/ecommerce/contact` },
+    { label: "Home", href: `/` },
+    { label: "Shop", href: `/marketplace/products` },
+    { label: "Categories", href: `/marketplace/categories` },
+    { label: "Deals", href: `/marketplace/deals` },
+    { label: "Contact", href: `/marketplace/contact` },
   ];
 
   // Auth handlers
@@ -99,7 +99,7 @@ export default function Header() {
       return;
     }
     if (user.role?.toLowerCase() === "admin") router.push("/dashboards");
-    else router.push(`/ecommerce/profile`);
+    else router.push(`/marketplace/profile`);
   };
 
   const handleSignup = () => {

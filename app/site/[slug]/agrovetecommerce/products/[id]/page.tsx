@@ -50,11 +50,12 @@ export default async function ProductPage({ params }: PageProps) {
   });
 
   // Normalize images server-side to avoid runtime checks in client
-  const normalizeImages = (arr: any) => (arr && arr.length ? arr.map((i: any) => ({ url: i.url || '/placeholder-image.png' })) : [{ url: '/placeholder-image.png' }]);
+  const normalizeImages = (arr: any) => (arr && arr.length ? arr.map((i: any) => ({ url: i.url || (i ? i : 'https://via.placeholder.com/1200x800') })) : [{ url: 'https://via.placeholder.com/1200x800' }]);
 
   const productForClient: MarketListingForm = {
     ...product,
     images: normalizeImages(product.images),
+    productCategoryId: product.productCategoryId || '',
     finalPrice: typeof product.finalPrice === 'number' ? product.finalPrice : Number(product.sellingPrice) || 0,
     sellingPrice: typeof product.sellingPrice === 'number' ? product.sellingPrice : 0,
     startDealDate: product.startDealDate instanceof Date ? product.startDealDate.toISOString() : product.startDealDate,
@@ -67,6 +68,7 @@ export default async function ProductPage({ params }: PageProps) {
   const relatedForClient : MarketListingForm[] = related.map(r => ({
     ...r,
     images: normalizeImages(r.images),
+    productCategoryId: r.productCategoryId || '',
     startDealDate: r.startDealDate instanceof Date ? r.startDealDate.toISOString() : r.startDealDate,
     endDealDate: r.endDealDate instanceof Date ? r.endDealDate.toISOString() : r.endDealDate,
     expirationDate: r.expirationDate instanceof Date ? r.expirationDate.toISOString() : r.expirationDate,
