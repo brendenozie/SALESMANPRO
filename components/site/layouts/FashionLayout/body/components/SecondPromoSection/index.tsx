@@ -95,7 +95,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
               className="flex items-center gap-8 pt-4"
             >
               <a
-                href={promo.ctaLink || '#'}
+                href={promo.ctaLink || '/fashionecommerce/products'}
                 className="relative group inline-flex items-center justify-center px-10 py-5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 overflow-hidden shadow-xl"
               >
                 <span className="relative z-10 text-[10px] font-black uppercase tracking-[0.3em]">

@@ -55,6 +55,7 @@ export default function AllProducts({ marketplaceListings, themeSettings }: AllP
             {['New Arrivals', 'Best Sellers', 'Limited Edition', 'Archive'].map((filter) => (
               <button 
                 key={filter}
+                onClick={() => window.location.href = `/fashionecommerce/products?filter=${filter}`}
                 className="whitespace-nowrap px-4 py-2 rounded-full border border-gray-100 dark:border-zinc-800 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:border-gray-900 dark:hover:border-white transition-all"
               >
                 {filter}

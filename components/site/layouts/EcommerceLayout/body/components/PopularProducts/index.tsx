@@ -74,7 +74,7 @@ export default function DailyBestSells({ id }: { id: string }) {
             Weekly <span className="text-indigo-600 dark:text-indigo-400">Specials</span>
           </h2>
           <button 
-            onClick={() => window.location.href = `/ecommerce/products`}
+            onClick={() => window.location.href = `/ecommerce/products?flag=isOnOffer`}
             className="flex items-center text-gray-600 dark:text-gray-400 font-bold text-sm sm:text-base hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
           >
             Explore All <ArrowRightCircleIcon className="w-5 h-5 ml-1.5" />

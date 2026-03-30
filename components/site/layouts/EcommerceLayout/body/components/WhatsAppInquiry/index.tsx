@@ -85,6 +85,7 @@ export default function WhatsAppInquiry({
                     alt="Agent" 
                     fill 
                     className="object-cover"
+                    loader={({ src }) => src}
                   />
                   <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#075E54] rounded-full" />
                 </div>

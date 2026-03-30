@@ -115,7 +115,7 @@ export default function ShoePromotionAd({ promotions, themeSettings }: ShoePromo
           </div>
 
           <div className="flex flex-wrap gap-4">
-            <Link href={adData.ctaLink || '/products'}>
+            <Link href={adData.ctaLink || '/ecommerceshoes/products'} passHref>
               <button 
                 className="group flex items-center gap-3 text-white font-bold py-5 px-10 rounded-2xl shadow-xl transition-all hover:scale-105 active:scale-95"
                 style={{ backgroundColor: primary }}

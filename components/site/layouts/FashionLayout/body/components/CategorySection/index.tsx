@@ -185,7 +185,7 @@ export default function CategoriesSection({ store }: { store: StoreForm | null }
             </h2>
           </div>
           <Link 
-            href={`/${store?.slug}/categories`}
+            href={`/fashionecommerce/categories`}
             className="text-[10px] font-black uppercase tracking-[0.3em] py-4 border-b border-zinc-900 dark:border-white text-zinc-900 dark:text-white hover:text-zinc-500 dark:hover:text-zinc-400 transition-colors"
           >
             View All Series

@@ -55,7 +55,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                 </p>
 
                 <a
-                  href={item.ctaLink || '#'}
+                  href={item.ctaLink || '/ecommerceshoes/products'}
                   className="inline-flex items-center justify-center gap-2 w-full py-4 rounded-xl font-bold text-white transition-all hover:brightness-110 active:scale-[0.98] shadow-lg"
                   style={{ 
                     backgroundColor: primary,

@@ -89,7 +89,7 @@ export default function AllProducts({ martketplaceListings, themeSettings }: All
         {/* Bottom CTA */}
         <div className="mt-20 flex justify-center">
           <button 
-            onClick={() => window.location.href = `/products`}
+            onClick={() => window.location.href = `/ecommerceshoes/products`}
             className="group flex items-center gap-3 px-10 py-5 rounded-2xl border-2 border-gray-900 dark:border-white text-gray-900 dark:text-white font-black uppercase text-sm tracking-widest hover:bg-gray-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-300"
           >
             Load More Products

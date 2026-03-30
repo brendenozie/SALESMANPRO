@@ -53,7 +53,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
               </p>
 
               <motion.a
-                href={promo.ctaLink || '#'}
+                href={promo.ctaLink || '/fashionecommerce/products'}
                 whileHover={{ gap: '1.5rem' }}
                 className="inline-flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-900 dark:text-white group"
               >
@@ -130,7 +130,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                   {item.description}
                 </p>
                 <a 
-                  href={item.ctaLink || '#'} 
+                  href={item.ctaLink || '/fashionecommerce/products'} 
                   className="inline-block text-[10px] font-black uppercase tracking-[0.2em] border-b border-zinc-900 dark:border-white pb-1 mt-4"
                 >
                   {item.ctaText || 'Learn More'}

@@ -129,7 +129,7 @@ export default function PopularProducts({ id, themeSettings, marketplaceListings
               Explore our most sought-after products, hand-picked for their style, comfort, and uncompromising quality.
             </p>
           </div>
-          <Link href={`/ecommerceshoes/products`} className="hidden md:flex items-center gap-2 font-bold text-sm uppercase tracking-widest hover:opacity-70 transition-opacity dark:text-white">
+          <Link href={`/ecommerceshoes/products?companyId=${id}&flag=isFeatured`} className="hidden md:flex items-center gap-2 font-bold text-sm uppercase tracking-widest hover:opacity-70 transition-opacity dark:text-white">
             View Collection <ArrowRightIcon className="w-4 h-4" />
           </Link>
         </div>
@@ -156,7 +156,7 @@ export default function PopularProducts({ id, themeSettings, marketplaceListings
 
         {/* Mobile View All */}
         <div className="mt-12 md:hidden flex justify-center">
-          <Link href={`/ecommerceshoes/products`} className="px-8 py-4 rounded-full text-white font-bold shadow-xl shadow-orange-500/20" style={{ backgroundColor: primary }}>
+          <Link href={`/ecommerceshoes/products?companyId=${id}&flag=isFeatured`} className="px-8 py-4 rounded-full text-white font-bold shadow-xl shadow-orange-500/20" style={{ backgroundColor: primary }}>
             View All Products
           </Link>
         </div>

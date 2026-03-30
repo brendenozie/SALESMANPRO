@@ -105,7 +105,7 @@ export default function CategorySection({ promotions, themeSettings }: any) {
               />
             </div>
 
-            <Link href={categoryData.ctaLink || '/shop'} className="group">
+            <Link href={categoryData.ctaLink || '/ecommerceshoes/products'} className="group">
               <div 
                 style={{ backgroundColor: primary }}
                 className="h-48 w-20 rounded-[2rem] text-white flex items-center justify-center cursor-pointer hover:brightness-110 transition-all shadow-xl shadow-red-500/20"

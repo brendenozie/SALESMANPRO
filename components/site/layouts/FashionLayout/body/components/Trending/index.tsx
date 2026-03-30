@@ -85,7 +85,7 @@ export default function DailyBestSells({ id }: { id: string }) {
           </div>
           
           <button 
-            onClick={() => window.location.href = `/fashionecommerce/products`}
+            onClick={() => window.location.href = `/fashionecommerce/products?companyId=${id}&flag=isOnOffer`}
             className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] dark:text-white"
           >
             Explore the vault 

@@ -105,7 +105,7 @@ export default function TrendingPromotion({ promotions, themeSettings }: Trendin
                     </motion.p>
 
                     <motion.div variants={itemVariants}>
-                        <Link href={product.ctaLink}>
+                        <Link href={product.ctaLink || '/ecommerceshoes/products'} passHref>
                             <button
                                 className="group relative inline-flex items-center justify-center text-white font-black text-lg py-5 px-12 rounded-2xl transition-all duration-500 hover:shadow-[0_0_40px_-10px] overflow-hidden"
                                 style={{ 
