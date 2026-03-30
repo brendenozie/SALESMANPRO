@@ -106,7 +106,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
 
             <div className="pt-6">
               <a
-                href={promotion.ctaLink || '#'}
+                href={promotion.ctaLink || '/furnitureecommerce/products'}
                 className="group relative inline-flex items-center justify-between min-w-[280px] overflow-hidden rounded-full border border-zinc-200 dark:border-zinc-800 px-10 py-6 transition-all hover:border-zinc-900 dark:hover:border-white"
               >
                 <span className="relative z-10 text-[11px] font-black uppercase tracking-[0.3em] text-zinc-900 dark:text-white group-hover:text-white dark:group-hover:text-zinc-900 transition-colors duration-500">

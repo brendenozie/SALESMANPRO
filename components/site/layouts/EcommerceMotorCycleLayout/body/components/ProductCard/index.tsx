@@ -31,7 +31,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
     >
       {/* Image Container */}
       <div className="relative aspect-[4/5] overflow-hidden bg-[#f3f3f3] rounded-sm mb-6">
-        <Link href={`/ecommerce/products/${product.id}`}>
+        <Link href={`/motorcycleecommerce/products/${product.id}`}>
           <Image
             src={imageSrc || 'https://images.unsplash.com/photo-1600185364436-1bafc9e8e5c3?auto=format&fit=crop&w=600&q=80'}
             alt={name}
@@ -78,7 +78,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
            </div>
         </div>
         
-        <Link href={`/ecommerce/products/${product.id}`}>
+        <Link href={`/motorcycleecommerce/products/${product.id}`}>
           <h4 className="text-lg font-serif italic text-gray-900 group-hover:text-[#c5a059] transition-colors line-clamp-1 px-2">
             {name}
           </h4>

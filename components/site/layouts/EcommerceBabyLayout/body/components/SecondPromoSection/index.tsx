@@ -24,9 +24,9 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
   const promo = promotions?.[1] || {
     title: 'Sweet Weekend Surprises',
     description: 'Wrap your little ones in love with our organic cotton essentials. This weekend only, enjoy a special treat on us with every bundle purchase.',
-    bannerUrl: 'https://images.unsplash.com/photo-1522771917743-28b90c0db61b',
     ctaText: 'Claim My Offer',
     ctaLink: '#',
+    bannerUrl: 'https://images.unsplash.com/photo-1522771917743-28b90c0db61b',
   };
 
   return (
@@ -99,7 +99,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
 
                 <div className="flex flex-col sm:flex-row items-center gap-8 pt-4">
                   <motion.a
-                    href={promo.ctaLink || '#'}
+                    href={promo.ctaLink || '/babyecommerce/products'}
                     whileHover={{ scale: 1.02, y: -5 }}
                     whileTap={{ scale: 0.98 }}
                     className="w-full sm:w-auto px-12 py-6 text-white rounded-[2.5rem] font-black text-lg shadow-2xl flex items-center justify-center gap-4 group relative overflow-hidden"

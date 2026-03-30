@@ -49,7 +49,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     >
       {/* --- IMAGE CONTAINER --- */}
       <div className="relative h-64 w-full rounded-[2rem] overflow-hidden bg-[#F8FAFC] dark:bg-zinc-800/50">
-        <Link href={`/ecommerce/products/${product.id}`} className="block h-full w-full">
+        <Link href={`/babyecommerce/products/${product.id}`} className="block h-full w-full">
           <Image
             src={imageSrc}
             alt={name}
@@ -98,7 +98,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <span className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest">Organic Cotton</span>
         </div>
 
-        <Link href={`/ecommerce/products/${product.id}`}>
+        <Link href={`/babyecommerce/products/${product.id}`}>
           <h4 className="text-lg font-bold text-slate-800 dark:text-zinc-100 line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
             {name}
           </h4>
@@ -107,11 +107,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="mt-3 flex items-center justify-between">
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-black text-slate-900 dark:text-white">
-              ${(finalPrice ?? 0).toFixed(2)}
+              {finalPrice?.toLocaleString('en-US', { style: 'currency', currency: 'Kes' }) || sellingPrice?.toLocaleString('en-US', { style: 'currency', currency: 'Kes' }) || '$0.00'}
             </span>
             {discount && (
               <span className="text-sm line-through text-slate-300 dark:text-zinc-600 font-medium">
-                ${sellingPrice?.toFixed(2)}
+                {sellingPrice?.toLocaleString('en-US', { style: 'currency', currency: 'Kes' })}
               </span>
             )}
           </div>

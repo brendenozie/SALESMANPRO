@@ -40,7 +40,7 @@ export default function AllProducts({ id, marketplaceListings, themeSettings }: 
               <AdjustmentsHorizontalIcon className="w-3 h-3" /> Filter Archive
             </span>
             <button 
-              onClick={() => window.location.href = `/ecommerce/products`}
+              onClick={() => window.location.href = `/flowersecommerce/products`}
               className="flex items-center gap-3 bg-slate-900 text-white text-[11px] font-bold uppercase tracking-[0.2em] px-8 py-4 rounded-full hover:bg-slate-800 transition-all shadow-xl hover:shadow-slate-200"
             >
               Explore Full Catalog <ArrowRightIcon className="w-4 h-4" />
@@ -73,7 +73,7 @@ export default function AllProducts({ id, marketplaceListings, themeSettings }: 
             Couldn't find exactly what you were looking for?
           </p>
           <button 
-             onClick={() => window.location.href = `/ecommerce/products`}
+             onClick={() => window.location.href = `/flowersecommerce/products`}
              className="group text-slate-900 font-bold uppercase tracking-[0.3em] text-[12px] flex items-center gap-3 border-b-2 border-slate-900 pb-1 hover:text-rose-500 hover:border-rose-500 transition-all"
           >
             Custom Arrangements <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

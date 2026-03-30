@@ -92,7 +92,7 @@ export default function ProductCommunitySection() {
             ))}
             <div className="col-span-2 md:col-span-4 flex justify-between items-center pt-4">
                <h4 className="text-xs font-black uppercase tracking-[0.3em]">Our Gallery</h4>
-               <Link href="/gallery" className="flex items-center text-[10px] font-bold uppercase tracking-widest hover:text-[#bc9c64] transition-colors">
+               <Link href="/honeyecommerce/products" className="flex items-center text-[10px] font-bold uppercase tracking-widest hover:text-[#bc9c64] transition-colors">
                   View All <ArrowRightIcon className="h-3 w-3 ml-2" />
                </Link>
             </div>

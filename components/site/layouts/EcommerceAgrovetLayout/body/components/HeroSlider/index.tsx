@@ -11,7 +11,7 @@ import {
 } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 
-const slides = [
+const sampleSlides = [
   {
     category: "Crop Science",
     title: "High-Yield $ Hybrids",
@@ -30,11 +30,21 @@ const slides = [
 
 export default function RethoughtAgrovetHero({heroSlides, themeSettings }: { heroSlides:any; themeSettings:any }) {
   const [index, setIndex] = useState(0);
+  const [slides, setSlides] = useState(heroSlides.length > 0 ? heroSlides : sampleSlides);
+  const primary = themeSettings?.primaryColor || '#f97316';
+  const secondary = themeSettings?.secondaryColor || '#3b82f6';
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  };
+
 
   useEffect(() => {
     const timer = setInterval(() => setIndex((prev) => (prev + 1) % slides.length), 10000);
     return () => clearInterval(timer);
   }, []);
+
 
   return (
     <section className="relative h-screen min-h-[750px] bg-[#0a0a0a] text-white overflow-hidden font-sans">
@@ -100,7 +110,7 @@ export default function RethoughtAgrovetHero({heroSlides, themeSettings }: { her
             </div>
 
             <h1 className="text-7xl md:text-[6.5rem] font-black leading-[0.85] tracking-tighter mb-8">
-              {slides[index].title.split('$').map((word, i) => (
+              {slides[index].title.split('$').map((word: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactFragment | React.ReactPortal | null | undefined, i: React.Key | null | undefined) => (
                 <span key={i} className={i === 1 ? "text-transparent stroke-white" : ""}>
                   {word}
                   {i === 1 && <style jsx>{`.stroke-white { -webkit-text-stroke: 1px white; }`}</style>}
@@ -121,12 +131,12 @@ export default function RethoughtAgrovetHero({heroSlides, themeSettings }: { her
 
               <div className="flex gap-8 border-l border-white/20 pl-8">
                 <div>
-                  <p className="text-2xl font-black text-emerald-400">{Object.values(slides[index].stats)[0]}</p>
-                  <p className="text-[10px] uppercase font-bold opacity-40 tracking-widest">{Object.keys(slides[index].stats)[0]} Rate</p>
+                  <p className="text-2xl font-black text-emerald-400">{String(Object.values(slides[index].stats)[0] || 'N/A')}</p>
+                  <p className="text-[10px] uppercase font-bold opacity-40 tracking-widest">{String(Object.keys(slides[index].stats)[0])} Rate</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-black text-emerald-400">{Object.values(slides[index].stats)[1]}</p>
-                  <p className="text-[10px] uppercase font-bold opacity-40 tracking-widest">{Object.keys(slides[index].stats)[1]} Optimization</p>
+                  <p className="text-2xl font-black text-emerald-400">{String(Object.values(slides[index].stats)[1] || 'N/A')}</p>
+                  <p className="text-[10px] uppercase font-bold opacity-40 tracking-widest">{String(Object.keys(slides[index].stats)[1])} Optimization</p>
                 </div>
               </div>
             </div>
@@ -154,7 +164,7 @@ export default function RethoughtAgrovetHero({heroSlides, themeSettings }: { her
 
       {/* Navigation Progress */}
       <div className="absolute bottom-12 right-12 flex items-center gap-4">
-        {slides.map((_, i) => (
+        {slides.map((_: any, i: React.Key | null | undefined) => (
           <div 
             key={i} 
             className={`h-1 transition-all duration-700 rounded-full ${index === i ? 'w-24 bg-emerald-500' : 'w-4 bg-white/20'}`} 

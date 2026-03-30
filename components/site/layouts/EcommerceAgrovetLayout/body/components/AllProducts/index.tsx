@@ -37,7 +37,7 @@ export default function AllProducts({ marketplaceListings }: AllProductsProps) {
 
           <motion.button 
             whileHover={{ x: 5 }}
-            onClick={() => window.location.href = `/ecommerce/products`}
+            onClick={() => window.location.href = `/agrovetecommerce/products`}
             className="group flex items-center gap-3 text-slate-900 font-black uppercase text-xs tracking-widest border-b-2 border-emerald-500 pb-1 transition-all"
           >
             Explore Full Catalog 

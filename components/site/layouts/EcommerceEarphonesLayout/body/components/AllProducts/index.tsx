@@ -62,7 +62,7 @@ export default function AllProducts({ id, marketplaceListings, themeSettings }: 
               Showing {marketplaceListings.length} Premium Units
             </p>
             <button 
-              onClick={() => window.location.href = `/ecommerce/products`}
+              onClick={() => window.location.href = `/earphonesecommerce/products`}
               className="group flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 px-8 py-4 rounded-2xl transition-all"
             >
               <Squares2X2Icon className="w-5 h-5 text-white" />
@@ -90,7 +90,7 @@ export default function AllProducts({ id, marketplaceListings, themeSettings }: 
         {/* Bottom Call to Action: Minimalist Navigation */}
         <div className="mt-24 pt-12 border-t border-white/5 flex justify-center">
           <button 
-            onClick={() => window.location.href = `/ecommerce/products`}
+            onClick={() => window.location.href = `/earphonesecommerce/products`}
             className="group relative overflow-hidden px-12 py-6 rounded-full border border-white/10 hover:border-white/40 transition-all"
           >
             <span className="relative z-10 text-white font-black uppercase tracking-[0.3em] text-sm">

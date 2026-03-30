@@ -114,7 +114,7 @@ export default function ProductShowcaseSection() {
 
             <div className="flex flex-col sm:flex-row items-center gap-6">
               <Link
-                href="/cart"
+                href="/peanutecommerce/products"
                 className="group w-full sm:w-auto flex items-center justify-between gap-10 px-8 py-5 bg-[#3E2723] rounded-2xl text-white font-black transition-all hover:shadow-2xl hover:-translate-y-1 active:scale-95 overflow-hidden relative"
               >
                 <span className="relative z-10 uppercase tracking-widest text-sm">Add To Pantry</span>

@@ -40,7 +40,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     >
       {/* Image Container */}
       <div className="relative h-64 w-full rounded-[1.5rem] overflow-hidden bg-[#FAF9F6]">
-        <Link href={`/ecommerce/products/${product.id}`} className="block h-full w-full">
+        <Link href={`/honeyecommerce/products/${product.id}`} className="block h-full w-full">
           <Image
             src={imageSrc}
             alt={name}

@@ -66,7 +66,7 @@ export default function DailyBestSells({ id }: { id: string }) {
           </div>
           
           <button 
-            onClick={() => window.location.href = `/ecommerce/products`}
+            onClick={() => window.location.href = `/honeyecommerce/products?flag=isOnOffer`}
             className="group flex items-center gap-3 px-6 py-3 bg-white border border-stone-200 rounded-full font-black uppercase tracking-widest text-[10px] text-[#3E2723] hover:bg-[#3E2723] hover:text-white transition-all shadow-sm"
           >
             Explore Full Pantry 

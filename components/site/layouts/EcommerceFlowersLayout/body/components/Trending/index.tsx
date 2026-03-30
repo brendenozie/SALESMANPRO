@@ -96,7 +96,7 @@ export default function TrendingGallery({ id }: { id: string }) {
 
           <motion.button 
             whileHover={{ x: 5 }}
-            onClick={() => window.location.href = `/ecommerce/products?flag=trending`}
+            onClick={() => window.location.href = `/flowersecommerce/products?flag=trending`}
             className="group flex items-center gap-3 text-slate-900 font-bold uppercase tracking-[0.2em] text-[11px] pb-1 border-b border-slate-300 hover:border-slate-900 transition-colors"
           >
             See What's Popular <ArrowRightIcon className="w-4 h-4" />

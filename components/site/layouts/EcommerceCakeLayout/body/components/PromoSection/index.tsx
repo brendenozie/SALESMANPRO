@@ -118,7 +118,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                   {item.description}
                 </p>
 
-                <Link href={item.ctaLink || '#'} className="block">
+                <Link href={item.ctaLink || '/cakeecommerce/products'} className="block">
                   <motion.button 
                     whileTap={{ scale: 0.95 }}
                     className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 text-white font-black uppercase tracking-widest text-[10px] hover:bg-white hover:text-black transition-all"

@@ -60,7 +60,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                     {displayedPromotions[0].description}
                   </p>
                   <a
-                    href={displayedPromotions[0].ctaLink || '#'}
+                    href={displayedPromotions[0].ctaLink || '/honeyecommerce/products'}
                     className="inline-flex items-center gap-3 bg-white text-[#3E2723] px-8 py-4 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-[#F3A852] transition-colors group/btn"
                   >
                     {displayedPromotions[0].ctaText || 'Claim Offer'}

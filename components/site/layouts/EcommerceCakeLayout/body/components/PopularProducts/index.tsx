@@ -82,7 +82,7 @@ export default function DailyBestSells({ id }: { id: string }) {
           {/* Desktop Navigation Arrows */}
           <div className="hidden md:flex items-center gap-4">
             <button 
-              onClick={() => (window.location.href = '/ecommerce/products')}
+              onClick={() => (window.location.href = '/cakeecommerce/products?flag=isOnOffer')}
               className="mr-4 text-xs font-black uppercase tracking-widest border-b-2 border-amber-500 pb-1 hover:text-amber-600 transition-all"
             >
               View All

@@ -40,7 +40,7 @@ const shellVariants: Variants = {
 function PeanutPill({ sub }: { sub: ISubcategory }) {
   return (
     <motion.div variants={shellVariants}>
-      <Link href={`/ecommerce/products?subcategory=${sub.slug || sub.name}`}>
+      <Link href={`/peanutecommerce/products?subcategory=${sub.slug || sub.name}`}>
         <div className="group flex items-center gap-3 px-6 py-3 rounded-full bg-[#F3E5AB] border-2 border-[#D2B48C] hover:bg-[#8B4513] hover:border-[#5D2E0C] transition-all duration-300 shadow-sm">
           <span className="text-sm font-black text-[#5D2E0C] group-hover:text-white transition-colors">
             {sub.name}
@@ -107,7 +107,7 @@ export default function PeanutCategorySection({ StoreCategory, themeSettings }: 
             </motion.h2>
           </div>
           
-          <Link href="/ecommerce/categories" className="group flex items-center gap-3 bg-white px-6 py-3 rounded-2xl shadow-sm border border-stone-200 hover:shadow-md transition-all">
+          <Link href="/peanutecommerce/categories" className="group flex items-center gap-3 bg-white px-6 py-3 rounded-2xl shadow-sm border border-stone-200 hover:shadow-md transition-all">
             <span className="text-sm font-bold text-stone-800 uppercase tracking-widest">Full Pantry</span>
             <ShoppingBagIcon className="w-5 h-5 text-[#A0522D] group-hover:rotate-12 transition-transform" />
           </Link>
@@ -123,7 +123,7 @@ export default function PeanutCategorySection({ StoreCategory, themeSettings }: 
         >
           {categoriesToShow.map((cat, idx) => (
             <motion.div key={cat.id || idx} variants={shellVariants} className="group">
-              <Link href={`/ecommerce/products?category=${cat.id}`}>
+              <Link href={`/peanutecommerce/products?category=${cat.categoryId || cat.category?.id || cat.id}`}>
                 <div className="relative p-1 bg-[#F5DEB3] rounded-[3rem] transition-all duration-500 group-hover:rotate-1 group-hover:shadow-xl">
                   <div className="bg-white rounded-[2.8rem] overflow-hidden p-8 flex flex-col items-center">
                     

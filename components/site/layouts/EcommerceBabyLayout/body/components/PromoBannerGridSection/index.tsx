@@ -16,22 +16,12 @@ const promoBanners = [
   {
     title: 'KIDS SHOES',
     subtitle: 'Tiny steps, big style',
-    price: '$30.00',
+    price: '30.00',
     discount: '15% OFF',
     image: 'https://images.unsplash.com/photo-1514989940723-e8e51635b782',
     baseColor: 'rose', // Will map to primary-ish
     icon: TagIcon,
     tag: 'Little Steps'
-  },
-  {
-    title: 'FASHION',
-    subtitle: 'Nursery essentials',
-    price: '$20.00',
-    discount: 'NEW ARRIVAL',
-    image: 'https://images.unsplash.com/photo-1522771935876-249711cd40f2',
-    baseColor: 'sky', // Will map to secondary-ish
-    icon: SparklesIcon,
-    tag: 'Trending'
   },
   {
     title: 'BIG SAVINGS',
@@ -43,6 +33,27 @@ const promoBanners = [
     icon: FireIcon,
     tag: 'Mega Deal'
   },
+  {
+    title: 'NEW TOYS',
+    subtitle: 'Playtime just got better',
+    price: 'From 15.00',
+    discount: '20% OFF',
+    image: 'https://images.unsplash.com/photo-1594787318286-3d835c1d207f', 
+    baseColor: 'sky', // Will map to secondary-ish
+    icon: SparklesIcon,
+    tag: 'Toy Box'
+  },
+  
+  // {
+  //   title: 'FASHION',
+  //   subtitle: 'Nursery essentials',
+  //   price: '20.00',
+  //   discount: 'NEW ARRIVAL',
+  //   image: 'https://images.unsplash.com/photo-1522771935876-249711cd40f2',
+  //   baseColor: 'sky', // Will map to secondary-ish
+  //   icon: SparklesIcon,
+  //   tag: 'Trending'
+  // },
 ];
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -113,7 +124,7 @@ export default function PromoBannerGridSection() {
               </div>
 
               {banner.isSpecial ? (
-                <Link href="/ecommerce/products">
+                <Link href="/babyecommerce/products">
                   <motion.button 
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -124,7 +135,7 @@ export default function PromoBannerGridSection() {
                   </motion.button>
                 </Link>
               ) : (
-                <Link href="/ecommerce/products" className="group/link flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
+                <Link href="/babyecommerce/products" className="group/link flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
                     Explore Now
                     <div className="w-8 h-8 rounded-full bg-white dark:bg-zinc-800 flex items-center justify-center shadow-md group-hover/link:translate-x-2 transition-all">
                         <ArrowRightIcon className="w-4 h-4" />

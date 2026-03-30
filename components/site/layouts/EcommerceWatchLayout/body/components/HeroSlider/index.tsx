@@ -24,7 +24,7 @@ const defaultSlides: HeroSlide[] = [
     subline: 'The Midnight Limited Edition features new subtle accents of white luminescent hands and new raised steel indices.',
     headline: 'Timeless Elegance',
     ctaText: 'Explore',
-    ctaLink: '/shop',
+    ctaLink: '/watchecommerce/products',
     id: '1',
     companyId: '',
     productImageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80',
@@ -118,7 +118,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                   transition={{ delay: 0.2 }}
                 >
                   <Link
-                    href={slide.ctaLink || '#'}
+                    href={slide.ctaLink || '/watchecommerce/products'}
                     className="inline-block bg-[#C5A059] hover:bg-[#b38f4d] text-white font-bold uppercase tracking-widest px-10 py-4 transition-colors"
                   >
                     {slide.ctaText}

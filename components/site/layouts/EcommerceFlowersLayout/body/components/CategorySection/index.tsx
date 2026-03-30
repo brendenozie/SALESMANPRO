@@ -55,7 +55,7 @@ function CategoryCard({
   index: number;
 }) {
   const [isHovered, setIsHovered] = useState(false);
-  const catSlug = safeSlug(cat.categoryId || cat.displayName || "category");
+  const catSlug = safeSlug(cat.categoryId || cat.category?.id || cat.displayName || "category");
   const imageUrl = FALLBACK_IMAGE_URL; //cat.imageUrl || cat.image || 
 
   // Varied heights for a masonry feel
@@ -187,7 +187,7 @@ export default function CategoriesSection({ store }: { store: StoreForm | null }
           className="mt-24 flex justify-center"
         >
           <Link 
-            href="/ecommerce/categories" 
+            href="/flowersecommerce/categories" 
             className="group flex items-center gap-4 text-slate-900 font-bold uppercase tracking-[0.2em] text-[12px]"
           >
             <span>View All Departments</span>

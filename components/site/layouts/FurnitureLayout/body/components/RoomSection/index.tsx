@@ -154,7 +154,7 @@ export default function RoomSection({ store, themeSettings }: RoomSectionProps) 
               >
                 <Link href={room.href} className="block w-full h-full relative">
                   <Image 
-                    src={room.img} 
+                    src={room.img || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1000'} 
                     alt={room.name} 
                     fill 
                     className="object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110" 

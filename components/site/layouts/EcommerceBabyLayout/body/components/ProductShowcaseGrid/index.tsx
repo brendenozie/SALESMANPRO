@@ -12,36 +12,36 @@ const productColumns = [
     title: 'Top Sells',
     label: 'Popular Picks',
     products: [
-      { name: 'Pink Hoodie', price: 2.00, oldPrice: 3.00, rating: 4, img: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4' },
-      { name: 'Remote Control Car', price: 6.00, oldPrice: 7.00, rating: 4, img: 'https://images.unsplash.com/photo-1594787318286-3d835c1d207f' },
-      { name: 'Baby Boy Set', price: 2.00, oldPrice: 2.99, rating: 4, img: 'https://images.unsplash.com/photo-1522771935876-249711cd40f2' },
+      { id: 'pink-hoodie', name: 'Pink Hoodie', price: 2.00, oldPrice: 3.00, rating: 4, img: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4' },
+      { id: 'remote-control-car', name: 'Remote Control Car', price: 6.00, oldPrice: 7.00, rating: 4, img: 'https://images.unsplash.com/photo-1594787318286-3d835c1d207f' },
+      { id: 'baby-boy-set', name: 'Baby Boy Set', price: 2.00, oldPrice: 2.99, rating: 4, img: 'https://images.unsplash.com/photo-1522771935876-249711cd40f2' },
     ]
   },
   {
     title: 'Top Rated',
     label: 'Parent Approved',
     products: [
-      { name: 'Winter Hat for Baby', price: 7.40, oldPrice: 7.99, rating: 4, img: 'https://images.unsplash.com/photo-1522771935876-249711cd40f2' },
-      { name: 'Kids Pampers', price: 3.00, oldPrice: 3.99, rating: 4, img: 'https://images.unsplash.com/photo-1617330780360-6060c4c4d57c' },
-      { name: 'Electric Bike Toy', price: 2.60, oldPrice: 2.99, rating: 4, img: 'https://images.unsplash.com/photo-1532330393533-443990a51d10' },
+      { id: 'winter-hat-for-baby', name: 'Winter Hat for Baby', price: 7.40, oldPrice: 7.99, rating: 4, img: 'https://images.unsplash.com/photo-1522771935876-249711cd40f2' },
+      { id: 'kids-pampers', name: 'Kids Pampers', price: 3.00, oldPrice: 3.99, rating: 4, img: 'https://images.unsplash.com/photo-1617330780360-6060c4c4d57c' },
+      { id: 'electric-bike-toy', name: 'Electric Bike Toy', price: 2.60, oldPrice: 2.99, rating: 4, img: 'https://images.unsplash.com/photo-1532330393533-443990a51d10' },
     ]
   },
   {
     title: 'Trending',
     label: 'Viral Now',
     products: [
-      { name: 'Puzzle Game', price: 28.50, oldPrice: 30.99, rating: 4, img: 'https://images.unsplash.com/photo-1585435557343-3b092031a831' },
-      { name: 'Baby shampoo', price: 15.00, oldPrice: 19.90, rating: 4, img: 'https://images.unsplash.com/photo-1559599101-f09722fb4948' },
-      { name: 'Robo Toys', price: 3.75, oldPrice: 3.99, rating: 4, img: 'https://images.unsplash.com/photo-1546776310-eef45dd6d63c' },
+      { id: 'puzzle-game', name: 'Puzzle Game', price: 28.50, oldPrice: 30.99, rating: 4, img: 'https://images.unsplash.com/photo-1585435557343-3b092031a831' },
+      { id: 'baby-shampoo', name: 'Baby shampoo', price: 15.00, oldPrice: 19.90, rating: 4, img: 'https://images.unsplash.com/photo-1559599101-f09722fb4948' },
+      { id: 'robo-toys', name: 'Robo Toys', price: 3.75, oldPrice: 3.99, rating: 4, img: 'https://images.unsplash.com/photo-1546776310-eef45dd6d63c' },
     ]
   },
   {
     title: 'New Arrivals',
     label: 'Just In',
     products: [
-      { name: 'Red Sneakers', price: 12.00, oldPrice: 15.00, rating: 5, img: 'https://images.unsplash.com/photo-1514989940723-e8e51635b782' },
-      { name: 'Baby Stroller', price: 45.00, oldPrice: 50.00, rating: 5, img: 'https://images.unsplash.com/photo-1591339102716-4bc24f7c41bc' },
-      { name: 'Girl Blue Dress', price: 18.00, oldPrice: 22.00, rating: 5, img: 'https://images.unsplash.com/photo-1518831959646-742c3a14ebf7' },
+      { id: 'red-sneakers', name: 'Red Sneakers', price: 12.00, oldPrice: 15.00, rating: 5, img: 'https://images.unsplash.com/photo-1514989940723-e8e51635b782' },
+      { id: 'baby-stroller', name: 'Baby Stroller', price: 45.00, oldPrice: 50.00, rating: 5, img: 'https://images.unsplash.com/photo-1591339102716-4bc24f7c41bc' },
+      { id: 'girl-blue-dress', name: 'Girl Blue Dress', price: 18.00, oldPrice: 22.00, rating: 5, img: 'https://images.unsplash.com/photo-1518831959646-742c3a14ebf7' },
     ]
   }
 ];
@@ -88,7 +88,7 @@ export default function ProductShowcaseGrid() {
               {column.products.map((product, pIdx) => (
                 <div key={pIdx} className="group relative">
                   <Link 
-                    href={`/ecommerce/product/${product.name.toLowerCase().replace(/ /g, '-')}`}
+                    href={`/babyecommerce/product/${product.id.toLowerCase().replace(/ /g, '-')}`}
                     className="flex items-center gap-6"
                   >
                     {/* Artistic Image Container */}

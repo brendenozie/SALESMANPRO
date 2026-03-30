@@ -73,7 +73,7 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
 
   return (
     <motion.div variants={itemVariants} className="group relative h-full">
-      <Link href={`/shop/catalog?category=${catSlug}`} className="block h-full">
+      <Link href={`/agrovetecommerce/products?category=${cat.categoryId || cat.category?.id || catSlug}`} className="block h-full">
         <div className="relative h-[420px] w-full overflow-hidden rounded-[2.5rem] bg-white border border-slate-100 transition-all duration-500 group-hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] group-hover:-translate-y-2">
           <div className="h-3/5 w-full overflow-hidden relative">
             <Image
@@ -115,7 +115,7 @@ function SubcategoryTile({ sub, index }: { sub: ISubcategory; index: number }) {
 
   return (
     <motion.div variants={itemVariants}>
-      <Link href={`/shop/catalog?subcategory=${sub.slug || sub.name}`}>
+      <Link href={`/agrovetecommerce/products?subcategory=${sub.slug || sub.name}`}>
         <div className={`group flex items-center gap-5 p-6 rounded-[2rem] bg-white border border-slate-100 transition-all hover:bg-slate-50 ${theme.border} hover:shadow-md`}>
           <div className={`h-14 w-14 flex items-center justify-center rounded-2xl ${theme.bg} ${theme.accent} group-hover:scale-110 transition-transform`}>
             {icon}
@@ -241,7 +241,7 @@ export default function EnhancedAgroCategories({ store }: { store: StoreForm | n
                 <RectangleGroupIcon className="w-12 h-12 text-emerald-400 relative z-10" />
                 <div className="relative z-10">
                   <p className="text-3xl font-bold leading-tight mb-4">Need a Custom Solution?</p>
-                  <Link href="/contact" className="inline-flex items-center gap-2 font-bold text-emerald-400 hover:text-white transition-colors">
+                  <Link href="/agrovetecommerce/contact" className="inline-flex items-center gap-2 font-bold text-emerald-400 hover:text-white transition-colors">
                     Contact Specialist <ArrowRightIcon className="w-4 h-4" />
                   </Link>
                 </div>

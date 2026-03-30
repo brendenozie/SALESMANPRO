@@ -63,7 +63,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                 </p>
 
                 <motion.a
-                  href={promo.ctaLink || '#'}
+                  href={promo.ctaLink || '/petsecommerce/products'}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="inline-flex items-center gap-4 px-10 py-5 rounded-full text-white font-black text-lg shadow-2xl transition-all"
@@ -120,7 +120,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                 
                 <div className="mt-auto">
                   <a
-                    href={item.ctaLink || '#'}
+                    href={item.ctaLink || '/petsecommerce/products'}
                     className="group/btn relative flex items-center justify-between w-full p-1 pl-6 rounded-2xl bg-slate-50 border border-slate-100 transition-all hover:bg-slate-900 overflow-hidden"
                   >
                     <span className="text-sm font-black text-slate-900 group-hover/btn:text-white transition-colors">

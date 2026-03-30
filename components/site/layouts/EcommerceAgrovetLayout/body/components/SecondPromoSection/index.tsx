@@ -60,7 +60,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
             </p>
 
             <motion.a
-              href={promotion.ctaLink || '#'}
+              href={promotion.ctaLink || '/agrovetecommerce/products'}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="inline-flex items-center gap-4 bg-slate-900 text-white px-10 py-5 rounded-2xl font-black text-sm uppercase tracking-tighter shadow-xl hover:bg-emerald-700 transition-colors group"

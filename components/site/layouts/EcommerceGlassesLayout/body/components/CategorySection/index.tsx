@@ -29,7 +29,7 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
         isLarge ? "md:col-span-2 md:row-span-2 h-[550px]" : "h-[265px]"
       }`}
     >
-      <Link href={`/ecommerce/products?category=${cat.categoryId}`} className="block h-full w-full">
+      <Link href={`/glassesecommerce/products?category=${cat.category?.id || cat.categoryId || cat.displayName}`} className="block h-full w-full">
         <Image
           src={(cat as any).imageUrl || (cat as any).image || FALLBACK_IMAGE}
           alt={cat.displayName || ""}
@@ -65,7 +65,7 @@ function SubcategoryTile({ sub, index }: { sub: ISubcategory; index: number }) {
       whileHover={{ y: -5 }}
       className="group relative h-48 rounded-3xl overflow-hidden bg-white border border-gray-100 shadow-sm"
     >
-      <Link href={`/ecommerce/products?subcategory=${sub.name}`} className="block h-full w-full p-6 flex flex-col justify-between">
+      <Link href={`/glassesecommerce/products?subcategory=${sub.name}`} className="block h-full w-full p-6 flex flex-col justify-between">
         <div className="flex justify-between items-start">
           <div className="w-10 h-10 rounded-xl bg-[#FDF8F4] flex items-center justify-center text-[#0D4C4F]">
              <SparklesIcon className="w-5 h-5" />
@@ -169,7 +169,7 @@ export default function SmartCategoriesSection({ store }: { store: StoreForm | n
         {/* Action Logic */}
         <div className="mt-16 flex justify-center">
             <Link 
-              href="/ecommerce/products" 
+              href="/glassesecommerce/products" 
               className="group px-12 py-5 bg-[#0D4C4F] text-white rounded-full flex items-center gap-4 hover:bg-black transition-all"
             >
                 <span className="text-xs font-black uppercase tracking-[0.2em]">Explore Full Catalog</span>

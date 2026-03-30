@@ -63,7 +63,7 @@ function SubcategoryPill({ sub, index }: { sub: ISubcategory; index: number }) {
       whileInView={{ opacity: 1, skewX: -12 }}
       transition={{ delay: index * 0.05 }}
     >
-      <Link href={`/ecommerce/products?subcategory=${sub.slug || sub.name}`}>
+      <Link href={`/gamingecommerce/products?subcategory=${sub.slug || sub.name}`}>
         <div className="group relative bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 p-4 transition-all duration-300 hover:border-red-600 dark:hover:border-red-600 hover:bg-white dark:hover:bg-zinc-800">
           <div className="relative flex items-center justify-between z-10 skew-x-[12deg]">
             <div className="flex flex-col">
@@ -95,14 +95,14 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
 
   return (
     <motion.div variants={itemVariants} className="group relative">
-      <Link href={`/ecommerce/products?category=${catSlug}`} className="block relative h-[450px] w-full overflow-hidden bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-white/5 transition-all">
+      <Link href={`/gamingecommerce/products?category=${cat.category?.id || cat.categoryId || catSlug}`} className="block relative h-[450px] w-full overflow-hidden bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-white/5 transition-all">
         
         <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-red-600 z-20 group-hover:w-12 group-hover:h-12 transition-all duration-300" />
         <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-zinc-400 dark:border-white/20 z-20" />
 
         <Image
           src={imageUrl}
-          alt={cat.displayName || ""}
+          alt={cat.displayName || "htttps://source.unsplash.com/random/800x600/?technology"}
           fill
           loader={customLoader}
           onError={() => setImgError(true)}
@@ -249,7 +249,7 @@ export default function CategoriesSectionGaming({ store }: { store: StoreForm | 
             viewport={{ once: true }}
             className="mt-20 flex justify-center"
         >
-          <Link href={`/ecommerce/categories`} className="group relative px-12 py-5 bg-zinc-900 dark:bg-white text-white dark:text-black font-black uppercase tracking-tighter italic text-xl hover:bg-red-600 hover:text-white transition-all overflow-hidden shadow-xl">
+          <Link href={`/gamingecommerce/categories`} className="group relative px-12 py-5 bg-zinc-900 dark:bg-white text-white dark:text-black font-black uppercase tracking-tighter italic text-xl hover:bg-red-600 hover:text-white transition-all overflow-hidden shadow-xl">
             <span className="relative z-10 flex items-center gap-3">
               ACCESS ALL MODULES <ArrowRightIcon className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
             </span>

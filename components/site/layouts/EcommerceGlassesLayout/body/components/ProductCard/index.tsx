@@ -26,10 +26,10 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
     <motion.div className="group relative flex flex-col bg-white overflow-hidden">
       {/* Image Wrapper */}
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F9F6F2]">
-        <Link href={`/ecommerce/products/${product.id}`} className="block h-full w-full">
+        <Link href={`/glassesecommerce/products/${product.id}`} className="block h-full w-full">
           <Image
             src={product.images?.[0] || 'https://via.placeholder.com/600x800'}
-            alt={product.name}
+            alt={product.name || 'Product Image'}
             fill
             loader={loader}
             className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -71,7 +71,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             {product.name}
           </h4>
           <span className="text-[13px] font-serif italic text-gray-500">
-            ${(product.finalPrice ?? 0).toFixed(2)}
+            ${(product.finalPrice ?? 0).toFixed(2) || product.sellingPrice ? `$${(product.finalPrice ?? product.sellingPrice).toFixed(2)}` : 'N/A'}
           </span>
         </div>
         <div className="flex items-center gap-1">

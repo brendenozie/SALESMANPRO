@@ -27,7 +27,7 @@ export default function FullScreenHero({ heroSlides, themeSettings }: any) {
       headline: 'ORGANIC HARVEST$DELIVERED DAILY',
       badgeText: 'Hand-picked premium produce from local farmers, delivered to your doorstep within 2 hours.',
       ctaText: 'Start Shopping',
-      ctaLink: '/shop'
+      ctaLink: '/groceriesecommerce/products'
     },
     {
       imageUrl: 'https://images.unsplash.com/photo-1610348725531-843dff563e2c?q=80&w=2000',
@@ -35,7 +35,7 @@ export default function FullScreenHero({ heroSlides, themeSettings }: any) {
       headline: 'FUEL YOUR BODY$WITH NATURE',
       badgeText: 'Explore our curated selection of superfoods and seasonal greens to kickstart your wellness journey.',
       ctaText: 'View Seasonal Picks',
-      ctaLink: '/seasonal'
+      ctaLink: '/groceriesecommerce/products?filter=seasonal'
     }
   ]);
 
@@ -123,7 +123,7 @@ export default function FullScreenHero({ heroSlides, themeSettings }: any) {
             className="flex flex-col sm:flex-row items-start sm:items-center gap-6"
           >
             <Link
-              href={slides[current].ctaLink}
+              href={slides[current].ctaLink || '/groceriesecommerce/products'}
               className="group flex items-center px-10 py-5 rounded-full text-white font-bold text-lg transition-all duration-300 hover:shadow-[0_0_30px_rgba(22,163,74,0.4)]"
               style={{ backgroundColor: primary }}
             >

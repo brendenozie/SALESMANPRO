@@ -107,7 +107,7 @@ export default function MissionNewsSection() {
               ))}
             </div>
 
-            <Link href="/news" className="inline-flex items-center mt-12 text-[10px] font-black uppercase tracking-[0.3em] hover:text-[#c2a472] transition-colors group">
+            <Link href="/honeyecommerce/blogs" className="inline-flex items-center mt-12 text-[10px] font-black uppercase tracking-[0.3em] hover:text-[#c2a472] transition-colors group">
               Show More News 
               <ChevronRightIcon className="h-3 w-3 ml-2 group-hover:translate-x-1 transition-transform" />
             </Link>

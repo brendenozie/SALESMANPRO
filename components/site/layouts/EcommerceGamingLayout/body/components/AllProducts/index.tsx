@@ -47,7 +47,7 @@ export default function AllProducts({ id, marketplaceListings, themeSettings }: 
           </div>
 
           <button 
-            onClick={() => window.location.href = `/ecommerce/products`}
+            onClick={() => window.location.href = `/gamingecommerce/products`}
             className="group relative flex items-center gap-3 px-8 py-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 overflow-hidden transition-all hover:border-red-600/50 shadow-md dark:shadow-none"
           >
             <span className="relative z-10 font-black uppercase italic tracking-tighter text-sm text-zinc-900 dark:text-white group-hover:text-red-500 transition-colors">

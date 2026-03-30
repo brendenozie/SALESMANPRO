@@ -95,7 +95,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
 
               <div className="flex flex-col sm:flex-row items-center gap-8">
                 <a
-                  href={promotion.ctaLink || '#'}
+                  href={promotion.ctaLink || '/flowersecommerce/products'}
                   className="w-full sm:w-auto text-center bg-slate-900 text-white font-bold uppercase tracking-widest text-[12px] py-5 px-12 rounded-full hover:bg-slate-800 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1"
                 >
                   {promotion.ctaText}

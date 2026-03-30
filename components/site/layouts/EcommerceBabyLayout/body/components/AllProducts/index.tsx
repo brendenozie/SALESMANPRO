@@ -62,7 +62,7 @@ export default function AllProducts({ id, marketplaceListings, themeSettings }: 
             </h2>
           </div>
 
-          <Link href="/ecommerce/products">
+          <Link href="/babyecommerce/products">
             <motion.button 
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}

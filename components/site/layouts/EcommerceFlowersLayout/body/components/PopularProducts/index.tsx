@@ -46,7 +46,7 @@ export default function DailyBestSells({ id }: { id: string }) {
           
           <motion.button 
             whileHover={{ x: 5 }}
-            onClick={() => window.location.href = `/ecommerce/products`}
+            onClick={() => window.location.href = `/flowersecommerce/products`}
             className="flex items-center gap-3 text-slate-900 font-bold uppercase tracking-[0.2em] text-[12px] border-b border-slate-200 pb-2 self-start md:self-auto"
           >
             Explore All Stems <ArrowRightIcon className="w-4 h-4" />

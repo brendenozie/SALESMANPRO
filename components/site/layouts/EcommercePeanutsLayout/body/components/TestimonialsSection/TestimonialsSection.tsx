@@ -79,7 +79,7 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
                 <div className="relative w-12 h-12 rounded-2xl overflow-hidden bg-stone-100 shadow-inner">
                   <img
                     src={t.avatarUrl || `https://ui-avatars.com/api/?name=${t.authorName}&background=F3A852&color=3E2723`}
-                    alt={t.authorName}
+                    alt={t.authorName || 'User Avatar'}
                     className="w-full h-full object-cover"
                   />
                 </div>

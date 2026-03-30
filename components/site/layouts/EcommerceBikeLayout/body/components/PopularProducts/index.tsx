@@ -44,7 +44,7 @@ export default function DailyBestSells({ id }: { id: string }) {
           </div>
 
           <button 
-            onClick={() => window.location.href = `/ecommerce/products`}
+            onClick={() => window.location.href = `/bikeecommerce/products`}
             className="group flex items-center gap-4 text-xs font-black tracking-[0.3em] uppercase transition-all hover:gap-6"
           >
             Full Catalog <ArrowRightIcon className="w-5 h-5" style={{ color: primary }} />

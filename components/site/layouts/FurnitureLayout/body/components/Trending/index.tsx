@@ -10,6 +10,7 @@ import { createCachedFetcher } from '@/lib/swrCachedFetcher';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css'; 
+import Link from '@/components/Link';
 // Note: You might need to adjust the paths/import for slick.css/slick-theme.css 
 // based on your project's CSS setup if the imports above don't work globally.
 
@@ -105,12 +106,14 @@ export default function DailyBestSells({ id }: { id: string }) {
   return (
     <section className="py-8 sm:py-12 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-6">
-          <p className="text-2xl sm:text-3xl font-bold text-gray-900">Trending Products</p>
-          <button className="flex items-center text-green-600 font-semibold text-sm sm:text-base hover:underline transition duration-150 ease-in-out">
-            See All <ArrowRightCircleIcon className="w-5 h-5 ml-1 sm:w-6 sm:h-6 sm:ml-2" />
-          </button>
-        </div>
+        <Link href="/furnitureecommerce/products?flag=trending" className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center mb-6">
+            <p className="text-2xl sm:text-3xl font-bold text-gray-900">Trending Products</p>
+            <button className="flex items-center text-green-600 font-semibold text-sm sm:text-base hover:underline transition duration-150 ease-in-out">
+              See All <ArrowRightCircleIcon className="w-5 h-5 ml-1 sm:w-6 sm:h-6 sm:ml-2" />
+            </button>
+          </div>
+        </Link>
 
         {/* --- Responsive Product Display --- */}
         

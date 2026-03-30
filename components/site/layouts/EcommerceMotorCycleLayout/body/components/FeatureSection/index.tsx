@@ -15,7 +15,7 @@ export default function FeatureSection() {
     description: "With more than 10 years experience in the field, Withings invents, designs, and new entry manufactures a range of award-winning.",
     subDescription: "Come clinically validated smart health devices and associated apps. Withings provides an the comfort of home, and can help anyone master long term health goals.",
     ctaText: "Shop Now",
-    ctaLink: "/ecommerce/products",
+    ctaLink: "/motorcycleecommerce/products",
     imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80", // Placeholder matching the watch style
   };
 

@@ -63,7 +63,7 @@ export default function DailyBestSells({ id }: { id: string }) {
             <h2 className="text-4xl md:text-5xl font-serif text-gray-900 mt-2">The Heritage Collection</h2>
           </div>
           <button 
-            onClick={() => window.location.href = `/ecommerce/products`}
+            onClick={() => window.location.href = `/watchecommerce/products`}
             className="group flex items-center gap-2 text-sm font-bold tracking-widest uppercase pb-1 border-b-2 border-black"
           >
             Explore All <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

@@ -65,7 +65,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                 <motion.a
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  href={promo.ctaLink || '#'}
+                  href={promo.ctaLink || '/glassesecommerce/products'}
                   className="inline-flex items-center gap-4 px-10 py-5 rounded-full text-white text-xs font-black uppercase tracking-widest transition-all shadow-2xl"
                   style={{ backgroundColor: primary }}
                 >
@@ -107,7 +107,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                     {item.description}
                   </p>
                   <a
-                    href={item.ctaLink || '#'}
+                    href={item.ctaLink || '/glassesecommerce/products'}
                     className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#F3A852] hover:text-white transition-colors"
                   >
                     {item.ctaText || 'Shop Collection'} <ArrowRightIcon className="w-3 h-3" />

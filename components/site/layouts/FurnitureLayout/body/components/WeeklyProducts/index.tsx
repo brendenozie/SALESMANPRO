@@ -88,7 +88,7 @@ export default function WeeklyProducts({ id }: { id: string }) {
           </div>
 
           <button
-            onClick={() => { window.location.href = `/products?filter=onOffer`; }}
+            onClick={() => { window.location.href = `/furnitureecommerce/products?flag=isOnOffer`; }}
             className="group flex items-center gap-4 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-900 dark:text-white hover:opacity-70 transition-all"
           >
             Explore All 

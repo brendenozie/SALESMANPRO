@@ -39,7 +39,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                 {promo.description}
               </p>
               <a
-                href={promo.ctaLink || '#'}
+                href={promo.ctaLink || '/bikeecommerce/collections'}
                 className="group inline-flex items-center gap-4 text-sm font-bold uppercase tracking-widest pt-4"
               >
                 <span className="relative">
@@ -85,7 +85,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
             <div className="absolute inset-0 p-12 flex flex-col justify-end bg-gradient-to-t from-black/80 via-transparent to-transparent">
               <span className="text-amber-500 text-xs font-bold tracking-widest mb-2 uppercase">Feature</span>
               <h3 className="text-4xl font-serif mb-4">{items[0].title}</h3>
-              <a href={items[0].ctaLink || '#'} className="text-sm font-bold tracking-widest uppercase border-b border-white w-fit pb-1 group-hover:text-amber-500 group-hover:border-amber-500 transition-colors">
+              <a href={items[0].ctaLink || '/bikeecommerce/collections'} className="text-sm font-bold tracking-widest uppercase border-b border-white w-fit pb-1 group-hover:text-amber-500 group-hover:border-amber-500 transition-colors">
                 Explore
               </a>
             </div>
@@ -105,7 +105,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                   <p className="text-xs text-gray-300 font-light tracking-wide line-clamp-2 mb-4">
                     {item.description}
                   </p>
-                  <a href={item.ctaLink || '#'} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white">
+                  <a href={item.ctaLink || '/bikeecommerce/collections'} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white">
                     View <ArrowUpRightIcon className="w-3 h-3" />
                   </a>
                 </div>

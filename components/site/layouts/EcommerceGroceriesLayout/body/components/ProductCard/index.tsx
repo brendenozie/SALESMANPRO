@@ -28,7 +28,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
     >
       {/* Image Wrapper */}
       <div className="relative h-64 w-full p-4 overflow-hidden">
-        <Link href={`/ecommerce/products/${product.id}`} className="block h-full w-full relative rounded-2xl overflow-hidden bg-gray-50">
+        <Link href={`/groceriesecommerce/products/${product.id}`} className="block h-full w-full relative rounded-2xl overflow-hidden bg-gray-50">
           <Image
             src={product.images?.[0] || 'https://via.placeholder.com/300'}
             alt={product.name}
@@ -57,7 +57,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             <StarIcon className="w-3.5 h-3.5" />
             <span className="text-xs font-bold text-gray-500">4.8 (120)</span>
           </div>
-          <Link href={`/ecommerce/products/${product.id}`}>
+          <Link href={`/groceriesecommerce/products/${product.id}`}>
             <h4 className="text-lg font-bold text-gray-900 line-clamp-1 group-hover:text-green-600 transition-colors">
               {product.name}
             </h4>

@@ -29,7 +29,7 @@ function SubcategoryTag({ sub, index }: { sub: ISubcategory; index: number }) {
       whileInView={{ opacity: 1, scale: 1 }}
       transition={{ delay: index * 0.03 }}
     >
-      <Link href={`/ecommerce/products?subcategory=${sub.slug || sub.name}`}>
+      <Link href={`/groceriesecommerce/products?subcategory=${sub.slug || sub.name}`}>
         <div className="group flex items-center gap-3 bg-white border border-gray-100 px-5 py-4 rounded-2xl hover:border-green-600 hover:shadow-md transition-all duration-300">
           <div className="h-8 w-8 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-600 transition-colors">
             <TagIcon className="h-4 w-4 text-green-600 group-hover:text-white" />
@@ -62,7 +62,7 @@ function CategoryBentoCard({ cat, index }: { cat: IStoreCategory; index: number 
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Link href={`/ecommerce/products?category=${cat.categoryId}`} className="block h-full w-full">
+      <Link href={`/groceriesecommerce/products?category=${cat.category?.id || cat.categoryId || cat.displayName}`} className="block h-full w-full">
         <Image
           src={getImageUrl(cat)}
           alt={cat.displayName || 'Category Image'}
@@ -166,7 +166,7 @@ export default function CategoriesSectionV6({ store }: { store: StoreForm | null
 
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}>
             <Link 
-              href="/ecommerce/categories" 
+              href="/groceriesecommerce/categories" 
               className="group flex items-center gap-3 text-lg font-bold text-gray-900 hover:text-green-600 transition-colors"
             >
               All Departments

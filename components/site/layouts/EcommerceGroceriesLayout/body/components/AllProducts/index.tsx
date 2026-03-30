@@ -24,7 +24,8 @@ export default function AllProducts({ id, marketplaceListings, themeSettings }: 
   const hasMore = displayCount < marketplaceListings.length;
 
   const handleLoadMore = () => {
-    setDisplayCount(prev => prev + 4);
+    // setDisplayCount(prev => prev + 4);
+    window.location.href = `/groceriesecommerce/products`;
   };
 
   return (

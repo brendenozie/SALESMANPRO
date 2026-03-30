@@ -116,7 +116,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
               className="flex flex-wrap items-center gap-6"
             >
               <Link
-                href="/shop"
+                href="/glassesecommerce/products"
                 className="group relative px-10 py-5 bg-[#0D4C4F] text-white overflow-hidden"
               >
                 <motion.div className="absolute inset-0 bg-black translate-y-[101%] group-hover:translate-y-0 transition-transform duration-300" />

@@ -45,7 +45,7 @@ export default function AllProducts({ id, marketplaceListings, themeSettings }: 
 
           <motion.button 
             whileHover={{ x: 5 }}
-            onClick={() => window.location.href = `/ecommerce/products`}
+            onClick={() => window.location.href = `/bikeecommerce/products`}
             className="flex items-center gap-4 group"
           >
             <div className="text-right">

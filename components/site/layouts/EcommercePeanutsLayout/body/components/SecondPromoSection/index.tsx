@@ -77,7 +77,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
 
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
                 <a
-                  href={promotion.ctaLink || '#'}
+                  href={promotion.ctaLink || '/peanutecommerce/products'}
                   className="group relative inline-flex items-center gap-3 bg-[#3E2723] text-white font-black py-5 px-10 rounded-2xl transition-all duration-300 hover:bg-[#F3A852] hover:text-[#3E2723]"
                 >
                   <span className="uppercase tracking-widest text-xs">{promotion.ctaText}</span>

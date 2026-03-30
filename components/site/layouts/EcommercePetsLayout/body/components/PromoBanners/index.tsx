@@ -33,7 +33,7 @@ export default function PromoBanners({
         'https://images.unsplash.com/photo-1598133894008-61f7fdb8cc3a?auto=format&fit=crop&w=600&q=80',
       bgColor: primaryColor,
       textColor: '#ffffff',
-      href: '/ecommerce/products',
+      href: '/petsecommerce/products',
     },
     {
       title: 'Adopt Give them Home',
@@ -43,7 +43,7 @@ export default function PromoBanners({
         'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80',
       bgColor: secondaryColor,
       textColor: '#ffffff',
-      href: '/ecommerce/categories',
+      href: '/petsecommerce/categories',
     },
   ];
 

@@ -87,7 +87,7 @@ export default function DailyBestSells({ id }: { id: string }) {
             </div>
             
             <button 
-              onClick={() => window.location.href = `/ecommerce/products`}
+              onClick={() => window.location.href = `/earphonesecommerce/products`}
               className="text-xs font-bold uppercase tracking-widest text-white/40 hover:text-orange-500 transition-colors flex items-center gap-2 group"
             >
               Enter the Vault <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

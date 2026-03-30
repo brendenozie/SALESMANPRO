@@ -73,7 +73,7 @@ export default function DailyBestSells({ id }: { id: string }) {
           </div>
           
           <button 
-            onClick={() => window.location.href = `/ecommerce/products`}
+            onClick={() => window.location.href = `/groceriesecommerce/products`}
             className="group flex items-center gap-2 font-bold text-gray-900 hover:text-green-600 transition-colors"
           >
             Explore All 

@@ -102,14 +102,14 @@ export default function WelcomingPetHero({ heroSlides }: { heroSlides?: any[] })
 
                 <div className="flex flex-wrap gap-4">
                   <Link
-                    href="/shop"
+                    href="/petsecommerce/products"
                     style={{ backgroundColor: slidesToUse[index].color }}
                     className="px-8 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-orange-200 hover:brightness-110 transition-all flex items-center gap-2"
                   >
                     <ShoppingBagIcon className="w-5 h-5" />
                     Shop for My Pet
                   </Link>
-                  <Link href="/quiz" className="px-8 py-4 rounded-2xl bg-white border-2 border-slate-100 text-slate-700 font-bold text-lg hover:bg-slate-50 transition-all flex items-center gap-2">
+                  <Link href="/petsecommerce/products" className="px-8 py-4 rounded-2xl bg-white border-2 border-slate-100 text-slate-700 font-bold text-lg hover:bg-slate-50 transition-all flex items-center gap-2">
                     Find the Right Fit
                     <ChevronRightIcon className="w-4 h-4" />
                   </Link>

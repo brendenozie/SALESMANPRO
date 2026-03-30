@@ -27,7 +27,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
     description: 'Enjoy exclusive discounts on our top-rated kibble and toys this weekend only. Grab your furry friend\'s favorites before they\'re gone!',
     bannerUrl: 'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?q=80&w=1000',
     ctaText: 'Claim Discount',
-    ctaLink: '#',
+    ctaLink: '/petsecommerce/products?companyId=default&flag=weekend-pawty' // Fallback link,
   };
 
   return (
@@ -91,7 +91,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                 className="flex flex-wrap gap-4"
               >
                 <a
-                  href={promo.ctaLink || '#'}
+                  href={promo.ctaLink || '/petsecommerce/products'}
                   className="group relative flex items-center gap-3 bg-white px-10 py-5 rounded-2xl text-slate-900 font-black transition-all hover:scale-105 hover:shadow-xl active:scale-95"
                 >
                   <TicketIcon className="w-6 h-6 text-slate-900 group-hover:rotate-12 transition-transform" />

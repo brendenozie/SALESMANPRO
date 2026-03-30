@@ -41,7 +41,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
       </div>
 
       {/* Image Section */}
-      <Link href={`/ecommerce/products/${product.id}`} className="relative h-64 w-full overflow-hidden bg-zinc-100 dark:bg-black">
+      <Link href={`/gamingecommerce/products/${product.id}`} className="relative h-64 w-full overflow-hidden bg-zinc-100 dark:bg-black">
         <Image
           src={imageSrc}
           alt={name}
@@ -65,7 +65,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
         </div>
 
         <div className="flex items-baseline gap-3 mb-6">
-          <span className="text-2xl font-black italic text-zinc-900 dark:text-white">${finalPrice?.toFixed(2)}</span>
+          <span className="text-2xl font-black italic text-zinc-900 dark:text-white">${finalPrice?.toFixed(2) || sellingPrice?.toFixed(2)}</span>
           {sellingPrice && sellingPrice > finalPrice && (
             <span className="text-sm line-through text-zinc-400 dark:text-zinc-600">${sellingPrice.toFixed(2)}</span>
           )}

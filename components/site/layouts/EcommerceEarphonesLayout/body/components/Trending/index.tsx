@@ -77,7 +77,7 @@ export default function TrendingProducts({ id }: { id: string }) {
             </div>
             
             <button 
-              onClick={() => window.location.href = `/ecommerce/products`}
+              onClick={() => window.location.href = `/earphonesecommerce/products`}
               className="flex items-center gap-2 text-white/40 font-bold text-xs uppercase tracking-widest hover:text-white transition-colors group"
             >
               See Full Rank <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

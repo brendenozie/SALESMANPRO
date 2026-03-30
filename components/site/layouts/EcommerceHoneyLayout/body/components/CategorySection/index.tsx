@@ -40,7 +40,7 @@ const hexVariants: Variants = {
 function HoneycombPill({ sub }: { sub: ISubcategory }) {
   return (
     <motion.div variants={hexVariants}>
-      <Link href={`/ecommerce/products?subcategory=${sub.slug || sub.name}`}>
+      <Link href={`/honeyecommerce/products?subcategory=${sub.slug || sub.name}`}>
         <div className="group flex items-center gap-3 px-5 py-3 rounded-full bg-amber-50 border border-amber-100 hover:bg-amber-500 hover:border-amber-600 transition-all duration-300 shadow-sm hover:shadow-md">
           <div className="w-2 h-2 rounded-full bg-amber-400 group-hover:bg-white" />
           <span className="text-sm font-bold text-amber-900 group-hover:text-white transition-colors">
@@ -123,7 +123,7 @@ export default function HoneyCategorySection({ StoreCategory, themeSettings }: H
             const [isHovered, setIsHovered] = useState(false); // Track hover for this card
 
             <motion.div key={cat.id || idx} variants={hexVariants} className="group">
-              <Link href={`/ecommerce/products?category=${cat.id}`}>
+              <Link href={`/honeyecommerce/products?category=${cat.categoryId || cat.category?.id || cat.id}`}>
               {/* cat.slug ||  */}
                 <div className="relative flex flex-col items-center">
                   {/* Hexagon Shape Container */}
@@ -187,7 +187,7 @@ export default function HoneyCategorySection({ StoreCategory, themeSettings }: H
           {/* Golden CTA Card */}
           {!isFew && (
             <motion.div variants={hexVariants} className="hidden lg:flex">
-              <Link href="/ecommerce/categories" className="w-full h-full p-8 border-2 border-dashed border-amber-200 rounded-3xl flex flex-col items-center justify-center text-center hover:bg-amber-50 transition-colors">
+              <Link href="/honeyecommerce/categories" className="w-full h-full p-8 border-2 border-dashed border-amber-200 rounded-3xl flex flex-col items-center justify-center text-center hover:bg-amber-50 transition-colors">
                  <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mb-4">
                     <ArrowRightIcon className="w-6 h-6 text-amber-600" />
                  </div>

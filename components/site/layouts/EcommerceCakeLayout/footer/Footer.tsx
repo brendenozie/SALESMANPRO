@@ -76,7 +76,7 @@ export default function Footer() {
               <ul className="space-y-4 text-sm font-bold">
                 {['Shop All', 'Signature Cakes', 'Wedding Studio', 'Gift Cards'].map((item) => (
                   <li key={item}>
-                    <Link href="#" className="hover:text-white transition-colors flex items-center gap-2 group">
+                    <Link href={item === 'Shop All' ? '/cakeecommerce/products' : `/cakeecommerce/products?name=${item.toLowerCase().replace(' ', '-')}`} className="hover:text-white transition-colors flex items-center gap-2 group">
                       {item}
                       <ArrowUpRightIcon className="w-3 h-3 opacity-0 group-hover:opacity-100 -translate-y-1 transition-all" />
                     </Link>
@@ -90,7 +90,9 @@ export default function Footer() {
               <ul className="space-y-4 text-sm font-bold">
                 {['Our Story', 'Visit Us', 'Work with Us', 'Contact'].map((item) => (
                   <li key={item}>
-                    <Link href="#" className="hover:text-white transition-colors">{item}</Link>
+                    <Link href={item === 'Our Story' ? '/cakeecommerce/about' : item === 'Visit Us' ? '/cakeecommerce/visit' : item === 'Work with Us' ? '/cakeecommerce/careers' : '/cakeecommerce/contact'} className="hover:text-white transition-colors">
+                      {item}
+                    </Link>
                   </li>
                 ))}
               </ul>

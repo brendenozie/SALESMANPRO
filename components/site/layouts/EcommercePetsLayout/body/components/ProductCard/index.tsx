@@ -26,7 +26,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
     >
       {/* Image Area */}
       <div className="relative aspect-[10/11] rounded-[2rem] overflow-hidden bg-slate-50">
-        <Link href={`/ecommerce/products/${product.id}`}>
+        <Link href={`/petsecommerce/products/${product.id}`}>
           <Image
             src={product.images?.[0] || 'https://via.placeholder.com/400'}
             alt={product.name}

@@ -114,7 +114,7 @@ export default function NewsletterPromoGrid() {
                   
                   <p className="text-zinc-500 dark:text-zinc-400 font-bold text-lg italic">{item.subtitle}</p>
                   
-                  <Link href="/ecommerce/products" className="block pt-4">
+                  <Link href="/babyecommerce/products" className="block pt-4">
                     <motion.button 
                       whileHover={{ scale: 1.05, boxShadow: `0 20px 40px ${primaryColor}44` }}
                       whileTap={{ scale: 0.95 }}
@@ -144,7 +144,7 @@ export default function NewsletterPromoGrid() {
                     {item.price && (
                       <p className="text-sky-500 dark:text-sky-400 font-black text-3xl">{item.price}</p>
                     )}
-                    <Link href="/ecommerce/products">
+                    <Link href="/babyecommerce/products">
                       <button className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
                         View Details 
                         <div className="w-8 h-8 rounded-full bg-white dark:bg-zinc-800 flex items-center justify-center shadow-md group-hover:translate-x-2 transition-all">

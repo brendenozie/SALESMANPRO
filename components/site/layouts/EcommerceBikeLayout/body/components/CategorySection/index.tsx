@@ -30,7 +30,7 @@ const itemVariants: Variants = {
 function TechSpecTile({ sub }: { sub: ISubcategory }) {
   return (
     <motion.div variants={itemVariants}>
-      <Link href={`/shop/catalog?subcategory=${sub.slug || sub.name}`}>
+      <Link href={`/bikeecommerce/products?subcategory=${sub.slug || sub.name}`}>
         <div className="group flex items-center justify-between p-4 bg-white border border-slate-200 hover:border-slate-900 transition-all duration-300">
           <div className="flex flex-col">
             <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold mb-0.5">Series</span>
@@ -90,7 +90,7 @@ export default function WatchCategorySection({ StoreCategory, themeSettings }: W
           </div>
           
           <Link 
-            href="/shop/catalog" 
+            href="/bikeecommerce/products" 
             className="text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-2"
           >
             Full Catalog <ArrowRightIcon className="w-3 h-3" />
@@ -107,7 +107,7 @@ export default function WatchCategorySection({ StoreCategory, themeSettings }: W
         >
           {categoriesToShow.map((cat, idx) => (
             <motion.div key={cat.id || idx} variants={itemVariants}>
-              <Link href={`/shop/catalog?category=${ cat.id}`}>
+              <Link href={`category=${cat.categoryId || cat.category?.id || cat.displayName?.toLowerCase()}`}>
               {/* cat.slug || */}
                 <div className="group relative bg-slate-50 border border-transparent hover:border-slate-200 hover:bg-white p-8 h-full flex flex-col items-center text-center transition-all duration-500">
                   {/* Icon with circular "Lens" effect */}

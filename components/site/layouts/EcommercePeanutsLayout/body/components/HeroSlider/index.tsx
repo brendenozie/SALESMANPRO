@@ -81,7 +81,7 @@ export default function PeanutHeroIntuitive({ heroSlides }: any) {
 
                 <div className="flex items-center gap-8">
                   <Link
-                    href="/shop"
+                    href="/peanutecommerce/products"
                     className="group flex items-center gap-4 text-[11px] font-black uppercase tracking-[0.2em] text-[#3E2723] transition-all"
                   >
                     <span className="border-b-2 border-[#3E2723] pb-1 group-hover:border-[#F3A852] group-hover:text-[#F3A852] transition-colors">

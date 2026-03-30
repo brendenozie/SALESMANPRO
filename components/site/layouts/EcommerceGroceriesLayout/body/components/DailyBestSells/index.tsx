@@ -89,7 +89,7 @@ export default function DailyBestSells({ id }: { id: string }) {
 
           <motion.button 
             whileHover={{ x: 5 }}
-            onClick={() => window.location.href = `/ecommerce/products`}
+            onClick={() => window.location.href = `/groceriesecommerce/products`}
             className="mt-6 md:mt-0 group flex items-center gap-2 text-lg font-bold text-gray-900"
           >
             See All Offers

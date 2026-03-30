@@ -98,7 +98,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                   <motion.a
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    href={promotion.ctaLink || '#'}
+                    href={promotion.ctaLink || '/glassesecommerce/products'}
                     className="inline-flex items-center gap-3 bg-[#F3A852] text-white px-10 py-5 rounded-full text-[11px] font-black uppercase tracking-widest shadow-xl transition-all"
                   >
                     {promotion.ctaText || 'Shop Collection'}

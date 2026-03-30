@@ -51,6 +51,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
               <Image
                 src={promotions[0].bannerUrl || 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2'}
                 alt={promotions[0].title}
+                loader={({ src }) => src}
                 fill
                 className="object-cover transition-transform duration-1000 group-hover:scale-105"
               />
@@ -68,7 +69,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                   {promotions[0].description}
                 </p>
                 <a
-                  href={promotions[0].ctaLink || '#'}
+                  href={promotions[0].ctaLink || '/agrovetecommerce/products'}
                   className="inline-flex items-center gap-3 bg-white text-slate-900 px-8 py-4 rounded-2xl font-black hover:bg-emerald-500 hover:text-white transition-all group/btn shadow-xl"
                 >
                   {promotions[0].ctaText || 'Claim Discount'}
@@ -104,7 +105,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                   
                   <div className="mt-6 flex items-center justify-between">
                     <a 
-                      href={promo.ctaLink || '#'} 
+                      href={promo.ctaLink || '/agrovetecommerce/products'} 
                       className="text-sm font-black uppercase tracking-tighter text-slate-900 border-b-2 border-emerald-500 pb-1"
                     >
                       {promo.ctaText || 'Shop Now'}
@@ -115,6 +116,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                             alt="thumb" 
                             fill 
                             className="object-cover"
+                            loader={({ src }) => src}
                         />
                     </div>
                   </div>

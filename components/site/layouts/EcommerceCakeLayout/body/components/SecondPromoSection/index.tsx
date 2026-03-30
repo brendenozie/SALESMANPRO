@@ -31,7 +31,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
       'Treat yourself to our artisan cake collection this weekend. Every bite is crafted with premium ingredients and a sprinkle of magic. Available while supplies last!',
     bannerUrl: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1000&q=80',
     ctaText: 'Claim My Treat',
-    ctaLink: '/shop',
+    ctaLink: '/cakeecommerce/products',
   };
 
   return (

@@ -117,7 +117,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
             {/* Background Image with Soft Overlay */}
             <div className="absolute inset-0 z-0">
               <Image
-                src={slide.imageUrl || ''}
+                src={slide.imageUrl || 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=1600&q=80'}
                 alt="background"
                 fill
                 className="object-cover brightness-95"
@@ -161,7 +161,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
 
                   <div className="flex items-center gap-6">
                     <Link
-                      href={slide.ctaLink || '#'}
+                      href={slide.ctaLink || '/flowersecommerce/products'}
                       className="group relative px-8 py-4 bg-slate-900 text-white rounded-full overflow-hidden transition-all hover:scale-105 active:scale-95"
                     >
                       <span className="relative z-10 font-medium">{slide.ctaText}</span>
@@ -186,7 +186,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                 <div className="absolute inset-0 border border-white/40 rounded-2xl transform translate-x-4 translate-y-4 z-0" />
                 <div className="relative h-full w-full overflow-hidden rounded-2xl shadow-2xl border-8 border-white">
                    <Image 
-                    src={slide.productImageUrl || slide.imageUrl || ''} 
+                    src={slide.productImageUrl || slide.imageUrl || 'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&w=600&q=80'} 
                     alt="feature" 
                     fill 
                     className="object-cover"

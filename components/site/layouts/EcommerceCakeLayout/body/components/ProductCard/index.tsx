@@ -39,7 +39,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       className="group relative flex flex-col bg-white rounded-2xl transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] overflow-hidden border border-gray-100/50"
     >
       {/* 1. Image Section with Boutique Labels */}
-      <Link href={`/ecommerce/products/${product.id}`} className="relative h-80 w-full overflow-hidden bg-gray-50">
+      <Link href={`/babyecommerce/products/${product.id}`} className="relative h-80 w-full overflow-hidden bg-gray-50">
         <Image
           src={imageSrc}
           alt={name}
@@ -88,7 +88,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               </span>
             )}
             <span className="text-xl font-black text-gray-900">
-              ${(finalPrice ?? 0).toFixed(2)}
+              {(finalPrice ?? 0).toFixed(2) || sellingPrice?.toFixed(2) || 'N/A'}
             </span>
           </div>
 

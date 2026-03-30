@@ -98,7 +98,7 @@ export default function TrendingProducts({ id }: { id: string }) {
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
             transition={{ delay: 0.3 }}
-            onClick={() => window.location.href = `/ecommerce/products`}
+            onClick={() => window.location.href = `/groceriesecommerce/products`}
             className="group flex items-center gap-4 bg-gray-900 text-white pl-8 pr-2 py-2 rounded-[2rem] hover:bg-orange-600 transition-all duration-500 shadow-xl hover:shadow-orange-200"
           >
             <span className="font-bold tracking-tight">Discover Full Collection</span>

@@ -92,7 +92,7 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
   return (
     <motion.div variants={cardVariants} className="flex-shrink-0 group">
       <Link
-        href={`/ecommerce/products?category=${catSlug}`}
+        href={`/babyecommerce/products?category=${cat.categoryId || cat.category?.id || catSlug}`}
         className="flex flex-col items-center w-44 md:w-56"
       >
         <div className={`relative w-full aspect-[4/5] rounded-[3.5rem] ${theme.bg} transition-all duration-700 group-hover:shadow-[0_40px_80px_-15px_rgba(0,0,0,0.1)] dark:group-hover:shadow-[0_40px_80px_-15px_rgba(0,0,0,0.4)] group-hover:-translate-y-4 flex flex-col items-center justify-center p-8 border-2 border-transparent group-hover:border-white dark:group-hover:border-zinc-800`}>
@@ -130,7 +130,7 @@ function SubcategoryPill({ sub, index }: { sub: ISubcategory; index: number }) {
   const theme = resolveCategoryTheme(index);
   return (
     <motion.div variants={cardVariants}>
-      <Link href={`/ecommerce/products?subcategory=${sub.slug || sub.name}`}>
+      <Link href={`/babyecommerce/products?subcategory=${sub.slug || sub.name}`}>
         <div className="relative group bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 p-5 rounded-[2rem] transition-all duration-500 hover:shadow-2xl hover:shadow-zinc-200/50 dark:hover:shadow-none hover:border-transparent overflow-hidden">
           <div className={`absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity ${theme.accent}`} />
           <div className="relative flex items-center justify-between">

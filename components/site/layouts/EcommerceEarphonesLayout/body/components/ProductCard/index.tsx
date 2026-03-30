@@ -28,7 +28,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
       className="group relative flex flex-col bg-[#0a0a0a] rounded-[2rem] border border-white/5 overflow-hidden transition-all duration-500 hover:border-white/20 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
     >
       {/* Media Container */}
-      <Link href={`/ecommerce/products/${product.id}`} className="relative h-80 w-full bg-[#111]">
+      <Link href={`/earphonesecommerce/products/${product.id}`} className="relative h-80 w-full bg-[#111]">
         <Image
           src={product.images?.[0] || 'https://via.placeholder.com/300'}
           alt={product.name}
@@ -65,7 +65,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
         <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
           <div className="flex flex-col">
             <span className="text-white font-black text-xl italic leading-none">
-              ${(product.finalPrice ?? 0).toFixed(2)}
+              ${(product.finalPrice ?? 0).toFixed(2) || product.sellingPrice?.toFixed(2) || '0.00'}
             </span>
             {product.sellingPrice && (
               <span className="text-white/30 line-through text-[10px] mt-1">

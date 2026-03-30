@@ -28,7 +28,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
       {/* Price Badge - Top Right */}
       <div className="absolute top-6 right-6 z-10 flex flex-col items-end">
         <span className="text-2xl font-black italic tracking-tighter text-gray-900 leading-none">
-          ${(finalPrice ?? 0).toLocaleString()}
+          ${(finalPrice ?? 0).toLocaleString() || sellingPrice.toLocaleString()}
         </span>
         {sellingPrice > finalPrice && (
           <span className="text-[10px] line-through text-gray-400 font-bold uppercase tracking-widest">
@@ -43,7 +43,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
              style={{ backgroundImage: `radial-gradient(${primary} 1px, transparent 1px)`, backgroundSize: '20px 20px' }} />
         
-        <Link href={`/ecommerce/products/${product.id}`} className="block h-full w-full">
+        <Link href={`/bikeecommerce/products/${product.id}`} className="block h-full w-full">
           <Image
             src={imageSrc}
             alt={name}
@@ -66,7 +66,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
         <span className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: primary }}>
           Series 2026
         </span>
-        <Link href={`/ecommerce/products/${product.id}`}>
+        <Link href={`/bikeecommerce/products/${product.id}`}>
           <h4 className="text-xl font-black italic uppercase tracking-tighter text-gray-900 leading-tight mt-1 group-hover:underline decoration-2">
             {name}
           </h4>

@@ -23,7 +23,7 @@ export default function PremiumHeroSlider({ heroSlides, themeSettings }: any) {
       badgeText: "Experience Class 1 Bluetooth connectivity with 40-hour battery life. Engineered for the studio, built for the street.",
       imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1200&q=80",
       ctaText: "Explore the Series",
-      ctaLink: "/shop"
+      ctaLink: "/earphonesecommerce/products"
     }
   ];
 

@@ -31,7 +31,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
     >
       {/* Image Container */}
       <div className="relative aspect-[4/5] overflow-hidden bg-[#f3f3f3] rounded-sm mb-6">
-        <Link href={`/ecommerce/products/${product.id}`}>
+        <Link href={`/watchecommerce/products/${product.id}`}>
           <Image
             src={imageSrc || 'https://images.unsplash.com/photo-1600185364436-1bafc9e8e5c3?auto=format&fit=crop&w=600&q=80'}
             alt={name}
@@ -43,7 +43,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
         </Link>
 
         {/* Floating Badges */}
-        {sellingPrice > finalPrice && (
+        {sellingPrice > (finalPrice || 0) && (
           <div className="absolute top-4 left-4 bg-white px-3 py-1 shadow-sm">
             <p className="text-[10px] font-bold tracking-tighter uppercase text-red-600">
               Limited Edition
@@ -78,7 +78,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
            </div>
         </div>
         
-        <Link href={`/ecommerce/products/${product.id}`}>
+        <Link href={`/watchecommerce/products/${product.id}`}>
           <h4 className="text-lg font-serif italic text-gray-900 group-hover:text-[#c5a059] transition-colors line-clamp-1 px-2">
             {name}
           </h4>
@@ -88,7 +88,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
           <span className="text-xl font-light tracking-wider text-gray-900">
             ${(finalPrice ?? 0).toLocaleString()}
           </span>
-          {sellingPrice > finalPrice && (
+          {sellingPrice > (finalPrice || 0) && (
             <span className="text-sm line-through text-gray-400">
               ${sellingPrice.toLocaleString()}
             </span>

@@ -40,7 +40,7 @@ export default function DailyBestSells({ id }: { id: string }) {
           </div>
 
           <button 
-            onClick={() => window.location.href = `/ecommerce/products`}
+            onClick={() => window.location.href = `/earphonesecommerce/products`}
             className="group flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 px-6 py-3 rounded-full transition-all"
           >
             <span className="text-xs font-bold uppercase tracking-widest text-white">View All Gear</span>

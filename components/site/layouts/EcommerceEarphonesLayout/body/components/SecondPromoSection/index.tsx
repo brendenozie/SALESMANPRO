@@ -103,7 +103,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
               transition={{ delay: 0.3 }}
             >
               <a
-                href={promotion.ctaLink || '#'}
+                href={promotion.ctaLink || '/earphonesecommerce/products'}
                 className="group relative inline-flex items-center gap-4 bg-white px-10 py-5 rounded-2xl overflow-hidden transition-all hover:pr-14"
               >
                 <span className="relative z-10 text-black font-black uppercase tracking-widest text-sm">

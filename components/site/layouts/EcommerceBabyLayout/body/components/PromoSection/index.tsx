@@ -50,7 +50,7 @@ export default function PromoSection({ promotions }: { promotions: IPromotion[] 
               </p>
 
               <div className="flex flex-col sm:flex-row items-center gap-6 justify-center lg:justify-start pt-4">
-                <Link href={promo.ctaLink || '#'}>
+                <Link href={promo.ctaLink || '/babyecommerce/products'} className="w-full sm:w-auto">
                   <motion.button
                     whileHover={{ scale: 1.05, y: -5 }}
                     whileTap={{ scale: 0.95 }}
@@ -68,7 +68,7 @@ export default function PromoSection({ promotions }: { promotions: IPromotion[] 
               {/* Artistic offset frame */}
               <div className="absolute inset-0 border-2 border-zinc-100 dark:border-zinc-800 rounded-[4rem] translate-x-6 translate-y-6 -z-10 transition-transform group-hover:translate-x-3 group-hover:translate-y-3" />
               <img
-                src={promo.bannerUrl || ''}
+                src={promo.bannerUrl || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80'}
                 alt={promo.title}
                 className="w-full h-full object-cover rounded-[4rem] shadow-2xl"
               />
@@ -97,7 +97,7 @@ export default function PromoSection({ promotions }: { promotions: IPromotion[] 
                   ${isLarge ? 'lg:col-span-8 h-[600px] lg:h-[750px]' : 'lg:col-span-4 h-[600px] lg:h-[750px]'}`}
               >
                 <img
-                  src={item.bannerUrl || ''}
+                  src={item.bannerUrl || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80'}
                   alt={item.title}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-[2s] ease-out group-hover:scale-110"
                 />
@@ -123,7 +123,7 @@ export default function PromoSection({ promotions }: { promotions: IPromotion[] 
                   </p>
                   
                   <Link
-                    href={item.ctaLink || '#'}
+                    href={item.ctaLink || '/babyecommerce/products'}
                     className="inline-flex items-center gap-4 group/btn w-fit"
                   >
                     <div className="px-8 py-4 rounded-2xl bg-white text-zinc-900 font-black text-xs uppercase tracking-widest group-hover/btn:bg-zinc-900 group-hover/btn:text-white transition-colors">

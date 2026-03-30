@@ -67,7 +67,7 @@ export default function DailyBestSells({ id }: { id: string }) {
           </div>
           
           <button 
-            onClick={() => window.location.href = `/ecommerce/products`}
+            onClick={() => window.location.href = `/gamingecommerce/products`}
             className="group flex items-center gap-3 text-zinc-900 dark:text-white font-black italic tracking-tighter hover:text-red-600 transition-all mt-6 md:mt-0"
           >
             EXPAND_CATALOG <ArrowRightIcon className="w-6 h-6 group-hover:translate-x-2 transition-transform" />

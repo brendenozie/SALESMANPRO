@@ -29,7 +29,7 @@ export default function DailyBestSells({ id }: { id: string }) {
           </div>
           
           <button 
-            onClick={() => window.location.href = `/ecommerce/products`}
+            onClick={() => window.location.href = `/honeyecommerce/products?flag=isOnOffer`}
             className="group flex items-center gap-3 text-[11px] font-black uppercase tracking-widest text-[#3E2723]"
           >
             <span className="border-b-2 border-[#3E2723] pb-1 group-hover:text-[#F3A852] group-hover:border-[#F3A852] transition-all">

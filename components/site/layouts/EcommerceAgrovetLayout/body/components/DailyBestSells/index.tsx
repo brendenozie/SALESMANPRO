@@ -108,7 +108,7 @@ export default function DailyBestSells({ id }: { id: string }) {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Daily Best Sells</h2>
           <button
-          onClick={() => window.location.href = `/ecommerce/products`}
+          onClick={() => window.location.href = `/agrovetecommerce/products?companyId=${id}&flag=isOnOffer  `}
            className="flex items-center text-green-600 font-semibold text-sm sm:text-base hover:underline transition duration-150 ease-in-out">
             See All <ArrowRightCircleIcon className="w-5 h-5 ml-1 sm:w-6 sm:h-6 sm:ml-2" />
           </button>

@@ -39,7 +39,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                   {promotion.description}
                 </p>
                 <a
-                  href={promotion.ctaLink || '#'}
+                  href={promotion.ctaLink || '/peanutecommerce/products'}
                   className="inline-block font-semibold py-3 px-8 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-xl"
                   style={{ backgroundColor: primary, color: '#FFFFFF' }}
                 >
@@ -77,7 +77,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                     {item.description}
                   </p>
                   <a
-                    href={item.ctaLink || '#'}
+                    href={item.ctaLink || '/peanutecommerce/products'}
                     className="block text-center font-semibold py-2 px-4 rounded-md transition-colors hover:opacity-90"
                     style={{ background: primary, color: '#FFFFFF' }}
                   >

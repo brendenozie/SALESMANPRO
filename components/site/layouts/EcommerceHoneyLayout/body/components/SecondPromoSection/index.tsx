@@ -89,7 +89,7 @@ export default function SecondPromoSection({ promotions }: { promotions: IPromot
 
               <div className="flex flex-wrap items-center gap-8">
                 <a
-                  href={promotion.ctaLink || '#'}
+                  href={promotion.ctaLink || '/honeyecommerce/products'}
                   className="group relative px-10 py-5 bg-[#F3A852] text-[#3E2723] rounded-full font-black uppercase tracking-widest text-[11px] overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[#F3A852]/10"
                 >
                   <span className="relative z-10">{promotion.ctaText}</span>

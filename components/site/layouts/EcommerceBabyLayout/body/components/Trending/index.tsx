@@ -72,7 +72,7 @@ export default function DailyBestSells({ id }: { id: string }) {
               <NavBtn icon={<ChevronRightIcon className="w-6 h-6" />} onClick={() => scroll('right')} />
             </div>
             
-            <Link href="/ecommerce/products" className="group flex items-center gap-3 px-6 py-4 rounded-3xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold transition-all hover:scale-105 active:scale-95">
+            <Link href="/babyecommerce/products" className="group flex items-center gap-3 px-6 py-4 rounded-3xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold transition-all hover:scale-105 active:scale-95">
               <span className="text-xs uppercase tracking-widest">View All</span>
               <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
@@ -120,7 +120,7 @@ export default function DailyBestSells({ id }: { id: string }) {
               <h3 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight">Discover<br/>More Magic</h3>
               <p className="mt-2 text-xs font-bold text-zinc-400 uppercase tracking-widest">Explore 50+ Offers</p>
               
-              <Link href="/ecommerce/products" className="absolute inset-0" />
+              <Link href="/babyecommerce/products" className="absolute inset-0" />
             </motion.div>
           </div>
         </div>

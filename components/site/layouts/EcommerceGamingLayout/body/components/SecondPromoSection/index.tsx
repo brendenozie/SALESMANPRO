@@ -72,7 +72,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
 
             <div className="mt-12 flex flex-wrap items-center gap-8">
               <a
-                href={promotion.ctaLink || '#'}
+                href={promotion.ctaLink || '/gamingecommerce/products'}
                 className="group relative px-12 py-5 bg-zinc-900 dark:bg-white text-white dark:text-black font-black uppercase tracking-tighter italic text-xl hover:bg-red-600 hover:text-white transition-all overflow-hidden shadow-2xl"
                 style={{ clipPath: 'polygon(0 0, 100% 0, 90% 100%, 0% 100%)' }}
               >

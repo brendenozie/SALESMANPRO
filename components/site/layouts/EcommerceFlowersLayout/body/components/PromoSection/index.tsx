@@ -61,7 +61,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                 {promotion.description}
               </p>
               <a
-                href={promotion.ctaLink || '#'}
+                href={promotion.ctaLink || '/flowersecommerce/products'}
                 className="group flex items-center gap-4 py-4 px-10 rounded-full text-white font-bold uppercase tracking-widest text-[12px] shadow-lg transition-all duration-300"
                 style={{ backgroundColor: primary }}
               >
@@ -104,7 +104,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                   {item.description}
                 </p>
                 <a
-                  href={item.ctaLink || '#'}
+                  href={item.ctaLink || '/flowersecommerce/products'}
                   className="inline-block text-[11px] font-black uppercase tracking-[0.3em] text-slate-900 border-b-2 pb-1 transition-all duration-300 group-hover:text-rose-500 group-hover:border-rose-500"
                   style={{ borderColor: `${primary}20` }}
                 >

@@ -74,7 +74,7 @@ export default function DailyBestSells({ id }: { id: string }) {
           </div>
           
           <button 
-            onClick={() => window.location.href = `/ecommerce/products`}
+            onClick={() => window.location.href = `/petsecommerce/products?flag=isOnOffer`}
             className="group flex items-center gap-3 px-8 py-4 bg-slate-900 rounded-full text-white font-bold transition-all hover:pr-10"
           >
             Explore All <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

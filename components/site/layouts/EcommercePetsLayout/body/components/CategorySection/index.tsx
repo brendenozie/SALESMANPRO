@@ -43,7 +43,7 @@ function SubcategoryPill({ sub, index }: { sub: ISubcategory; index: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
     >
-      <Link href={`/ecommerce/products?subcategory=${sub.slug || sub.name}`}>
+      <Link href={`/petsecommerce/products?subcategory=${sub.slug || sub.name}`}>
         <div className="group relative bg-white border border-slate-100 p-5 rounded-[2rem] transition-all duration-500 hover:shadow-xl hover:shadow-slate-200/50 hover:border-transparent overflow-hidden">
           <div className="relative flex items-center justify-between z-10">
             <span className="font-black text-sm text-slate-700 group-hover:text-slate-900 transition-colors">
@@ -133,7 +133,7 @@ export default function CategoriesSection({ store }: { store: StoreForm | null }
           {categoriesToShow.map((cat, idx) => {
              const theme = resolveCategoryTheme(idx);
              return (
-               <Link key={cat.id || idx} href={`/ecommerce/products?category=${safeSlug(cat.displayName || cat.category?.name)}`} className="flex-shrink-0 group">
+               <Link key={cat.id || idx} href={`/petsecommerce/products?category=${safeSlug(cat.categoryId || cat.category?.id || cat.displayName || cat.category?.name)}`} className="flex-shrink-0 group">
                  <div className={`relative w-64 md:w-80 aspect-[4/5] rounded-[3.5rem] ${theme.bg} transition-all duration-700 group-hover:shadow-2xl group-hover:-translate-y-4 border-2 border-transparent group-hover:border-white overflow-hidden flex flex-col items-center justify-center p-10`}>
                     <div className="relative w-40 h-40 mb-8 rounded-full transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-6">
                       <Image 

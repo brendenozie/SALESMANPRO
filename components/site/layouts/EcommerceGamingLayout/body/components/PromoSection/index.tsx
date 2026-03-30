@@ -62,7 +62,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
 
               <div className="flex items-center gap-6">
                 <a
-                  href={promo.ctaLink || '#'}
+                  href={promo.ctaLink || '/gamingecommerce/products'}
                   className="relative px-10 py-4 bg-zinc-900 dark:bg-white text-white dark:text-black font-black uppercase tracking-tighter italic text-lg hover:bg-red-600 hover:text-white transition-all overflow-hidden shadow-lg"
                   style={{ clipPath: 'polygon(0 0, 100% 0, 92% 100%, 0% 100%)' }}
                 >
@@ -131,7 +131,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                 </p>
                 
                 <a
-                  href={item.ctaLink || '#'}
+                  href={item.ctaLink || '/gamingecommerce/products'}
                   className="flex items-center justify-between group/btn"
                 >
                   <span className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest italic group-hover/btn:text-red-600 transition-colors">

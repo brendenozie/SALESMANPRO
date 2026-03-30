@@ -43,7 +43,7 @@ const itemVariants: Variants = {
 function SubcategoryTile({ sub, idx }: { sub: ISubcategory; idx: number }) {
   return (
     <motion.div variants={itemVariants}>
-      <Link href={`/ecommerce/products?subcategory=${sub.slug || sub.name}`}>
+      <Link href={`/cakeecommerce/products?subcategory=${sub.slug || sub.name}`}>
         <div className="group flex items-center gap-4 p-5 rounded-2xl bg-white border border-stone-100 transition-all hover:border-amber-200 hover:shadow-md hover:-translate-y-1">
           <div className="h-12 w-12 flex items-center justify-center rounded-xl bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-colors duration-300">
             <span className="text-xl">✨</span>
@@ -117,7 +117,7 @@ export default function CategorySection({ StoreCategory, themeSettings }: Catego
             </motion.h2>
           </div>
           <Link 
-            href="/ecommerce/categories" 
+            href="/cakeecommerce/categories" 
             className="group flex items-center gap-2 text-sm font-black uppercase tracking-widest border-b-2 border-amber-500 pb-1 hover:text-amber-600 transition-colors"
           >
             View All Categories
@@ -135,7 +135,7 @@ export default function CategorySection({ StoreCategory, themeSettings }: Catego
         >
           {categoriesToShow.map((cat, idx) => (
             <motion.div key={cat.id} variants={itemVariants} className="group cursor-pointer">
-              <Link href={`/ecommerce/products?category=${cat.category?.slug || cat.id}`}>
+              <Link href={`/cakeecommerce/products?category=${cat.category?.slug || cat.id}`}>
                 <div className="relative h-[450px] overflow-hidden rounded-2xl mb-6 shadow-xl transition-shadow hover:shadow-2xl">
                   
                   <Image

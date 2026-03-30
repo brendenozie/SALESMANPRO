@@ -28,7 +28,7 @@ export default function ProductCard({ product }: { product: MarketListingForm })
     >
       {/* Image Container */}
       <div className="relative h-64 w-full rounded-[2rem] overflow-hidden bg-stone-50">
-        <Link href={`/ecommerce/products/${product.id}`}>
+        <Link href={`/peanutecommerce/products/${product.id}`}>
           <Image
             src={product.images?.[0] || 'https://via.placeholder.com/300'}
             alt={product.name}
@@ -48,7 +48,7 @@ export default function ProductCard({ product }: { product: MarketListingForm })
       {/* Content */}
       <div className="mt-6 px-2 space-y-1">
         <div className="flex justify-between items-start">
-          <Link href={`/ecommerce/products/${product.id}`}>
+          <Link href={`/peanutecommerce/products/${product.id}`}>
             <h4 className="text-lg font-black text-[#3E2723] tracking-tight group-hover:text-[#8B4513] transition-colors line-clamp-1">
               {product.name}
             </h4>
@@ -59,7 +59,7 @@ export default function ProductCard({ product }: { product: MarketListingForm })
 
         <div className="flex items-center justify-between pt-4">
           <div className="flex flex-col">
-            <span className="text-2xl font-black text-[#3E2723]">${product.finalPrice?.toFixed(2)}</span>
+            <span className="text-2xl font-black text-[#3E2723]">${product.finalPrice?.toFixed(2) || product.sellingPrice?.toFixed(2)}</span>
             {product.sellingPrice && product.sellingPrice > product.finalPrice && (
               <span className="text-xs line-through text-stone-300 font-bold">${product.sellingPrice.toFixed(2)}</span>
             )}

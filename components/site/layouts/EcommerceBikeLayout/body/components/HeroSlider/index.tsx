@@ -22,7 +22,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
       headline: 'MAMMOTH MOUNTING PONICS',
       subline: 'The peak of electric performance. Engineered for those who refuse to compromise.',
       ctaText: 'Explore Series',
-      ctaLink: '/shop',
+      ctaLink: '/bikeecommerce/products',
       imageUrl: 'https://i.ibb.co/v4m8YmP/orange-bike.png',
       price: '€2,499',
       backgroundColor: '#FAFAFA',
@@ -110,7 +110,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
 
               <div className="flex flex-wrap items-center gap-6 mt-10">
                 <Link
-                  href={slide.ctaLink || '#'}
+                  href={slide.ctaLink || '/bikeecommerce/products'}
                   className="group relative overflow-hidden px-12 py-5 bg-black text-white font-bold uppercase tracking-widest transition-all shadow-2xl hover:shadow-black/20"
                 >
                   <span className="relative z-10">{slide.ctaText}</span>

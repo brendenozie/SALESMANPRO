@@ -45,7 +45,7 @@ function SubcategoryPill({ sub, index }: { sub: ISubcategory; index: number }) {
       whileInView={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.05 }}
     >
-      <Link href={`/ecommerce/products?subcategory=${sub.slug || sub.name}`}>
+      <Link href={`/earphonesecommerce/products?subcategory=${sub.slug || sub.name}`}>
         <div className="group relative bg-white/5 border border-white/10 p-6 rounded-3xl transition-all duration-500 hover:bg-white/10 hover:border-white/20 overflow-hidden">
           <div className="relative flex items-center justify-between z-10">
             <div>
@@ -85,7 +85,7 @@ function CategoryPortal({ cat, index }: { cat: IStoreCategory; index: number }) 
       onMouseLeave={() => setHovered(false)}
       className="relative h-[500px] w-full group cursor-pointer"
     >
-      <Link href={`/ecommerce/products?category=${cat.categoryId}`} className="block h-full w-full">
+      <Link href={`/earphonesecommerce/products?category=${cat.categoryId || cat.categoryId || cat.displayName}`} className="block h-full w-full">
         <div className="relative h-full w-full overflow-hidden rounded-[3rem] border border-white/10 bg-[#0a0a0a]">
           <motion.div 
             animate={{ scale: hovered ? 1.05 : 1, opacity: hovered ? 0.7 : 0.5 }}
@@ -238,7 +238,7 @@ export default function CategoriesSectionAudiophile({ store }: { store: StoreFor
           whileInView={{ opacity: 1, y: 0 }}
           className="mt-32 flex justify-center"
         >
-          <Link href="/ecommerce/categories" className="group relative px-16 py-6 rounded-full border border-white/10 transition-all">
+          <Link href="/earphonesecommerce/categories" className="group relative px-16 py-6 rounded-full border border-white/10 transition-all">
             <div className="absolute inset-0 bg-white scale-y-0 group-hover:scale-y-100 transition-transform duration-500 origin-bottom rounded-full" />
             <span className="relative z-10 text-white group-hover:text-black font-black uppercase tracking-[0.2em] text-xs flex items-center gap-4">
               Explore Full Universe <ArrowUpRightIcon className="w-5 h-5" />

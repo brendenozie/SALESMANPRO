@@ -68,7 +68,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
 
               <div className="flex flex-wrap gap-4">
                 <a
-                  href={promo.ctaLink || '#'}
+                  href={promo.ctaLink || '/earphonesecommerce/products'}
                   className="group/btn relative px-10 py-5 rounded-2xl bg-white text-black font-black uppercase tracking-widest text-sm transition-all hover:pr-14"
                 >
                   <span className="relative z-10">{promo.ctaText || 'Get Access'}</span>
@@ -121,7 +121,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                 </div>
 
                 <a
-                  href={item.ctaLink || '#'}
+                  href={item.ctaLink || '/earphonesecommerce/products'}
                   className="w-full py-4 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-white text-center text-xs font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all"
                 >
                   {item.ctaText || 'Claim Now'}

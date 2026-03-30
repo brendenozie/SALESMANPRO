@@ -75,7 +75,7 @@ export default function FeatureGrid() {
           ))}
         </div>
         
-        <button className="mt-16 self-start px-8 py-3 bg-white text-black font-bold uppercase tracking-widest text-xs hover:bg-gray-100 transition-colors">
+        <button onClick={() => window.location.href = '/glassesecommerce/products'} className="mt-16 self-start px-8 py-3 bg-white text-black font-bold uppercase tracking-widest text-xs hover:bg-gray-100 transition-colors">
           See All Services
         </button>
       </div>

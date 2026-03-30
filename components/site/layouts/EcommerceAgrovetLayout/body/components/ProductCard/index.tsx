@@ -41,7 +41,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
     >
       {/* Image Container */}
       <div className="relative aspect-[4/5] w-full rounded-[2rem] overflow-hidden bg-slate-50 border border-slate-100 mb-6">
-        <Link href={`/ecommerce/products/${product.id}`} className="block w-full h-full">
+        <Link href={`/agrovetecommerce/products/${product.id}`} className="block w-full h-full">
           <Image
             src={product.images?.[0] || 'https://via.placeholder.com/400'}
             alt={product.name}
@@ -79,13 +79,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
 
         <div className="flex items-center gap-3 mb-6">
           <span className="text-xl font-mono font-bold text-slate-900 tracking-tighter">
-            KSh {product.finalPrice?.toLocaleString()}
+            KSh {(product.finalPrice || product.sellingPrice)?.toLocaleString()}
           </span>
           {product.sellingPrice && product.sellingPrice > (product.finalPrice ?? 0) && (
             <span className="text-xs line-through text-slate-300 font-medium">
               {product.sellingPrice.toLocaleString()}
             </span>
           )}
+          
         </div>
 
         {/* Action Tray */}

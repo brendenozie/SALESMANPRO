@@ -124,7 +124,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: { heroSlides: 
                     transition={{ delay: 0.5 }}
                     className="flex flex-col sm:flex-row gap-6 items-center"
                   >
-                    <Link href={slide.ctaLink || '/ecommerce/products'}>
+                    <Link href={slide.ctaLink || '/cakeecommerce/products'}>
                       <motion.button 
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -137,7 +137,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: { heroSlides: 
                       </motion.button>
                     </Link>
 
-                    <Link href="/ecommerce/categories" className="group flex items-center gap-4 text-white/70 hover:text-white transition-colors">
+                    <Link href="/cakeecommerce/categories" className="group flex items-center gap-4 text-white/70 hover:text-white transition-colors">
                       <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center group-hover:border-white transition-colors">
                         <CakeIcon className="w-6 h-6" />
                       </div>

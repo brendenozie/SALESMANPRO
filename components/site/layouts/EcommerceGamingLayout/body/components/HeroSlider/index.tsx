@@ -121,7 +121,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
 
                 <div className="flex items-center gap-6 pt-4">
                   <Link
-                    href={slide.ctaLink || '#'}
+                    href={slide.ctaLink || '/gamingecommerce/products'}
                     className="group relative bg-black dark:bg-white text-white dark:text-black font-black px-8 py-4 uppercase tracking-tighter flex items-center gap-2 hover:bg-red-600 hover:text-white transition-all duration-300"
                   >
                     {slide.ctaText}

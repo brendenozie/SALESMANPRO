@@ -55,10 +55,10 @@ export default function RootFooter() {
             <div className="space-y-6">
               <h3 className="text-white font-black uppercase text-[10px] tracking-[0.3em]">Supply Chain</h3>
               <ul className="space-y-4 text-sm font-bold">
-                <li><Link href="/agrovetecommerce/shop" className="hover:text-emerald-400 transition-colors">Agrochemicals</Link></li>
-                <li><Link href="/agrovetecommerce/shop" className="hover:text-emerald-400 transition-colors">Certified Seeds</Link></li>
-                <li><Link href="/agrovetecommerce/shop" className="hover:text-emerald-400 transition-colors">Animal Health</Link></li>
-                <li><Link href="/agrovetecommerce/shop" className="hover:text-emerald-400 transition-colors">Bulk Equipment</Link></li>
+                <li><Link href="/agrovetecommerce/products" className="hover:text-emerald-400 transition-colors">Agrochemicals</Link></li>
+                <li><Link href="/agrovetecommerce/products" className="hover:text-emerald-400 transition-colors">Certified Seeds</Link></li>
+                <li><Link href="/agrovetecommerce/products" className="hover:text-emerald-400 transition-colors">Animal Health</Link></li>
+                <li><Link href="/agrovetecommerce/products" className="hover:text-emerald-400 transition-colors">Bulk Equipment</Link></li>
               </ul>
             </div>
             <div className="space-y-6">

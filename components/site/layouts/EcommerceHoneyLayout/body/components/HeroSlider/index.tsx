@@ -21,7 +21,7 @@ export default function HoneyHero({ heroSlides }: { heroSlides: HeroSlide[] | nu
       subline: "Batch No. 724 / Wildflower",
       badgeText: "Unfiltered, raw honey harvested from the sun-drenched meadows of the valley. A complex profile with notes of clover and citrus.",
       ctaText: "Shop the Harvest",
-      ctaLink: "/shop",
+      ctaLink: "/honeyecommerce/products",
       imageUrl: fallback
     }];
     return heroSlides;
@@ -85,7 +85,7 @@ export default function HoneyHero({ heroSlides }: { heroSlides: HeroSlide[] | nu
               </motion.span>
               
               <h1 className="text-5xl md:text-7xl font-serif italic text-[#3E2723] leading-[0.9] mb-8 tracking-tight">
-                {slides[current].headline.split('\n').map((text, i) => (
+                {slides[current].headline?.split('\n').map((text, i) => (
                   <span key={i} className="block">{text}</span>
                 ))}
               </h1>
@@ -96,7 +96,7 @@ export default function HoneyHero({ heroSlides }: { heroSlides: HeroSlide[] | nu
 
               <div className="flex flex-col sm:flex-row items-start gap-8">
                 <Link
-                  href={slides[current].ctaLink || '#'}
+                  href={slides[current].ctaLink || '/honeyecommerce/products'}
                   className="px-10 py-4 bg-[#3E2723] text-white text-[11px] font-black uppercase tracking-widest rounded-full hover:bg-[#B8860B] transition-colors shadow-xl shadow-stone-200"
                 >
                   {slides[current].ctaText}
@@ -120,7 +120,7 @@ export default function HoneyHero({ heroSlides }: { heroSlides: HeroSlide[] | nu
                   className="relative w-4/5 h-[90%] z-10 rounded-t-[200px] rounded-b-2xl overflow-hidden border-[12px] border-white shadow-2xl"
                 >
                   <Image 
-                    src={slides[current].imageUrl} 
+                    src={slides[current].imageUrl || 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=1200&auto=format&fit=crop'} 
                     alt="Honey" 
                     fill 
                     loader={loader}
@@ -136,7 +136,7 @@ export default function HoneyHero({ heroSlides }: { heroSlides: HeroSlide[] | nu
                   className="absolute -right-4 bottom-10 w-48 h-64 z-20 rounded-2xl overflow-hidden border-8 border-white shadow-xl hidden md:block"
                 >
                   <Image 
-                    src={slides[current].imageUrl} 
+                    src={slides[current].imageUrl || 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=1200&auto=format&fit=crop'} 
                     alt="Detail" 
                     fill 
                     loader={loader}

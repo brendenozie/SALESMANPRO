@@ -24,7 +24,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
       'Elevate your collection with exclusive weekend pricing on our mechanical movements and chronographs. Heritage craftsmanship meets modern precision.',
     bannerUrl: 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49',
     ctaText: 'View Event',
-    ctaLink: '#',
+    ctaLink: '/motorcycleecommerce/products',
   };
 
   return (
@@ -95,7 +95,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
 
             <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
               <a
-                href={promotion.ctaLink || '#'}
+                href={promotion.ctaLink || '/motorcycleecommerce/products'}
                 className="group relative inline-flex items-center gap-4 bg-white text-black px-10 py-5 font-bold uppercase tracking-widest text-xs transition-all hover:bg-amber-600 hover:text-white"
               >
                 {promotion.ctaText}

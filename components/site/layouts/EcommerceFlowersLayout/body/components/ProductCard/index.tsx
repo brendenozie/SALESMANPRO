@@ -33,7 +33,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Image Container */}
-      <Link href={`/ecommerce/products/${product.id}`} className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-slate-100">
+      <Link href={`/flowersecommerce/products/${product.id}`} className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-slate-100">
         <Image
           src={imageSrc}
           alt={product.name}
@@ -93,7 +93,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
       {/* Details Section */}
       <div className="mt-6 flex flex-col items-center text-center">
-        <Link href={`/ecommerce/products/${product.id}`}>
+        <Link href={`/flowersecommerce/products/${product.id}`}>
           <h4 className="text-lg font-serif italic text-slate-900 group-hover:text-rose-500 transition-colors duration-300">
             {product.name}
           </h4>
@@ -101,7 +101,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         
         <div className="flex items-center gap-3 mt-2">
           <span className="text-slate-900 font-bold tracking-tight">
-            ${(product.finalPrice ?? 0).toFixed(2)}
+            ${(product.finalPrice ?? 0).toFixed(2) || product.sellingPrice?.toFixed(2) || 'N/A'}
           </span>
           {product.sellingPrice! > product.finalPrice! && (
             <span className="text-slate-400 line-through text-sm">
