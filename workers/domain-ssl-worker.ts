@@ -102,24 +102,43 @@ server {
   console.log(`✅ SSL Successfully activated for ${domain}`);
 }
 
+// async function worker() {
+//   console.log("🛠️ SSL Worker is running...");
+
+//   while (true) {
+//     try {
+//       const company = await prisma.company.findFirst({
+//         where: { sslStatus: "PENDING" },
+//       });
+
+//       if (company && company.domain) {
+//         await processCompany(company.id, company.domain);
+//       }
+//     } catch (err: any) {
+//       console.error("❌ Worker Error:", err.message);
+//     }
+
+//     // Wait before next check
+//     await new Promise((resolve) => setTimeout(resolve, CHECK_INTERVAL));
+//   }
+// }
+
 async function worker() {
-  console.log("🛠️ SSL Worker is running...");
+  try {
+    console.log("🛠️ SSL Worker is running...");
+    const company = await prisma.company.findFirst({
+      where: { sslStatus: "PENDING" },
+    });
 
-  while (true) {
-    try {
-      const company = await prisma.company.findFirst({
-        where: { sslStatus: "PENDING" },
-      });
-
-      if (company && company.domain) {
-        await processCompany(company.id, company.domain);
-      }
-    } catch (err: any) {
-      console.error("❌ Worker Error:", err.message);
+    if (company && company.domain) {
+      await processCompany(company.id, company.domain);
     }
-
-    // Wait before next check
-    await new Promise((resolve) => setTimeout(resolve, CHECK_INTERVAL));
+  } catch (err) {
+    console.error("Worker Error:", err);
+  } finally {
+    // 1. Force Global Garbage Collection (optional but helpful)
+    // 2. Wait 30 seconds before the NEXT run instead of a tight while loop
+    setTimeout(worker, 30000);
   }
 }
 
