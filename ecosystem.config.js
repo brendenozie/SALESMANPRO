@@ -21,18 +21,30 @@ module.exports = {
     },
     {
       name: 'ssl-worker',
-      // Use the full relative path from your project root
-      script: 'workers/domain-ssl-worker.ts', 
+      script: 'dist/workers/domain-ssl-worker.js', // Point to compiled JS
       interpreter: 'node',
-      // This combined flag handles TS execution AND the @/ aliases
-      node_args: '-r ts-node/register -r tsconfig-paths/register',
       instances: 1,
       exec_mode: 'fork',
       env: {
         NODE_ENV: 'production',
-        TS_NODE_PROJECT: './tsconfig.json',
-      }
+      },
+      // Add a memory limit to force a restart if it leaks
+      max_memory_restart: '200M'
     }
+    // {
+    //   name: 'ssl-worker',
+    //   // Use the full relative path from your project root
+    //   script: 'workers/domain-ssl-worker.ts', 
+    //   interpreter: 'node',
+    //   // This combined flag handles TS execution AND the @/ aliases
+    //   node_args: '-r ts-node/register -r tsconfig-paths/register',
+    //   instances: 1,
+    //   exec_mode: 'fork',
+    //   env: {
+    //     NODE_ENV: 'production',
+    //     TS_NODE_PROJECT: './tsconfig.json',
+    //   }
+    // }
     // {
     //   name: 'ssl-worker',
     //   // If using TypeScript directly:

@@ -2,7 +2,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 3000",
-    "build": "npx prisma generate && node --max-old-space-size=6144 node_modules/next/dist/bin/next build --no-lint",
+    "build": "npx prisma generate && node --max-old-space-size=6144 node_modules/next/dist/bin/next build --no-lint && tsc --project tsconfig.worker.json",
     "start": "next start",
     "vercel-build": "npx prisma generate && next build",
     "analyze": "cross-env ANALYZE=true next build",

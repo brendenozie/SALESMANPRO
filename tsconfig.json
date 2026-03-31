@@ -47,8 +47,9 @@
     "middleware.ts",
     "next-env.d.ts",
     ".next/types/**/*.ts",
-    "types/**/*"
-, "app/api/optimize-routes.mjs", "app/api/optimize-routes.mjs"  ],
+    "types/**/*",
+    "app/api/optimize-routes.mjs", 
+  ],
   "exclude": [
     "node_modules"
   ],
