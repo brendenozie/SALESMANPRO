@@ -21,7 +21,7 @@ module.exports = {
     },
     {
       name: 'ssl-worker',
-      script: 'dist/workers/domain-ssl-worker.js', // Point to compiled JS
+      script: './dist-worker/workers/domain-ssl-worker.js', // Point to compiled JS
       interpreter: 'node',
       instances: 1,
       exec_mode: 'fork',

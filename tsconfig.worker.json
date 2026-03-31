@@ -1,10 +1,16 @@
 {
-  "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "dist",
+    "target": "ESNext",
+    "module": "CommonJS", 
+    "moduleResolution": "node",
+    "outDir": "./dist-worker",
     "rootDir": ".",
-    "module": "CommonJS",
-    "noEmit": false
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
   },
-  "include": ["workers/**/*.ts"]
+  "include": ["workers/**/*.ts", "server/db/prismadb.ts"]
 }
