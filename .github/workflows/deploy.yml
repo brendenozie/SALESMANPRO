@@ -31,7 +31,7 @@ jobs:
 
             echo "🔐 Changing to project directory..."
             cd /var/www/salesmanpro
-
+            git checkout package.json package-lock.json
             echo "📥 Pulling latest code..."
             git pull origin main
 
