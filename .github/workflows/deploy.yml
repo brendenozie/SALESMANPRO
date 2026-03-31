@@ -51,9 +51,14 @@ jobs:
             npm run build
 
             echo "🔁 Reloading Server..."
+            cd /var/www/salesmanpro
+
+            # 2. Run an explicit check to see if the file exists (for debugging logs)
+            ls -l workers/domain-ssl-worker.ts
+
             # Using reload instead of restart for zero-downtime
             # This looks for the name defined in your ecosystem.config.js
-            pm2 reload ecosystem.config.js || pm2 start ecosystem.config.js
+            pm2 reload ecosystem.config.js --update-env || pm2 start ecosystem.config.js
 
             # 2. Scale back up to 2 instances now that build is done
             pm2 scale salesmanpro 2
