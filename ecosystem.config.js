@@ -22,6 +22,7 @@ module.exports = {
     {
       name: 'ssl-worker',
       script: './dist-worker/workers/domain-ssl-worker.js', // Point to compiled JS
+      node_args: "--max-old-space-size=150", // Hard limit Node to 150MB RAM
       interpreter: 'node',
       instances: 1,
       exec_mode: 'fork',
