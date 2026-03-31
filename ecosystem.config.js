@@ -22,7 +22,7 @@ module.exports = {
     {
       name: 'ssl-worker',
       // Use the full relative path from your project root
-      script: 'app/workers/domain-ssl-worker.ts', 
+      script: 'workers/domain-ssl-worker.ts', 
       interpreter: 'node',
       // This combined flag handles TS execution AND the @/ aliases
       node_args: '-r ts-node/register -r tsconfig-paths/register',
