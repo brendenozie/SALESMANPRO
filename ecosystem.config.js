@@ -21,17 +21,16 @@ module.exports = {
     },
     {
       name: 'ssl-worker',
-      // Use the full relative path from the root of /var/www/salesmanpro
-      script: 'workers/domain-ssl-worker.ts', 
+      // Use the full relative path from your project root
+      script: 'app/workers/domain-ssl-worker.ts', 
       interpreter: 'node',
-      // This tells Node to use ts-node to interpret the TS file on the fly
-      node_args: '-r ts-node/register',
+      // This combined flag handles TS execution AND the @/ aliases
+      node_args: '-r ts-node/register -r tsconfig-paths/register',
       instances: 1,
       exec_mode: 'fork',
       env: {
         NODE_ENV: 'production',
-        // Ensure this points to your root so it can find your .env and prisma
-        TS_NODE_PROJECT: './tsconfig.json', 
+        TS_NODE_PROJECT: './tsconfig.json',
       }
     }
     // {
