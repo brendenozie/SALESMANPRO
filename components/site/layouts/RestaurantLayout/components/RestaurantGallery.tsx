@@ -112,6 +112,14 @@ const fallbackGalleryImages: GalleryImage[] = [
     category: "Ambiance",
     order: 6,
   },
+  {
+    id: "fb-g7",
+    imageUrl:
+      "https://www.lavenderthemes.com/wp-content/uploads/2020/05/restaurant-website-design.jpg?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    altText: "Cozy dining area with warm lighting",
+    category: "Ambiance",
+    order: 7,
+  }
 ]
 
 export default function RestaurantGallery() {
@@ -214,7 +222,7 @@ export default function RestaurantGallery() {
             Want to see more of our culinary artistry and beautiful spaces?
           </p>
           <Link
-            href={`/${slug || 'restaurant'}/gallery`} // Link to a dedicated full gallery page
+            href={`/restaurent/gallery`} // Link to a dedicated full gallery page
             className="px-8 py-4 text-white rounded-full font-bold text-lg shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
             style={{ backgroundColor: primaryColor, '--tw-hover-bg': secondaryColor } as React.CSSProperties}
           >

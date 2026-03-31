@@ -131,6 +131,7 @@ export default function HeroComponent({ storeFormData }: HeroComponentProps) {
             className="flex gap-4 justify-center lg:justify-start flex-wrap"
           >
             <motion.button
+              // onClick={() => router.push('/events/tickets')}
               whileHover={{ scale: 1.05, boxShadow: '0px 0px 20px rgba(192, 132, 252, 0.5)' }}
               whileTap={{ scale: 0.95 }}
               className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform duration-300"
@@ -138,7 +139,7 @@ export default function HeroComponent({ storeFormData }: HeroComponentProps) {
               Get Tickets
             </motion.button>
             <motion.a
-              href="#events"
+              href="/events/products"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 text-white font-semibold py-3 px-6 rounded-full flex items-center gap-2 transition-transform duration-300"

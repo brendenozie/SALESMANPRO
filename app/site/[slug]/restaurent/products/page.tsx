@@ -62,7 +62,7 @@ export default async function ProductListPage({ params, searchParams }: PageProp
   const products: Product[] = listings.map(p => ({
     id: p.id,
     name: p.name,
-    price: p.finalPrice ?? 0,
+    price: p.finalPrice ?? p.sellingPrice ?? 0,
     imageUrl: 'p.images[0]?.url ',//|| '/placeholder.png',
     slug: "",//p.slug || undefined,
   }));

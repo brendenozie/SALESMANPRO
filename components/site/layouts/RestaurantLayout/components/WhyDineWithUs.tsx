@@ -297,7 +297,7 @@ export default function WhyDineWithUs() {
               </p>
               {/* {f.link && ( // Only render link if provided */}
                 <Link
-                  href={'#'}//f.link
+                  href={'/restaurent/about'}//f.link
                   className="inline-flex items-center font-semibold hover:underline transition-colors"
                   style={{ color: primaryColor }}
                 >

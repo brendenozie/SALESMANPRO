@@ -90,7 +90,7 @@ const LocationCard = ({ loc, slug }: { loc: ILocation; slug: string }) => {
   return (
     <motion.div variants={cardVariants} className="group relative h-full">
       <Link
-        href={`/location/${loc.slug}`}
+        href={`/realestate/listings?location=${loc.slug}`}
         className="block relative h-[450px] w-full overflow-hidden rounded-[2rem] shadow-xl transition-all duration-500 hover:shadow-2xl hover:-translate-y-2"
       >
         {/* 1. Image Layer */}
@@ -246,7 +246,7 @@ export default function TrendingLocations({
           viewport={{ once: true }}
           transition={{ delay: 0.3 }}
         >
-          <Link href={`/locations`} passHref legacyBehavior>
+          <Link href={`/realestate/listings`} passHref legacyBehavior>
             <a className="group inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 transition-all duration-300 hover:ring-emerald-500 hover:text-emerald-600 dark:hover:ring-emerald-400 dark:hover:text-emerald-400 hover:scale-105">
               Explore All Locations
               <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />

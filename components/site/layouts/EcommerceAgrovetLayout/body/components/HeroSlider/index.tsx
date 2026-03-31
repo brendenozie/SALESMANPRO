@@ -110,7 +110,7 @@ export default function RethoughtAgrovetHero({heroSlides, themeSettings }: { her
             </div>
 
             <h1 className="text-7xl md:text-[6.5rem] font-black leading-[0.85] tracking-tighter mb-8">
-              {slides[index].title.split('$').map((word: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactFragment | React.ReactPortal | null | undefined, i: React.Key | null | undefined) => (
+              {(slides[index].title || slides[index].headline).split('$').map((word: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactFragment | React.ReactPortal | null | undefined, i: React.Key | null | undefined) => (
                 <span key={i} className={i === 1 ? "text-transparent stroke-white" : ""}>
                   {word}
                   {i === 1 && <style jsx>{`.stroke-white { -webkit-text-stroke: 1px white; }`}</style>}

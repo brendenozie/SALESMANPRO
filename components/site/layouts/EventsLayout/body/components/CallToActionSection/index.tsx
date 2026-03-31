@@ -26,7 +26,7 @@ export default function CallToActionSection() {
     "Get Started Now";
   const path =
     store.themeSettings?.ctaPath ||
-    `/${store.slug}/host`;
+    `/events/products`;
 
   return (
     <section id="contact" className="relative bg-gray-900 py-24 sm:py-32 px-4 sm:px-10 overflow-hidden text-center">

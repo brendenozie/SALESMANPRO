@@ -189,7 +189,7 @@ function FeaturedListings({ listings, companyId }: any) {
                 <div className="p-5 flex flex-col justify-between flex-grow">
                   {/* Price at the top for immediate visibility */}
                   <p className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mb-2">
-                    KES {item.finalPrice?.toLocaleString()}
+                    KES {item.finalPrice?.toLocaleString() || item.sellingPrice?.toLocaleString() || "Contact for Price"}
                   </p>
 
                   <h3 className="text-xl font-bold text-gray-900 dark:text-gray-50 truncate mb-1">

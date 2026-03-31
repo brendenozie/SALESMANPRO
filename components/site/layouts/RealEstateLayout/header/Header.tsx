@@ -153,15 +153,15 @@ export default function Header() {
         <nav className="hidden lg:flex items-center space-x-8">
           {[
             { label: "Home", path: "" },
-            { label: "Listings", path: `#listings` },
-            { label: "Agents", path: `#agents` },
-            { label: "About", path: `#about` },
-            { label: "Blog", path: `#blog` },
-            { label: "Contact", path: `#contact` },
+            { label: "Listings", path: `/realestate/listings` },
+            { label: "Agents", path: `/#agents` },
+            { label: "About", path: `/realestate/about` },
+            { label: "Blog", path: `/realestate/blog` },
+            { label: "Contact", path: `/realestate/contact` },
           ].map((item) => (
             <Link
               key={item.label}
-              href={`/${item.path}`}
+              href={`${item.path}`}
               className="relative text-gray-700 uppercase tracking-wide font-medium text-lg group hover:text-emerald-600"
             >
               {item.label}

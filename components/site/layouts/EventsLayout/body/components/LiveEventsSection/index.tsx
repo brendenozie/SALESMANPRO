@@ -24,7 +24,7 @@ const fallbackEvents: IEvent[] = [
     description: "Experience live bands and DJs at our annual music festival.",
     startDateTime: new Date("2025-08-15T18:00:00Z"),
     endDateTime: null,
-    imageUrl: "/default-event-1.jpg",
+    imageUrl: "https://images.unsplash.com/photo-1508971344143-1c0b9a1d8c9e?auto=format&fit=crop&w=800&q=80",
     // subtitle: "Live music under the stars.",
     location: "Nairobi, Kenya",
     summary: null,
@@ -58,7 +58,7 @@ const fallbackEvents: IEvent[] = [
     description: "Explore contemporary art from local and international artists.",
     startDateTime: new Date("2025-09-10T10:00:00Z"),
     endDateTime: null,
-    imageUrl: "/default-event-2.jpg",
+    imageUrl: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=800&q=80",
     // subtitle: "Art, culture, and inspiration.",
     location: "Mombasa, Kenya",
     summary: null,
@@ -99,7 +99,7 @@ export default function LiveEventsSection({ events }: LiveEventsSectionProps) {
     ...e,
     title: e.title || "Upcoming Event",
     subtitle: e.description || "",
-    image: (e as any).bannerUrl || "https://www.unsplash.com/wp-content/uploads/2015/01/unsplash-1.jpg",
+    image: (e as any).bannerUrl || "https://images.unsplash.com/photo-1508971344143-1c0b9a1d8c9e?auto=format&fit=crop&w=800&q=80",
     location: (e as any).location || "",
   })) as typeof fallbackEvents;
 
@@ -148,7 +148,7 @@ export default function LiveEventsSection({ events }: LiveEventsSectionProps) {
                 className="bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-700 hover:border-indigo-500 transition-all duration-300 relative group"
               >
                 <img
-                  src={event.imageUrl || 'https://www.unsplush.com/'}
+                  src={event.imageUrl || 'https://images.unsplash.com/photo-1508971344143-1c0b9a1d8c9e?auto=format&fit=crop&w=800&q=80'}
                   alt={event.title}
                   className="h-52 w-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -173,7 +173,7 @@ export default function LiveEventsSection({ events }: LiveEventsSectionProps) {
                     {'Art, culture, and inspiration.'}
                   </p>
                   <a
-                    href={`/event/${event.id}`}
+                    href={`/events/products/${event.id}`}
                     className="inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900"
                   >
                     View Event

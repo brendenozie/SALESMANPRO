@@ -111,14 +111,14 @@ export default function Header() {
   const handleProfile = () => {
     if (!user) return handleSignIn();
     if (user.role?.toLowerCase() === 'admin') router.push(`/dashboards`);
-    else router.push(`/profile`);
+    else router.push(`/events/profile`);
   };
 
   // --- Nav items ---
   const navItems = [
-    { label: 'Home', href: `#home`, key: 'home' },
-    { label: 'Events', href: `#events`, key: 'events' },
-    { label: 'About', href: `#about`, key: 'about' },
+    { label: 'Home', href: `/`, key: 'home' },
+    { label: 'Events', href: `/events/products`, key: 'events' },
+    { label: 'About', href: `/events/about`, key: 'about' },
     { label: 'Contact', href: `#contact`, key: 'contact' },
   ];
 

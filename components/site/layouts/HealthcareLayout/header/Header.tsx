@@ -111,7 +111,7 @@ export default function Header() {
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
         scrolled
           ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg shadow-xl py-3 border-b border-gray-100 dark:border-gray-800'
-          : 'bg-transparent py-5'
+          : 'bg-transparent py-5 text-white'
       }`}
     >
       {/* TOP INFO BAR */}

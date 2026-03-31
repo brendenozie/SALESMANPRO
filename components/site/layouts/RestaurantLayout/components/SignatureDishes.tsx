@@ -5,338 +5,204 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   StarIcon,
-  ShoppingCartIcon,
+  ShoppingBagIcon,
   EyeIcon,
   MinusIcon,
   PlusIcon,
-  TrashIcon,
+  FireIcon,
+  ClockIcon,
 } from "@heroicons/react/24/solid";
 import { HeartIcon as HeartOutlineIcon } from "@heroicons/react/24/outline";
+import { useStateContext } from "@/contexts/ContextProvider";
 
-// Assuming this context is correctly defined in your project
-import { useStateContext } from "@/contexts/ContextProvider"; // ✅ cart context
-
-// Optimized image loader
-const loader = ({
-  src,
-  width,
-  quality,
-}: {
-  src: string;
-  width: number;
-  quality?: number;
-}) => `${src}?w=${width}&q=${quality || 75}`;
-
-// Framer Motion Variants for Staggered Entrance
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 50 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { type: "spring", stiffness: 100, damping: 12 },
-  },
-};
-
-interface SignatureDishesProps {
-  marketplaceListings?: any[];
-  StoreCategory?: any[];
-  themeSettings?: any;
-}
+const loader = ({ src, width }: { src: string; width: number }) => `${src}?w=${width}&q=80`;
 
 export default function SignatureDishes({
-  marketplaceListings,
-  StoreCategory,
+  marketplaceListings = [],
+  StoreCategory = [],
   themeSettings,
-}: SignatureDishesProps) {
-  
-  const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext(); // ✅ cart actions
+}: any) {
+  const { cart, addToCart, decreaseQuantity } = useStateContext();
+  const [activeCategory, setActiveCategory] = useState("all-menu");
 
-  const allProducts = marketplaceListings || [];
-  const productCategories = StoreCategory || [];
-  
-  // Default colors are set to enhance the gradient button
-  const primaryColor = themeSettings?.primaryColor || "#FF5722"; // Deep Orange
-  const secondaryColor = themeSettings?.secondaryColor || "#FF8A65"; // Light Orange/Coral
+  const primaryColor = themeSettings?.primaryColor || "#FF5722";
 
-  const [activeCategory, setActiveCategory] = useState<string>("all-menu");
-
-  const categoriesForDisplay = useMemo(() => {
-    const sortedCategories = [...productCategories].sort(
-      (a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)
-    );
+  const categories = useMemo(() => {
     return [
-      { id: "all-menu", displayName: "All Menu", order: 0 },
-      ...sortedCategories,
+      { id: "all-menu", displayName: "Full Menu" },
+      ...StoreCategory.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)),
     ];
-  }, [productCategories]);
+  }, [StoreCategory]);
 
   const filteredDishes = useMemo(() => {
-    let dishesToFilter = [...allProducts];
-    if (activeCategory === "all-menu") return dishesToFilter;
-    return dishesToFilter.filter((dish) =>
-      dish.category?.categoryId.includes(activeCategory)
-    );
-  }, [activeCategory, allProducts]);
-
-  const getQuantity = (id: string) =>
-    cart.find((item: any) => item.id === id)?.quantity || 0;
-
-  const handleQuickView = (dishId: string) => {
-    console.log(`Quick view for dish ${dishId}`);
-    // In a real app, this would open a modal/drawer
-  };
-
-  const handleFavorite = (dishId: string) => {
-    console.log(`Toggled favorite for dish ${dishId}`);
-    // In a real app, this would toggle a favorite state
-  };
-
-  const handleImageError = (
-    e: React.SyntheticEvent<HTMLImageElement, Event>
-  ) => {
-    e.currentTarget.onerror = null;
-    e.currentTarget.src =
-      "https://placehold.co/400x250/FF8A65/FFFFFF?text=Image+Missing";
-  };
+    if (activeCategory === "all-menu") return marketplaceListings;
+    return marketplaceListings.filter((dish) => dish.category?.categoryId === activeCategory);
+  }, [activeCategory, marketplaceListings]);
 
   return (
-    <section
-      id="menu"
-      className="py-20 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-    >
+    <section className="py-24 bg-white dark:bg-zinc-950 transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-6">
-        {/* Section Title & Category Tabs */}
-        <motion.div
-          className="text-center mb-12"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          variants={containerVariants}
-        >
-          <motion.h2
-            className="text-4xl md:text-5xl font-extrabold mb-4 drop-shadow-lg"
-            // Enhanced Typography: Apply primary color style with a deep shadow
-            style={{ color: primaryColor, textShadow: `0 3px 5px rgba(0, 0, 0, 0.1)` }}
-            variants={itemVariants}
-          >
-            Our Signature Dishes
-          </motion.h2>
-          <motion.p
-            className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-8"
-            variants={itemVariants}
-          >
-            Explore a world of flavors with our chef&apos;s finest creations,
-            crafted with passion and the freshest ingredients.
-          </motion.p>
+        
+        {/* --- HEADER STRATEGY --- */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+          <div className="max-w-2xl">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-2 mb-4"
+            >
+              <span className="h-px w-8 bg-zinc-300 dark:bg-zinc-700" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Chef's Selection</span>
+            </motion.div>
+            <h2 className="text-5xl md:text-7xl font-serif italic text-zinc-900 dark:text-white tracking-tighter leading-none">
+              Signature <span style={{ color: primaryColor }}>Dishes</span>
+            </h2>
+          </div>
 
-          {/* Category Tabs (Premium Pill Design) */}
-          <motion.div
-            className="inline-flex flex-wrap justify-center gap-3 p-2 bg-white dark:bg-gray-800 rounded-full shadow-xl shadow-gray-200/50 dark:shadow-gray-900/50"
-            variants={itemVariants}
-          >
-            {categoriesForDisplay.map((category) => (
-              <motion.button
-                key={category.id}
-                className={`px-5 py-2 text-sm md:text-base font-semibold rounded-full transition-all duration-300 relative
-                  ${
-                    activeCategory === category.id
-                      ? "text-white shadow-lg"
-                      : "bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  }`}
-                style={{
-                  backgroundColor:
-                    activeCategory === category.id ? primaryColor : "transparent",
-                }}
-                onClick={() => setActiveCategory(category.id)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+          {/* Premium Category Scroller */}
+          <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`whitespace-nowrap px-8 py-3 rounded-full text-xs font-black uppercase tracking-widest transition-all duration-300 border ${
+                  activeCategory === cat.id 
+                  ? "bg-zinc-900 text-white border-zinc-900 dark:bg-white dark:text-zinc-900 dark:border-white" 
+                  : "bg-transparent text-zinc-400 border-zinc-100 dark:border-zinc-800 hover:border-zinc-300"
+                }`}
               >
-                {category.displayName}
-              </motion.button>
+                {cat.displayName}
+              </button>
             ))}
-          </motion.div>
+          </div>
+        </div>
+
+        {/* --- MENU GRID --- */}
+        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          <AnimatePresence mode="popLayout">
+            {filteredDishes.map((dish, idx) => (
+              <DishCard 
+                key={dish.id} 
+                dish={dish} 
+                idx={idx} 
+                primaryColor={primaryColor} 
+                quantity={cart.find((item: any) => item.id === dish.id)?.quantity || 0}
+                onAdd={() => addToCart(dish)}
+                onSub={() => decreaseQuantity(dish.id)}
+              />
+            ))}
+          </AnimatePresence>
         </motion.div>
-
-        {/* Dishes Grid */}
-        <AnimatePresence mode="wait">
-          {filteredDishes.length === 0 ? (
-            <motion.div
-              key="no-dishes"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="text-center py-10 text-gray-600 dark:text-gray-400"
-            >
-              <p className="text-xl">No dishes found for this category.</p>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="dishes-grid"
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              viewport={{ once: true, amount: 0.2 }}
-            >
-              {filteredDishes.map((dish) => {
-                const quantity = getQuantity(dish.id);
-
-                return (
-                  <motion.div
-                    key={dish.id}
-                    variants={itemVariants}
-                    whileHover={{
-                      scale: 1.03,
-                      // Enhanced Card Hover Shadow
-                      boxShadow:
-                        "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-                    }}
-                    // Enhanced Card Design
-                    className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border-2 border-transparent hover:border-opacity-70 overflow-hidden flex flex-col group cursor-pointer transition-all duration-300"
-                    style={{
-                      transition: 'transform 0.3s, box-shadow 0.3s',
-                    }}
-                  >
-                    {/* Image */}
-                    <div className="relative h-56 w-full overflow-hidden">
-                      <Image
-                        src={
-                          dish.images?.[0] ||
-                          "https://placehold.co/400x250/FF7043/FFFFFF?text=Dish"
-                        }
-                        alt={dish.name}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                        loader={loader}
-                        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                        onError={handleImageError}
-                      />
-                      {/* Overlay (with Quick View and Favorite) */}
-                      <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <motion.button
-                          onClick={() => handleQuickView(dish.id)}
-                          className="p-3 bg-white/80 rounded-full text-gray-800 hover:bg-white transition-colors mx-2 backdrop-blur-sm"
-                          aria-label="Quick View"
-                          whileHover={{ scale: 1.1 }}
-                        >
-                          <EyeIcon className="h-6 w-6" />
-                        </motion.button>
-                        <motion.button
-                          onClick={() => handleFavorite(dish.id)}
-                          className="p-3 bg-white/80 rounded-full hover:bg-white transition-colors mx-2 backdrop-blur-sm"
-                          // Note: You would check dish.isFavorite here for the filled icon
-                          aria-label="Add to Favorites"
-                          whileHover={{ scale: 1.1 }}
-                        >
-                          <HeartOutlineIcon className="h-6 w-6 text-red-500" />
-                        </motion.button>
-                      </div>
-                    </div>
-
-                    {/* Details */}
-                    <div className="p-6 flex-1 flex flex-col">
-                      {/* Name and Price (Enhanced Presentation) */}
-                      <div className="flex justify-between items-start mb-3">
-                        <h3 className="text-xl md:text-2xl font-extrabold text-gray-900 dark:text-gray-100 leading-tight">
-                          {dish.name}
-                        </h3>
-                        <span
-                          className="text-2xl font-extrabold ml-4"
-                          style={{ color: primaryColor }}
-                        >
-                          ${dish?.finalPrice?.toFixed(2) || dish?.sellingPrice?.toFixed(2)}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 flex-1 line-clamp-3">
-                        {dish.description}
-                      </p>
-
-                      {/* Rating (Placeholder) */}
-                      <div className="flex items-center mb-4">
-                        {[...Array(5)].map((_, i) => (
-                          <StarIcon
-                            key={i}
-                            className={`h-5 w-5 ${
-                              i < Math.floor(0) // dish.rating ||
-                                ? "text-yellow-400"
-                                : "text-gray-300 dark:text-gray-600"
-                            }`}
-                          />
-                        ))}
-                        <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
-                          ({(0).toFixed(1)})
-                        </span>
-                      </div>
-
-                      {/* ✅ Cart Controls (Tactile and Intuitive) */}
-                      {quantity > 0 ? (
-                        <div className="mt-auto flex items-center justify-between">
-                          <div className="flex items-center space-x-3 bg-gray-100 dark:bg-gray-700 rounded-full p-1 shadow-inner">
-                            {/* Decrease/Remove Button */}
-                            <motion.button
-                              whileTap={{ scale: 0.85 }}
-                              onClick={() => decreaseQuantity(dish.id)}
-                              className="p-2 bg-white dark:bg-gray-600 rounded-full transition-all duration-200 shadow-md hover:shadow-lg"
-                            >
-                              {quantity === 1 ? (
-                                <TrashIcon className="h-5 w-5 text-red-500" />
-                              ) : (
-                                <MinusIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                              )}
-                            </motion.button>
-                            
-                            <span className="text-lg text-gray-900 dark:text-gray-100 font-extrabold w-6 text-center">
-                              {quantity}
-                            </span>
-                            
-                            {/* Increase Button */}
-                            <motion.button
-                              whileTap={{ scale: 0.85 }}
-                              onClick={() => addToCart(dish)}
-                              className="p-2 bg-white dark:bg-gray-600 rounded-full transition-all duration-200 shadow-md hover:shadow-lg"
-                            >
-                              <PlusIcon className="h-5 w-5 text-green-500" />
-                            </motion.button>
-                          </div>
-                          
-                          {/* Final Remove Text Button */}
-                          <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => removeFromCart(dish.id)}
-                            className="text-sm font-bold text-red-600 dark:text-red-400 hover:text-red-800 transition-colors"
-                          >
-                            Remove Item
-                          </motion.button>
-                        </div>
-                      ) : (
-                        // Gradient "Add to Cart" Button
-                        <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.96 }}
-                          onClick={() => addToCart(dish)}
-                          className="mt-auto flex items-center justify-center gap-2 px-6 py-3 text-white rounded-full font-bold uppercase tracking-wider shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
-                          style={{
-                            background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
-                          }}
-                        >
-                          <ShoppingCartIcon className="h-5 w-5" />
-                          Add to Cart
-                        </motion.button>
-                      )}
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     </section>
+  );
+}
+
+function DishCard({ dish, idx, primaryColor, quantity, onAdd, onSub }: any) {
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ delay: idx * 0.05 }}
+      className="group relative flex flex-col bg-zinc-50 dark:bg-zinc-900/40 rounded-[2.5rem] p-4 border border-transparent hover:border-zinc-100 dark:hover:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 transition-all duration-500"
+    >
+      {/* Image Core */}
+      <div className="relative aspect-[16/11] w-full rounded-[2rem] overflow-hidden mb-6">
+        <Image
+          src={dish.images?.[0] || "/placeholder-food.jpg"}
+          alt={dish.name}
+          fill
+          className="object-cover transition-transform duration-700 group-hover:scale-110"
+          loader={loader}
+        />
+        
+        {/* Badges */}
+        <div className="absolute top-4 left-4 flex gap-2">
+            <div className="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                <FireIcon className="w-3 h-3 text-orange-500" />
+                <span className="text-[9px] font-black uppercase text-zinc-900">Popular</span>
+            </div>
+        </div>
+
+        {/* Quick Actions Hover Overlay */}
+        <div className="absolute inset-0 bg-zinc-900/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
+            <button 
+                onClick={() => window.open(`/restaurent/products/${dish.id}`, '_blank')}
+                className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-zinc-900 shadow-xl hover:scale-110 transition-transform">
+                <EyeIcon className="w-5 h-5" />
+            </button>
+            <button className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-red-500 shadow-xl hover:scale-110 transition-transform">
+                <HeartOutlineIcon className="w-5 h-5" />
+            </button>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="px-2 pb-2 flex-grow flex flex-col">
+        <div className="flex justify-between items-start mb-2">
+            <h3 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tighter leading-tight">
+                {dish.name}
+            </h3>
+            <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded-lg">
+                <StarIcon className="w-3 h-3 text-amber-500" />
+                <span className="text-[10px] font-black text-amber-700 dark:text-amber-400">4.9</span>
+            </div>
+        </div>
+
+        <p className="text-sm text-zinc-500 dark:text-zinc-400 line-clamp-2 mb-6 font-medium">
+            {dish.description || "Indulge in our chef's hand-crafted masterpiece using only the finest seasonal ingredients."}
+        </p>
+
+        <div className="flex items-center gap-4 mb-8">
+            <div className="flex items-center gap-1.5 text-zinc-400">
+                <ClockIcon className="w-3.5 h-3.5" />
+                <span className="text-[10px] font-bold uppercase tracking-widest">15-20 min</span>
+            </div>
+            <div className="h-1 w-1 rounded-full bg-zinc-300" />
+            <div className="text-xl font-black text-zinc-900 dark:text-white">
+                <span className="text-xs font-bold mr-1 text-zinc-400">KSh</span>
+                {dish.finalPrice?.toLocaleString()}
+            </div>
+        </div>
+
+        {/* --- DYNAMIC ACTION POD --- */}
+        <div className="mt-auto">
+          <AnimatePresence mode="wait">
+            {quantity > 0 ? (
+              <motion.div 
+                key="qty"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="flex items-center justify-between bg-zinc-900 dark:bg-white rounded-2xl p-1.5 shadow-xl shadow-zinc-900/20"
+              >
+                <button onClick={onSub} className="p-3 text-white dark:text-zinc-900 hover:bg-white/10 dark:hover:bg-zinc-100 rounded-xl transition-colors">
+                  <MinusIcon className="w-4 h-4" />
+                </button>
+                <div className="flex flex-col items-center">
+                    <span className="text-sm font-black text-white dark:text-zinc-900">{quantity}</span>
+                    <span className="text-[7px] font-black text-zinc-500 uppercase tracking-tighter">In Cart</span>
+                </div>
+                <button onClick={onAdd} className="p-3 text-white dark:text-zinc-900 hover:bg-white/10 dark:hover:bg-zinc-100 rounded-xl transition-colors">
+                  <PlusIcon className="w-4 h-4" />
+                </button>
+              </motion.div>
+            ) : (
+              <motion.button
+                key="add"
+                whileTap={{ scale: 0.97 }}
+                onClick={onAdd}
+                className="w-full flex items-center justify-center gap-3 py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg hover:shadow-2xl transition-all"
+              >
+                <ShoppingBagIcon className="w-4 h-4" />
+                Order Dish
+              </motion.button>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </motion.div>
   );
 }
