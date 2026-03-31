@@ -21,17 +21,32 @@ module.exports = {
     },
     {
       name: 'ssl-worker',
-      // If using TypeScript directly:
-      script: 'node_modules/.bin/ts-node',
-      args: 'workers/domain-ssl-worker.ts', // Path to your worker file
-      instances: 1,      // NEVER run more than 1 instance of the SSL worker
+      // Use the full relative path from the root of /var/www/salesmanpro
+      script: 'workers/domain-ssl-worker.ts', 
+      interpreter: 'node',
+      // This tells Node to use ts-node to interpret the TS file on the fly
+      node_args: '-r ts-node/register',
+      instances: 1,
       exec_mode: 'fork',
-      watch: false,
-      autorestart: true,
       env: {
         NODE_ENV: 'production',
-        // Pass your env vars here or ensure they are in your .env file
+        // Ensure this points to your root so it can find your .env and prisma
+        TS_NODE_PROJECT: './tsconfig.json', 
       }
     }
+    // {
+    //   name: 'ssl-worker',
+    //   // If using TypeScript directly:
+    //   script: 'node_modules/.bin/ts-node',
+    //   args: 'workers/domain-ssl-worker.ts', // Path to your worker file
+    //   instances: 1,      // NEVER run more than 1 instance of the SSL worker
+    //   exec_mode: 'fork',
+    //   watch: false,
+    //   autorestart: true,
+    //   env: {
+    //     NODE_ENV: 'production',
+    //     // Pass your env vars here or ensure they are in your .env file
+    //   }
+    // }
   ],
 };
