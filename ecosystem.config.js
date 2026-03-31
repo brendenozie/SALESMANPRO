@@ -19,5 +19,19 @@ module.exports = {
       kill_timeout: 3000,   // Give the app more time to shut down gracefully
       watch: false,          // Disable watch mode in production
     },
+    {
+      name: 'ssl-worker',
+      // If using TypeScript directly:
+      script: 'node_modules/.bin/ts-node',
+      args: 'workers/domain-ssl-worker.ts', // Path to your worker file
+      instances: 1,      // NEVER run more than 1 instance of the SSL worker
+      exec_mode: 'fork',
+      watch: false,
+      autorestart: true,
+      env: {
+        NODE_ENV: 'production',
+        // Pass your env vars here or ensure they are in your .env file
+      }
+    }
   ],
 };

@@ -3,18 +3,29 @@ import { spawn } from "child_process";
 import fs from "fs";
 
 const CERT_PATH = "/etc/letsencrypt/live";
-const NGINX_SNIPPETS = "/etc/nginx/snippets";
+const NGINX_SITES = "/etc/nginx/sites-enabled"; // Recommended over snippets for full server blocks
 const EMAIL = process.env.ADMIN_EMAIL!;
 const PLATFORM_DOMAIN = process.env.PLATFORM_BASE_DOMAIN!;
+const CHECK_INTERVAL = 30000; // 30 seconds
 
+/**
+ * Helper to run shell commands with sudo
+ */
 function run(cmd: string, args: string[]) {
   return new Promise<void>((resolve, reject) => {
-    const p = spawn(cmd, args, { stdio: "inherit" });
-    p.on("exit", (code) => (code === 0 ? resolve() : reject()));
+    // We add 'sudo' here because the worker likely runs as a limited user
+    const p = spawn("sudo", [cmd, ...args], { stdio: "inherit" });
+    p.on("exit", (code) =>
+      code === 0
+        ? resolve()
+        : reject(new Error(`Command ${cmd} failed with code ${code}`)),
+    );
   });
 }
 
 async function processCompany(companyId: string, domain: string) {
+  console.log(`🚀 Processing SSL for: ${domain}`);
+
   await prisma.company.update({
     where: { id: companyId },
     data: { sslStatus: "ISSUING", sslError: null },
@@ -25,6 +36,7 @@ async function processCompany(companyId: string, domain: string) {
     ? `${CERT_PATH}/${PLATFORM_DOMAIN}`
     : `${CERT_PATH}/${domain}`;
 
+  // 1. Issue Certificate (Skip if it's a subdomain covered by your wildcard)
   if (!isWildcard) {
     await run("certbot", [
       "certonly",
@@ -40,28 +52,44 @@ async function processCompany(companyId: string, domain: string) {
     ]);
   }
 
+  // 2. Verify files exist
   if (
     !fs.existsSync(`${certDir}/fullchain.pem`) ||
     !fs.existsSync(`${certDir}/privkey.pem`)
   ) {
-    throw new Error("Certificate files missing");
+    throw new Error(`Certificate files missing in ${certDir}`);
   }
 
-  const snippet = `
+  // 3. Generate Full Nginx Config (Including Port 80 redirect)
+  const config = `
 server {
-  listen 443 ssl http2;
-  server_name ${domain} www.${domain};
+    listen 80;
+    server_name ${domain} www.${domain};
+    return 301 https://$host$request_uri;
+}
 
-  ssl_certificate ${certDir}/fullchain.pem;
-  ssl_certificate_key ${certDir}/privkey.pem;
+server {
+    listen 443 ssl http2;
+    server_name ${domain} www.${domain};
 
-  location / {
-    proxy_pass http://127.0.0.1:3000;
-  }
+    ssl_certificate ${certDir}/fullchain.pem;
+    ssl_certificate_key ${certDir}/privkey.pem;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
 }
 `;
 
-  fs.writeFileSync(`${NGINX_SNIPPETS}/ssl-${domain}.conf`, snippet);
+  // 4. Write config and reload Nginx
+  // Note: If fs.writeFileSync fails due to permissions, use a temporary file + sudo mv
+  const tempPath = `/tmp/${domain}.conf`;
+  fs.writeFileSync(tempPath, config);
+  await run("mv", [tempPath, `${NGINX_SITES}/${domain}.conf`]);
 
   await run("nginx", ["-t"]);
   await run("systemctl", ["reload", "nginx"]);
@@ -70,23 +98,123 @@ server {
     where: { id: companyId },
     data: { sslStatus: "ACTIVE" },
   });
+
+  console.log(`✅ SSL Successfully activated for ${domain}`);
 }
 
-async function main() {
-  const companies = await prisma.company.findMany({
-    where: { sslStatus: "PENDING" },
-  });
+async function worker() {
+  console.log("🛠️ SSL Worker is running...");
 
-  for (const c of companies) {
+  while (true) {
     try {
-      await processCompany(c.id, c.domain!);
-    } catch (err: any) {
-      await prisma.company.update({
-        where: { id: c.id },
-        data: { sslStatus: "FAILED", sslError: err.message },
+      const company = await prisma.company.findFirst({
+        where: { sslStatus: "PENDING" },
       });
+
+      if (company && company.domain) {
+        await processCompany(company.id, company.domain);
+      }
+    } catch (err: any) {
+      console.error("❌ Worker Error:", err.message);
     }
+
+    // Wait before next check
+    await new Promise((resolve) => setTimeout(resolve, CHECK_INTERVAL));
   }
 }
 
-main().catch(console.error);
+// Start the persistent loop
+worker().catch(console.error);
+
+// import prisma from "@/server/db/prismadb";
+// import { spawn } from "child_process";
+// import fs from "fs";
+
+// const CERT_PATH = "/etc/letsencrypt/live";
+// const NGINX_SNIPPETS = "/etc/nginx/snippets";
+// const EMAIL = process.env.ADMIN_EMAIL!;
+// const PLATFORM_DOMAIN = process.env.PLATFORM_BASE_DOMAIN!;
+
+// function run(cmd: string, args: string[]) {
+//   return new Promise<void>((resolve, reject) => {
+//     const p = spawn(cmd, args, { stdio: "inherit" });
+//     p.on("exit", (code) => (code === 0 ? resolve() : reject()));
+//   });
+// }
+
+// async function processCompany(companyId: string, domain: string) {
+//   await prisma.company.update({
+//     where: { id: companyId },
+//     data: { sslStatus: "ISSUING", sslError: null },
+//   });
+
+//   const isWildcard = domain.endsWith(`.${PLATFORM_DOMAIN}`);
+//   const certDir = isWildcard
+//     ? `${CERT_PATH}/${PLATFORM_DOMAIN}`
+//     : `${CERT_PATH}/${domain}`;
+
+//   if (!isWildcard) {
+//     await run("certbot", [
+//       "certonly",
+//       "--nginx",
+//       "--non-interactive",
+//       "--agree-tos",
+//       "-m",
+//       EMAIL,
+//       "-d",
+//       domain,
+//       "-d",
+//       `www.${domain}`,
+//     ]);
+//   }
+
+//   if (
+//     !fs.existsSync(`${certDir}/fullchain.pem`) ||
+//     !fs.existsSync(`${certDir}/privkey.pem`)
+//   ) {
+//     throw new Error("Certificate files missing");
+//   }
+
+//   const snippet = `
+// server {
+//   listen 443 ssl http2;
+//   server_name ${domain} www.${domain};
+
+//   ssl_certificate ${certDir}/fullchain.pem;
+//   ssl_certificate_key ${certDir}/privkey.pem;
+
+//   location / {
+//     proxy_pass http://127.0.0.1:3000;
+//   }
+// }
+// `;
+
+//   fs.writeFileSync(`${NGINX_SNIPPETS}/ssl-${domain}.conf`, snippet);
+
+//   await run("nginx", ["-t"]);
+//   await run("systemctl", ["reload", "nginx"]);
+
+//   await prisma.company.update({
+//     where: { id: companyId },
+//     data: { sslStatus: "ACTIVE" },
+//   });
+// }
+
+// async function main() {
+//   const companies = await prisma.company.findMany({
+//     where: { sslStatus: "PENDING" },
+//   });
+
+//   for (const c of companies) {
+//     try {
+//       await processCompany(c.id, c.domain!);
+//     } catch (err: any) {
+//       await prisma.company.update({
+//         where: { id: c.id },
+//         data: { sslStatus: "FAILED", sslError: err.message },
+//       });
+//     }
+//   }
+// }
+
+// main().catch(console.error);
