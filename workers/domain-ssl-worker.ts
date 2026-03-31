@@ -13,15 +13,31 @@ const CHECK_INTERVAL = 30000; // 30 seconds
  */
 function run(cmd: string, args: string[]) {
   return new Promise<void>((resolve, reject) => {
-    // We add 'sudo' here because the worker likely runs as a limited user
-    const p = spawn("sudo", [cmd, ...args], { stdio: "inherit" });
+    // The -n flag for sudo means "non-interactive"
+    const p = spawn("sudo", ["-n", cmd, ...args], { stdio: "inherit" });
     p.on("exit", (code) =>
       code === 0
         ? resolve()
-        : reject(new Error(`Command ${cmd} failed with code ${code}`)),
+        : reject(
+            new Error(
+              `Command ${cmd} failed with code ${code}. Check sudo permissions.`,
+            ),
+          ),
     );
   });
 }
+
+// function run(cmd: string, args: string[]) {
+//   return new Promise<void>((resolve, reject) => {
+//     // We add 'sudo' here because the worker likely runs as a limited user
+//     const p = spawn("sudo", [cmd, ...args], { stdio: "inherit" });
+//     p.on("exit", (code) =>
+//       code === 0
+//         ? resolve()
+//         : reject(new Error(`Command ${cmd} failed with code ${code}`)),
+//     );
+//   });
+// }
 
 async function processCompany(companyId: string, domain: string) {
   console.log(`🚀 Processing SSL for: ${domain}`);
@@ -43,6 +59,7 @@ async function processCompany(companyId: string, domain: string) {
       "--nginx",
       "--non-interactive",
       "--agree-tos",
+      "--quiet", // Add this to reduce output noise
       "-m",
       EMAIL,
       "-d",
