@@ -15,7 +15,7 @@ export default function BookingFormModal({ service }: { service: any }) {
     const params = new URLSearchParams({
       listingId: service.id,
       name: service.name ?? "",
-      price: service.finalPrice?.toString() || "0.00",
+      price: service.finalPrice?.toString() || service.sellingPrice?.toString() || "0",
       date,
       timeSlot,
     });

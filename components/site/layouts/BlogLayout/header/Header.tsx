@@ -68,30 +68,30 @@ const Header = () => {
 
   // --- Navigation Items ---
   const navItems = [
-    { label: 'Home', href: `/${slug}` },
-    { label: 'Blog', href: `/${slug}/blog/products` },
-    { label: 'About', href: `/${slug}/blog/about` },
-    { label: 'Contact', href: `/${slug}/blog/contact` },
+    { label: 'Home', href: `/` },
+    { label: 'Blog', href: `/blog/products` },
+    { label: 'About', href: `/blog/about` },
+    { label: 'Contact', href: `/blog/contact` },
   ];
 
   // --- Handlers ---
   const handleUserAction = () => {
     if (!user) return handleGoogleSignIn();
     if (user.role?.toLowerCase() === 'admin') router.push('/dashboards');
-    else router.push(`/${slug}/blog/profile`);
+    else router.push(`/blog/profile`);
   };
 
-  const handleSignOut = () => signOut({ callbackUrl: `/${slug}` });
+  const handleSignOut = () => signOut({ callbackUrl: `/` });
 
   const handleGoogleSignIn = () => {
     const authUrl = new URL('https://auth.salesmanpro.site/signin');
-    authUrl.searchParams.set('callbackUrl', `${window.location.origin}/${slug}`);
+    authUrl.searchParams.set('callbackUrl', `${window.location.origin}/`);
     window.location.href = authUrl.toString();
   };
 
   const handleGoogleSignUp = () => {
     const authUrl = new URL('https://auth.salesmanpro.site/signup');
-    authUrl.searchParams.set('callbackUrl', `${window.location.origin}/${slug}`);
+    authUrl.searchParams.set('callbackUrl', `${window.location.origin}/`);
     window.location.href = authUrl.toString();
   };
 
@@ -112,7 +112,7 @@ const Header = () => {
           {/* ===== LEFT: LOGO ===== */}
           <motion.div
             className="flex items-center gap-3 cursor-pointer z-50"
-            onClick={() => router.push(`/${slug}`)}
+            onClick={() => router.push(`/`)}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.95 }}
           >

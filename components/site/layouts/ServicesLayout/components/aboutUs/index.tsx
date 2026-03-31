@@ -120,7 +120,7 @@ export default function AboutSectionEditorial() {
                         {description || "Our journey began with a singular vision: to create experiences that resonate deeper. We blend meticulous craftsmanship with innovative thinking to deliver results that don't just meet expectations, but shatter them."}
                     </p>
 
-                    <Link href={`/${slug}/about`} className="group inline-flex items-center gap-4 font-bold text-gray-900 dark:text-white">
+                    <Link href={`/service-provider/about`} className="group inline-flex items-center gap-4 font-bold text-gray-900 dark:text-white">
                         <span className="relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-bottom-right after:scale-x-0 after:bg-current after:transition-transform after:duration-300 after:ease-in-out group-hover:after:origin-bottom-left group-hover:after:scale-x-100">
                             Read Full Story
                         </span>
@@ -136,7 +136,7 @@ export default function AboutSectionEditorial() {
                     className="absolute inset-0 w-full h-[120%] -top-[10%]"
                  >
                      <Image 
-                        src={bannerUrl || "/placeholder.jpg"} 
+                        src={bannerUrl || "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"} 
                         alt={name}
                         loader={loader}
                         fill

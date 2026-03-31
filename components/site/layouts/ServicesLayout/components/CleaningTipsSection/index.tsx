@@ -15,25 +15,25 @@ const defaultTips : any = [
     id: 1, // Add unique IDs for better keying
     title: '55 Best Cleaning Tips for Every Room in Your Home',
     description: 'Unlock professional secrets to maintain a spotless living space, from quick tidies to deep cleans.',
-    image: '/images/cleaning1.png',
+    image: 'https://images.unsplash.com/photo-1581579181918-9b1c8e5f0c9b?auto=format&fit=crop&w=800&q=80',
     date: 'March 17, 2024',
-    link: '/blog/55-best-cleaning-tips', // Example link, ideally dynamic
+    link: '/service-provider/blog/55-best-cleaning-tips', // Example link, ideally dynamic
   },
   {
     id: 2,
     title: 'Tips For Cleaning Your Home Before A Party',
     description: 'Prepare your home effortlessly for guests with these essential pre-party cleaning hacks and tricks.',
-    image: '/images/cleaning2.png',
+    image: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=800&q=80',
     date: 'March 29, 2024',
-    link: '/blog/party-cleaning-tips',
+    link: '/service-provider/blog/party-cleaning-tips',
   },
   {
     id: 3,
     title: '6 Cleaning Tips For When You Have Allergies',
     description: 'Discover hypoallergenic cleaning methods and products to create a healthier, allergen-free environment.',
-    image: '/images/cleaning3.png',
+    image: 'https://images.unsplash.com/photo-1581579181918-9b1c8e5f0c9b?auto=format&fit=crop&w=800&q=80',
     date: 'August 28, 2024',
-    link: '/blog/allergy-cleaning-tips',
+    link: '/service-provider/blog/allergy-cleaning-tips',
   },
 ];
 

@@ -22,10 +22,10 @@ export default function Footer() {
   const [email, setEmail] = useState('');
 
   const navItems = [
-    { label: 'Home', href: `/${slug}` },
-    { label: 'Blog', href: `/${slug}/blog/products` },
-    { label: 'About', href: `/${slug}/blog/about` },
-    { label: 'Contact', href: `/${slug}/blog/contact` },
+    { label: 'Home', href: `/` },
+    { label: 'Blog', href: `/blog/products` },
+    { label: 'About', href: `/blog/about` },
+    { label: 'Contact', href: `/blog/contact` },
   ];
 
   const handleSubscribe = (e: React.FormEvent) => {

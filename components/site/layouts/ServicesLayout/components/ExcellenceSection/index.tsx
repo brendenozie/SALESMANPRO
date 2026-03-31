@@ -202,9 +202,6 @@ export default function ExcellenceHorizonLight({ slug, themeSettings, promotions
                                            <span>Process Visualization</span>
                                         </div>
                                         <div className="relative w-full aspect-[2/1] flex items-center justify-center overflow-hidden rounded-lg bg-white">
-                                            
-                                            
-
                                              <Image   
                                                 src="https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=800&q=80"
                                                 alt="Innovation Process Diagram"
@@ -212,8 +209,6 @@ export default function ExcellenceHorizonLight({ slug, themeSettings, promotions
                                                 fill
                                                 className="object-contain"
                                              />
-
-
                                         </div>
                                      </div>
                                   )}

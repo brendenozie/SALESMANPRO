@@ -17,6 +17,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { clsx } from 'clsx';
+import CartDrawer from './CartDrawer';
 
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -119,6 +120,7 @@ const Header = ({ storeFormData }: { storeFormData: any }) => {
   // Scroll Logic for "Floating" effect
   const { scrollY } = useScroll();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   
   useMotionValueEvent(scrollY, "change", (latest) => {
     setIsScrolled(latest > 50);
@@ -284,11 +286,12 @@ const Header = ({ storeFormData }: { storeFormData: any }) => {
             </div>
 
             {/* Cart */}
-            <Link href="/service-provider/checkout">
-              <button className={clsx(
-                 "relative p-2.5 rounded-full transition-colors hidden sm:block",
-                 isScrolled ? "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200" : "hover:bg-white/20 text-white"
-              )}>
+              <button 
+                onClick={() => setIsDrawerOpen(true)}
+                className={clsx(
+                   "relative p-2.5 rounded-full transition-colors hidden sm:block",
+                   isScrolled ? "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200" : "hover:bg-white/20 text-white"
+                )}>
                 <ShoppingCartIcon className="w-5 h-5" />
                 {cart?.length > 0 && (
                   <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white dark:ring-gray-900">
@@ -296,7 +299,6 @@ const Header = ({ storeFormData }: { storeFormData: any }) => {
                   </span>
                 )}
               </button>
-            </Link>
 
             {/* Desktop Profile / Login */}
             <div className="relative hidden lg:block">
@@ -435,6 +437,7 @@ const Header = ({ storeFormData }: { storeFormData: any }) => {
           </motion.div>
         )}
       </AnimatePresence>
+      <CartDrawer isCartOpen={isDrawerOpen} setIsCartOpen={() => setIsDrawerOpen(false)} />
     </>
   );
 };

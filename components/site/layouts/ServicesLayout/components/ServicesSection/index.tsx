@@ -6,7 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
     ArrowUpRightIcon,
     ArrowLongRightIcon,
-    StarIcon as StarIconOutline
+    StarIcon as StarIconOutline,
+    XMarkIcon
 } from "@heroicons/react/24/outline";
 import { StarIcon as StarIconSolid, CheckCircleIcon } from "@heroicons/react/24/solid";
 import BookingFormModal from "../BookingFormModal"; 
@@ -84,7 +85,7 @@ const ServiceCard = ({ service, primaryColor, onBook, isSpotlight, index }: Serv
                     {/* Price and Rating */}
                     <div className="flex items-center gap-4 mb-4 text-white">
                         <span className={`font-serif font-medium ${isSpotlight ? 'text-3xl' : 'text-xl'}`} style={{ color: primaryColor }}>
-                            {(service.finalPrice ?? 0).toFixed(0)}
+                            {(service.finalPrice ?? 0).toFixed(0) || service.sellingPrice ? `${(service.sellingPrice ?? 0).toFixed(0)}` : "0.00"}
                         </span>
                         <div className="flex items-center gap-1 text-sm text-yellow-400">
                             <StarIconSolid className="w-4 h-4" /> 4.9
@@ -213,7 +214,7 @@ export default function ServicesSpotlightDeck({ marketplaceListings, themeSettin
                                onClick={() => setIsModalOpen(false)}
                                className="absolute top-4 right-4 z-30 p-2 bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 rounded-full transition-all"
                             >
-                                <ArrowLongRightIcon className="w-6 h-6 text-gray-900 dark:text-white transform rotate-90" />
+                                <XMarkIcon className="w-6 h-6 text-gray-900 dark:text-white transform rotate-90" />
                             </button>
 
                             {/* Left Column: Details & Diagram */}

@@ -33,7 +33,7 @@ export function ServiceDetail({ product, related }: { product: MarketListingForm
   const [selectedTier, setSelectedTier] = useState(SERVICE_TIERS[0]);
   const [showProcess, setShowProcess] = useState(false);
 
-  const totalPrice = (product.finalPrice || 0) + selectedTier.price;
+  const totalPrice = (product.finalPrice || (product.sellingPrice || 0)) + selectedTier.price;
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-[#050505] transition-colors duration-700">

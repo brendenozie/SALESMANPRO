@@ -205,7 +205,7 @@ export default function HeroSection({
             className="mt-12 flex flex-col sm:flex-row gap-5 sm:gap-7"
             variants={wordReveal}
         >
-            <Link href={firstSlide.ctaLink || `/${slug}/services`}>
+            <Link href={firstSlide.ctaLink || `/service-provider/services`}>
                 <motion.button
                     className="w-full sm:w-auto px-10 py-5 font-bold rounded-xl text-lg shadow-2xl transition-all duration-300" 
                     style={{
