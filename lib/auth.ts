@@ -346,7 +346,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         const mainHubDomains = ["salesmanpro.site", "www.salesmanpro.site"];
 
         // ✅ 1. INTERNAL auth routes (safe, session exists)z
-        if (targetHost === AUTH_HOST && targetUrlObj.pathname !== "/") {
+        if (targetHost === AUTH_HOST || targetUrlObj.pathname !== "/") {
           return finalRedirectUrl;
         }
 
