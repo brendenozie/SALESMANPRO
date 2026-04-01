@@ -34,10 +34,10 @@ jobs:
             sudo rm -rf /tmp/kdevtmpfsi /tmp/libsystem.so /var/tmp/.unix /etc/cron.d/kinsing
 
             # 2. VACCINATE (Lock the paths so it can't come back mid-build)
-            sudo mkdir -p /var/tmp/.unix
-            sudo touch /tmp/kdevtmpfsi /tmp/libsystem.so /var/tmp/.unix/javae
-            sudo chmod 000 /tmp/kdevtmpfsi /tmp/libsystem.so /var/tmp/.unix/javae
-            sudo chattr +i /tmp/kdevtmpfsi /tmp/libsystem.so /var/tmp/.unix/javae
+            # sudo mkdir -p /var/tmp/.unix
+            # sudo touch /tmp/kdevtmpfsi /tmp/libsystem.so /var/tmp/.unix/javae
+            # sudo chmod 000 /tmp/kdevtmpfsi /tmp/libsystem.so /var/tmp/.unix/javae
+            # sudo chattr +i /tmp/kdevtmpfsi /tmp/libsystem.so /var/tmp/.unix/javae
 
             # 3. Standard Deployment
             export NVM_DIR="$HOME/.nvm"
@@ -53,12 +53,20 @@ jobs:
             echo "📦 Installing dependencies..."
             npm ci --legacy-peer-deps
 
+            ## 1. Free up RAM for the build
+            #echo "📉 Scaling down PM2 to 1 instance..."
+            pm2 scale salesmanpro 0
+
             echo "🏗️ Building Next.js app..."
             export NODE_OPTIONS="--max-old-space-size=6144"
             npm run build
 
             echo "🔁 Reloading PM2..."
             pm2 reload ecosystem.config.js --update-env || pm2 start ecosystem.config.js
+            
+            # 2. Scale back up to 2 instances now that build is done
+            pm2 scale salesmanpro 2
+
             pm2 save
             echo "🎉 Deployment successful!"
           EOF

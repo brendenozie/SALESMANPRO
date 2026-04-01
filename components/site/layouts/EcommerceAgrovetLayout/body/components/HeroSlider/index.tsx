@@ -130,14 +130,23 @@ export default function RethoughtAgrovetHero({heroSlides, themeSettings }: { her
               </button>
 
               <div className="flex gap-8 border-l border-white/20 pl-8">
-                <div>
-                  <p className="text-2xl font-black text-emerald-400">{String(Object.values(slides[index].stats)[0] || 'N/A')}</p>
-                  <p className="text-[10px] uppercase font-bold opacity-40 tracking-widest">{String(Object.keys(slides[index].stats)[0])} Rate</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-black text-emerald-400">{String(Object.values(slides[index].stats)[1] || 'N/A')}</p>
-                  <p className="text-[10px] uppercase font-bold opacity-40 tracking-widest">{String(Object.keys(slides[index].stats)[1])} Optimization</p>
-                </div>
+                {/* Map through the entries to ensure Key and Value stay together */}
+                {Object.entries(slides[index].stats || {}).slice(0, 2).map(([key, value], i) => (
+                  <div key={key}>
+                    <p className="text-2xl font-black text-emerald-400">
+                      {String(value ?? 'N/A')}
+                    </p>
+                    <p className="text-[10px] uppercase font-bold opacity-40 tracking-widest">
+                      {/* Dynamic Label Mapping */}
+                      {key === 'yield' && 'Yield Rate'}
+                      {key === 'water' && 'Water Usage'}
+                      {key === 'growth' && 'Growth Rate'}
+                      {key === 'health' && 'Health Optimization'}
+                      {/* Fallback for keys not explicitly mapped */}
+                      {!['yield', 'water', 'growth', 'health'].includes(key) && `${key} ${i === 0 ? 'Rate' : 'Optimization'}`}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           </motion.div>
