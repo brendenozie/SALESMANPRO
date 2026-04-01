@@ -3,6 +3,7 @@ import Head from "next/head";
 import Header from "./Header";
 import Footer from "./Footer";
 import { Toaster } from "react-hot-toast"; // Assuming you're using react-hot-toast for notifications
+import Script from "next/script";
 
 const MainLayout = (props: PropsWithChildren) => {
   return (
@@ -26,6 +27,20 @@ const MainLayout = (props: PropsWithChildren) => {
       
       {/* Toast Notifications */}
       <Toaster position="bottom-right" />
+      {/* <!-- Google tag (gtag.js) --> */}
+      {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-JQJSSHQD25"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-JQJSSHQD25');
+          `}
+        </Script>
     </div>
   );
 };
