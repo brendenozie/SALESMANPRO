@@ -164,9 +164,8 @@ export default function Header() {
   };
 
   // ---------- Auth helpers ----------
-  const handleSignOut = () => {
-    signOut({ callbackUrl: `/site/${slug || ''}` });
-  };
+    const handleSignOut = () => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` });
+  
 
   const handleGoogleSignIn = () => {
     const authUrl = new URL('https://auth.salesmanpro.site/signin');

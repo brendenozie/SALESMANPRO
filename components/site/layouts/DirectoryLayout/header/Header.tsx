@@ -114,7 +114,7 @@ export default function Header() {
   };
 
   const handleSignOutUser = () =>
-    signOut({ callbackUrl: `/` });
+    signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` });
 
 
   // --------------------------------------

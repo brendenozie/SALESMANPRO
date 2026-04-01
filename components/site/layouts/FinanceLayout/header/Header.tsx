@@ -64,7 +64,7 @@ export default function FinanceHeader() {
   };
 
   const handleLogout = () => {
-    signOut({ callbackUrl: `/finance` });
+    signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` });    
   };
 
   // UI State

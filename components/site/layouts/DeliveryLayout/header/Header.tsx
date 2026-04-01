@@ -235,7 +235,7 @@ export default function Navbar() {
                     <button onClick={handleUserAction} className="flex items-center gap-3 text-orange-500 text-sm font-black uppercase">
                       <UserIcon className="w-5 h-5" /> Account Profile
                     </button>
-                    <button onClick={() => signOut()} className="flex items-center gap-3 text-red-400 text-sm font-black uppercase">
+                    <button onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` })} className="flex items-center gap-3 text-red-400 text-sm font-black uppercase">
                       <ArrowRightOnRectangleIcon className="w-5 h-5" /> Sign Out
                     </button>
                   </div>

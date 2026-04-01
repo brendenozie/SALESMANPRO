@@ -61,6 +61,8 @@ export default function Header() {
     }
   };
 
+  const handleSignOut = () => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` });
+
   // DATA
   const {
     name = DEFAULT_NAME,
@@ -223,7 +225,7 @@ export default function Header() {
                 {user.name || "Profile"}
               </button>
               <button
-                onClick={() => signOut({ callbackUrl: "/" })}
+                onClick={() => handleSignOut()}
                 className="text-red-600 font-bold"
               >
                 Logout
@@ -304,7 +306,7 @@ export default function Header() {
                     Profile
                   </button>
                   <button
-                    onClick={() => signOut({ callbackUrl: "/" })}
+                    onClick={() => handleSignOut()}
                     className="w-full py-3 rounded-full font-bold text-red-600"
                   >
                     Logout

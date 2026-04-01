@@ -143,7 +143,7 @@ export default function Header() {
                   </button>
 
                   <button
-                    onClick={() => signOut({ callbackUrl: "/" })}
+                    onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` })}
                     className="text-red-400 hover:text-red-300 text-sm"
                   >
                     Logout
@@ -276,7 +276,7 @@ export default function Header() {
                     </button>
 
                     <button
-                      onClick={() => signOut({ callbackUrl: "/" })}
+                      onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` })}
                       className="text-red-400"
                     >
                       Logout

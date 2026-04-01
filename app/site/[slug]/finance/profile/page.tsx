@@ -143,7 +143,7 @@ const FinanceLegalDashboard = () => {
             </div>
           </div>
           <button 
-            onClick={() => signOut({ callbackUrl: `/site/${slug}` })}
+            onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` })}
             className="mt-2 w-full flex items-center justify-center gap-2 p-2 rounded-xl text-slate-400 hover:bg-red-900/30 hover:text-red-300 transition-colors"
           >
             <ArrowRightOnRectangleIcon className="w-5 h-5" />

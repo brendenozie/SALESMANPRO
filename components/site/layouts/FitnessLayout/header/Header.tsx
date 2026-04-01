@@ -199,7 +199,7 @@ export default function Header() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
-                onClick={() => { signOut(); setMobileOpen(false); }}
+                onClick={() => { signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` }); setMobileOpen(false); }}
                 className="pt-10 text-orange-500 font-black uppercase tracking-[0.3em] text-xs"
               >
                 {user ? "Sign Out" : ""}

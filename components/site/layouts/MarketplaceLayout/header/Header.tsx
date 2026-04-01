@@ -270,7 +270,7 @@ export default function Header() {
                 <button
                   onClick={() => {
                     setMobileMenu(false);
-                    signOut();
+                    signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` });
                   }}
                   className="text-gray-600 underline"
                 >

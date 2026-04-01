@@ -64,6 +64,8 @@ export default function AdminLayout({ children, params }: {
   console.log("User role from context:", userRole);
   console.log("Store form data:", storeFormData);
 
+  const handleSignOut = () => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` });
+  
   // 1. This is the core logic.
   // It checks if the current URL path ends with '/pos'.
   const shouldHideNav = pathname.endsWith('/pos') || pathname.endsWith('/storepos') || pathname.endsWith('/service-pos') || pathname.endsWith('/fitness-pos') || pathname.endsWith('/health-pos') ||  pathname.endsWith('/company-pos');
@@ -206,7 +208,7 @@ export default function AdminLayout({ children, params }: {
         {/* Logout Button */}
         <div className="p-4 border-t border-white/20">
           <button
-            onClick={() => { signOut({ callbackUrl: `/${storeFormData?.category || 'home'}` }) }}
+            onClick={() => handleSignOut()}
             className="w-full flex items-center justify-center px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition"
           >
             <span className="text-sm text-white">Logout</span>

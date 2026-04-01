@@ -139,7 +139,7 @@ const PublicSpeakingHeader: React.FC<HeaderProps> = ({ storeFormData }) => {
     else router.push("/publicspeaking/profile");
   };
 
-  const handleSignOut = () => signOut({ callbackUrl: "/" });
+  const handleSignOut = () => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` });
 
   const handleGoogleSignIn = () => {
     const authUrl = new URL("https://auth.salesmanpro.site/signin");

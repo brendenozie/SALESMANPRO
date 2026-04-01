@@ -52,7 +52,7 @@ const WelcomePage = () => {
               </div>
         </div>
         <button 
-          onClick={() => signOut({ callbackUrl: '/' })}
+          onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` })}
           className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500"
         >
           <ArrowLeftOnRectangleIcon className="w-6 h-6" />

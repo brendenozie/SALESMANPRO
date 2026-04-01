@@ -174,7 +174,7 @@ const CommunityDashboard = () => {
             </div>
             <img src={displayUser.avatar} className="h-10 w-10 rounded-full border-2 border-white shadow-sm" alt="User" />
             <button 
-              onClick={() => signOut({ callbackUrl: `/site/${slug}` })}
+              onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` })}
               className="hidden sm:block text-sm text-slate-500 hover:text-red-600"
             >
               Sign Out

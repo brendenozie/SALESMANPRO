@@ -418,7 +418,7 @@ export default function AccountDashboard() {
                 
                 <div className="pt-4 mt-4 border-t border-slate-200">
                   <button 
-                    onClick={() => signOut()}
+                    onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` })}
                     className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
                   >
                     <ArrowRightOnRectangleIcon className="w-5 h-5" />

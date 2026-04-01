@@ -81,7 +81,7 @@ const Header = () => {
     else router.push(`/blog/profile`);
   };
 
-  const handleSignOut = () => signOut({ callbackUrl: `/` });
+  const handleSignOut = () => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` });
 
   const handleGoogleSignIn = () => {
     const authUrl = new URL('https://auth.salesmanpro.site/signin');
@@ -319,7 +319,7 @@ const Header = () => {
                     Dashboard
                   </button>
                   <button
-                    onClick={() => { setMobileMenuOpen(false); handleSignOut(); }}
+                  onClick={() => { setMobileMenuOpen(false); handleSignOut(); }}
                     className="w-full py-3.5 text-gray-400 font-medium hover:text-white transition-colors"
                   >
                     Sign Out

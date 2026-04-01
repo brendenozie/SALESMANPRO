@@ -206,7 +206,7 @@ export default function Header() {
                 </button>
               ) : (
                 <button 
-                  onClick={() => signOut()}
+                  onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` })}
                   className="w-full py-4 border-2 border-gray-200 text-gray-600 rounded-2xl font-bold"
                 >
                   Logout

@@ -137,7 +137,7 @@ const Header = ({ storeFormData }: { storeFormData: any }) => {
     setIsSearchOpen(false);
   }, [pathname]);
 
-  const handleSignOut = () => signOut({ callbackUrl: `/` });
+  const handleSignOut = () => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` });
   const handleSignIn = () => {
     const authUrl = new URL("https://auth.salesmanpro.site/signin");
     authUrl.searchParams.set("callbackUrl", `${window.location.origin}`);

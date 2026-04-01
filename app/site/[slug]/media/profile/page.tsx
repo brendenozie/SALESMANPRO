@@ -139,7 +139,7 @@ const UserProfile = () => {
               <PencilSquareIcon className="w-4 h-4" /> Edit Cover
             </button>
             <button 
-              onClick={() => signOut({ callbackUrl: `/site/${slug}` })}
+              onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` })}
               className="bg-black/30 backdrop-blur-md border border-white/10 text-white px-4 py-2 rounded-full flex items-center gap-2 hover:bg-red-500/20 transition-all text-sm font-medium"
             >
               <ArrowRightOnRectangleIcon className="w-4 h-4" /> Sign Out

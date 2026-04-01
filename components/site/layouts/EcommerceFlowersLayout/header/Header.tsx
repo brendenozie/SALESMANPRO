@@ -200,7 +200,7 @@ export default function Header() {
                  </button>
                  {user && (
                     <button 
-                      onClick={() => signOut()}
+                      onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` })}
                       className="w-full mt-4 text-slate-400 text-sm font-medium"
                     >
                       Logout
