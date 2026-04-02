@@ -3,12 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChatBubbleLeftEllipsisIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 const WHATSAPP_NUMBER = "254700000000"; // Your Business Number
 
 export default function WhatsAppBubble(store: any) {
   const [isOpen, setIsOpen] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
+  const { storeFormData } = useStoreContext();
 
   // Auto-show a little "How can I help?" prompt after 5 seconds
   useEffect(() => {
@@ -18,7 +20,7 @@ export default function WhatsAppBubble(store: any) {
 
   const openWhatsApp = () => {
     const msg = encodeURIComponent(`Hi! I'm browsing the store and have an enquiry i'd like to make.`);
-    window.open(`https://wa.me/${ store.contactPhone || WHATSAPP_NUMBER }?text=${msg}`, '_blank');
+    window.open(`https://wa.me/${ storeFormData?.contactPhone || WHATSAPP_NUMBER }?text=${msg}`, '_blank');
   };
 
   return (
