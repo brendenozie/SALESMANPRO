@@ -92,7 +92,7 @@ const DishCard: React.FC<DishCardProps> = ({ dish }) => {
           {/* Content */}
           <div className="px-2 pb-2 flex-grow flex flex-col">
             <div className="flex justify-between items-start mb-2">
-                <h3 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tighter leading-tight">
+                <h3 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tighter leading-tight h-14 overflow-hidden">
                     {dish.name}
                 </h3>
                 <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded-lg">

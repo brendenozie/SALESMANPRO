@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import FilterSidebar from '../FilterSidebar/FilterSidebar';
 import { AdjustmentsHorizontalIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline';
 import { useRouter, useSearchParams } from 'next/navigation';
-
+import DishCard from '@/components/site/layouts/RestaurantLayout/components/DishCard';
 export interface FilterState {
   search: string;
   category: string | null;
@@ -98,9 +98,7 @@ export default function ProductListWrapper({ products, categories }: any) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                 >
-                  <DishCard 
-                    dish={dish} 
-                   />
+                  <DishCard dish={dish} />
                 </motion.div>
               ))}
             </AnimatePresence>
