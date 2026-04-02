@@ -54,7 +54,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       {/* --- IMAGE CONTAINER --- */}
       <div className="relative aspect-[2/3] w-full overflow-hidden rounded-[2rem] bg-zinc-100 dark:bg-zinc-900 shadow-sm group-hover:shadow-2xl transition-all duration-700 ease-[0.16, 1, 0.3, 1]">
         
-        <Link href={`/ecommerce/products/${id}`} className="block w-full h-full">
+        <Link href={`/fashionecommerce/products/${id}`} className="block w-full h-full">
           <Image
             src={img}
             alt={name}
@@ -147,7 +147,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </span>
         )}
         
-        <Link href={`/ecommerce/products/${id}`} className="max-w-[85%]">
+        <Link href={`/fashionecommerce/products/${id}`} className="max-w-[85%]">
           <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 hover:text-zinc-500 transition-colors mb-3 tracking-wide leading-tight uppercase truncate">
             {name}
           </h3>

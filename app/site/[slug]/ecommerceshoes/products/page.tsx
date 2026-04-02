@@ -137,9 +137,10 @@ export default async function ProductListPage({ params, searchParams }: PageProp
         productCategoryId: true,
       },
     }),
-    prisma.productCategory.findMany({
-      orderBy: { name: "asc" },
+    prisma.storeCategory.findMany({
+      orderBy: { displayName: "asc" },
       where: { companyId: company.id },
+      select: { id: true, displayName: true, categoryId: true, category: true },
     }),
   ]);
 
@@ -189,11 +190,11 @@ export default async function ProductListPage({ params, searchParams }: PageProp
 
   // Normalize categories
   const cats = categories.length
-    ? categories.map((c) => ({ id: c.id, displayName: c.name }))
+    ? categories.map((c) => ({ id: c.id, displayName: c.displayName, categoryId: c.categoryId, category: c.category }))
     : [
-        { id: "cat_1", displayName: "Men's Shoes" },
-        { id: "cat_2", displayName: "Accessories" },
-        { id: "cat_3", displayName: "Home Goods" },
+        { id: "cat_1", displayName: "Men's Shoes", categoryId: "cat_1", category: "Shoes" },
+        { id: "cat_2", displayName: "Accessories", categoryId: "cat_2", category: "Accessories" },
+        { id: "cat_3", displayName: "Home Goods", categoryId: "cat_3", category: "Home" },
       ];
 
   return (

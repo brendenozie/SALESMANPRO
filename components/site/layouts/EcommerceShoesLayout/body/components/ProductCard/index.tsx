@@ -1,6 +1,6 @@
 'use client';
 
-import { MinusIcon, PlusIcon, StarIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { MinusIcon, PlusIcon, StarIcon, TrashIcon, XMarkIcon, ShoppingBagIcon } from '@heroicons/react/24/solid';
 import React, { useState } from 'react';
 import { MarketListingForm } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,7 +12,6 @@ import Image from 'next/image';
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-// Mock sizes - in a real app, these would come from product.variants or product.sizes
 const AVAILABLE_SIZES = ['7', '8', '9', '10', '11', '12'];
 
 const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
@@ -22,137 +21,157 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
   const { storeFormData } = useStoreContext();
   
-  const primary = storeFormData?.themeSettings?.primaryColor || '#10B981';
-  const secondary = storeFormData?.themeSettings?.secondaryColor || '#3B82F6';
-
+  const primary = storeFormData?.themeSettings?.primaryColor || '#18181b'; // Zinc-900 default
+  
   const quantity = cart.find((item: any) => item.id === product.id)?.quantity || 0;
 
-  const handleAddToCart = () => {
-    // If the product requires a size and we haven't picked one, show selector
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent Link navigation
     if (!selectedSize) {
       setIsSelectingSize(true);
       return;
     }
-    // Add to cart with the selected size meta-data
-    addToCart({ ...product, finalPrice: (product.finalPrice || 0), selectedSize });
+    addToCart({ ...product, finalPrice: (product.finalPrice || product.sellingPrice || 0), selectedSize });
     setIsSelectingSize(false);
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      className="relative flex flex-col bg-white dark:bg-slate-900 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden group border border-gray-100 dark:border-slate-800"
+      className="relative flex flex-col bg-white dark:bg-zinc-900 rounded-[2.5rem] p-3 transition-all duration-500 group border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 hover:shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)]"
     >
-      {/* Quick Add Size Overlay */}
-      <AnimatePresence>
-        {isSelectingSize && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 z-30 bg-white/90 dark:bg-slate-900/95 backdrop-blur-md p-6 flex flex-col"
-          >
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-xs font-black uppercase tracking-widest text-gray-400">Select Size</span>
-              <button onClick={() => setIsSelectingSize(false)} className="p-1 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full">
-                <XMarkIcon className="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 mb-6">
-              {AVAILABLE_SIZES.map((size) => (
-                <button
-                  key={size}
-                  onClick={() => setSelectedSize(size)}
-                  className={`py-3 rounded-xl border-2 text-sm font-bold transition-all ${
-                    selectedSize === size 
-                    ? 'border-gray-900 bg-gray-900 text-white dark:border-white dark:bg-white dark:text-gray-900' 
-                    : 'border-gray-100 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-500 text-gray-600 dark:text-slate-400'
-                  }`}
-                >
-                  {size}
-                </button>
-              ))}
-            </div>
-
-            <button
-              disabled={!selectedSize}
-              onClick={handleAddToCart}
-              className="mt-auto w-full py-4 rounded-2xl text-white font-black text-sm uppercase tracking-widest shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ backgroundColor: primary }}
-            >
-              Confirm & Add
-            </button>
-          </motion.div>
+      {/* Badge Tags */}
+      <div className="absolute top-6 left-6 z-20 flex flex-col gap-2">
+        {product.isNewArrival && (
+          <span className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">
+            New
+          </span>
         )}
-      </AnimatePresence>
+        {product.isDiscounted && (
+          <span className="bg-red-500 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">
+            -{Math.round(((product.sellingPrice - (product.finalPrice || 0)) / product.sellingPrice) * 100)}%
+          </span>
+        )}
+      </div>
 
-      {/* Image Section */}
-      <Link href={`/ecommerceshoes/products/${product.id}`} className="block relative h-64 bg-gray-50 dark:bg-slate-800/50">
-        <Image
-          src={(product.images?.[0] as any)?.url || product.images?.[0] || 'https://via.placeholder.com/300'}
-          alt={product.name}
-          loader={loader}
-          fill
-          className="object-contain p-8 transition-transform duration-700 group-hover:scale-110"
-        />
-      </Link>
+      {/* Image Container */}
+      <div className="relative h-72 w-full overflow-hidden rounded-[2rem] bg-zinc-100 dark:bg-zinc-800/50">
+        <Link href={`/products/${product.id}`} className="block h-full w-full">
+          <Image
+            src={(product.images?.[0] as any)?.url || product.images?.[0] || 'https://via.placeholder.com/600'}
+            alt={product.name}
+            loader={loader}
+            fill
+            className="object-contain p-10 transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-3"
+          />
+        </Link>
+
+        {/* Size Selector Overlay */}
+        <AnimatePresence>
+          {isSelectingSize && (
+            <motion.div 
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              className="absolute inset-0 z-30 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md p-6 flex flex-col justify-center items-center"
+            >
+              <button 
+                onClick={() => setIsSelectingSize(false)}
+                className="absolute top-4 right-4 p-2 bg-white dark:bg-zinc-800 rounded-full shadow-md"
+              >
+                <XMarkIcon className="w-4 h-4 text-zinc-500" />
+              </button>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-4">Select UK Size</p>
+              <div className="grid grid-cols-3 gap-2 w-full">
+                {AVAILABLE_SIZES.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`py-3 rounded-xl border-2 text-xs font-black transition-all ${
+                      selectedSize === size 
+                      ? 'border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900' 
+                      : 'border-zinc-200 dark:border-zinc-700 text-zinc-400 hover:border-zinc-400'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+              <button
+                disabled={!selectedSize}
+                onClick={handleAddToCart}
+                className="mt-6 w-full py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-2xl font-black text-[10px] uppercase tracking-widest disabled:opacity-50"
+              >
+                Confirm Size
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* Details Section */}
-      <div className="p-6 flex flex-col flex-grow">
-        <div className="flex justify-between items-start mb-2">
-          <h4 className="text-lg font-bold text-gray-900 dark:text-white truncate">{product.name}</h4>
-          {selectedSize && (
-            <span className="text-[10px] font-bold px-2 py-0.5 bg-gray-100 dark:bg-slate-800 rounded text-gray-500">
-              Size: {selectedSize}
+      <div className="p-5 flex flex-col flex-grow">
+        <div className="flex justify-between items-start">
+          <div className='h-10 mb-4'>
+            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">
+              {product.category?.name || "Premium Footwear"}
+            </p>
+            <h4 className="text-xl font-bold text-zinc-900 dark:text-white leading-tight">
+              {product.name}
+            </h4>
+          </div>
+          <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-lg">
+            <StarIcon className="w-3 h-3 text-zinc-900 dark:text-white" />
+            <span className="text-[10px] font-black dark:text-white">4.8</span>
+          </div>
+        </div>
+
+        <div className="mt-4 flex items-baseline gap-2">
+          <span className="text-2xl font-black text-zinc-900 dark:text-white">
+            KES {product.finalPrice?.toLocaleString() || product.sellingPrice?.toLocaleString() || '0'}
+          </span>
+          {product.isDiscounted && (
+            <span className="text-sm font-bold text-zinc-400 line-through">
+              KES {product.sellingPrice?.toLocaleString() || '0'}
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-1 text-yellow-500 mb-4">
-          <StarIcon className="w-4 h-4" />
-          <span className="text-xs font-bold text-gray-900 dark:text-white">4.5</span>
-        </div>
-
-        <div className="text-2xl font-black mb-6" style={{ color: primary }}>
-          ${(product.finalPrice ?? 0).toFixed(2)}
-        </div>
-
         {/* Footer Actions */}
-        <div className="mt-auto">
+        <div className="mt-6">
           <AnimatePresence mode="wait">
             {quantity > 0 ? (
               <motion.div 
-                key="qty"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="flex items-center justify-between bg-gray-100 dark:bg-slate-800 p-1.5 rounded-2xl"
+                key="qty-control"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center justify-between bg-zinc-100 dark:bg-zinc-800 p-1 rounded-2xl"
               >
-                <div className="flex items-center">
-                  <button onClick={() => decreaseQuantity(product.id)} className="p-2.5 rounded-xl hover:bg-white dark:hover:bg-slate-700 shadow-sm transition-all">
-                    {quantity === 1 ? <TrashIcon className="h-5 w-5 text-red-500" /> : <MinusIcon className="h-5 w-5 text-gray-600 dark:text-slate-300" />}
+                <div className="flex items-center gap-1">
+                  <button 
+                    onClick={() => decreaseQuantity(product.id)} 
+                    className="p-3 bg-white dark:bg-zinc-700 rounded-xl shadow-sm hover:scale-105 transition-transform"
+                  >
+                    {quantity === 1 ? <TrashIcon className="h-4 w-4 text-red-500" /> : <MinusIcon className="h-4 w-4 text-zinc-900 dark:text-white" />}
                   </button>
-                  <span className="w-10 text-center font-black dark:text-white">{quantity}</span>
-                  <button onClick={() => addToCart({ ...product, finalPrice: (product.finalPrice || 0), selectedSize: selectedSize })} className="p-2.5 rounded-xl hover:bg-white dark:hover:bg-slate-700 shadow-sm transition-all">
-                    <PlusIcon className="h-5 w-5 text-gray-600 dark:text-slate-300" />
+                  <span className="w-10 text-center font-black text-sm dark:text-white">{quantity}</span>
+                  <button 
+                    onClick={() => addToCart({ ...product, finalPrice: (product.finalPrice || product.sellingPrice || 0), selectedSize })} 
+                    className="p-3 bg-white dark:bg-zinc-700 rounded-xl shadow-sm hover:scale-105 transition-transform"
+                  >
+                    <PlusIcon className="h-4 w-4 text-zinc-900 dark:text-white" />
                   </button>
                 </div>
-                <button onClick={() => { setSelectedSize(null); removeFromCart(product.id); }} className="px-4 text-[10px] font-black uppercase text-gray-400 hover:text-red-500 transition-colors">
-                  Reset
-                </button>
+                <span className="pr-4 text-[9px] font-black uppercase text-zinc-400">UK {selectedSize}</span>
               </motion.div>
             ) : (
               <motion.button
-                key="add"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                key="add-btn"
+                whileTap={{ scale: 0.95 }}
                 onClick={handleAddToCart}
-                className="w-full py-4 rounded-2xl text-white font-black text-sm uppercase tracking-widest shadow-xl shadow-black/10 transition-all"
-                style={{ background: `linear-gradient(135deg, ${primary}, ${secondary})` }}
+                className="w-full flex items-center justify-center gap-3 py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-[1.5rem] font-black text-[11px] uppercase tracking-widest transition-all hover:shadow-lg hover:shadow-zinc-500/20"
               >
-                {isSelectingSize ? 'Picking...' : 'Add to Cart'}
+                <ShoppingBagIcon className="w-4 h-4" />
+                {isSelectingSize ? 'Select Size' : 'Add to Cart'}
               </motion.button>
             )}
           </AnimatePresence>
