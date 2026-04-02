@@ -24,7 +24,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
     subtitle: 'Limited Time Offer',
     description:
       'Elevate your perspective with our exclusive weekend collection. Precisely crafted, architectural silhouettes available at an exceptional value for 48 hours only.',
-    bannerUrl: 'https://images.unsplash.com/photo-1511499767350-a1590fdb7351?q=80&w=1200&auto=format&fit=crop',
+    bannerUrl: "https://images.unsplash.com/photo-1591076482161-42ce6da69f67?auto=format&fit=crop&w=800&q=80",
     ctaText: 'Shop the Drop',
     ctaLink: '/ecommerce/products',
   };

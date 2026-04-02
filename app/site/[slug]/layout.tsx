@@ -9,6 +9,7 @@ import { transformCompanyToStoreForm } from '@/utils/transformPrismaToStoreForm'
 import LoadingSpinner from '@/components/site/LoadingSpinner';
 import { SITE_CATEGORIES } from '@/utils/sitedata';
 import { findCompanyCached, leanShellInclude } from '@/lib/company-fetcher';
+import WhatsAppBubble from '@/components/WhatsAppBubble';
 
 // Cache for ISR (60 seconds)
 export const revalidate = 60;
@@ -96,6 +97,7 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
         <LayoutComponent params={{ storeFormData }}>
           {/* Suspense is key for streaming UI while page data loads */}
           <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
+          <WhatsAppBubble store={storeFormData} />
         </LayoutComponent>
       </div>
     </StoreContextProvider>

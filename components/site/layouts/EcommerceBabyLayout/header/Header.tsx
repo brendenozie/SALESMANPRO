@@ -288,7 +288,7 @@ All Categories
 
 <Link
 key={cat.id}
-href={`/babyecommerce/products?categories=${cat.categoryId || cat.category?.id || cat.category?.name?.toLowerCase()} || ${cat.displayName?.toLowerCase()}`}
+href={`/babyecommerce/products?categories=${cat.categoryId || cat.category?.id || cat.category?.name?.toLowerCase() || cat.displayName?.toLowerCase()}`}
 className="py-4 px-4 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
 >
 
@@ -381,7 +381,7 @@ Shop Categories
 
 <Link
 key={cat.id}
-href={`/babyecommerce/products?categories=${cat.categoryId || cat.category?.id || cat.category?.name?.toLowerCase()} || ${cat.displayName?.toLowerCase()}`}
+href={`/babyecommerce/products?categories=${cat.categoryId || cat.category?.id || cat.category?.name?.toLowerCase() || cat.displayName?.toLowerCase()}`}
 onClick={() => setIsDrawerOpen(false)}
 className="block p-3 text-base font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg"
 >

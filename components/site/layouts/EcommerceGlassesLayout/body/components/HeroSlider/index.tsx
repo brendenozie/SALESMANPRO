@@ -16,7 +16,7 @@ const opticalSlides = [
     subline: '2026 LUXE COLLECTION',
     description: 'Bespoke eyewear crafted for those who see the world differently. Merging clinical precision with runway aesthetics.',
     ctaText: 'Explore Collection',
-    imageUrl: 'https://images.unsplash.com/photo-1511499767390-90342f16b147?q=80&w=1000&auto=format&fit=crop', // Better High-Res Model
+    imageUrl: 'https://dozi4r4ug9739.cloudfront.net/images/1772312106481-zeelool-glasses-aShmUdodJ3w-unsplash.jpg', // Better High-Res Model
     productImage: 'https://images.unsplash.com/photo-1574258495973-f010dfbb5371?q=80&w=500&auto=format&fit=crop', // Isolated Glasses
     productName: 'Metal Lennons',
     price: '$175.00',
@@ -60,7 +60,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
   return (
     <section 
       onMouseMove={handleMouseMove}
-      className="relative min-h-screen flex items-center overflow-hidden bg-[#F9F6F2] py-20 lg:py-0"
+      className="relative min-h-screen flex items-center overflow-hidden bg-[#F9F6F2] py-20 lg:py-20"
     >
       {/* 1. HUGE BACKGROUND TYPOGRAPHY (The "Wow" Factor) */}
       <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none select-none">
@@ -160,7 +160,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                 className="relative z-20 w-full h-full rounded-[40px] overflow-hidden shadow-2xl"
               >
                 <Image 
-                  src={opticalSlides[0].imageUrl} 
+                  src={opticalSlides[0].imageUrl || "https://dozi4r4ug9739.cloudfront.net/images/1772312106481-zeelool-glasses-aShmUdodJ3w-unsplash.jpg"} 
                   loader={imageLoader}
                   alt="Model"
                   fill
