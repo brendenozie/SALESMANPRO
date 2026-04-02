@@ -55,7 +55,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
       {/* Image Container */}
       <div className="relative h-72 w-full overflow-hidden rounded-[2rem] bg-zinc-100 dark:bg-zinc-800/50">
-        <Link href={`/products/${product.id}`} className="block h-full w-full">
+        <Link href={`/ecommerceshoes/products/${product.id}`} className="block h-full w-full">
           <Image
             src={(product.images?.[0] as any)?.url || product.images?.[0] || 'https://via.placeholder.com/600'}
             alt={product.name}

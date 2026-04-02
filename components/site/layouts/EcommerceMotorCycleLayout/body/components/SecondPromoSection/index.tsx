@@ -4,7 +4,7 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import { IPromotion } from '@/types/typings';
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ClockIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { BoltIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 
 export interface SecondPromoSectionProps {
   promotions: IPromotion[];
@@ -13,109 +13,109 @@ export interface SecondPromoSectionProps {
 export default function SecondPromoSection({ promotions }: SecondPromoSectionProps) {
   const { storeFormData } = useStoreContext();
   
-  // Luxury Watch Palette: Deep Navy, Gold, and Off-White
-  const primary = storeFormData?.themeSettings?.primaryColor || '#0f172a'; 
-  const accent = "#c5a059"; // Champagne Gold
+  // Moto Duka Palette: High-Octane Red, Asphalt Black, and Stark White
+  const nitroRed = "#E63946"; 
 
   const promotion = promotions?.[1] || {
-    title: 'Precision in Every Second',
-    subtitle: 'THE WEEKEND COLLECTOR\'S EVENT',
+    title: 'Full Throttle Freedom',
+    subtitle: 'THE END-OF-MONTH RIDERS EVENT',
     description:
-      'Elevate your collection with exclusive weekend pricing on our mechanical movements and chronographs. Heritage craftsmanship meets modern precision.',
-    bannerUrl: 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49',
-    ctaText: 'View Event',
+      'Own the road with exclusive financing and weekend pricing on our flagship cruiser and sport series. Performance engineering meets the spirit of the open highway.',
+    bannerUrl: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=1200&q=80',
+    ctaText: 'View The Fleet',
     ctaLink: '/motorcycleecommerce/products',
   };
 
   return (
-    <section className="relative min-h-[600px] flex items-center overflow-hidden bg-[#050505]">
-      {/* Background Decorative Element: Large faded watch dial outline or Roman Numerals */}
-      <div className="absolute right-[-10%] top-[-10%] opacity-5 pointer-events-none">
-         <ClockIcon className="w-[800px] h-[800px] text-white" />
+    <section className="relative min-h-[700px] flex items-center overflow-hidden bg-[#080808]">
+      {/* Background Decorative Element: Large faded Bolt or Gear outline */}
+      <div className="absolute right-[-15%] top-[-10%] opacity-[0.03] pointer-events-none rotate-12">
+         <BoltIcon className="w-[1000px] h-[1000px] text-white" />
       </div>
 
       <div className="container mx-auto px-6 lg:px-12 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
           
-          {/* --- Image Block with "Lifting" Effect --- */}
+          {/* --- Image Block with "Industrial" Effect --- */}
           <motion.div 
-            initial={{ opacity: 0, x: -40 }}
+            initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
             className="relative order-2 lg:order-1"
           >
             <div className="relative group">
-              {/* Frame Decoration */}
-              <div className="absolute -inset-4 border border-white/10 rounded-sm" />
+              {/* Rugged Frame Decoration */}
+              <div className="absolute -inset-4 border-2 border-white/5 rounded-2xl" />
               
-              <div className="relative overflow-hidden aspect-[4/5] rounded-sm shadow-2xl">
+              <div className="relative overflow-hidden aspect-[4/5] rounded-2xl shadow-[0_40px_80px_-15px_rgba(230,57,70,0.2)] bg-zinc-900">
                 <img
-                  src={promotion.bannerUrl || 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49'}
+                  src={promotion.bannerUrl || 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=1200&q=80'}
                   alt={promotion.title}
-                  className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105"
+                  className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
               </div>
 
-              {/* Float-over Detail Card */}
-              <div className="absolute -bottom-10 -right-6 md:right-10 bg-white p-6 shadow-2xl rounded-sm hidden sm:block">
+              {/* Floating Detail Card: The "Spec Badge" */}
+              <div className="absolute -bottom-8 -right-4 md:right-8 bg-zinc-900 border border-white/10 p-8 shadow-2xl rounded-2xl hidden sm:block">
                 <div className="flex items-center gap-3 mb-2">
-                   <ClockIcon className="w-5 h-5 text-amber-600" />
-                   <span className="text-[10px] font-bold tracking-[0.2em] text-gray-500 uppercase">Ending Soon</span>
+                   <div className="w-2 h-2 rounded-full bg-[#E63946] animate-pulse" />
+                   <span className="text-[10px] font-black tracking-[0.3em] text-zinc-500 uppercase">Status: In Stock</span>
                 </div>
-                <p className="text-gray-900 font-serif italic">The Obsidian Series</p>
+                <p className="text-white font-black italic uppercase text-xl">The Renegade 1200</p>
+                <p className="text-[#E63946] text-[10px] font-bold uppercase tracking-widest mt-1">Nairobi Showroom</p>
               </div>
             </div>
           </motion.div>
 
           {/* --- Content Block --- */}
           <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-left order-1 lg:order-2"
           >
-            <div className="inline-flex items-center gap-3 px-4 py-1.5 border border-amber-600/30 bg-amber-600/5 rounded-full mb-8">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-              </span>
-              <span className="text-[10px] font-bold tracking-[0.3em] text-amber-500 uppercase">
-                {promotion.badgeText || 'Exclusive Offer'}
+            <div className="inline-flex items-center gap-3 px-5 py-2 border border-[#E63946]/30 bg-[#E63946]/5 rounded-lg mb-10">
+              <span className="text-[10px] font-black tracking-[0.4em] text-[#E63946] uppercase">
+                {promotion.badgeText || 'Limited Flash Deal'}
               </span>
             </div>
 
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-serif text-white leading-[1.1] mb-8">
+            <h2 className="text-6xl md:text-8xl font-black text-white leading-[0.85] uppercase tracking-tighter mb-10">
               {promotion.title}
             </h2>
 
-            <p className="text-lg text-gray-400 font-light leading-relaxed max-w-lg mb-10">
+            <p className="text-xl text-zinc-400 font-medium leading-relaxed max-w-lg mb-12">
               {promotion.description}
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
+            <div className="flex flex-col sm:flex-row gap-8 items-start sm:items-center">
               <a
                 href={promotion.ctaLink || '/motorcycleecommerce/products'}
-                className="group relative inline-flex items-center gap-4 bg-white text-black px-10 py-5 font-bold uppercase tracking-widest text-xs transition-all hover:bg-amber-600 hover:text-white"
+                className="group relative inline-flex items-center gap-4 bg-white text-black px-12 py-6 font-black uppercase tracking-widest text-xs transition-all hover:bg-[#E63946] hover:text-white rounded-md"
               >
                 {promotion.ctaText}
-                <ChevronRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <ChevronRightIcon className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
               </a>
               
-              <button className="text-white/60 text-[10px] font-bold tracking-[0.2em] uppercase hover:text-amber-500 transition-colors">
-                Request a Catalog
+              <button className="text-zinc-500 text-[10px] font-black tracking-[0.3em] uppercase hover:text-white transition-colors border-b-2 border-transparent hover:border-[#E63946] pb-1">
+                Download Brochure
               </button>
             </div>
 
-            {/* Micro-Stat for social proof */}
-            <div className="mt-16 pt-8 border-t border-white/10 flex gap-12">
+            {/* Performance Stats / Social Proof */}
+            <div className="mt-20 pt-10 border-t border-white/5 flex gap-16">
                <div>
-                  <p className="text-white text-xl font-serif">10k+</p>
-                  <p className="text-gray-500 text-[9px] uppercase tracking-widest">Enthusiasts</p>
+                  <p className="text-white text-4xl font-black italic">5.2k</p>
+                  <p className="text-zinc-600 text-[9px] font-black uppercase tracking-widest mt-1">Riders in Kenya</p>
                </div>
                <div>
-                  <p className="text-white text-xl font-serif">24h</p>
-                  <p className="text-gray-500 text-[9px] uppercase tracking-widest">Dispatch</p>
+                  <p className="text-white text-4xl font-black italic">12.5%</p>
+                  <p className="text-zinc-600 text-[9px] font-black uppercase tracking-widest mt-1">APR Financing</p>
+               </div>
+               <div className="hidden sm:block">
+                  <p className="text-white text-4xl font-black italic">2YR</p>
+                  <p className="text-zinc-600 text-[9px] font-black uppercase tracking-widest mt-1">Full Warranty</p>
                </div>
             </div>
           </motion.div>

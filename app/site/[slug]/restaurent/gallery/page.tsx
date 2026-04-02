@@ -111,7 +111,7 @@ export default function RestaurantGallery() {
                 <div className="flex -space-x-4">
                     {[1,2,3,4].map(i => (
                         <div key={i} className="w-12 h-12 rounded-full border-4 border-zinc-900 bg-zinc-800 overflow-hidden">
-                            <Image src={`https://i.pravatar.cc/100?img=${i+10}`} alt="user" width={48} height={48} />
+                            <Image src={`https://i.pravatar.cc/100?img=${i+10}`} alt="user" width={48} height={48} loader={({src}) => src}/>
                         </div>
                     ))}
                 </div>
