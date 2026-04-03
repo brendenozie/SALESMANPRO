@@ -92,9 +92,9 @@ async function processCompany(companyId: string, domain: string) {
     }
 
     // 2. Double-verify accessibility before writing Nginx config
-    // if (!(await fileExistsSudo(`${certDir}/fullchain.pem`))) {
-    //   throw new Error(`Critical: Certificate files inaccessible in ${certDir}`);
-    // }
+    if (!(await fileExistsSudo(`${certDir}/fullchain.pem`))) {
+      throw new Error(`Critical: Certificate files inaccessible in ${certDir}`);
+    }
 
     // 3. Generate Nginx Configuration
     const config = `
