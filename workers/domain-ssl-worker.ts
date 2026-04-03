@@ -12,20 +12,44 @@ const CHECK_INTERVAL = 30000; // 30 seconds
  * Helper to run shell commands with sudo
  */
 function run(cmd: string, args: string[]) {
-  return new Promise<void>((resolve, reject) => {
-    // The -n flag for sudo means "non-interactive"
-    const p = spawn("sudo", ["-n", cmd, ...args], { stdio: "inherit" });
-    p.on("exit", (code) =>
-      code === 0
-        ? resolve()
-        : reject(
-            new Error(
-              `Command ${cmd} failed with code ${code}. Check sudo permissions.`,
-            ),
-          ),
-    );
+  return new Promise<string>((resolve, reject) => {
+    const p = spawn("sudo", ["-n", cmd, ...args]);
+    let stderr = "";
+    
+    p.stderr.on("data", (data) => { stderr += data.toString(); });
+
+    p.on("exit", (code) => {
+      if (code === 0) resolve("Success");
+      else reject(new Error(`Command ${cmd} failed (Code ${code}): ${stderr}`));
+    });
   });
 }
+// function run(cmd: string, args: string[]) {
+//   return new Promise<void>((resolve, reject) => {
+//     // The -n flag for sudo means "non-interactive"
+//     const p = spawn("sudo", ["-n", cmd, ...args], { stdio: "inherit" });
+//     p.on("exit", (code) =>
+//       code === 0
+//         ? resolve()
+//         : reject(
+//             new Error(
+//               `Command ${cmd} failed with code ${code}. Check sudo permissions.`,
+//             ),
+//           ),
+//     );
+//   });
+// }
+
+// Replace fs.existsSync with a shell check
+async function fileExistsSudo(path: string) {
+  try {
+    await run("test", ["-f", path]);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 
 async function processCompany(companyId: string, domain: string) {
   console.log(`🚀 Processing SSL for: ${domain}`);
@@ -56,6 +80,7 @@ async function processCompany(companyId: string, domain: string) {
         "--nginx",
         "--non-interactive",
         "--agree-tos",
+        "--cert-name", domain,
         "--quiet", // Add this to reduce output noise
         "-m",
         EMAIL,
@@ -68,11 +93,17 @@ async function processCompany(companyId: string, domain: string) {
 
     try {
       // 2. Verify files exist
-      if (
-        !fs.existsSync(`${certDir}/fullchain.pem`) ||
-        !fs.existsSync(`${certDir}/privkey.pem`)
+      // if (
+      //   !fs.existsSync(`${certDir}/fullchain.pem`) ||
+      //   !fs.existsSync(`${certDir}/privkey.pem`)
+      // ) {
+      //   throw new Error(`Certificate files missing in ${certDir}`);
+      // }
+
+      if (!(await fileExistsSudo(`${certDir}/fullchain.pem`)) ||
+        !(await fileExistsSudo(`${certDir}/privkey.pem`))
       ) {
-        throw new Error(`Certificate files missing in ${certDir}`);
+        throw new Error(`Certificate files missing or inaccessible in ${certDir}`);
       }
 
       // 3. Generate Full Nginx Config (Including Port 80 redirect)
