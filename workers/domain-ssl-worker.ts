@@ -15,8 +15,10 @@ function run(cmd: string, args: string[]) {
   return new Promise<string>((resolve, reject) => {
     const p = spawn("sudo", ["-n", cmd, ...args]);
     let stderr = "";
-    
-    p.stderr.on("data", (data) => { stderr += data.toString(); });
+
+    p.stderr.on("data", (data) => {
+      stderr += data.toString();
+    });
 
     p.on("exit", (code) => {
       if (code === 0) resolve("Success");
@@ -45,11 +47,12 @@ async function fileExistsSudo(path: string) {
   try {
     await run("test", ["-f", path]);
     return true;
-  } catch {
+  } catch (err: any) {
+    // This will tell us if it's "File not found" or "Sudo password required"
+    console.error(`🔍 Debugging ${path}:`, err.message);
     return false;
   }
 }
-
 
 async function processCompany(companyId: string, domain: string) {
   console.log(`🚀 Processing SSL for: ${domain}`);
@@ -80,7 +83,8 @@ async function processCompany(companyId: string, domain: string) {
         "--nginx",
         "--non-interactive",
         "--agree-tos",
-        "--cert-name", domain,
+        "--cert-name",
+        domain,
         "--quiet", // Add this to reduce output noise
         "-m",
         EMAIL,
@@ -100,10 +104,13 @@ async function processCompany(companyId: string, domain: string) {
       //   throw new Error(`Certificate files missing in ${certDir}`);
       // }
 
-      if (!(await fileExistsSudo(`${certDir}/fullchain.pem`)) ||
+      if (
+        !(await fileExistsSudo(`${certDir}/fullchain.pem`)) ||
         !(await fileExistsSudo(`${certDir}/privkey.pem`))
       ) {
-        throw new Error(`Certificate files missing or inaccessible in ${certDir}`);
+        throw new Error(
+          `Certificate files missing or inaccessible in ${certDir}`,
+        );
       }
 
       // 3. Generate Full Nginx Config (Including Port 80 redirect)
