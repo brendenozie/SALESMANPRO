@@ -1,8 +1,10 @@
 // // app/site/[slug]/page.tsx
 
 
+import AnalyticsProvider from '@/components/analytics/AnalyticsProvider';
 import { loadStore } from '@/lib/loadStore';
 import { getEnabledPaymentMethods } from '@/utils/payment-utils';
+import Script from "next/script";
 
 interface StorePageProps {
   params: Promise<{ slug: string }>;
@@ -21,6 +23,9 @@ export default async function StorePage({ params }: StorePageProps) {
   return (
     <main className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 min-h-screen w-full mx-auto">
       <BodyComponent pageData={pageData} companyId={raw.id} paymentMethods={enabledPaymentMethods}/>
+
+      {/* Load google analytics script per store */}
+      <AnalyticsProvider config={pageData.analyticsConfig} />
     </main>
   );
 }

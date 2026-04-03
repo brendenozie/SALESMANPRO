@@ -34,6 +34,28 @@ export default function ContactAccordion({
     onToggleDay(key);
   };
 
+  const formatForWhatsApp = (phone: string, defaultCountryCode = '254') => {
+  if (!phone) return '';
+
+  // Remove everything except digits
+  let digits = phone.replace(/\D/g, '');
+
+  // If starts with 0 (e.g. 0712...), convert to country format
+  if (digits.startsWith('0')) {
+    digits = defaultCountryCode + digits.slice(1);
+  }
+
+  // If already starts with country code but missing +
+  if (!digits.startsWith(defaultCountryCode)) {
+    return '';
+  }
+
+  return `+${digits}`;
+};
+
+const isValidWhatsAppNumber = (phone: string) =>
+  /^\+\d{10,15}$/.test(phone);
+
   return (
     <section className="max-w-3xl mx-auto overflow-hidden">
       <button
@@ -67,18 +89,56 @@ export default function ContactAccordion({
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">
-                Phone Number
-              </span>
-              <input
-                type="tel"
-                name="contactPhone"
-                value={contactPhone || ''}
-                onChange={onChange}
-                placeholder="123-456-7890"
-                className="mt-1 block w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
-              />
-            </label>
+                <span className="text-sm font-medium text-gray-700">
+                  Phone Number (WhatsApp)
+                </span>
+
+                <input
+                  type="tel"
+                  name="contactPhone"
+                  value={contactPhone || ''}
+                  onChange={onChange}
+                  placeholder="0712 345 678"
+                  className="mt-1 block w-full px-4 py-2 border rounded-lg
+                    focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+                />
+
+                {/* WhatsApp formatting helper */}
+                {contactPhone && (
+                  <div className="mt-2 text-sm">
+                    {(() => {
+                      const waNumber = formatForWhatsApp(contactPhone);
+
+                      if (!isValidWhatsAppNumber(waNumber)) {
+                        return (
+                          <span className="text-amber-600">
+                            WhatsApp format: +254712345678
+                          </span>
+                        );
+                      }
+
+                      return (
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-600">
+                            WhatsApp ready:
+                          </span>
+
+                          <a
+                            href={`https://wa.me/${waNumber.replace('+', '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1
+                              text-green-700 font-medium hover:underline"
+                          >
+                            {waNumber}
+                            <span className="text-xs">↗</span>
+                          </a>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+              </label>
           </div>
 
           {/* Opening Hours */}
