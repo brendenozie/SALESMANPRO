@@ -7,187 +7,192 @@ import "slick-carousel/slick/slick-theme.css";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import asset1 from "@/assets/asset1.png";
-import asset2 from "@/assets/asset2.png";
-import asset3 from "@/assets/asset3.png";
 import {
-  ArrowLeftCircleIcon,
-  ArrowRightCircleIcon
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ArrowRightIcon,
+  SparklesIcon
 } from "@heroicons/react/24/outline";
-
-// Custom Arrow Buttons
-const CustomPrevArrow = (props) => (
-  <button
-    {...props}
-    className="absolute top-1/2 left-[-15px] z-10 transform -translate-y-1/2 bg-yellow-400 dark:bg-yellow-400 p-3 rounded-full shadow-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-all backdrop-blur-md"
-  >
-    <ArrowLeftCircleIcon className="text-black dark:text-white text-lg h-14 w-14" />
-  </button>
-);
-
-const CustomNextArrow = (props) => (
-  <button
-    {...props}
-    className="absolute top-1/2 right-[-15px] z-10 transform -translate-y-1/2 bg-yellow-400 dark:bg-yellow-400 p-3 rounded-full shadow-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-all backdrop-blur-md"
-  >
-    <ArrowRightCircleIcon className="text-black dark:text-white text-lg h-14 w-14" />
-  </button>
-);
-
 
 const loader = ({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`;
 
+// --- BRAND CONSTANTS ---
+const BRAND_GOLD = "#F59E0B";
+
+// --- REFINED ARROWS ---
+const CustomPrevArrow = ({ onClick }) => (
+  <button
+    onClick={onClick}
+    className="absolute top-1/2 left-4 z-30 -translate-y-1/2 bg-white/10 backdrop-blur-xl border border-white/20 p-4 rounded-2xl shadow-2xl hover:bg-amber-500 hover:border-amber-400 transition-all group hidden md:block"
+  >
+    <ChevronLeftIcon className="h-6 w-6 text-black dark:text-white group-hover:scale-110 transition-transform" />
+  </button>
+);
+
+const CustomNextArrow = ({ onClick }) => (
+  <button
+    onClick={onClick}
+    className="absolute top-1/2 right-4 z-30 -translate-y-1/2 bg-white/10 backdrop-blur-xl border border-white/20 p-4 rounded-2xl shadow-2xl hover:bg-amber-500 hover:border-amber-400 transition-all group hidden md:block"
+  >
+    <ChevronRightIcon className="h-6 w-6 text-black dark:text-white group-hover:scale-110 transition-transform" />
+  </button>
+);
+
+// --- REFINED CATEGORIES ---
 const CategoriesGrid = ({ categories }) => {
   const router = useRouter();
   return (
-  <div className="grid grid-cols-3 gap-2 sm:grid-cols-[repeat(auto-fit,_minmax(200px,_1fr))] sm:gap-6 px-4 py-4 sm:px-6 sm:py-8">
-  {categories.map(({ name, icon }, index) => (
-    <motion.div
-      onClick={() => {router.push(`/ghuba/productlist?category=${name}`)}}
-      key={index}
-      whileHover={{ scale: 1.05 }}
-      className="relative bg-gradient-to-br from-yellow-400 to-yellow-500 text-white p-6 rounded-2xl shadow-xl flex flex-col items-center justify-center cursor-pointer hover:shadow-2xl transition-transform overflow-hidden"
-    >
-      {/* Overlay - ensure it's behind the text */}
-      {/* <div className="absolute inset-0 bg-white/10 dark:bg-black/10 backdrop-blur-md rounded-2xl z-0"></div> */}
-      
-      <span className="text-5xl mb-3 relative z-10 drop-shadow-md">{icon}</span>
-      <p className="font-bold text-center text-sm sm:text-lg relative z-10 drop-shadow-sm whitespace-normal break-words w-full">
-        {name}
-      </p>
-    </motion.div>
-  ))}
-</div>
-)};
+    <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4 px-4 py-10">
+      {categories.map(({ name, icon }, index) => (
+        <motion.div
+          key={index}
+          onClick={() => router.push(`/ghuba/productlist?category=${name}`)}
+          whileHover={{ y: -8 }}
+          className="group relative flex flex-col items-center p-8 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[1.0rem] cursor-pointer transition-all hover:border-amber-500/50 hover:shadow-2xl hover:shadow-amber-500/10"
+        >
+          <div className="w-16 h-16 flex items-center justify-center bg-white dark:bg-zinc-800 rounded-2xl shadow-inner group-hover:bg-amber-500 group-hover:text-white transition-all duration-300">
+            <span className="text-3xl group-hover:scale-110 transition-transform">{icon}</span>
+          </div>
+          <p className="mt-4 font-black text-center text-[10px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400 group-hover:text-amber-500">
+            {name}
+          </p>
+        </motion.div>
+      ))}
+    </div>
+  );
+};
 
-const SliderComponent = ({ promoSlides }) => (
-  <Slider dots infinite slidesToShow={1} slidesToScroll={1} autoplay autoplaySpeed={4000} arrows 
-  nextArrow={promoSlides.length > 1 ? <CustomNextArrow /> : null}
-    prevArrow={promoSlides.length > 1 ? <CustomPrevArrow /> : null}>
-    {promoSlides.map((slide, index) => (
-      <SlideCard slide={slide} key={slide.id} index={index} />
-    ))}
-  </Slider>
-);
+// --- REFINED SLIDE CARD ---
+const SlideCard = ({ slide }) => {
+  return (
+    <div className="px-2">
+      <motion.div
+        className="relative w-full min-h-[550px] md:h-[650px] flex flex-col md:flex-row items-center justify-between overflow-hidden group 
+                   bg-zinc-50 dark:bg-zinc-950 
+                   rounded-[3rem] md:rounded-[4rem] 
+                   border border-zinc-200 dark:border-zinc-800 
+                   transition-colors duration-500"
+      >
+        {/* Layered Background */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src={slide.bgImage}
+            fill
+            alt="Background"
+            className="object-cover opacity-20 dark:opacity-30 grayscale group-hover:scale-105 transition-transform duration-[10s]"
+            loader={loader}
+          />
+          {/* Light Mode Gradients */}
+          <div className="absolute inset-0 bg-gradient-to-r from-zinc-50 via-zinc-50/80 to-transparent dark:hidden" />
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-50 via-transparent to-transparent dark:hidden" />
+          
+          {/* Dark Mode Gradients */}
+          <div className="absolute inset-0 hidden dark:block bg-gradient-to-r from-black via-black/80 to-transparent" />
+          <div className="absolute inset-0 hidden dark:block bg-gradient-to-t from-black via-transparent to-transparent" />
+        </div>
 
-const BannerSlider = ({categories}) => {
-  
+        {/* Content */}
+        <div className="relative z-20 w-full md:w-1/2 p-8 md:p-24 space-y-8">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            className="flex items-center gap-3 bg-amber-500/10 border border-amber-500/20 px-4 py-2 rounded-full w-fit"
+          >
+            <SparklesIcon className="w-4 h-4 text-amber-600 dark:text-amber-500" />
+            <span className="text-amber-600 dark:text-amber-500 text-[10px] font-black uppercase tracking-[0.2em]">
+              Exclusive Deal
+            </span>
+          </motion.div>
+
+          <h2 className="text-5xl md:text-8xl font-black uppercase leading-[0.9] text-zinc-900 dark:text-white tracking-tighter transition-colors">
+            {slide.title}
+          </h2>
+
+          <p className="text-lg md:text-xl text-zinc-600 dark:text-zinc-400 font-medium max-w-sm leading-relaxed transition-colors">
+            {slide.description}
+          </p>
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="group/btn relative px-10 py-5 bg-amber-500 text-white dark:text-black font-black uppercase tracking-widest text-xs rounded-2xl flex items-center gap-3 overflow-hidden shadow-lg shadow-amber-500/20"
+          >
+            <span className="relative z-10">Shop Now</span>
+            <ArrowRightIcon className="w-4 h-4 z-10 group-hover/btn:translate-x-2 transition-transform" />
+            {/* Glossy Overlay for Light/Dark feel */}
+            <div className="absolute inset-0 bg-white opacity-0 group-hover/btn:opacity-20 transition-opacity" />
+          </motion.button>
+        </div>
+
+        {/* Image Display */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          className="relative z-10 w-full md:w-1/2 h-[350px] md:h-full flex justify-center items-center p-12"
+        >
+          <div className="relative w-full h-full group-hover:drop-shadow-[0_0_50px_rgba(245,158,11,0.2)] transition-all duration-700">
+            <Image
+              src={slide.img}
+              loader={loader}
+              alt={slide.title}
+              fill
+              className="object-contain drop-shadow-[0_30px_60px_rgba(0,0,0,0.15)] dark:drop-shadow-[0_30px_60px_rgba(0,0,0,0.8)]"
+            />
+          </div>
+        </motion.div>
+      </motion.div>
+    </div>
+  );
+};
+
+// --- MAIN SECTION ---
+const BannerSlider = ({ categories }) => {
   const promoSlides = [
-    { id: 1, title: "50% Off On Your First Purchase", description: "Exclusive discounts just for you.", img: "/images/SlideCard/slide-1.png" },
-    { id: 2, title: "Limited Time Offer", description: "Shop now to enjoy amazing deals.", img: "/images/SlideCard/slide-2.png" },
-    { id: 3, title: "New Arrivals", description: "Discover the latest trends and products.", img: "/images/SlideCard/slide-3.png" },
+    { id: 1, title: "Modern Heritage", description: "Discover the best of African fashion and craftsmanship.", img: "/images/SlideCard/slide-1.png", bgImage: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d" },
+    { id: 2, title: "Tech Pulse", description: "Stay ahead with the latest certified electronics.", img: "/images/SlideCard/slide-2.png", bgImage: "https://images.unsplash.com/photo-1519389950473-47ba0277781c" },
+    { id: 3, title: "Urban Living", description: "Transform your space with curated home essentials.", img: "/images/SlideCard/slide-3.png", bgImage: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7" },
   ];
 
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 800,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 5000,
+    prevArrow: <CustomPrevArrow />,
+    nextArrow: <CustomNextArrow />,
+    appendDots: dots => <div style={{ bottom: "40px" }} className="custom-dots">{dots}</div>,
+  };
+
   return (
-    <section className="min-h-screen bg-gradient-to-b from-white via-gray-100 to-white dark:from-black dark:via-gray-900 dark:to-black text-gray-800 dark:text-gray-100 px-4 py-12 sm:px-6 sm:py-12 mx-auto">
-  <motion.div
-    initial={{ opacity: 0, y: -30 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 1 }}
-    className="text-center mb-8 sm:mb-14 relative"
-  >
-    <h1 className="text-4xl sm:text-6xl font-extrabold tracking-wide mb-4">
-      Uncover <span className="text-yellow-400">Exclusive</span> Deals
-    </h1>
-    <p className="text-base sm:text-xl text-gray-700 dark:text-gray-300 max-w-xl mx-auto leading-relaxed">
-      Your gateway to the best offers and latest products.
-    </p>
-  </motion.div>
+    <section className="min-h-screen bg-white dark:bg-[#080808] transition-colors duration-500">
+      <div className="max-w-[1600px] mx-auto py-12 px-4">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6 text-center justify-items-center w-full mx-auto"> 
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full ">
+            <h1 className="text-5xl md:text-8xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">
+              Uncover <span className="text-amber-500 italic">Exclusive</span> Deals
+            </h1>
+            <p className="mt-4 text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-[0.4em] text-xs">
+              Ghuba Marketplace • Premium Collection
+            </p>
+          </motion.div>
+        </div>
 
-  <CategoriesGrid categories={categories} />
+        <CategoriesGrid categories={categories} />
 
-  <div className="mt-8 sm:mt-12 sm:px-2 md:px-8 lg:px-8">
-    <SliderComponent promoSlides={promoSlides} />
-  </div>
-</section>
-
+        <div className="mt-12">
+          <Slider {...settings}>
+            {promoSlides.map((slide) => (
+              <SlideCard key={slide.id} slide={slide} />
+            ))}
+          </Slider>
+        </div>
+      </div>
+    </section>
   );
 };
 
 export default BannerSlider;
-
-const SlideCard = ({ slide, index }) => {
-  // Background images array
-  const backgroundImages = [asset1, asset2, asset3];
-
-  // Ensure index is valid and fallback to the first image if undefined
-  const backgroundImage = backgroundImages[index % backgroundImages.length] || asset1;
-
-  return (
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      transition={{ duration: 0.8 }}
-      variants={fadeInUp}
-      className="relative flex flex-col md:flex-row items-center justify-center w-full text-white p-6 md:p-12 rounded-3xl border border-white/10 overflow-hidden h-auto md:h-[650px] gap-8"
-      style={{
-        backgroundImage: `url(${backgroundImage.src})`, 
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      {/* Overlay to improve text visibility */}
-      <div className="absolute inset-0 bg-black/20 rounded-3xl"></div>
-
-      {/* Text Section */}
-      <div className="relative z-10 w-full md:w-1/2 flex flex-col items-center justify-center text-center md:text-left md:p-20 md:items-start space-y-6 min-h-[200px] md:min-h-[450px] overflow-y-auto">
-        <motion.h2
-          variants={fadeInLeft}
-          transition={{ delay: 0.2 }}
-          className="text-3xl md:text-5xl font-extrabold leading-tight"
-        >
-          {slide.title}
-        </motion.h2>
-        <motion.p
-          variants={fadeInUp}
-          transition={{ delay: 0.4 }}
-          className="text-base md:text-xl"
-        >
-          {slide.description}
-        </motion.p>
-        <motion.button
-          whileHover={{ scale: 1.05, rotate: 1 }}
-          whileTap={{ scale: 0.95 }}
-          className="mt-4 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 dark:bg-gray-800 dark:hover:bg-gray-700 focus:ring-2 focus:ring-yellow-400 text-white font-semibold rounded-xl shadow-lg transition"
-        >
-          Learn More
-        </motion.button>
-      </div>
-
-      {/* Image Section */}
-      <motion.div
-        variants={scaleUp}
-        transition={{ delay: 0.4, duration: 0.6, type: "spring" }}
-        className="relative z-10 w-full md:w-1/2 flex justify-center items-center"
-      >
-        <div className="relative w-[350px] h-[350px] md:h-[550px] md:w-[550px] overflow-hidden">
-          <Image
-            src={slide.img}
-            loader={loader}
-            alt={slide.title}
-            layout="fill"
-            objectFit="contain"
-            className="transition-transform hover:scale-105 hover:rotate-1 filter brightness-110 contrast-125"
-          />
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-};
-
-const fadeInLeft = {
-  hidden: { opacity: 0, x: -50 },
-  visible: { opacity: 1, x: 0, transition: { delay: 0.2, ease: [0.42, 0, 0.58, 1] } },
-};
-
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { delay: 0.3, ease: [0.42, 0, 0.58, 1] } },
-};
-
-const scaleUp = {
-  hidden: { scale: 0.9, opacity: 0 },
-  visible: { scale: 1, opacity: 1 },
-};
-

@@ -3,13 +3,13 @@
 import React, { useState, useEffect } from "react";
 import BannerSlider from "./components/BannerSlider/BannerSlider";
 import FlashDeals from "./components/flashDeals/FlashDeals";
-import TopCate from "./components/top/TopCate";
-import NewArrivals from "./components/newarrivals/NewArrivals";
-import Discount from "./components/discount/Discount";
+import TopCate from "./components/top";
+import NewArrivals from "./components/newarrivals";
+import Discount from "./components/discount";
 import Annocument from "./components/annocument/Annocument";
 import Wrapper from "./components/wrapper/Wrapper";
 import { useStateContext } from '@/contexts/ContextProvider';
-import Shop from "./components/shops/Shop";
+import Shop from "./components/shops";
 import { StoreForm } from '@/types/typings';
 // import PricingTable from "@/components/pricingTable";
 
