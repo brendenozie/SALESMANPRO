@@ -3,7 +3,10 @@ import { spawn } from "child_process";
 import fs from "fs";
 
 const CERT_PATH = "/etc/letsencrypt/live";
-const NGINX_SITES = "/etc/nginx/sites-enabled";
+// const NGINX_SITES = "/etc/nginx/sites-enabled";
+const TENANT_AVAILABLE = "/etc/nginx/sites-available/tenants";
+const TENANT_ENABLED = "/etc/nginx/sites-enabled";
+
 const EMAIL = process.env.ADMIN_EMAIL!;
 const PLATFORM_DOMAIN = process.env.PLATFORM_BASE_DOMAIN!;
 
@@ -122,9 +125,15 @@ server {
 `;
 
     // 4. Atomic Write: Write to tmp then move with sudo to avoid permission issues
+    const availablePath = `${TENANT_AVAILABLE}/${domain}.conf`;
+    const tenantEnabledPath = `${TENANT_ENABLED}/${domain}.conf`;
+
     const tempPath = `/tmp/${domain}.conf`;
+
     fs.writeFileSync(tempPath, config);
-    await run("mv", [tempPath, `${NGINX_SITES}/${domain}.conf`]);
+    await run("mv", [tempPath, `${availablePath}/${domain}.conf`]);
+    // Create symlink only if missing
+    await run("ln", ["-sfn", availablePath, tenantEnabledPath]);
 
     // 5. Reload Nginx
     await run("nginx", ["-t"]);
