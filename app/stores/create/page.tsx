@@ -63,9 +63,14 @@ export default async function CreateStorePage() {
     }).then(r => r.json()),
 
     fetch(`${apiBaseUrl}/site-categories?limit=100`, {
+      headers: { Cookie: cookieHeader },
       next: { revalidate: 600 },
     }).then(r => r.json()),
   ]);
+
+  console.log('Fetched categories:', categories);
+  console.log('Fetched locations:', locations);
+  console.log('Fetched site categories:', siteCategories);
 
   return (
     <CreateStoreForm

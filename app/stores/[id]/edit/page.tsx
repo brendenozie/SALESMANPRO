@@ -108,6 +108,7 @@ export default async function EditStorePage({ params }: PageProps) {
       next: { revalidate: 300 },
     }),
     fetch(`${apiBaseUrl}/site-categories?limit=100`, {
+      headers: { Cookie: cookieHeader },
       next: { revalidate: 600 },
     }),
   ]);
