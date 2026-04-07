@@ -73,10 +73,10 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Pupils",
     "Principal",
     "School Head",
-    "Other"
+    "Other",
   ],
 
-  "Fashion Shop":[
+  "Fashion Shop": [
     "Fashion",
     "Accessories",
     "Shoes",
@@ -97,10 +97,10 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Womenswear",
     "Vintage Clothing",
     "Custom Tailoring",
-    "Other"
+    "Other",
   ],
 
-  "Furniture Shop" : [
+  "Furniture Shop": [
     "Furniture",
     "Living Room Furniture",
     "Bedroom Furniture",
@@ -116,7 +116,7 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Kids' Furniture",
     "Antique Furniture",
     "Custom Furniture",
-    "Other"
+    "Other",
   ],
 
   "Bike Store": [
@@ -131,7 +131,7 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Kids' Bikes",
     "Bike Rentals",
     "Custom Bike Builds",
-    "Other"
+    "Other",
   ],
 
   "Motorcycle Store": [
@@ -145,104 +145,104 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Riding Gear & Apparel",
     "Motorcycle Maintenance & Repair",
     "Custom Motorcycle Builds",
-    "Other"
+    "Other",
   ],
-  
+
   "Public Speaking": [
-      // Core Coaching Categories
-      "Business Consulting",           // Business strategy, operations, management
-      "Career Coaching",               // Interview prep, job transitions, personal branding
-      "Life Coaching",                 // Mindset, motivation, productivity, personal growth
-      "Health & Wellness Coaching",    // Nutrition, fitness, mindfulness, holistic health
-      "Financial Coaching",            // Budgeting, investment, retirement planning
-      "Executive Coaching",            // Leadership, team building, corporate training
+    // Core Coaching Categories
+    "Business Consulting", // Business strategy, operations, management
+    "Career Coaching", // Interview prep, job transitions, personal branding
+    "Life Coaching", // Mindset, motivation, productivity, personal growth
+    "Health & Wellness Coaching", // Nutrition, fitness, mindfulness, holistic health
+    "Financial Coaching", // Budgeting, investment, retirement planning
+    "Executive Coaching", // Leadership, team building, corporate training
 
-      // Specialized Consulting Areas
-      "Marketing Consulting",          // Branding, digital marketing, content strategy
-      "Technology Consulting",         // IT, SaaS, automation, digital transformation
-      "Education & Training",          // Workshops, online courses, certification programs
-      "Public Speaking & Workshops",   // Seminars, webinars, motivational talks
-      "Personal Development",          // Confidence, productivity, communication skills
-      "Team Development",              // HR, conflict management, collaboration training
-      "HR & Recruitment Consulting",   // Hiring strategy, employee growth, talent development
-      "Legal & Compliance Consulting", // Business setup, contracts, compliance
+    // Specialized Consulting Areas
+    "Marketing Consulting", // Branding, digital marketing, content strategy
+    "Technology Consulting", // IT, SaaS, automation, digital transformation
+    "Education & Training", // Workshops, online courses, certification programs
+    "Public Speaking & Workshops", // Seminars, webinars, motivational talks
+    "Personal Development", // Confidence, productivity, communication skills
+    "Team Development", // HR, conflict management, collaboration training
+    "HR & Recruitment Consulting", // Hiring strategy, employee growth, talent development
+    "Legal & Compliance Consulting", // Business setup, contracts, compliance
 
-      // Supporting Digital & Business Layers
-      "Portfolio & Personal Branding", // Building personal sites & online presence
-      "Booking & Appointments",        // Scheduling coaching or consulting sessions
-      "Digital Goods & Subscriptions", // eBooks, paid guides, exclusive content
-      "Services",                      // General consulting or advisory services
-      "Blog & Content",                // Thought leadership, insights, case studies
-      "Directory & Listings",          // Visibility for consultants in directories
-      "SaaS & Web Apps",               // Platforms for delivering coaching programs
-      "Finance & Legal",               // Financial advisors, compliance, structuring
-      "Healthcare & Clinics",          // For wellness or therapy-related coaches
-      "Nonprofit & Community",         // Mentorship programs, social impact coaching
-      "Media & Entertainment",         // Coaching for creators, speakers, or influencers
-      "Travel & Experiences",          // Retreats, offsite coaching events, workshops
+    // Supporting Digital & Business Layers
+    "Portfolio & Personal Branding", // Building personal sites & online presence
+    "Booking & Appointments", // Scheduling coaching or consulting sessions
+    "Digital Goods & Subscriptions", // eBooks, paid guides, exclusive content
+    "Services", // General consulting or advisory services
+    "Blog & Content", // Thought leadership, insights, case studies
+    "Directory & Listings", // Visibility for consultants in directories
+    "SaaS & Web Apps", // Platforms for delivering coaching programs
+    "Finance & Legal", // Financial advisors, compliance, structuring
+    "Healthcare & Clinics", // For wellness or therapy-related coaches
+    "Nonprofit & Community", // Mentorship programs, social impact coaching
+    "Media & Entertainment", // Coaching for creators, speakers, or influencers
+    "Travel & Experiences", // Retreats, offsite coaching events, workshops
 
-      // Cross-domain Support
-      "Event & Ticketing",             // Paid seminars, conferences, meetups
-      "Fitness & Wellness",            // For coaches blending physical + mental health
-      "Educational & Online Courses",  // Self-paced coaching programs and modules
+    // Cross-domain Support
+    "Event & Ticketing", // Paid seminars, conferences, meetups
+    "Fitness & Wellness", // For coaches blending physical + mental health
+    "Educational & Online Courses", // Self-paced coaching programs and modules
 
-      "Consultant ",                    // General consulting services
-      "Coach",                         // General coaching services
+    "Consultant ", // General consulting services
+    "Coach", // General coaching services
 
-      "Consultant & Coach",
-      "Consulting & Coaching",
+    "Consultant & Coach",
+    "Consulting & Coaching",
 
-      // Miscellaneous
-      "Other"                          // Catch-all for niche or hybrid consulting areas
-    ],
-  
+    // Miscellaneous
+    "Other", // Catch-all for niche or hybrid consulting areas
+  ],
+
   "Consultant & Coach": [
-      // Core Coaching Categories
-      "Business Consulting",           // Business strategy, operations, management
-      "Career Coaching",               // Interview prep, job transitions, personal branding
-      "Life Coaching",                 // Mindset, motivation, productivity, personal growth
-      "Health & Wellness Coaching",    // Nutrition, fitness, mindfulness, holistic health
-      "Financial Coaching",            // Budgeting, investment, retirement planning
-      "Executive Coaching",            // Leadership, team building, corporate training
+    // Core Coaching Categories
+    "Business Consulting", // Business strategy, operations, management
+    "Career Coaching", // Interview prep, job transitions, personal branding
+    "Life Coaching", // Mindset, motivation, productivity, personal growth
+    "Health & Wellness Coaching", // Nutrition, fitness, mindfulness, holistic health
+    "Financial Coaching", // Budgeting, investment, retirement planning
+    "Executive Coaching", // Leadership, team building, corporate training
 
-      // Specialized Consulting Areas
-      "Marketing Consulting",          // Branding, digital marketing, content strategy
-      "Technology Consulting",         // IT, SaaS, automation, digital transformation
-      "Education & Training",          // Workshops, online courses, certification programs
-      "Public Speaking & Workshops",   // Seminars, webinars, motivational talks
-      "Personal Development",          // Confidence, productivity, communication skills
-      "Team Development",              // HR, conflict management, collaboration training
-      "HR & Recruitment Consulting",   // Hiring strategy, employee growth, talent development
-      "Legal & Compliance Consulting", // Business setup, contracts, compliance
+    // Specialized Consulting Areas
+    "Marketing Consulting", // Branding, digital marketing, content strategy
+    "Technology Consulting", // IT, SaaS, automation, digital transformation
+    "Education & Training", // Workshops, online courses, certification programs
+    "Public Speaking & Workshops", // Seminars, webinars, motivational talks
+    "Personal Development", // Confidence, productivity, communication skills
+    "Team Development", // HR, conflict management, collaboration training
+    "HR & Recruitment Consulting", // Hiring strategy, employee growth, talent development
+    "Legal & Compliance Consulting", // Business setup, contracts, compliance
 
-      // Supporting Digital & Business Layers
-      "Portfolio & Personal Branding", // Building personal sites & online presence
-      "Booking & Appointments",        // Scheduling coaching or consulting sessions
-      "Digital Goods & Subscriptions", // eBooks, paid guides, exclusive content
-      "Services",                      // General consulting or advisory services
-      "Blog & Content",                // Thought leadership, insights, case studies
-      "Directory & Listings",          // Visibility for consultants in directories
-      "SaaS & Web Apps",               // Platforms for delivering coaching programs
-      "Finance & Legal",               // Financial advisors, compliance, structuring
-      "Healthcare & Clinics",          // For wellness or therapy-related coaches
-      "Nonprofit & Community",         // Mentorship programs, social impact coaching
-      "Media & Entertainment",         // Coaching for creators, speakers, or influencers
-      "Travel & Experiences",          // Retreats, offsite coaching events, workshops
+    // Supporting Digital & Business Layers
+    "Portfolio & Personal Branding", // Building personal sites & online presence
+    "Booking & Appointments", // Scheduling coaching or consulting sessions
+    "Digital Goods & Subscriptions", // eBooks, paid guides, exclusive content
+    "Services", // General consulting or advisory services
+    "Blog & Content", // Thought leadership, insights, case studies
+    "Directory & Listings", // Visibility for consultants in directories
+    "SaaS & Web Apps", // Platforms for delivering coaching programs
+    "Finance & Legal", // Financial advisors, compliance, structuring
+    "Healthcare & Clinics", // For wellness or therapy-related coaches
+    "Nonprofit & Community", // Mentorship programs, social impact coaching
+    "Media & Entertainment", // Coaching for creators, speakers, or influencers
+    "Travel & Experiences", // Retreats, offsite coaching events, workshops
 
-      // Cross-domain Support
-      "Event & Ticketing",             // Paid seminars, conferences, meetups
-      "Fitness & Wellness",            // For coaches blending physical + mental health
-      "Educational & Online Courses",  // Self-paced coaching programs and modules
+    // Cross-domain Support
+    "Event & Ticketing", // Paid seminars, conferences, meetups
+    "Fitness & Wellness", // For coaches blending physical + mental health
+    "Educational & Online Courses", // Self-paced coaching programs and modules
 
-      "Consultant ",                    // General consulting services
-      "Coach",                         // General coaching services
+    "Consultant ", // General consulting services
+    "Coach", // General coaching services
 
-      "Consultant & Coach",
-      "Consulting & Coaching",
+    "Consultant & Coach",
+    "Consulting & Coaching",
 
-      // Miscellaneous
-      "Other"                          // Catch-all for niche or hybrid consulting areas
-    ],
+    // Miscellaneous
+    "Other", // Catch-all for niche or hybrid consulting areas
+  ],
 
   "Shoes Store": [
     "Fashion",
@@ -287,7 +287,7 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Pupils",
     "Principal",
     "School Head",
-    "Other"
+    "Other",
   ],
 
   "Agrovet Store": [
@@ -310,7 +310,7 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Soil Amendments",
     "Farm Safety Equipment",
     "Agricultural Books & Resources",
-    "Other"
+    "Other",
   ],
 
   "Gaming Store": [
@@ -331,10 +331,10 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Game Development Tools",
     "Streaming Equipment",
     "Gaming Chairs & Desks",
-    "Other"
+    "Other",
   ],
 
-  "Earphones Store": [  
+  "Earphones Store": [
     "Earphones Store",
     "In-Ear Earphones",
     "Over-Ear Headphones",
@@ -348,7 +348,7 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "True Wireless Earbuds",
     "Waterproof Earphones",
     "Kids' Earphones",
-    "Other"
+    "Other",
   ],
 
   "Glasses Store": [
@@ -362,9 +362,9 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Safety Glasses",
     "Fashion Eyewear",
     "Kids' Glasses",
-    "Other"
+    "Other",
   ],
-  
+
   "Flowers Store": [
     "Flowers Store",
     "Fresh Flowers",
@@ -377,10 +377,10 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Event Flowers",
     "Sympathy Flowers",
     "Seasonal Flowers",
-    "Other"
+    "Other",
   ],
 
-  "Honey Store":[
+  "Honey Store": [
     "Honey Store",
     "Raw Honey",
     "Flavored Honey",
@@ -390,18 +390,18 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Organic Honey",
     "Manuka Honey",
     "Local Honey",
-    "Other"
+    "Other",
   ],
 
-  "Peanuts Store":[
+  "Peanuts Store": [
     "Peanuts Store",
     "Peanut Butter",
     "Peanut Snacks",
     "Peanut Oil",
-    "Other"
+    "Other",
   ],
 
-  "Watch Store":[
+  "Watch Store": [
     "Watch Store",
     "Analog Watches",
     "Digital Watches",
@@ -410,10 +410,10 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Sports Watches",
     "Fashion Watches",
     "Kids' Watches",
-    "Other"
+    "Other",
   ],
 
-  "Baby Store":[
+  "Baby Store": [
     "Baby Store",
     "Baby Clothing",
     "Baby Gear",
@@ -425,10 +425,10 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Strollers & Car Seats",
     "Baby Care Products",
     "Maternity Wear",
-    "Other"
+    "Other",
   ],
 
-  "Cake Store":[
+  "Cake Store": [
     "Cake Store",
     "Custom Cakes",
     "Cupcakes",
@@ -438,10 +438,10 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Birthday Cakes",
     "Dessert Cakes",
     "Vegan & Gluten-Free Cakes",
-    "Other"
+    "Other",
   ],
-  
-  "Pets Store":[
+
+  "Pets Store": [
     "Pets Store",
     "Pet Food",
     "Pet Accessories",
@@ -451,10 +451,10 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Pet Beds & Furniture",
     "Pet Training Aids",
     "Pet Apparel",
-    "Other"
+    "Other",
   ],
 
-  "Groceries Store":[
+  "Groceries Store": [
     "Groceries Store",
     "Fresh Produce",
     "Dairy Products",
@@ -466,148 +466,145 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Bakery Items",
     "Health Foods",
     "Organic Products",
-    "Other"
+    "Other",
   ],
 
   "Service Provider": [
     "Services",
-    "Home And Garden",       // e.g., cleaning services + selling cleaning supplies
-    "Health And Beauty"      // e.g., spa services + related products
+    "Home And Garden", // e.g., cleaning services + selling cleaning supplies
+    "Health And Beauty", // e.g., spa services + related products
   ],
 
-  "Booking & Appointments": [
-    "Booking & Appointments",
-    "Services",
-  ],
+  "Booking & Appointments": ["Booking & Appointments", "Services"],
 
   "Portfolio & Personal Branding": [
     "Portfolio & Personal Branding",
     "Services",
   ],
 
-  "Blog & Content": [
-    "Blog & Content"
-  ],
+  "Blog & Content": ["Blog & Content"],
 
-  "Directory & Listings": [
-    "Directory & Listings"
-  ],
+  "Directory & Listings": ["Directory & Listings"],
 
   "Educational & Online Courses": [
     "Subjects",
-    "Books"                  // maybe also sell books/resources
+    "Books", // maybe also sell books/resources
   ],
 
   "Nonprofit & Community": [
     "Nonprofit & Community",
-    "Gifts"                  // fundraising gift items
+    "Gifts", // fundraising gift items
   ],
 
   "Restaurant & Food Delivery": [
     "Restaurant & Food Delivery",
-    "Groceries"              // meal kits or specialty groceries
+    "Groceries", // meal kits or specialty groceries
   ],
 
   "Event & Ticketing": [
     "Event & Ticketing",
-    "Travel & Experiences"   // tours + events
+    "Travel & Experiences", // tours + events
   ],
 
-  "Real Estate": [
-    "Property"
-  ],
+  "Real Estate": ["Property"],
 
-  "Property Management": [
-    "Property Management",
-    "Property"
-  ],  
+  "Property Management": ["Property Management", "Property"],
 
   "Healthcare & Clinics": [
     "Healthcare & Clinics",
-    "Health And Beauty"      // e.g., cosmetic procedures + products
+    "Health And Beauty", // e.g., cosmetic procedures + products
   ],
 
-  "SaaS & Web Apps": [
-    "SaaS & Web Apps",
-    "Digital Goods & Subscriptions"
-  ],
+  "SaaS & Web Apps": ["SaaS & Web Apps", "Digital Goods & Subscriptions"],
 
-  "Media & Entertainment": [
-    "Media & Entertainment",
-    "Music",
-    "Books"
-  ],
+  "Media & Entertainment": ["Media & Entertainment", "Music", "Books"],
 
-  "Finance & Legal": [
-    "Finance & Legal",
-    "Services"
-  ],
+  "Finance & Legal": ["Finance & Legal", "Services"],
 
-  "Automotive": [
+  Automotive: [
     "Cars",
-    "Services",              // e.g., repair services
-    "Car Accessories"
+    "Services", // e.g., repair services
+    "Car Accessories",
   ],
 
-  "Travel & Tourism": [
-    "Travel & Experiences",
-    "Booking & Appointments"
-  ],
+  "Travel & Tourism": ["Travel & Experiences", "Booking & Appointments"],
 
-  "Fitness & Wellness": [
-    "Fitness & Wellness",
-    "Health And Beauty"
-  ],
+  "Fitness & Wellness": ["Fitness & Wellness", "Health And Beauty"],
 
-  "Marketplace": [
-    "Fashion",
-    "Electronics",
-    "Home And Garden"
-  ],
+  Marketplace: ["Fashion", "Electronics", "Home And Garden"],
 
-  "Security": [
+  Security: [
     "Cybersecurity",
     "Electronic Security Systems",
-    "Emergency Response Services",    
+    "Emergency Response Services",
     "Security Consulting",
     "Surveillance Services",
     "Personal Protection Services",
     "Event Security Services",
-    "Security Training Services"
+    "Security Training Services",
   ],
 
-  "Tutors": [
-    "Tutors",
-    "Subjects"
+  Tutors: ["Tutors", "Subjects"],
+
+  Lecturer: ["Lecturer", "Subjects"],
+
+  Teacher: ["Teacher", "Subjects"],
+
+  Students: ["Students", "Books"],
+
+  Pupils: ["Pupils", "Books"],
+
+  Principal: ["Principal"],
+
+  "School Head": ["School Head"],
+
+  "Meat Store": [
+    "Meat Store",
+    "Meat & Butchery",
+    "Beef",
+    "Pork",
+    "Chicken",
+    "Lamb",
+    "Seafood",
+    "Deli Meats",
+    "Other",
   ],
 
-  "Lecturer": [
-    "Lecturer",
-    "Subjects"
+  "Meat & Butchery": [
+    "Meat & Butchery",
+    "Beef",
+    "Pork",
+    "Chicken",
+    "Lamb",
+    "Seafood",
+    "Deli Meats",
+    "Other",
   ],
 
-  "Teacher": [
-    "Teacher",
-    "Subjects"
+  "Meat Shop": [
+    "Meat Store",
+    "Meat & Butchery",
+    "Meat Shop",
+    "Beef",
+    "Pork",
+    "Chicken",
+    "Lamb",
+    "Seafood",
+    "Deli Meats",
+    "Other",
   ],
 
-  "Students": [
-    "Students",
-    "Books"
+  "Hardware Shop": [
+    "Hardware Store",
+    "Tools",
+    "Building Materials",
+    "Paint & Supplies",
+    "Plumbing Supplies",
+    "Electrical Supplies",
+    "Lawn & Garden Equipment",
+    "Home Improvement",
+    "Other",
   ],
 
-  "Pupils": [
-    "Pupils",
-    "Books"
-  ],
-
-  "Principal": [
-    "Principal"
-  ],
-
-  "School Head": [
-    "School Head"
-  ],
-  
-  "Other": []
+  Other: [],
 };
