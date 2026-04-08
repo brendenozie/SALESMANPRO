@@ -31,7 +31,7 @@ export default function GhubaProductCard({ key, product, toggleLike, likedItems,
       className="relative p-2 sm:p-4 group h-full"
     >
       <div 
-        onClick={() => router.push(`/ghuba/product/${product.id}`)}
+        onClick={() => router.push(`/ghuba/productlist/${product.id}`)}
         className="relative h-full cursor-pointer bg-white dark:bg-[#0F0F0F] border border-zinc-200 dark:border-zinc-800 rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] dark:hover:shadow-[0_30px_60px_-15px_rgba(230,57,70,0.1)]"
       >
         
