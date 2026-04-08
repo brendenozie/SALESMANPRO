@@ -12,7 +12,7 @@ export default function DesktopSignIn() {
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
-    await signIn("google", { redirect: true, callbackUrl });
+    await signIn("google", { redirect: true, callbackUrl: encodeURIComponent(callbackUrl) });
   };
 
   return (

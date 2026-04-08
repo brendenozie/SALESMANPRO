@@ -19,6 +19,7 @@ import load from "@/assets/load.png";
 import PropTypes from "prop-types";
 
 import GhubaProductCard from "@/components/site/layouts/GhubaLayout/body/components/GhubaProductCard";
+import Modal from "@/components/Modal";
 
 // next/image loader
 const loaderProp = ({ src, width, quality }) => {
@@ -31,8 +32,11 @@ const ProductPageClient = ({ listing, similarListings }) => {
   const [currentImage, setCurrentImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const { addToCart, decreaseQuantity } = useStateContext();
+  const [isZoomed, setIsZoomed] = useState(false);
+  const prevImage = () => setCurrentImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  const nextImage = () => setCurrentImage((prev) => prev === images.length - 1 ? 0 : prev + 1  );
 
-  const images = listing.image ? [listing.image, ...listing.additionalImages || []] : [
+  const images = listing.images ? listing.images: [
     "/images/placeholder-1.png",
     "/images/placeholder-2.png",
   ];
@@ -55,6 +59,10 @@ const ProductPageClient = ({ listing, similarListings }) => {
               images={images} 
               currentImageIndex={currentImage} 
               setCurrentImageIndex={setCurrentImage} 
+              prevImage={prevImage}
+              nextImage={nextImage}
+              isZoomed={isZoomed}
+              setIsZoomed={setIsZoomed}
             />
           </div>
 
@@ -115,20 +123,45 @@ const ProductPageClient = ({ listing, similarListings }) => {
           </section>
         </div>
       </main>
+
+       {isZoomed && (
+      <Modal isOpen={isZoomed} onClose={() => setIsZoomed(false)}  showCloseButton={false}>
+          <div className="flex justify-center items-center ">
+            <button
+              onClick={() => setIsZoomed(false)}
+              className="absolute top-5 right-5 text-white bg-gray-700 p-2 rounded-full hover:bg-gray-600 transition"
+            >
+              <XMarkIcon className="h-6 w-6" />
+            </button>
+            <button
+              onClick={prevImage}
+              className="absolute left-5 top-1/2 transform -translate-y-1/2 text-white bg-gray-700 p-3 rounded-full hover:bg-gray-600 transition"
+            >
+              <ArrowLeftIcon className="h-6 w-6" />
+            </button>
+            <img
+              src={images[currentImage] || images[currentImage].url || 'https://image.unsplash.com/photo-1559526324-551c9e75d510'}
+              alt="Enlarged Product"
+              className="max-h-[80vh] max-w-[90vw] object-contain"
+            />
+            <button
+              onClick={nextImage}
+              className="absolute right-5 top-1/2 transform -translate-y-1/2 text-white bg-gray-700 p-3 rounded-full hover:bg-gray-600 transition"
+            >
+              <ArrowRightIcon className="h-6 w-6" />
+            </button>
+          </div>
+        </Modal>
+      )}
+
     </div>
   );
 };
 
 /* --- SUB-COMPONENTS --- */
 
-const ProductImages = ({ images, currentImageIndex, setCurrentImageIndex }) => {
-  const [isZoomed, setIsZoomed] = useState(false);
-  const prevImage = () =>
-    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-  const nextImage = () =>
-    setCurrentImageIndex((prev) =>
-      prev === images.length - 1 ? 0 : prev + 1
-    );
+const ProductImages = ({ images, currentImageIndex, setCurrentImageIndex, prevImage, nextImage, isZoomed, setIsZoomed }) => {
+  
 
   return (
     <>
@@ -143,6 +176,7 @@ const ProductImages = ({ images, currentImageIndex, setCurrentImageIndex }) => {
             src={images[currentImageIndex] || images[currentImageIndex].url || 'https://image.unsplash.com/photo-1559526324-551c9e75d510' }
             className="w-full h-full object-cover cursor-zoom-in"
             onClick={() => setIsZoomed(true)}
+            alt={`Product Image ${currentImageIndex + 1}`}
           />
         </AnimatePresence>
         
@@ -161,39 +195,13 @@ const ProductImages = ({ images, currentImageIndex, setCurrentImageIndex }) => {
               i === currentImageIndex ? "border-yellow-500 scale-105 shadow-lg" : "border-transparent opacity-60"
             }`}
           >
-            <img src={img || img.url || 'https://image.unsplash.com/photo-1559526324-551c9e75d510'} className="w-full h-full object-cover" />
+            <img src={img || img.url || 'https://image.unsplash.com/photo-1559526324-551c9e75d510'} className="w-full h-full object-cover"  alt={`Product Image ${i + 1}`} />
           </button>
         ))}
       </div>
     </div>
 
-    {isZoomed && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex justify-center items-center z-50">
-          <button
-            onClick={() => setIsZoomed(false)}
-            className="absolute top-5 right-5 text-white bg-gray-700 p-2 rounded-full hover:bg-gray-600 transition"
-          >
-            <XMarkIcon className="h-6 w-6" />
-          </button>
-          <button
-            onClick={prevImage}
-            className="absolute left-5 top-1/2 transform -translate-y-1/2 text-white bg-gray-700 p-3 rounded-full hover:bg-gray-600 transition"
-          >
-            <ArrowLeftIcon className="h-6 w-6" />
-          </button>
-          <img
-            src={images[currentImageIndex] || images[currentImageIndex].url || 'https://image.unsplash.com/photo-1559526324-551c9e75d510'}
-            alt="Enlarged Product"
-            className="max-h-[80vh] max-w-[90vw] object-contain"
-          />
-          <button
-            onClick={nextImage}
-            className="absolute right-5 top-1/2 transform -translate-y-1/2 text-white bg-gray-700 p-3 rounded-full hover:bg-gray-600 transition"
-          >
-            <ArrowRightIcon className="h-6 w-6" />
-          </button>
-        </div>
-      )}
+   
 
     </>
   );

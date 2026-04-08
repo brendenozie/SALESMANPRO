@@ -46,7 +46,7 @@ export default function SignInPage() {
       // Let's stick with the original simplified flow for now.
       await signIn("google", {
         redirect: true,
-        callbackUrl: callbackUrl,
+        callbackUrl: encodeURIComponent(callbackUrl),
       });
     } catch (err) {
       console.error(err);
