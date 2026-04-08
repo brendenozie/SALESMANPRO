@@ -23,7 +23,7 @@ const ProductsPage = () => {
       try {
         const response = await fetch(`${apiBaseUrl}/clients/revenuereport?reportType=${reportType}`);
         const data = await response.json();
-        console.log(data);
+        // console.log(data);
         if (data.success) {
           setRevenueData(data.data);
         } else {

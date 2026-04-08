@@ -244,7 +244,7 @@ export default function TeachersSubjectListPage({
 
   const handleDeleteClassRequest = (courseId: string, courseTitle: string) => {
     if (window.confirm(`Are you sure you want to request deletion of "${courseTitle}"? This will send a request to the admin.`)) {
-      console.log(`Requesting deletion of Course ID: ${courseId} (${courseTitle})`);
+      // console.log(`Requesting deletion of Course ID: ${courseId} (${courseTitle})`);
       // In a real app, send a deletion request to the admin API
       alert(`Functionality: Deletion Request for "${courseTitle}" sent to Admin (Simulated)`);
     }

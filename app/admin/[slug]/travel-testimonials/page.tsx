@@ -61,7 +61,7 @@ const TestimonialsPage = () => {
       );
       if (!res.ok) throw new Error("Failed to fetch testimonials");
       const data = (await res.json()).data;
-      console.log(data);
+      // console.log(data);
       setTestimonials(data.testimonials);
     } catch (error) {
       console.error("Error fetching testimonials:", error);

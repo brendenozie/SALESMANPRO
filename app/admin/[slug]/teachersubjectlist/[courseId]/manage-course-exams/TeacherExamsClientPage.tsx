@@ -105,7 +105,7 @@ export default function TeacherExamsClientPage({
             return;
         }
     }
-    console.log("Saving Exam:", formData);
+    // console.log("Saving Exam:", formData);
     setIsModalOpen(false);
   };
 

@@ -212,7 +212,7 @@ export async function uploadFiles(
         xhr.send(file);
       });
 
-      console.log(`✅ Uploaded: ${file.name} (${contentType}) → ${publicUrl}`);
+    //   console.log(`✅ Uploaded: ${file.name} (${contentType}) → ${publicUrl}`);
       return { url: publicUrl, key, contentType };
     } catch (err) {
       console.error("❌ Upload error:", err);
@@ -545,7 +545,7 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
             }
         } else {
             // Validation failed, errors are already set in state
-            console.log("Validation failed for current tab. Cannot proceed.");
+            // console.log("Validation failed for current tab. Cannot proceed.");
         }
     };
 
@@ -596,19 +596,19 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
                     // 2. Create upload promises for new files
                     const uploadImagePromises = newImageItems.map(item =>
                       uploadFiles([item.file!], "image", (progress, file) => {
-                        console.log(`Uploading image ${file.name}: ${progress}%`);
+                        // console.log(`Uploading image ${file.name}: ${progress}%`);
                       }).then(result => ({ id: item.id, url: result[0].url }))
                     );
             
                     const uploadVideoPromises = newVideoItems.map(item =>
                       uploadFiles([item.file!], "video", (progress, file) => {
-                        console.log(`Uploading video ${file.name}: ${progress}%`);
+                        // console.log(`Uploading video ${file.name}: ${progress}%`);
                       }).then(result => ({ id: item.id, url: result[0].url }))
                     );
             
                     const uploadBookPromises = newBookItems.map(item =>
                       uploadFiles([item.file!], "book", (progress, file) => {
-                        console.log(`Uploading book ${file.name}: ${progress}%`);
+                        // console.log(`Uploading book ${file.name}: ${progress}%`);
                       }).then(result => ({ id: item.id, url: result[0].url }))
                     );
             

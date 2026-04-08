@@ -37,7 +37,7 @@ export default async function ServicesPage({ params }: PageProps) {
 
     if (categoriesRes.ok) {
       const categoriesJson = await categoriesRes.json();
-      console.log("Categories JSON:", categoriesJson);
+      // console.log("Categories JSON:", categoriesJson);
       const results = categoriesJson.data.results;
       categoriesData = Array.isArray(results) ? results : [];
     }
@@ -73,7 +73,7 @@ export default async function ServicesPage({ params }: PageProps) {
     initialServices = [];
   }
 
-  console.log(initialServices);
+  // console.log(initialServices);
 
   return (
     <div>

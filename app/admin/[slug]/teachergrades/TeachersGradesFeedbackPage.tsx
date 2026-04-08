@@ -130,7 +130,7 @@ export default function TeachersGradesFeedbackPage() {
     setIsSaving(true);
     // Simulate API call to save drafts
     setTimeout(() => {
-      console.log('Drafts saved:', studentsWithGrades);
+      // console.log('Drafts saved:', studentsWithGrades);
       alert('Grades and feedback saved as draft!');
       setIsSaving(false);
       // In a real app, you'd update your backend here.
@@ -144,7 +144,7 @@ export default function TeachersGradesFeedbackPage() {
     setIsPublishing(true);
     // Simulate API call to publish grades
     setTimeout(() => {
-      console.log('Grades published:', studentsWithGrades);
+      // console.log('Grades published:', studentsWithGrades);
       alert('Grades and feedback published successfully!');
       setIsPublishing(false);
       // In a real app, update backend and potentially set status to 'Graded' for the assignment

@@ -120,7 +120,7 @@ export async function POST(req: Request) {
     });
 
 
-    console.log("Order created with ID:", order);
+    // console.log("Order created with ID:", order);
     let paymentResponse;
 
     switch (paymentOption) {

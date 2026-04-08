@@ -19,7 +19,7 @@ export async function GET(req: Request) {
     const type = searchParams.get("type") || "image";
     const contentType = searchParams.get("contentType") || "";
 
-    console.log("📘 Upload request:", { filename, type, contentType });
+    // console.log("📘 Upload request:", { filename, type, contentType });
 
 
     if (!filename) {

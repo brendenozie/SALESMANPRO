@@ -148,7 +148,7 @@ export default function UploadResourcesPage({ classId }: UploadResourcesPageProp
 
     if (resourceType === 'File') {
       // Simulate file upload process
-      console.log('Simulating file upload:', selectedFile?.name);
+      // console.log('Simulating file upload:', selectedFile?.name);
       newResource = {
         id: newResourceId,
         name: resourceName,

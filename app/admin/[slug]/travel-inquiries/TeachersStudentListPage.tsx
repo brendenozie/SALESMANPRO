@@ -116,13 +116,13 @@ export default function TeachersStudentListPage() {
 
   // Placeholder functions for actions
   const handleViewStudentProfile = (studentId: string) => {
-    console.log(`Viewing profile for student ID: ${studentId}`);
+    // console.log(`Viewing profile for student ID: ${studentId}`);
     alert(`Redirecting to student profile for: ${studentId}`);
     // In a real app, route to student profile page: Router.push(`/student/${studentId}/profile`);
   };
 
   const handleMessageParent = (parentId: string, studentName: string) => {
-    console.log(`Messaging parent of ${studentName} (Parent ID: ${parentId})`);
+    // console.log(`Messaging parent of ${studentName} (Parent ID: ${parentId})`);
     alert(`Opening message composer for parent of ${studentName}`);
     // In a real app, open a messaging interface
   };

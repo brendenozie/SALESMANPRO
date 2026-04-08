@@ -121,7 +121,7 @@ export default function TeachersAttendancePage() {
     setIsSaving(true);
     // Simulate API call to save draft attendance
     setTimeout(() => {
-      console.log(`Draft attendance saved for ${currentClass?.name} on ${selectedDate}:`, attendanceRecords);
+      // console.log(`Draft attendance saved for ${currentClass?.name} on ${selectedDate}:`, attendanceRecords);
       alert('Attendance saved as draft!');
       setIsSaving(false);
       // In a real app, update initialAttendanceData or send to backend
@@ -135,7 +135,7 @@ export default function TeachersAttendancePage() {
     setIsSubmitting(true);
     // Simulate API call to submit and finalize attendance
     setTimeout(() => {
-      console.log(`Attendance submitted for ${currentClass?.name} on ${selectedDate}:`, attendanceRecords);
+      // console.log(`Attendance submitted for ${currentClass?.name} on ${selectedDate}:`, attendanceRecords);
       alert('Attendance submitted successfully!');
       setIsSubmitting(false);
       // In a real app, send to backend and possibly lock changes for this date/class

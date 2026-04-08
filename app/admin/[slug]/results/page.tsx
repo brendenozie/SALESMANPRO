@@ -100,11 +100,11 @@ export default async function AdminResultsOverviewPageWrapper({ params }: PagePr
     });
     if (submissionsRes.ok) {
       const data = (await submissionsRes.json()).data.data;
-      console.log("[AdminResultsOverviewPageWrapper] Fetched submissions data:", data);
+      // console.log("[AdminResultsOverviewPageWrapper] Fetched submissions data:", data);
       initialSubmissions = data as ExamSubmissionDataForAdmin[];
       // initialSubmissions = (await submissionsRes.json()) as ExamSubmissionDataForAdmin[];
     } else {
-      console.error(`[AdminResultsOverviewPageWrapper] Failed to fetch submissions: ${submissionsRes.status} ${submissionsRes.statusText}`);
+      // console.error(`[AdminResultsOverviewPageWrapper] Failed to fetch submissions: ${submissionsRes.status} ${submissionsRes.statusText}`);
       fetchError = true;
     }
 
@@ -118,7 +118,7 @@ export default async function AdminResultsOverviewPageWrapper({ params }: PagePr
     });
     if (examsRes.ok) {
       const data = (await examsRes.json()).data.data;
-      console.log("[AdminResultsOverviewPageWrapper] Fetched exams data:", data);
+      // console.log("[AdminResultsOverviewPageWrapper] Fetched exams data:", data);
       const fetchedExams = data as any[];
       allExams = fetchedExams.map(e => ({
         id: e.id,
@@ -142,7 +142,7 @@ export default async function AdminResultsOverviewPageWrapper({ params }: PagePr
     });
     if (studentsRes.ok) {
       const data = (await studentsRes.json()).data;
-      console.log("[AdminResultsOverviewPageWrapper] Fetched students data:", data);
+      // console.log("[AdminResultsOverviewPageWrapper] Fetched students data:", data);
       const fetchedStudents = data as any[];
       allStudents = fetchedStudents.map(s => ({
         id: s.id,
@@ -165,7 +165,7 @@ export default async function AdminResultsOverviewPageWrapper({ params }: PagePr
     });
     if (coursesRes.ok) {
       const data = (await coursesRes.json()).data;
-      console.log("[AdminResultsOverviewPageWrapper] Fetched courses data:", data);
+      // console.log("[AdminResultsOverviewPageWrapper] Fetched courses data:", data);
       const fetchedCourses = data as any[];
       allCourses = fetchedCourses.map(c => ({
         id: c.id,
@@ -186,7 +186,7 @@ export default async function AdminResultsOverviewPageWrapper({ params }: PagePr
     });
     if (educatorsRes.ok) {
       const data = (await educatorsRes.json()).data.data;
-      console.log("[AdminResultsOverviewPageWrapper] Fetched educators data:", data);
+      // console.log("[AdminResultsOverviewPageWrapper] Fetched educators data:", data);
       const fetchedEducators = data as any[];
       allEducators = fetchedEducators.map(e => ({
         id: e.id,
@@ -205,7 +205,7 @@ export default async function AdminResultsOverviewPageWrapper({ params }: PagePr
 
   // If any fetch failed or returned empty, use sample data as fallback
   if (fetchError || initialSubmissions.length === 0 && allExams.length === 0  && allStudents.length === 0  && allCourses.length === 0  && allEducators.length === 0) {
-    console.log("[AdminResultsOverviewPageWrapper] Using sample data as fallback for admin results.");
+    // console.log("[AdminResultsOverviewPageWrapper] Using sample data as fallback for admin results.");
     const { sampleSubmissions, sampleExams, sampleStudents, sampleCourses, sampleEducators } = generateSampleAdminResultsData(companyId);
     initialSubmissions = sampleSubmissions;
     allExams = sampleExams;

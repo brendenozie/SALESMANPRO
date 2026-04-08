@@ -131,7 +131,7 @@ export default function ShowingsPage() {
         throw new Error(errorData.message || 'Failed to fetch showings.');
       }
       const data = (await res.json()).data;
-      console.log("Fetched showings:", data); 
+      // console.log("Fetched showings:", data); 
       setShowings(data.sort((a: Showing, b: Showing) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime()));
     } catch (err: any) {
       console.error("Error fetching showings:", err);

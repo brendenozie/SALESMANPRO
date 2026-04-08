@@ -627,7 +627,7 @@ export function PlansClient({
       
               const data = await res.json();
               
-              console.log("Fetched subscriptions data:", data.data);
+            //   console.log("Fetched subscriptions data:", data.data);
               setSubscriptions(data.data.subscriptions);
               setCurrentPage(data.data.page);
               setTotalPages(data.data.totalPages);

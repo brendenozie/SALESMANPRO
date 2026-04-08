@@ -215,7 +215,7 @@ export default async function TeachersManagementPage({ params }: PageProps) {
     );
     if (educatorsRes.ok) {
       const data = (await educatorsRes.json()).data.data;
-      console.log("[TeachersManagementPage] Fetched educators:", data);
+      // console.log("[TeachersManagementPage] Fetched educators:", data);
       initialEducators = data as EducatorType[];
     } else {
       console.error(
@@ -276,7 +276,7 @@ export default async function TeachersManagementPage({ params }: PageProps) {
 
   // If fetching failed or returned no data, use sample data
   if (fetchError || initialEducators.length === 0 && allDepartments.length === 0 && allAcademicLevels.length === 0 && allClassrooms.length === 0) {
-    console.log("[TeachersManagementPage] Using sample data for educators, departments, academic levels, and classrooms.");
+    // console.log("[TeachersManagementPage] Using sample data for educators, departments, academic levels, and classrooms.");
     const { sampleEducators, sampleDepartments, sampleAcademicLevels, sampleClassrooms } = generateSampleEducatorsData(companyId);
     initialEducators = sampleEducators;
     allDepartments = sampleDepartments;

@@ -223,7 +223,7 @@ const printReceipt = (htmlContent: string) => {
       type: 'PRINT_HTML_RECEIPT',
       payload: htmlContent
     });
-    console.log("Sent receipt to Desktop Printer Service");
+    // console.log("Sent receipt to Desktop Printer Service");
       (window as any).chrome.webview.postMessage({ type: 'NOTIFY', message: 'Receipt sent to printer!' });
 
     return;
@@ -441,7 +441,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   useEffect(() => {
     // 1. Fetch Products
     const fetchProducts = async () => {
-      console.log(`Fetching products for companyId: ${companyId}`);
+      // console.log(`Fetching products for companyId: ${companyId}`);
       // Simulate API call for products
       await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
       const fetchedProducts: Product[] = [
@@ -467,7 +467,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
 
     // 2. Fetch Agent Info (assuming a current user/agent context)
     const fetchAgentInfo = async () => {
-      console.log("Fetching current agent info");
+      // console.log("Fetching current agent info");
       await new Promise(resolve => setTimeout(resolve, 300)); // Simulate network delay
       const fetchedAgent: Agent = {
         id: userId || 'agent-001',
@@ -491,7 +491,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
 
     // 3. Fetch Company Info
     const fetchCompanyInfo = async () => {
-      console.log(`Fetching company info for companyId: ${companyId}`);
+      // console.log(`Fetching company info for companyId: ${companyId}`);
       await new Promise(resolve => setTimeout(resolve, 400)); // Simulate network delay
       const fetchedCompany: CompanyInfo = {
         name: 'Your Awesome Store',
@@ -641,7 +641,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   if (cart.length === 0) return alert("Cart is empty");
   
   setPaymentStatus(null);
-  console.log("Finalizing sale...");
+  // console.log("Finalizing sale...");
 
   // 1. Map frontend cart to backend schema
   const orderPayload = {

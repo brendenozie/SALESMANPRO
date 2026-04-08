@@ -271,7 +271,7 @@ export default async function TeachersSubjectPage({ params }: Props) {
 
   // If fetch failed or data is missing, use sample data as fallback
   if (fetchError || !pageData || !pageData.teacherClasses || !pageData.teacherInfo) {
-    console.log("[TeachersClassPage] Using sample data as fallback.");
+    // console.log("[TeachersClassPage] Using sample data as fallback.");
     pageData = generateSampleTeacherClassesData(teacherUserId, teacherUserId);
   }
 

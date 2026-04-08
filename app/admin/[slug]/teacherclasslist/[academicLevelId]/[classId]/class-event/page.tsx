@@ -236,9 +236,9 @@ export default async function EventsManagerPage({ params }: PageProps) {
     throw new Error("User not authenticated");
   }
 
-  console.log(`Educator ID (teacherId): ${educatorId}`);
-  console.log(`Academic Level ID (classId): ${academicLevelId}`);
-  console.log(`Class ID (classId): ${classId}`);
+  // console.log(`Educator ID (teacherId): ${educatorId}`);
+  // console.log(`Academic Level ID (classId): ${academicLevelId}`);
+  // console.log(`Class ID (classId): ${classId}`);
   const teacherId = educatorId; // For clarity in this context
 
   try {
@@ -351,7 +351,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     && allEducators.length === 0 && allStudents.length === 0 && allDepartments.length === 0 && allParents.length === 0
     && allOrganizers.length === 0) {
 
-    console.log("[EventsManagerPage] Using sample data as fallback for events.");
+    // console.log("[EventsManagerPage] Using sample data as fallback for events.");
     // In a real app, you'd get the companyId from the authenticated teacher's profile
     // For sample, we'll use a placeholder or derive from teacherId if possible.
     const sampleCompanyId = teacherId; // Placeholder: In reality, fetch this from educator profile
@@ -376,17 +376,17 @@ export default async function EventsManagerPage({ params }: PageProps) {
     allOrganizers = sampleOrganizers;
   }
 
-  console.log(`[EventsManagerPage] Rendering with ${initialEvents.length} events, ${allAcademicLevels.length} academic levels, ${allCourses.length} courses, ${allEducators.length} educators, ${allStudents.length} students, ${allDepartments.length} departments, ${allParents.length} parents, and ${allOrganizers.length} organizers.`);
-  console.log(`[EventsManagerPage] Teacher ID: ${teacherId}, Academic Level ID: ${academicLevelId}`);
-  console.log(initialEvents);
-  console.log(allAcademicLevels);
-  console.log(allCourses);
-  console.log(allEducators);
-  console.log(allStudents);
-  console.log(allDepartments);
-  console.log(allParents);
-  console.log(allOrganizers);
-  console.log("---------------------------------------------------");
+  // console.log(`[EventsManagerPage] Rendering with ${initialEvents.length} events, ${allAcademicLevels.length} academic levels, ${allCourses.length} courses, ${allEducators.length} educators, ${allStudents.length} students, ${allDepartments.length} departments, ${allParents.length} parents, and ${allOrganizers.length} organizers.`);
+  // console.log(`[EventsManagerPage] Teacher ID: ${teacherId}, Academic Level ID: ${academicLevelId}`);
+  // console.log(initialEvents);
+  // console.log(allAcademicLevels);
+  // console.log(allCourses);
+  // console.log(allEducators);
+  // console.log(allStudents);
+  // console.log(allDepartments);
+  // console.log(allParents);
+  // console.log(allOrganizers);
+  // console.log("---------------------------------------------------");
 
   return (
     <AddClassEventPage

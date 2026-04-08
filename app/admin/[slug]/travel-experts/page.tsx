@@ -78,12 +78,12 @@ export default function AdminExpertsPage() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data: ExpertData[] = (await response.json()).data.data;
-      console.log("Fetched experts:", data);
+      // console.log("Fetched experts:", data);
       setExperts(data);
     } catch (err: any) {
       setError(err.message);
       // toast.error('Failed to fetch experts. Please try again.');
-      console.error("Failed to fetch experts:", err);
+      // console.error("Failed to fetch experts:", err);
     } finally {
       setLoading(false);
     }

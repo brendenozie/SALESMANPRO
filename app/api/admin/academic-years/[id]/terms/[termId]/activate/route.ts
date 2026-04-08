@@ -13,7 +13,7 @@ export async function PATCH(
   try {
     const { companyId, academicYearId } = await req.json();
 
-    console.log("Activating term", { termId: params.termId, companyId, academicYearId });
+    // console.log("Activating term", { termId: params.termId, companyId, academicYearId });
 
     const [deactivated, activated] = await prisma.$transaction([
       // 1. Deactivate all terms for this specific year and company

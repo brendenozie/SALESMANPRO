@@ -137,7 +137,7 @@ async function main() {
         data: { sslStatus: "ACTIVE", hasWebsite: true },
       });
 
-      console.log(`✅ ${domain} active`);
+      // console.log(`✅ ${domain} active`);
     } catch (err: any) {
       console.error(`❌ ${domain}:`, err.message);
       await prisma.company.update({
@@ -147,7 +147,7 @@ async function main() {
     }
   }
 
-  console.log("🎉 SSL worker finished");
+  // console.log("🎉 SSL worker finished");
 }
 
 main().catch((err) => {

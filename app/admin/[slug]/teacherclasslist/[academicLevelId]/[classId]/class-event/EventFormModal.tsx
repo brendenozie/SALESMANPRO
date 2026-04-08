@@ -110,7 +110,7 @@ export async function uploadFiles(
         xhr.send(file);
       });
 
-      console.log(`✅ Uploaded: ${file.name} (${contentType}) → ${publicUrl}`);
+      // console.log(`✅ Uploaded: ${file.name} (${contentType}) → ${publicUrl}`);
       return { url: publicUrl, key, contentType };
     } catch (err) {
       console.error("❌ Upload error:", err);

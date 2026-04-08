@@ -13,7 +13,7 @@ interface Context {
 // GET handler – fetch all student fee records
 async function getAllStudentFees(req: Request, context: Context) {
   
-  console.log('Fetching student fee records for company :', context);
+  // console.log('Fetching student fee records for company :', context);
 
   // const companySlug = req.params?.slug;
   const { searchParams } = new URL(req.url);

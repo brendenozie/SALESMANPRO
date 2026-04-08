@@ -150,7 +150,7 @@ export default function VehicleManagementPage() {
         throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
       }
       const json = await response.json();
-      console.log("[VehicleManagementPage] Fetched marketplace products:", json);
+      // console.log("[VehicleManagementPage] Fetched marketplace products:", json);
       const marketListings = json.data.results as MarketListingForm[];
       setVehicles(marketListings);
     } catch (err: any) {

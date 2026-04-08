@@ -80,7 +80,7 @@ export default function LoginPage() {
         setTimeout(() => {
           // Redirect based on role or data from backend
           // Example: window.location.href = `/${role}-dashboard`;
-          console.log(`Successfully logged in as ${role}. User ID: ${data.user?.id}`);
+          // console.log(`Successfully logged in as ${role}. User ID: ${data.user?.id}`);
           setMessage(null); // Clear message after "redirection"
         }, 2000);
       } else {

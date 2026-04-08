@@ -67,19 +67,19 @@ export default async function PropertiesCategoriesPage({ params }: CategoriesPag
 
   const handleAddCategory = () => {
     // Navigate to a new page or open a modal for adding
-    console.log('Navigate to add new category form');
+    // console.log('Navigate to add new category form');
     // Example: router.push(`/admin/${adminSlug}/properties-categories/new`);
   };
 
   const handleEditCategory = (categoryId: string) => {
     // Navigate to an edit page or open a modal with category data
-    console.log(`Edit category with ID: ${categoryId}`);
+    // console.log(`Edit category with ID: ${categoryId}`);
     // Example: router.push(`/admin/${adminSlug}/properties-categories/edit/${categoryId}`);
   };
 
   const handleDeleteCategory = (categoryId: string) => {
     // Implement confirmation modal before actual deletion
-    console.log(`Delete category with ID: ${categoryId}`);
+    // console.log(`Delete category with ID: ${categoryId}`);
     // Call API to delete, then update state
   };
 

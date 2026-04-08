@@ -23,7 +23,7 @@ export default function AdminSettings() {
   const handleSaveGeneralSettings = (e:any) => {
     e.preventDefault();
     alert('General settings saved!');
-    console.log({ siteName, contactEmail });
+    // console.log({ siteName, contactEmail });
   };
 
   const handleAddAdmin = (e:any) => {

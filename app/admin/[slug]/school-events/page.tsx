@@ -239,7 +239,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     });
     if (eventsRes.ok) {
       const data = (await eventsRes.json()).data;
-      console.log("[EventsManagerPage] Fetched events data:", data);
+      // console.log("[EventsManagerPage] Fetched events data:", data);
       initialEvents = data as EventData[];
     } else {
       console.error(`[EventsManagerPage] Failed to fetch events: ${eventsRes.status} ${eventsRes.statusText}`);
@@ -253,7 +253,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     });
     if (academicLevelsRes.ok) {
       const data = (await academicLevelsRes.json()).data;
-      console.log("[EventsManagerPage] Fetched academic levels data:", data);
+      // console.log("[EventsManagerPage] Fetched academic levels data:", data);
       allAcademicLevels = data as AcademicLevelOption[];
     } else {
       console.error(`[EventsManagerPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`);
@@ -267,7 +267,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     });
     if (coursesRes.ok) {
       const data = (await coursesRes.json()).data;
-      console.log("[EventsManagerPage] Fetched courses data:", data);
+      // console.log("[EventsManagerPage] Fetched courses data:", data);
       allCourses = data as CourseOption[];
     } else {
       console.error(`[EventsManagerPage] Failed to fetch courses: ${coursesRes.status} ${coursesRes.statusText}`);
@@ -281,7 +281,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     });
     if (educatorsRes.ok) {
       const data = (await educatorsRes.json()).data.data;
-      console.log("[EventsManagerPage] Fetched educators data:", data);
+      // console.log("[EventsManagerPage] Fetched educators data:", data);
       const fetchedEducators = data as any[];      
       allEducators = fetchedEducators.map(e => ({ id: e.id, name: e.user?.name || 'N/A', email: e.user?.email || 'N/A' }));
     } else {
@@ -296,7 +296,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     });
     if (studentsRes.ok) {
       const data = (await studentsRes.json()).data;
-      console.log("[EventsManagerPage] Fetched students data:", data);
+      // console.log("[EventsManagerPage] Fetched students data:", data);
       const fetchedStudents = data as any[];
       allStudents = fetchedStudents.map(s => ({ id: s.id, name: s.user?.name || 'N/A', email: s.user?.email || 'N/A' }));
     } else {
@@ -311,7 +311,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     });
     if (departmentsRes.ok) {
       const data = (await departmentsRes.json()).data.data;
-      console.log("[EventsManagerPage] Fetched departments data:", data);
+      // console.log("[EventsManagerPage] Fetched departments data:", data);
       const fetchedDepartments = data as any[];
       allDepartments = fetchedDepartments.map(d => ({ id: d.id, name: d.name || 'N/A' }));
     } else {
@@ -326,7 +326,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     });
     if (parentsRes.ok) {
       const data = (await parentsRes.json()).data;
-      console.log("[EventsManagerPage] Fetched parents data:", data);
+      // console.log("[EventsManagerPage] Fetched parents data:", data);
       const fetchedParents = data as any[];
       allParents = fetchedParents.map(p => ({ id: p.id, name: p.user?.name || 'N/A', email: p.user?.email || 'N/A' }));
     } else {
@@ -341,7 +341,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     });
     if (organizersRes.ok) {
       const data = (await organizersRes.json()).data;
-      console.log("[EventsManagerPage] Fetched organizers data:", data);
+      // console.log("[EventsManagerPage] Fetched organizers data:", data);
       const fetchedOrganizers = data as any[];
       allOrganizers = fetchedOrganizers.map(u => ({ id: u.id, name: u.name || 'N/A', email: u.email || 'N/A' }));
     } else {
@@ -357,7 +357,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
 
   // If any fetch failed or returned empty, use sample data as fallback
   if (fetchError || initialEvents.length === 0 && allAcademicLevels.length === 0 && allCourses.length === 0 && allEducators.length === 0 || allStudents.length === 0 && allDepartments.length === 0 && allParents.length === 0 && allOrganizers.length === 0) {
-    console.log("[EventsManagerPage] Using sample data as fallback for events.");
+    // console.log("[EventsManagerPage] Using sample data as fallback for events.");
     const {
       sampleEvents,
       sampleAcademicLevels,

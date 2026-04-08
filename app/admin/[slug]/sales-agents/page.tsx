@@ -628,7 +628,7 @@ export default function AgentsPage() {
       }
       else{
         const data: AgentProfile[] = (await res.json()).data;
-        console.log("Fetched agents:", data);
+        // console.log("Fetched agents:", data);
         setAgents(data.sort((a, b) => new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime()));
       }
 

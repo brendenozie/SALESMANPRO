@@ -18,7 +18,7 @@ export default async function SubscriptionPaymentsPage() {
 
     if (res.ok) {
       const json = await res.json();
-      console.log("[SubscriptionPaymentsPage] Fetched data:", json);
+      // console.log("[SubscriptionPaymentsPage] Fetched data:", json);
       paymentsData = json.data || [];
     }
   } catch (err: any) {

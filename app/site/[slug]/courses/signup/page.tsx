@@ -322,7 +322,9 @@ export default function SignupPage() {
             <a
               href="#login"
               className="text-indigo-600 dark:text-purple-400 font-semibold hover:underline transition-colors"
-              onClick={(e) => { e.preventDefault(); console.log('Login clicked!'); }}
+              onClick={(e) => { e.preventDefault();
+                 // console.log('Login clicked!'); 
+                 }}
             >
               Login
             </a>

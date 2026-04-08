@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     }
 
     // Process event
-    console.log("PayPal webhook:", body.event_type);
+    // console.log("PayPal webhook:", body.event_type);
 
     return NextResponse.json({ ok: true });
   } catch (err: any) {

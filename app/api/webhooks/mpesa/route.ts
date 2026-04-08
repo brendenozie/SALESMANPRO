@@ -40,7 +40,7 @@ export async function POST(req: Request) {
             deliveryStatus: "Payment Received",
           },
         });
-        console.log(`✅ Order ${order.trackingNumber} marked as PAID`);
+        // console.log(`✅ Order ${order.trackingNumber} marked as PAID`);
       }
     }
 

@@ -80,7 +80,7 @@ export default function QuestionBuilder({ initialQuestions, assignment, courseId
   const handleSave = async () => {
     setIsSaving(true);
     // API logic to sync the questions array with the backend
-    console.log("Saving questions:", questions);
+    // console.log("Saving questions:", questions);
     setTimeout(() => setIsSaving(false), 1000); // Simulate API
   };
 

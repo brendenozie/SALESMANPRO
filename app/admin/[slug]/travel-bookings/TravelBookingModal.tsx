@@ -106,9 +106,9 @@ const TravelBookingModal: React.FC<TravelBookingModalProps> = ({ isOpen, onClose
         if (!tourPackagesRes.ok) throw new Error(tourPackagesData.message || 'Failed to fetch tour packages');
         if (!destinationsRes.ok) throw new Error(destinationsData.message || 'Failed to fetch destinations');
 
-        console.log("Fetched clients:", clientsData);
-        console.log("Fetched tour packages:", tourPackagesData);
-        console.log("Fetched destinations:", destinationsData); 
+        // console.log("Fetched clients:", clientsData);
+        // console.log("Fetched tour packages:", tourPackagesData);
+        // console.log("Fetched destinations:", destinationsData); 
 
         setClients(clientsData.map((c: any) => ({ id: c.id, name: c.name, email: c.email })));
         setTourPackages(tourPackagesData.map((p: any) => ({ id: p.id, name: p.name })));

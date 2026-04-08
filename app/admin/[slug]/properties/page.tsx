@@ -159,11 +159,11 @@ const fetchData = async <T,>(
 
         const dataRes = await res.json();
         // Adjusting based on common API responses from the original file (results or data)
-        console.log(`✅ Successfully fetched data for ${endpoint}:`, dataRes);
+        // console.log(`✅ Successfully fetched data for ${endpoint}:`, dataRes);
         const data = dataRes?.results || dataRes?.data || dataRes?.data?.results || null; 
-        console.log(`Extracted data for ${endpoint}:`, data);
+        // console.log(`Extracted data for ${endpoint}:`, data);
         if (!data || (Array.isArray(data) && data.length === 0)) {
-            console.warn(`No data received for ${endpoint}. Using fallback sample data.`);
+            // console.warn(`No data received for ${endpoint}. Using fallback sample data.`);
             return { data: fallbackData(), error: null };
         }
 

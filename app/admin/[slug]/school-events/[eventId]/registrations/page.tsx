@@ -179,7 +179,7 @@ export default async function EventRegistrationsOverviewPage({ params }: PagePro
 
   // If any fetch failed or returned empty, use sample data as fallback
   if (fetchError || !initialEventDetails || initialRegistrations.length === 0 || allUsers.length === 0 || allStudents.length === 0) {
-    console.log("[EventRegistrationsOverviewPage] Using sample data as fallback.");
+    // console.log("[EventRegistrationsOverviewPage] Using sample data as fallback.");
     const { sampleEventDetails, sampleRegistrations, sampleUsers, sampleStudents } = generateSampleRegistrationData(companyId, eventId);
     initialEventDetails = sampleEventDetails;
     initialRegistrations = sampleRegistrations;

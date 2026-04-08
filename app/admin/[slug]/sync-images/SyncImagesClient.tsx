@@ -31,7 +31,7 @@ async function uploadFiles(
   type: "image" | "video" | "book",
   onProgress?: (progress: number, file: File) => void
 ): Promise<{ url: string; key: string; contentType: string }[]> {
-  console.log("uploadFiles called with files:", files, "type:", type);
+  // console.log("uploadFiles called with files:", files, "type:", type);
   if (!files?.length) return [];
 
   const uploads = files.map(async (file) => {

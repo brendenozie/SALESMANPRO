@@ -47,7 +47,7 @@ export default async function StudentRosterPageServer({ params }: Props) {
 
   // If fetch failed or data is missing, use sample data as fallback
   if (fetchError || !studentsData ) {
-    console.log("[StudentRosterPageServer] Using sample data as fallback.");
+    // console.log("[StudentRosterPageServer] Using sample data as fallback.");
   }
 
   return (

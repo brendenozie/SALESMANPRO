@@ -51,7 +51,7 @@ async function getAttendance(req: Request, { params }: { params: { academicLevel
 
     // 4. PREVENT CRASH: Fetch Mapping records first without "including" the student
 
-    console.log("Fetching student mappings for academicLevelId:", academicLevelId, "and classId:", classId);
+    // console.log("Fetching student mappings for academicLevelId:", academicLevelId, "and classId:", classId);
     const studentMappings = await prisma.studentAcademicLevel.findMany({
       where: { academicLevelId, classRoomId: classId },
       select: { studentId: true },

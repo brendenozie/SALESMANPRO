@@ -71,7 +71,7 @@ export default async function AgentsPage({ params }: AgentsPageProps) {
       { cache: 'no-store', headers: { cookie: cookiesHeader } });
     if (!res.ok) throw new Error('Failed to fetch agents');
     let intialRes = await res.json();
-    console.log("Fetched initial agents:", intialRes);
+    // console.log("Fetched initial agents:", intialRes);
     initialAgents = intialRes.data as AgentProfile[];
     // If the fetch fails, we fall back to sample data for demonstration purposes
     if (initialAgents.length === 0) {

@@ -127,8 +127,8 @@ export default function DestinationManagementPage() {
       const destinationsData = (await destinationsResponse.json()).data.data;
       const locationsData = (await locationsResponse.json()).data.data;
 
-      console.log("Fetched Destinations:", destinationsData);
-      console.log("Fetched Locations:", locationsData);
+      // console.log("Fetched Destinations:", destinationsData);
+      // console.log("Fetched Locations:", locationsData);
 
       setDestinations(destinationsData || []);
       setLocations(locationsData || []);

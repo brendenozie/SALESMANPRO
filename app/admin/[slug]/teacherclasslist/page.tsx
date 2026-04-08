@@ -210,7 +210,7 @@ export default async function ClassTeacherAcademicLevelsPageServer({ params }: P
 
   // If fetch failed or data is missing, use sample data as fallback
   if (fetchError || !pageData || !pageData.assignedAcademicLevels) {
-    console.log("[ClassTeacherAcademicLevelsPageServer] Using sample data as fallback.");
+    // console.log("[ClassTeacherAcademicLevelsPageServer] Using sample data as fallback.");
     pageData = generateSampleClassTeacherAcademicLevelsData(); // Assign the full sample data
   }
 

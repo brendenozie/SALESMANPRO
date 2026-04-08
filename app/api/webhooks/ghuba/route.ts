@@ -18,7 +18,7 @@ export async function POST(req: Request) {
 
     const event = JSON.parse(raw);
 
-    console.log("Ghuba webhook received:", event.type);
+    // console.log("Ghuba webhook received:", event.type);
 
     return NextResponse.json({ ok: true });
   } catch (err: any) {

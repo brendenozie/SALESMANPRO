@@ -69,19 +69,19 @@ export default async function PropertiesLocationsPage({ params }: LocationsPageP
 
   const handleAddLocation = () => {
     // Navigate to a new page or open a modal for adding
-    console.log('Navigate to add new location form');
+    // console.log('Navigate to add new location form');
     // Example: router.push(`/admin/${slug}/properties-locations/new`);
   };
 
   const handleEditLocation = (locationId: string) => {
     // Navigate to an edit page or open a modal with location data
-    console.log(`Edit location with ID: ${locationId}`);
+    // console.log(`Edit location with ID: ${locationId}`);
     // Example: router.push(`/admin/${slug}/properties-locations/edit/${locationId}`);
   };
 
   const handleDeleteLocation = (locationId: string) => {
     // Implement confirmation modal before actual deletion
-    console.log(`Delete location with ID: ${locationId}`);
+    // console.log(`Delete location with ID: ${locationId}`);
     // Call API to delete, then update state
   };
 

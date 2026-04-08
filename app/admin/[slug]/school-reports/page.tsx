@@ -131,7 +131,7 @@ export default async function AdminReportsPage({ params }: PageProps) {
 
   // If any fetch failed or data is missing, use sample data as fallback
   if (fetchError || !overallStats || !studentPerformanceData || !staffReportsData || !academicReportsData || !upcomingEventsSummary) {
-    console.log("[AdminReportsPage] Using sample data as fallback for reports.");
+    // console.log("[AdminReportsPage] Using sample data as fallback for reports.");
     const sampleData = generateSampleReportData();
     overallStats = sampleData.sampleOverallStats;
     studentPerformanceData = sampleData.sampleStudentPerformanceData;

@@ -166,7 +166,7 @@ export default function TeachersAssignmentPage() {
   };
 
   const handleGradeSubmissions = (assignmentId: string) => {
-    console.log(`Navigating to grading interface for assignment: ${assignmentId}`);
+    // console.log(`Navigating to grading interface for assignment: ${assignmentId}`);
     alert(`Redirecting to grade submissions for Assignment ID: ${assignmentId}`);
     // In a real app, this would route to a specific grading page:
     // Router.push(`/teacher/assignments/${assignmentId}/grade`);

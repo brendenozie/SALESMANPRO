@@ -38,7 +38,7 @@ export default async function PosPage({ params }: PageProps) {
     });
     if (categoriesRes.ok) {
       const categoriesData = (await categoriesRes.json()).data;
-      console.log("Fetched categories data:", categoriesData);
+      // console.log("Fetched categories data:", categoriesData);
       initialCategories = categoriesData.categories || []; // Ensure it's an array
     } else {
       console.error(`Failed to fetch categories: ${categoriesRes.status} ${categoriesRes.statusText}`);
@@ -56,7 +56,7 @@ export default async function PosPage({ params }: PageProps) {
     });
     if (productsRes.ok) {
       const productsData = (await productsRes.json()).data;
-      console.log("Fetched products data:", productsData);
+      // console.log("Fetched products data:", productsData);
       // Map marketplace listings to the Product type expected by StorePOSPageClient
       initialProducts = productsData.results ;
         

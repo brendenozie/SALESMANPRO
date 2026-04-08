@@ -91,7 +91,7 @@ const CheckoutPage = () => {
   const [promoMessage, setPromoMessage] = useState('');
 
   const handleAddressSelect = (address, coords) => {
-    console.log("Selected address:", address, coords);
+    // console.log("Selected address:", address, coords);
     
     // Use address/coords (e.g. update form state or submit)
     setFormData(f => ({ ...f, shippingAddress:{

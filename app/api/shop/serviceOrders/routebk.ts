@@ -108,7 +108,7 @@ async function initiateMpesaSTKPush(amount: number, phone: string, trackingNumbe
     });
 
     const data = await response.json();
-    console.log("[M-Pesa STK Response]", data);
+    // console.log("[M-Pesa STK Response]", data);
 
     if (data.ResponseCode !== "0") {
       throw new Error(data.errorMessage || "Failed to initiate STK Push");

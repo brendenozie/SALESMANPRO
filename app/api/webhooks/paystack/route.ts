@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
   const event = JSON.parse(rawBody);
 
-  console.log("Paystack webhook:", event.event);
+  // console.log("Paystack webhook:", event.event);
 
   return NextResponse.json({ ok: true });
 }

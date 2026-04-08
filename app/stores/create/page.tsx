@@ -68,9 +68,9 @@ export default async function CreateStorePage() {
     }).then(r => r.json()),
   ]);
 
-  console.log('Fetched categories:', categories);
-  console.log('Fetched locations:', locations);
-  console.log('Fetched site categories:', siteCategories);
+  // console.log('Fetched categories:', categories);
+  // console.log('Fetched locations:', locations);
+  // console.log('Fetched site categories:', siteCategories);
 
   return (
     <CreateStoreForm

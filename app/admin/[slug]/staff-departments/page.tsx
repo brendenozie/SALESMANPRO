@@ -19,7 +19,7 @@ export default async function DepartmentsPage({ params }: PageProps) {
     });
     if (res.ok) initialDepartments = (await res.json()).data.data;
 
-    console.log("Fetched departments:", initialDepartments);
+    // console.log("Fetched departments:", initialDepartments);
 
   } catch (err) {
     console.error("Failed to load departments", err);

@@ -24,7 +24,7 @@ export default async function StaffAttendancePage({ params }: PageProps) {
 
     if (res.ok) {
       initialData = (await res.json());
-      console.log("Fetched initial attendance data:", initialData);
+      // console.log("Fetched initial attendance data:", initialData);
     }
 
     const resStaff = await fetch(

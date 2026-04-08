@@ -214,7 +214,7 @@ export default function ManageAssignmentsPage({ classId }: ManageAssignmentsPage
   };
 
   const handleCollectSubmissions = (assignmentId: string, assignmentTitle: string) => {
-    console.log(`Collecting submissions for: ${assignmentTitle} (ID: ${assignmentId})`);
+    // console.log(`Collecting submissions for: ${assignmentTitle} (ID: ${assignmentId})`);
     // In a real app, this would navigate to a page to view/grade submissions
     alert(`Functionality: Collect Submissions for "${assignmentTitle}"`);
   };

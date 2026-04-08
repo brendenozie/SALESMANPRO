@@ -312,7 +312,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
 
   // If any fetch failed or returned empty, use sample data as fallback
   if (fetchError || initialAnnouncements.length === 0 || allAcademicLevels.length === 0 || allCourses.length === 0 || allEducators.length === 0 || allStudents.length === 0 || allDepartments.length === 0 || allParents.length === 0 || allAuthors.length === 0) {
-    console.log("[AnnouncementsManagerPage] Using sample data as fallback.");
+    // console.log("[AnnouncementsManagerPage] Using sample data as fallback.");
     const {
       sampleAnnouncements,
       sampleAcademicLevels,

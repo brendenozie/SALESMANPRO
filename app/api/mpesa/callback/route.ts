@@ -37,7 +37,7 @@ export function OPTIONS() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    console.log("📥 M-Pesa Callback Received:", JSON.stringify(body, null, 2));
+    // console.log("📥 M-Pesa Callback Received:", JSON.stringify(body, null, 2));
 
     const stk = body?.Body?.stkCallback;
     if (!stk) {
@@ -100,7 +100,7 @@ export async function POST(req: Request) {
         },
       });
 
-      console.log("✅ Payment Successful:", receipt);
+      // console.log("✅ Payment Successful:", receipt);
 
       return withCors({ success: true });
     }
@@ -115,7 +115,7 @@ export async function POST(req: Request) {
       },
     });
 
-    console.log("❌ Payment Failed:", ResultDesc);
+    // console.log("❌ Payment Failed:", ResultDesc);
 
     return withCors({ success: true });
   } catch (err) {

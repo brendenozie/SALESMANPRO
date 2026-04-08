@@ -227,7 +227,7 @@ export default function AdminBookingsPage() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data: TravelBookingData[] = (await response.json()).data;
-      console.log("Fetched bookings:", data);
+      // console.log("Fetched bookings:", data);
       setBookings(data);
     } catch (err: any) {
       setError(err.message);
