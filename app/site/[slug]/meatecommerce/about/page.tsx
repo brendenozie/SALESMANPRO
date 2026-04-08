@@ -1,111 +1,141 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { 
-  SunIcon, 
-  BeakerIcon, 
+  SparklesIcon, 
+  ShieldCheckIcon, 
   UserGroupIcon, 
-  GlobeAmericasIcon 
+  ClockIcon 
 } from '@heroicons/react/24/outline';
 
 const fadeInUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0, transition: { duration: 1, ease: [0.16, 1, 0.3, 1] } }
 };
 
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
-export default function AgrovetAboutPage() {
+export default function TuyiaAboutPage() {
   return (
-    <main className="bg-[#fcfdfc] dark:bg-[#050705] min-h-screen pt-28 pb-20 overflow-hidden">
+    <main className="bg-[#0a0a0a] text-white min-h-screen pt-32 pb-20 overflow-hidden font-sans">
       
-      {/* 1. THE GROWTH HERO */}
-      <section className="max-w-7xl mx-auto px-6 mb-32 relative">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      {/* 1. THE HERITAGE HERO */}
+      <section className="max-w-7xl mx-auto px-6 mb-40 relative">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           
-          <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
-            <div className="flex items-center gap-3 mb-6">
-              <span className="h-[2px] w-8 bg-emerald-600" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-700 dark:text-emerald-400">
-                Rooted in Excellence
+          <motion.div 
+            className="lg:col-span-7"
+            initial="hidden" 
+            whileInView="visible" 
+            viewport={{ once: true }}
+            variants={fadeInUp}
+          >
+            <div className="flex items-center gap-4 mb-8">
+              <span className="h-[1px] w-12 bg-amber-500" />
+              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-amber-500">
+                The Tuyia Legacy
               </span>
             </div>
             
-            <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] text-slate-900 dark:text-emerald-50 mb-8">
-              Feeding the <br /> 
-              <span className="text-emerald-600 italic">Future.</span>
+            <h1 className="text-7xl md:text-[9rem] font-black tracking-tighter leading-[0.8] mb-12 uppercase">
+              The Art of <br /> 
+              <span className="text-transparent italic font-serif font-light" style={{ WebkitTextStroke: '1px rgba(255,255,255,0.4)' }}>Modern</span> Butchery.
             </h1>
             
-            <p className="text-lg text-slate-600 dark:text-emerald-100/60 leading-relaxed max-w-lg mb-8 font-medium">
-              We started with a single bag of seeds and a vision to empower every farmer. Today, we are Nairobi's trusted partner in agricultural innovation and veterinary care.
+            <p className="text-xl text-stone-400 leading-snug max-w-xl mb-12 font-medium">
+              Tuyia Farm wasn’t built on shortcuts. It was built on the Laikipia plains, 
+              defined by the patient cycle of nature and the precision of master craftsmen. 
+              We don’t just supply meat; we preserve a standard.
             </p>
             
-            <div className="flex gap-4">
-               <div className="px-6 py-3 bg-emerald-600 text-white font-bold rounded-full text-sm">Our Legacy</div>
-               <div className="px-6 py-3 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 font-bold rounded-full text-sm">View Labs</div>
+            <div className="flex items-center gap-8">
+               <button className="px-10 py-5 bg-white text-black font-black uppercase text-xs tracking-widest rounded-2xl hover:bg-amber-500 transition-colors">
+                 Our Philosophy
+               </button>
+               <div className="flex flex-col">
+                 <span className="text-xs font-black text-amber-500 uppercase tracking-widest">Est. 2026</span>
+                 <span className="text-stone-500 text-[10px] font-bold uppercase">Nairobi, Kenya</span>
+               </div>
             </div>
           </motion.div>
 
-          {/* Image Composition: Organic Frame */}
-          <div className="relative">
+          <div className="lg:col-span-5 relative">
             <motion.div 
-              initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
-              animate={{ opacity: 1, scale: 1, rotate: 0 }}
-              transition={{ duration: 1 }}
-              className="relative aspect-square rounded-[3rem] overflow-hidden shadow-2xl z-10"
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 1.2 }}
+              className="relative aspect-[3/4] rounded-[2rem] overflow-hidden border border-white/10 group"
             >
               <Image 
-                src="https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=1200&q=80" 
-                alt="Modern Farming" fill className="object-cover" loader={customLoader}
+                src="https://images.unsplash.com/photo-1602484281540-0239366fbd81?auto=format&fit=crop&w=1200&q=80" 
+                alt="Tuyia Craft" 
+                fill 
+                className="object-cover grayscale hover:grayscale-0 transition-all duration-1000 scale-110 group-hover:scale-100" 
+                loader={customLoader}
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
             </motion.div>
             
-            {/* Background Decorative "Leaf" shape */}
-            <div className="absolute -top-10 -right-10 w-64 h-64 bg-emerald-100 dark:bg-emerald-900/20 rounded-full blur-3xl -z-0" />
-            <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-lime-100 dark:bg-lime-900/20 rounded-full blur-3xl -z-0" />
+            {/* Floating Detail Card */}
+            <motion.div 
+               initial={{ y: 20, opacity: 0 }}
+               whileInView={{ y: 0, opacity: 1 }}
+               transition={{ delay: 0.5 }}
+               className="absolute -bottom-10 -left-10 bg-stone-900 border border-white/10 p-8 rounded-3xl shadow-2xl backdrop-blur-xl max-w-[240px]"
+            >
+              <SparklesIcon className="w-8 h-8 text-amber-500 mb-4" />
+              <p className="text-xs font-bold leading-relaxed text-stone-300 uppercase tracking-tight">
+                "Every cut tells a story of the soil, the grass, and the hands that prepared it."
+              </p>
+            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* 2. CORE PILLARS: THE "FERTILE" GRID */}
-      <section className="bg-emerald-50/50 dark:bg-emerald-950/10 py-24 border-y border-emerald-100 dark:border-emerald-900/30">
+      {/* 2. CORE PILLARS: THE CRAFT GRID */}
+      <section className="py-32 border-y border-white/5 bg-[#0e0e0e]">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/5 border border-white/5 rounded-[2.5rem] overflow-hidden">
             <PillarItem 
-              Icon={BeakerIcon} 
-              title="Science-Led" 
-              desc="Every fertilizer and feed is lab-tested for maximum yield performance." 
+              Icon={ShieldCheckIcon} 
+              title="Traceability" 
+              desc="Full visibility from our Laikipia pastures to your doorstep. Every cut is QR-verified." 
             />
             <PillarItem 
               Icon={UserGroupIcon} 
-              title="Farmer First" 
-              desc="On-the-ground support and consultation for local small-scale farmers." 
+              title="Community" 
+              desc="Supporting local herdsmen through fair-trade practices and sustainable grazing education." 
             />
             <PillarItem 
-              Icon={SunIcon} 
-              title="Sustainable" 
-              desc="Committed to organic solutions that protect our soil for generations." 
+              Icon={ClockIcon} 
+              title="Patient Aging" 
+              desc="Our Himalayan salt cellar allows cuts to develop deep, nutty flavors over 28 days." 
             />
             <PillarItem 
-              Icon={GlobeAmericasIcon} 
-              title="Global Quality" 
-              desc="Bringing world-class veterinary medicine to the heart of Kenya." 
+              Icon={SparklesIcon} 
+              title="Gold Standard" 
+              desc="Only top-tier Angus and Heritage breeds make the Tuyia Reserve selection." 
             />
           </div>
         </div>
       </section>
 
-      {/* 3. IMPACT STATS: THE "HARVEST" COUNTER */}
-      <section className="max-w-7xl mx-auto px-6 py-32">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 border-l border-emerald-100 dark:border-emerald-900/50 pl-12">
-          <StatBox number="15k+" label="Farmers Supported" />
-          <StatBox number="200+" label="Vet Clinics Supplied" />
-          <StatBox number="100%" label="Quality Guaranteed" />
-          <StatBox number="24/7" label="Expert Support" />
+      {/* 3. IMPACT STATS: THE "RESERVE" COUNTER */}
+      <section className="max-w-7xl mx-auto px-6 py-40">
+        <div className="flex flex-col md:flex-row justify-between items-end gap-12">
+          <div className="max-w-md">
+            <h2 className="text-4xl font-black tracking-tighter uppercase mb-6">Quantifying Our <br /><span className="text-amber-500">Obsession.</span></h2>
+            <p className="text-stone-500 text-sm font-medium">We don't measure success by volume, but by the precision of our yield and the satisfaction of Kenya's top chefs.</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-16">
+            <StatBox number="28" label="Days Dry Aged" />
+            <StatBox number="100%" label="Pasture Raised" />
+            <StatBox number="0" label="Antibiotics Used" />
+          </div>
         </div>
       </section>
     </main>
@@ -114,21 +144,21 @@ export default function AgrovetAboutPage() {
 
 function PillarItem({ Icon, title, desc }: { Icon: any, title: string, desc: string }) {
   return (
-    <div className="space-y-4 group">
-      <div className="w-14 h-14 rounded-2xl bg-white dark:bg-emerald-900/20 shadow-lg flex items-center justify-center text-emerald-600 transition-transform group-hover:-rotate-6">
-        <Icon className="w-7 h-7" />
+    <div className="bg-[#0a0a0a] p-12 space-y-6 hover:bg-stone-900/50 transition-colors group">
+      <div className="w-12 h-12 flex items-center justify-center text-amber-500 border border-amber-500/20 rounded-full group-hover:bg-amber-500 group-hover:text-black transition-all">
+        <Icon className="w-6 h-6" />
       </div>
-      <h3 className="text-xl font-bold text-slate-900 dark:text-emerald-50">{title}</h3>
-      <p className="text-sm text-slate-500 dark:text-emerald-200/50 leading-relaxed font-medium">{desc}</p>
+      <h3 className="text-xl font-black uppercase tracking-tighter">{title}</h3>
+      <p className="text-sm text-stone-500 leading-relaxed font-medium">{desc}</p>
     </div>
   );
 }
 
 function StatBox({ number, label }: { number: string; label: string }) {
   return (
-    <div className="space-y-1">
-      <div className="text-4xl md:text-5xl font-black tracking-tighter text-emerald-600">{number}</div>
-      <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-emerald-800">{label}</div>
+    <div className="space-y-2">
+      <div className="text-6xl font-black tracking-tighter text-white tabular-nums italic">{number}</div>
+      <div className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-500/60">{label}</div>
     </div>
   );
 }

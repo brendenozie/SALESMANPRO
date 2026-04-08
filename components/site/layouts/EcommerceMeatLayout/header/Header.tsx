@@ -1,40 +1,40 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  MagnifyingGlassIcon,
   ShoppingBagIcon,
   Bars3BottomLeftIcon,
   XMarkIcon,
   UserIcon,
-  ChevronDownIcon
+  MapPinIcon
 } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
-import { useSession, signOut } from 'next-auth/react'; 
+import { useSession } from 'next-auth/react'; 
 import CartDrawer from './CartDrawer';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-export default function AgrovetHeader() {
+export default function PremiumMeatHeader() {
   const { cart } = useStateContext();
   const { storeFormData } = useStoreContext();
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const user = session?.user as { role?: string; name?: string } | undefined;
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   const { name, logoUrl, themeSettings = {} } = storeFormData || {};
-  const primaryColor = themeSettings?.primaryColor || '#064e3b'; 
+  
+  // Theme colors adjusted for a Meat Butchery Duka
+  const primaryColor = themeSettings?.primaryColor || '#991b1b'; // Deep Red
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -43,10 +43,10 @@ export default function AgrovetHeader() {
   }, []);
 
   const navLinks = [
-    { label: 'Home', href: `/` },
-    { label: 'Seeds', href: `/meatecommerce/products?cat=seeds` },
-    { label: 'Animal Health', href: `/meatecommerce/products?cat=livestock` },
-    { label: 'Consultancy', href: `/meatecommerce/services` },
+    { label: 'The Farm', href: `/meatecommerce/about` },
+    { label: 'Reserve Cuts', href: `/meatecommerce/products?cat=reserve` },
+    { label: 'Artisan Boxes', href: `/meatecommerce/products?cat=boxes` },
+    { label: 'Delivery', href: `/meatecommerce/delivery` },
   ];
 
   const handleGoogleSignIn = () => {
@@ -58,49 +58,56 @@ export default function AgrovetHeader() {
   return (
     <>
       <header
-        className={`
-          fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out
-          ${scrolled ? 'py-2' : 'py-6'}
-        `}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ease-in-out ${
+          scrolled ? 'py-3' : 'py-8'
+        }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <nav 
             className={`
-              relative flex items-center justify-between px-6 py-3 transition-all duration-500
+              relative flex items-center justify-between px-8 py-4 transition-all duration-700
               ${scrolled 
-                ? 'bg-white/80 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] rounded-full border border-white/40' 
+                ? 'bg-black/80 backdrop-blur-2xl shadow-2xl rounded-2xl border border-white/10' 
                 : 'bg-transparent'}
             `}
           >
             {/* LOGO SECTION */}
-            <Link href="/" className="relative z-10 flex items-center gap-3 group">
-              <div className="relative w-10 h-10 md:w-12 md:h-12 overflow-hidden rounded-xl bg-white shadow-sm transition-transform group-hover:scale-110">
+            <Link href="/" className="relative z-10 flex items-center gap-4 group">
+              <div className="relative w-12 h-12 overflow-hidden rounded-full bg-white p-0.5 transition-transform group-hover:rotate-12 group-hover:scale-110 shadow-lg">
                 {logoUrl ? (
                   <Image
                     src={logoUrl}
                     alt={name || ''}
                     fill
-                    className="object-contain p-1"
+                    className="object-contain"
                     loader={imageLoader}
                   />
                 ) : (
-                  <div className={`w-full h-full flex items-center justify-center font-black ${scrolled ? 'text-slate-900' : 'text-white'}`} style={{ background: primaryColor }}>
-                    {name?.charAt(0)}
+                  <div className="w-full h-full flex items-center justify-center font-black text-white rounded-full" style={{ background: primaryColor }}>
+                    {name?.charAt(0) || 'T'}
                   </div>
                 )}
               </div>
-              <span className={`text-xl font-black tracking-tighter transition-colors ${scrolled ? 'text-slate-900' : 'text-white'}`}>
-                {name || 'AgroStore'}
-              </span>
+              <div className="flex flex-col">
+                <span className={`text-xl font-black tracking-tighter leading-none transition-colors ${scrolled ? 'text-white' : 'text-white'}`}>
+                  {name || 'TUYIA FARM'}
+                </span>
+                <span className="text-[9px] font-bold tracking-[0.3em] text-stone-500 uppercase mt-1">Premium Butchery</span>
+              </div>
             </Link>
 
-            {/* DESKTOP NAV - CENTERED */}
-            <div className="hidden md:flex items-center bg-slate-100/50 p-1 rounded-full border border-slate-200/50 backdrop-blur-sm">
+            {/* DESKTOP NAV - CENTERED FLOATING PILL */}
+            <div className={`
+              hidden md:flex items-center gap-1 p-1 rounded-full border transition-all duration-500
+              ${scrolled 
+                ? 'bg-white/5 border-white/10 backdrop-blur-md' 
+                : 'bg-black/20 border-white/5 backdrop-blur-sm'}
+            `}>
               {navLinks.map((item) => (
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="px-5 py-2 rounded-full text-sm font-bold text-slate-600 hover:text-slate-900 transition-all hover:bg-white hover:shadow-sm"
+                  className="px-6 py-2 rounded-full text-[11px] font-black uppercase tracking-widest text-stone-300 hover:text-white transition-all hover:bg-white/10"
                 >
                   {item.label}
                 </Link>
@@ -108,28 +115,34 @@ export default function AgrovetHeader() {
             </div>
 
             {/* ACTION ICONS */}
-            <div className="flex items-center gap-2 md:gap-4">
+            <div className="flex items-center gap-3">
+              {/* Location indicator - subtle trust builder */}
+              <div className="hidden lg:flex items-center gap-2 mr-4 border-r border-white/10 pr-6">
+                <MapPinIcon className="w-4 h-4 text-stone-500" />
+                <span className="text-[10px] font-black text-stone-400 uppercase tracking-widest">NBO Delivery</span>
+              </div>
+
               {/* User Account */}
               <button 
                 onClick={user ? () => router.push('/meatecommerce/profile') : handleGoogleSignIn}
-                className="p-2.5 rounded-full text-slate-700 hover:bg-white hover:shadow-md transition-all border border-transparent hover:border-slate-100"
+                className={`p-3 rounded-xl transition-all border border-white/5 hover:bg-white hover:text-black ${scrolled ? 'text-white' : 'text-white bg-black/20'}`}
               >
                 <UserIcon className="w-5 h-5" />
               </button>
 
-              {/* Cart Button - Styled as a Pill */}
+              {/* Cart Button */}
               <button 
-                // onClick={() => router.push('/meatecommerce/checkout')}
                 onClick={() => setIsCartOpen(true)}
-                className="group flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 text-white shadow-xl shadow-slate-900/20 transition-all hover:scale-105 active:scale-95"
+                className="group flex items-center gap-3 px-6 py-3 rounded-xl transition-all shadow-2xl active:scale-95"
+                style={{ backgroundColor: primaryColor }}
               >
-                <ShoppingBagIcon className="w-5 h-5" />
-                <span className="text-sm font-bold">{cart.length}</span>
+                <ShoppingBagIcon className="w-5 h-5 text-white" />
+                <span className="text-sm font-black text-white">{cart.length}</span>
               </button>
 
               {/* Mobile Menu Toggle */}
               <button
-                className="md:hidden p-2.5 rounded-full bg-white shadow-sm border border-slate-100 text-slate-900"
+                className="md:hidden p-3 rounded-xl bg-white text-black"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
                 {mobileMenuOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3BottomLeftIcon className="w-6 h-6" />}
@@ -139,50 +152,61 @@ export default function AgrovetHeader() {
         </div>
       </header>
 
-      {/* MOBILE MENU - FULL SCREEN OVERLAY STYLE */}
+      {/* MOBILE MENU */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-[40] bg-white pt-32 px-8 md:hidden"
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed inset-0 z-[60] bg-[#0a0a0a] flex flex-col p-8 md:hidden"
           >
-            <div className="space-y-8">
+            <div className="flex justify-between items-center mb-16">
+              <span className="text-2xl font-black tracking-tighter text-white">TUYIA MENU</span>
+              <button onClick={() => setMobileMenuOpen(false)} className="p-4 bg-white/10 rounded-full">
+                <XMarkIcon className="w-8 h-8 text-white" />
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-8">
               {navLinks.map((link, i) => (
                 <motion.div
                   key={link.label}
-                  initial={{ x: -20, opacity: 0 }}
+                  initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: i * 0.1 }}
                 >
                   <Link 
                     href={link.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="text-4xl font-black text-slate-900 tracking-tighter hover:text-emerald-600 transition-colors"
+                    className="text-5xl font-black text-white tracking-tighter flex items-center gap-4 hover:text-red-600 transition-colors"
                   >
+                    <span className="text-sm font-serif italic text-stone-600">0{i+1}</span>
                     {link.label}
                   </Link>
                 </motion.div>
               ))}
-              
-              <div className="pt-12 space-y-4">
-                <button 
-                   onClick={handleGoogleSignIn}
-                   className="w-full py-5 rounded-3xl bg-slate-900 text-white font-black text-xl shadow-2xl"
-                >
-                  {user ? 'My Profile' : 'Sign In'}
-                </button>
-                <p className="text-center text-slate-400 text-sm font-medium">
-                  Need help? <span className="text-slate-900 underline">Contact Support</span>
-                </p>
+            </div>
+            
+            <div className="mt-auto space-y-6">
+              <button 
+                onClick={handleGoogleSignIn}
+                className="w-full py-6 rounded-2xl text-white font-black text-xl border border-white/20"
+                style={{ backgroundColor: primaryColor }}
+              >
+                {user ? 'My Dashboard' : 'Member Login'}
+              </button>
+              <div className="flex justify-center gap-8 text-stone-500 font-bold text-[10px] uppercase tracking-widest">
+                <span>Instagram</span>
+                <span>Facebook</span>
+                <span>WhatsApp</span>
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Cart Drawer */}
       <AnimatePresence>
         {isCartOpen && <CartDrawer isCartOpen={isCartOpen} setIsCartOpen={setIsCartOpen} />}
       </AnimatePresence>
