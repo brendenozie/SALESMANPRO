@@ -164,7 +164,7 @@ export const PrescriptionManager: React.FC<ManagerProps> = ({
       const data: Prescription[] = await response.json();
       setPrescriptions(data);
     } catch (e: any) {
-      console.error("Error fetching prescriptions:", e);
+      // console.error("Error fetching prescriptions:", e);
       setError(e.message || "Failed to load prescription data.");
     } finally {
       setLoading(false);
@@ -241,7 +241,7 @@ export const PrescriptionManager: React.FC<ManagerProps> = ({
       setIsAddModalOpen(false);
       fetchPrescriptions(); // Refresh list
     } catch (e: any) {
-      console.error("Error adding prescription:", e);
+      // console.error("Error adding prescription:", e);
       setError(e.message || "Failed to add new prescription.");
     } finally {
       setLoading(false);
@@ -272,7 +272,7 @@ export const PrescriptionManager: React.FC<ManagerProps> = ({
       setIsEditModalOpen(false);
       fetchPrescriptions(); // Refresh list
     } catch (e: any) {
-      console.error("Error updating prescription:", e);
+      // console.error("Error updating prescription:", e);
       setError(e.message || "Failed to update prescription.");
     } finally {
       setLoading(false);
@@ -299,7 +299,7 @@ export const PrescriptionManager: React.FC<ManagerProps> = ({
       setIsDeleteConfirmOpen(false);
       fetchPrescriptions(); // Refresh list
     } catch (e: any) {
-      console.error("Error deleting prescription:", e);
+      // console.error("Error deleting prescription:", e);
       setError(e.message || "Failed to delete prescription.");
     } finally {
       setLoading(false);

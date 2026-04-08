@@ -34,14 +34,14 @@ export default async function ClientsPage(_: PageProps) {
     if (res.ok) {
       clientsData = (await res.json()).data as Client[];
     } else {
-      console.error(
-        "[ClientsPage] Failed to fetch clients →",
-        res.status,
-        res.statusText
-      );
+      // console.error(
+      //   "[ClientsPage] Failed to fetch clients →",
+      //   res.status,
+      //   res.statusText
+      // );
     }
   } catch (err: any) {
-    console.error("[ClientsPage] Error fetching clients →", err.message);
+    // console.error("[ClientsPage] Error fetching clients →", err.message);
   }
 
   return <ClientsClient initialClients={clientsData} />;

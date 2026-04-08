@@ -44,9 +44,9 @@ async function getInitialStaffData(companyId: string, searchTerm: string, status
           }
 
           const dataRes = await response.json();
-          console.log("Fetched staff data:", dataRes);
+          // console.log("Fetched staff data:", dataRes);
           const data: Staff[] = dataRes.data || [];
-          console.log("Staff data array:", data);
+          // console.log("Staff data array:", data);
     
     // MOCK DATA: Replace with your actual database/API call
     const mockStaffData: Staff[] = [
@@ -59,7 +59,7 @@ async function getInitialStaffData(companyId: string, searchTerm: string, status
     return data.length > 0 ? data : mockStaffData;
 
   } catch (error) {
-    console.error("Server-side initial data fetch failed:", error);
+    // console.error("Server-side initial data fetch failed:", error);
     // Return an empty array on failure, or handle error display gracefully
     return [];
   }

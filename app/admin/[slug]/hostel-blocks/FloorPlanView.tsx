@@ -18,7 +18,7 @@ interface Room {
 
 export function FloorPlanView({ rooms, onEditRoom }: { rooms: Room[], onEditRoom: (r: Room) => void }) {
 
-  console.log("Rendering FloorPlanView with rooms:", rooms);
+  // console.log("Rendering FloorPlanView with rooms:", rooms);
 
   if (rooms.length === 0) {
     return (

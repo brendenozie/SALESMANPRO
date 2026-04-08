@@ -59,18 +59,18 @@ export default function SingAlongPage() {
           setSongs(mappedSongs);
         } else {
           // No data from API, use sample data
-          console.warn("No courses with audio found for Playgroup academic level. Displaying sample data.");
+          // console.warn("No courses with audio found for Playgroup academic level. Displaying sample data.");
           setSongs(sampleSongs);
         }
       }
       else {
         // No data from API, use sample data
-        console.warn("No courses with audio found for Playgroup academic level. Displaying sample data.");
+        // console.warn("No courses with audio found for Playgroup academic level. Displaying sample data.");
         setSongs(sampleSongs);
       }
 
       } catch (e: any) {
-        console.error("Failed to fetch songs:", e);
+        // console.error("Failed to fetch songs:", e);
         setError("Failed to load songs. Displaying sample data.");
         setSongs(sampleSongs); // Fallback to sample data on error
       } finally {

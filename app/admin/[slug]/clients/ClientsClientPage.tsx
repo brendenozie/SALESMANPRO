@@ -436,7 +436,7 @@ export default function ClientsClientPage({ adminSlug, initialClients, isInitial
       setClients(data); 
       toast.success("Clients list successfully refreshed!");
     } catch (err: any) {
-      console.error("Error fetching clients after update:", err);
+      // console.error("Error fetching clients after update:", err);
       setError(err.message || "Failed to refresh clients list.");
       toast.error(err.message || "Failed to refresh clients list.");
     } finally {

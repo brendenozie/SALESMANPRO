@@ -91,7 +91,7 @@ export default function SingAlongViewPage() {
           });
         } else {
           // No data from API, try to use specific sample data or generic fallback
-          console.warn(`No course found for slug: ${songSlug}. Displaying sample data.`);
+          // console.warn(`No course found for slug: ${songSlug}. Displaying sample data.`);
           setCurrentSongData(sampleSongsData[songSlug as keyof typeof sampleSongsData] || null);
           if (!sampleSongsData[songSlug as keyof typeof sampleSongsData]) {
             setError("Song not found. Redirecting...");
@@ -101,7 +101,7 @@ export default function SingAlongViewPage() {
         }
       }else {
         // No data from API, try to use specific sample data or generic fallback
-        console.warn(`No course found for slug: ${songSlug}. Displaying sample data.`);
+        // console.warn(`No course found for slug: ${songSlug}. Displaying sample data.`);
         setCurrentSongData(sampleSongsData[songSlug as keyof typeof sampleSongsData] || null);
         if (!sampleSongsData[songSlug as keyof typeof sampleSongsData]) {
           setError("Song not found. Redirecting...");
@@ -110,7 +110,7 @@ export default function SingAlongViewPage() {
         }
       }
       } catch (e: any) {
-        console.error("Failed to fetch song:", e);
+        // console.error("Failed to fetch song:", e);
         setError("Failed to load song. Displaying sample data.");
         setCurrentSongData(sampleSongsData[songSlug as keyof typeof sampleSongsData] || null);
         if (!sampleSongsData[songSlug as keyof typeof sampleSongsData]) {

@@ -80,7 +80,7 @@ const DeliveryClient: React.FC<ClientProps> = ({ deliveryOrdersData: initialDeli
     } catch (err: any) {
       setError(err.message || "Failed to refresh delivery orders.");
       toast.error(err.message || "Failed to refresh delivery orders.");
-      console.error("Error refreshing delivery orders:", err);
+      // console.error("Error refreshing delivery orders:", err);
     } finally {
       setLoading(false);
     }
@@ -199,7 +199,7 @@ const DeliveryClient: React.FC<ClientProps> = ({ deliveryOrdersData: initialDeli
     } catch (err: any) {
       setError(err.message || "Failed to update delivery status.");
       toast.error(err.message || "Failed to update delivery status.");
-      console.error("Error updating delivery status:", err);
+      // console.error("Error updating delivery status:", err);
     } finally {
       setLoading(false);
     }

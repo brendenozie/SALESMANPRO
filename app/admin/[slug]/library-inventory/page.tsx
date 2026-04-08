@@ -15,7 +15,7 @@ export default async function LibraryInventoryPage({ params }: { params: Promise
       initialItems = (await res.json()).data;
     }
   } catch (err) {
-    console.error("Inventory load failed", err);
+    // console.error("Inventory load failed", err);
   }
 
   return <LibraryInventoryClient initialItems={initialItems} schoolId={schoolId} />;

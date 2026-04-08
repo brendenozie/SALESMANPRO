@@ -25,7 +25,7 @@ export default async function InventoryDashboardPage({ params }: PageProps) {
       initialMembers = (await res.json()).data;
     }
   } catch (err) {
-    console.error("[LibraryMembersPage] Failed to load members", err);
+    // console.error("[LibraryMembersPage] Failed to load members", err);
   }
 
   return (

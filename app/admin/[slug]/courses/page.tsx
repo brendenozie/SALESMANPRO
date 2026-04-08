@@ -156,9 +156,9 @@ export default async function AdminCoursesPage({ params }: PageProps) {
     if (coursesRes.ok) {
       initialCourses = (await coursesRes.json()).data as CourseType[];
     } else {
-      console.error(
-        `[AdminCoursesPage] Failed to fetch courses: ${coursesRes.status} ${coursesRes.statusText}`
-      );
+      // console.error(
+      //   `[AdminCoursesPage] Failed to fetch courses: ${coursesRes.status} ${coursesRes.statusText}`
+      // );
       fetchError = true;
     }
 
@@ -175,9 +175,9 @@ export default async function AdminCoursesPage({ params }: PageProps) {
         email: e.email,
       }));
     } else {
-      console.error(
-        `[AdminCoursesPage] Failed to fetch educators: ${educatorsRes.status} ${educatorsRes.statusText}`
-      );
+      // console.error(
+      //   `[AdminCoursesPage] Failed to fetch educators: ${educatorsRes.status} ${educatorsRes.statusText}`
+      // );
       fetchError = true;
     }
 
@@ -189,9 +189,9 @@ export default async function AdminCoursesPage({ params }: PageProps) {
     if (departmentsRes.ok) {
       allDepartments = (await departmentsRes.json()).data as DepartmentOption[];
     } else {
-      console.error(
-        `[AdminCoursesPage] Failed to fetch departments: ${departmentsRes.status} ${departmentsRes.statusText}`
-      );
+      // console.error(
+      //   `[AdminCoursesPage] Failed to fetch departments: ${departmentsRes.status} ${departmentsRes.statusText}`
+      // );
       fetchError = true;
     }
 
@@ -203,20 +203,20 @@ export default async function AdminCoursesPage({ params }: PageProps) {
     if (academicLevelsRes.ok) {
       allAcademicLevels = (await academicLevelsRes.json()).data as AcademicLevelOption[];
     } else {
-      console.error(
-        `[AdminCoursesPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
-      );
+      // console.error(
+      //   `[AdminCoursesPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
+      // );
       fetchError = true;
     }
 
   } catch (err: any) {
-    console.error("[AdminCoursesPage] Error fetching initial data:", err.message);
+    // console.error("[AdminCoursesPage] Error fetching initial data:", err.message);
     fetchError = true;
   }
 
   // If fetching failed or returned no data, use sample data
   if (fetchError && initialCourses.length === 0 && allEducators.length === 0 && allDepartments.length === 0 && allAcademicLevels.length === 0) {
-    console.log("[AdminCoursesPage] Using sample data for courses, educators, departments, and academic levels.");
+    // console.log("[AdminCoursesPage] Using sample data for courses, educators, departments, and academic levels.");
     const { sampleCourses, sampleEducators, sampleDepartments, sampleAcademicLevels } = generateSampleCoursesData(companyId);
     initialCourses = sampleCourses;
     allEducators = sampleEducators;

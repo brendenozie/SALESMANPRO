@@ -130,7 +130,7 @@ export default async function MessagesManagerPage({ params }: Props) {
       initialConversations = dataConvers.data as ConversationData[]
       ;
     } else {
-      console.error(`[MessagesManagerPage] Failed to fetch conversations: ${conversationsRes.status} ${conversationsRes.statusText}`);
+      // console.error(`[MessagesManagerPage] Failed to fetch conversations: ${conversationsRes.status} ${conversationsRes.statusText}`);
       fetchError = true;
     }
 
@@ -143,18 +143,18 @@ export default async function MessagesManagerPage({ params }: Props) {
       let dataUsers = await usersRes.json();
       allUsers = dataUsers.data as UserData[];
     } else {
-      console.error(`[MessagesManagerPage] Failed to fetch users: ${usersRes.status} ${usersRes.statusText}`);
+      // console.error(`[MessagesManagerPage] Failed to fetch users: ${usersRes.status} ${usersRes.statusText}`);
       fetchError = true;
     }
 
   } catch (err: any) {
-    console.error("MessagesManagerPage-fetch error:", err.message);
+    // console.error("MessagesManagerPage-fetch error:", err.message);
     fetchError = true;
   }
 
   // If any fetch failed or data is missing, use sample data as fallback
   if (fetchError || initialConversations.length === 0 || allUsers.length === 0) {
-    console.log("[MessagesManagerPage] Using sample data as fallback for messages.");
+    // console.log("[MessagesManagerPage] Using sample data as fallback for messages.");
     const { sampleConversations, sampleAllUsers } = generateSampleMessageData(companyId, currentUserId);
     initialConversations = sampleConversations;
     allUsers = sampleAllUsers;

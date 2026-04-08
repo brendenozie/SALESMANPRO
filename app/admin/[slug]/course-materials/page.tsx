@@ -152,9 +152,9 @@ export default async function GlobalCourseMaterialsManagementPage({ params }: Pa
       initialMaterials = data as CourseMaterialType[];
       
     } else {
-      console.error(
-        `[GlobalCourseMaterialsManagementPage] Failed to fetch materials: ${materialsRes.status} ${materialsRes.statusText}`
-      );
+      // console.error(
+      //   `[GlobalCourseMaterialsManagementPage] Failed to fetch materials: ${materialsRes.status} ${materialsRes.statusText}`
+      // );
       fetchError = true;
     }
 
@@ -173,9 +173,9 @@ export default async function GlobalCourseMaterialsManagementPage({ params }: Pa
         academicLevels: c.academicLevels, // Include academic levels for course filtering
       }));
     } else {
-      console.error(
-        `[GlobalCourseMaterialsManagementPage] Failed to fetch courses: ${coursesRes.status} ${coursesRes.statusText}`
-      );
+      // console.error(
+      //   `[GlobalCourseMaterialsManagementPage] Failed to fetch courses: ${coursesRes.status} ${coursesRes.statusText}`
+      // );
       fetchError = true;
     }
 
@@ -193,9 +193,9 @@ export default async function GlobalCourseMaterialsManagementPage({ params }: Pa
         email: e.email,
       }));
     } else {
-      console.error(
-        `[GlobalCourseMaterialsManagementPage] Failed to fetch educators: ${educatorsRes.status} ${educatorsRes.statusText}`
-      );
+      // console.error(
+      //   `[GlobalCourseMaterialsManagementPage] Failed to fetch educators: ${educatorsRes.status} ${educatorsRes.statusText}`
+      // );
       fetchError = true;
     }
 
@@ -209,20 +209,20 @@ export default async function GlobalCourseMaterialsManagementPage({ params }: Pa
       
       allAcademicLevels = data as AcademicLevelOption[];
     } else {
-      console.error(
-        `[GlobalCourseMaterialsManagementPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
-      );
+      // console.error(
+      //   `[GlobalCourseMaterialsManagementPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
+      // );
       fetchError = true;
     }
 
   } catch (err: any) {
-    console.error("[GlobalCourseMaterialsManagementPage] Error fetching initial data:", err.message);
+    // console.error("[GlobalCourseMaterialsManagementPage] Error fetching initial data:", err.message);
     fetchError = true;
   }
 
   // If fetching failed or returned no data, use sample data
   if (fetchError || initialMaterials.length === 0 && allCourses.length === 0 && allEducators.length === 0 && allAcademicLevels.length === 0) {
-    console.log("[GlobalCourseMaterialsManagementPage] Using sample data for global course materials.");
+    // console.log("[GlobalCourseMaterialsManagementPage] Using sample data for global course materials.");
     const { sampleMaterials, sampleCourses, sampleEducators, sampleAcademicLevels } = generateSampleGlobalMaterialsData(companyId);
     initialMaterials = sampleMaterials;
     allCourses = sampleCourses;

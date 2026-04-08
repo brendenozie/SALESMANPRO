@@ -53,7 +53,7 @@ export default async function AdminCheckinPage({ params }: Props) {
     initialEvents = (data.data?.events || []) as Event[];
 
   } catch (err: any) {
-    console.error("AdminCheckinPage initial event fetch error:", err.message);
+    // console.error("AdminCheckinPage initial event fetch error:", err.message);
     error = "Failed to load events. Check API connectivity or user authorization.";
   }
   

@@ -189,7 +189,7 @@ export default function AdminAppointmentsClient({
       const data: Appointment[] = await response.json();
       setAppointments(data);
     } catch (e: any) {
-      console.error("Error fetching appointments:", e);
+      // console.error("Error fetching appointments:", e);
       setError(e.message || "Failed to load appointment data.");
     } finally {
       setLoading(false);
@@ -207,7 +207,7 @@ export default function AdminAppointmentsClient({
       const data: PatientOption[] = await response.json();
       setPatients(data.map(p => ({ id: p.id, name: p.name, userId: p.userId }))); // Map to PatientOption
     } catch (e: any) {
-      console.error("Error fetching patients list:", e);
+      // console.error("Error fetching patients list:", e);
       // Don't set global error, just log for dropdowns
     }
   };
@@ -223,7 +223,7 @@ export default function AdminAppointmentsClient({
       const data: DoctorOption[] = await response.json();
       setDoctors(data);
     } catch (e: any) {
-      console.error("Error fetching doctors list:", e);
+      // console.error("Error fetching doctors list:", e);
       // Don't set global error, just log for dropdowns
     }
   };
@@ -249,7 +249,7 @@ export default function AdminAppointmentsClient({
       setIsAddModalOpen(false);
       fetchAppointments(); // Refresh list
     } catch (e: any) {
-      console.error("Error adding appointment:", e);
+      // console.error("Error adding appointment:", e);
       setError(e.message || "Failed to add new appointment.");
     } finally {
       setLoading(false);
@@ -280,7 +280,7 @@ export default function AdminAppointmentsClient({
       setIsEditModalOpen(false);
       fetchAppointments(); // Refresh list
     } catch (e: any) {
-      console.error("Error updating appointment:", e);
+      // console.error("Error updating appointment:", e);
       setError(e.message || "Failed to update appointment.");
     } finally {
       setLoading(false);
@@ -307,7 +307,7 @@ export default function AdminAppointmentsClient({
       setIsDeleteConfirmOpen(false);
       fetchAppointments(); // Refresh list
     } catch (e: any) {
-      console.error("Error deleting appointment:", e);
+      // console.error("Error deleting appointment:", e);
       setError(e.message || "Failed to delete appointment.");
     } finally {
       setLoading(false);

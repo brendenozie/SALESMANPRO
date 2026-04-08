@@ -76,7 +76,7 @@ export default async function MenuPage({ params }: PageProps) {
       if (res.ok) {
         
         let menuRes = await res.json();   
-        console.log("Fetched marketplace products data:", menuRes);
+        // console.log("Fetched marketplace products data:", menuRes);
         productsData = menuRes.data.results.map((product: any) => ({
           ...product,
           createdAt: product.createdAt ? new Date(product.createdAt).toISOString() : null,
@@ -84,11 +84,11 @@ export default async function MenuPage({ params }: PageProps) {
         })) as MarketListingForm[];
         
       } else {
-        console.error(
-          "[ClientInventoryPage] Failed to fetch marketplace products:",
-          res.status,
-          res.statusText
-        );
+        // console.error(
+        //   "[ClientInventoryPage] Failed to fetch marketplace products:",
+        //   res.status,
+        //   res.statusText
+        // );
       }
   
       
@@ -101,13 +101,13 @@ export default async function MenuPage({ params }: PageProps) {
       );
       if (categoriesRes.ok) {
           let catRes = await categoriesRes.json();
-          console.log("Fetched categories data:", catRes);
+          // console.log("Fetched categories data:", catRes);
           const categoriesJson: { InfoResponse: any; results: IStoreCategory[] } = catRes.data;
           categoriesData = categoriesJson.results;
         };
         
     } catch (err: any) {
-      console.error("[ClientInventoryPage] Error fetching marketplace products:", err.message);
+      // console.error("[ClientInventoryPage] Error fetching marketplace products:", err.message);
     }
   
   return <MenuClient categoriesData={categoriesData} productsData={productsData} companyId={companyId} />;

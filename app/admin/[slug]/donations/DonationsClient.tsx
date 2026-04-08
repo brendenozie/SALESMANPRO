@@ -67,7 +67,7 @@ const DonationsClient: React.FC<ClientProps> = ({
       }
     } catch (err: any) {
       setError(err.message || "Failed to refresh donations.");
-      console.error("Error refreshing donations:", err);
+      // console.error("Error refreshing donations:", err);
     } finally {
       setLoading(false);
     }
@@ -149,7 +149,7 @@ const DonationsClient: React.FC<ClientProps> = ({
       }
     } catch (err: any) {
       setError(err.message || "Failed to add donation.");
-      console.error("Error adding donation:", err);
+      // console.error("Error adding donation:", err);
     } finally {
       setLoading(false);
     }

@@ -43,17 +43,17 @@ export default async function ProjectsPage({ params }: PageProps) {
     const res = await fetch(`${apiBaseUrl}/admin/projects?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (res.ok) {
       let projectRes = await res.json();
-      console.log("[ProjectsPage] Fetched projects successfully:", projectRes);
+      // console.log("[ProjectsPage] Fetched projects successfully:", projectRes);
       projectsData = projectRes.data || [];
     } else {
-      console.error(
-        "[ProjectsPage] Failed to fetch projects →",
-        res.status,
-        res.statusText
-      );
+      // console.error(
+      //   "[ProjectsPage] Failed to fetch projects →",
+      //   res.status,
+      //   res.statusText
+      // );
     }
   } catch (err: any) {
-    console.error("[ProjectsPage] Error fetching projects →", err.message);
+    // console.error("[ProjectsPage] Error fetching projects →", err.message);
   }
 
   return <ProjectsClient projectsData={projectsData} companyId={companyId}/>;

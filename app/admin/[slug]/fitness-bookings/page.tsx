@@ -182,7 +182,7 @@ export default function BookingsPage() {
       toast.success("Bookings loaded successfully!", { duration: 3000 });
     } catch (err: any) {
       setError(err.message);
-      console.error("Failed to fetch bookings:", err);
+      // console.error("Failed to fetch bookings:", err);
       toast.error(`Failed to load bookings: ${err.message}`);
     } finally {
       setLoading(false);

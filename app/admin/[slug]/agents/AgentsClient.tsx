@@ -623,7 +623,7 @@ export default function AgentsPage({ params }: AgentsPageProps) {
       }
       setAgents(data);
     } catch (err: any) {
-      console.error("Error fetching agents:", err);
+      // console.error("Error fetching agents:", err);
       setError(err.message || "Failed to load agents.");
       toast.error(err.message || "Failed to load agents.");
     } finally {

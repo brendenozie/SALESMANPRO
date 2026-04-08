@@ -127,7 +127,7 @@ export default function InquiriesPage() {
       // setInquiries(data.sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime()));
       // ----------------------------------------
     } catch (err: any) {
-      console.error("Error fetching inquiries:", err);
+      // console.error("Error fetching inquiries:", err);
       setError(err.message || "Failed to load inquiries.");
     } finally {
       setIsLoading(false);

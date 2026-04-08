@@ -132,9 +132,9 @@ export default async function CourseMaterialsManagementPage({ params }: PageProp
     if (courseRes.ok) {
       courseDetails = (await courseRes.json()).data as CourseDetailsType;
     } else {
-      console.error(
-        `[CourseMaterialsManagementPage] Failed to fetch course details: ${courseRes.status} ${courseRes.statusText}`
-      );
+      // console.error(
+      //   `[CourseMaterialsManagementPage] Failed to fetch course details: ${courseRes.status} ${courseRes.statusText}`
+      // );
       fetchError = true;
     }
 
@@ -146,9 +146,9 @@ export default async function CourseMaterialsManagementPage({ params }: PageProp
     if (materialsRes.ok) {
       initialMaterials = (await materialsRes.json()).data as CourseMaterialType[];
     } else {
-      console.error(
-        `[CourseMaterialsManagementPage] Failed to fetch materials: ${materialsRes.status} ${materialsRes.statusText}`
-      );
+        // console.error(
+        //   `[CourseMaterialsManagementPage] Failed to fetch materials: ${materialsRes.status} ${materialsRes.statusText}`
+        // );
       fetchError = true;
     }
 
@@ -165,20 +165,20 @@ export default async function CourseMaterialsManagementPage({ params }: PageProp
         email: e.email,
       }));
     } else {
-      console.error(
-        `[CourseMaterialsManagementPage] Failed to fetch educators: ${educatorsRes.status} ${educatorsRes.statusText}`
-      );
+      // console.error(
+      //   `[CourseMaterialsManagementPage] Failed to fetch educators: ${educatorsRes.status} ${educatorsRes.statusText}`
+      // );
       fetchError = true;
     }
 
   } catch (err: any) {
-    console.error("[CourseMaterialsManagementPage] Error fetching initial data:", err.message);
+    // console.error("[CourseMaterialsManagementPage] Error fetching initial data:", err.message);
     fetchError = true;
   }
 
   // If fetching failed or returned no data, use sample data
   if (fetchError || !courseDetails || initialMaterials.length === 0 || allEducators.length === 0) {
-    console.log("[CourseMaterialsManagementPage] Using sample data for course materials.");
+    // console.log("[CourseMaterialsManagementPage] Using sample data for course materials.");
     const { sampleMaterials, sampleCourse, sampleEducators } = generateSampleMaterialsData(companyId, courseId);
     initialMaterials = sampleMaterials;
     courseDetails = sampleCourse;

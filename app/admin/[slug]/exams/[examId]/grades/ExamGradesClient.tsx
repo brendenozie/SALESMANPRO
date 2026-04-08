@@ -94,7 +94,7 @@ export default function ExamGradesClient({ examId, courseId, classroomId, compan
     // setStudents(successStudents);
 
   } catch (error) {
-    console.error(error);
+    // console.error(error);
 
     // const failedStudents = students.map((s) => ({
     //   ...s,

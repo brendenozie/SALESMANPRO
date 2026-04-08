@@ -79,10 +79,10 @@ export default function OffersClient({ adminSlug }: Props) {
         throw new Error(errorData.message || 'Failed to fetch offers.');
       }
       const data = (await res.json()).data.results; // Assuming your API returns { data: [...] }
-      console.log("Fetched offers:", data);
+      // console.log("Fetched offers:", data);
       setOffers(data.sort((a: OfferContract, b: OfferContract) => new Date(b.offerDate).getTime() - new Date(a.offerDate).getTime()));
     } catch (err: any) {
-      console.error("Error fetching offers:", err);
+      // console.error("Error fetching offers:", err);
       setError(err.message || "Failed to load offers.");
     } finally {
       setIsLoading(false);

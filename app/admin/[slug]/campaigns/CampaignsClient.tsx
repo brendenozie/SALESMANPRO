@@ -48,7 +48,7 @@ const CampaignsClient: React.FC<ClientProps> = ({ campaignsData: initialCampaign
       }
     } catch (err: any) {
       setError(err.message || "Failed to refresh campaigns.");
-      console.error("Error refreshing campaigns:", err);
+      // console.error("Error refreshing campaigns:", err);
     } finally {
       setLoading(false);
     }

@@ -42,10 +42,10 @@ async function fetchDoctors(companyId: string) {
     }
 
     const json = await res.json();
-    console.log("Fetched doctors:", json);
+    // console.log("Fetched doctors:", json);
     return json.data.data || [];
   } catch (err) {
-    console.error("fetchDoctors error:", err);
+    // console.error("fetchDoctors error:", err);
     return [];
   }
 }

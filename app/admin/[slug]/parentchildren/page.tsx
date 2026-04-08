@@ -55,10 +55,10 @@ export default async function ParentChildrenPage({ params }: { params: Promise<{
 
   const result = (await response.json());
 
-  console.log("API Result:", result); // Debug log to check the API response
+  // console.log("API Result:", result); // Debug log to check the API response
 
   if (!result.success) {
-    console.error("API Fetch Error:", result.message);
+    // console.error("API Fetch Error:", result.message);
     return notFound();
   }
 

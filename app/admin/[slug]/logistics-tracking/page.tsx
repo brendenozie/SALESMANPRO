@@ -60,7 +60,7 @@ export default async function TrackingPage({ params }: PageProps) {
       assets = rawData.data || mockAssets; // Fallback to mock data if API fails or returns empty
     }
   } catch (err) {
-    console.error("[TrackingPage] Error:", err);
+    // console.error("[TrackingPage] Error:", err);
     assets = mockAssets; // Use mock data on error to ensure UI still renders
   }
 

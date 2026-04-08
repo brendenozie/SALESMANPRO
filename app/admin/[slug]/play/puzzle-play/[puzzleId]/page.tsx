@@ -73,7 +73,7 @@ export default function PuzzleGamePage() {
                 });
               } else {
                 // No data from API, try to use specific sample data or generic fallback
-                console.warn(`No course found for slug: ${puzzleSlug}. Displaying sample data.`);
+                // console.warn(`No course found for slug: ${puzzleSlug}. Displaying sample data.`);
                 setCurrentPuzzleData(samplePuzzlesData[puzzleSlug as keyof typeof samplePuzzlesData] || null);
                 if (!samplePuzzlesData[puzzleSlug as keyof typeof samplePuzzlesData]) {
                   setError("Puzzle not found. Redirecting...");
@@ -83,7 +83,7 @@ export default function PuzzleGamePage() {
               }
             } else {
               // No data from API, try to use specific sample data or generic fallback
-              console.warn(`No course found for slug: ${puzzleSlug}. Displaying sample data.`);
+              // console.warn(`No course found for slug: ${puzzleSlug}. Displaying sample data.`);
               setCurrentPuzzleData(samplePuzzlesData[puzzleSlug as keyof typeof samplePuzzlesData] || null);
               if (!samplePuzzlesData[puzzleSlug as keyof typeof samplePuzzlesData]) {
                 setError("Puzzle not found. Redirecting...");
@@ -92,7 +92,7 @@ export default function PuzzleGamePage() {
               }
             }
       } catch (e: any) {
-        console.error("Failed to fetch puzzle:", e);
+        // console.error("Failed to fetch puzzle:", e);
         setError("Failed to load puzzle. Displaying sample data.");
         setCurrentPuzzleData(samplePuzzlesData[puzzleSlug as keyof typeof samplePuzzlesData] || null);
         if (!samplePuzzlesData[puzzleSlug as keyof typeof samplePuzzlesData]) {

@@ -62,7 +62,7 @@ export default async function MembersPage({ params }: PageProps) {
         createdAt: user.createdAt,
       })) as Member[];
     } else {
-      console.error("[MembersPage] Failed to fetch users →", usersRes.status, usersRes.statusText);
+      // console.error("[MembersPage] Failed to fetch users →", usersRes.status, usersRes.statusText);
     }
 
     // Fetch Projects (for Project Member dropdown)
@@ -74,7 +74,7 @@ export default async function MembersPage({ params }: PageProps) {
         name: project.name,
       })) as ProjectOption[];
     } else {
-      console.error("[MembersPage] Failed to fetch projects →", projectsRes.status, projectsRes.statusText);
+      // console.error("[MembersPage] Failed to fetch projects →", projectsRes.status, projectsRes.statusText);
     }
 
     // Fetch Project Members
@@ -96,11 +96,11 @@ export default async function MembersPage({ params }: PageProps) {
         },
       })) as ProjectMember[];
     } else {
-      console.error("[MembersPage] Failed to fetch project members →", projectMembersRes.status, projectMembersRes.statusText);
+      // console.error("[MembersPage] Failed to fetch project members →", projectMembersRes.status, projectMembersRes.statusText);
     }
 
   } catch (err: any) {
-    console.error("[MembersPage] Error fetching data for members page →", err.message);
+    // console.error("[MembersPage] Error fetching data for members page →", err.message);
   }
 
   return <MembersClient membersData={membersData} projectsData={projectsData} projectMembersData={projectMembersData} />;

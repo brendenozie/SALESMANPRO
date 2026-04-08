@@ -120,9 +120,9 @@ export default async function GlobalCourseAssignmentsManagementPage({ params }: 
     if (assignmentsRes.ok) {
       initialAssignments = (await assignmentsRes.json()).data as CourseAssignmentType[];
     } else {
-      console.error(
-        `[GlobalCourseAssignmentsManagementPage] Failed to fetch assignments: ${assignmentsRes.status} ${assignmentsRes.statusText}`
-      );
+      // console.error(
+      //   `[GlobalCourseAssignmentsManagementPage] Failed to fetch assignments: ${assignmentsRes.status} ${assignmentsRes.statusText}`
+      // );
       fetchError = true;
     }
 
@@ -144,9 +144,9 @@ export default async function GlobalCourseAssignmentsManagementPage({ params }: 
         academicLevels: c.academicLevels, // Include academic levels for course filtering
       }));
     } else {
-      console.error(
-        `[GlobalCourseAssignmentsManagementPage] Failed to fetch courses: ${coursesRes.status} ${coursesRes.statusText}`
-      );
+      // console.error(
+      //   `[GlobalCourseAssignmentsManagementPage] Failed to fetch courses: ${coursesRes.status} ${coursesRes.statusText}`
+      // );
       fetchError = true;
     }
 
@@ -161,20 +161,20 @@ export default async function GlobalCourseAssignmentsManagementPage({ params }: 
     if (academicLevelsRes.ok) {
       allAcademicLevels = (await academicLevelsRes.json()).data as AcademicLevelOption[];
     } else {
-      console.error(
-        `[GlobalCourseAssignmentsManagementPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
-      );
+      // console.error(
+      //   `[GlobalCourseAssignmentsManagementPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
+      // );
       fetchError = true;
     }
 
   } catch (err: any) {
-    console.error("[GlobalCourseAssignmentsManagementPage] Error fetching initial data:", err.message);
+    // console.error("[GlobalCourseAssignmentsManagementPage] Error fetching initial data:", err.message);
     fetchError = true;
   }
 
   // If fetching failed or returned no data, use sample data
   if (fetchError || initialAssignments.length === 0 || allCourses.length === 0 || allAcademicLevels.length === 0) {
-    console.log("[GlobalCourseAssignmentsManagementPage] Using sample data for global course assignments.");
+    // console.log("[GlobalCourseAssignmentsManagementPage] Using sample data for global course assignments.");
     const { sampleAssignments, sampleCourses, sampleAcademicLevels } = generateSampleGlobalAssignmentsData(companyId);
     initialAssignments = sampleAssignments;
     allCourses = sampleCourses;

@@ -57,15 +57,15 @@ export default function MakeFriendsPage() {
                 }));
               setFriendActivities(mappedActivities);
             } else {
-              console.warn("No courses with friendship-related content found for Playgroup academic level. Displaying sample data.");
+              // console.warn("No courses with friendship-related content found for Playgroup academic level. Displaying sample data.");
               setFriendActivities(sampleFriendActivities);
             }
           } else {
-            console.warn("No courses with friendship-related content found for Playgroup academic level. Displaying sample data.");
+            // console.warn("No courses with friendship-related content found for Playgroup academic level. Displaying sample data.");
             setFriendActivities(sampleFriendActivities);
           }
       } catch (e: any) {
-        console.error("Failed to fetch friendship activities:", e);
+        // console.error("Failed to fetch friendship activities:", e);
         setError("Failed to load activities. Displaying sample data.");
         setFriendActivities(sampleFriendActivities); // Fallback to sample data on error
       } finally {

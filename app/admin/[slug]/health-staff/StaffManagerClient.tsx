@@ -144,7 +144,7 @@ export const StaffManagerClient: React.FC<StaffManagerProps> = ({ initialStaff, 
         ]); // Fallback to empty array if data is not an array
       }
     } catch (e: any) {
-      console.error("Error fetching staff:", e);
+      // console.error("Error fetching staff:", e);
       setError(e.message || "Failed to load staff data.");
     } finally {
       setLoading(false);
@@ -216,7 +216,7 @@ export const StaffManagerClient: React.FC<StaffManagerProps> = ({ initialStaff, 
       setIsAddModalOpen(false);
       fetchStaff(); // Refresh list
     } catch (e: any) {
-      console.error("Error adding staff member:", e);
+      // console.error("Error adding staff member:", e);
       setError(e.message || "Failed to add new staff member.");
     } finally {
       setLoading(false);
@@ -248,7 +248,7 @@ export const StaffManagerClient: React.FC<StaffManagerProps> = ({ initialStaff, 
       setIsEditModalOpen(false);
       fetchStaff(); // Refresh list
     } catch (e: any) {
-      console.error("Error updating staff member:", e);
+      // console.error("Error updating staff member:", e);
       setError(e.message || "Failed to update staff member.");
     } finally {
       setLoading(false);
@@ -279,7 +279,7 @@ export const StaffManagerClient: React.FC<StaffManagerProps> = ({ initialStaff, 
       setIsDeleteConfirmOpen(false);
       fetchStaff(); // Refresh list
     } catch (e: any) {
-      console.error("Error deleting staff member:", e);
+      // console.error("Error deleting staff member:", e);
       setError(e.message || "Failed to delete staff member.");
     } finally {
       setLoading(false);

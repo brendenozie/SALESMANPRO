@@ -38,7 +38,7 @@ export default async function AdminInventoryPage({ params }: Props) {
 
     if (productsRes.ok) {
       let prodeuctR = (await productsRes.json());
-      console.log("prodeuctR:", prodeuctR);
+      // console.log("prodeuctR:", prodeuctR);
       productsData = Array.isArray(prodeuctR.data.results) ? prodeuctR.data.results : [];
 
     }
@@ -74,7 +74,7 @@ export default async function AdminInventoryPage({ params }: Props) {
     //   throw new Error("Agents API response is not an array.");
     // }
   } catch (err: any) {
-    console.error("AdminInventoryPage-fetch error:", err.message);
+    // console.error("AdminInventoryPage-fetch error:", err.message);
     // We simply proceed with empty arrays if something fails.
   }
 

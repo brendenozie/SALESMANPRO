@@ -75,7 +75,7 @@ const OrdersClient: React.FC<ClientProps> = ({ ordersData: initialOrdersData, co
     } catch (err: any) {
       setError(err.message || "Failed to refresh orders.");
       toast.error(err.message || "Failed to refresh orders.");
-      console.error("Error refreshing orders:", err);
+      // console.error("Error refreshing orders:", err);
     } finally {
       setLoading(false);
     }
@@ -174,7 +174,7 @@ const OrdersClient: React.FC<ClientProps> = ({ ordersData: initialOrdersData, co
     } catch (err: any) {
       setError(err.message || "Failed to update order status.");
       toast.error(err.message || "Failed to update order status.");
-      console.error("Error updating order status:", err);
+      // console.error("Error updating order status:", err);
     } finally {
       setLoading(false);
     }

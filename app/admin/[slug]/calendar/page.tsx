@@ -193,8 +193,8 @@ export default async function AppointmentsPage({ params }: Props) {
   const initialAppointments = sampleAppointments;
   const combinedInitialOrderItems = [...sampleOrderItems, ...orderItems]; // Combine fetched with sample
 
-  console.log("Initial Appointments:", initialAppointments);
-  console.log("Initial Order Items (with date/time):", combinedInitialOrderItems);
+  // console.log("Initial Appointments:", initialAppointments);
+  // console.log("Initial Order Items (with date/time):", combinedInitialOrderItems);
 
   return <AdminAppointmentsClient initialAppointments={initialAppointments} initialOrderItems={combinedInitialOrderItems} />;
 }

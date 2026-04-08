@@ -29,10 +29,10 @@ async function fetchAppointments(companyId: string, cookieHeader: string) {
     }
 
     const json = (await res.json()).data;
-    console.log("Fetched appointments:", json);
+    // console.log("Fetched appointments:", json);
     return json.data || [];
   } catch (err) {
-    console.error("fetchAppointments error:", err);
+    // console.error("fetchAppointments error:", err);
     return [];
   }
 }
@@ -56,10 +56,10 @@ async function fetchPatients(companyId: string, cookieHeader: string) {
     }
 
     const json = await res.json();
-    console.log("Fetched patients:", json);
+    // console.log("Fetched patients:", json);
     return json.data || [];
   } catch (err) {
-    console.error("fetchPatients error:", err);
+    // console.error("fetchPatients error:", err);
     return [];
   }
 }
@@ -83,10 +83,10 @@ async function fetchDoctors(companyId: string, cookieHeader: string) {
     }
 
     const json = await res.json();
-    console.log("Fetched doctors:", json);
+    // console.log("Fetched doctors:", json);
     return json.data.data || [];
   } catch (err) {
-    console.error("fetchDoctors error:", err);
+    // console.error("fetchDoctors error:", err);
     return [];
   }
 }

@@ -94,7 +94,7 @@ export default function App() {
       setCompanyLocations(data.data);
     } catch (err: any) {
       setError(`Failed to fetch company locations: ${err.message}`);
-      console.error('Fetch company locations error:', err);
+      // console.error('Fetch company locations error:', err);
     } finally {
       setLoading(false);
     }
@@ -113,7 +113,7 @@ export default function App() {
       setAvailableLocations(data.data);
     } catch (err: any) {
       setError(`Failed to fetch available base locations: ${err.message}`);
-      console.error('Fetch available locations error:', err);
+      // console.error('Fetch available locations error:', err);
     }
   };
 
@@ -192,7 +192,7 @@ export default function App() {
       resetFormData();
     } catch (err: any) {
       setError(`Failed to add company location: ${err.message}`);
-      console.error('Add company location error:', err);
+      // console.error('Add company location error:', err);
     } finally {
       setLoading(false);
     }
@@ -237,7 +237,7 @@ export default function App() {
       resetFormData();
     } catch (err: any) {
       setError(`Failed to update company location: ${err.message}`);
-      console.error('Update company location error:', err);
+      // console.error('Update company location error:', err);
     } finally {
       setLoading(false);
     }
@@ -265,7 +265,7 @@ export default function App() {
       setCompanyLocationToDeleteId(null);
     } catch (err: any) {
       setError(`Failed to delete company location: ${err.message}`);
-      console.error('Delete company location error:', err);
+      // console.error('Delete company location error:', err);
     } finally {
       setLoading(false);
     }

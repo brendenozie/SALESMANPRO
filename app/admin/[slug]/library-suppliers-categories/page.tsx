@@ -33,7 +33,7 @@ export default async function LibrarySuppliersCategoryPage({ params }: { params:
 
     }
   } catch (err) {
-    console.error("[LibrarySuppliersPage] Error:", err);
+    // console.error("[LibrarySuppliersPage] Error:", err);
   }
 
   return (

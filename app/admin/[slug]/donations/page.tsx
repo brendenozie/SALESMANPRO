@@ -60,7 +60,7 @@ export default async function DonationsPage({ params }: PageProps) {
     const res = await fetch(`${apiBaseUrl}/admin/donations?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (res.ok) {
       let data = await res.json();
-      console.log("Fetched donations data:", data);
+      // console.log("Fetched donations data:", data);
       // Convert donationDate and createdAt to ISO strings if they are Date objects
       donationsData = data.data.map((donation: any) => ({
         ...donation,

@@ -93,7 +93,7 @@ export default async function CourseCurriculumManagementPage({ params }: PagePro
     }
 
   } catch (err: any) {
-    console.error("[CurriculumPage] Error fetching data:", err.message);
+    // console.error("[CurriculumPage] Error fetching data:", err.message);
     fetchError = true;
   }
 

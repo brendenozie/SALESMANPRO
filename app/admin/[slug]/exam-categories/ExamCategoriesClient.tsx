@@ -74,7 +74,7 @@ const ExamCategoriesClient = ({ initialData, schoolId }: Props) => {
         alert(err.message || "Something went wrong");
       }
     } catch (err) {
-      console.error("Submission error", err);
+      // console.error("Submission error", err);
     } finally {
       setLoading(false);
     }
@@ -92,7 +92,7 @@ const ExamCategoriesClient = ({ initialData, schoolId }: Props) => {
         alert(err.message);
       }
     } catch (err) {
-      console.error("Delete error", err);
+      // console.error("Delete error", err);
     }
   };
 

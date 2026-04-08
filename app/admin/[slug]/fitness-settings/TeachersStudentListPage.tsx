@@ -79,7 +79,7 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
       setSettings(data);
     } catch (err: any) {
       setError(err.message);
-      console.error("Failed to fetch settings:", err);
+      // console.error("Failed to fetch settings:", err);
     } finally {
       setLoading(false);
     }

@@ -140,7 +140,7 @@ export default async function LocationManagementPage({params}:PageProps) {
       }
 
       const result = await res.json();
-      console.log(result);
+      // console.log(result);
       const data: Location[] = result.data.data || []; // <-- FIX: pick data array
       setLocations(data);
     } catch (err: any) {

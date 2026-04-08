@@ -259,15 +259,7 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
       }
 
       const { data: orderResponse } = await res.json();
-
-      console.log('Order response', orderResponse);
-      console.log('Payment method', payment.method);
-      console.log('Order response links', {
-        authorizationUrl: orderResponse?.authorizationUrl,
-        checkoutUrl: orderResponse?.checkoutUrl,
-        approveLink: orderResponse?.approveLink,
-      });
-
+      
       if (payment.method === 'paystack' && orderResponse?.authorizationUrl) {
         router.push(orderResponse.authorizationUrl);
         return;

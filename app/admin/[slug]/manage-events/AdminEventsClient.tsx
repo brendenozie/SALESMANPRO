@@ -119,7 +119,7 @@ export default function AdminEventsClient({ slug, allOrganizers, allEvents }: Ad
 
     } catch (err: any) {
       setError(err.message || "Failed to fetch events.");
-      console.error("Events fetch error:", err);
+      // console.error("Events fetch error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -170,7 +170,7 @@ export default function AdminEventsClient({ slug, allOrganizers, allEvents }: Ad
       await fetchEvents(); // Refetch to update the list
     } catch (err: any) {
       setError(err.message || "Failed to delete event.");
-      console.error("Delete event error:", err);
+      // console.error("Delete event error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -207,7 +207,7 @@ export default function AdminEventsClient({ slug, allOrganizers, allEvents }: Ad
       await fetchEvents(); // Re-fetch events to update the list
     } catch (err: any) {
       setError(err.message || "Failed to save event."); // This error will be shown in the modal
-      console.error("Save event error:", err);
+      // console.error("Save event error:", err);
     } finally {
       setIsSaving(false);
     }

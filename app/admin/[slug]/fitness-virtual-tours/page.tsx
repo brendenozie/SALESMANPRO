@@ -79,7 +79,7 @@ export default function AdminVirtualToursPage() {
     } catch (err: any) {
       setError(err.message);
       toast.error(`Failed to fetch virtual tours: ${err.message}`);
-      console.error("Failed to fetch virtual tours:", err);
+      // console.error("Failed to fetch virtual tours:", err);
     } finally {
       setLoading(false);
     }

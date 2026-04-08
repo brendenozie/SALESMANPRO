@@ -26,8 +26,7 @@ export default function ContactPage() {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
       // TODO: Replace with actual API call to your backend
-      console.log('Form submission data:', form);
-      
+    
       setSubmitMessage('Message sent successfully! Thank you for reaching out.');
       setForm({ name: '', email: '', message: '' });
     } catch (error) {

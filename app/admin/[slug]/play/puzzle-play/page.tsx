@@ -52,15 +52,15 @@ export default function PlayHomePage() {
             }));
             setPuzzles(mappedPuzzles);
           } else {
-            console.warn("No courses found for Playgroup academic level. Displaying sample puzzle data.");
+            // console.warn("No courses found for Playgroup academic level. Displaying sample puzzle data.");
             setPuzzles(samplePuzzles);
           }
         } else {
-          console.warn("No courses found for Playgroup academic level. Displaying sample puzzle data.");
+          // console.warn("No courses found for Playgroup academic level. Displaying sample puzzle data.");
           setPuzzles(samplePuzzles);
         }
       } catch (e: any) {
-        console.error("Failed to fetch puzzles:", e);
+        // console.error("Failed to fetch puzzles:", e);
         setError("Failed to load puzzles. Displaying sample data.");
         setPuzzles(samplePuzzles); // Fallback to sample data on error
       } finally {

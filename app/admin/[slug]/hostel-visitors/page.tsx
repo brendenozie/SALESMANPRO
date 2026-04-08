@@ -18,7 +18,9 @@ export default async function VisitorsPage({ params }: PageProps) {
       { headers: { cookie: cookieHeader }, cache: 'no-store' }
     );
     if (res.ok) initialLogs = (await res.json()).data;
-  } catch (err) { console.error(err); }
+  } catch (err) { 
+    // console.error(err); 
+    }
 
   return (
     <VisitorsPageClient 

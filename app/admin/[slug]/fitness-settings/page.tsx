@@ -46,7 +46,7 @@ export default async function SettingsPage({ params }: SettingsProps) {
     setIsSaving(true);
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log("Saving settings:", currentSettings);
+    // console.log("Saving settings:", currentSettings);
     setIsSaving(false);
     alert("Settings saved successfully!");
   };

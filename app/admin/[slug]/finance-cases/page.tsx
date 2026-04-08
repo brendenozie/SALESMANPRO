@@ -80,12 +80,12 @@ export default function CasesPage() {
         headers: { 'Credentials': 'include' },
       });
       const dataRes = await res.json();
-      console.log("Fetched cases:", dataRes);
+      // console.log("Fetched cases:", dataRes);
       const data = dataRes || [];
 
       setCases(data);
     } catch (error) {
-      console.error("Error fetching cases:", error);
+      // console.error("Error fetching cases:", error);
     } finally {
       setLoading(false);
     }
@@ -98,17 +98,17 @@ export default function CasesPage() {
         , { headers: { 'Credentials': 'include' } }
       );
       const clientsData:  Client[]  = (await clientsRes.json()).data;
-      console.log("Fetched clients:", clientsData);
+      // console.log("Fetched clients:", clientsData);
       setClients(clientsData);
 
       const usersRes = await fetch(`${apiBaseUrl}/admin/experts?companyId=${companyId}`, {
         headers: { 'Credentials': 'include' },
       });
       const usersData: User[] = (await usersRes.json()).data.data;
-      console.log("Fetched users:", usersData);
+      // console.log("Fetched users:", usersData);
       setUsers(usersData);
     } catch (error) {
-      console.error("Error fetching clients or users:", error);
+      // console.error("Error fetching clients or users:", error);
     }
   };
 
@@ -151,10 +151,10 @@ export default function CasesPage() {
         status: "ACTIVE",
       });
     } catch (error) {
-      console.error(
-        `Error ${isEditing ? "updating" : "creating"} case:`,
-        error
-      );
+      // console.error(
+      //   `Error ${isEditing ? "updating" : "creating"} case:`,
+      //   error
+      // );
     }
   };
 
@@ -170,7 +170,7 @@ export default function CasesPage() {
         }
         await fetchCases();
       } catch (error) {
-        console.error("Error deleting case:", error);
+        // console.error("Error deleting case:", error);
       }
     }
   };

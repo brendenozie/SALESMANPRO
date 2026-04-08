@@ -74,8 +74,7 @@ export default function SignupPage() {
         signupData = { ...signupData, studentGrade };
       }
 
-      console.log('Attempting signup with data:', signupData);
-
+  
       // Simulate successful signup
       if (email.includes('@')) { // Basic email validation
         setMessage({ type: 'success', text: 'Registration successful! Please check your email for verification.' });

@@ -51,7 +51,7 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
         throw new Error("Failed to save");
       }
     } catch (err) {
-      console.error("[CATEGORY_MODAL_ERROR]", err);
+      // console.error("[CATEGORY_MODAL_ERROR]", err);
       toast.error("Operation failed");
     } finally {
       setLoading(false);

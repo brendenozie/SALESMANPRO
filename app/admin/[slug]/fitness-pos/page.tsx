@@ -67,9 +67,9 @@ export default async function PosPage({ params }: PageProps) {
       headers: { cookie: cookieHeaders }, });
     if (categoriesRes.ok) {
       categoriesData = (await categoriesRes.json()).data.categories;
-      console.log("[PosPage] Fetched categories data →", categoriesData);
+      // console.log("[PosPage] Fetched categories data →", categoriesData);
     } else {
-      console.error("[PosPage] Failed to fetch categories →", categoriesRes.status, categoriesRes.statusText);
+      // console.error("[PosPage] Failed to fetch categories →", categoriesRes.status, categoriesRes.statusText);
     }
 
     // Fetch Products (dishes) for the company
@@ -77,13 +77,13 @@ export default async function PosPage({ params }: PageProps) {
       headers: { cookie: cookieHeaders }, });
     if (productsRes.ok) {
       productsData = (await productsRes.json()).data.results;
-      console.log("[PosPage] Fetched products data →", productsData);
+      // console.log("[PosPage] Fetched products data →", productsData);
     } else {
-      console.error("[PosPage] Failed to fetch products →", productsRes.status, productsRes.statusText);
+      // console.error("[PosPage] Failed to fetch products →", productsRes.status, productsRes.statusText);
     }
 
   } catch (err: any) {
-    console.error("[PosPage] Error fetching POS data →", err.message);
+    // console.error("[PosPage] Error fetching POS data →", err.message);
   }
 
   return (

@@ -27,7 +27,7 @@ export default async function LibraryIssuancePage({ params }: PageProps) {
     fetcher("/admin/library/members"),
   ]);
 
-  console.log(initialRecords);
+  // console.log(initialRecords);
 
   return (
     <IssuanceRecordsClient 

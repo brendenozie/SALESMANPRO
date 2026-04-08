@@ -67,7 +67,7 @@ export default function EbookManagementPage() {
         throw new Error(errorData.message || "Failed to fetch categories.");
       }
       const resJson = await res.json();
-      console.log("[EbookManagementPage] Fetched categories:", resJson);
+      // console.log("[EbookManagementPage] Fetched categories:", resJson);
       const data = resJson.results || resJson.data.results; // Handle both cases
 
       if (!data) {
@@ -128,7 +128,7 @@ export default function EbookManagementPage() {
         throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
       }
       const data = await response.json();
-      console.log("[EbookManagementPage] Fetched locations:", data);
+      // console.log("[EbookManagementPage] Fetched locations:", data);
       setLocations(data.data.data || []);
     } catch (err: any) {
       // setError(`Failed to fetch locations: ${err.message}`); // Only set error if needed for UI
@@ -152,12 +152,12 @@ export default function EbookManagementPage() {
         throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
       }
       const json = await response.json();
-      console.log("[EbookManagementPage] Fetched marketplace products:", json);
+      // console.log("[EbookManagementPage] Fetched marketplace products:", json);
       const marketListings = json.data.results as MarketListingForm[];
       // State setter change
       setEbooks(marketListings);
     } catch (err: any) {
-      console.error("[EbookManagementPage] Failed to fetch marketplace products:", err);
+      // console.error("[EbookManagementPage] Failed to fetch marketplace products:", err);
       // Error message update
       setError(err.message || "Failed to load ebooks.");
     } finally {

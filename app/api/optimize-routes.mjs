@@ -213,13 +213,13 @@ async function optimizeFile(filePath) {
 
     if (content !== originalContent) {
       if (DRY_RUN) {
-        console.log(`[DRY RUN] Optimized ${filePath}`);
+        // console.log(`[DRY RUN] Optimized ${filePath}`);
       } else {
         await fs.writeFile(filePath, content);
-        console.log(`✅ Optimized ${filePath}`);
+        // console.log(`✅ Optimized ${filePath}`);
       }
     } else {
-      console.log(`ℹ️ Skipped ${filePath}`);
+      // console.log(`ℹ️ Skipped ${filePath}`);
     }
 
   } catch (e) {

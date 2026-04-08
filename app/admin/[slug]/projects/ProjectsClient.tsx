@@ -60,7 +60,7 @@ const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsDa
     } catch (err: any) {
       setError(err.message || "Failed to refresh projects.");
       toast.error(`Error refreshing projects: ${err.message || "Unknown error"}`);
-      console.error("Error refreshing projects:", err);
+      // console.error("Error refreshing projects:", err);
     } finally {
       setLoading(false);
     }
@@ -168,7 +168,7 @@ const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsDa
     } catch (err: any) {
       setError(err.message || "Failed to add project.");
       toast.error(`Error adding project: ${err.message || "Unknown error"}`);
-      console.error("Error adding project:", err);
+      // console.error("Error adding project:", err);
     } finally {
       setLoading(false);
     }
@@ -198,7 +198,7 @@ const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsDa
     } catch (err: any) {
       setError(err.message || "Failed to update project.");
       toast.error(`Error updating project: ${err.message || "Unknown error"}`);
-      console.error("Error updating project:", err);
+      // console.error("Error updating project:", err);
     } finally {
       setLoading(false);
     }
@@ -226,7 +226,7 @@ const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsDa
     } catch (err: any) {
       setError(err.message || "Failed to delete project.");
       toast.error(`Error deleting project: ${err.message || "Unknown error"}`);
-      console.error("Error deleting project:", err);
+      // console.error("Error deleting project:", err);
     } finally {
       setLoading(false);
     }

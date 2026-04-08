@@ -24,10 +24,10 @@ export default async function ResidentsPage({ params }: PageProps) {
 
     if (res.ok) {
       initialResidents = (await res.json()).data;
-      console.log("[ResidentsPage] Fetched residents:", initialResidents);
+      // console.log("[ResidentsPage] Fetched residents:", initialResidents);
     }
   } catch (err) {
-    console.error("[ResidentsPage] Error:", err);
+    // console.error("[ResidentsPage] Error:", err);
   }
 
   return (

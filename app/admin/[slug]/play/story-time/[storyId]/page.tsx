@@ -100,7 +100,7 @@ export default function StoryViewPage() {
             });
           } else {
             // No data from API, try to use specific sample data or generic fallback
-            console.warn(`No course found for ID: ${storyId}. Displaying sample data.`);
+            // console.warn(`No course found for ID: ${storyId}. Displaying sample data.`);
             setCurrentStoryData(sampleStoryData[storyId as keyof typeof sampleStoryData] || null);
             if (!sampleStoryData[storyId as keyof typeof sampleStoryData]) {
               setError("Story not found. Redirecting...");
@@ -110,7 +110,7 @@ export default function StoryViewPage() {
           }
         } else {
           // No data from API, try to use specific sample data or generic fallback
-          console.warn(`No course found for ID: ${storyId}. Displaying sample data.`);
+          // console.warn(`No course found for ID: ${storyId}. Displaying sample data.`);
           setCurrentStoryData(sampleStoryData[storyId as keyof typeof sampleStoryData] || null);
           if (!sampleStoryData[storyId as keyof typeof sampleStoryData]) {
             setError("Story not found. Redirecting...");
@@ -175,7 +175,7 @@ export default function StoryViewPage() {
       // If reading aloud, you might want to restart audio for the new page if page-specific audios exist
       // For now, it will continue playing the full story audio or stop if it ends.
     } else {
-      console.log("Story finished!");
+      // console.log("Story finished!");
       setIsReadingAloud(false); // Stop reading when done
       if (audioRef.current) audioRef.current.pause();
     }

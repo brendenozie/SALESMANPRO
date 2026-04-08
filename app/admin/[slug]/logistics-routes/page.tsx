@@ -37,7 +37,7 @@ export default async function RoutesPage({ params }: PageProps) {
       routesData = rawData.data || [];
     }
   } catch (err) {
-    console.error("[RoutesPage] Error:", err);
+    // console.error("[RoutesPage] Error:", err);
   }
 
   return <RoutesClient params={{ companyId, routesData }} />;

@@ -134,7 +134,7 @@ export const BillingManagerClient: React.FC<BillingManagerProps> = ({
       const data: Invoice[] = await response.json();
       setInvoices(data);
     } catch (e: any) {
-      console.error("Error fetching invoices:", e);
+      // console.error("Error fetching invoices:", e);
       setError(e.message || "Failed to load invoice data.");
     } finally {
       setLoading(false);
@@ -215,7 +215,7 @@ export const BillingManagerClient: React.FC<BillingManagerProps> = ({
       setIsAddModalOpen(false);
       fetchInvoices(); // Refresh list
     } catch (e: any) {
-      console.error("Error adding invoice:", e);
+      // console.error("Error adding invoice:", e);
       setError(e.message || "Failed to generate new invoice.");
     } finally {
       setLoading(false);
@@ -253,7 +253,7 @@ export const BillingManagerClient: React.FC<BillingManagerProps> = ({
       setIsEditModalOpen(false);
       fetchInvoices(); // Refresh list
     } catch (e: any) {
-      console.error("Error updating invoice:", e);
+      // console.error("Error updating invoice:", e);
       setError(e.message || "Failed to update invoice.");
     } finally {
       setLoading(false);
@@ -284,7 +284,7 @@ export const BillingManagerClient: React.FC<BillingManagerProps> = ({
       setIsDeleteConfirmOpen(false);
       fetchInvoices(); // Refresh list
     } catch (e: any) {
-      console.error("Error deleting invoice:", e);
+      // console.error("Error deleting invoice:", e);
       setError(e.message || "Failed to delete invoice.");
     } finally {
       setLoading(false);

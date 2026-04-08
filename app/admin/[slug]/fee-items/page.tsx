@@ -43,9 +43,9 @@ export default async function FeeItemsPage({ params }: PageProps) {
     if (academicLevelsRes.ok) {
       allAcademicLevels = (await academicLevelsRes.json()).data as AcademicLevelOption[];
     } else {
-      console.error(
-        `[AdminCoursesPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
-      );
+      // console.error(
+      //   `[AdminCoursesPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
+      // );
       // fetchError = true;
     }
 
@@ -58,22 +58,22 @@ export default async function FeeItemsPage({ params }: PageProps) {
     if (classroomsRes.ok) {
       allClassrooms = (await classroomsRes.json()).data;
     } else {
-      console.error(
-        `[AdminCoursesPage] Failed to fetch classrooms: ${classroomsRes.status} ${classroomsRes.statusText}`
-      );
+      // console.error(
+      //   `[AdminCoursesPage] Failed to fetch classrooms: ${classroomsRes.status} ${classroomsRes.statusText}`
+      // );
       // fetchError = true; 
     }
 
 
   } catch (err) {
-    console.error("[FeeItemsPage] Failed to load fee items", err);
+    // console.error("[FeeItemsPage] Failed to load fee items", err);
   }
 
-  console.log("Fetched fee items:", initialFeeItems);
-  console.log("Fetched academic levels:", allAcademicLevels);
-  console.log("Fetched classrooms:", allClassrooms);
-  console.log("Using schoolId:", schoolId);
-  console.log("Using cookieHeader:", cookieHeader);
+  // console.log("Fetched fee items:", initialFeeItems);
+  // console.log("Fetched academic levels:", allAcademicLevels);
+  // console.log("Fetched classrooms:", allClassrooms);
+  // console.log("Using schoolId:", schoolId);
+  // console.log("Using cookieHeader:", cookieHeader);
   
   return (
     <FeeItemsClient

@@ -54,7 +54,7 @@ const FAQsPage = () => {
       const data: { faqs: FAQ[] } = (await res.json()).data;
       setFaqs(data.faqs);
     } catch (error) {
-      console.error("Error fetching FAQs:", error);
+      // console.error("Error fetching FAQs:", error);
     } finally {
       setLoading(false);
     }
@@ -116,7 +116,7 @@ const FAQsPage = () => {
       await fetchFaqs();
       setShowModal(false);
     } catch (error) {
-      console.error("Error saving FAQ:", error);
+      // console.error("Error saving FAQ:", error);
     } finally {
       setLoading(false);
     }
@@ -134,7 +134,7 @@ const FAQsPage = () => {
         if (!res.ok) throw new Error("Failed to delete FAQ");
         await fetchFaqs();
       } catch (error) {
-        console.error("Error deleting FAQ:", error);
+        // console.error("Error deleting FAQ:", error);
       } finally {
         setLoading(false);
       }

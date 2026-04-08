@@ -34,7 +34,7 @@ const AddRoomModal = ({ blockId, schoolId, onClose, onSuccess }: AddRoomModalPro
         onClose();
       }
     } catch (error) {
-      console.error("Error creating room:", error);
+      // console.error("Error creating room:", error);
     } finally {
       setLoading(false);
     }

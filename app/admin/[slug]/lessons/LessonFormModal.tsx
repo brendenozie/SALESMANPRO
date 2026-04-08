@@ -116,11 +116,11 @@ export default function LessonFormModal({
   allEntries,
 }: LessonFormModalProps) {
 
-   console.log('Rendering LessonFormModal with entryData:', entryData);
-   console.log('All entries for conflict checking:', allEntries);
-   console.log('Selected Day:', selectedDayOfWeek, 'Selected Time Slot:', selectedTimeSlot);
-   console.log('All Classrooms:', allClassrooms);
-   console.log('All Educators:', allEducators);
+  //  console.log('Rendering LessonFormModal with entryData:', entryData);
+  //  console.log('All entries for conflict checking:', allEntries);
+  //  console.log('Selected Day:', selectedDayOfWeek, 'Selected Time Slot:', selectedTimeSlot);
+  //  console.log('All Classrooms:', allClassrooms);
+  //  console.log('All Educators:', allEducators);
    
 
   

@@ -133,7 +133,7 @@ export const ServiceManagerClient: React.FC<ServiceManagerProps> = ({ initialSer
       const data: Service[] = await response.json();
       setServices(data);
     } catch (e: any) {
-      console.error("Error fetching services:", e);
+      // console.error("Error fetching services:", e);
       setError(e.message || "Failed to load service data.");
     } finally {
       setLoading(false);
@@ -196,7 +196,7 @@ export const ServiceManagerClient: React.FC<ServiceManagerProps> = ({ initialSer
         setIsAddModalOpen(false);
         fetchServices(); // Refresh list
       } catch (e: any) {
-        console.error("Error adding service:", e);
+        // console.error("Error adding service:", e);
         setError(e.message || "Failed to add new service.");
       } finally {
         setLoading(false);
@@ -227,7 +227,7 @@ export const ServiceManagerClient: React.FC<ServiceManagerProps> = ({ initialSer
         setIsEditModalOpen(false);
         fetchServices(); // Refresh list
       } catch (e: any) {
-        console.error("Error updating service:", e);
+        // console.error("Error updating service:", e);
         setError(e.message || "Failed to update service.");
       } finally {
         setLoading(false);
@@ -254,7 +254,7 @@ export const ServiceManagerClient: React.FC<ServiceManagerProps> = ({ initialSer
         setIsDeleteConfirmOpen(false);
         fetchServices(); // Refresh list
       } catch (e: any) {
-        console.error("Error deleting service:", e);
+        // console.error("Error deleting service:", e);
         setError(e.message || "Failed to delete service.");
       } finally {
         setLoading(false);

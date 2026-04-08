@@ -68,7 +68,7 @@ export default async function InquiriesPage({ params }: InquiriesPageProps) {
     // In a real app: 
     const res = await fetch(`${apiBaseUrl}/admin/inquiries?companyId=${slug}`, { cache: 'no-store', headers: { cookie: cookiesHeader } });
     let data = await res.json();
-    console.log("Fetched inquiries data from API:", data);
+    // console.log("Fetched inquiries data from API:", data);
     if (res.ok) {
       initialInquiries = data.inquiries.sort((a: Inquiry, b: Inquiry) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
     }

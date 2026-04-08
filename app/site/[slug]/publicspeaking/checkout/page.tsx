@@ -129,7 +129,6 @@ export default function CheckoutPage() {
       shippingMethod: "AT SHOP",
     };
 
-    console.log("🔹 Sending checkout payload:", payload);
 
     const res = await fetch(`${apiBaseUrl}/shop/orders`, {
       method: "POST",
@@ -147,8 +146,6 @@ export default function CheckoutPage() {
 
     const { order, paymentResponse } = await res.json();
 
-    console.log("✅ Order created:", order);
-    console.log("✅ Payment response:", paymentResponse);
 
     setTracking(order.trackingNumber);
     setOrderPlaced(true);

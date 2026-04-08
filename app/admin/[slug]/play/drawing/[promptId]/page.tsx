@@ -89,7 +89,7 @@ export default function DrawingCanvasPage() {
                 });
               } else {
                 // No data from API, try to use specific sample data or generic fallback
-                console.warn(`No course found for slug: ${promptSlug}. Displaying sample data.`);
+                // console.warn(`No course found for slug: ${promptSlug}. Displaying sample data.`);
                 setCurrentPromptData(sampleDrawingPromptsData[promptSlug as keyof typeof sampleDrawingPromptsData] || null);
                 if (!sampleDrawingPromptsData[promptSlug as keyof typeof sampleDrawingPromptsData]) {
                   setError("Drawing prompt not found. Redirecting...");
@@ -99,7 +99,7 @@ export default function DrawingCanvasPage() {
               }
           } else {
               // No data from API, try to use specific sample data or generic fallback
-              console.warn(`No course found for slug: ${promptSlug}. Displaying sample data.`);
+              // console.warn(`No course found for slug: ${promptSlug}. Displaying sample data.`);
               setCurrentPromptData(sampleDrawingPromptsData[promptSlug as keyof typeof sampleDrawingPromptsData] || null);
               if (!sampleDrawingPromptsData[promptSlug as keyof typeof sampleDrawingPromptsData]) {
                 setError("Drawing prompt not found. Redirecting...");
@@ -108,7 +108,7 @@ export default function DrawingCanvasPage() {
               }
             }
       } catch (e: any) {
-        console.error("Failed to fetch drawing prompt:", e);
+        // console.error("Failed to fetch drawing prompt:", e);
         setError("Failed to load drawing prompt. Displaying sample data.");
         setCurrentPromptData(sampleDrawingPromptsData[promptSlug as keyof typeof sampleDrawingPromptsData] || null);
         if (!sampleDrawingPromptsData[promptSlug as keyof typeof sampleDrawingPromptsData]) {
@@ -173,7 +173,7 @@ export default function DrawingCanvasPage() {
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       };
       img.onerror = (e) => {
-        console.error("Error loading prompt image:", e);
+        // console.error("Error loading prompt image:", e);
         // Optionally display a fallback or error message on canvas
       };
     } else {
@@ -271,7 +271,7 @@ export default function DrawingCanvasPage() {
     link.click();
     document.body.removeChild(link);
     // Replaced alert() with a console log for better practice in iframes
-    console.log('Your masterpiece is saved!');
+    // console.log('Your masterpiece is saved!');
   };
 
   if (isLoading || !currentPromptData) {

@@ -58,7 +58,7 @@ export default async function AdminOrdersPage({ params }: Props) {
       const organizersJson = await organizersRes.json();
       allOrganizers = organizersJson.data as Agent[];
     } else {
-       console.warn(`AdminOrdersPage: Failed to fetch organizers (Status: ${organizersRes.status})`);
+      //  console.warn(`AdminOrdersPage: Failed to fetch organizers (Status: ${organizersRes.status})`);
     }
 
     // --- 3. Fetch ALL Orders (The complete, unfiltered dataset) ---
@@ -80,7 +80,7 @@ export default async function AdminOrdersPage({ params }: Props) {
       throw new Error(errorData.message || `HTTP error! status: ${ordersRes.status}`);
     }
   } catch (err: any) {
-    console.error("AdminOrdersPage-initial fetch error:", err.message);
+    // console.error("AdminOrdersPage-initial fetch error:", err.message);
     initialFetchError = "Failed to load initial data. Check backend connection and authorization.";
   }
 

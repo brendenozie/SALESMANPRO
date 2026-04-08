@@ -122,7 +122,7 @@ export default function AdminOrdersClient({ adminSlug, initialOrders, allOrganiz
 
     } catch (err: any) {
       setError(err.message || "Failed to refresh all orders.");
-      console.error("Orders refresh error:", err);
+      // console.error("Orders refresh error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -167,7 +167,7 @@ export default function AdminOrdersClient({ adminSlug, initialOrders, allOrganiz
       await refetchAllData();
     } catch (err: any) {
       setError(err.message || "Failed to update order status.");
-      console.error("Update order status error:", err);
+      // console.error("Update order status error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -196,7 +196,7 @@ export default function AdminOrdersClient({ adminSlug, initialOrders, allOrganiz
       setSelectedOrder(data);
     } catch (err: any) {
       setError(err.message || "Failed to fetch order details.");
-      console.error("Fetch order details error:", err);
+      // console.error("Fetch order details error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -237,7 +237,7 @@ export default function AdminOrdersClient({ adminSlug, initialOrders, allOrganiz
 
     } catch (err: any) {
       setError(err.message || "Failed to export orders data.");
-      console.error("Export error:", err);
+      // console.error("Export error:", err);
     } finally {
       setIsLoading(false);
     }

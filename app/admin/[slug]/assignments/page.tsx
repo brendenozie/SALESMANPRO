@@ -231,7 +231,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
 
     if(sessionRes.ok){
       const sessionData = (await sessionRes.json()).data;
-      console.log("Academic session data:", sessionData);
+      // console.log("Academic session data:", sessionData);
 
       academicYears = sessionData.academicYears
       activeYearId = sessionData.activeAcademicYearId
@@ -248,12 +248,12 @@ export default async function ExamsManagerPage({ params }: PageProps) {
     });
     if (examsRes.ok) {
       const data = (await examsRes.json()).data.assignments;
-      console.log("Fetched Exams Data:");
-      console.log(data);
+      // console.log("Fetched Exams Data:");
+      // console.log(data);
       initialAssignments = data as AssignmentData[];
-      console.log(initialAssignments);  
+      // console.log(initialAssignments);  
     } else {
-      console.error(`[ExamsManagerPage] Failed to fetch exams: ${examsRes.status} ${examsRes.statusText}`);
+      // console.error(`[ExamsManagerPage] Failed to fetch exams: ${examsRes.status} ${examsRes.statusText}`);
       fetchError = true;
     }
 
@@ -267,9 +267,9 @@ export default async function ExamsManagerPage({ params }: PageProps) {
     if (coursesRes.ok) {
       const data = (await coursesRes.json()).data;
       allCourses = data as CourseOption[];
-      console.log(allCourses);
+      // console.log(allCourses);
     } else {
-      console.error(`[ExamsManagerPage] Failed to fetch courses: ${coursesRes.status} ${coursesRes.statusText}`);
+      // console.error(`[ExamsManagerPage] Failed to fetch courses: ${coursesRes.status} ${coursesRes.statusText}`);
       fetchError = true;
     }
 
@@ -283,7 +283,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
     if (educatorsRes.ok) {
       allEducators = (await educatorsRes.json()).data.data as EducatorOption[];
     } else {
-      console.error(`[ExamsManagerPage] Failed to fetch educators: ${educatorsRes.status} ${educatorsRes.statusText}`);
+      // console.error(`[ExamsManagerPage] Failed to fetch educators: ${educatorsRes.status} ${educatorsRes.statusText}`);
       fetchError = true;
     }
 
@@ -299,7 +299,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
       
       allAcademicLevels = data as AcademicLevelOption[];
     } else {
-      console.error(`[ExamsManagerPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`);
+      // console.error(`[ExamsManagerPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`);
       fetchError = true;
     }
 
@@ -312,20 +312,20 @@ export default async function ExamsManagerPage({ params }: PageProps) {
       const data = (await classRoomsRes.json()).data;
       allClassRooms = data as ClassRoomOption[];
     } else {
-      console.error(
-        `[StudentsManagementPage] Failed to fetch classrooms: ${classRoomsRes.status} ${classRoomsRes.statusText}`
-      );
+      // console.error(
+      //   `[StudentsManagementPage] Failed to fetch classrooms: ${classRoomsRes.status} ${classRoomsRes.statusText}`
+      // );
       fetchError = true;
     }
         
   } catch (err: any) {
-    console.error("[ExamsManagerPage] Error fetching initial data →", err.message);
+    // console.error("[ExamsManagerPage] Error fetching initial data →", err.message);
     fetchError = true;
   }
 
   // If any fetch failed or returned empty, use sample data as fallback
   if (fetchError && initialAssignments.length === 0 && allCourses.length === 0 && allEducators.length === 0 && allAcademicLevels.length === 0 && allClassRooms.length === 0) {
-    console.log("[ExamsManagerPage] Using sample data as fallback.");
+    // console.log("[ExamsManagerPage] Using sample data as fallback.");
     const { sampleExams, sampleCourses, sampleEducators, sampleAcademicLevels, sampleClassRooms } = generateSampleExamData(companyId);
     initialAssignments = sampleExams;
     allCourses = sampleCourses;

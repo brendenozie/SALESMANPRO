@@ -24,10 +24,10 @@ export default async function AdminTicketsPage({ params }: Props) {
       const json = await res.json();
       tickets = json.data?.tickets || [];
     } else {
-      console.error(`Failed to fetch tickets: ${res.status}`);
+      // console.error(`Failed to fetch tickets: ${res.status}`);
     }
   } catch (err: any) {
-    console.error("Error fetching tickets:", err.message);
+    // console.error("Error fetching tickets:", err.message);
   }
 
   return <AdminTicketsClient slug={companyId} initialTickets={tickets} />;

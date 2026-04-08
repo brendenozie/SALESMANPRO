@@ -7,11 +7,11 @@ import { formatResponse } from "@/lib/formatResponse";
  */
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     const body = await req.json();
-    
+
     const updatedTerm = await prisma.term.update({
       where: { id: params.id },
       data: {
@@ -27,7 +27,7 @@ export async function PATCH(
 
     return formatResponse(true, updatedTerm, "Term updated successfully", 200);
   } catch (error: any) {
-    console.error("[TERM_PATCH_ERROR]:", error);
+    // console.error("[TERM_PATCH_ERROR]:", error);
     return formatResponse(false, null, error.message || "Update failed", 500);
   }
 }
@@ -38,7 +38,7 @@ export async function PATCH(
  */
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     const { companyId, academicYearId } = await req.json();
@@ -59,7 +59,12 @@ export async function PUT(
 
     await cacheDel(`admin:terms:${companyId}:all`);
 
-    return formatResponse(true, activatedTerm, "Term activated successfully", 200);
+    return formatResponse(
+      true,
+      activatedTerm,
+      "Term activated successfully",
+      200,
+    );
   } catch (error: any) {
     return formatResponse(false, null, "Activation failed", 500);
   }
@@ -70,7 +75,7 @@ export async function PUT(
  */
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     const term = await prisma.term.delete({
@@ -82,7 +87,7 @@ export async function DELETE(
 
     return formatResponse(true, term, "Term deleted successfully", 200);
   } catch (error: any) {
-    console.error("[TERM_DELETE_ERROR]:", error);
+    // console.error("[TERM_DELETE_ERROR]:", error);
     return formatResponse(false, null, error.message || "Delete failed", 500);
   }
 }

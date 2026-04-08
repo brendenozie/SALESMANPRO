@@ -14,7 +14,7 @@ export default async function LibraryMaintenancePage({ params }: { params: Promi
     });
     if (res.ok) initialBooks = (await res.json()).data;
   } catch (err) {
-    console.error("Maintenance fetch error", err);
+    // console.error("Maintenance fetch error", err);
   }
 
   return <MaintenanceClient schoolId={schoolId} initialBooks={initialBooks} />;

@@ -340,10 +340,10 @@ export default function PhotoGalleryPage(): JSX.Element {
       });
       if (!res.ok) throw new Error("Failed to fetch");
       const data: Album[] = (await res.json()).data || [];
-      console.log("Fetched albums:", data);
+      // console.log("Fetched albums:", data);
       setAlbums(data);
     } catch (err) {
-      console.error(err);
+      // console.error(err);
     } finally {
       setLoading(false);
     }
@@ -369,7 +369,7 @@ export default function PhotoGalleryPage(): JSX.Element {
       setAlbums(prev => [...prev, added]);
       setIsUploadOpen(false);
     } catch (err) {
-      console.error(err);
+      // console.error(err);
     } finally {
       setSubmitting(false);
     }
@@ -396,7 +396,7 @@ export default function PhotoGalleryPage(): JSX.Element {
       setIsEditOpen(false);
       setAlbumBeingEdited(null);
     } catch (err) {
-      console.error(err);
+      // console.error(err);
     } finally {
       setSubmitting(false);
     }
@@ -429,7 +429,7 @@ export default function PhotoGalleryPage(): JSX.Element {
       setAlbumToDelete(null);
       setIsAlbumDeleteOpen(false);
     } catch (err) {
-      console.error(err);
+      // console.error(err);
     } finally {
       setSubmitting(false);
     }
@@ -456,7 +456,7 @@ export default function PhotoGalleryPage(): JSX.Element {
       setPhotoToDelete(null);
       setIsPhotoDeleteOpen(false);
     } catch (err) {
-      console.error(err);
+      // console.error(err);
     } finally {
       setSubmitting(false);
     }

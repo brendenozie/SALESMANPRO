@@ -75,15 +75,15 @@ export default async function PodcastsAdminPage({ params }: PageProps) {
 
     if (podcastsRes.ok) {
       const dataRes = await podcastsRes.json();
-      console.log("[PodcastsAdminPage] Fetched podcasts data:", dataRes);
+      // console.log("[PodcastsAdminPage] Fetched podcasts data:", dataRes);
       const data = dataRes.data;
       podcastsData = data;
     } else {
-      console.error(
-        "[PodcastsAdminPage] Failed to fetch podcasts:",
-        podcastsRes.status,
-        podcastsRes.statusText
-      );
+      // console.error(
+      //   "[PodcastsAdminPage] Failed to fetch podcasts:",
+      //   podcastsRes.status,
+      //   podcastsRes.statusText
+      // );
     }
 
     // Fetch all categories relevant to podcasts (might be different from store categories)
@@ -97,15 +97,15 @@ export default async function PodcastsAdminPage({ params }: PageProps) {
       const json = await categoriesRes.json();
       categoriesData = json.data.results ?? [];
     } else {
-      console.error(
-        "[ClientInventoryPage] Failed to fetch store categories:",
-        categoriesRes.status,
-        categoriesRes.statusText
-      );
+      // console.error(
+      //   "[ClientInventoryPage] Failed to fetch store categories:",
+      //   categoriesRes.status,
+      //   categoriesRes.statusText
+      // );
     }
 
   } catch (err: any) {
-    console.error("[PodcastsAdminPage] Error fetching data:", err.message);
+    // console.error("[PodcastsAdminPage] Error fetching data:", err.message);
   }
 
   return (

@@ -46,7 +46,7 @@ export default async function LibraryReservationsPage({ params }: { params: Prom
       });
     }
   } catch (err) {
-    console.error("[LibraryReservationsPage] Fetch error:", err);
+    // console.error("[LibraryReservationsPage] Fetch error:", err);
   }
 
   return (

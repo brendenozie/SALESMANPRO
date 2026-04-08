@@ -78,7 +78,7 @@ const DonorManagementPage = ({ donationsData, donorsData, projectsData, campaign
 
       if (response.ok) {
         const result = await response.json();
-        console.log('Donor saved:', result);
+        // console.log('Donor saved:', result);
         // In a real app, you'd refresh your donor list here
         // For now, just close the modal
         setIsFormModalOpen(false);
@@ -87,11 +87,11 @@ const DonorManagementPage = ({ donationsData, donorsData, projectsData, campaign
         // e.g., fetchDonors();
       } else {
         const errorData = await response.json();
-        console.error('Failed to save donor:', errorData);
+        // console.error('Failed to save donor:', errorData);
         // Handle error, maybe display it in the form
       }
     } catch (error) {
-      console.error('API call failed:', error);
+      // console.error('API call failed:', error);
       // Handle network or unexpected errors
     } finally {
       setIsLoading(false);

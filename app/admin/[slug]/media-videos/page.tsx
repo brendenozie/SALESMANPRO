@@ -347,7 +347,7 @@ export default function VideoGalleryPage() {
       const fetchedAlbums: VideoAlbum[] = (await response.json()).data || [];
       setVideoAlbums(fetchedAlbums);
     } catch (error) {
-      console.error("Failed to fetch video albums:", error);
+      // console.error("Failed to fetch video albums:", error);
     } finally {
       setIsLoading(false);
     }
@@ -385,7 +385,7 @@ export default function VideoGalleryPage() {
       setVideoAlbums(prev => [...prev, addedAlbum]);
       setIsUploadModalOpen(false);
     } catch (error) {
-      console.error("Failed to add video album:", error);
+      // console.error("Failed to add video album:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -413,7 +413,7 @@ export default function VideoGalleryPage() {
       setVideoAlbums(prev => prev.map(a => a.id === updatedAlbum.id ? updatedAlbum : a));
       setIsEditModalOpen(false);
     } catch (error) {
-      console.error("Failed to update video album:", error);
+      // console.error("Failed to update video album:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -441,7 +441,7 @@ export default function VideoGalleryPage() {
       setIsAlbumDeleteModalOpen(false);
       setSelectedAlbum(null);
     } catch (error) {
-      console.error("Failed to delete video album:", error);
+      // console.error("Failed to delete video album:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -484,7 +484,7 @@ export default function VideoGalleryPage() {
       setIsVideoDeleteModalOpen(false);
       setSelectedVideo(null);
     } catch (error) {
-      console.error("Failed to delete video:", error);
+      // console.error("Failed to delete video:", error);
     } finally {
       setIsSubmitting(false);
     }

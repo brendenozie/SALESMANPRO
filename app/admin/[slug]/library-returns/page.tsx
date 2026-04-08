@@ -17,7 +17,7 @@ export default async function LibraryReturnsPage({ params }: { params: Promise<{
     );
     if (res.ok) initialHistory = (await res.json()).data;
   } catch (err) {
-    console.error("Failed to load return history", err);
+    // console.error("Failed to load return history", err);
   }
 
   return <LibraryReturnsPageClient schoolId={schoolId} initialHistory={initialHistory} />;

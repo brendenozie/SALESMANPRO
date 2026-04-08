@@ -4,12 +4,12 @@ import { NextResponse } from "next/server";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
     const { companyId, academicYearId } = await req.json();
 
-    console.log("Activating term", { termId: params.id, companyId, academicYearId });
+    // console.log("Activating term", { termId: params.id, companyId, academicYearId });
 
     const [deactivated, activated] = await prisma.$transaction([
       // 1. Deactivate all terms for this specific year and company
@@ -28,9 +28,12 @@ export async function PATCH(
       }),
     ]);
 
-    return NextResponse.json({ success: true,  });
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("TERM_ACTIVATE_ERROR", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    // console.error("TERM_ACTIVATE_ERROR", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }

@@ -278,7 +278,6 @@ export default function CheckoutPage(): JSX.Element {
       setTrackingNumber(orderResponse.trackingNumber);
       setIsOrderPlaced(true);
     } catch (err: any) {
-      console.error('Submit error', err);
       setSubmitError(err.message || 'Order failed. Please try again.');
     } finally {
       setIsSubmitting(false);

@@ -151,13 +151,13 @@ export default function ProgramManagementPage() {
         throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
       }
       const json = await response.json();
-      console.log("[ProgramManagementPage] Fetched marketplace products:", json);
+      // console.log("[ProgramManagementPage] Fetched marketplace products:", json);
       const marketListings = json.data.results as MarketListingForm[];
       // Filter the listings to only show programs/services, or handle this within the marketplace API
       // For now, we set all listings, assuming they are the correct type or will be filtered by category later.
       setPrograms(marketListings); 
     } catch (err: any) {
-      console.error("[ProgramManagementPage] Failed to fetch marketplace products:", err);
+      // console.error("[ProgramManagementPage] Failed to fetch marketplace products:", err);
       // Error message update
       setError(err.message || "Failed to load programs/services.");
     } finally {

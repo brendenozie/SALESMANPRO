@@ -24,7 +24,7 @@ export default async function HostelRoomsPage({ params }: PageProps) {
     blocks = (await blocksRes.json()).data || [];
 
   } catch (err) {
-    console.error("[HostelRoomsPage] Failed to load rooms", err);
+    // console.error("[HostelRoomsPage] Failed to load rooms", err);
   }
 
   return (

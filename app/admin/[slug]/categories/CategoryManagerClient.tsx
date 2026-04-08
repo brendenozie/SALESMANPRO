@@ -119,7 +119,7 @@ export default function CategoryManagerClient({ initialCategories, apiBaseUrl, c
             },
           }));
           
-          console.log('Fetched store categories:', storeCategories);
+          // console.log('Fetched store categories:', storeCategories);
           setCategories(storeCategories);
          
       } else {

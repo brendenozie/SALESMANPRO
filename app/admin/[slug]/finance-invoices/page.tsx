@@ -121,7 +121,7 @@ export default function InvoicesPage() {
       const data = await res.json();   
       setInvoices(data);
     } catch (err) {
-      console.error("Error fetching invoices:", err);
+      // console.error("Error fetching invoices:", err);
     } finally {
       setLoading(false);
     }
@@ -140,7 +140,7 @@ export default function InvoicesPage() {
       const data = await res.json();
       setClients(data.data);
     } catch (err) {
-      console.error("Error fetching clients:", err);
+      // console.error("Error fetching clients:", err);
     }
   };
 
@@ -207,7 +207,7 @@ export default function InvoicesPage() {
       await fetchInvoices();
       setShowModal(false);
     } catch (err) {
-      console.error("Error saving invoice:", err);
+      // console.error("Error saving invoice:", err);
     } finally {
       setLoading(false);
     }
@@ -224,7 +224,7 @@ export default function InvoicesPage() {
       if (!res.ok) throw new Error("Failed to delete invoice");
       await fetchInvoices();
     } catch (err) {
-      console.error("Error deleting invoice:", err);
+      // console.error("Error deleting invoice:", err);
     } finally {
       setLoading(false);
     }
@@ -232,7 +232,7 @@ export default function InvoicesPage() {
 
   // --- Download Invoice ---
   const handleDownload = (id: string) => {
-    console.log(`Downloading invoice ${id}...`);
+    // console.log(`Downloading invoice ${id}...`);
     // window.open(`${apiBaseUrl}/admin/finance-invoices/download/${id}`, "_blank");
   };
 

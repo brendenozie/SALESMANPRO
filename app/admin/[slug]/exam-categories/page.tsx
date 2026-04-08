@@ -18,7 +18,7 @@ export default async function ExamCategoriesPage({ params }: { params: Promise<{
       initialCategories = await res.json();
     }
   } catch (err) {
-    console.error("Failed to load exam categories", err);
+    // console.error("Failed to load exam categories", err);
   }
 
   return (

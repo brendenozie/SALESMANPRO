@@ -65,11 +65,11 @@ export default async function DeliveryPage({ params }: PageProps) {
       deliveryOrdersData = data.data.orders || [];
     } else {
       error = `Failed to fetch delivery orders: ${ordersRes.status} ${ordersRes.statusText}`;
-      console.error("[DeliveryPage] Failed to fetch delivery orders →", ordersRes.status, ordersRes.statusText);
+      // console.error("[DeliveryPage] Failed to fetch delivery orders →", ordersRes.status, ordersRes.statusText);
     }
   } catch (err: any) {
     error = `Error fetching delivery data: ${err.message}`;
-    console.error("[DeliveryPage] Error fetching delivery data →", err.message);
+    // console.error("[DeliveryPage] Error fetching delivery data →", err.message);
   }
 
   return <DeliveryClient deliveryOrdersData={deliveryOrdersData} companyId={companyId} initialError={error} />;

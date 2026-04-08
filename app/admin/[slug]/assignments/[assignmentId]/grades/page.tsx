@@ -21,12 +21,12 @@ export default async function AssignmentsGradesPage({ params, searchParams }: Pa
 
   const cookieHeader = (await cookies()).toString();
 
-  console.log({
-    companyId,
-    assignmentId,
-    courseId,
-    classroomId,
-  });
+  // console.log({
+  //   companyId,
+  //   assignmentId,
+  //   courseId,
+  //   classroomId,
+  // });
 
   let initialData: any = null;
 
@@ -57,7 +57,7 @@ export default async function AssignmentsGradesPage({ params, searchParams }: Pa
       />
     );
   } catch (err: any) {
-    console.error("[ExamGradesPage] Error →", err.message);
+    // console.error("[ExamGradesPage] Error →", err.message);
 
     return (
       <div className="p-8 text-center text-rose-600 bg-rose-50 rounded-xl border border-rose-100">

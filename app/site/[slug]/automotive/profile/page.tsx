@@ -73,7 +73,7 @@ const AutomotiveDashboard = () => {
         setListings(data.items || []);
       }
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      // console.error('Error fetching user data:', error);
     } finally {
       setLoading(false);
     }

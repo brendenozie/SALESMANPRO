@@ -58,11 +58,11 @@ async function getInitialInvoiceData(companyId: string, cookieHeader: string): P
       throw new Error(`Failed to fetch invoices: ${res.statusText}`);
     }
     const json = await res.json();
-    console.log("Fetched invoices:", json);
-    console.log("Invoices data:", json.data.invoicesData);
+    // console.log("Fetched invoices:", json);
+    // console.log("Invoices data:", json.data.invoicesData);
     return json.data.invoicesData || [];
   } catch (error) {
-    console.error("Error fetching initial invoice data:", error);
+    // console.error("Error fetching initial invoice data:", error);
     return [];
   }
 }
@@ -86,10 +86,10 @@ async function fetchPatients(companyId: string, cookieHeader: string) {
     }
 
     const json = await res.json();
-    console.log("Fetched patients:", json);
+    // console.log("Fetched patients:", json);
     return json.data || [];
   } catch (err) {
-    console.error("fetchPatients error:", err);
+    // console.error("fetchPatients error:", err);
     return [];
   }
 }

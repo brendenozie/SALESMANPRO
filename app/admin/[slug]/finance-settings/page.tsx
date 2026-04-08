@@ -108,7 +108,7 @@ const SettingsPage = () => {
         setGeneralSettings(data);
       }
     } catch (error) {
-      console.error("Failed to fetch general settings:", error);
+      // console.error("Failed to fetch general settings:", error);
     } finally {
       setGeneralLoading(false);
     }
@@ -123,7 +123,7 @@ const SettingsPage = () => {
         setUsers(data);
       }
     } catch (error) {
-      console.error("Failed to fetch users:", error);
+      // console.error("Failed to fetch users:", error);
     } finally {
       setUsersLoading(false);
     }
@@ -140,7 +140,7 @@ const SettingsPage = () => {
         }
       }
     } catch (error) {
-      console.error("Failed to fetch notifications:", error);
+      // console.error("Failed to fetch notifications:", error);
     } finally {
       setNotificationsLoading(false);
     }
@@ -170,7 +170,7 @@ const SettingsPage = () => {
         body: JSON.stringify(generalSettings),
       });
     } catch (error) {
-      console.error("Failed to save general settings:", error);
+      // console.error("Failed to save general settings:", error);
     } finally {
       setSaving(false);
     }
@@ -218,7 +218,7 @@ const SettingsPage = () => {
         setUserModalOpen(false);
       }
     } catch (error) {
-      console.error("Failed to save user:", error);
+      // console.error("Failed to save user:", error);
     } finally {
       setSaving(false);
     }
@@ -230,7 +230,7 @@ const SettingsPage = () => {
         await fetch(`${apiBaseUrl}/settings/users/${id}`, { method: "DELETE" });
         await fetchUsers();
       } catch (error) {
-        console.error("Failed to delete user:", error);
+        // console.error("Failed to delete user:", error);
       }
     }
   };
@@ -251,7 +251,7 @@ const SettingsPage = () => {
         body: JSON.stringify(notifications),
       });
     } catch (error) {
-      console.error("Failed to save notification preferences:", error);
+      // console.error("Failed to save notification preferences:", error);
     } finally {
       setSaving(false);
     }

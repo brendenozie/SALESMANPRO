@@ -48,7 +48,7 @@ export default async function Page({params}:PageProps){
 
   if(res.ok){
    const data = (await res.json()).data;
-   console.log("Fetched Academic Years →", data); 
+  //  console.log("Fetched Academic Years →", data); 
    years = data || []
   }
 

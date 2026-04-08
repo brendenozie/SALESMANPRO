@@ -380,7 +380,7 @@ export default function SponsorsPage() {
       const fetchedSponsors: Sponsor[] = (await response.json()).data || [];
       setSponsors(fetchedSponsors);
     } catch (error) {
-      console.log("Failed to fetch sponsors:", error);
+      // console.log("Failed to fetch sponsors:", error);
     } finally {
       setIsLoading(false);
     }
@@ -402,7 +402,7 @@ export default function SponsorsPage() {
       setSponsors(prev => [...prev, newSponsor]);
       setIsAddModalOpen(false);
     } catch (error) {
-      console.log("Failed to add sponsor:", error);
+      // console.log("Failed to add sponsor:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -429,7 +429,7 @@ export default function SponsorsPage() {
       setSponsors(prev => prev.map(s => s.id === updatedSponsor.id ? updatedSponsor : s));
       setIsEditModalOpen(false);
     } catch (error) {
-      console.log("Failed to update sponsor:", error);
+      // console.log("Failed to update sponsor:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -457,7 +457,7 @@ export default function SponsorsPage() {
       setIsDeleteModalOpen(false);
       setSelectedSponsor(null);
     } catch (error) {
-      console.log("Failed to delete sponsor:", error);
+      // console.log("Failed to delete sponsor:", error);
     } finally {
       setIsSubmitting(false);
     }

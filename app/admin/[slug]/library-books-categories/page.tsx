@@ -17,7 +17,7 @@ export default async function LibraryCategoriesPage({ params }: { params: Promis
     });
     if (res.ok) initialCategories = (await res.json()).data;
   } catch (err) {
-    console.error("Failed to load categories", err);
+    // console.error("Failed to load categories", err);
   }
 
   return <LibraryCategoriesClient initialCategories={initialCategories} schoolId={schoolId} />;

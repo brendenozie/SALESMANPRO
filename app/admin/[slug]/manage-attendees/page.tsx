@@ -64,7 +64,7 @@ export default async function AdminOrdersPage({ params }: Props) {
     );
     if (ordersRes.ok) {
       const ordersJson = await ordersRes.json();
-      console.log("AdminOrdersPage-fetch all orders →", ordersJson);
+      // console.log("AdminOrdersPage-fetch all orders →", ordersJson);
       // Assuming the API returns an object like { orders: [...] }
       allOrders = ordersJson.data.orderItems as Order[]; 
     } else {
@@ -72,7 +72,7 @@ export default async function AdminOrdersPage({ params }: Props) {
       throw new Error(errorData.message || `HTTP error! status: ${ordersRes.status}`);
     }
   } catch (err: any) {
-    console.error("AdminOrdersPage-fetch error:", err.message);
+    // console.error("AdminOrdersPage-fetch error:", err.message);
     initialFetchError = err.message || "Failed to load initial data. Please try refreshing.";
   }
 

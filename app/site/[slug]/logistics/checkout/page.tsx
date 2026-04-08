@@ -267,7 +267,7 @@ export default function ServiceCheckoutPage(): JSX.Element {
 
       setIsOrderPlaced(true);
     } catch (err: any) {
-      console.error('Submit error', err);
+      error('Submit error', err);
       setSubmitError(err.message || 'Booking failed. Please try again.');
     } finally {
       setIsSubmitting(false);

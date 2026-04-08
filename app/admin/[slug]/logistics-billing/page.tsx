@@ -34,7 +34,7 @@ export default async function BillingPage({ params }: PageProps) {
       billingData = rawData.data || [];
     }
   } catch (err) {
-    console.error("[BillingPage] Error:", err);
+    // console.error("[BillingPage] Error:", err);
   }
 
   return <BillingClient params={{ companyId, billingData }} />;

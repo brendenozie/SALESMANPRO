@@ -68,7 +68,7 @@ export default function DocumentsPage() {
       const data: DocumentItem[] = await res.json();
       setDocuments(data);
     } catch (error) {
-      console.error("Error fetching documents:", error);
+      // console.error("Error fetching documents:", error);
     } finally {
       setLoading(false);
     }
@@ -111,7 +111,7 @@ export default function DocumentsPage() {
       setFileToUpload(null);
       setFileName("");
     } catch (error) {
-      console.error("Error uploading document:", error);
+      // console.error("Error uploading document:", error);
     }
   };
 
@@ -126,7 +126,7 @@ export default function DocumentsPage() {
         }
         await fetchDocuments();
       } catch (error) {
-        console.error("Error deleting document:", error);
+        // console.error("Error deleting document:", error);
       }
     }
   };

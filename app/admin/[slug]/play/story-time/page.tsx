@@ -72,17 +72,17 @@ export default function StoryTimePage() {
               setStories(mappedStories);
             } else {
               // No data from API, use sample data
-              console.warn("No courses found for Playgroup academic level. Displaying sample data.");
+              // console.warn("No courses found for Playgroup academic level. Displaying sample data.");
               setStories(sampleStories);
             }
           }
           else{
             // No data from API, use sample data
-            console.warn("No courses found for Playgroup academic level. Displaying sample data.");
+            // console.warn("No courses found for Playgroup academic level. Displaying sample data.");
             setStories(sampleStories);
           }
       } catch (e: any) {
-        console.error("Failed to fetch stories:", e);
+        // console.error("Failed to fetch stories:", e);
         setError("Failed to load stories. Displaying sample data.");
         setStories(sampleStories); // Fallback to sample data on error
       } finally {

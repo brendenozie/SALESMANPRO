@@ -134,7 +134,7 @@ export default async function ExamSubmissionsPage({ params }: PageProps) {
         companyId: examData.companyId,
       };
     } else {
-      console.error(`[ExamSubmissionsPage] Failed to fetch exam details for ${examId}: ${examRes.status} ${examRes.statusText}`);
+      // console.error(`[ExamSubmissionsPage] Failed to fetch exam details for ${examId}: ${examRes.status} ${examRes.statusText}`);
       fetchError = true;
     }
 
@@ -148,18 +148,18 @@ export default async function ExamSubmissionsPage({ params }: PageProps) {
     if (submissionsRes.ok) {
       initialSubmissions = (await submissionsRes.json()).data as ExamSubmissionData[];
     } else {
-      console.error(`[ExamSubmissionsPage] Failed to fetch exam submissions for ${examId}: ${submissionsRes.status} ${submissionsRes.statusText}`);
+      // console.error(`[ExamSubmissionsPage] Failed to fetch exam submissions for ${examId}: ${submissionsRes.status} ${submissionsRes.statusText}`);
       fetchError = true;
     }
 
   } catch (err: any) {
-    console.error("[ExamSubmissionsPage] Error fetching initial data →", err.message);
+    // console.error("[ExamSubmissionsPage] Error fetching initial data →", err.message);
     fetchError = true;
   }
 
   // If any fetch failed or returned empty, use sample data as fallback
   if (fetchError || !initialExamDetails || initialSubmissions.length === 0) {
-    console.log("[ExamSubmissionsPage] Using sample data as fallback.");
+    // console.log("[ExamSubmissionsPage] Using sample data as fallback.");
     const { sampleExamDetails, sampleSubmissions } = generateSampleSubmissionData(examId, companyId);
     initialExamDetails = sampleExamDetails;
     initialSubmissions = sampleSubmissions;

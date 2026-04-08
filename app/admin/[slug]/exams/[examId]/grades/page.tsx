@@ -23,14 +23,14 @@ export default async function ExamGradesPage({ params, searchParams }: PageProps
 
   const cookieHeader = (await cookies()).toString();
 
-  console.log({
-    companyId,
-    examId,
-    courseId,
-    classroomId,
-    academicYearId,
-    termId,
-  });
+  // console.log({
+  //   companyId,
+  //   examId,
+  //   courseId,
+  //   classroomId,
+  //   academicYearId,
+  //   termId,
+  // });
 
   let initialData: any = null;
 
@@ -50,7 +50,7 @@ export default async function ExamGradesPage({ params, searchParams }: PageProps
       initialData = (await gradesRes.json()).data;
     }
 
-    console.log("Initial Data →", initialData);
+    // console.log("Initial Data →", initialData);
 
     return (
       <ExamGradesClient
@@ -65,7 +65,7 @@ export default async function ExamGradesPage({ params, searchParams }: PageProps
       />
     );
   } catch (err: any) {
-    console.error("[ExamGradesPage] Error →", err.message);
+    // console.error("[ExamGradesPage] Error →", err.message);
 
     return (
       <div className="p-8 text-center text-rose-600 bg-rose-50 rounded-xl border border-rose-100">

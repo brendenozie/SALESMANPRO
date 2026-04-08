@@ -73,7 +73,7 @@ const PackagesPage = () => {
       const data = (await res.json()).data;
       setPackages(data.packages as ServicePackage[]);
     } catch (error) {
-      console.error("Error fetching packages:", error);
+      // console.error("Error fetching packages:", error);
     } finally {
       setLoading(false);
     }
@@ -172,7 +172,7 @@ const PackagesPage = () => {
       await fetchPackages();
       setShowModal(false);
     } catch (error) {
-      console.error("Error saving package:", error);
+      // console.error("Error saving package:", error);
     } finally {
       setLoading(false);
     }
@@ -189,7 +189,7 @@ const PackagesPage = () => {
         if (!res.ok) throw new Error("Failed to delete package");
         await fetchPackages();
       } catch (error) {
-        console.error("Error deleting package:", error);
+        // console.error("Error deleting package:", error);
       } finally {
         setLoading(false);
       }

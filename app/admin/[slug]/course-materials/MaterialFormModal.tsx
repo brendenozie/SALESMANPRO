@@ -103,10 +103,10 @@ export async function uploadFiles(
         xhr.send(file);
       });
 
-      console.log(`✅ Uploaded: ${file.name} (${contentType}) → ${publicUrl}`);
+      // console.log(`✅ Uploaded: ${file.name} (${contentType}) → ${publicUrl}`);
       return { url: publicUrl, key, contentType };
     } catch (err) {
-      console.error("❌ Upload error:", err);
+      // console.error("❌ Upload error:", err);
       throw err;
     }
   });
@@ -235,7 +235,7 @@ const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ apiBaseUrl, mater
 
     } catch (err) {
       alert("Error during upload/save. Please try again.");
-      console.error(err);
+      //  console.error(err);
     } finally {
       setIsUploading(false);
       setUploadProgress(0);

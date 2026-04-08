@@ -62,11 +62,11 @@ export default async function AssignmentSubmissionsPage({ params }: PageProps) {
       assignmentData = assignmentJson.data;
       submissionsData = submissionsJson.data || [];
     } else {
-      console.error("API Error: One or more requests failed");
+      // console.error("API Error: One or more requests failed");
       useFallback = true;
     }
   } catch (err) {
-    console.error("Network Error fetching submissions:", err);
+    // console.error("Network Error fetching submissions:", err);
     useFallback = true;
   }
 

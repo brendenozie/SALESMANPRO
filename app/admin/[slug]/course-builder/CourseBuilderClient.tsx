@@ -129,7 +129,7 @@ export default function CourseBuilderClient() {
   const handlePublish = () => {
       setCourse(prev => ({ ...prev, status: 'Published' }));
       // NOTE: Replaced standard alert() with a console log for better compatibility.
-      console.log('Course published! Go to the Programs page to view it live.'); 
+    //   console.log('Course published! Go to the Programs page to view it live.'); 
   };
 
   const handleUpdateLessonTitle = (newTitle: string) => {

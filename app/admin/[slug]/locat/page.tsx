@@ -84,7 +84,7 @@ export default function LocationManagementPage({ params }: PageProps) {
       );
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       const data = await response.json();
-      console.log("Fetched Locations:", data);
+      // console.log("Fetched Locations:", data);
       setLocations(data.data.data || []);
     } catch (err: any) {
       setError(`Failed to fetch locations: ${err.message}`);

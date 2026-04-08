@@ -5,7 +5,7 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const endpointSecret = process.env.STRIPE_SIGNING_SECRET;
 // API Request to Post Hotel Booking to DB
 const fulfillBooking = async (session: any) => {
-  console.log("FULFILLING ORDER:", session);
+  // console.log("FULFILLING ORDER:", session);
   try {
     const body = {
       userEmail: session.metadata.email,
@@ -31,7 +31,7 @@ const fulfillBooking = async (session: any) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-    console.log(`SUCCESS: Booking ${session.id} has been added to the DB`);
+    // console.log(`SUCCESS: Booking ${session.id} has been added to the DB`);
   } catch (error) {
     console.error(error);
   }
@@ -50,8 +50,11 @@ export default async (req: Request) => {
     try {
       event = stripe.webhooks.constructEvent(payload, sig, endpointSecret);
     } catch (err: any) {
-      console.log("ERROR", err.message);
-      return NextResponse.json({ error: `Webhook error: ${err.message}` }, { status: 400 });
+      // console.log("ERROR", err.message);
+      return NextResponse.json(
+        { error: `Webhook error: ${err.message}` },
+        { status: 400 },
+      );
     }
     // Handle the checkout.session.completed event
     if (event.type === "checkout.session.completed") {
@@ -61,8 +64,11 @@ export default async (req: Request) => {
         await fulfillBooking(session);
         return NextResponse.json({ received: true }, { status: 200 });
       } catch (err: any) {
-        console.error(err);
-        return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 500 });
+        // console.error(err);
+        return NextResponse.json(
+          { error: `Webhook Error: ${err.message}` },
+          { status: 500 },
+        );
       }
     }
     return NextResponse.json({ received: true }, { status: 200 });

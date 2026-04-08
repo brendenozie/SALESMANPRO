@@ -58,15 +58,15 @@ export default function DrawingPage() {
               }));
             setDrawingPrompts(mappedPrompts);
           } else {
-            console.warn("No courses with drawing-related content found for Playgroup academic level. Displaying sample data.");
+            // console.warn("No courses with drawing-related content found for Playgroup academic level. Displaying sample data.");
             setDrawingPrompts(sampleDrawingPrompts);
           }
         } else {
-          console.warn("No courses with drawing-related content found for Playgroup academic level. Displaying sample data.");
+          // console.warn("No courses with drawing-related content found for Playgroup academic level. Displaying sample data.");
           setDrawingPrompts(sampleDrawingPrompts);
         }
       } catch (e: any) {
-        console.error("Failed to fetch drawing prompts:", e);
+        // console.error("Failed to fetch drawing prompts:", e);
         setError("Failed to load drawing prompts. Displaying sample data.");
         setDrawingPrompts(sampleDrawingPrompts); // Fallback to sample data on error
       } finally {

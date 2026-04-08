@@ -77,7 +77,7 @@ function DoctorsClient({ initialDoctors, companyId }: { initialDoctors: Doctor[]
       const data: Doctor[] = await response.json();
       setDoctors(data);
     } catch (e: any) {
-      console.error("Error fetching doctors:", e);
+      // console.error("Error fetching doctors:", e);
       setError(e.message || "Failed to load doctor data.");
     } finally {
       setLoading(false);
@@ -129,7 +129,7 @@ function DoctorsClient({ initialDoctors, companyId }: { initialDoctors: Doctor[]
       setIsAddModalOpen(false);
       fetchDoctors(); // Refresh list
     } catch (e: any) {
-      console.error("Error adding doctor:", e);
+      // console.error("Error adding doctor:", e);
       setError(e.message || "Failed to add new doctor.");
     } finally {
       setLoading(false);
@@ -160,7 +160,7 @@ function DoctorsClient({ initialDoctors, companyId }: { initialDoctors: Doctor[]
       setIsEditModalOpen(false);
       fetchDoctors(); // Refresh list
     } catch (e: any) {
-      console.error("Error updating doctor:", e);
+      // console.error("Error updating doctor:", e);
       setError(e.message || "Failed to update doctor.");
     } finally {
       setLoading(false);
@@ -187,7 +187,7 @@ function DoctorsClient({ initialDoctors, companyId }: { initialDoctors: Doctor[]
       setIsDeleteConfirmOpen(false);
       fetchDoctors(); // Refresh list
     } catch (e: any) {
-      console.error("Error deleting doctor:", e);
+      // console.error("Error deleting doctor:", e);
       setError(e.message || "Failed to delete doctor.");
     } finally {
       setLoading(false);

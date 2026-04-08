@@ -99,23 +99,23 @@ export default async function ParentsManagementPage({ params }: PageProps) {
     );
     if (parentsRes.ok) {
       const data = (await parentsRes.json()).data;
-      console.log("Fetched parents data:", data);
+      // console.log("Fetched parents data:", data);
       initialParents = data as ParentType[];
     } else {
-      console.error(
-        `[ParentsManagementPage] Failed to fetch parents: ${parentsRes.status} ${parentsRes.statusText}`
-      );
+      // console.error(
+      //   `[ParentsManagementPage] Failed to fetch parents: ${parentsRes.status} ${parentsRes.statusText}`
+      // );
       fetchError = true;
     }
 
   } catch (err: any) {
-    console.error("[ParentsManagementPage] Error fetching initial data:", err.message);
+    // console.error("[ParentsManagementPage] Error fetching initial data:", err.message);
     fetchError = true;
   }
 
   // If fetching failed or returned no data, use sample data
   if (fetchError || initialParents.length === 0) {
-    console.log("[ParentsManagementPage] Using sample data for parents.");
+    // console.log("[ParentsManagementPage] Using sample data for parents.");
     initialParents = generateSampleParentsData(companyId);
   }
 

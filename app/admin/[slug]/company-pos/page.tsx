@@ -71,7 +71,7 @@ export default function AdminPOS() {
         setEvents(data.events); // Assuming the API returns { events: [], ... }
       } catch (err: any) {
         setError(err.message || "Failed to fetch events.");
-        console.error("Events fetch error:", err);
+        // console.error("Events fetch error:", err);
       } finally {
         setIsLoadingEvents(false);
       }
@@ -103,7 +103,7 @@ export default function AdminPOS() {
         setAvailableTickets(data.tickets); // Assuming the API returns { tickets: [], ... }
       } catch (err: any) {
         setError(err.message || "Failed to fetch tickets for event.");
-        console.error("Tickets fetch error:", err);
+        // console.error("Tickets fetch error:", err);
       } finally {
         setIsLoadingTickets(false);
       }
@@ -212,7 +212,7 @@ export default function AdminPOS() {
       setTransactionStatus('error');
       setMessage(err.message || "Failed to process sale.");
       setError(err.message || "Failed to process sale.");
-      console.error("POS sale error:", err);
+      // console.error("POS sale error:", err);
     } finally {
       setIsProcessingSale(false);
     }

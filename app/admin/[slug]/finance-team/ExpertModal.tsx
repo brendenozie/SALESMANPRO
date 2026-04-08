@@ -171,7 +171,7 @@ const ExpertModal: React.FC<ExpertModalProps> = ({ isOpen, onClose, onSave, expe
       onClose();
     } catch (err: any) {
       toast.error(`Error: ${err.message}`, { id: toastId });
-      console.error("API Error:", err);
+      // console.error("API Error:", err);
     } finally {
       setLoading(false);
     }

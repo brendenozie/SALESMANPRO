@@ -217,7 +217,7 @@ export default function LocationsPage() {
       setLocations(data);
     } catch (err: any) {
       setError(err.message);
-      console.error("Failed to fetch locations:", err);
+      // console.error("Failed to fetch locations:", err);
       toast.error(`Failed to fetch locations: ${err.message}`);
     } finally {
       setLoading(false);

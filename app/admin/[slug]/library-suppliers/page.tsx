@@ -59,7 +59,7 @@ export default async function LibrarySuppliersPage({ params }: { params: Promise
     }
 
   } catch (err) {
-    console.error("[LibrarySuppliersPage] Error:", err);
+    // console.error("[LibrarySuppliersPage] Error:", err);
   }
 
   return (

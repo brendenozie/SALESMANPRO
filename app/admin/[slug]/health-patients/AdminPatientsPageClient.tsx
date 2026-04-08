@@ -141,7 +141,7 @@ export default function AdminPatientsPageClient({
         const data: Patient[] = (await response.json()).data;
         setPatients(data);
       } catch (e: any) {
-        console.error("Error fetching patients:", e);
+        // console.error("Error fetching patients:", e);
         setError(e.message || "Failed to load patient data.");
       } finally {
         setLoading(false);
@@ -199,7 +199,7 @@ export default function AdminPatientsPageClient({
         setIsAddModalOpen(false);
         fetchPatients(); // Refresh list
       } catch (e: any) {
-        console.error("Error adding patient:", e);
+        // console.error("Error adding patient:", e);
         setError(e.message || "Failed to add new patient.");
       } finally {
         setLoading(false);
@@ -231,7 +231,7 @@ export default function AdminPatientsPageClient({
         setIsEditModalOpen(false);
         fetchPatients(); // Refresh list
       } catch (e: any) {
-        console.error("Error updating patient:", e);
+        // console.error("Error updating patient:", e);
         setError(e.message || "Failed to update patient.");
       } finally {
         setLoading(false);
@@ -262,7 +262,7 @@ export default function AdminPatientsPageClient({
         setIsDeleteConfirmOpen(false);
         fetchPatients(); // Refresh list
       } catch (e: any) {
-        console.error("Error deleting patient:", e);
+        // console.error("Error deleting patient:", e);
         setError(e.message || "Failed to delete patient.");
       } finally {
         setLoading(false);

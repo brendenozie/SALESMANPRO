@@ -72,15 +72,15 @@ export default async function ProductsPage({ params }: Props) {
     // Process orders response
     if (ordersResponse.ok) {
       const jsonRes = (await ordersResponse.json()).data;
-      console.log("Fetched order items:", jsonRes);
+      // console.log("Fetched order items:", jsonRes);
       const json: { orderItems: OrderItem[] } = jsonRes;
       orderItems = json.orderItems || [];
     } else {
-      console.error(
-        "[ProductsPage] Failed to fetch order items →",
-        ordersResponse.status,
-        ordersResponse.statusText
-      );
+      // console.error(
+      //   "[ProductsPage] Failed to fetch order items →",
+      //   ordersResponse.status,
+      //   ordersResponse.statusText
+      // );
     }
     
     // Process riders response
@@ -88,11 +88,11 @@ export default async function ProductsPage({ params }: Props) {
         const jsonRes = (await ridersResponse.json());
         riders = jsonRes.data || [];
     } else {
-        console.error(
-            "[ProductsPage] Failed to fetch riders →",
-            ridersResponse.status,
-            ridersResponse.statusText
-        );
+        // console.error(
+        //     "[ProductsPage] Failed to fetch riders →",
+        //     ridersResponse.status,
+        //     ridersResponse.statusText
+        // );
     }
 
   } catch (err: any) {

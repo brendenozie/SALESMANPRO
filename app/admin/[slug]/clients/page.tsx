@@ -74,7 +74,7 @@ export default async function ClientsPage({ params }: ClientsPageProps) {
       });
 
     let initialRes = await res.json();
-      console.log("Fetched initial client data:", initialRes);
+      // console.log("Fetched initial client data:", initialRes);
     initialClients = initialRes.data;
 
     if (!initialClients || initialClients.length === 0) {

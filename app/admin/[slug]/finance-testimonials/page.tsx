@@ -61,10 +61,10 @@ const TestimonialsPage = () => {
       );
       if (!res.ok) throw new Error("Failed to fetch testimonials");
       const data = (await res.json()).data;
-      console.log(data);
+      // console.log(data);
       setTestimonials(data.testimonials);
     } catch (error) {
-      console.error("Error fetching testimonials:", error);
+      // console.error("Error fetching testimonials:", error);
     } finally {
       setLoading(false);
     }
@@ -123,7 +123,7 @@ const TestimonialsPage = () => {
       await fetchTestimonials();
       setShowModal(false);
     } catch (error) {
-      console.error("Error saving testimonial:", error);
+      // console.error("Error saving testimonial:", error);
     } finally {
       setLoading(false);
     }
@@ -142,7 +142,7 @@ const TestimonialsPage = () => {
       if (!res.ok) throw new Error("Failed to update testimonial status");
       await fetchTestimonials();
     } catch (error) {
-      console.error("Error updating testimonial status:", error);
+      // console.error("Error updating testimonial status:", error);
     } finally {
       setLoading(false);
     }
@@ -158,7 +158,7 @@ const TestimonialsPage = () => {
         if (!res.ok) throw new Error("Failed to delete testimonial");
         await fetchTestimonials();
       } catch (error) {
-        console.error("Error deleting testimonial:", error);
+        // console.error("Error deleting testimonial:", error);
       } finally {
         setLoading(false);
       }

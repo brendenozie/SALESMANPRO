@@ -172,13 +172,13 @@ export default async function TimetableManagerPage({ params }: PageProps) {
     );
     if (timetableRes.ok) {
       initialTimetable = (await timetableRes.json()).data as any[];
-      console.log(`[TimetableManagerPage] Fetched timetable entries with course and educator info.`, initialTimetable);
+      // console.log(`[TimetableManagerPage] Fetched timetable entries with course and educator info.`, initialTimetable);
     } else {
-      console.error(
-        "[TimetableManagerPage] Failed to fetch timetable →",
-        timetableRes.status,
-        timetableRes.statusText
-      );
+      // console.error(
+      //   "[TimetableManagerPage] Failed to fetch timetable →",
+      //   timetableRes.status,
+      //   timetableRes.statusText
+      // );
       fetchError = true;
     }
 
@@ -189,7 +189,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
     );
     if (coursesRes.ok) {
       const fetchedCourses = (await coursesRes.json()).data as any[];
-      console.log(`[TimetableManagerPage] Fetched courses for dropdowns.`, fetchedCourses);
+      // console.log(`[TimetableManagerPage] Fetched courses for dropdowns.`, fetchedCourses);
       allCourses = fetchedCourses.map(c => ({
         id: c.id,
         title: c.title,
@@ -199,11 +199,11 @@ export default async function TimetableManagerPage({ params }: PageProps) {
         educators: c.educators, // This should now be an array of {id, name, email, roleInCourse}
       }));
     } else {
-      console.error(
-        "[TimetableManagerPage] Failed to fetch courses →",
-        coursesRes.status,
-        coursesRes.statusText
-      );
+      // console.error(
+      //   "[TimetableManagerPage] Failed to fetch courses →",
+      //   coursesRes.status,
+      //   coursesRes.statusText
+      // );
       fetchError = true;
     }
 
@@ -221,11 +221,11 @@ export default async function TimetableManagerPage({ params }: PageProps) {
         email: e.email,
       }));
     } else {
-      console.error(
-        "[TimetableManagerPage] Failed to fetch educators →",
-        educatorsRes.status,
-        educatorsRes.statusText
-      );
+      // console.error(
+      //   "[TimetableManagerPage] Failed to fetch educators →",
+      //   educatorsRes.status,
+      //   educatorsRes.statusText
+      // );
       fetchError = true;
     }
 
@@ -238,9 +238,9 @@ export default async function TimetableManagerPage({ params }: PageProps) {
       allAcademicLevels = (await academicLevelsRes.json()).data as any[];
       
     } else {
-      console.error(
-        `[TimetableManagerPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
-      );
+      // console.error(
+      //   `[TimetableManagerPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
+      // );
       fetchError = true;
     }
 
@@ -250,21 +250,21 @@ export default async function TimetableManagerPage({ params }: PageProps) {
       { headers: { cookie: cookieHeader }, next: { revalidate: 60 } }
     );
     if (!classroomsRes.ok) {
-      console.error(
-        `[TimetableManagerPage] Failed to fetch classrooms: ${classroomsRes.status} ${classroomsRes.statusText}`
-      );
+      // console.error(
+      //   `[TimetableManagerPage] Failed to fetch classrooms: ${classroomsRes.status} ${classroomsRes.statusText}`
+      // );
       fetchError = true;
     } else {
       allClassrooms = (await classroomsRes.json()).data as any[];
     }
   } catch (err: any) {
-    console.error("[TimetableManagerPage] Error fetching initial data →", err.message);
+    // console.error("[TimetableManagerPage] Error fetching initial data →", err.message);
     fetchError = true;
   }
 
   // If no data was fetched from the API, generate and use sample data
   if (fetchError  || initialTimetable.length === 0 && allCourses.length === 0 && allEducators.length === 0 && allAcademicLevels.length === 0 && allClassrooms.length === 0) {
-    console.log("[TimetableManagerPage] No data fetched, generating sample data...");
+    // console.log("[TimetableManagerPage] No data fetched, generating sample data...");
     const { sampleTimetableEntries, sampleCourses, sampleEducators, sampleAcademicLevels } = generateSampleTimetableData(companyId);
     initialTimetable = sampleTimetableEntries;
     allCourses = sampleCourses;

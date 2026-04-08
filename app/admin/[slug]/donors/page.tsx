@@ -61,7 +61,7 @@ export default async function DonationsPage({ params }: PageProps) {
     const res = await fetch(`${apiBaseUrl}/admin/donations?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (res.ok) {
       let data = await res.json();
-      console.log("Fetched donations data:", data);
+      // console.log("Fetched donations data:", data);
       // Convert donationDate and createdAt to ISO strings if they are Date objects
       donationsData = data.data.map((donation: any) => ({
         ...donation,
@@ -69,14 +69,14 @@ export default async function DonationsPage({ params }: PageProps) {
         createdAt: donation.createdAt ? new Date(donation.createdAt).toISOString() : null,
       })) as Donation[];
     } else {
-      console.error(
-        "[DonationsPage] Failed to fetch donations →",
-        res.status,
-        res.statusText
-      );
+      // console.error(
+      //   "[DonationsPage] Failed to fetch donations →",
+      //   res.status,
+      //   res.statusText
+      // );
     }
   } catch (err: any) {
-    console.error("[DonationsPage] Error fetching donations →", err.message);
+    // console.error("[DonationsPage] Error fetching donations →", err.message);
   }
 
   
@@ -85,21 +85,21 @@ export default async function DonationsPage({ params }: PageProps) {
     const res = await fetch(`${apiBaseUrl}/admin/donors?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (res.ok) {
       let data = await res.json();
-      console.log("Fetched donors data:", data);
+      // console.log("Fetched donors data:", data);
       donorsData = data.map((donor: any) => ({
         id: donor.id,
         name: donor.name,
         email: donor.email,
       })) as UserOption[];
     } else {
-      console.error(
-        "[DonationsPage] Failed to fetch donations →",
-        res.status,
-        res.statusText
-      );
+      // console.error(
+      //   "[DonationsPage] Failed to fetch donations →",
+      //   res.status,
+      //   res.statusText
+      // );
     }
   } catch (err: any) {
-    console.error("[DonationsPage] Error fetching donations →", err.message);
+    // console.error("[DonationsPage] Error fetching donations →", err.message);
   }
 
 
@@ -109,20 +109,20 @@ export default async function DonationsPage({ params }: PageProps) {
     const res = await fetch(`${apiBaseUrl}/admin/projects?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (res.ok) {
       let data = await res.json();
-      console.log("Fetched projects data:", data);
+      // console.log("Fetched projects data:", data);
       projectsData = data.map((project: any) => ({
         id: project.id,
         name: project.name,
       })) as ProjectOption[];
     } else {
-      console.error(
-        "[DonationsPage] Failed to fetch donations →",
-        res.status,
-        res.statusText
-      );
+      // console.error(
+      //   "[DonationsPage] Failed to fetch donations →",
+      //   res.status,
+      //   res.statusText
+      // );
     }
   } catch (err: any) {
-    console.error("[DonationsPage] Error fetching donations →", err.message);
+    // console.error("[DonationsPage] Error fetching donations →", err.message);
   }
 
   
@@ -131,20 +131,20 @@ export default async function DonationsPage({ params }: PageProps) {
     const res = await fetch(`${apiBaseUrl}/admin/campaigns?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (res.ok) {
       let data = await res.json();
-      console.log("Fetched campaigns data:", data);
+      // console.log("Fetched campaigns data:", data);
       campaignsData = data.map((campaign: any) => ({
         id: campaign.id,
         name: campaign.name,
       })) as CampaignOption[];
     } else {
-      console.error(
-        "[DonationsPage] Failed to fetch donations →",
-        res.status,
-        res.statusText
-      );
+      // console.error(
+      //   "[DonationsPage] Failed to fetch donations →",
+      //   res.status,
+      //   res.statusText
+      // );
     }
   } catch (err: any) {
-    console.error("[DonationsPage] Error fetching donations →", err.message);
+    // console.error("[DonationsPage] Error fetching donations →", err.message);
   }
 
   return <DonorManagementPage donationsData={donationsData} donorsData={donorsData} projectsData={projectsData} campaignsData={campaignsData} />;

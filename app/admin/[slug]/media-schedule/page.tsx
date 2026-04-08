@@ -357,7 +357,7 @@ export default function SchedulePage() {
       const data: ScheduledContent[] = (await res.json()).data || [];
       setScheduledContent(data || []);
     } catch (err) {
-      console.error("Failed to fetch scheduled content:", err);
+      // console.error("Failed to fetch scheduled content:", err);
       setScheduledContent([]);
     } finally {
       setIsLoading(false);
@@ -389,7 +389,7 @@ export default function SchedulePage() {
         setVideoAlbums(videos || []);
       }
     } catch (err) {
-      console.error("Failed to fetch albums:", err);
+      // console.error("Failed to fetch albums:", err);
       setPhotoAlbums([]);
       setVideoAlbums([]);
     }
@@ -409,7 +409,7 @@ export default function SchedulePage() {
       setScheduledContent(prev => [...prev, added]);
       setIsScheduleModalOpen(false);
     } catch (err) {
-      console.error("Failed to add schedule item:", err);
+      // console.error("Failed to add schedule item:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -433,7 +433,7 @@ export default function SchedulePage() {
       setIsDeleteModalOpen(false);
       setSelectedContent(null);
     } catch (err) {
-      console.error("Failed to delete content:", err);
+      // console.error("Failed to delete content:", err);
     } finally {
       setIsSubmitting(false);
     }

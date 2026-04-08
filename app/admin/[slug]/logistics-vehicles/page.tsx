@@ -36,7 +36,7 @@ export default async function VehiclesPage({ params }: PageProps) {
       vehiclesData = rawData.data || [];
     }
   } catch (err) {
-    console.error("[VehiclesPage] Error:", err);
+    // console.error("[VehiclesPage] Error:", err);
   }
 
   return <VehiclesClient params={{ companyId, vehiclesData }} />;

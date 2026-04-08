@@ -71,7 +71,7 @@ export default function ClientsPage() {
       const data: { data: Client[] } = (await res.json()).data || [];
       setClients(data.data);
     } catch (error) {
-      console.error("Error fetching clients:", error);
+      // console.error("Error fetching clients:", error);
     } finally {
       setLoading(false);
     }
@@ -108,10 +108,10 @@ export default function ClientsPage() {
       setCurrentClient(null);
       setFormState({ name: "", email: "", phone: "", status: "ACTIVE" });
     } catch (error) {
-      console.error(
-        `Error ${isEditing ? "updating" : "creating"} client:`,
-        error
-      );
+      // console.error(
+      //   `Error ${isEditing ? "updating" : "creating"} client:`,
+      //   error
+      // );
     }
   };
 
@@ -126,7 +126,7 @@ export default function ClientsPage() {
         }
         await fetchClients();
       } catch (error) {
-        console.error("Error deleting client:", error);
+        // console.error("Error deleting client:", error);
       }
     }
   };

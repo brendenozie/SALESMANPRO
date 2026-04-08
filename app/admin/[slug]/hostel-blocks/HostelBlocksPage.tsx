@@ -143,7 +143,7 @@ export default function HostelBlocksPage({ initialBlocks, schoolId }: HostelBloc
   const openRoom = async (room: any) => {
     const res = await fetch(`/api/admin/hostel/rooms/${room.id || room._id}`);
     const json = await res.json();
-    console.log("Fetched Room:", json.data);
+    // console.log("Fetched Room:", json.data);
     setSelectedRoom(json.data);
   };
 

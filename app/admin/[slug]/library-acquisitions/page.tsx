@@ -24,7 +24,7 @@ export default async function LibraryAcquisitionsPage({ params }: { params: Prom
       }));
     }
   } catch (err) {
-    console.error("Acquisitions fetch error", err);
+    // console.error("Acquisitions fetch error", err);
   }
 
   return <LibraryAcquisitionsClient initialOrders={initialOrders} schoolId={schoolId} />;

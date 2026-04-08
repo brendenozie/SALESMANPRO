@@ -36,7 +36,7 @@ export default async function ShipmentsPage({ params }: PageProps) {
       shipmentsData = rawData.data || [];
     }
   } catch (err) {
-    console.error("[ShipmentsPage] Error:", err);
+    // console.error("[ShipmentsPage] Error:", err);
   }
 
   return <ShipmentsClient params={{ companyId, shipmentsData }} />;

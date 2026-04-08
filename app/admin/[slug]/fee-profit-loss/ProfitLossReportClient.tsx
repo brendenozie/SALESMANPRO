@@ -40,7 +40,7 @@ const ProfitLossReportClient = ({ companyId, initialData }: Props) => {
         const result = await res.json();
         setData(result);
       } catch (err) {
-        console.error("Report load failed", err);
+      //   console.error("Report load failed", err);
       } finally {
         setLoading(false);
       }

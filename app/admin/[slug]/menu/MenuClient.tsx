@@ -223,7 +223,7 @@ const MenuClient: React.FC<any> = ({ companyId, categoriesData = [], productsDat
       setTotalPages(meta.totalPages || 1);
     } catch (err: any) {
       setError(err.message || 'Failed to load products');
-      console.error('loadProducts error', err);
+      // console.error('loadProducts error', err);
     } finally {
       setLoading(false);
     }
@@ -235,7 +235,7 @@ const MenuClient: React.FC<any> = ({ companyId, categoriesData = [], productsDat
       const results = res?.data?.results || res?.results || [];
       setCategories(results);
     } catch (err: any) {
-      console.error('loadCategories error', err);
+      // console.error('loadCategories error', err);
     }
   }, [companyId]);
 
@@ -317,7 +317,7 @@ const MenuClient: React.FC<any> = ({ companyId, categoriesData = [], productsDat
       await loadProducts(1);
       setShowAddToMarketModal(false);
     } catch (err: any) {
-      console.error('create error', err);
+      // console.error('create error', err);
       toast.error(err?.message || 'Failed to create product');
     } finally {
       setIsActionLoading(false);
@@ -333,7 +333,7 @@ const MenuClient: React.FC<any> = ({ companyId, categoriesData = [], productsDat
       setIsEditProductModalOpen(false);
       setEditingProduct(null);
     } catch (err: any) {
-      console.error('update error', err);
+      // console.error('update error', err);
       toast.error(err?.message || 'Failed to update product');
     } finally {
       setIsActionLoading(false);
@@ -356,7 +356,7 @@ const MenuClient: React.FC<any> = ({ companyId, categoriesData = [], productsDat
       setIsConfirmModalOpen(false);
       setItemToDelete(null);
     } catch (err: any) {
-      console.error('delete error', err);
+      // console.error('delete error', err);
       toast.error(err?.message || 'Failed to delete');
     } finally {
       setIsActionLoading(false);

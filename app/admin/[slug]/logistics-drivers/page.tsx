@@ -45,7 +45,7 @@ export default async function DriversPage({ params }: PageProps) {
       })) : [];
     }
   } catch (err: any) {
-    console.error("[DriversPage] Error fetching drivers →", err.message);
+    // console.error("[DriversPage] Error fetching drivers →", err.message);
   }
 
   return <DriversClient params={{

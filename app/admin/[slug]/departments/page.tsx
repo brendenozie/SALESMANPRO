@@ -59,7 +59,7 @@ export default async function DepartmentsManagerPage({ params}: PageProps) {
   );
   if (educatorsRes.ok) {
     const data = (await educatorsRes.json()).data.data;
-    console.log("[TeachersManagementPage] Fetched educators:", data);
+    // console.log("[TeachersManagementPage] Fetched educators:", data);
     initialEducators = data as EducatorType[];
   } else {
     console.error(

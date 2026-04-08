@@ -147,7 +147,7 @@ const printReceipt = (htmlContent: string) => {
       type: 'PRINT_HTML_RECEIPT',
       payload: htmlContent
     });
-    console.log("Sent receipt to Desktop Printer Service");
+    // console.log("Sent receipt to Desktop Printer Service");
       (window as any).chrome.webview.postMessage({ type: 'NOTIFY', message: 'Receipt sent to printer!' });
 
     return;

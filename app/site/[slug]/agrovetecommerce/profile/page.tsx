@@ -70,7 +70,7 @@ function SettingsForm({ profile, mutateProfile }: { profile: any, mutateProfile:
         alert("Failed to save profile.");
       }
     } catch (error) {
-      console.error("Save error:", error);
+      // console.error("Save error:", error);
       alert("An error occurred during saving.");
     } finally {
       setLoading(false);

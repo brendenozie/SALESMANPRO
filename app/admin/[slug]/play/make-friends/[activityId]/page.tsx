@@ -75,7 +75,7 @@ export default function FriendActivityViewPage() {
               });
             } else {
               // No data from API, try to use specific sample data or generic fallback
-              console.warn(`No course found for slug: ${activitySlug}. Displaying sample data.`);
+              // console.warn(`No course found for slug: ${activitySlug}. Displaying sample data.`);
               setCurrentActivityData(sampleFriendActivitiesData[activitySlug as keyof typeof sampleFriendActivitiesData] || null);
               if (!sampleFriendActivitiesData[activitySlug as keyof typeof sampleFriendActivitiesData]) {
                 setError("Activity not found. Redirecting...");
@@ -85,7 +85,7 @@ export default function FriendActivityViewPage() {
             }
           } else {
             // No data from API, try to use specific sample data or generic fallback
-            console.warn(`No course found for slug: ${activitySlug}. Displaying sample data.`);
+            // console.warn(`No course found for slug: ${activitySlug}. Displaying sample data.`);
             setCurrentActivityData(sampleFriendActivitiesData[activitySlug as keyof typeof sampleFriendActivitiesData] || null);
             if (!sampleFriendActivitiesData[activitySlug as keyof typeof sampleFriendActivitiesData]) {
               setError("Activity not found. Redirecting...");
@@ -95,7 +95,7 @@ export default function FriendActivityViewPage() {
           }
           
       } catch (e: any) {
-        console.error("Failed to fetch activity:", e);
+        // console.error("Failed to fetch activity:", e);
         setError("Failed to load activity. Displaying sample data.");
         setCurrentActivityData(sampleFriendActivitiesData[activitySlug as keyof typeof sampleFriendActivitiesData] || null);
         if (!sampleFriendActivitiesData[activitySlug as keyof typeof sampleFriendActivitiesData]) {

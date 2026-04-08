@@ -31,7 +31,7 @@ export default async function AdminPatientsPage(
   let patients: any[] = [];
   if (res.ok) {
     const json = await res.json();
-    console.log("Fetched patients:", json);
+    // console.log("Fetched patients:", json);
     patients = json.data || [];
   }
 

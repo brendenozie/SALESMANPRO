@@ -50,7 +50,7 @@ export default async function AdminInventoryPage({ params }: Props) {
 
     if (categoriesRes.ok) {
       let categoriesJson = await categoriesRes.json();
-      console.log("Fetched categories:", categoriesJson);
+      // console.log("Fetched categories:", categoriesJson);
       categoriesData = categoriesJson.data.results as IStoreCategory[];
     }
 
@@ -61,7 +61,7 @@ export default async function AdminInventoryPage({ params }: Props) {
     );
     if (allOrganizersRes.ok) {
       let organizersJson = await allOrganizersRes.json();
-      console.log("Fetched organizers:", organizersJson);
+      // console.log("Fetched organizers:", organizersJson);
       allOrganizers = organizersJson.data as Agent[];
     }
 
@@ -86,7 +86,7 @@ export default async function AdminInventoryPage({ params }: Props) {
 
     if (eventsRes.ok) {
       let eventsJson = await eventsRes.json();
-      console.log("Fetched events:", eventsJson);
+      // console.log("Fetched events:", eventsJson);
       allEvents = eventsJson.data as IEvent[];
     
     }else {
@@ -107,7 +107,7 @@ export default async function AdminInventoryPage({ params }: Props) {
     // }
 
   } catch (err: any) {
-    console.error("AdminInventoryPage-fetch error:", err.message);
+    // console.error("AdminInventoryPage-fetch error:", err.message);
     // We simply proceed with empty arrays if something fails.
   }
 

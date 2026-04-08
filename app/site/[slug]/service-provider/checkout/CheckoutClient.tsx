@@ -63,7 +63,7 @@ interface CheckoutClientProps {
 
 export default function ServiceCheckoutPage({ paymentMethods = [] }: CheckoutClientProps) {
 
-  console.log('CheckoutClient paymentMethods', paymentMethods);
+  // console.log('CheckoutClient paymentMethods', paymentMethods);
 
   const { data: session } = useSession();
   const router = useRouter();

@@ -25,7 +25,7 @@ export default async function FeeStructurePage({ params }: PageProps) {
       initialStructures = (await res.json()).data;
     }
   } catch (err) {
-    console.error("[FeeStructurePage] Failed to load fee structures", err);
+    // console.error("[FeeStructurePage] Failed to load fee structures", err);
   }
 
   return (

@@ -221,7 +221,7 @@ const generateSampleTimetableData = (companyId: string): {
 const formatTimeToHHMM = (isoString: string): string => {
   const date = new Date(isoString);
   if (isNaN(date.getTime())) {
-    console.warn("Invalid date string passed to formatTimeToHHMM:", isoString);
+    // console.warn("Invalid date string passed to formatTimeToHHMM:", isoString);
     return '08:00'; // Return a default valid time or handle error appropriately
   }
   // Use UTC methods to ensure no timezone conversion
@@ -617,7 +617,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
         daysOfWeek={daysOfWeekOrder}
         timeSlots={defaultTimeSlots}
         onClickLesson={(entry: TimetableEntry) => {
-          console.log("Editing entry:", entry);
+          // console.log("Editing entry:", entry);
           setEditingEntry(entry);
           setShowFormModal(true);
         }}

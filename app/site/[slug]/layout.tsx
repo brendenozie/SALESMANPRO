@@ -68,15 +68,12 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
   // This call will be de-duplicated by React.cache, hitting the cache instead of the DB again.
   const raw = await findCompanyCached(slug, requestedHost, requestedSubdomain, leanShellInclude());
   if (!raw) {
-    console.log('Store layout: Company not found for', slug, requestedHost, requestedSubdomain);
     notFound();
   }
 
   const storeFormData = transformCompanyToStoreForm(raw);
   const category = normalize(storeFormData.category || 'other');
   const variant = normalize(storeFormData.variant || '');
-
-  console.log('Store layout: Loaded data for', slug, 'Category:', category, 'Variant:', variant);
   
   // --- Layout selection logic (remains the same) ---
   let LayoutComponent = categoryHeaderFooterLayoutMap[variant] || categoryHeaderFooterLayoutMap[category]

@@ -215,7 +215,7 @@ export default function AdminAppointmentsClient({ initialAppointments, initialOr
         toast.success(`Appointment "${selectedItem.service}" status updated to "${newStatus}"!`);
       } else { // It's an OrderItem
         // Mock API call for order item status update - REPLACE WITH YOUR REAL API
-        console.log(`Simulating API call to update OrderItem ${selectedItem.id} to status: ${newStatus}, Rider: ${rider}`);
+        // console.log(`Simulating API call to update OrderItem ${selectedItem.id} to status: ${newStatus}, Rider: ${rider}`);
         const res = await fetch(
           `${apiBaseUrl}/admin/orders/${selectedItem.id}/status`, // Example API endpoint
           {

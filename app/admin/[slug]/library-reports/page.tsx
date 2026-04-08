@@ -16,7 +16,7 @@ export default async function LibraryReportsPage({ params }: { params: Promise<{
       stats = result.data;
     }
   } catch (err) {
-    console.error("Failed to load library analytics", err);
+    // console.error("Failed to load library analytics", err);
   }
 
   return <LibraryReportingClient initialStats={stats} schoolId={schoolId} />;

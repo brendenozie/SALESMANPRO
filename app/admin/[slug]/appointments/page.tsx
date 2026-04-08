@@ -116,7 +116,7 @@ export default async function AppointmentsPage({ params }: Props) {
           status: item.status || item.order?.status || 'UNKNOWN'
         })) || [];
         
-      console.log("✅ Fetched and typed order items:", fetchedOrderItems.length);
+      // console.log("✅ Fetched and typed order items:", fetchedOrderItems.length);
     } else {
       console.error(
         "[AppointmentsPage] Failed to fetch order items →",
@@ -143,7 +143,7 @@ export default async function AppointmentsPage({ params }: Props) {
       ? [...fetchedAppointments, ...fetchedOrderItems] // Use fetched data
       : combinedSamples; // Use fallback data
 
-  console.log("✅ Initial data prepared with unified types:", initialData);
+  // console.log("✅ Initial data prepared with unified types:", initialData);
 
   // 3. Pass the single, unified data array to the client component
   return (

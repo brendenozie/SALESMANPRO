@@ -106,7 +106,7 @@ export default async function AcademicLevelsManagementPage({ params }: PageProps
 
   // If fetching failed or returned no data, use sample data
   if (fetchError || initialAcademicLevels.length === 0) {
-    console.log("[AcademicLevelsManagementPage] Using sample data for academic levels.");
+    // console.log("[AcademicLevelsManagementPage] Using sample data for academic levels.");
     initialAcademicLevels = generateSampleAcademicLevelsData(companyId);
   }
 

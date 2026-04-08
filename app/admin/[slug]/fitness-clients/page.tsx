@@ -221,7 +221,7 @@ export default function ClientsPage() {
       setClients(data);
     } catch (err: any) {
       setError(err.message);
-      console.error("Failed to fetch clients:", err);
+      // console.error("Failed to fetch clients:", err);
     } finally {
       setLoading(false);
     }

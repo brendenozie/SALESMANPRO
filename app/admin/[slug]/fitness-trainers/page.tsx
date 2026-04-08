@@ -162,7 +162,7 @@ export default function TrainersPage() {
       setTrainers(data);
     } catch (err: any) {
       setError(err.message);
-      console.error("Failed to fetch trainers:", err);
+      // console.error("Failed to fetch trainers:", err);
     } finally {
       setLoading(false);
     }

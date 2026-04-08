@@ -99,7 +99,7 @@ export default function AdminCheckinClient({ adminSlug, initialEvents }: Props) 
       setAttendees(data);
     } catch (err: any) {
       setError(err.message || "Failed to fetch attendees for event.");
-      console.error("Attendees check-in fetch error:", err);
+      // console.error("Attendees check-in fetch error:", err);
     } finally {
       setIsLoadingAttendees(false);
     }
@@ -171,7 +171,7 @@ export default function AdminCheckinClient({ adminSlug, initialEvents }: Props) 
     } catch (err: any) {
       setError(err.message || "Failed to update check-in status.");
       setMessage({ type: 'error', text: err.message || "Failed to update check-in status." });
-      console.error("Toggle check-in error:", err);
+      // console.error("Toggle check-in error:", err);
     } finally {
       setIsLoadingAttendees(false);
     }

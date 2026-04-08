@@ -329,8 +329,8 @@ export default function VehiclesPage() {
       const vehiclesData = (await vehiclesRes.json()).data;
       const ridersData = (await ridersRes.json()).data;
 
-      console.log('Fetched Vehicles:', vehiclesData);
-      console.log('Fetched Riders:', ridersData);
+      // console.log('Fetched Vehicles:', vehiclesData);
+      // console.log('Fetched Riders:', ridersData);
 
       setVehicles(vehiclesData || []);
       setRiders(ridersData || []);
@@ -362,7 +362,7 @@ export default function VehiclesPage() {
       const url = isEdit ? `${apiBaseUrl}/admin/delivery-vehicles/${editingVehicle.id}` : `${apiBaseUrl}/admin/delivery-vehicles`;
       const method = isEdit ? 'PUT' : 'POST';
 
-      console.log('Submitting Vehicle Data:', { ...formData, companyId });
+      // console.log('Submitting Vehicle Data:', { ...formData, companyId });
 
       const response = await fetch(url, {
         method,

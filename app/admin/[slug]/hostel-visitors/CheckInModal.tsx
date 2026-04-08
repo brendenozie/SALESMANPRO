@@ -39,7 +39,7 @@ const CheckInModal = ({ schoolId, onClose, onSuccess }: any) => {
               setSearchResults(json.data);
             }
           } catch (err) {
-            console.error("Search failed", err);
+            // console.error("Search failed", err);
           }
         };
         fetchPeople();

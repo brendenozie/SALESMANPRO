@@ -24,10 +24,10 @@ export default async function LibraryBooksPage({ params }: PageProps) {
 
     if (res.ok) {
       initialBooks = (await res.json()).data;
-      console.log(initialBooks);
+      // console.log(initialBooks);
     }
   } catch (err) {
-    console.error("[LibraryBooksPage] Failed to load books", err);
+    // console.error("[LibraryBooksPage] Failed to load books", err);
   }
 
   return (

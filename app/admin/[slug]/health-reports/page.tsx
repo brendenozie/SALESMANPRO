@@ -217,7 +217,9 @@ export default async function AdminReportsPage({ params }: StaffPerformanceRepor
         const data = await response.json();
         setPatients(data.map((p: any) => ({ id: p.id, name: p.name, userId: p.userId })));
       }
-    } catch (e) { console.error("Error fetching patients list:", e); }
+    } catch (e) { 
+      // console.error("Error fetching patients list:", e); 
+    }
   }, [companyId]);
 
   const fetchDoctorsList = useCallback(async () => {
@@ -227,7 +229,9 @@ export default async function AdminReportsPage({ params }: StaffPerformanceRepor
         const data = await response.json();
         setDoctors(data);
       }
-    } catch (e) { console.error("Error fetching doctors list:", e); }
+    } catch (e) { 
+      // console.error("Error fetching doctors list:", e); 
+    }
   }, [companyId]);
 
   const fetchProductsList = useCallback(async () => {
@@ -239,7 +243,9 @@ export default async function AdminReportsPage({ params }: StaffPerformanceRepor
         const categories = Array.from(new Set(data.map((p: any) => p.category).filter(Boolean)));
         setProductCategories(['All', ...categories as string[]]);
       }
-    } catch (e) { console.error("Error fetching products list:", e); }
+    } catch (e) { 
+      // console.error("Error fetching products list:", e); 
+    }
   }, [companyId]);
 
   const fetchServiceNames = useCallback(async () => {
@@ -250,7 +256,9 @@ export default async function AdminReportsPage({ params }: StaffPerformanceRepor
         const names = Array.from(new Set(data.map((s: any) => s.name).filter(Boolean)));
         setServiceNames(['All', ...names as string[]]);
       }
-    } catch (e) { console.error("Error fetching service names:", e); }
+    } catch (e) { 
+      // console.error("Error fetching service names:", e); 
+    }
   }, [companyId]);
 
   useEffect(() => {
@@ -281,7 +289,7 @@ export default async function AdminReportsPage({ params }: StaffPerformanceRepor
       const data: SalesReportData = await response.json();
       setSalesReportData(data);
     } catch (e: any) {
-      console.error("Error fetching sales report:", e);
+      // console.error("Error fetching sales report:", e);
       setError(e.message || "Failed to load sales report.");
     } finally {
       setLoading(false);
@@ -304,7 +312,7 @@ export default async function AdminReportsPage({ params }: StaffPerformanceRepor
       const data: InventoryItemReport[] = await response.json();
       setInventoryReportData(data);
     } catch (e: any) {
-      console.error("Error fetching inventory report:", e);
+      // console.error("Error fetching inventory report:", e);
       setError(e.message || "Failed to load inventory report.");
     } finally {
       setLoading(false);
@@ -331,7 +339,7 @@ export default async function AdminReportsPage({ params }: StaffPerformanceRepor
       const data: AppointmentReportData = await response.json();
       setAppointmentReportData(data);
     } catch (e: any) {
-      console.error("Error fetching appointment report:", e);
+      // console.error("Error fetching appointment report:", e);
       setError(e.message || "Failed to load appointment report.");
     } finally {
       setLoading(false);
@@ -356,7 +364,7 @@ export default async function AdminReportsPage({ params }: StaffPerformanceRepor
       const data: StaffPerformanceItem[] = await response.json();
       setStaffPerformanceData(data);
     } catch (e: any) {
-      console.error("Error fetching staff performance report:", e);
+      // console.error("Error fetching staff performance report:", e);
       setError(e.message || "Failed to load staff performance report.");
     } finally {
       setLoading(false);

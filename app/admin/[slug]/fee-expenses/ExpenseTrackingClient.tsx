@@ -38,7 +38,7 @@ const handleDeleteExpense = async (id: string) => {
       alert("Failed to delete the record. Please try again.");
     }
   } catch (error) {
-    console.error("Delete error:", error);
+    // console.error("Delete error:", error);
   }
 };
 
@@ -61,7 +61,7 @@ const handleSaveExpense = async (data: any) => {
       setIsModalOpen(false);
     }
   } catch (error) {
-    console.error("Failed to save expense", error);
+    // console.error("Failed to save expense", error);
   } finally {
     setIsSubmitting(false);
   }
@@ -73,7 +73,7 @@ const fetchExpenses = async () => {
     const data = await res.json();
     setExpenses(data);
   } catch (err) {
-    console.error("Fetch error", err);
+    // console.error("Fetch error", err);
   } finally {
     setIsLoading(false);
   }

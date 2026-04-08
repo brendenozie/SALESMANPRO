@@ -35,7 +35,7 @@ export default async function AdminStoreLayout({
       session.user.role?.toLowerCase() !== 'store_driver' &&
       session.user.role?.toLowerCase() !== 'parent' &&
       session.user.role?.toLowerCase() !== 'consumer')) {
-      console.log(`Unauthorized access attempt by user ID: ${session?.user?.id} with role: ${session?.user?.role}`);
+      // console.log(`Unauthorized access attempt by user ID: ${session?.user?.id} with role: ${session?.user?.role}`);
     notFound(); // Using notFound instead of redirect for layout, or redirect to a more appropriate unauthorized page
   }
 

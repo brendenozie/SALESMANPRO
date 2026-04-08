@@ -43,7 +43,7 @@ const MembersClient: React.FC<ClientProps> = ({ membersData: initialMembersData,
       }
     } catch (err: any) {
       setError(err.message || "Failed to refresh data.");
-      console.error("Error refreshing data:", err);
+      // console.error("Error refreshing data:", err);
     } finally {
       setLoading(false);
     }
@@ -90,7 +90,7 @@ const MembersClient: React.FC<ClientProps> = ({ membersData: initialMembersData,
       }
     } catch (err: any) {
       setError(err.message || "Failed to add project member.");
-      console.error("Error adding project member:", err);
+      // console.error("Error adding project member:", err);
     } finally {
       setLoading(false);
     }

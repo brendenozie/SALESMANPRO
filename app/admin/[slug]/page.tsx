@@ -376,7 +376,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
         isLoading = false;
         if (res.ok) {
           const data = (await res.json()).data;
-            console.log("[AdminDashboardPage] Raw Student API response:", data);
+            // console.log("[AdminDashboardPage] Raw Student API response:", data);
             studentDashboardData = data;
           // const parsed = StudentDashboardSchema.safeParse(data);
           // if (!parsed.success) {
@@ -565,7 +565,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
   if (res.ok) {
     const jsonResponse =( await res.json());
     
-    console.log("[AdminDashboardPage] Raw Principal API response:", jsonResponse);
+    // console.log("[AdminDashboardPage] Raw Principal API response:", jsonResponse);
     // Validate against the new schema (validating the nested 'data' property)
     const parsed = PrincipalDashboardSchema.safeParse(jsonResponse.data);
 
@@ -573,7 +573,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
       error = 'Principal dashboard data validation failed!';
       logError(error, parsed.error);
       // It's helpful to see exactly what failed in development
-      console.error("Zod Issues:", parsed.error.format()); 
+      // console.error("Zod Issues:", parsed.error.format()); 
       principalDashboardData = getFallbackDashboardData('principal');
     } else {
       // --- Data Transformation Layer ---
@@ -592,10 +592,10 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
         // trendData and impactReport are passed through as-is from the validated schema
       };
 
-      console.log("[AdminDashboardPage] Successfully synced Principal Analytics:", {
-        trendPoints: principalDashboardData.trendData.series[0].data.length,
-        volatilityCount: principalDashboardData.impactReport.length
-      });
+      // console.log("[AdminDashboardPage] Successfully synced Principal Analytics:", {
+      //   trendPoints: principalDashboardData.trendData.series[0].data.length,
+      //   volatilityCount: principalDashboardData.impactReport.length
+      // });
     }
   } else {
     error = `Principal API Error: ${res.status} ${res.statusText}`;
@@ -629,7 +629,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
           isLoading = false;
           if (res.ok) {
             let resData = await res.json();
-            console.log("[AdminDashboardPage] Raw Tutor API response:", resData);
+            // console.log("[AdminDashboardPage] Raw Tutor API response:", resData);
             tutorDashboardData = resData.data; // Assuming API returns { data: { ...tutorDashboardData } }
           } else {
             error = `Failed to fetch tutor dashboard data: ${res.statusText}`;
@@ -671,7 +671,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
           isLoading = false;
           if (res.ok) {
             dashboardCategoryData = (await res.json()).data;
-            console.log("[AdminDashboardPage] Fetched dashboard data for category:", categoryKey, dashboardCategoryData);
+            // console.log("[AdminDashboardPage] Fetched dashboard data for category:", categoryKey, dashboardCategoryData);
             // Add runtime validation here for each dashboard type as needed!
           } else {
             error = `Failed to fetch dashboard data for category "${categoryKey}": ${res.statusText}`;

@@ -260,14 +260,6 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
 
       const { data: orderResponse } = await res.json();
 
-      console.log('Order response', orderResponse);
-      console.log('Payment method', payment.method);
-      console.log('Order response links', {
-        authorizationUrl: orderResponse?.authorizationUrl,
-        checkoutUrl: orderResponse?.checkoutUrl,
-        approveLink: orderResponse?.approveLink,
-      });
-
       if (payment.method === 'paystack' && orderResponse?.authorizationUrl) {
         router.push(orderResponse.authorizationUrl);
         return;
@@ -288,7 +280,6 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
       setTrackingNumber(orderResponse.trackingNumber);
       setIsOrderPlaced(true);
     } catch (err: any) {
-      console.error('Submit error', err);
       setSubmitError(err.message || 'Order failed. Please try again.');
     } finally {
       setIsSubmitting(false);

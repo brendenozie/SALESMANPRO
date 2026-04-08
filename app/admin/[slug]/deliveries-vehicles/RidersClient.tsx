@@ -582,7 +582,7 @@ export default function RidersPage({ params }: RidersPageProps) { // Renamed
       }
       setRiders(data);
     } catch (err: any) {
-      console.error("Error fetching riders:", err);
+      // console.error("Error fetching riders:", err);
       setError(err.message || "Failed to load riders.");
       toast.error(err.message || "Failed to load riders.");
     } finally {
@@ -628,7 +628,7 @@ export default function RidersPage({ params }: RidersPageProps) { // Renamed
       }
       setShowAddEditModal(false);
     } catch (error: any) {
-      console.error("Error saving rider:", error);
+      // console.error("Error saving rider:", error);
       toast.error(error.message || `Failed to ${editingRider ? 'update' : 'add'} rider.`, { id: toastId });
     } finally {
       setIsSubmitting(false);
@@ -653,7 +653,7 @@ export default function RidersPage({ params }: RidersPageProps) { // Renamed
       toast.success(`${riderToDelete.name} deleted successfully!`, { id: deleteToastId });
       setRiderToDelete(null);
     } catch (err: any) {
-      console.error("Error deleting rider:", err);
+      // console.error("Error deleting rider:", err);
       toast.error(err.message || "Failed to delete rider.", { id: deleteToastId });
       setError(err.message || "Failed to delete rider.");
     } finally {

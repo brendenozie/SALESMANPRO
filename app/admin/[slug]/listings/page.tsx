@@ -85,11 +85,11 @@ export default async function ClientInventoryPage({ params }: PageProps) {
       productsData = data.results;    
       
     } else {
-      console.error(
-        "[ClientInventoryPage] Failed to fetch marketplace products:",
-        res.status,
-        res.statusText
-      );
+      // console.error(
+      //   "[ClientInventoryPage] Failed to fetch marketplace products:",
+      //   res.status,
+      //   res.statusText
+      // );
     }
 
     
@@ -108,7 +108,7 @@ export default async function ClientInventoryPage({ params }: PageProps) {
     }
 
   } catch (err: any) {
-    console.error("[ClientInventoryPage] Error fetching marketplace products:", err.message);
+    // console.error("[ClientInventoryPage] Error fetching marketplace products:", err.message);
   }
 
   

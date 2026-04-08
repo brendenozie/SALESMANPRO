@@ -71,7 +71,7 @@ export default async function AdminExpensePage({ params }: Props) {
     }
 
   } catch (err: any) {
-    console.error("AdminInventoryPage-fetch error:", err.message);
+    // console.error("AdminInventoryPage-fetch error:", err.message);
     // We simply proceed with empty arrays if something fails.
   }
 

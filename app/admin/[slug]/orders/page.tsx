@@ -62,16 +62,16 @@ export default async function OrdersPage({ params }: PageProps) {
     const ordersRes = await fetch(`${apiBaseUrl}/admin/customer-orders?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } });
     if (ordersRes.ok) {
       let data = await ordersRes.json();
-      console.log("[OrdersPage] Fetched orders data →", data);
+      // console.log("[OrdersPage] Fetched orders data →", data);
       ordersData = data.data.orders || [];
       
     } else {
       error = `Failed to fetch orders: ${ordersRes.status} ${ordersRes.statusText}`;
-      console.error("[OrdersPage] Failed to fetch orders →", ordersRes.status, ordersRes.statusText);
+      // console.error("[OrdersPage] Failed to fetch orders →", ordersRes.status, ordersRes.statusText);
     }
   } catch (err: any) {
     error = `Error fetching orders data: ${err.message}`;
-    console.error("[OrdersPage] Error fetching orders data →", err.message);
+    // console.error("[OrdersPage] Error fetching orders data →", err.message);
   }
 
   return <OrdersClient ordersData={ordersData} companyId={companyId} initialError={error} />;

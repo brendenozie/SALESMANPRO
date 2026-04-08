@@ -144,7 +144,7 @@ export default function ProductsClient({ initialOrderItems, initialRiders }: Cli
         closeModal();
 
     } catch (e) {
-        console.error("Update failed:", e);
+        // console.error("Update failed:", e);
         // toast.error(`Failed to update order: ${(e as Error).message}`);
     } finally {
         setLoading(false);

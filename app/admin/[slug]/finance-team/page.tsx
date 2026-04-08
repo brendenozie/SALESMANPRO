@@ -92,14 +92,14 @@ const ExpertManagementPage = () => {
         }
       );
       const dataRes= (await res.json()).data;
-      console.log("Fetched experts:", dataRes);
+      // console.log("Fetched experts:", dataRes);
       
       const data: ExpertData[] = dataRes.data || [];
       
 
       setExperts(data);
     } catch (error) {
-      console.error("Error fetching experts:", error);
+      // console.error("Error fetching experts:", error);
     } finally {
       setLoading(false);
     }
@@ -196,7 +196,7 @@ const ExpertManagementPage = () => {
       await fetchExperts();
       setShowModal(false);
     } catch (error) {
-      console.error("Error saving expert:", error);
+      // console.error("Error saving expert:", error);
     } finally {
       setLoading(false);
     }
@@ -214,7 +214,7 @@ const ExpertManagementPage = () => {
         if (!res.ok) throw new Error("Failed to delete expert");
         await fetchExperts();
       } catch (error) {
-        console.error("Error deleting expert:", error);
+        // console.error("Error deleting expert:", error);
       } finally {
         setLoading(false);
       }

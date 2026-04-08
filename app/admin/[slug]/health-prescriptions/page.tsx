@@ -55,10 +55,10 @@ async function getInitialPrescriptionData(companyId: string, cookieHeader: strin
       throw new Error(`Failed to fetch prescriptions: ${res.statusText}`);
     }
     const json = await res.json();
-    console.log("Fetched prescriptions:", json);
+    // console.log("Fetched prescriptions:", json);
     return json.data || [];
   } catch (err) {
-    console.error("getInitialPrescriptionData error:", err);
+    // console.error("getInitialPrescriptionData error:", err);
     return [];
   }
 }
@@ -83,10 +83,10 @@ async function fetchPatients(companyId: string, cookieHeader: string) {
     }
 
     const json = await res.json();
-    console.log("Fetched patients:", json);
+    // console.log("Fetched patients:", json);
     return json.data || [];
   } catch (err) {
-    console.error("fetchPatients error:", err);
+    // console.error("fetchPatients error:", err);
     return [];
   }
 }
@@ -110,10 +110,10 @@ async function fetchDoctors(companyId: string, cookieHeader: string) {
     }
 
     const json = await res.json();
-    console.log("Fetched doctors:", json);
+    // console.log("Fetched doctors:", json);
     return json.data.data || [];
   } catch (err) {
-    console.error("fetchDoctors error:", err);
+    // console.error("fetchDoctors error:", err);
     return [];
   }
 }

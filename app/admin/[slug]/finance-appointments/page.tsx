@@ -139,7 +139,7 @@ export default function AppointmentsPage() {
       const data: Appointment[] = dataRes.data || [];
       setAppointments(data);
     } catch (error) {
-      console.error("Error fetching appointments:", error);
+      // console.error("Error fetching appointments:", error);
     } finally {
       setLoading(false);
     }
@@ -165,7 +165,7 @@ export default function AppointmentsPage() {
       setClients(clientsData);
       setUsers(usersData);
     } catch (error) {
-      console.error("Error fetching clients and users:", error);
+      // console.error("Error fetching clients and users:", error);
     }
   };
 
@@ -236,7 +236,7 @@ export default function AppointmentsPage() {
       await fetchAppointments();
       setShowModal(false);
     } catch (error) {
-      console.error("Error saving appointment:", error);
+      // console.error("Error saving appointment:", error);
     } finally {
       setLoading(false);
     }
@@ -252,7 +252,7 @@ export default function AppointmentsPage() {
         if (!res.ok) throw new Error("Failed to delete appointment");
         await fetchAppointments();
       } catch (error) {
-        console.error("Error deleting appointment:", error);
+        // console.error("Error deleting appointment:", error);
       } finally {
         setLoading(false);
       }

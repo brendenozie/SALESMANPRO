@@ -74,7 +74,7 @@ export async function POST(req: Request) {
 
     return formatResponse(true, academicYear, "Academic Year created", 201);
   } catch (error) {
-    console.error("Academic Year Error:", error);
+    // console.error("Academic Year Error:", error);
     return formatResponse(false, null, "Failed to create academic year", 500);
   }
 }

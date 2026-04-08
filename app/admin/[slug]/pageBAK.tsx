@@ -104,7 +104,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
       if (studentRes.ok) {
         studentDashboardData = (await studentRes.json()).data as StudentDashboardData;
       } else {
-        console.error(`[AdminDashboardPage] Failed to fetch student dashboard data: ${studentRes.status} ${studentRes.statusText}`);
+        // console.error(`[AdminDashboardPage] Failed to fetch student dashboard data: ${studentRes.status} ${studentRes.statusText}`);
         fetchError = true;
       }
     } else if (userRole === 'EDUCATOR' || userRole === 'TEACHER' || userRole === 'LECTURER' || userRole === 'TUTOR' || userRole === 'HEAD_TEACHER' || 
@@ -121,7 +121,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
         if (principalRes.ok) {
           principalDashboardData = (await principalRes.json()) as PrincipalDashboardData;
         } else {
-          console.error(`[AdminDashboardPage] Failed to fetch principal dashboard data: ${principalRes.status} ${principalRes.statusText}`);
+          // console.error(`[AdminDashboardPage] Failed to fetch principal dashboard data: ${principalRes.status} ${principalRes.statusText}`);
           fetchError = true;
         }
       } else {
@@ -133,7 +133,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
         if (tutorRes.ok) {
           tutorDashboardData = (await tutorRes.json()) as TutorDashboardData;
         } else {
-          console.error(`[AdminDashboardPage] Failed to fetch tutor dashboard data: ${tutorRes.status} ${tutorRes.statusText}`);
+          // console.error(`[AdminDashboardPage] Failed to fetch tutor dashboard data: ${tutorRes.status} ${tutorRes.statusText}`);
           fetchError = true;
         }
       }
@@ -146,10 +146,10 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
 
             if (res.ok) {
               let dashRes = (await res.json()).data
-              console.log("Fetched dashboard data:", dashRes);
+              // console.log("Fetched dashboard data:", dashRes);
               serviceDashboardData = dashRes as ServiceProviderDashboardData;
             } else {
-              console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+              // console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
               fetchError = true;
             }
       }
@@ -161,10 +161,10 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
         );
         if (res.ok) {
           let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
+          // console.log("Fetched dashboard data:", dashRes);
           dashboardData = dashRes as DashboardData;
         } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          // console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
           fetchError = true;
         }
       }
@@ -176,11 +176,11 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
         );
         if (res.ok) {
           let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
+          // console.log("Fetched dashboard data:", dashRes);
           dashboardData = dashRes as DashboardData;
         }
         else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          // console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
           fetchError = true;
         }
     }
@@ -192,10 +192,10 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
         );
         if (res.ok) {
           let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
+          // console.log("Fetched dashboard data:", dashRes);
           dashboardData = dashRes as DashboardData;
         } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          // console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
           fetchError = true;
         }
       }
@@ -207,10 +207,10 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
         );
         if (res.ok) {
           let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
+          // console.log("Fetched dashboard data:", dashRes);
           dashboardData = dashRes as DashboardData;
         } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          // console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
           fetchError = true;
         }
       }
@@ -222,10 +222,10 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
         );
         if (res.ok) {
           let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
+          // console.log("Fetched dashboard data:", dashRes);
           dashboardData = dashRes as DashboardData;
         } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          // console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
           fetchError = true;
         }
       }      
@@ -237,10 +237,10 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
         );
         if (res.ok) {
           let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
+          // console.log("Fetched dashboard data:", dashRes);
           dashboardData = dashRes as DashboardData;
         } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          // console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
           fetchError = true;
         }
       }
@@ -252,10 +252,10 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
         );
         if (res.ok) {
           let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
+          // console.log("Fetched dashboard data:", dashRes);
           dashboardData = dashRes as DashboardData;
         } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          // console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
           fetchError = true;
         }
       }      
@@ -267,10 +267,10 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
         );
         if (res.ok) {
           let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
+          // console.log("Fetched dashboard data:", dashRes);
           dashboardData = dashRes as DashboardData;
         } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          // console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
           fetchError = true;
         }
       }     
@@ -282,10 +282,10 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
         );
         if (res.ok) {
           let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
+          // console.log("Fetched dashboard data:", dashRes);
           dashboardData = dashRes as DashboardData;
         } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          // console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
           fetchError = true;
         }
       }
@@ -298,10 +298,10 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
         );
         if (res.ok) {
           let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
+          // console.log("Fetched dashboard data:", dashRes);
           dashboardData = dashRes as DashboardData;
         } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          // console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
           fetchError = true;
         }
       }
@@ -314,10 +314,10 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
         );
         if (res.ok) {
           let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
+          // console.log("Fetched dashboard data:", dashRes);
           dashboardData = dashRes as DashboardData;
         } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          // console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
           fetchError = true;
         }
       }
@@ -329,10 +329,10 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
         );
         if (res.ok) {
           let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
+          // console.log("Fetched dashboard data:", dashRes);
           dashboardData = dashRes as DashboardData;
         } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          // console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
           fetchError = true;
         }
       }
@@ -344,10 +344,10 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
         );
         if (res.ok) {
           let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
+          // console.log("Fetched dashboard data:", dashRes);
           dashboardData = dashRes as DashboardData;
         } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          // console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
           fetchError = true;
         }
       }
@@ -359,10 +359,10 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
         );
         if (res.ok) {
           let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
+          // console.log("Fetched dashboard data:", dashRes);
           dashboardData = dashRes as DashboardData;
         } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          // console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
           fetchError = true;
         }
       }
@@ -374,27 +374,27 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
         );
         if (res.ok) {
           let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
+          // console.log("Fetched dashboard data:", dashRes);
           dashboardData = dashRes as DashboardData;
         } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          // console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
           fetchError = true;
         }
       }
   }
 
   } catch (err: any) {
-    console.error("AdminDashboardPage-fetch error:", err.message);
+    // console.error("AdminDashboardPage-fetch error:", err.message);
     fetchError = true;
   }
 
   // 4. Fallback Data (if fetch failed) - Keep existing fallbacks and add new ones
   if (!dashboardData || fetchError) {
-    console.warn("Using fallback data for general dashboard.");
+    // console.warn("Using fallback data for general dashboard.");
   }
 
   if (userRole === 'STUDENT' && !studentDashboardData) {
-    console.warn("Using fallback data for Student Dashboard.");
+    // console.warn("Using fallback data for Student Dashboard.");
     studentDashboardData = {
       studentStats: [
         { title: 'Courses Enrolled', value: '5', description: 'Total active courses', color: 'bg-blue-50' },
@@ -454,7 +454,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
         },
       };
     } else { // Fallback for Tutor Dashboard (if applicable and failed)
-      console.warn("Using fallback data for Tutor Dashboard.");
+      // console.warn("Using fallback data for Tutor Dashboard.");
       tutorDashboardData = {
         tutorStats: [
           { title: 'Courses Assigned', value: '3', description: 'Currently teaching', color: 'bg-blue-50' },
