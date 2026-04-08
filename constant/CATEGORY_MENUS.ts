@@ -64,13 +64,21 @@ import {
 import { sub } from "date-fns";
 
 // Helper to inject dynamic adminSlug
-//accessLevel is the users different user roles that allows for users to access some paths or not 
+//accessLevel is the users different user roles that allows for users to access some paths or not
 
 export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
   "E-commerce": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "POS", href: `/admin/${adminSlug}/storepos`, icon: ClipboardDocumentListIcon },
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
+    {
+      label: "POS",
+      href: `/admin/${adminSlug}/storepos`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
     {
       label: "Products",
       icon: ClipboardDocumentListIcon,
@@ -80,7 +88,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       ],
     },
     {
-      label:"Users",
+      label: "Users",
       icon: UsersIcon,
       subItems: [
         { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
@@ -101,17 +109,37 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     {
       label: "Vehicles",
       href: `/admin/${adminSlug}/deliveries-vehicles`,
-      icon: TruckIcon
+      icon: TruckIcon,
     },
-    { label: "Reports", href: `/admin/${adminSlug}/revenuereport`, icon: ChartBarIcon },
-    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+    {
+      label: "Reports",
+      href: `/admin/${adminSlug}/revenuereport`,
+      icon: ChartBarIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
   ],
 
-   "Shoes Store": [
+  "Shoes Store": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "POS", href: `/admin/${adminSlug}/storepos`, icon: ClipboardDocumentListIcon },
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
+    {
+      label: "POS",
+      href: `/admin/${adminSlug}/storepos`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
     {
       label: "Products",
       icon: ClipboardDocumentListIcon,
@@ -121,7 +149,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       ],
     },
     {
-      label:"Users",
+      label: "Users",
       icon: UsersIcon,
       subItems: [
         { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
@@ -143,17 +171,37 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     {
       label: "Vehicles",
       href: `/admin/${adminSlug}/deliveries-vehicles`,
-      icon: TruckIcon
+      icon: TruckIcon,
     },
-    { label: "Reports", href: `/admin/${adminSlug}/revenuereport`, icon: ChartBarIcon },
-    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+    {
+      label: "Reports",
+      href: `/admin/${adminSlug}/revenuereport`,
+      icon: ChartBarIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
   ],
 
-   "Fashion Shop": [
+  "Fashion Shop": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "POS", href: `/admin/${adminSlug}/storepos`, icon: ClipboardDocumentListIcon },
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
+    {
+      label: "POS",
+      href: `/admin/${adminSlug}/storepos`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
     {
       label: "Products",
       icon: ClipboardDocumentListIcon,
@@ -163,7 +211,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       ],
     },
     {
-      label:"Users",
+      label: "Users",
       icon: UsersIcon,
       subItems: [
         { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
@@ -185,17 +233,37 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     {
       label: "Vehicles",
       href: `/admin/${adminSlug}/deliveries-vehicles`,
-      icon: TruckIcon
+      icon: TruckIcon,
     },
-    { label: "Reports", href: `/admin/${adminSlug}/revenuereport`, icon: ChartBarIcon },
-    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+    {
+      label: "Reports",
+      href: `/admin/${adminSlug}/revenuereport`,
+      icon: ChartBarIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
   ],
 
-   "Furniture Shop": [
+  "Furniture Shop": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "POS", href: `/admin/${adminSlug}/storepos`, icon: ClipboardDocumentListIcon },
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
+    {
+      label: "POS",
+      href: `/admin/${adminSlug}/storepos`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
     {
       label: "Products",
       icon: ClipboardDocumentListIcon,
@@ -205,7 +273,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       ],
     },
     {
-      label:"Users",
+      label: "Users",
       icon: UsersIcon,
       subItems: [
         { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
@@ -227,74 +295,319 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     {
       label: "Vehicles",
       href: `/admin/${adminSlug}/deliveries-vehicles`,
-      icon: TruckIcon
+      icon: TruckIcon,
     },
-    { label: "Reports", href: `/admin/${adminSlug}/revenuereport`, icon: ChartBarIcon },
-    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+    {
+      label: "Reports",
+      href: `/admin/${adminSlug}/revenuereport`,
+      icon: ChartBarIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
+  ],
+
+  "Meat Store": [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    {
+      label: "POS",
+      href: `/admin/${adminSlug}/storepos`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Products",
+      icon: ClipboardDocumentListIcon,
+      subItems: [
+        { label: "Browse Catalog", href: `/admin/${adminSlug}/inventory` },
+        { label: "Market List", href: `/admin/${adminSlug}/mymarketplace` },
+      ],
+    },
+    {
+      label: "Users",
+      icon: UsersIcon,
+      subItems: [
+        { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
+        { label: "Riders", href: `/admin/${adminSlug}/riders` },
+        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
+        // { label: "Suppliers", href: `/admin/${adminSlug}/suppliers` },
+      ],
+    },
+    {
+      label: "Orders",
+      icon: UsersIcon,
+      subItems: [
+        { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
+        { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
+        { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
+        { label: "Delivery", href: `/admin/${adminSlug}/deliveries` },
+      ],
+    },
+    {
+      label: "Vehicles",
+      href: `/admin/${adminSlug}/deliveries-vehicles`,
+      icon: TruckIcon,
+    },
+    {
+      label: "Reports",
+      href: `/admin/${adminSlug}/revenuereport`,
+      icon: ChartBarIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
+  ],
+
+  "Hardware Shop": [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    {
+      label: "POS",
+      href: `/admin/${adminSlug}/storepos`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Products",
+      icon: ClipboardDocumentListIcon,
+      subItems: [
+        { label: "Browse Catalog", href: `/admin/${adminSlug}/inventory` },
+        { label: "Market List", href: `/admin/${adminSlug}/mymarketplace` },
+      ],
+    },
+    {
+      label: "Users",
+      icon: UsersIcon,
+      subItems: [
+        { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
+        { label: "Riders", href: `/admin/${adminSlug}/riders` },
+        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
+        // { label: "Suppliers", href: `/admin/${adminSlug}/suppliers` },
+      ],
+    },
+    {
+      label: "Orders",
+      icon: UsersIcon,
+      subItems: [
+        { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
+        { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
+        { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
+        { label: "Delivery", href: `/admin/${adminSlug}/deliveries` },
+      ],
+    },
+    {
+      label: "Vehicles",
+      href: `/admin/${adminSlug}/deliveries-vehicles`,
+      icon: TruckIcon,
+    },
+    {
+      label: "Reports",
+      href: `/admin/${adminSlug}/revenuereport`,
+      icon: ChartBarIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
   ],
 
   "Service Provider": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
-    { label: "POS", href: `/admin/${adminSlug}/service-pos`, icon: ClipboardDocumentListIcon },
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-    { label: "Calendar", href: `/admin/${adminSlug}/calendar`, icon: CalendarIcon },
-    { label: "Services", href: `/admin/${adminSlug}/services`, icon: WrenchScrewdriverIcon },
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    {
+      label: "POS",
+      href: `/admin/${adminSlug}/service-pos`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Calendar",
+      href: `/admin/${adminSlug}/calendar`,
+      icon: CalendarIcon,
+    },
+    {
+      label: "Services",
+      href: `/admin/${adminSlug}/services`,
+      icon: WrenchScrewdriverIcon,
+    },
     {
       label: "Bookings",
       icon: CalendarIcon,
       subItems: [
-        { label: "Manage Appointments", href: `/admin/${adminSlug}/appointments` },
+        {
+          label: "Manage Appointments",
+          href: `/admin/${adminSlug}/appointments`,
+        },
         { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
-    { label: "blogs", href: `/admin/${adminSlug}/blogs`, icon: WrenchScrewdriverIcon },
-    { label: "Reports", href: `/admin/${adminSlug}/revenuereport`, icon: ChartBarIcon },
-    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+    {
+      label: "blogs",
+      href: `/admin/${adminSlug}/blogs`,
+      icon: WrenchScrewdriverIcon,
+    },
+    {
+      label: "Reports",
+      href: `/admin/${adminSlug}/revenuereport`,
+      icon: ChartBarIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
   ],
 
   "Booking & Appointments": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
-    { label: "POS", href: `/admin/${adminSlug}/service-pos`, icon: ClipboardDocumentListIcon },
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-    { label: "Calendar", href: `/admin/${adminSlug}/calendar`, icon: CalendarIcon },
-    { label: "Services", href: `/admin/${adminSlug}/services`, icon: WrenchScrewdriverIcon },
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    {
+      label: "POS",
+      href: `/admin/${adminSlug}/service-pos`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Calendar",
+      href: `/admin/${adminSlug}/calendar`,
+      icon: CalendarIcon,
+    },
+    {
+      label: "Services",
+      href: `/admin/${adminSlug}/services`,
+      icon: WrenchScrewdriverIcon,
+    },
     {
       label: "Bookings",
       icon: CalendarIcon,
       subItems: [
-        { label: "Manage Appointments", href: `/admin/${adminSlug}/appointments` },
+        {
+          label: "Manage Appointments",
+          href: `/admin/${adminSlug}/appointments`,
+        },
         { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
     // { label: "Appointments", href: `/admin/${adminSlug}/appointments`, icon: ClipboardDocumentListIcon },
     // { label: "Clients", href: `/admin/${adminSlug}/storeclients`, icon: UsersIcon },
-    { label: "blogs", href: `/admin/${adminSlug}/blogs`, icon: WrenchScrewdriverIcon },
-    { label: "Reports", href: `/admin/${adminSlug}/revenuereport`, icon: ChartBarIcon },
-    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+    {
+      label: "blogs",
+      href: `/admin/${adminSlug}/blogs`,
+      icon: WrenchScrewdriverIcon,
+    },
+    {
+      label: "Reports",
+      href: `/admin/${adminSlug}/revenuereport`,
+      icon: ChartBarIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
   ],
 
   "Portfolio & Personal Branding": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "POS", href: `/admin/${adminSlug}/service-pos`, icon: ClipboardDocumentListIcon },
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },    
-    { label: "Calendar", href: `/admin/${adminSlug}/calendar`, icon: CalendarIcon },
-    { label: "Projects", href: `/admin/${adminSlug}/projects`, icon: PresentationChartBarIcon },
-    { label: "Services", href: `/admin/${adminSlug}/services`, icon: WrenchScrewdriverIcon },
+    {
+      label: "POS",
+      href: `/admin/${adminSlug}/service-pos`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Calendar",
+      href: `/admin/${adminSlug}/calendar`,
+      icon: CalendarIcon,
+    },
+    {
+      label: "Projects",
+      href: `/admin/${adminSlug}/projects`,
+      icon: PresentationChartBarIcon,
+    },
+    {
+      label: "Services",
+      href: `/admin/${adminSlug}/services`,
+      icon: WrenchScrewdriverIcon,
+    },
     {
       label: "Bookings",
       icon: CalendarIcon,
       subItems: [
-        { label: "Manage Appointments", href: `/admin/${adminSlug}/appointments` },
+        {
+          label: "Manage Appointments",
+          href: `/admin/${adminSlug}/appointments`,
+        },
         { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
-    { label: "blogs", href: `/admin/${adminSlug}/blogs`, icon: WrenchScrewdriverIcon },
-    { label: "Reports", href: `/admin/${adminSlug}/reports`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+    {
+      label: "blogs",
+      href: `/admin/${adminSlug}/blogs`,
+      icon: WrenchScrewdriverIcon,
+    },
+    {
+      label: "Reports",
+      href: `/admin/${adminSlug}/reports`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
   ],
 
   "Blog & Content": [
@@ -302,21 +615,43 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     {
       label: "Blogs",
       icon: DocumentTextIcon,
-      subItems: [
-        { label: "All Blogs", href: `/admin/${adminSlug}/blogs` },
-      ],
+      subItems: [{ label: "All Blogs", href: `/admin/${adminSlug}/blogs` }],
     },
     { label: "Writers", href: `/admin/${adminSlug}/writers`, icon: UsersIcon },
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-    { label: "Podcast", href: `/admin/${adminSlug}/podcast`, icon: ClipboardDocumentListIcon },
-    { label: "Comments", href: `/admin/${adminSlug}/comments`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Analytics", href: `/admin/${adminSlug}/analytics`, icon: ChartBarIcon },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Podcast",
+      href: `/admin/${adminSlug}/podcast`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Comments",
+      href: `/admin/${adminSlug}/comments`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Analytics",
+      href: `/admin/${adminSlug}/analytics`,
+      icon: ChartBarIcon,
+    },
   ],
 
   "Directory & Listings": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "POS", href: `/admin/${adminSlug}/storepos`, icon: ClipboardDocumentListIcon },
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
+    {
+      label: "POS",
+      href: `/admin/${adminSlug}/storepos`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
     {
       label: "Products",
       icon: ClipboardDocumentListIcon,
@@ -326,7 +661,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       ],
     },
     {
-      label:"Users",
+      label: "Users",
       icon: UsersIcon,
       subItems: [
         { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
@@ -347,11 +682,23 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     {
       label: "Vehicles",
       href: `/admin/${adminSlug}/deliveries-vehicles`,
-      icon: TruckIcon
+      icon: TruckIcon,
     },
-    { label: "Reports", href: `/admin/${adminSlug}/revenuereport`, icon: ChartBarIcon },
-    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+    {
+      label: "Reports",
+      href: `/admin/${adminSlug}/revenuereport`,
+      icon: ChartBarIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
   ],
 
   // OLD PAth
@@ -363,7 +710,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
   // ],
 
   "Educational & Online Courses": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     {
       label: "Management",
       icon: ClipboardDocumentListIcon,
@@ -372,13 +719,19 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         // { label: "Terms/Semesters", href: `/admin/${adminSlug}/terms` },
         { label: "Departments", href: `/admin/${adminSlug}/departments` },
         { label: "Categories", href: `/admin/${adminSlug}/categories` },
-        { label: "Academic Levels", href: `/admin/${adminSlug}/academic-levels` },
+        {
+          label: "Academic Levels",
+          href: `/admin/${adminSlug}/academic-levels`,
+        },
         { label: "Classrooms", href: `/admin/${adminSlug}/classrooms` },
         { label: "Teachers", href: `/admin/${adminSlug}/teachers` },
-        { label: "Parents", href: `/admin/${adminSlug}/parents` },     
-        { label: "Students", href: `/admin/${adminSlug}/students` }, 
+        { label: "Parents", href: `/admin/${adminSlug}/parents` },
+        { label: "Students", href: `/admin/${adminSlug}/students` },
         { label: "Courses", href: `/admin/${adminSlug}/courses` },
-        { label: "Course Materials", href: `/admin/${adminSlug}/course-materials` },        
+        {
+          label: "Course Materials",
+          href: `/admin/${adminSlug}/course-materials`,
+        },
         { label: "TimeTable", href: `/admin/${adminSlug}/lessons` },
       ],
     },
@@ -394,86 +747,148 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Exams/Assessments",
       icon: AcademicCapIcon,
       subItems: [
-        { label: "Exam Categories", href: `/admin/${adminSlug}/exam-categories`},
+        {
+          label: "Exam Categories",
+          href: `/admin/${adminSlug}/exam-categories`,
+        },
         { label: "Exams", href: `/admin/${adminSlug}/exams` },
         // { label: "Results", href: `/admin/${adminSlug}/results` },
-        { label: "Grades & Report Card", href: `/admin/${adminSlug}/grading-report-card` },
+        {
+          label: "Grades & Report Card",
+          href: `/admin/${adminSlug}/grading-report-card`,
+        },
       ],
-    },    
-    { label: "Attendance", href: `/admin/${adminSlug}/attendance`, icon: HomeIcon },
+    },
+    {
+      label: "Attendance",
+      href: `/admin/${adminSlug}/attendance`,
+      icon: HomeIcon,
+    },
     {
       label: "Events",
       icon: AcademicCapIcon,
       subItems: [
         { label: "All Events", href: `/admin/${adminSlug}/school-events` },
       ],
-    },    
-    { label: "Announcements", href: `/admin/${adminSlug}/schoolAnnouncements`, icon: AcademicCapIcon },
-    { label: "Library", href: `/admin/${adminSlug}/library`, 
-      icon: HomeIcon , 
+    },
+    {
+      label: "Announcements",
+      href: `/admin/${adminSlug}/schoolAnnouncements`,
+      icon: AcademicCapIcon,
+    },
+    {
+      label: "Library",
+      href: `/admin/${adminSlug}/library`,
+      icon: HomeIcon,
       subItems: [
-        { label: "Categories", href: `/admin/${adminSlug}/library-books-categories` },
-        { label: "Books",  href: `/admin/${adminSlug}/library-books` },
+        {
+          label: "Categories",
+          href: `/admin/${adminSlug}/library-books-categories`,
+        },
+        { label: "Books", href: `/admin/${adminSlug}/library-books` },
         { label: "Members", href: `/admin/${adminSlug}/library-members` },
-        { label: "Issuance Records", href: `/admin/${adminSlug}/library-issuance-records` },
+        {
+          label: "Issuance Records",
+          href: `/admin/${adminSlug}/library-issuance-records`,
+        },
         { label: "Returns", href: `/admin/${adminSlug}/library-returns` },
         { label: "Fines", href: `/admin/${adminSlug}/library-fines` },
-        { label: "Maintenance", href: `/admin/${adminSlug}/library-maintenance` },
-        { label: "Reservations", href: `/admin/${adminSlug}/library-reservations` },
-        { label: "Suppliers Categories", href: `/admin/${adminSlug}/library-suppliers-categories` },
+        {
+          label: "Maintenance",
+          href: `/admin/${adminSlug}/library-maintenance`,
+        },
+        {
+          label: "Reservations",
+          href: `/admin/${adminSlug}/library-reservations`,
+        },
+        {
+          label: "Suppliers Categories",
+          href: `/admin/${adminSlug}/library-suppliers-categories`,
+        },
         { label: "Suppliers", href: `/admin/${adminSlug}/library-suppliers` },
-        { label: "Acquisitions", href: `/admin/${adminSlug}/library-acquisitions` },
+        {
+          label: "Acquisitions",
+          href: `/admin/${adminSlug}/library-acquisitions`,
+        },
         { label: "Inventory", href: `/admin/${adminSlug}/library-inventory` },
         { label: "Reports", href: `/admin/${adminSlug}/library-reports` },
       ],
     },
-    { label: "Transport", href: `/admin/${adminSlug}/transport`, icon: HomeIcon,
+    {
+      label: "Transport",
+      href: `/admin/${adminSlug}/transport`,
+      icon: HomeIcon,
       subItems: [
         { label: "Vehicles", href: `/admin/${adminSlug}/transport-vehicles` },
         { label: "Routes", href: `/admin/${adminSlug}/transport-routes` },
         { label: "Drivers", href: `/admin/${adminSlug}/transport-drivers` },
         { label: "Schedules", href: `/admin/${adminSlug}/transport-schedules` },
-        { label: "Maintenance Records", href: `/admin/${adminSlug}/transport-maintenance-records` },
+        {
+          label: "Maintenance Records",
+          href: `/admin/${adminSlug}/transport-maintenance-records`,
+        },
         { label: "Fuel Logs", href: `/admin/${adminSlug}/transport-fuel-logs` },
-        { label: "Assignments", href: `/admin/${adminSlug}/transport-assignments` },
+        {
+          label: "Assignments",
+          href: `/admin/${adminSlug}/transport-assignments`,
+        },
         { label: "Incidents", href: `/admin/${adminSlug}/transport-incidents` },
         { label: "Reports", href: `/admin/${adminSlug}/transport-reports` },
       ],
     },
-    { label: "Hostel", href: `/admin/${adminSlug}/hostel`, icon: HomeIcon,
+    {
+      label: "Hostel",
+      href: `/admin/${adminSlug}/hostel`,
+      icon: HomeIcon,
       subItems: [
         { label: "Blocks", href: `/admin/${adminSlug}/hostel-blocks` },
         { label: "Rooms", href: `/admin/${adminSlug}/hostel-rooms` },
         { label: "Residents", href: `/admin/${adminSlug}/hostel-residents` },
-        { label: "Room Assignments", href: `/admin/${adminSlug}/hostel-room-assignments` },
-        { label: "Maintenance Requests", href: `/admin/${adminSlug}/hostel-maintenance-requests` },
+        {
+          label: "Room Assignments",
+          href: `/admin/${adminSlug}/hostel-room-assignments`,
+        },
+        {
+          label: "Maintenance Requests",
+          href: `/admin/${adminSlug}/hostel-maintenance-requests`,
+        },
         { label: "Visitors", href: `/admin/${adminSlug}/hostel-visitors` },
         // { label: "Fee Management", href: `/admin/${adminSlug}/hostel-fee-management` },
         // { label: "Inventory", href: `/admin/${adminSlug}/hostel-inventory` },
         { label: "Staff", href: `/admin/${adminSlug}/hostel-staff` },
         { label: "Reports", href: `/admin/${adminSlug}/hostel-reports` },
-      ], 
-     },
-    { label: "Staff", href: `/admin/${adminSlug}/staff`, icon: HomeIcon,
+      ],
+    },
+    {
+      label: "Staff",
+      href: `/admin/${adminSlug}/staff`,
+      icon: HomeIcon,
       subItems: [
         { label: "Departments", href: `/admin/${adminSlug}/staff-departments` },
         { label: "Roles", href: `/admin/${adminSlug}/staff-roles` },
         { label: "Staff Members", href: `/admin/${adminSlug}/staff-members` },
         { label: "Attendance", href: `/admin/${adminSlug}/staff-attendance` },
         { label: "Payroll", href: `/admin/${adminSlug}/staff-payroll` },
-        { label: "Leave Management", href: `/admin/${adminSlug}/staff-leave-management` },
-        { label: "Performance Reviews", href: `/admin/${adminSlug}/staff-performance-reviews` },
+        {
+          label: "Leave Management",
+          href: `/admin/${adminSlug}/staff-leave-management`,
+        },
+        {
+          label: "Performance Reviews",
+          href: `/admin/${adminSlug}/staff-performance-reviews`,
+        },
         { label: "Recruitment", href: `/admin/${adminSlug}/staff-recruitment` },
         { label: "Reports", href: `/admin/${adminSlug}/staff-reports` },
       ],
     },
     {
-      label: "FEE Management", icon: BanknotesIcon,
+      label: "FEE Management",
+      icon: BanknotesIcon,
       subItems: [
         // { label: "FEE Dashboard", href: `/admin/${adminSlug}/fee-dashboard` },
-        // { label: "FEE Structure", href: `/admin/${adminSlug}/fee-structure` },        
-        { label: "FEE Structure", href: `/admin/${adminSlug}/fee-items` },          
-        { label: "FEE Transactions", href: `/admin/${adminSlug}/fee` },     
+        // { label: "FEE Structure", href: `/admin/${adminSlug}/fee-structure` },
+        { label: "FEE Structure", href: `/admin/${adminSlug}/fee-items` },
+        { label: "FEE Transactions", href: `/admin/${adminSlug}/fee` },
         // { label: "Transactions", href: `/admin/${adminSlug}/fee-transactions` },
         // { label: "Invoices", href: `/admin/${adminSlug}/fee-invoices` },
         { label: "Expenses", href: `/admin/${adminSlug}/fee-expenses` },
@@ -484,115 +899,322 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       ],
     },
     {
-      label: "Inventory & Asset Manage", icon: HomeIcon,
+      label: "Inventory & Asset Manage",
+      icon: HomeIcon,
       subItems: [
-        { label: "Inventory Dashboard", href: `/admin/${adminSlug}/inventory-dashboard` },
-        { label: "Assets Overview", href: `/admin/${adminSlug}/inventory-assets-overview` },
-        { label: "Assets", href: `/admin/${adminSlug}/inventory-assets-list` },        
+        {
+          label: "Inventory Dashboard",
+          href: `/admin/${adminSlug}/inventory-dashboard`,
+        },
+        {
+          label: "Assets Overview",
+          href: `/admin/${adminSlug}/inventory-assets-overview`,
+        },
+        { label: "Assets", href: `/admin/${adminSlug}/inventory-assets-list` },
         { label: "Asset Tracking", href: `/admin/${adminSlug}/asset-tracking` },
-        { label: "Categories", href: `/admin/${adminSlug}/inventory-categories` },
-        { label: "Inventory Items", href: `/admin/${adminSlug}/inventory-items` },
-        { label: "Inventory Audits", href: `/admin/${adminSlug}/inventory-audits` },
+        {
+          label: "Categories",
+          href: `/admin/${adminSlug}/inventory-categories`,
+        },
+        {
+          label: "Inventory Items",
+          href: `/admin/${adminSlug}/inventory-items`,
+        },
+        {
+          label: "Inventory Audits",
+          href: `/admin/${adminSlug}/inventory-audits`,
+        },
         { label: "Suppliers", href: `/admin/${adminSlug}/inventory-suppliers` },
-        { label: "Purchase Orders", href: `/admin/${adminSlug}/inventory-purchase-orders` },
-        { label: "Maintenance Records", href: `/admin/${adminSlug}/inventory-maintenance-records` },
-        { label: "Depreciation Schedules", href: `/admin/${adminSlug}/inventory-depreciation-schedules` },
+        {
+          label: "Purchase Orders",
+          href: `/admin/${adminSlug}/inventory-purchase-orders`,
+        },
+        {
+          label: "Maintenance Records",
+          href: `/admin/${adminSlug}/inventory-maintenance-records`,
+        },
+        {
+          label: "Depreciation Schedules",
+          href: `/admin/${adminSlug}/inventory-depreciation-schedules`,
+        },
         { label: "Reports", href: `/admin/${adminSlug}/inventory-reports` },
       ],
     },
-    { label: "Reports", href: `/admin/${adminSlug}/school-reports`, icon: HomeIcon },
-    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+    {
+      label: "Reports",
+      href: `/admin/${adminSlug}/school-reports`,
+      icon: HomeIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
   ],
-  
+
   "Nonprofit & Community": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-    { label: "Projects", href: `/admin/${adminSlug}/projects`, icon: PresentationChartBarIcon },
-    { label: "Donations", href: `/admin/${adminSlug}/donations`, icon: HeartIcon },
-    { label: "Campaigns", href: `/admin/${adminSlug}/campaigns`, icon: MegaphoneIcon }, // Added Campaigns link
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Projects",
+      href: `/admin/${adminSlug}/projects`,
+      icon: PresentationChartBarIcon,
+    },
+    {
+      label: "Donations",
+      href: `/admin/${adminSlug}/donations`,
+      icon: HeartIcon,
+    },
+    {
+      label: "Campaigns",
+      href: `/admin/${adminSlug}/campaigns`,
+      icon: MegaphoneIcon,
+    }, // Added Campaigns link
     { label: "Donors", href: `/admin/${adminSlug}/donors`, icon: UsersIcon },
     { label: "Members", href: `/admin/${adminSlug}/members`, icon: UsersIcon },
-    { label: "blogs", href: `/admin/${adminSlug}/blogs`, icon: WrenchScrewdriverIcon },
-    { label: "Manage Events", href: `/admin/${adminSlug}/manage-events`, icon: TicketIcon },
+    {
+      label: "blogs",
+      href: `/admin/${adminSlug}/blogs`,
+      icon: WrenchScrewdriverIcon,
+    },
+    {
+      label: "Manage Events",
+      href: `/admin/${adminSlug}/manage-events`,
+      icon: TicketIcon,
+    },
   ],
 
   "Restaurant & Food Delivery": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
-    { label: "Menu", href: `/admin/${adminSlug}/menu`, icon: ClipboardDocumentListIcon },
-    { label: "Orders", href: `/admin/${adminSlug}/orders`, icon: UsersIcon },
-    { label: "Delivery", href: `/admin/${adminSlug}/delivery`, icon: GlobeAltIcon },
-    { label: "blogs", href: `/admin/${adminSlug}/blogs`, icon: WrenchScrewdriverIcon },
-  ],
-  
- "Event & Ticketing": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "POS", href: `/admin/${adminSlug}/company-pos`, icon: CreditCardIcon }, // Changed icon for POS for better representation
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-    // { label: "Events", href: `/admin/${adminSlug}/company-events`, icon: CalendarIcon },    
     {
-      label:"Users",
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "POS",
+      href: `/admin/${adminSlug}/pos`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Menu",
+      href: `/admin/${adminSlug}/menu`,
+      icon: ClipboardDocumentListIcon,
+    },
+    { label: "Orders", href: `/admin/${adminSlug}/orders`, icon: UsersIcon },
+    {
+      label: "Delivery",
+      href: `/admin/${adminSlug}/delivery`,
+      icon: GlobeAltIcon,
+    },
+    {
+      label: "blogs",
+      href: `/admin/${adminSlug}/blogs`,
+      icon: WrenchScrewdriverIcon,
+    },
+  ],
+
+  "Event & Ticketing": [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    {
+      label: "POS",
+      href: `/admin/${adminSlug}/company-pos`,
+      icon: CreditCardIcon,
+    }, // Changed icon for POS for better representation
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    // { label: "Events", href: `/admin/${adminSlug}/company-events`, icon: CalendarIcon },
+    {
+      label: "Users",
       icon: UsersIcon,
       subItems: [
         { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
         { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
-    { label: "Manage Events", href: `/admin/${adminSlug}/manage-events`, icon: TicketIcon },
-    { label: "Tickets", href: `/admin/${adminSlug}/manage-tickets`, icon: TicketIcon }, // Changed icon to TicketIcon for clarity
-    { label: "Attendees", href: `/admin/${adminSlug}/manage-attendees`, icon: UsersIcon },
-    { label: "Orders", href: `/admin/${adminSlug}/manage-event-orders`, icon: ShoppingBagIcon }, // Added Orders for transaction tracking
-    { label: "Check-in", href: `/admin/${adminSlug}/manage-check-in`, icon: QrCodeIcon }, // For attendee check-in at events    
-    { label: "blogs", href: `/admin/${adminSlug}/blogs`, icon: WrenchScrewdriverIcon },
+    {
+      label: "Manage Events",
+      href: `/admin/${adminSlug}/manage-events`,
+      icon: TicketIcon,
+    },
+    {
+      label: "Tickets",
+      href: `/admin/${adminSlug}/manage-tickets`,
+      icon: TicketIcon,
+    }, // Changed icon to TicketIcon for clarity
+    {
+      label: "Attendees",
+      href: `/admin/${adminSlug}/manage-attendees`,
+      icon: UsersIcon,
+    },
+    {
+      label: "Orders",
+      href: `/admin/${adminSlug}/manage-event-orders`,
+      icon: ShoppingBagIcon,
+    }, // Added Orders for transaction tracking
+    {
+      label: "Check-in",
+      href: `/admin/${adminSlug}/manage-check-in`,
+      icon: QrCodeIcon,
+    }, // For attendee check-in at events
+    {
+      label: "blogs",
+      href: `/admin/${adminSlug}/blogs`,
+      icon: WrenchScrewdriverIcon,
+    },
   ],
 
   "Content Management": [
-    { label: "Pages", href: `/admin/${adminSlug}/pages`, icon: DocumentTextIcon }, // For static pages like About Us, Contact
-    { label: "Blog Posts", href: `/admin/${adminSlug}/blog`, icon: NewspaperIcon }, // If you have a blog
-    { label: "Announcements", href: `/admin/${adminSlug}/announcements`, icon: MegaphoneIcon }, // For site-wide announcements
-    { label: "Promotions", href: `/admin/${adminSlug}/promotions`, icon: TagIcon }, // For discounts, promo codes
-    { label: "Sponsors", href: `/admin/${adminSlug}/sponsors`, icon: HandRaisedIcon }, // If events have sponsors
-    { label: "Media Library", href: `/admin/${adminSlug}/media`, icon: PhotoIcon }, // Central place for images, videos
+    {
+      label: "Pages",
+      href: `/admin/${adminSlug}/pages`,
+      icon: DocumentTextIcon,
+    }, // For static pages like About Us, Contact
+    {
+      label: "Blog Posts",
+      href: `/admin/${adminSlug}/blog`,
+      icon: NewspaperIcon,
+    }, // If you have a blog
+    {
+      label: "Announcements",
+      href: `/admin/${adminSlug}/announcements`,
+      icon: MegaphoneIcon,
+    }, // For site-wide announcements
+    {
+      label: "Promotions",
+      href: `/admin/${adminSlug}/promotions`,
+      icon: TagIcon,
+    }, // For discounts, promo codes
+    {
+      label: "Sponsors",
+      href: `/admin/${adminSlug}/sponsors`,
+      icon: HandRaisedIcon,
+    }, // If events have sponsors
+    {
+      label: "Media Library",
+      href: `/admin/${adminSlug}/media`,
+      icon: PhotoIcon,
+    }, // Central place for images, videos
   ],
 
   "User Management": [
     { label: "Users", href: `/admin/${adminSlug}/users`, icon: UserGroupIcon }, // Manage all platform users
-    { label: "Roles & Permissions", href: `/admin/${adminSlug}/roles`, icon: KeyIcon }, // If you have different admin/organizer roles
-    { label: "Organizers", href: `/admin/${adminSlug}/organizers`, icon: BuildingOfficeIcon }, // Manage event organizers (if distinct from general users)
+    {
+      label: "Roles & Permissions",
+      href: `/admin/${adminSlug}/roles`,
+      icon: KeyIcon,
+    }, // If you have different admin/organizer roles
+    {
+      label: "Organizers",
+      href: `/admin/${adminSlug}/organizers`,
+      icon: BuildingOfficeIcon,
+    }, // Manage event organizers (if distinct from general users)
   ],
 
   "Financials & Reports": [
-    { label: "Payouts", href: `/admin/${adminSlug}/payouts`, icon: BanknotesIcon }, // Track money paid out to organizers
-    { label: "Transactions", href: `/admin/${adminSlug}/transactions`, icon: ReceiptPercentIcon }, // Detailed transaction logs
-    { label: "Revenue Reports", href: `/admin/${adminSlug}/reports/revenue`, icon: ChartBarIcon },
-    { label: "Sales Reports", href: `/admin/${adminSlug}/reports/sales`, icon: ChartPieIcon },
+    {
+      label: "Payouts",
+      href: `/admin/${adminSlug}/payouts`,
+      icon: BanknotesIcon,
+    }, // Track money paid out to organizers
+    {
+      label: "Transactions",
+      href: `/admin/${adminSlug}/transactions`,
+      icon: ReceiptPercentIcon,
+    }, // Detailed transaction logs
+    {
+      label: "Revenue Reports",
+      href: `/admin/${adminSlug}/reports/revenue`,
+      icon: ChartBarIcon,
+    },
+    {
+      label: "Sales Reports",
+      href: `/admin/${adminSlug}/reports/sales`,
+      icon: ChartPieIcon,
+    },
   ],
-  
-  "Settings": [
-    { label: "General Settings", href: `/admin/${adminSlug}/settings/general`, icon: Cog6ToothIcon },
-    { label: "Profile", href: `/admin/${adminSlug}/settings/profile`, icon: UserCircleIcon }, // Admin user profile settings
-    { label: "Integrations", href: `/admin/${adminSlug}/settings/integrations`, icon: PuzzlePieceIcon }, // API keys, third-party connections
-    { label: "Audit Log", href: `/admin/${adminSlug}/settings/audit-log`, icon: ListBulletIcon }, // Track admin actions
+
+  Settings: [
+    {
+      label: "General Settings",
+      href: `/admin/${adminSlug}/settings/general`,
+      icon: Cog6ToothIcon,
+    },
+    {
+      label: "Profile",
+      href: `/admin/${adminSlug}/settings/profile`,
+      icon: UserCircleIcon,
+    }, // Admin user profile settings
+    {
+      label: "Integrations",
+      href: `/admin/${adminSlug}/settings/integrations`,
+      icon: PuzzlePieceIcon,
+    }, // API keys, third-party connections
+    {
+      label: "Audit Log",
+      href: `/admin/${adminSlug}/settings/audit-log`,
+      icon: ListBulletIcon,
+    }, // Track admin actions
   ],
 
   "Real Estate": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon }, // Overall view of key metrics    
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-    { label: "Locations", href: `/admin/${adminSlug}/locations`, icon: MapPinIcon }, // company-locations properties-locations Manage geographic locations for listings
-    { label: "Agents", href: `/admin/${adminSlug}/properties-agents`, icon: UsersIcon }, // Manage agent profiles, performance, and assignments
-    { label: "Clients", href: `/admin/${adminSlug}/clients`, icon: UserGroupIcon }, // Manage client profiles, inquiries, and history (changed to UserGroupIcon for clarity)
-    { label: "Properties", href: `/admin/${adminSlug}/properties`, icon: BuildingOfficeIcon }, // Manage all property listings (add, edit, delete, status)
-    { label: "Inquiries", href: `/admin/${adminSlug}/properties-inquiries`, icon: ChatBubbleLeftRightIcon }, // Track and manage all property inquiries and messages
-    { label: "Showings", href: `/admin/${adminSlug}/properties-showings`, icon: CalendarDaysIcon }, // Schedule and manage property viewings
-    { label: "Offers & Contracts", href: `/admin/${adminSlug}/properties-offers`, icon: DocumentTextIcon }, // Manage offers, sales agreements, and contracts
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon }, // Overall view of key metrics
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Locations",
+      href: `/admin/${adminSlug}/locations`,
+      icon: MapPinIcon,
+    }, // company-locations properties-locations Manage geographic locations for listings
+    {
+      label: "Agents",
+      href: `/admin/${adminSlug}/properties-agents`,
+      icon: UsersIcon,
+    }, // Manage agent profiles, performance, and assignments
+    {
+      label: "Clients",
+      href: `/admin/${adminSlug}/clients`,
+      icon: UserGroupIcon,
+    }, // Manage client profiles, inquiries, and history (changed to UserGroupIcon for clarity)
+    {
+      label: "Properties",
+      href: `/admin/${adminSlug}/properties`,
+      icon: BuildingOfficeIcon,
+    }, // Manage all property listings (add, edit, delete, status)
+    {
+      label: "Inquiries",
+      href: `/admin/${adminSlug}/properties-inquiries`,
+      icon: ChatBubbleLeftRightIcon,
+    }, // Track and manage all property inquiries and messages
+    {
+      label: "Showings",
+      href: `/admin/${adminSlug}/properties-showings`,
+      icon: CalendarDaysIcon,
+    }, // Schedule and manage property viewings
+    {
+      label: "Offers & Contracts",
+      href: `/admin/${adminSlug}/properties-offers`,
+      icon: DocumentTextIcon,
+    }, // Manage offers, sales agreements, and contracts
     {
       label: "Blogs",
       icon: DocumentTextIcon,
-      subItems: [
-        { label: "All Blogs", href: `/admin/${adminSlug}/blogs` },
-      ],
+      subItems: [{ label: "All Blogs", href: `/admin/${adminSlug}/blogs` }],
     },
     // { label: "Categories", href: `/admin/${adminSlug}/properties-categories`, icon: TagIcon }, // Manage property categories (e.g., Residential, Commercial, Land)
   ],
@@ -631,15 +1253,51 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
 
   "Healthcare & Clinics": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "POS", href: `/admin/${adminSlug}/health-pos`, icon: ClipboardDocumentListIcon },
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-    { label: "Patients", href: `/admin/${adminSlug}/health-patients`, icon: UsersIcon },
-    { label: "Appointments", href: `/admin/${adminSlug}/health-appointments`, icon: CalendarIcon },
-    { label: "Doctors", href: `/admin/${adminSlug}/health-doctors`, icon: BriefcaseIcon },
-    { label: "Staff", href: `/admin/${adminSlug}/health-staff`, icon: UserGroupIcon }, // Manage all clinic staff
-    { label: "Services", href: `/admin/${adminSlug}/health-services`, icon: HeartIcon }, // Manage medical services offered
-    { label: "Prescriptions", href: `/admin/${adminSlug}/health-prescriptions`, icon: DocumentTextIcon }, // Manage patient prescriptions
-    { label: "Billing & Invoices", href: `/admin/${adminSlug}/health-billing`, icon: CreditCardIcon }, // Handle financial transactions
+    {
+      label: "POS",
+      href: `/admin/${adminSlug}/health-pos`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Patients",
+      href: `/admin/${adminSlug}/health-patients`,
+      icon: UsersIcon,
+    },
+    {
+      label: "Appointments",
+      href: `/admin/${adminSlug}/health-appointments`,
+      icon: CalendarIcon,
+    },
+    {
+      label: "Doctors",
+      href: `/admin/${adminSlug}/health-doctors`,
+      icon: BriefcaseIcon,
+    },
+    {
+      label: "Staff",
+      href: `/admin/${adminSlug}/health-staff`,
+      icon: UserGroupIcon,
+    }, // Manage all clinic staff
+    {
+      label: "Services",
+      href: `/admin/${adminSlug}/health-services`,
+      icon: HeartIcon,
+    }, // Manage medical services offered
+    {
+      label: "Prescriptions",
+      href: `/admin/${adminSlug}/health-prescriptions`,
+      icon: DocumentTextIcon,
+    }, // Manage patient prescriptions
+    {
+      label: "Billing & Invoices",
+      href: `/admin/${adminSlug}/health-billing`,
+      icon: CreditCardIcon,
+    }, // Handle financial transactions
     // { label: "Inventory", href: `/admin/${adminSlug}/health-inventory`, icon: CubeTransparentIcon }, // Manage medical supplies and equipment
     {
       label: "Inventory",
@@ -648,222 +1306,284 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         { label: "Browse Catalog", href: `/admin/${adminSlug}/inventory` },
         { label: "Market List", href: `/admin/${adminSlug}/mymarketplace` },
       ],
-    },    
-    { label: "blogs", href: `/admin/${adminSlug}/blogs`, icon: WrenchScrewdriverIcon },
-    { label: "Reports", href: `/admin/${adminSlug}/health-reports`, icon: ChartBarIcon }, // Generate various clinic reports
-    { label: "Settings", href: `/admin/${adminSlug}/health-settings`, icon: Cog6ToothIcon }, // Clinic-wide settings
+    },
+    {
+      label: "blogs",
+      href: `/admin/${adminSlug}/blogs`,
+      icon: WrenchScrewdriverIcon,
+    },
+    {
+      label: "Reports",
+      href: `/admin/${adminSlug}/health-reports`,
+      icon: ChartBarIcon,
+    }, // Generate various clinic reports
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/health-settings`,
+      icon: Cog6ToothIcon,
+    }, // Clinic-wide settings
   ],
 
   "SaaS & Web Apps": [
-      {label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon,  },      
-      { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon }, 
-      {
-        label: "Users",  href: `/admin/${adminSlug}/saas-users`, icon: UsersIcon,  },
-      {
-        label: "leads", icon: UsersIcon, subItems: [
-          { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
-          { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
-          { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
-          { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
-          { label: "Lead Statuses", href: `/admin/${adminSlug}/saasleadstatuses` },
-        ],
-      },
-      {
-          label: "Backup And Restore", href: `/admin/${adminSlug}/db-management`, icon: ClipboardDocumentListIcon
-      },
-      {
-        label: "Plans & Subscriptions",
-        href: `/admin/${adminSlug}/saas-plans`,
-        icon: ClipboardDocumentListIcon,
-      },
-      {
-          label: "Subscription Payments", href: `/admin/${adminSlug}/subscriptionpayments`, icon: ClipboardDocumentListIcon
-      },
-      {
-        label: "Billing & Payments",
-        href: `/admin/${adminSlug}/saas-billing`,
-        icon: CreditCardIcon,
-      },
-      {
-        label: "General Settings",
-        href: `/admin/${adminSlug}/saas-settings`,
-        icon: Cog6ToothIcon,
-      },
-      {
-        label: "Analytics",
-        href: `/admin/${adminSlug}/saas-analytics`,
-        icon: ChartBarIcon,
-      },
-      {
-        label: "Reports",
-        href: `/admin/${adminSlug}/saas-reports`,
-        icon: DocumentChartBarIcon,
-      },
-      {
-        label: "Support Tickets",
-        href: `/admin/${adminSlug}/saas-support`,
-        icon: LifebuoyIcon,
-      },
-      {
-        label: "Announcements",
-        href: `/admin/${adminSlug}/saas-announcements`,
-        icon: MegaphoneIcon,
-      },
-      {
-        label: "Content (CMS)",
-        href: `/admin/${adminSlug}/saas-content`,
-        icon: DocumentTextIcon,
-      },
-      {
-        label: "API Keys",
-        href: `/admin/${adminSlug}/saas-api-keys`,
-        icon: KeyIcon,
-      },
-      {
-        label: "Audit Log",
-        href: `/admin/${adminSlug}/saas-audit-log`,
-        icon: ClipboardDocumentCheckIcon,
-      },
-      {
-        label: "System Status",
-        href: `/admin/${adminSlug}/saas-status`,
-        icon: ServerStackIcon,
-      }
-  ],   
-
-  "Dashboards": [
-      {label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon,  },
-      { label: "Categories", href: `/admin/${adminSlug}/cated`, icon: ClipboardDocumentListIcon },
-      { label: "Site Categories", href: `/admin/${adminSlug}/site-categories`, icon: ClipboardDocumentListIcon },      
-      { label: "Locations", href: `/admin/${adminSlug}/locat`, icon: ClipboardDocumentListIcon },
-      {
-        label: "Users",  href: `/admin/${adminSlug}/saas-users`, icon: UsersIcon,  },
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Users",
+      href: `/admin/${adminSlug}/saas-users`,
+      icon: UsersIcon,
+    },
+    {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
         {
-        label: "leads", icon: UsersIcon, subItems: [
-          { label: "All Leads", href: `/admin/${adminSlug}/salesleads` },
-          { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
-          { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
-          { label: "Lead Sources", href: `/admin/${adminSlug}/salesleadsources` },
-          { label: "Lead Statuses", href: `/admin/${adminSlug}/salesleadstatuses` },
-        ],
-      },
-      {
-          label: "Sample Listings Generator", href: `/admin/${adminSlug}/samplelistingsgenerator`, icon: ClipboardDocumentListIcon
-      }, 
-      {
-        label: "Bulk Csv Upload For listings", href: `/admin/${adminSlug}/bulkcsvlistingsgenerator`, icon: ClipboardDocumentListIcon
-      },
-      {
-        label: "Sample Image Upload For listings", href: `/admin/${adminSlug}/sync-images`, icon: ClipboardDocumentListIcon
-      } ,    
-      {
-          label: "Backup And Restore", href: `/admin/${adminSlug}/db-management`, icon: ClipboardDocumentListIcon
-      },
-      {
-        label: "Plans & Subscriptions",
-        href: `/admin/${adminSlug}/saas-plans`,
-        icon: ClipboardDocumentListIcon,
-      },
-      {
-          label: "Subscription Payments", href: `/admin/${adminSlug}/subscriptionpayments`, icon: ClipboardDocumentListIcon
-      },
-      {
-        label: "Billing & Payments",
-        href: `/admin/${adminSlug}/saas-billing`,
-        icon: CreditCardIcon,
-      },
-      {
-        label: "General Settings",
-        href: `/admin/${adminSlug}/saas-settings`,
-        icon: Cog6ToothIcon,
-      },
-      {
-        label: "Analytics",
-        href: `/admin/${adminSlug}/saas-analytics`,
-        icon: ChartBarIcon,
-      },
-      {
-        label: "Reports",
-        href: `/admin/${adminSlug}/saas-reports`,
-        icon: DocumentChartBarIcon,
-      },
-      {
-        label: "Support Tickets",
-        href: `/admin/${adminSlug}/saas-support`,
-        icon: LifebuoyIcon,
-      },
-      {
-        label: "Announcements",
-        href: `/admin/${adminSlug}/saas-announcements`,
-        icon: MegaphoneIcon,
-      },
-      {
-        label: "Content (CMS)",
-        href: `/admin/${adminSlug}/saas-content`,
-        icon: DocumentTextIcon,
-      },
-      {
-        label: "API Keys",
-        href: `/admin/${adminSlug}/saas-api-keys`,
-        icon: KeyIcon,
-      },
-      {
-        label: "Audit Log",
-        href: `/admin/${adminSlug}/saas-audit-log`,
-        icon: ClipboardDocumentCheckIcon,
-      },
-      {
-        label: "System Status",
-        href: `/admin/${adminSlug}/saas-status`,
-        icon: ServerStackIcon,
-      }
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/saasleadstatuses`,
+        },
+      ],
+    },
+    {
+      label: "Backup And Restore",
+      href: `/admin/${adminSlug}/db-management`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Plans & Subscriptions",
+      href: `/admin/${adminSlug}/saas-plans`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Subscription Payments",
+      href: `/admin/${adminSlug}/subscriptionpayments`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Billing & Payments",
+      href: `/admin/${adminSlug}/saas-billing`,
+      icon: CreditCardIcon,
+    },
+    {
+      label: "General Settings",
+      href: `/admin/${adminSlug}/saas-settings`,
+      icon: Cog6ToothIcon,
+    },
+    {
+      label: "Analytics",
+      href: `/admin/${adminSlug}/saas-analytics`,
+      icon: ChartBarIcon,
+    },
+    {
+      label: "Reports",
+      href: `/admin/${adminSlug}/saas-reports`,
+      icon: DocumentChartBarIcon,
+    },
+    {
+      label: "Support Tickets",
+      href: `/admin/${adminSlug}/saas-support`,
+      icon: LifebuoyIcon,
+    },
+    {
+      label: "Announcements",
+      href: `/admin/${adminSlug}/saas-announcements`,
+      icon: MegaphoneIcon,
+    },
+    {
+      label: "Content (CMS)",
+      href: `/admin/${adminSlug}/saas-content`,
+      icon: DocumentTextIcon,
+    },
+    {
+      label: "API Keys",
+      href: `/admin/${adminSlug}/saas-api-keys`,
+      icon: KeyIcon,
+    },
+    {
+      label: "Audit Log",
+      href: `/admin/${adminSlug}/saas-audit-log`,
+      icon: ClipboardDocumentCheckIcon,
+    },
+    {
+      label: "System Status",
+      href: `/admin/${adminSlug}/saas-status`,
+      icon: ServerStackIcon,
+    },
+  ],
+
+  Dashboards: [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/cated`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Site Categories",
+      href: `/admin/${adminSlug}/site-categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Locations",
+      href: `/admin/${adminSlug}/locat`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Users",
+      href: `/admin/${adminSlug}/saas-users`,
+      icon: UsersIcon,
+    },
+    {
+      label: "leads",
+      icon: UsersIcon,
+      subItems: [
+        { label: "All Leads", href: `/admin/${adminSlug}/salesleads` },
+        { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
+        { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
+        { label: "Lead Sources", href: `/admin/${adminSlug}/salesleadsources` },
+        {
+          label: "Lead Statuses",
+          href: `/admin/${adminSlug}/salesleadstatuses`,
+        },
+      ],
+    },
+    {
+      label: "Sample Listings Generator",
+      href: `/admin/${adminSlug}/samplelistingsgenerator`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Bulk Csv Upload For listings",
+      href: `/admin/${adminSlug}/bulkcsvlistingsgenerator`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Sample Image Upload For listings",
+      href: `/admin/${adminSlug}/sync-images`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Backup And Restore",
+      href: `/admin/${adminSlug}/db-management`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Plans & Subscriptions",
+      href: `/admin/${adminSlug}/saas-plans`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Subscription Payments",
+      href: `/admin/${adminSlug}/subscriptionpayments`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Billing & Payments",
+      href: `/admin/${adminSlug}/saas-billing`,
+      icon: CreditCardIcon,
+    },
+    {
+      label: "General Settings",
+      href: `/admin/${adminSlug}/saas-settings`,
+      icon: Cog6ToothIcon,
+    },
+    {
+      label: "Analytics",
+      href: `/admin/${adminSlug}/saas-analytics`,
+      icon: ChartBarIcon,
+    },
+    {
+      label: "Reports",
+      href: `/admin/${adminSlug}/saas-reports`,
+      icon: DocumentChartBarIcon,
+    },
+    {
+      label: "Support Tickets",
+      href: `/admin/${adminSlug}/saas-support`,
+      icon: LifebuoyIcon,
+    },
+    {
+      label: "Announcements",
+      href: `/admin/${adminSlug}/saas-announcements`,
+      icon: MegaphoneIcon,
+    },
+    {
+      label: "Content (CMS)",
+      href: `/admin/${adminSlug}/saas-content`,
+      icon: DocumentTextIcon,
+    },
+    {
+      label: "API Keys",
+      href: `/admin/${adminSlug}/saas-api-keys`,
+      icon: KeyIcon,
+    },
+    {
+      label: "Audit Log",
+      href: `/admin/${adminSlug}/saas-audit-log`,
+      icon: ClipboardDocumentCheckIcon,
+    },
+    {
+      label: "System Status",
+      href: `/admin/${adminSlug}/saas-status`,
+      icon: ServerStackIcon,
+    },
   ],
 
   "Media & Entertainment": [
-    { 
-      label: "Dashboard", 
-      href: `/admin/${adminSlug}`, 
+    {
+      label: "Dashboard",
+      href: `/admin/${adminSlug}`,
       icon: HomeIcon,
     },
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-    { 
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
       label: "Content Library", // Renamed for clarity
       href: `/admin/${adminSlug}/media-content`, // Unified content management
       icon: FilmIcon, // Covers both video and general media
     },
-    { 
+    {
       label: "Article Management", // Specific for articles
       href: `/admin/${adminSlug}/blogs`, //media-articles
       icon: NewspaperIcon,
     },
-    { 
+    {
       label: "Gallery Management", // Specific for videos
-      href: `/admin/${adminSlug}/media-gallery`, 
+      href: `/admin/${adminSlug}/media-gallery`,
       icon: VideoCameraIcon,
     },
-    { 
+    {
       label: "Video Management", // Specific for videos
-      href: `/admin/${adminSlug}/media-videos`, 
+      href: `/admin/${adminSlug}/media-videos`,
       icon: VideoCameraIcon,
     },
-    { 
+    {
       label: "Publishing Schedule", // More descriptive
-      href: `/admin/${adminSlug}/media-schedule`, 
+      href: `/admin/${adminSlug}/media-schedule`,
       icon: CalendarIcon,
     },
-    { 
+    {
       label: "User Management", // Essential for any platform
-      href: `/admin/${adminSlug}/media-users`, 
+      href: `/admin/${adminSlug}/media-users`,
       icon: UsersIcon,
     },
-    { 
+    {
       label: "Sponsors & Partnerships", // More descriptive
-      href: `/admin/${adminSlug}/media-sponsors`, 
+      href: `/admin/${adminSlug}/media-sponsors`,
       icon: BriefcaseIcon,
     },
-    { 
+    {
       label: "Analytics", // For insights
-      href: `/admin/${adminSlug}/media-analytics`, 
+      href: `/admin/${adminSlug}/media-analytics`,
       icon: ChartBarIcon,
     },
     {
@@ -874,41 +1594,125 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     {
       label: "Blogs",
       icon: DocumentTextIcon,
-      href: `/admin/${adminSlug}/blogs`
+      href: `/admin/${adminSlug}/blogs`,
     },
   ],
 
   "Finance & Legal": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-    { label: "Clients", href: `/admin/${adminSlug}/finance-clients`, icon: UsersIcon },
-    { label: "Experts/Team", href: `/admin/${adminSlug}/finance-team`, icon: ShieldCheckIcon }, // Manage experts/advisors
-    { label: "Cases & Matters", href: `/admin/${adminSlug}/finance-cases`, icon: BriefcaseIcon }, // For legal cases/financial matters
-    { label: "Documents", href: `/admin/${adminSlug}/finance-documents`, icon: DocumentTextIcon },
-    { label: "Appointments", href: `/admin/${adminSlug}/finance-appointments`, icon: CalendarDaysIcon }, // For scheduling consultations    
-    { label: "Services", href: `/admin/${adminSlug}/services`, icon: WrenchScrewdriverIcon },
-    { label: "Billing & Invoices", href: `/admin/${adminSlug}/finance-invoices`, icon: ClipboardDocumentListIcon }, // More explicit name
-    { label: "Packages & Pricing", href: `/admin/${adminSlug}/finance-packages`, icon: TagIcon }, // Manage consultation packages
-    { label: "Testimonials", href: `/admin/${adminSlug}/finance-testimonials`, icon: ChatBubbleLeftRightIcon }, // Manage client feedback
-    { label: "FAQs", href: `/admin/${adminSlug}/finance-faqs`, icon: QuestionMarkCircleIcon }, // Manage frequently asked questions 
-    { label: "Blogs", icon: DocumentTextIcon, subItems: [ { label: "All Blogs", href: `/admin/${adminSlug}/blogs` }, ], },
-    { label: "Settings", href: `/admin/${adminSlug}/finance-settings`, icon: Cog6ToothIcon }, // General admin settings
-  ],
-
-  "Automotive": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },  
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-    { label: "Locations", href: `/admin/${adminSlug}/locations`, icon: MapPinIcon }, // company-locations properties-locations Manage geographic locations for listings
-    { label: "Agents", href: `/admin/${adminSlug}/sales-agents`, icon: UsersIcon }, // Manage agent profiles, performance, and assignments
-    { label: "Clients", href: `/admin/${adminSlug}/clients`, icon: UserGroupIcon }, // Manage client profiles, inquiries, and history (changed to UserGroupIcon for clarity)
-    { label: "Vehicles", href: `/admin/${adminSlug}/vehicles`, icon: BuildingOfficeIcon }, // vehicle-manage Manage all property listings (add, edit, delete, status)
-    { label: "Inquiries", href: `/admin/${adminSlug}/inquiries`, icon: ChatBubbleLeftRightIcon }, // Track and manage all property inquiries and messages
-    { label: "Showings", href: `/admin/${adminSlug}/showings`, icon: CalendarDaysIcon }, // Schedule and manage property viewings
-    { label: "Offers & Contracts", href: `/admin/${adminSlug}/offers`, icon: DocumentTextIcon }, // Manage offers, sales agreements, and contracts
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Clients",
+      href: `/admin/${adminSlug}/finance-clients`,
+      icon: UsersIcon,
+    },
+    {
+      label: "Experts/Team",
+      href: `/admin/${adminSlug}/finance-team`,
+      icon: ShieldCheckIcon,
+    }, // Manage experts/advisors
+    {
+      label: "Cases & Matters",
+      href: `/admin/${adminSlug}/finance-cases`,
+      icon: BriefcaseIcon,
+    }, // For legal cases/financial matters
+    {
+      label: "Documents",
+      href: `/admin/${adminSlug}/finance-documents`,
+      icon: DocumentTextIcon,
+    },
+    {
+      label: "Appointments",
+      href: `/admin/${adminSlug}/finance-appointments`,
+      icon: CalendarDaysIcon,
+    }, // For scheduling consultations
+    {
+      label: "Services",
+      href: `/admin/${adminSlug}/services`,
+      icon: WrenchScrewdriverIcon,
+    },
+    {
+      label: "Billing & Invoices",
+      href: `/admin/${adminSlug}/finance-invoices`,
+      icon: ClipboardDocumentListIcon,
+    }, // More explicit name
+    {
+      label: "Packages & Pricing",
+      href: `/admin/${adminSlug}/finance-packages`,
+      icon: TagIcon,
+    }, // Manage consultation packages
+    {
+      label: "Testimonials",
+      href: `/admin/${adminSlug}/finance-testimonials`,
+      icon: ChatBubbleLeftRightIcon,
+    }, // Manage client feedback
+    {
+      label: "FAQs",
+      href: `/admin/${adminSlug}/finance-faqs`,
+      icon: QuestionMarkCircleIcon,
+    }, // Manage frequently asked questions
     {
       label: "Blogs",
       icon: DocumentTextIcon,
-      href: `/admin/${adminSlug}/blogs`
+      subItems: [{ label: "All Blogs", href: `/admin/${adminSlug}/blogs` }],
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/finance-settings`,
+      icon: Cog6ToothIcon,
+    }, // General admin settings
+  ],
+
+  Automotive: [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Locations",
+      href: `/admin/${adminSlug}/locations`,
+      icon: MapPinIcon,
+    }, // company-locations properties-locations Manage geographic locations for listings
+    {
+      label: "Agents",
+      href: `/admin/${adminSlug}/sales-agents`,
+      icon: UsersIcon,
+    }, // Manage agent profiles, performance, and assignments
+    {
+      label: "Clients",
+      href: `/admin/${adminSlug}/clients`,
+      icon: UserGroupIcon,
+    }, // Manage client profiles, inquiries, and history (changed to UserGroupIcon for clarity)
+    {
+      label: "Vehicles",
+      href: `/admin/${adminSlug}/vehicles`,
+      icon: BuildingOfficeIcon,
+    }, // vehicle-manage Manage all property listings (add, edit, delete, status)
+    {
+      label: "Inquiries",
+      href: `/admin/${adminSlug}/inquiries`,
+      icon: ChatBubbleLeftRightIcon,
+    }, // Track and manage all property inquiries and messages
+    {
+      label: "Showings",
+      href: `/admin/${adminSlug}/showings`,
+      icon: CalendarDaysIcon,
+    }, // Schedule and manage property viewings
+    {
+      label: "Offers & Contracts",
+      href: `/admin/${adminSlug}/offers`,
+      icon: DocumentTextIcon,
+    }, // Manage offers, sales agreements, and contracts
+    {
+      label: "Blogs",
+      icon: DocumentTextIcon,
+      href: `/admin/${adminSlug}/blogs`,
     },
     // { label: "Requests", href: `/admin/${adminSlug}/vehicle-requests`, icon: ClipboardDocumentListIcon },
     // { label: "Clients", href: `/admin/${adminSlug}/vehicle-clients`, icon: UsersIcon }, most of the commented routes actually have they're pages maybe we'll delete those
@@ -918,176 +1722,346 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     {
       label: "Dashboard",
       href: `/admin/${adminSlug}`,
-      icon: HomeIcon
+      icon: HomeIcon,
     },
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-    { 
-      label: "Locations", 
-      href: `/admin/${adminSlug}/locations`, 
-      icon: MapPinIcon 
-    }, // company-locations properties-locations Manage geographic locations for listings    
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Locations",
+      href: `/admin/${adminSlug}/locations`,
+      icon: MapPinIcon,
+    }, // company-locations properties-locations Manage geographic locations for listings
     {
       label: "Destinations",
       href: `/admin/${adminSlug}/travel-destinations`,
-      icon: GlobeAltIcon
+      icon: GlobeAltIcon,
     },
     {
       label: "Packages & Tours",
       href: `/admin/${adminSlug}/travel-packages`,
-      icon: BriefcaseIcon
+      icon: BriefcaseIcon,
     },
     {
       label: "Users & Customers",
       href: `/admin/${adminSlug}/travel-users`,
-      icon: UsersIcon
+      icon: UsersIcon,
     },
-    { label: "Listings", 
-      href: `/admin/${adminSlug}/travel-experiences`, 
-      icon: BuildingOfficeIcon 
+    {
+      label: "Listings",
+      href: `/admin/${adminSlug}/travel-experiences`,
+      icon: BuildingOfficeIcon,
     }, // vehicle-manage Manage all property listings (add, edit, delete, status)
     {
       label: "Travel Experts",
       href: `/admin/${adminSlug}/travel-experts`,
-      icon: UserGroupIcon
+      icon: UserGroupIcon,
     },
     {
       label: "Bookings",
       href: `/admin/${adminSlug}/travel-bookings`,
-      icon: CalendarDaysIcon
+      icon: CalendarDaysIcon,
     },
     {
       label: "Virtual Tours",
       href: `/admin/${adminSlug}/travel-virtual-tours`,
-      icon: PlayCircleIcon
+      icon: PlayCircleIcon,
     },
     {
       label: "Testimonials",
       href: `/admin/${adminSlug}/travel-testimonials`,
-      icon: ChatBubbleLeftRightIcon
+      icon: ChatBubbleLeftRightIcon,
     },
     {
       label: "Blog & Content",
       href: `/admin/${adminSlug}/blogs`,
-      icon: NewspaperIcon
+      icon: NewspaperIcon,
     },
     {
       label: "Promotions & Deals",
       href: `/admin/${adminSlug}/travel-promotions`,
-      icon: TagIcon
+      icon: TagIcon,
     },
     {
       label: "Inquiries",
       href: `/admin/${adminSlug}/inquiries`,
-      icon: QuestionMarkCircleIcon
+      icon: QuestionMarkCircleIcon,
     },
     {
       label: "Settings",
       href: `/admin/${adminSlug}/travel-settings`,
-      icon: Cog6ToothIcon
-    }
+      icon: Cog6ToothIcon,
+    },
   ],
 
-  "Property Management":[
+  "Property Management": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon }, // Overall view of key metrics
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-    { label: "Locations", href: `/admin/${adminSlug}/locations`, icon: MapPinIcon }, // company-locations properties-locations Manage geographic locations for listings
-    { label: "Agents", href: `/admin/${adminSlug}/properties-agents`, icon: UsersIcon }, // Manage agent profiles, performance, and assignments
-    { label: "Clients", href: `/admin/${adminSlug}/clients`, icon: UserGroupIcon }, // Manage client profiles, inquiries, and history (changed to UserGroupIcon for clarity)
-    { label: "Properties", href: `/admin/${adminSlug}/properties`, icon: BuildingOfficeIcon }, // Manage all property listings (add, edit, delete, status)
-    { label: "Inquiries", href: `/admin/${adminSlug}/properties-inquiries`, icon: ChatBubbleLeftRightIcon }, // Track and manage all property inquiries and messages
-    { label: "Showings", href: `/admin/${adminSlug}/properties-showings`, icon: CalendarDaysIcon }, // Schedule and manage property viewings
-    { label: "Hostel", href: `/admin/${adminSlug}/hostel`, icon: HomeIcon,
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Locations",
+      href: `/admin/${adminSlug}/locations`,
+      icon: MapPinIcon,
+    }, // company-locations properties-locations Manage geographic locations for listings
+    {
+      label: "Agents",
+      href: `/admin/${adminSlug}/properties-agents`,
+      icon: UsersIcon,
+    }, // Manage agent profiles, performance, and assignments
+    {
+      label: "Clients",
+      href: `/admin/${adminSlug}/clients`,
+      icon: UserGroupIcon,
+    }, // Manage client profiles, inquiries, and history (changed to UserGroupIcon for clarity)
+    {
+      label: "Properties",
+      href: `/admin/${adminSlug}/properties`,
+      icon: BuildingOfficeIcon,
+    }, // Manage all property listings (add, edit, delete, status)
+    {
+      label: "Inquiries",
+      href: `/admin/${adminSlug}/properties-inquiries`,
+      icon: ChatBubbleLeftRightIcon,
+    }, // Track and manage all property inquiries and messages
+    {
+      label: "Showings",
+      href: `/admin/${adminSlug}/properties-showings`,
+      icon: CalendarDaysIcon,
+    }, // Schedule and manage property viewings
+    {
+      label: "Hostel",
+      href: `/admin/${adminSlug}/hostel`,
+      icon: HomeIcon,
       subItems: [
         { label: "Blocks", href: `/admin/${adminSlug}/hostel-blocks` },
         { label: "Rooms", href: `/admin/${adminSlug}/hostel-rooms` },
         { label: "Residents", href: `/admin/${adminSlug}/hostel-residents` },
-        { label: "Room Assignments", href: `/admin/${adminSlug}/hostel-room-assignments` },
-        { label: "Maintenance Requests", href: `/admin/${adminSlug}/hostel-maintenance-requests` },
+        {
+          label: "Room Assignments",
+          href: `/admin/${adminSlug}/hostel-room-assignments`,
+        },
+        {
+          label: "Maintenance Requests",
+          href: `/admin/${adminSlug}/hostel-maintenance-requests`,
+        },
         { label: "Visitors", href: `/admin/${adminSlug}/hostel-visitors` },
         // { label: "Fee Management", href: `/admin/${adminSlug}/hostel-fee-management` },
         // { label: "Inventory", href: `/admin/${adminSlug}/hostel-inventory` },
         { label: "Staff", href: `/admin/${adminSlug}/hostel-staff` },
         { label: "Reports", href: `/admin/${adminSlug}/hostel-reports` },
-      ], 
-     },
-    { label: "Offers & Contracts", href: `/admin/${adminSlug}/properties-offers`, icon: DocumentTextIcon }, // Manage offers, sales agreements, and contracts
-    { label: "Virtual Tours", href: `/admin/${adminSlug}/properties-virtual-tours`, icon: PlayCircleIcon }, // Manage virtual tour content for listings
-    { label: "Testimonials", href: `/admin/${adminSlug}/properties-testimonials`, icon: ChatBubbleLeftRightIcon }, // Manage client testimonials for properties
-    { label: "Promotions & Deals", href: `/admin/${adminSlug}/properties-promotions`, icon: TagIcon }, // Create and manage discounts, special offers for listings
-    { label: "FAQs", href: `/admin/${adminSlug}/properties-faqs`, icon: QuestionMarkCircleIcon }, // Manage frequently asked questions related to properties
-    { label: "Media Library", href: `/admin/${adminSlug}/properties-media`, icon: PhotoIcon }, // Central place for property images, videos, and virtual tour media
-    { label: "Blogs", icon: DocumentTextIcon, href: `/admin/${adminSlug}/blogs` },
-    { label: "Reports", href: `/admin/${adminSlug}/properties-reports`, icon: ChartBarIcon }, // Generate various reports (sales, agent performance, market trends)
-    { label: "Settings", href: `/admin/${adminSlug}/properties-settings`, icon: Cog6ToothIcon }, // General administrative settings
+      ],
+    },
+    {
+      label: "Offers & Contracts",
+      href: `/admin/${adminSlug}/properties-offers`,
+      icon: DocumentTextIcon,
+    }, // Manage offers, sales agreements, and contracts
+    {
+      label: "Virtual Tours",
+      href: `/admin/${adminSlug}/properties-virtual-tours`,
+      icon: PlayCircleIcon,
+    }, // Manage virtual tour content for listings
+    {
+      label: "Testimonials",
+      href: `/admin/${adminSlug}/properties-testimonials`,
+      icon: ChatBubbleLeftRightIcon,
+    }, // Manage client testimonials for properties
+    {
+      label: "Promotions & Deals",
+      href: `/admin/${adminSlug}/properties-promotions`,
+      icon: TagIcon,
+    }, // Create and manage discounts, special offers for listings
+    {
+      label: "FAQs",
+      href: `/admin/${adminSlug}/properties-faqs`,
+      icon: QuestionMarkCircleIcon,
+    }, // Manage frequently asked questions related to properties
+    {
+      label: "Media Library",
+      href: `/admin/${adminSlug}/properties-media`,
+      icon: PhotoIcon,
+    }, // Central place for property images, videos, and virtual tour media
+    {
+      label: "Blogs",
+      icon: DocumentTextIcon,
+      href: `/admin/${adminSlug}/blogs`,
+    },
+    {
+      label: "Reports",
+      href: `/admin/${adminSlug}/properties-reports`,
+      icon: ChartBarIcon,
+    }, // Generate various reports (sales, agent performance, market trends)
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/properties-settings`,
+      icon: Cog6ToothIcon,
+    }, // General administrative settings
   ],
 
   "Fitness & Wellness": [
-        { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon }, // Overview of gym activity
-        { label: "POS & Sales", href: `/admin/${adminSlug}/fitness-pos`, icon: CurrencyDollarIcon }, // Point of Sale and transaction management
-        { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-        { label: "Programs & Classes", href: `/admin/${adminSlug}/fitness-programs`, icon : ClipboardDocumentListIcon}, // Manage fitness programs, classes, schedules
-        { label: "Trainers & Staff", href: `/admin/${adminSlug}/fitness-trainers`, icon : BriefcaseIcon}, // Manage trainer profiles, availability
-        { label: "Clients & Members", href: `/admin/${adminSlug}/fitness-clients`, icon : UsersIcon}, // Manage client accounts, memberships, progress
-        { label: "Locations & Facilities", href: `/admin/${adminSlug}/fitness-locations`, icon : MapPinIcon}, // Manage physical gym locations, equipment, rooms
-        { label: "Bookings & Schedule", href: `/admin/${adminSlug}/fitness-bookings`, icon : CalendarDaysIcon}, // Manage class and personal training bookings
-        { label: "Notifications & Comms", href: `/admin/${adminSlug}/fitness-notifications`, icon : BellIcon}, // Send announcements, newsletters, client messages          
-        {
-          label: "Virtual Tours",
-          href: `/admin/${adminSlug}/fitness-virtual-tours`,
-          icon: PlayCircleIcon
-        },
-        { label: "blogs", href: `/admin/${adminSlug}/blogs`, icon: WrenchScrewdriverIcon },
-        { label: "Reports & Analytics", href: `/admin/${adminSlug}/fitness-reports`, icon : ChartBarIcon}, // View performance metrics, sales reports
-        { label: "Settings", href: `/admin/${adminSlug}/fitness-settings`, icon : Cog6ToothIcon}, // General administrative settings, user roles
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon }, // Overview of gym activity
+    {
+      label: "POS & Sales",
+      href: `/admin/${adminSlug}/fitness-pos`,
+      icon: CurrencyDollarIcon,
+    }, // Point of Sale and transaction management
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Programs & Classes",
+      href: `/admin/${adminSlug}/fitness-programs`,
+      icon: ClipboardDocumentListIcon,
+    }, // Manage fitness programs, classes, schedules
+    {
+      label: "Trainers & Staff",
+      href: `/admin/${adminSlug}/fitness-trainers`,
+      icon: BriefcaseIcon,
+    }, // Manage trainer profiles, availability
+    {
+      label: "Clients & Members",
+      href: `/admin/${adminSlug}/fitness-clients`,
+      icon: UsersIcon,
+    }, // Manage client accounts, memberships, progress
+    {
+      label: "Locations & Facilities",
+      href: `/admin/${adminSlug}/fitness-locations`,
+      icon: MapPinIcon,
+    }, // Manage physical gym locations, equipment, rooms
+    {
+      label: "Bookings & Schedule",
+      href: `/admin/${adminSlug}/fitness-bookings`,
+      icon: CalendarDaysIcon,
+    }, // Manage class and personal training bookings
+    {
+      label: "Notifications & Comms",
+      href: `/admin/${adminSlug}/fitness-notifications`,
+      icon: BellIcon,
+    }, // Send announcements, newsletters, client messages
+    {
+      label: "Virtual Tours",
+      href: `/admin/${adminSlug}/fitness-virtual-tours`,
+      icon: PlayCircleIcon,
+    },
+    {
+      label: "blogs",
+      href: `/admin/${adminSlug}/blogs`,
+      icon: WrenchScrewdriverIcon,
+    },
+    {
+      label: "Reports & Analytics",
+      href: `/admin/${adminSlug}/fitness-reports`,
+      icon: ChartBarIcon,
+    }, // View performance metrics, sales reports
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/fitness-settings`,
+      icon: Cog6ToothIcon,
+    }, // General administrative settings, user roles
   ],
 
   // You could also categorize into more specific sections if the admin grows
   "Marketing & Engagement": [
-      { label: "Content Management", href: `/admin/${adminSlug}/content`, icon : PencilSquareIcon}, // Blog posts, articles, website content
-      { label: "Promotions & Deals", href: `/admin/${adminSlug}/promotions`, icon : TagIcon}, // Create and manage discounts, special offers
-      { label: "Testimonials", href: `/admin/${adminSlug}/testimonials`, icon : ChatBubbleLeftRightIcon}, // Manage client testimonials
-      { label: "FAQs", href: `/admin/${adminSlug}/faqs`, icon : QuestionMarkCircleIcon}, // Manage frequently asked questions
+    {
+      label: "Content Management",
+      href: `/admin/${adminSlug}/content`,
+      icon: PencilSquareIcon,
+    }, // Blog posts, articles, website content
+    {
+      label: "Promotions & Deals",
+      href: `/admin/${adminSlug}/promotions`,
+      icon: TagIcon,
+    }, // Create and manage discounts, special offers
+    {
+      label: "Testimonials",
+      href: `/admin/${adminSlug}/testimonials`,
+      icon: ChatBubbleLeftRightIcon,
+    }, // Manage client testimonials
+    {
+      label: "FAQs",
+      href: `/admin/${adminSlug}/faqs`,
+      icon: QuestionMarkCircleIcon,
+    }, // Manage frequently asked questions
   ],
 
   "Billing & Finance": [
-      { label: "Invoices", href: `/admin/${adminSlug}/invoices`, icon : DocumentTextIcon},
-      { label: "Payments", href: `/admin/${adminSlug}/payments`, icon : CreditCardIcon},
-      { label: "Refunds", href: `/admin/${adminSlug}/refunds`, icon : ArrowUturnLeftIcon},
+    {
+      label: "Invoices",
+      href: `/admin/${adminSlug}/invoices`,
+      icon: DocumentTextIcon,
+    },
+    {
+      label: "Payments",
+      href: `/admin/${adminSlug}/payments`,
+      icon: CreditCardIcon,
+    },
+    {
+      label: "Refunds",
+      href: `/admin/${adminSlug}/refunds`,
+      icon: ArrowUturnLeftIcon,
+    },
   ],
 
-  "Marketplace": [
-  { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-  { label: "POS", href: `/admin/${adminSlug}/storepos`, icon: ClipboardDocumentListIcon },
-  { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-  {
-    label: "Products",
-    icon: ClipboardDocumentListIcon,
-    subItems: [
-      { label: "Browse Catalog", href: `/admin/${adminSlug}/inventory` },
-      { label: "Market List", href: `/admin/${adminSlug}/mymarketplace` },
-    ],
-  },
-  {
-    label:"Users",
-    icon: UsersIcon,
-    subItems: [
-      { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
-      { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
-    ],
-  },
-  {
-    label: "Orders",
-    icon: UsersIcon,
-    subItems: [
-      { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
-      { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
-      { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
+  Marketplace: [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    {
+      label: "POS",
+      href: `/admin/${adminSlug}/storepos`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Products",
+      icon: ClipboardDocumentListIcon,
+      subItems: [
+        { label: "Browse Catalog", href: `/admin/${adminSlug}/inventory` },
+        { label: "Market List", href: `/admin/${adminSlug}/mymarketplace` },
+      ],
+    },
+    {
+      label: "Users",
+      icon: UsersIcon,
+      subItems: [
+        { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
+        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
+      ],
+    },
+    {
+      label: "Orders",
+      icon: UsersIcon,
+      subItems: [
+        { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
+        { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
+        { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
         { label: "Delivery", href: `/admin/${adminSlug}/deliveries` },
-    ],
-  },
-  { label: "Reports", href: `/admin/${adminSlug}/revenuereport`, icon: ChartBarIcon },
-  { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
-  { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+      ],
+    },
+    {
+      label: "Reports",
+      href: `/admin/${adminSlug}/revenuereport`,
+      icon: ChartBarIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
   ],
 
   "Consultant & Coach": [
@@ -1105,7 +2079,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Programs & Courses",
       icon: BookOpenIcon, // Icon for a book or learning
       subItems: [
-        { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
+        {
+          label: "Categories",
+          href: `/admin/${adminSlug}/categories`,
+          icon: ClipboardDocumentListIcon,
+        },
         { label: "Ebooks", href: `/admin/${adminSlug}/ebooks` },
         { label: "Programs", href: `/admin/${adminSlug}/programs` },
         // { label: "Course Builder", href: `/admin/${adminSlug}/course-builder` },
@@ -1113,8 +2091,12 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         // { label: "Resource Downloads", href: `/admin/${adminSlug}/resources` },
       ],
     },
-    { label: "Appointments", href: `/admin/${adminSlug}/appointments`, icon: ClipboardDocumentListIcon },
-    
+    {
+      label: "Appointments",
+      href: `/admin/${adminSlug}/appointments`,
+      icon: ClipboardDocumentListIcon,
+    },
+
     // { label: "Schedule & Booking", href: `/admin/${adminSlug}/schedule`, icon: CalendarIcon }, // Icon for a calendar
     // {
     //   label: "Payments & Invoicing",
@@ -1125,9 +2107,21 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     //     { label: "Payment History", href: `/admin/${adminSlug}/payments` },
     //   ],
     // },
-    { label: "Reports & Analytics", href: `/admin/${adminSlug}/analytics`, icon: ChartBarIcon }, // Icon for charts/graphs
-    { label: "Messaging", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon }, // Icon for chat/messages
-    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon }, // Icon for gear/settings
+    {
+      label: "Reports & Analytics",
+      href: `/admin/${adminSlug}/analytics`,
+      icon: ChartBarIcon,
+    }, // Icon for charts/graphs
+    {
+      label: "Messaging",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    }, // Icon for chat/messages
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    }, // Icon for gear/settings
   ],
 
   "Public Speaking": [
@@ -1145,17 +2139,29 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Programs & Courses",
       icon: BookOpenIcon, // Icon for a book or learning
       subItems: [
-        { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
+        {
+          label: "Categories",
+          href: `/admin/${adminSlug}/categories`,
+          icon: ClipboardDocumentListIcon,
+        },
         { label: "Ebooks", href: `/admin/${adminSlug}/ebooks` },
         { label: "Programs", href: `/admin/${adminSlug}/programs` },
-        { label: "blogs", href: `/admin/${adminSlug}/blogs`, icon: WrenchScrewdriverIcon },
+        {
+          label: "blogs",
+          href: `/admin/${adminSlug}/blogs`,
+          icon: WrenchScrewdriverIcon,
+        },
         // { label: "Course Builder", href: `/admin/${adminSlug}/course-builder` },
         // { label: "Content Library", href: `/admin/${adminSlug}/content-library` },
         // { label: "Resource Downloads", href: `/admin/${adminSlug}/resources` },
       ],
     },
-    { label: "Appointments", href: `/admin/${adminSlug}/appointments`, icon: ClipboardDocumentListIcon },
-    
+    {
+      label: "Appointments",
+      href: `/admin/${adminSlug}/appointments`,
+      icon: ClipboardDocumentListIcon,
+    },
+
     // { label: "Schedule & Booking", href: `/admin/${adminSlug}/schedule`, icon: CalendarIcon }, // Icon for a calendar
     // {
     //   label: "Payments & Invoicing",
@@ -1167,8 +2173,16 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     //   ],
     // },
     // { label: "Reports & Analytics", href: `/admin/${adminSlug}/analytics`, icon: ChartBarIcon }, // Icon for charts/graphs
-    { label: "Messaging", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon }, // Icon for chat/messages
-    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon }, // Icon for gear/settings
+    {
+      label: "Messaging",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    }, // Icon for chat/messages
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    }, // Icon for gear/settings
   ],
 
   // "Security Services":[
@@ -1181,104 +2195,288 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
   //   { label: "Billing & Invoices", href: `/admin/${adminSlug}/security-billing`, icon: CreditCardIcon },
   //   { label: "Equipment & Inventory", href: `/admin/${adminSlug}/security-equipment`, icon: CubeTransparentIcon },
   //   { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
-  //   { label: "Settings", href: `/admin/${adminSlug}/security-settings`, icon: Cog6ToothIcon },    
+  //   { label: "Settings", href: `/admin/${adminSlug}/security-settings`, icon: Cog6ToothIcon },
   // ],
 
-  "Security": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-    { label: "Clients", href: `/admin/${adminSlug}/finance-clients`, icon: UsersIcon },
-    { label: "Experts/Team", href: `/admin/${adminSlug}/finance-team`, icon: ShieldCheckIcon }, // Manage experts/advisors
+  Security: [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Clients",
+      href: `/admin/${adminSlug}/finance-clients`,
+      icon: UsersIcon,
+    },
+    {
+      label: "Experts/Team",
+      href: `/admin/${adminSlug}/finance-team`,
+      icon: ShieldCheckIcon,
+    }, // Manage experts/advisors
     // { label: "Cases & Matters", href: `/admin/${adminSlug}/finance-cases`, icon: BriefcaseIcon }, // For legal cases/financial matters
-    { label: "Documents", href: `/admin/${adminSlug}/finance-documents`, icon: DocumentTextIcon },
-    { label: "Appointments", href: `/admin/${adminSlug}/finance-appointments`, icon: CalendarDaysIcon }, // For scheduling consultations    
-    { label: "Services", href: `/admin/${adminSlug}/services`, icon: WrenchScrewdriverIcon },
-    { label: "Billing & Invoices", href: `/admin/${adminSlug}/finance-invoices`, icon: ClipboardDocumentListIcon }, // More explicit name
-    { label: "Packages & Pricing", href: `/admin/${adminSlug}/finance-packages`, icon: TagIcon }, // Manage consultation packages
-    { label: "Testimonials", href: `/admin/${adminSlug}/finance-testimonials`, icon: ChatBubbleLeftRightIcon }, // Manage client feedback
-    { label: "FAQs", href: `/admin/${adminSlug}/finance-faqs`, icon: QuestionMarkCircleIcon }, // Manage frequently asked questions 
-    { label: "Blogs", icon: DocumentTextIcon, subItems: [ { label: "All Blogs", href: `/admin/${adminSlug}/blogs` }, ], },
-    { label: "Settings", href: `/admin/${adminSlug}/finance-settings`, icon: Cog6ToothIcon }, // General admin settings
+    {
+      label: "Documents",
+      href: `/admin/${adminSlug}/finance-documents`,
+      icon: DocumentTextIcon,
+    },
+    {
+      label: "Appointments",
+      href: `/admin/${adminSlug}/finance-appointments`,
+      icon: CalendarDaysIcon,
+    }, // For scheduling consultations
+    {
+      label: "Services",
+      href: `/admin/${adminSlug}/services`,
+      icon: WrenchScrewdriverIcon,
+    },
+    {
+      label: "Billing & Invoices",
+      href: `/admin/${adminSlug}/finance-invoices`,
+      icon: ClipboardDocumentListIcon,
+    }, // More explicit name
+    {
+      label: "Packages & Pricing",
+      href: `/admin/${adminSlug}/finance-packages`,
+      icon: TagIcon,
+    }, // Manage consultation packages
+    {
+      label: "Testimonials",
+      href: `/admin/${adminSlug}/finance-testimonials`,
+      icon: ChatBubbleLeftRightIcon,
+    }, // Manage client feedback
+    {
+      label: "FAQs",
+      href: `/admin/${adminSlug}/finance-faqs`,
+      icon: QuestionMarkCircleIcon,
+    }, // Manage frequently asked questions
+    {
+      label: "Blogs",
+      icon: DocumentTextIcon,
+      subItems: [{ label: "All Blogs", href: `/admin/${adminSlug}/blogs` }],
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/finance-settings`,
+      icon: Cog6ToothIcon,
+    }, // General admin settings
   ],
 
   "Delivery & Logistics": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-    { label: "Drivers & Personnel", href: `/admin/${adminSlug}/logistics-drivers`, icon: UsersIcon },
-    { label: "Clients & Customers", href: `/admin/${adminSlug}/logistics-clients`, icon: UserGroupIcon },
-    { label: "Vehicles & Fleet", href: `/admin/${adminSlug}/logistics-vehicles`, icon: TruckIcon },
-    { label: "Routes & Schedules", href: `/admin/${adminSlug}/logistics-routes`, icon: MapPinIcon },
-    { label: "Shipments & Orders", href: `/admin/${adminSlug}/logistics-shipments`, icon: ClipboardDocumentListIcon },
-    { label: "Tracking & Status", href: `/admin/${adminSlug}/logistics-tracking`, icon: EyeIcon },
-    { label: "Billing & Invoices", href: `/admin/${adminSlug}/logistics-billing`, icon: CreditCardIcon },
-    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Drivers & Personnel",
+      href: `/admin/${adminSlug}/logistics-drivers`,
+      icon: UsersIcon,
+    },
+    {
+      label: "Clients & Customers",
+      href: `/admin/${adminSlug}/logistics-clients`,
+      icon: UserGroupIcon,
+    },
+    {
+      label: "Vehicles & Fleet",
+      href: `/admin/${adminSlug}/logistics-vehicles`,
+      icon: TruckIcon,
+    },
+    {
+      label: "Routes & Schedules",
+      href: `/admin/${adminSlug}/logistics-routes`,
+      icon: MapPinIcon,
+    },
+    {
+      label: "Shipments & Orders",
+      href: `/admin/${adminSlug}/logistics-shipments`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Tracking & Status",
+      href: `/admin/${adminSlug}/logistics-tracking`,
+      icon: EyeIcon,
+    },
+    {
+      label: "Billing & Invoices",
+      href: `/admin/${adminSlug}/logistics-billing`,
+      icon: CreditCardIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
   ],
 
-  "Social Media Manager" : [
+  "Social Media Manager": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-    { label: "Clients & Accounts", href: `/admin/${adminSlug}/social-clients`, icon: UsersIcon },
-    { label: "Content Calendar", href: `/admin/${adminSlug}/social-calendar`, icon: CalendarDaysIcon },
-    { label: "Post Management", href: `/admin/${adminSlug}/social-posts`, icon: PencilSquareIcon },
-    { label: "Analytics & Reports", href: `/admin/${adminSlug}/social-analytics`, icon: ChartBarIcon },
-    { label: "Messages & Engagement", href: `/admin/${adminSlug}/social-messages`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Settings", href: `/admin/${adminSlug}/social-settings`, icon: Cog6ToothIcon },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Clients & Accounts",
+      href: `/admin/${adminSlug}/social-clients`,
+      icon: UsersIcon,
+    },
+    {
+      label: "Content Calendar",
+      href: `/admin/${adminSlug}/social-calendar`,
+      icon: CalendarDaysIcon,
+    },
+    {
+      label: "Post Management",
+      href: `/admin/${adminSlug}/social-posts`,
+      icon: PencilSquareIcon,
+    },
+    {
+      label: "Analytics & Reports",
+      href: `/admin/${adminSlug}/social-analytics`,
+      icon: ChartBarIcon,
+    },
+    {
+      label: "Messages & Engagement",
+      href: `/admin/${adminSlug}/social-messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/social-settings`,
+      icon: Cog6ToothIcon,
+    },
   ],
 
-  "SCHOOL_DRIVER": [
-      { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+  SCHOOL_DRIVER: [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
 
-      // Trips & Routes
-      { label: "My Routes", href: `/admin/${adminSlug}/school-driver-routes`, icon: MapIcon },//today-trips
-      // { label: "Today's Trips", href: `/admin/${adminSlug}/school-driver-trips/today`, icon: ClockIcon },
-      { label: "Trip History", href: `/admin/${adminSlug}/school-driver-trips/history`, icon: CalendarIcon },
+    // Trips & Routes
+    {
+      label: "My Routes",
+      href: `/admin/${adminSlug}/school-driver-routes`,
+      icon: MapIcon,
+    }, //today-trips
+    // { label: "Today's Trips", href: `/admin/${adminSlug}/school-driver-trips/today`, icon: ClockIcon },
+    {
+      label: "Trip History",
+      href: `/admin/${adminSlug}/school-driver-trips/history`,
+      icon: CalendarIcon,
+    },
 
-      // Students
-      // { label: "Assigned Students", href: `/admin/${adminSlug}/school-driver-students`, icon: UsersIcon },
-      // { label: "Attendance", href: `/admin/${adminSlug}/school-driver-attendance`, icon: ClipboardDocumentCheckIcon },
+    // Students
+    // { label: "Assigned Students", href: `/admin/${adminSlug}/school-driver-students`, icon: UsersIcon },
+    // { label: "Attendance", href: `/admin/${adminSlug}/school-driver-attendance`, icon: ClipboardDocumentCheckIcon },
 
-      // Vehicle
-      { label: "Vehicle Details", href: `/admin/${adminSlug}/school-driver-vehicle`, icon: TruckIcon },
-      // { label: "Fuel & Mileage", href: `/admin/${adminSlug}/school-driver-vehicle/fuel`, icon: BoltIcon },
-      // { label: "Maintenance Logs", href: `/admin/${adminSlug}/school-driver-vehicle/maintenance`, icon: WrenchScrewdriverIcon },
+    // Vehicle
+    {
+      label: "Vehicle Details",
+      href: `/admin/${adminSlug}/school-driver-vehicle`,
+      icon: TruckIcon,
+    },
+    // { label: "Fuel & Mileage", href: `/admin/${adminSlug}/school-driver-vehicle/fuel`, icon: BoltIcon },
+    // { label: "Maintenance Logs", href: `/admin/${adminSlug}/school-driver-vehicle/maintenance`, icon: WrenchScrewdriverIcon },
 
-      // Safety & Communication
-      // { label: "Live Tracking", href: `/admin/${adminSlug}/school-driver-tracking`, icon: MapPinIcon },
-      { label: "Incidents & Reports", href: `/admin/${adminSlug}/school-driver-incidents`, icon: ExclamationTriangleIcon },
-      { label: "Messages", href: `/admin/${adminSlug}/school-driver-messages`, icon: ChatBubbleLeftRightIcon },
+    // Safety & Communication
+    // { label: "Live Tracking", href: `/admin/${adminSlug}/school-driver-tracking`, icon: MapPinIcon },
+    {
+      label: "Incidents & Reports",
+      href: `/admin/${adminSlug}/school-driver-incidents`,
+      icon: ExclamationTriangleIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/school-driver-messages`,
+      icon: ChatBubbleLeftRightIcon,
+    },
 
-      // Profile
-      { label: "My Profile", href: `/admin/${adminSlug}/school-driver-profile`, icon: UserCircleIcon },
-    ],
+    // Profile
+    {
+      label: "My Profile",
+      href: `/admin/${adminSlug}/school-driver-profile`,
+      icon: UserCircleIcon,
+    },
+  ],
 
-  "STORE_DRIVER": [
-      { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+  STORE_DRIVER: [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
 
-      // Deliveries
-      { label: "Assigned Deliveries", href: `/admin/${adminSlug}/deliveries`, icon: CubeIcon },
-      { label: "Today's Deliveries", href: `/admin/${adminSlug}/deliveries/today`, icon: ClockIcon },
-      { label: "Delivery History", href: `/admin/${adminSlug}/deliveries/history`, icon: CalendarIcon },
+    // Deliveries
+    {
+      label: "Assigned Deliveries",
+      href: `/admin/${adminSlug}/deliveries`,
+      icon: CubeIcon,
+    },
+    {
+      label: "Today's Deliveries",
+      href: `/admin/${adminSlug}/deliveries/today`,
+      icon: ClockIcon,
+    },
+    {
+      label: "Delivery History",
+      href: `/admin/${adminSlug}/deliveries/history`,
+      icon: CalendarIcon,
+    },
 
-      // Orders
-      { label: "Order Details", href: `/admin/${adminSlug}/orders`, icon: ClipboardDocumentListIcon },
-      { label: "Proof of Delivery", href: `/admin/${adminSlug}/deliveries/proof`, icon: CameraIcon },
+    // Orders
+    {
+      label: "Order Details",
+      href: `/admin/${adminSlug}/orders`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Proof of Delivery",
+      href: `/admin/${adminSlug}/deliveries/proof`,
+      icon: CameraIcon,
+    },
 
-      // Navigation
-      { label: "Live Map", href: `/admin/${adminSlug}/map`, icon: MapIcon },
-      { label: "Route Optimization", href: `/admin/${adminSlug}/routes/optimize`, icon: ArrowsRightLeftIcon },
+    // Navigation
+    { label: "Live Map", href: `/admin/${adminSlug}/map`, icon: MapIcon },
+    {
+      label: "Route Optimization",
+      href: `/admin/${adminSlug}/routes/optimize`,
+      icon: ArrowsRightLeftIcon,
+    },
 
-      // Vehicle
-      { label: "Vehicle Status", href: `/admin/${adminSlug}/vehicle`, icon: TruckIcon },
-      { label: "Fuel & Mileage", href: `/admin/${adminSlug}/vehicle/fuel`, icon: BoltIcon },
+    // Vehicle
+    {
+      label: "Vehicle Status",
+      href: `/admin/${adminSlug}/vehicle`,
+      icon: TruckIcon,
+    },
+    {
+      label: "Fuel & Mileage",
+      href: `/admin/${adminSlug}/vehicle/fuel`,
+      icon: BoltIcon,
+    },
 
-      // Earnings & Performance
-      { label: "Earnings", href: `/admin/${adminSlug}/earnings`, icon: BanknotesIcon },
-      { label: "Performance", href: `/admin/${adminSlug}/performance`, icon: ChartBarIcon },
+    // Earnings & Performance
+    {
+      label: "Earnings",
+      href: `/admin/${adminSlug}/earnings`,
+      icon: BanknotesIcon,
+    },
+    {
+      label: "Performance",
+      href: `/admin/${adminSlug}/performance`,
+      icon: ChartBarIcon,
+    },
 
-      // Profile
-      { label: "My Profile", href: `/admin/${adminSlug}/profile`, icon: UserCircleIcon },
-    ],
+    // Profile
+    {
+      label: "My Profile",
+      href: `/admin/${adminSlug}/profile`,
+      icon: UserCircleIcon,
+    },
+  ],
   //Old PAths
   // "Marketplace": [
   //   { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
@@ -1288,7 +2486,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
   //   { label: "Orders", href: `/admin/${adminSlug}/orders`, icon: UsersIcon },
   // ],
 
-  "Tutor": [
+  Tutor: [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     // {
     //   label: "My Classes",
@@ -1309,20 +2507,60 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     //     { label: "Attendance", href: `/admin/${adminSlug}/teacherattendance` },
     //   ],
     // },
-    { label: "Assigned Classes", href: `/admin/${adminSlug}/teacherclasslist`, icon: UsersIcon },
-    { label: "Assigned Subjects", href: `/admin/${adminSlug}/teachersubjectlist`, icon: ClipboardDocumentListIcon },
-    { label: "Schedule", href: `/admin/${adminSlug}/teacherschedule`, icon: CalendarIcon },
-    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+    {
+      label: "Assigned Classes",
+      href: `/admin/${adminSlug}/teacherclasslist`,
+      icon: UsersIcon,
+    },
+    {
+      label: "Assigned Subjects",
+      href: `/admin/${adminSlug}/teachersubjectlist`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Schedule",
+      href: `/admin/${adminSlug}/teacherschedule`,
+      icon: CalendarIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
   ],
 
-  "Lecturer": [
+  Lecturer: [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "Assigned Classes", href: `/admin/${adminSlug}/teacherclasslist`, icon: UsersIcon },
-    { label: "Assigned Subjects", href: `/admin/${adminSlug}/teachersubjectlist`, icon: ClipboardDocumentListIcon },
-    { label: "Schedule", href: `/admin/${adminSlug}/teacherschedule`, icon: CalendarIcon },
-    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+    {
+      label: "Assigned Classes",
+      href: `/admin/${adminSlug}/teacherclasslist`,
+      icon: UsersIcon,
+    },
+    {
+      label: "Assigned Subjects",
+      href: `/admin/${adminSlug}/teachersubjectlist`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Schedule",
+      href: `/admin/${adminSlug}/teacherschedule`,
+      icon: CalendarIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
     // {
     //   label: "My Classes",
     //   icon: ClipboardDocumentListIcon,
@@ -1346,13 +2584,33 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     // { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
   ],
 
-  "Teacher": [
+  Teacher: [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "Assigned Classes", href: `/admin/${adminSlug}/teacherclasslist`, icon: UsersIcon },
-    { label: "Assigned Subjects", href: `/admin/${adminSlug}/teachersubjectlist`, icon: ClipboardDocumentListIcon },
-    { label: "Schedule", href: `/admin/${adminSlug}/teacherschedule`, icon: CalendarIcon },
-    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+    {
+      label: "Assigned Classes",
+      href: `/admin/${adminSlug}/teacherclasslist`,
+      icon: UsersIcon,
+    },
+    {
+      label: "Assigned Subjects",
+      href: `/admin/${adminSlug}/teachersubjectlist`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Schedule",
+      href: `/admin/${adminSlug}/teacherschedule`,
+      icon: CalendarIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
     // {
     //   label: "My Classes",
     //   icon: ClipboardDocumentListIcon,
@@ -1376,34 +2634,94 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     // { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
   ],
 
-  "Student": [
+  Student: [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "My Classes", href: `/admin/${adminSlug}/studentclasses`, icon: ClipboardDocumentListIcon },
-    { label: "Assignments", href: `/admin/${adminSlug}/studentassignments`, icon: DocumentTextIcon },
-    { label: "Grades", href: `/admin/${adminSlug}/studentgrades`, icon: ChartBarIcon },
-    { label: "Schedule", href: `/admin/${adminSlug}/studentschedule`, icon: CalendarIcon },
-    { label: "Messages", href: `/admin/${adminSlug}/studentmessages`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Resources", href: `/admin/${adminSlug}/studentresources`, icon: PresentationChartBarIcon },
+    {
+      label: "My Classes",
+      href: `/admin/${adminSlug}/studentclasses`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Assignments",
+      href: `/admin/${adminSlug}/studentassignments`,
+      icon: DocumentTextIcon,
+    },
+    {
+      label: "Grades",
+      href: `/admin/${adminSlug}/studentgrades`,
+      icon: ChartBarIcon,
+    },
+    {
+      label: "Schedule",
+      href: `/admin/${adminSlug}/studentschedule`,
+      icon: CalendarIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/studentmessages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Resources",
+      href: `/admin/${adminSlug}/studentresources`,
+      icon: PresentationChartBarIcon,
+    },
   ],
 
-  "Pupil": [
+  Pupil: [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "My Classes", href: `/admin/${adminSlug}/studentclasses`, icon: ClipboardDocumentListIcon },
-    { label: "Assignments", href: `/admin/${adminSlug}/studentassignments`, icon: DocumentTextIcon },
-    { label: "Grades", href: `/admin/${adminSlug}/studentgrades`, icon: ChartBarIcon },
-    { label: "Schedule", href: `/admin/${adminSlug}/studentschedule`, icon: CalendarIcon },
-    { label: "Messages", href: `/admin/${adminSlug}/studentmessages`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Resources", href: `/admin/${adminSlug}/studentresources`, icon: PresentationChartBarIcon },
+    {
+      label: "My Classes",
+      href: `/admin/${adminSlug}/studentclasses`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Assignments",
+      href: `/admin/${adminSlug}/studentassignments`,
+      icon: DocumentTextIcon,
+    },
+    {
+      label: "Grades",
+      href: `/admin/${adminSlug}/studentgrades`,
+      icon: ChartBarIcon,
+    },
+    {
+      label: "Schedule",
+      href: `/admin/${adminSlug}/studentschedule`,
+      icon: CalendarIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/studentmessages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Resources",
+      href: `/admin/${adminSlug}/studentresources`,
+      icon: PresentationChartBarIcon,
+    },
   ],
 
-  "Parent": [
+  Parent: [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "My Children", href: `/admin/${adminSlug}/parentchildren`, icon: UsersIcon },
+    {
+      label: "My Children",
+      href: `/admin/${adminSlug}/parentchildren`,
+      icon: UsersIcon,
+    },
     // { label: "Child Assignments", href: `/admin/${adminSlug}/parentassignments`, icon: DocumentTextIcon },
     // { label: "Child Grades", href: `/admin/${adminSlug}/parentgrades`, icon: ChartBarIcon },
     // { label: "Schedule", href: `/admin/${adminSlug}/parentschedule`, icon: CalendarIcon },
-    { label: "Messages", href: `/admin/${adminSlug}/parentmessages`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Resources", href: `/admin/${adminSlug}/parentresources`, icon: PresentationChartBarIcon },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/parentmessages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Resources",
+      href: `/admin/${adminSlug}/parentresources`,
+      icon: PresentationChartBarIcon,
+    },
   ],
 
   "School Head": [
@@ -1421,12 +2739,26 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Reports",
       icon: ChartBarIcon,
       subItems: [
-        { label: "Attendance Report", href: `/admin/${adminSlug}/reports/attendance` },
-        { label: "Performance", href: `/admin/${adminSlug}/reports/performance` },
+        {
+          label: "Attendance Report",
+          href: `/admin/${adminSlug}/reports/attendance`,
+        },
+        {
+          label: "Performance",
+          href: `/admin/${adminSlug}/reports/performance`,
+        },
       ],
     },
-    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
   ],
   "Head Teacher": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
@@ -1443,15 +2775,33 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Reports",
       icon: ChartBarIcon,
       subItems: [
-        { label: "Attendance Report", href: `/admin/${adminSlug}/reports/attendance` },
-        { label: "Performance", href: `/admin/${adminSlug}/reports/performance` },
+        {
+          label: "Attendance Report",
+          href: `/admin/${adminSlug}/reports/attendance`,
+        },
+        {
+          label: "Performance",
+          href: `/admin/${adminSlug}/reports/performance`,
+        },
       ],
     },
-    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
-    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
   ],
-  "Other": [
+  Other: [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
   ],
 });

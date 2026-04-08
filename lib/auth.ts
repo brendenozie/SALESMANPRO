@@ -352,7 +352,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
 
         // ✅ 2. EVERYTHING ELSE (hub, tenants, custom domains)
         // MUST go through handover to preserve session
-        const handoverUrl = new URL("/api/auth/callback", baseUrl);
+        const handoverUrl = new URL("/api/auth/handover", baseUrl);
 
         // 👉 If going to root hub, upgrade to /dashboards
         if (mainHubDomains.includes(targetHost)) {

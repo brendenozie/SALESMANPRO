@@ -1,6 +1,4 @@
 // File: app/api/auth/[...nextauth].ts
-// File: app/api/auth/[...nextauth]/route.ts (Ensure it is .ts or .js)
-// File: app/api/auth/[...nextauth]/route.ts
 import NextAuth from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { headers } from "next/headers";
