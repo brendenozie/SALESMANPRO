@@ -1,11 +1,10 @@
 // ./app/site/[slug]/ghuba/productlist/[id]/page.jsx
 import { PrismaClient } from "@prisma/client";
 import ProductPageClient from "./ProductPageClient"; // We will create this next
-
-const prisma = new PrismaClient();
+import prisma from '@/server/db/prismadb'; // This import is for server-side
 
 // Helper to handle Date serialization for Client Components
-const serialize = (item) => ({
+const serialize = (item: any) => ({
   ...item,
   createdAt: item.createdAt.toISOString(),
   updatedAt: item.updatedAt.toISOString(),
@@ -27,11 +26,16 @@ const serialize = (item) => ({
     : null,
 });
 
-export default async function Page({ params }) {
-  const { id } = await params;
 
-  const listing = await prisma.marketplaceListing.findUnique({
-    where: { id },
+interface PageProps {
+  params: Promise<{ slug: string; id: string }>;
+}
+
+export default async function Page({ params }: PageProps) {
+  const { slug, id } = await params;
+
+  const listing = await prisma.marketplaceListings.findUnique({
+    where: { id: id },
     include: { product: true, productCategory: true },
   });
 
@@ -40,7 +44,7 @@ export default async function Page({ params }) {
   const serializedListing = serialize(listing);
 
   // Fetch similar listings
-  let similar = await prisma.marketplaceListing.findMany({
+  let similar = await prisma.marketplaceListings.findMany({
     where: {
       productCategoryId: listing.productCategoryId,
       id: { not: id },
@@ -50,8 +54,8 @@ export default async function Page({ params }) {
   });
 
   if (similar.length === 0) {
-    similar = await prisma.marketplaceListing.findMany({
-      where: { id: { not: id } },
+    similar = await prisma.marketplaceListings.findMany({
+      where: { id: { not: slug } },
       include: { product: true },
       take: 4,
     });
