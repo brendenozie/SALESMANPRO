@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-// Using Hero Icons as per your saved preference
 import * as HeroIconsSolid from '@heroicons/react/24/solid';
 import { ICoreValue } from '@/types/typings';
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -22,142 +21,107 @@ const MetricCard = ({
 }) => {
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      transition={{ 
-        duration: 0.8, 
-        delay: index * 0.1,
-        type: "spring",
-        stiffness: 100 
-      }}
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
       viewport={{ once: true }}
-      className="relative flex flex-col items-center text-center gap-6 p-10 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-[3.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.05)] border border-white dark:border-zinc-800 group hover:-translate-y-3 transition-all duration-500 z-10"
+      className="group relative p-10 bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 hover:border-zinc-900 dark:hover:border-amber-500 transition-all duration-500"
     >
-      <div className="relative">
-        {/* The "Halo" Glow */}
+      {/* Structural Corner Accents */}
+      <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-transparent group-hover:border-amber-500 transition-colors" />
+      <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-transparent group-hover:border-amber-500 transition-colors" />
+
+      <div className="flex flex-col items-start gap-8">
+        {/* Icon with "Hard" Shadow */}
         <div 
-          className="absolute inset-0 scale-150 blur-[30px] opacity-20 rounded-full transition-all duration-700 group-hover:opacity-40 group-hover:scale-[2]"
-          style={{ backgroundColor: color }}
-        />
-        
-        {/* The Icon Container */}
-        <motion.div 
-          animate={{ y: [0, -4, 0] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: index * 0.5 }}
-          className="relative w-20 h-20 rounded-[2rem] flex items-center justify-center shadow-inner group-hover:rotate-[10deg] transition-transform duration-500"
-          style={{ backgroundColor: `${color}15` }}
+          className="w-16 h-16 flex items-center justify-center bg-zinc-900 dark:bg-zinc-800 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] group-hover:shadow-[6px_6px_0px_0px_rgba(245,158,11,0.5)] transition-all"
         >
-          <Icon className="w-10 h-10" style={{ color: color }} />
-        </motion.div>
-      </div>
+          <Icon className="w-8 h-8 text-white group-hover:text-amber-500 transition-colors" />
+        </div>
 
-      <div className="space-y-2">
-        <h3 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight">
-          {title}
-        </h3>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 font-bold leading-relaxed max-w-[200px] mx-auto">
-          {description}
-        </p>
-      </div>
+        <div className="space-y-3">
+          <h3 className="text-xl font-black text-zinc-900 dark:text-white uppercase italic tracking-tighter">
+            {title}
+          </h3>
+          <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest leading-relaxed">
+            {description}
+          </p>
+        </div>
 
-      {/* Interactive Bottom Accent */}
-      <div 
-        className="w-12 h-1 rounded-full opacity-30 transition-all duration-500 group-hover:w-20 group-hover:opacity-100" 
-        style={{ backgroundColor: color }}
-      />
+        {/* Tactical "Scanner" Progress Bar */}
+        <div className="w-full h-1 bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+          <motion.div 
+            initial={{ x: '-100%' }}
+            whileInView={{ x: '100%' }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            className="w-1/3 h-full bg-amber-500 opacity-0 group-hover:opacity-100"
+          />
+        </div>
+      </div>
     </motion.div>
   );
 };
 
-export default function MetricsSection({ coreValues }: { coreValues: ICoreValue[] }) {
+export default function HardwareMetricsSection({ coreValues }: { coreValues: ICoreValue[] }) {
   const { storeFormData } = useStoreContext();
-  const primary = storeFormData?.themeSettings?.primaryColor || '#F472B6';
-  const secondary = storeFormData?.themeSettings?.secondaryColor || '#3B82F6';
+  const primary = storeFormData?.themeSettings?.primaryColor || '#F59E0B'; // Safety Amber
 
   const defaultValues = [
-    { id: '1', title: 'Safe & Secure', description: 'Bank-level encrypted checkout for your peace of mind.', icon: 'ShieldCheckIcon', color: secondary },
-    { id: '2', title: 'Expert Support', description: 'Compassionate help from our team, available 24/7.', icon: 'HeartIcon', color: primary },
-    { id: '3', title: 'Express Delivery', description: 'Swift, tracked arrival because babies don’t wait!', icon: 'RocketLaunchIcon', color: '#10B981' },
+    { id: '1', title: 'Tactical Security', description: 'Encrypted trade-portal architecture for bulk procurement.', icon: 'ShieldCheckIcon', color: primary },
+    { id: '2', title: 'Site Logistics', description: '24/7 technical dispatch and procurement coordination.', icon: 'TruckIcon', color: primary },
+    { id: '3', title: 'ISO Certified', description: 'Full compliance with international industrial safety standards.', icon: 'CheckBadgeIcon', color: primary },
   ];
 
   const valuesToUse = coreValues?.length > 0 ? coreValues : defaultValues;
 
   return (
-    <section className="relative pt-32 pb-60 bg-[#FAF9F6] dark:bg-zinc-950 overflow-hidden transition-colors duration-500">
+    <section className="relative py-40 bg-zinc-50 dark:bg-[#050505] overflow-hidden">
       
-      {/* Dynamic Background Elements */}
-      <div 
-        className="absolute -top-24 -left-24 w-96 h-96 blur-[120px] opacity-10 rounded-full pointer-events-none"
-        style={{ backgroundColor: primary }}
-      />
+      {/* Background Technical Markers */}
+      <div className="absolute top-0 left-0 w-full h-full opacity-[0.02] dark:opacity-[0.05] pointer-events-none select-none overflow-hidden font-black text-[20vw] leading-none uppercase italic">
+        WARRANTY
+      </div>
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        {/* Header Section */}
-        <div className="text-center mb-24 space-y-6">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-white dark:bg-zinc-800 shadow-sm border border-zinc-100 dark:border-zinc-700"
-          >
-            <HeroIconsSolid.SparklesIcon className="w-4 h-4 text-amber-400" />
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 dark:text-zinc-500">
-              The Little Details Matter
-            </span>
-          </motion.div>
+      <div className="max-w-[1800px] mx-auto px-6 md:px-12 relative z-10">
+        {/* Header: Centered Minimalist */}
+        <div className="flex flex-col items-center text-center mb-24 space-y-6">
+          <div className="px-4 py-1 bg-zinc-900 dark:bg-zinc-800 text-white text-[9px] font-black uppercase tracking-[0.5em]">
+            Service Level Agreement
+          </div>
           
-          <h2 className="text-5xl md:text-7xl font-black text-zinc-900 dark:text-white tracking-tighter leading-none">
-            Designed for <br/> 
-            <span className="italic" style={{ color: primary }}>Peace of Mind</span>
+          <h2 className="text-5xl md:text-8xl font-black text-zinc-900 dark:text-white tracking-tighter leading-none uppercase italic">
+            Engineered for <br/> 
+            <span className="text-transparent" style={{ WebkitTextStroke: '1px currentColor' }}>Extreme Performance</span>
           </h2>
         </div>
 
-        {/* The Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-14">
+        {/* Grid: Mechanical Spacing */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border-t-2 border-l-2 border-zinc-100 dark:border-zinc-800">
           {valuesToUse.map((value: any, index: number) => {
-            const iconKey = value.icon || 'SparklesIcon';
-            const Icon = (HeroIconsSolid as any)[iconKey] || HeroIconsSolid.SparklesIcon;
+            const iconKey = value.icon || 'BoltIcon';
+            const Icon = (HeroIconsSolid as any)[iconKey] || HeroIconsSolid.BoltIcon;
             
             return (
-              <MetricCard
-                key={value.id}
-                index={index}
-                title={value.title}
-                description={value.description}
-                Icon={Icon}
-                color={value.color || (index % 2 === 0 ? secondary : primary)}
-              />
+              <div key={value.id} className="border-r-2 border-b-2 border-zinc-100 dark:border-zinc-800">
+                <MetricCard
+                  index={index}
+                  title={value.title}
+                  description={value.description}
+                  Icon={Icon}
+                  color={primary}
+                />
+              </div>
             );
           })}
         </div>
       </div>
 
-      {/* --- REFINED ORGANIC WAVE DIVIDER --- */}
-      <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] transform rotate-180">
-        <svg 
-          className="relative block w-[calc(100%+1.3px)] h-[150px]" 
-          xmlns="http://www.w3.org/2000/svg" 
-          viewBox="0 0 1200 120" 
-          preserveAspectRatio="none"
-        >
-          {/* Animated Mid-Layer Wave */}
-          <motion.path 
-            animate={{ 
-              d: [
-                "M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5,73.84-4.36,147.54,16.88,218.2,35.26,69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113,2,1200,34.58V0Z",
-                "M0,0V46.29c47.79,22.2,120,10,180,20,70.36,15,136.33,10,206.8,5,73.84-10,147.54,5,218.2,20,69.27,15,138.3,10,209.4,0,36.15-15,69.85-10,104.45-5,70,10,180,20,280,30V0Z",
-                "M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5,73.84-4.36,147.54,16.88,218.2,35.26,69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113,2,1200,34.58V0Z"
-              ]
-            }}
-            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-            fill={primary} 
-            fillOpacity="0.05"
-          />
-          {/* Main Bottom Solid Wave */}
-          <path 
-            d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.51,22.43-10.89,44.67-30.44,50.6-54.41V0Z" 
-            className="fill-white dark:fill-zinc-950 transition-colors duration-500"
-          />
-        </svg>
+      {/* --- GEOMETRIC SAWTOOTH DIVIDER --- */}
+      <div className="absolute bottom-0 left-0 w-full h-24 pointer-events-none">
+        <div 
+          className="h-full w-full bg-white dark:bg-zinc-950" 
+          style={{ clipPath: 'polygon(0% 100%, 5% 80%, 10% 100%, 15% 80%, 20% 100%, 25% 80%, 30% 100%, 35% 80%, 40% 100%, 45% 80%, 50% 100%, 55% 80%, 60% 100%, 65% 80%, 70% 100%, 75% 80%, 80% 100%, 85% 80%, 90% 100%, 95% 80%, 100% 100%)' }}
+        />
       </div>
 
     </section>

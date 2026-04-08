@@ -5,12 +5,11 @@ import Image from 'next/image';
 import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { Award } from '@/types/typings';
-// Using Hero Icons as per saved preference
 import { 
   TrophyIcon, 
   CheckBadgeIcon, 
   ShieldCheckIcon, 
-  SparklesIcon,
+  RectangleGroupIcon,
   StarIcon 
 } from '@heroicons/react/24/solid';
 
@@ -18,66 +17,71 @@ const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: { 
     opacity: 1, 
-    transition: { staggerChildren: 0.15, delayChildren: 0.3 } 
+    transition: { staggerChildren: 0.1, delayChildren: 0.2 } 
   },
 };
 
 const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 40, scale: 0.95 },
+  hidden: { opacity: 0, x: -20 },
   visible: { 
     opacity: 1, 
-    y: 0, 
-    scale: 1,
-    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } 
+    x: 0, 
+    transition: { duration: 0.6, ease: "easeOut" } 
   },
 };
 
 const loader = ({ src, width }: { src: string; width: number }) => src;
 
-export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
+export default function IndustrialAccreditations({ awards }: { awards?: Award[] | null }) {
   const { storeFormData } = useStoreContext();
-  const primary = storeFormData?.themeSettings?.primaryColor || '#FF8FA3';
+  const primary = storeFormData?.themeSettings?.primaryColor || '#F59E0B'; // Safety Amber
   
   const defaultAwards = [
-    { name: 'Mother & Baby Gold 2026', icon: <CheckBadgeIcon /> },
-    { name: 'Eco-Friendly Choice', icon: <SparklesIcon /> },
-    { name: 'Dermatologically Tested', icon: <ShieldCheckIcon /> },
-    { name: 'Top Rated Nursery Brand', icon: <TrophyIcon /> },
+    { name: 'KEBS Standard Certified', icon: <CheckBadgeIcon /> },
+    { name: 'Industrial Grade 2026', icon: <RectangleGroupIcon /> },
+    { name: 'High-Load Tested', icon: <ShieldCheckIcon /> },
+    { name: 'Regional Tech Leader', icon: <TrophyIcon /> },
   ];
 
   const awardsToDisplay = awards && awards.length > 0 ? awards : defaultAwards;
 
   return (
-    <section className="relative py-32 bg-[#FBFAFC] dark:bg-zinc-950 overflow-hidden">
-      {/* Abstract Soft Background Shape */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] blur-[120px] opacity-[0.07] pointer-events-none translate-x-1/2 -translate-y-1/2 rounded-full" style={{ backgroundColor: primary }} />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] blur-[100px] opacity-[0.05] pointer-events-none -translate-x-1/2 translate-y-1/2 rounded-full bg-sky-400" />
+    <section className="relative py-40 bg-white dark:bg-[#050505] overflow-hidden border-t border-zinc-100 dark:border-zinc-900">
+      {/* Technical Blueprint Overlay */}
+      <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none" 
+           style={{ backgroundImage: `radial-gradient(#000 1px, transparent 1px)`, backgroundSize: '30px 30px' }} />
 
-      <div className="max-w-[1400px] mx-auto px-6 relative z-10">
+      <div className="max-w-[1800px] mx-auto px-6 md:px-12 relative z-10">
         
-        {/* Header Section */}
-        <div className="text-center max-w-4xl mx-auto mb-24">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm mb-8"
-          >
-            <StarIcon className="w-4 h-4 text-amber-400" />
-            <span className="text-[11px] font-black uppercase tracking-[0.4em] text-zinc-400">Excellence in Care</span>
-          </motion.div>
-          
-          <h2 className="text-5xl md:text-7xl font-black text-zinc-900 dark:text-white leading-[1.1] tracking-tighter">
-            Globally Recognized for <br/>
-            <span className="italic font-serif font-light px-2" style={{ color: primary }}>Safety & Quality</span>
-          </h2>
+        {/* Header: Offset Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-32 items-end">
+          <div className="lg:col-span-8 space-y-6">
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              className="inline-flex items-center gap-3 px-4 py-1 bg-zinc-900 dark:bg-amber-500 text-white dark:text-zinc-900"
+            >
+              <StarIcon className="w-3 h-3" />
+              <span className="text-[9px] font-black uppercase tracking-[0.4em]">Audit Compliance</span>
+            </motion.div>
+            
+            <h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.85] tracking-tighter uppercase italic">
+              Built for <span className="text-transparent" style={{ WebkitTextStroke: '1px currentColor' }}>Performance</span>
+            </h2>
+          </div>
+          <div className="lg:col-span-4 lg:text-right pb-2">
+            <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest leading-loose">
+              Every system and component in the SalesmanPro hardware ecosystem undergoes rigorous field testing for the East African industrial landscape.
+            </p>
+          </div>
         </div>
         
-        {/* Awards Grid */}
+        {/* Awards/Accreditation Grid */}
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10"
+          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-0 border-t border-l border-zinc-200 dark:border-zinc-800"
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
+          viewport={{ once: true }}
           variants={containerVariants}
         >
           {awardsToDisplay.map((award: any, idx) => {
@@ -87,67 +91,68 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
               <motion.div
                 key={idx}
                 variants={cardVariants}
-                whileHover={{ y: -12 }}
-                className="group relative flex flex-col items-center p-12 rounded-[4rem] bg-white dark:bg-zinc-900 border border-transparent hover:border-zinc-100 dark:hover:border-zinc-800 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.03)] hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.08)] transition-all duration-500"
+                className="group relative p-16 bg-white dark:bg-zinc-950 border-r border-b border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors duration-500"
               >
-                {/* Visual Accent */}
-                <div className="absolute top-6 right-6 w-3 h-3 rounded-full opacity-10 group-hover:opacity-100 transition-all duration-700" style={{ backgroundColor: primary }} />
+                {/* Visual Accent: Serial Number Look */}
+                <span className="absolute top-6 left-8 text-[10px] font-black text-zinc-200 dark:text-zinc-800 tracking-tighter group-hover:text-amber-500/30 transition-colors">
+                  REG_CODE: 00{idx + 1}
+                </span>
 
-                {/* Award Icon Wrapper */}
-                <div className="relative w-32 h-32 mb-10 flex items-center justify-center">
-                   <div 
-                    className="absolute inset-0 rounded-full blur-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-700"
-                    style={{ backgroundColor: primary }}
-                   />
-                   
-                   <div className="relative z-10 w-full h-full text-zinc-300 dark:text-zinc-700 group-hover:text-zinc-900 dark:group-hover:text-white group-hover:scale-110 transition-all duration-700 ease-out">
+                <div className="flex flex-col items-center justify-center space-y-10">
+                  <div className="relative w-24 h-24 text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-amber-500 transition-all duration-500 group-hover:scale-110">
                     {src ? (
                       <Image
                         src={src}
                         alt={award.name}
                         loader={loader}
                         fill
-                        className="object-contain grayscale group-hover:grayscale-0 transition-all duration-700"
+                        className="object-contain grayscale contrast-125"
                       />
                     ) : (
                       React.cloneElement(award.icon as React.ReactElement, { className: "w-full h-full" })
                     )}
-                   </div>
-                </div>
+                  </div>
 
-                <div className="text-center space-y-2">
-                  <h3 className="text-[12px] font-black text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white uppercase tracking-widest transition-colors duration-500 leading-tight">
-                    {award.name}
-                  </h3>
-                  <div className="w-0 h-[2px] bg-zinc-100 dark:bg-zinc-800 mx-auto group-hover:w-full transition-all duration-500" />
+                  <div className="text-center">
+                    <h3 className="text-[13px] font-black text-zinc-900 dark:text-white uppercase tracking-[0.2em] leading-tight">
+                      {award.name}
+                    </h3>
+                    <div className="mt-4 flex justify-center gap-1">
+                      {[1, 2, 3].map(i => (
+                        <div key={i} className="w-1 h-1 bg-amber-500 rounded-full group-hover:animate-pulse" />
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             );
           })}
         </motion.div>
 
-        {/* Floating Certification Footer */}
-        <motion.div 
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            className="mt-24 pt-12 border-t border-zinc-100 dark:border-zinc-800 flex flex-col md:flex-row items-center justify-center gap-10 opacity-60 grayscale hover:grayscale-0 transition-all"
-        >
-            <div className="flex items-center gap-4">
-                <ShieldCheckIcon className="w-10 h-10 text-zinc-400" />
-                <div className="text-left">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Facility Standard</p>
-                    <p className="text-xs font-bold text-zinc-400">ISO 9001:2026 Certified</p>
-                </div>
+        {/* Global Compliance Footer */}
+        <div className="mt-32 p-12 bg-zinc-900 dark:bg-white flex flex-col md:flex-row items-center justify-between gap-8 group">
+          <div className="flex items-center gap-6">
+            <ShieldCheckIcon className="w-12 h-12 text-amber-500" />
+            <div className="text-left text-white dark:text-zinc-900">
+              <p className="text-[9px] font-black uppercase tracking-[0.4em] opacity-60">Facility Authentication</p>
+              <p className="text-2xl font-black uppercase italic tracking-tighter">ISO 9001:2026 Certified</p>
             </div>
-            <div className="h-8 w-[1px] bg-zinc-200 dark:bg-zinc-800 hidden md:block" />
-            <div className="flex items-center gap-4">
-                <CheckBadgeIcon className="w-10 h-10 text-zinc-400" />
-                <div className="text-left">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Sustainability</p>
-                    <p className="text-xs font-bold text-zinc-400">OEKO-TEX® Confirmed</p>
-                </div>
+          </div>
+          
+          <div className="flex gap-4">
+             {[1, 2, 3, 4].map(i => (
+               <div key={i} className="w-12 h-1 bg-white/10 dark:bg-zinc-900/10 group-hover:bg-amber-500 transition-colors duration-700" style={{ transitionDelay: `${i * 100}ms` }} />
+             ))}
+          </div>
+
+          <div className="flex items-center gap-6">
+            <div className="text-right text-white dark:text-zinc-900">
+              <p className="text-[9px] font-black uppercase tracking-[0.4em] opacity-60">Compliance Agency</p>
+              <p className="text-2xl font-black uppercase italic tracking-tighter">KEBS ACCREDITED</p>
             </div>
-        </motion.div>
+            <CheckBadgeIcon className="w-12 h-12 text-amber-500" />
+          </div>
+        </div>
       </div>
     </section>
   );

@@ -4,142 +4,140 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { StarIcon, PlusIcon } from '@heroicons/react/24/solid';
+import { StarIcon, PlusIcon, BoltIcon } from '@heroicons/react/24/solid';
 import { useStoreContext } from '@/contexts/StoreContext';
 
 const productColumns = [
   {
     title: 'Top Sells',
-    label: 'Popular Picks',
+    label: 'High Demand',
     products: [
-      { id: 'pink-hoodie', name: 'Pink Hoodie', price: 2.00, oldPrice: 3.00, rating: 4, img: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4' },
-      { id: 'remote-control-car', name: 'Remote Control Car', price: 6.00, oldPrice: 7.00, rating: 4, img: 'https://images.unsplash.com/photo-1594787318286-3d835c1d207f' },
-      { id: 'baby-boy-set', name: 'Baby Boy Set', price: 2.00, oldPrice: 2.99, rating: 4, img: 'https://images.unsplash.com/photo-1522771935876-249711cd40f2' },
+      { id: 'impact-driver', name: 'Impact Driver V2', price: 12500, oldPrice: 14000, rating: 5, img: 'https://images.unsplash.com/photo-1504148455328-c376907d081c' },
+      { id: 'safety-helmet', name: 'PRO-Shield Helmet', price: 2500, oldPrice: 3200, rating: 4, img: 'https://images.unsplash.com/photo-1516937941344-00b4e0337589' },
+      { id: 'concrete-mixer', name: 'Heavy Duty Mixer', price: 85000, oldPrice: 92000, rating: 5, img: 'https://images.unsplash.com/photo-1581094288338-2314dddb7ecc' },
     ]
   },
   {
     title: 'Top Rated',
-    label: 'Parent Approved',
+    label: 'Field Tested',
     products: [
-      { id: 'winter-hat-for-baby', name: 'Winter Hat for Baby', price: 7.40, oldPrice: 7.99, rating: 4, img: 'https://images.unsplash.com/photo-1522771935876-249711cd40f2' },
-      { id: 'kids-pampers', name: 'Kids Pampers', price: 3.00, oldPrice: 3.99, rating: 4, img: 'https://images.unsplash.com/photo-1617330780360-6060c4c4d57c' },
-      { id: 'electric-bike-toy', name: 'Electric Bike Toy', price: 2.60, oldPrice: 2.99, rating: 4, img: 'https://images.unsplash.com/photo-1532330393533-443990a51d10' },
+      { id: 'steel-rebar', name: 'Reinforced Steel', price: 1200, oldPrice: 1500, rating: 5, img: 'https://images.unsplash.com/photo-1530124566582-a618bc2615ad' },
+      { id: 'laser-level', name: 'Precision Leveler', price: 4500, oldPrice: 5000, rating: 4, img: 'https://images.unsplash.com/photo-1572916141101-97b7274070b4' },
+      { id: 'work-boots', name: 'Titanium Toe Boots', price: 6800, oldPrice: 7500, rating: 5, img: 'https://images.unsplash.com/photo-1560769629-975ec94e6a86' },
     ]
   },
   {
     title: 'Trending',
-    label: 'Viral Now',
+    label: 'Industry Standard',
     products: [
-      { id: 'puzzle-game', name: 'Puzzle Game', price: 28.50, oldPrice: 30.99, rating: 4, img: 'https://images.unsplash.com/photo-1585435557343-3b092031a831' },
-      { id: 'baby-shampoo', name: 'Baby shampoo', price: 15.00, oldPrice: 19.90, rating: 4, img: 'https://images.unsplash.com/photo-1559599101-f09722fb4948' },
-      { id: 'robo-toys', name: 'Robo Toys', price: 3.75, oldPrice: 3.99, rating: 4, img: 'https://images.unsplash.com/photo-1546776310-eef45dd6d63c' },
+      { id: 'solar-panel-pro', name: 'Monocrystalline Cell', price: 18000, oldPrice: 21000, rating: 5, img: 'https://images.unsplash.com/photo-1509391366360-fe5bb65830bb' },
+      { id: 'welding-kit', name: 'Arc Fusion Series', price: 32000, oldPrice: 35000, rating: 4, img: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1' },
+      { id: 'copper-wiring', name: 'Gage-12 Roll (50m)', price: 4200, oldPrice: 4800, rating: 5, img: 'https://images.unsplash.com/photo-1558434195-096860368d40' },
     ]
   },
   {
     title: 'New Arrivals',
-    label: 'Just In',
+    label: 'New to Inventory',
     products: [
-      { id: 'red-sneakers', name: 'Red Sneakers', price: 12.00, oldPrice: 15.00, rating: 5, img: 'https://images.unsplash.com/photo-1514989940723-e8e51635b782' },
-      { id: 'baby-stroller', name: 'Baby Stroller', price: 45.00, oldPrice: 50.00, rating: 5, img: 'https://images.unsplash.com/photo-1591339102716-4bc24f7c41bc' },
-      { id: 'girl-blue-dress', name: 'Girl Blue Dress', price: 18.00, oldPrice: 22.00, rating: 5, img: 'https://images.unsplash.com/photo-1518831959646-742c3a14ebf7' },
+      { id: 'smart-meter', name: 'IoT Energy Monitor', price: 5400, oldPrice: 6000, rating: 5, img: 'https://images.unsplash.com/photo-1591136934893-b6c867a1d132' },
+      { id: 'cordless-drill', name: '20V Brushless XR', price: 15500, oldPrice: 18000, rating: 5, img: 'https://images.unsplash.com/photo-1504148455328-c376907d081c' },
+      { id: 'generator-portable', name: 'QuietRun 3000W', price: 95000, oldPrice: 110000, rating: 5, img: 'https://images.unsplash.com/photo-1590135327266-40763f03b22e' },
     ]
   }
 ];
 
-export default function ProductShowcaseGrid() {
+export default function HardwareShowcaseGrid() {
   const { storeFormData } = useStoreContext();
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#FF8FA3';
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#F59E0B'; // Safety Amber
 
   return (
-    <section className="relative max-w-[1800px] mx-auto px-6 md:px-12 py-32 bg-white dark:bg-zinc-950 transition-colors">
+    <section className="relative max-w-[1800px] mx-auto px-6 md:px-12 py-32 bg-white dark:bg-[#050505] transition-colors">
       
-      {/* Background flourish */}
-      <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-zinc-50/50 dark:from-zinc-900/20 to-transparent pointer-events-none" />
+      {/* Blueprint Grid Overlay */}
+      <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07] pointer-events-none" 
+           style={{ backgroundImage: `linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)`, backgroundSize: '100px 100px' }} />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-16 gap-y-20 relative z-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-12 gap-y-24 relative z-10">
         {productColumns.map((column, idx) => (
           <motion.div 
             key={idx}
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: idx * 0.15 }}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: idx * 0.1 }}
             viewport={{ once: true }}
             className="group/column"
           >
-            {/* Boutique Header */}
-            <div className="mb-14 space-y-2">
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 dark:text-zinc-500 block">
-                {column.label}
-              </span>
-              <div className="flex items-center gap-4">
-                <h3 className="text-3xl font-black text-zinc-900 dark:text-white tracking-tighter">
+            {/* Professional Header */}
+            <div className="mb-16">
+              <div className="flex items-center gap-3 mb-3">
+                <BoltIcon className="w-3 h-3 text-amber-500" />
+                <span className="text-[9px] font-black uppercase tracking-[0.5em] text-zinc-400 dark:text-zinc-500 block">
+                  {column.label}
+                </span>
+              </div>
+              <div className="space-y-4">
+                <h3 className="text-4xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase italic leading-none">
                   {column.title}
                 </h3>
-                <div 
-                  className="h-px flex-1 bg-zinc-100 dark:bg-zinc-800 transition-all group-hover/column:flex-[2]" 
-                />
+                <div className="h-1 w-12 bg-amber-500 group-hover/column:w-full transition-all duration-700" />
               </div>
             </div>
 
-            <div className="relative space-y-12">
-              {/* Vertical path line */}
-              <div className="absolute left-6 top-8 bottom-8 w-px bg-zinc-100 dark:bg-zinc-800 -z-10 group-hover/column:bg-zinc-200 transition-colors" />
+            <div className="relative space-y-16">
+              {/* Mechanical Guide Line */}
+              <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-zinc-100 dark:bg-zinc-800" />
 
               {column.products.map((product, pIdx) => (
-                <div key={pIdx} className="group relative">
+                <div key={pIdx} className="group relative pl-8">
                   <Link 
-                    href={`/babyecommerce/product/${product.id.toLowerCase().replace(/ /g, '-')}`}
-                    className="flex items-center gap-6"
+                    href={`/hardwareecommerce/product/${product.id}`}
+                    className="flex flex-col gap-4"
                   >
-                    {/* Artistic Image Container */}
-                    <div className="relative w-28 h-28 flex-shrink-0">
-                      <div className="absolute inset-0 bg-zinc-50 dark:bg-zinc-900 rounded-tr-[2.5rem] rounded-bl-[2.5rem] rounded-tl-lg rounded-br-lg transition-transform duration-500 group-hover:scale-105 group-hover:rotate-3 shadow-sm group-hover:shadow-xl" />
-                      <div className="relative h-full w-full p-4">
-                        <Image 
-                          src={product.img} 
-                          alt={product.name} 
-                          fill 
-                          className="object-contain p-2 transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-6" 
-                          loader={({ src, width }) => `${src}?w=${width}&q=80`}
-                        />
+                    {/* Precision Frame Image Container */}
+                    <div className="relative w-full aspect-square bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 overflow-hidden">
+                      <div className="absolute top-0 right-0 p-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                         <span className="text-[8px] font-black bg-white dark:bg-zinc-800 px-2 py-1 border border-zinc-200 dark:border-zinc-700">REF: {product.id.substring(0, 5).toUpperCase()}</span>
                       </div>
+                      <Image 
+                        src={product.img} 
+                        alt={product.name} 
+                        fill 
+                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
+                        loader={({ src }) => `${src}?auto=format&fit=crop&w=400&q=80`}
+                      />
                     </div>
 
-                    {/* Product Details */}
-                    <div className="flex-1 space-y-1">
-                      <h4 className="text-sm font-black text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors leading-tight">
-                        {product.name}
-                      </h4>
-                      
+                    {/* Product Specs */}
+                    <div className="space-y-2">
                       <div className="flex items-center gap-1">
                         {[...Array(5)].map((_, i) => (
-                          <StarIcon 
+                          <div 
                             key={i} 
-                            className={`h-2.5 w-2.5 ${i < product.rating ? '' : 'text-zinc-200 dark:text-zinc-800'}`} 
-                            style={{ color: i < product.rating ? primaryColor : undefined }}
+                            className={`h-1 flex-1 ${i < product.rating ? 'bg-amber-500' : 'bg-zinc-100 dark:bg-zinc-800'}`} 
                           />
                         ))}
                       </div>
 
-                      <div className="flex items-center gap-3 pt-1">
-                        <span className="text-lg font-black text-zinc-900 dark:text-white tracking-tight">
-                          ${product.price.toFixed(2)}
+                      <h4 className="text-xs font-black text-zinc-800 dark:text-zinc-200 uppercase tracking-wide group-hover:text-amber-500 transition-colors">
+                        {product.name}
+                      </h4>
+
+                      <div className="flex items-baseline gap-3">
+                        <span className="text-xl font-black text-zinc-900 dark:text-white tracking-tighter">
+                          KES {product.price.toLocaleString()}
                         </span>
                         {product.oldPrice && (
-                          <span className="text-xs text-zinc-300 dark:text-zinc-600 line-through font-bold">
-                            ${product.oldPrice.toFixed(2)}
+                          <span className="text-[10px] text-zinc-400 line-through font-bold">
+                            {product.oldPrice.toLocaleString()}
                           </span>
                         )}
                       </div>
                     </div>
                   </Link>
 
-                  {/* Quick Buy Action Button */}
+                  {/* Add to Requisition Button */}
                   <button 
-                    className="absolute -right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white dark:bg-zinc-800 shadow-lg border border-zinc-50 dark:border-zinc-700 opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 flex items-center justify-center hover:text-white"
-                    style={{ '--hover-bg': primaryColor } as any}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = primaryColor}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ''}
+                    className="absolute -right-2 top-0 w-10 h-10 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center hover:bg-amber-500 hover:text-zinc-900"
                   >
                     <PlusIcon className="w-5 h-5" />
                   </button>

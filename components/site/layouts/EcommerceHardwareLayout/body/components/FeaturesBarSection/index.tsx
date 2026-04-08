@@ -3,97 +3,101 @@
 import React from 'react';
 import { 
   TruckIcon, 
-  ChatBubbleLeftRightIcon, 
+  WrenchScrewdriverIcon, 
   ShieldCheckIcon, 
-  ArrowPathIcon 
+  ArrowPathRoundedSquareIcon 
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { motion } from 'framer-motion';
 
 const features = [
   {
-    title: 'Free Delivery',
-    description: 'On all curated orders',
+    title: 'Site Delivery',
+    description: 'Direct to your project location',
+    tag: 'LOGISTICS-01',
     Icon: TruckIcon,
   },
   {
-    title: 'Expert Support',
-    description: 'Available every hour',
-    Icon: ChatBubbleLeftRightIcon,
+    title: 'Technical Support',
+    description: 'Expert guidance on every tool',
+    tag: 'SUPPORT-02',
+    Icon: WrenchScrewdriverIcon,
   },
   {
-    title: 'Secure Haven',
-    description: '100% Protected payments',
+    title: 'Verified Warranty',
+    description: '100% Genuine product cover',
+    tag: 'SECURE-03',
     Icon: ShieldCheckIcon,
   },
   {
-    title: 'Happy Returns',
-    description: '30-Day peace of mind',
-    Icon: ArrowPathIcon,
+    title: 'Easy Exchange',
+    description: 'Hassle-free hardware returns',
+    tag: 'RETURN-04',
+    Icon: ArrowPathRoundedSquareIcon,
   },
 ];
 
 export default function FeaturesBarSection() {
   const { storeFormData } = useStoreContext();
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#FF8FA3';
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#F59E0B'; // Default Safety Amber
 
   return (
-    <section className="relative py-16 bg-white dark:bg-zinc-950 overflow-hidden">
-      {/* Background soft accent */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-zinc-100 dark:via-zinc-800 to-transparent" />
+    <section className="relative py-12 bg-white dark:bg-[#080808] overflow-hidden">
+      {/* Structural Divider Lines */}
+      <div className="absolute top-0 inset-x-0 h-px bg-zinc-200 dark:bg-zinc-800 opacity-50" />
+      <div className="absolute bottom-0 inset-x-0 h-px bg-zinc-200 dark:bg-zinc-800 opacity-50" />
 
       <div className="max-w-[1800px] mx-auto px-6 md:px-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-zinc-200 dark:divide-zinc-800 border-x border-zinc-200 dark:border-zinc-800">
+          
           {features.map((feature, index) => (
             <motion.div 
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
-              whileHover={{ y: -5 }}
-              className="relative group p-6 rounded-[2.5rem] bg-zinc-50 dark:bg-zinc-900/50 border border-transparent hover:border-white dark:hover:border-zinc-800 hover:shadow-2xl hover:shadow-zinc-200/50 dark:hover:shadow-none transition-all duration-500"
+              transition={{ delay: index * 0.1 }}
+              className="group relative p-8 md:p-10 hover:bg-zinc-50 dark:hover:bg-zinc-900/40 transition-colors duration-500"
             >
-              <div className="flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-5">
-                
-                {/* Icon with Organic "Blob" Background */}
-                <div className="relative flex-shrink-0">
-                  <div 
-                    className="absolute inset-0 scale-150 blur-xl opacity-20 rounded-full"
-                    style={{ backgroundColor: primaryColor }}
+              {/* Technical Serial Tag */}
+              <span className="absolute top-4 right-6 text-[8px] font-black tracking-[0.3em] text-zinc-300 dark:text-zinc-700 uppercase group-hover:text-amber-500 transition-colors">
+                {feature.tag}
+              </span>
+
+              <div className="flex flex-col gap-6">
+                {/* Industrial Icon Frame */}
+                <div className="relative w-14 h-14 flex items-center justify-center">
+                  {/* Square Outline Rotation Effect */}
+                  <div className="absolute inset-0 border border-zinc-200 dark:border-zinc-800 rounded-xl group-hover:rotate-45 transition-transform duration-500" />
+                  <div className="absolute inset-0 border border-transparent group-hover:border-amber-500/30 rounded-xl group-hover:-rotate-45 transition-transform duration-700" />
+                  
+                  <feature.Icon 
+                    className="h-7 w-7 transition-all duration-500 group-hover:scale-110" 
+                    style={{ color: primaryColor }}
                   />
-                  <div 
-                    className="relative z-10 w-14 h-14 rounded-2xl flex items-center justify-center bg-white dark:bg-zinc-800 shadow-sm transition-transform duration-500 group-hover:rotate-6"
-                  >
-                    <feature.Icon 
-                      className="h-7 w-7 transition-colors duration-300" 
-                      style={{ color: primaryColor }}
-                    />
-                  </div>
                 </div>
 
-                {/* Content */}
-                <div className="space-y-1">
-                  <h3 className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white">
+                {/* Text Content */}
+                <div className="space-y-2">
+                  <h3 className="text-sm font-black uppercase tracking-tighter text-zinc-900 dark:text-white group-hover:translate-x-1 transition-transform">
                     {feature.title}
                   </h3>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-500 font-bold uppercase tracking-tight leading-relaxed max-w-[200px]">
                     {feature.description}
                   </p>
                 </div>
-
               </div>
 
-              {/* Decorative Corner Accent */}
-              <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                 <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: primaryColor }} />
-              </div>
+              {/* Bottom "Active" Indicator */}
+              <div 
+                className="absolute bottom-0 left-0 w-0 h-1 group-hover:w-full transition-all duration-700"
+                style={{ backgroundColor: primaryColor }}
+              />
             </motion.div>
           ))}
+
         </div>
       </div>
-      
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-zinc-100 dark:via-zinc-800 to-transparent" />
     </section>
   );
 }

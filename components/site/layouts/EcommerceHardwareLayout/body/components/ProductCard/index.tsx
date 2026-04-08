@@ -2,14 +2,15 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-// Using Hero Icons as requested
 import { 
   MinusIcon, 
   PlusIcon, 
-  StarIcon, 
-  TrashIcon, 
   ShoppingBagIcon,
-  HeartIcon 
+  HeartIcon,
+  WrenchScrewdriverIcon,
+  ShieldCheckIcon,
+  BoltIcon,
+  TrashIcon
 } from '@heroicons/react/24/solid';
 import { MarketListingForm } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
@@ -27,8 +28,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
   
-  const primary = storeFormData?.themeSettings?.primaryColor || '#F472B6';
-  const secondary = storeFormData?.themeSettings?.secondaryColor || '#3B82F6';
+  const primary = storeFormData?.themeSettings?.primaryColor || '#F59E0B'; // Safety Amber
 
   const quantity = cart.find((item: any) => item.id === product.id)?.quantity || 0;
   const { name, images, finalPrice, sellingPrice } = product;
@@ -37,134 +37,121 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     ? Math.round(((sellingPrice - finalPrice) / sellingPrice) * 100)
     : null;
     
-  const imageSrc = images?.[0] || 'https://images.unsplash.com/photo-1519408230728-0c7c8f0b2c5f';
+  const imageSrc = images?.[0] || 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189';
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, scale: 0.95 }}
+      whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
-      whileHover={{ y: -8 }}
-      className="relative flex flex-col bg-white dark:bg-zinc-900 rounded-[2.5rem] p-4 transition-all duration-500 group border border-transparent hover:border-slate-100 dark:hover:border-zinc-800 hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.4)]"
+      whileHover={{ y: -5 }}
+      className="group relative flex flex-col bg-white dark:bg-[#0A0A0A] border-2 border-gray-100 dark:border-zinc-800 hover:border-amber-500 dark:hover:border-amber-500 transition-all duration-300 overflow-hidden shadow-sm hover:shadow-2xl"
     >
-      {/* --- IMAGE CONTAINER --- */}
-      <div className="relative h-64 w-full rounded-[2rem] overflow-hidden bg-[#F8FAFC] dark:bg-zinc-800/50">
-        <Link href={`/babyecommerce/products/${product.id}`} className="block h-full w-full">
+      {/* --- IMAGE / SPECS OVERLAY --- */}
+      <div className="relative h-72 w-full overflow-hidden bg-gray-50 dark:bg-zinc-900/50 p-4">
+        <Link href={`/hardwareecommerce/products/${product.id}`} className="block h-full w-full relative">
           <Image
             src={imageSrc}
             alt={name}
             fill
             loader={loader}
-            className="object-cover transition-transform duration-700 group-hover:scale-110"
+            className="object-contain transition-transform duration-500 group-hover:scale-110 p-4"
           />
         </Link>
 
-        {/* Top Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-2">
+        {/* Technical Tags */}
+        <div className="absolute top-4 left-4 flex flex-col gap-2">
           {discount && (
-            <div 
-              className="px-3 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-wider shadow-sm"
-              style={{ backgroundColor: secondary }}
-            >
-              {discount}% OFF
+            <div className="bg-red-600 text-white text-[10px] font-black px-2 py-1 skew-x-[-12deg] shadow-lg">
+              SAVE {discount}%
             </div>
           )}
+          <div className="bg-zinc-900 dark:bg-amber-500 text-amber-500 dark:text-black text-[9px] font-black px-2 py-1 skew-x-[-12deg] flex items-center gap-1">
+             <ShieldCheckIcon className="w-3 h-3" />
+             GENUINE STOCK
+          </div>
         </div>
 
-        {/* Heart Action */}
-        <button className="absolute top-3 right-3 p-2.5 rounded-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md text-slate-400 dark:text-zinc-500 hover:text-pink-500 dark:hover:text-pink-400 transition-colors shadow-sm">
+        {/* Secondary Action */}
+        <button className="absolute top-4 right-4 p-2 bg-white/90 dark:bg-zinc-900/90 border border-gray-200 dark:border-zinc-800 text-zinc-400 hover:text-red-500 transition-colors">
           <HeartIcon className="w-5 h-5" />
         </button>
 
-        {/* Quick Add Overlay */}
-        {quantity === 0 && (
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => addToCart(product)}
-            className="absolute bottom-4 right-4 p-4 rounded-2xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-xl opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300"
-          >
-            <ShoppingBagIcon className="w-5 h-5" />
-          </motion.button>
-        )}
+        {/* Quick Spec Bottom Bar */}
+        <div className="absolute bottom-0 left-0 w-full bg-zinc-900/80 backdrop-blur-sm py-2 px-4 flex justify-between items-center translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+          <div className="flex gap-3">
+             <BoltIcon className="w-4 h-4 text-amber-400" />
+             <WrenchScrewdriverIcon className="w-4 h-4 text-zinc-400" />
+          </div>
+          <span className="text-[9px] text-white font-mono tracking-tighter">SKU: {product.id.slice(0, 8).toUpperCase()}</span>
+        </div>
       </div>
 
       {/* --- CONTENT SECTION --- */}
-      <div className="px-2 pt-6 pb-2 flex flex-col flex-grow">
-        <div className="flex justify-between items-start mb-2">
-          <div className="flex items-center gap-1 text-amber-400">
-            <StarIcon className="w-4 h-4" />
-            <span className="text-xs font-bold text-slate-600 dark:text-zinc-400">4.8</span>
-          </div>
-          <span className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest">Organic Cotton</span>
+      <div className="p-5 flex flex-col flex-grow bg-white dark:bg-[#0A0A0A]">
+        <div className="flex items-center gap-2 mb-2">
+           <span className="text-[9px] font-black text-amber-600 dark:text-amber-500 uppercase tracking-[0.2em]">Hardware Supply</span>
+           <div className="h-1 w-1 rounded-full bg-zinc-300" />
+           <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">In Stock</span>
         </div>
 
-        <Link href={`/babyecommerce/products/${product.id}`}>
-          <h4 className="text-lg font-bold text-slate-800 dark:text-zinc-100 line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+        <Link href={`/products/${product.id}`}>
+          <h4 className="text-md font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-tight line-clamp-2 leading-tight group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors mb-4">
             {name}
           </h4>
         </Link>
 
-        <div className="mt-3 flex items-center justify-between">
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-slate-900 dark:text-white">
-              {finalPrice?.toLocaleString('en-US', { style: 'currency', currency: 'Kes' }) || sellingPrice?.toLocaleString('en-US', { style: 'currency', currency: 'Kes' }) || '$0.00'}
-            </span>
+        <div className="mt-auto">
+          <div className="flex flex-col mb-4">
             {discount && (
-              <span className="text-sm line-through text-slate-300 dark:text-zinc-600 font-medium">
-                {sellingPrice?.toLocaleString('en-US', { style: 'currency', currency: 'Kes' })}
+              <span className="text-xs line-through text-zinc-400 font-bold decoration-red-500/50">
+                {sellingPrice?.toLocaleString('en-KE', { style: 'currency', currency: 'KES' })}
               </span>
             )}
+            <span className="text-2xl font-black text-zinc-900 dark:text-white italic">
+              {finalPrice?.toLocaleString('en-KE', { style: 'currency', currency: 'KES' }) || sellingPrice?.toLocaleString('en-KE', { style: 'currency', currency: 'KES' })}
+            </span>
           </div>
-        </div>
 
-        {/* --- DYNAMIC FOOTER ACTIONS --- */}
-        <div className="mt-6">
+          {/* --- INDUSTRIAL BUTTONS --- */}
           <AnimatePresence mode="wait">
             {quantity > 0 ? (
               <motion.div 
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="flex items-center justify-between bg-slate-50 dark:bg-zinc-800/50 p-1 rounded-2xl border border-slate-100 dark:border-zinc-800"
+                initial={{ x: 20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -20, opacity: 0 }}
+                className="flex items-center bg-zinc-100 dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-800"
               >
-                <div className="flex items-center gap-1">
-                  <motion.button
-                    whileTap={{ scale: 0.8 }}
-                    onClick={() => decreaseQuantity(product.id)}
-                    className="p-3 rounded-xl bg-white dark:bg-zinc-900 shadow-sm text-slate-600 dark:text-zinc-300 hover:text-red-500 transition-colors"
-                  >
-                    {quantity === 1 ? <TrashIcon className="h-4 w-4" /> : <MinusIcon className="h-4 w-4" />}
-                  </motion.button>
-                  <span className="w-10 text-center font-black text-slate-700 dark:text-zinc-200">{quantity}</span>
-                  <motion.button
-                    whileTap={{ scale: 0.8 }}
-                    onClick={() => addToCart(product)}
-                    className="p-3 rounded-xl bg-white dark:bg-zinc-900 shadow-sm text-slate-600 dark:text-zinc-300 hover:text-blue-500 transition-colors"
-                  >
-                    <PlusIcon className="h-4 w-4" />
-                  </motion.button>
-                </div>
-                <div className="pr-4">
-                  <span className="text-[10px] font-black uppercase text-slate-400 dark:text-zinc-500 tracking-tighter">In Cart</span>
-                </div>
+                <button
+                  onClick={() => decreaseQuantity(product.id)}
+                  className="p-4 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors text-zinc-600 dark:text-zinc-400"
+                >
+                  {quantity === 1 ? <TrashIcon className="h-5 w-5" /> : <MinusIcon className="h-5 w-5" />}
+                </button>
+                <span className="flex-grow text-center font-black text-lg dark:text-white font-mono">{quantity}</span>
+                <button
+                  onClick={() => addToCart(product)}
+                  className="p-4 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors text-zinc-600 dark:text-zinc-400 border-l border-zinc-200 dark:border-zinc-800"
+                >
+                  <PlusIcon className="h-5 w-5" />
+                </button>
               </motion.div>
             ) : (
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => addToCart(product)}
-                className="w-full py-4 rounded-2xl text-white font-bold text-sm shadow-lg transition-all active:shadow-none"
-                style={{ 
-                  backgroundColor: primary,
-                  boxShadow: `0 12px 24px -8px ${primary}66`
-                }}
+                className="w-full py-4 bg-zinc-900 dark:bg-white text-white dark:text-black font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-amber-500 dark:hover:bg-amber-500 hover:text-black transition-all"
               >
-                Add to Cart
+                <ShoppingBagIcon className="w-4 h-4" />
+                Add to Inventory
               </motion.button>
             )}
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Decorative Corner Trim */}
+      <div className="absolute top-0 right-0 w-8 h-8 bg-amber-500 translate-x-4 -translate-y-4 rotate-45 group-hover:translate-x-3 group-hover:-translate-y-3 transition-transform" />
     </motion.div>
   );
 };
