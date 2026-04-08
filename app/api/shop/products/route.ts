@@ -15,7 +15,11 @@ const CORS_HEADERS = {
     "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
 };
 
-function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
+function withCors(
+  json: any,
+  status = 200,
+  extraHeaders: Record<string, string> = {},
+) {
   return new NextResponse(JSON.stringify(json), {
     status,
     headers: {
@@ -35,7 +39,6 @@ export function OPTIONS() {
     headers: CORS_HEADERS,
   });
 }
-
 
 // GET /api/marketplace-listings?agentId=&search=&brand=&category=&subCategory=&minPrice=&maxPrice=&availability=&sort=&page=&limit=
 export async function GET(req: Request) {
@@ -61,14 +64,20 @@ export async function GET(req: Request) {
     // Build where clause
     const where: Prisma.marketplaceListingsWhereInput = {
       ...(agentId && { companyId: agentId }),
-      ...(search && { title: { contains: search, mode: 'insensitive' } }),
-      ...(minPrice || maxPrice) && {
+      ...(search && { title: { contains: search, mode: "insensitive" } }),
+      ...((minPrice || maxPrice) && {
         sellingPrice: {
-          ...(minPrice && !isNaN(Number(minPrice)) && { gte: Number(minPrice) }),
-          ...(maxPrice && !isNaN(Number(maxPrice)) && { lte: Number(maxPrice) }),
+          ...(minPrice &&
+            !isNaN(Number(minPrice)) && { gte: Number(minPrice) }),
+          ...(maxPrice &&
+            !isNaN(Number(maxPrice)) && { lte: Number(maxPrice) }),
         },
-      },
-      ...(availabilityParam === 'true' ? { isAvailable: true } : availabilityParam === 'false' ? { isAvailable: false } : {}),
+      }),
+      ...(availabilityParam === "true"
+        ? { isAvailable: true }
+        : availabilityParam === "false"
+          ? { isAvailable: false }
+          : {}),
       ...(brand.length > 0 && { brand: { in: brand } }),
       ...(category.length > 0 && { category: { in: category } }),
       // If subCategory is a JSON field, use 'hasSome' for array matching
@@ -77,19 +86,20 @@ export async function GET(req: Request) {
 
     // Sorting
     // Default sort by createdAt desc, or allow sorting by price or createdAt
-    let orderBy: Prisma.marketplaceListingsOrderByWithRelationInput = { createdAt: 'desc' };
+    let orderBy: Prisma.marketplaceListingsOrderByWithRelationInput = {
+      createdAt: "desc",
+    };
     if (sortParam) {
-      const [field, direction] = sortParam.split(':');
+      const [field, direction] = sortParam.split(":");
       if (
-        (field === 'createdAt' || field === 'sellingPrice') &&
-        (direction === 'asc' || direction === 'desc')
+        (field === "createdAt" || field === "sellingPrice") &&
+        (direction === "asc" || direction === "desc")
       ) {
         orderBy = { [field]: direction };
       }
     }
-    
 
-    const cacheKey = `shop:products:agent:${agentId || 'all'}:search:${search || 'all'}:brand:${brand.join(',') || 'all'}:category:${category.join(',') || 'all'}:subCategory:${subCategory.join(',') || 'all'}:minPrice:${minPrice || '0'}:maxPrice:${maxPrice || '999999999'}:availability:${availabilityParam || 'all'}:sort:${sortParam || 'createdAt:desc'}:page:${page}:limit:${limit}`;
+    const cacheKey = `shop:products:agent:${agentId || "all"}:search:${search || "all"}:brand:${brand.join(",") || "all"}:category:${category.join(",") || "all"}:subCategory:${subCategory.join(",") || "all"}:minPrice:${minPrice || "0"}:maxPrice:${maxPrice || "999999999"}:availability:${availabilityParam || "all"}:sort:${sortParam || "createdAt:desc"}:page:${page}:limit:${limit}`;
 
     try {
       const cached = await cacheGet(cacheKey);
@@ -109,20 +119,30 @@ export async function GET(req: Request) {
     const totalPages = Math.ceil(total / limit);
 
     try {
-      await cacheSet(cacheKey, { data: listings, meta: { total, perPage: limit, page, totalPages, orderBy } }, 60); // Cache for 1 minute
+      await cacheSet(
+        cacheKey,
+        {
+          data: listings,
+          meta: { total, perPage: limit, page, totalPages, orderBy },
+        },
+        60,
+      ); // Cache for 1 minute
     } catch (e) {
       console.error("Failed to cache marketplace listings data:", e);
     }
 
     return withCors(
-      { data: listings, meta: { total, perPage: limit, page, totalPages, orderBy } },
-      200
+      {
+        data: listings,
+        meta: { total, perPage: limit, page, totalPages, orderBy },
+      },
+      200,
     );
   } catch (err: any) {
     console.error("Error fetching listings:", err);
     return withCors(
       { error: "Failed to fetch listings", detail: err.message },
-      500
+      500,
     );
   }
 }

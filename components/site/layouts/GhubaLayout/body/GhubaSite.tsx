@@ -56,11 +56,10 @@ const HomePage = ({ pageData, companyId }: { pageData: StoreForm, companyId: str
         const response = await fetch(`${apiBaseUrl}/shop/productsByCategory?categoryId=${featuredCategories.id}`);
         if (!response.ok) throw new Error(`Failed to fetch products for category ${featuredCategories.name}.`);
         const data = await response.json();
+
         products[String(featuredCategories.name)] = data;
         setProductsByCategory(products);
       
-        
-        console.log(products);
       } catch (err:any) {
         setError(err.message);
       } finally {

@@ -9,11 +9,14 @@ import Filters from "@/components/Filters";
 import load from "@/assets/load.png";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useStateContext } from '@/contexts/ContextProvider';
+import GhubaProductCard from "@/components/site/layouts/GhubaLayout/body/components/GhubaProductCard";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // Custom product search hook
 function useProductSearch({ searchTerm, filters }) {
+  
   const [products, setProducts] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -42,9 +45,9 @@ function useProductSearch({ searchTerm, filters }) {
       const res = await fetch(`${apiBaseUrl}/shop/products?${params}`);
       if (!res.ok) throw new Error('Failed to fetch products');
       const data = (await res.json()).data;
-      setProducts(prev => pageNum === 1 ? data.products : [...prev, ...data.products]);
+      setProducts(prev => pageNum === 1 ? data : [...prev, ...data]);
       setTotalPages(data.totalPages);
-      setHasMore(pageNum < data.totalPages && data.products.length > 0);
+      setHasMore(pageNum < data.totalPages && data.length > 0);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -76,8 +79,18 @@ const loaderProp = ({ src, width, quality }) => {
 };
 
 const ProductList = () => {
+  
+  const { cart, isCartOpen, setIsCartOpen, addToCart, decreaseQuantity, removeFromCart, clearCart } = useStateContext();
   const router = useRouter();
   const { query } = router;
+  const [likedItems, setLikedItems] = useState({});
+  
+  const toggleLike = (id) => {
+    setLikedItems((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
 
   // Controlled search term with debounce
   const [searchTerm, setSearchTerm] = useState(query?.search || '');
@@ -140,7 +153,14 @@ const ProductList = () => {
           <div className="lg:col-span-3">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {products && products.map(product => (
-                <ProductCard key={product.id} product={product} addToCart={addToCart} />
+                // <ProductCard key={product.id} product={product} addToCart={addToCart} />
+                <GhubaProductCard 
+                              // key={index}
+                              product={product} 
+                              toggleLike={toggleLike} 
+                              likedItems={likedItems} 
+                              addToCart={addToCart} 
+                            />
               ))}
             </div>
 

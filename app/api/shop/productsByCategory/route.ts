@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
-import {cacheGet, cacheSet} from "@/lib/cache";
+import { cacheGet, cacheSet } from "@/lib/cache";
 import { formatResponse } from "@/lib/formatResponse";
 import { request } from "http";
 
@@ -14,7 +14,11 @@ const CORS_HEADERS = {
     "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
 };
 
-function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
+function withCors(
+  json: any,
+  status = 200,
+  extraHeaders: Record<string, string> = {},
+) {
   return new NextResponse(JSON.stringify(json), {
     status,
     headers: {
@@ -35,11 +39,9 @@ export function OPTIONS() {
   });
 }
 
-
 // GET /api/marketplace-by-category?agentId=&categoryId=&page=&limit=
 export async function GET(req: Request) {
   try {
-  
     const { searchParams } = new URL(req.url);
     const agentId = searchParams.get("agentId");
     const categoryId = searchParams.get("categoryId");
@@ -47,11 +49,13 @@ export async function GET(req: Request) {
     // Pagination params
     const pageParam = parseInt(searchParams.get("page") || "1", 10);
     const limitParam = parseInt(searchParams.get("limit") || "6", 10);
-    if (isNaN(pageParam) || pageParam < 1 || isNaN(limitParam) || limitParam < 1) {
-      return withCors(
-        { error: "Invalid pagination parameters." },
-        400
-      );
+    if (
+      isNaN(pageParam) ||
+      pageParam < 1 ||
+      isNaN(limitParam) ||
+      limitParam < 1
+    ) {
+      return withCors({ error: "Invalid pagination parameters." }, 400);
     }
     const skip = (pageParam - 1) * limitParam;
     const take = limitParam;
@@ -59,9 +63,9 @@ export async function GET(req: Request) {
     // Build where filter
     const whereFilter: any = {};
     if (agentId) whereFilter.companyId = agentId;
-    if (categoryId) whereFilter.product = { productCategoryId: categoryId };
+    if (categoryId) whereFilter.productCategoryId = categoryId;
 
-    const cacheKey = `shop:productsByCategory:agent:${agentId || 'all'}:category:${categoryId || 'all'}:page:${pageParam}:limit:${limitParam}`;
+    const cacheKey = `shop:productsByCategory:agent:${agentId || "all"}:category:${categoryId || "all"}:page:${pageParam}:limit:${limitParam}`;
 
     try {
       const cached = await cacheGet(cacheKey);
@@ -76,7 +80,7 @@ export async function GET(req: Request) {
         skip,
         take,
         include: { product: true },
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: "desc" },
       }),
     ]);
 
@@ -84,20 +88,24 @@ export async function GET(req: Request) {
 
     const response = {
       data: listings,
-      meta: { total, perPage: take, currentPage: pageParam, totalPages }
+      meta: { total, perPage: take, currentPage: pageParam, totalPages },
     };
 
     try {
       await cacheSet(cacheKey, response, 60); // Cache for 1 minute
     } catch (e) {
-      console.error("Failed to cache marketplace listings by category data:", e);
+      console.error(
+        "Failed to cache marketplace listings by category data:",
+        e,
+      );
     }
 
     return withCors(response, 200);
   } catch (error: any) {
     console.error("Error fetching marketplace listings by category:", error);
     return withCors(
-      { error: "Failed to fetch listings", detail: error.message }, 500
-    );  
+      { error: "Failed to fetch listings", detail: error.message },
+      500,
+    );
   }
 }

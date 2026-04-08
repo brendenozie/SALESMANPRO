@@ -140,7 +140,7 @@ const ProductCard = ({ product, addToCart }: any) => {
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
               e.stopPropagation();
               addToCart(product);
             }}
