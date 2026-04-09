@@ -117,7 +117,51 @@ const getTrueOrigin = (req: any) => {
 
 export const authOptions = (req?: any): NextAuthOptions => {
   // 1. Determine the "True Origin" (where the user actually came from)
-  let trueHost = getTrueOrigin(req);
+  // // let trueHost = getTrueOrigin(req);
+  //   const targetUrlObj = new URL(req?.query?.callbackUrl || baseUrl);
+  //   const targetHost = targetUrlObj.hostname;
+  //   const targetPath = targetUrlObj.pathname;
+  //   // const trueHosst = getTrueOrigin();
+  //   const trueHost = targetHost;
+
+  // const mainDomains = ["salesmanpro.site", "www.salesmanpro.site"];
+  // const isMainApp =
+  //   mainDomains.includes(trueHost) || trueHost.includes("localhost");
+  // 1. Try to get it from the query param (Initial hit)
+  let rawUrl = req?.query?.callbackUrl;
+
+  // 2. Fallback: Check the NextAuth internal cookie (During OAuth callback)
+  if (!rawUrl && req?.cookies) {
+    // Note: Use '__Secure-next-auth.callback-url' if in production/SSL
+    rawUrl =
+      req.cookies["next-auth.callback-url"] ||
+      req.cookies["__Secure-next-auth.callback-url"];
+  }
+
+  // 3. Last Resort: Referer header
+  if (!rawUrl && req?.headers?.referer) {
+    rawUrl = req.headers.referer;
+  }
+
+  let trueHost = "";
+  try {
+    if (rawUrl) {
+      // Decode if it's double-encoded from the browser
+      const decodedUrl = decodeURIComponent(rawUrl);
+      const targetUrlObj = new URL(
+        decodedUrl.startsWith("/")
+          ? `https://salesmanpro.site${decodedUrl}`
+          : decodedUrl,
+      );
+      trueHost = targetUrlObj.hostname;
+    }
+  } catch (e) {
+    console.error("Failed to parse trueHost:", e);
+  }
+
+  // Fallback to baseUrl if everything else fails
+  if (!trueHost) trueHost = new URL(baseUrl).hostname;
+
   const mainDomains = ["salesmanpro.site", "www.salesmanpro.site"];
   const isMainApp =
     mainDomains.includes(trueHost) || trueHost.includes("localhost");
@@ -496,7 +540,7 @@ export const authOptions = (req?: any): NextAuthOptions => {
           userId: user.id,
           email: user.email,
           trueHost,
-          // host,
+          isMainApp,
         });
 
         if (isMainApp) {
@@ -530,7 +574,7 @@ export const authOptions = (req?: any): NextAuthOptions => {
       },
     },
   };
-};
+};;
 
 // ✅ For Next.js App Router
 export const getAuthSession = () => getServerSession(authOptions());
