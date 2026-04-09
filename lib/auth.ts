@@ -179,47 +179,6 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         }
       },
     }),
-    // CredentialsProvider({
-    //   // An ID for this custom provider
-    //   id: "token-signin",
-    //   name: "Token Sign-In",
-    //   credentials: {
-    //     token: { label: "Token", type: "text" },
-    //   },
-    //   async authorize(credentials) {
-    //     if (!credentials?.token) {
-    //       console.error("Authorize: No token provided.");
-    //       return null;
-    //     }
-
-    //     try {
-    //       // Decode the token using the shared secret
-    //       const decodedToken = await decode({
-    //         token: credentials.token,
-    //         secret: aSharedSecret,
-    //       });
-
-    //       if (!decodedToken || !decodedToken.email) {
-    //         console.error("Authorize: Token decoding failed or no email found.");
-    //         return null;
-    //       }
-
-    //       // The decoded token is trusted. Return it as the user object.
-    //       // This object will be passed to the 'jwt' callback.
-    //       return {
-    //         id: decodedToken.id as string,
-    //         name: decodedToken.name,
-    //         email: decodedToken.email,
-    //         image: decodedToken.image,
-    //         role: decodedToken.role, // Pass through your custom properties
-    //         // ... add other properties from your token
-    //       };
-    //     } catch (error) {
-    //       console.error("Token authorization error:", error);
-    //       return null;
-    //     }
-    //   },
-    // }),
     // ✅ Credentials: Email & Password
     CredentialsProvider({
       id: "credentials-email-password",
@@ -348,34 +307,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
     generateSessionToken: () =>
       randomUUID?.() ?? randomBytes(32).toString("hex"),
   },
-  // inside authOptions
-  // events: {
-  //   async createUser({ user }) {
-  //     // This runs ONLY when a new user is created in the DB
-  //     const host = reqHost || "";
-  //     const cleanHost = host.split(":")[0].replace(/^www\./, "");
-  //     const mainDomains = ["salesmanpro.site"];
-  //     const isMainApp =
-  //       mainDomains.includes(cleanHost) || host.includes("localhost");
-  //     // const isMainApp = host.includes("salesmanpro.site") && !host.includes("tenant");
-
-  //     if (!isMainApp && user.email) {
-  //       const domain = host.split(":")[0].replace("www.", "");
-  //       const company = await prisma.company.findFirst({
-  //         where: { domain: domain },
-  //       });
-
-  //       if (company) {
-  //         await prisma.consumer.create({
-  //           data: {
-  //             companyId: company.id,
-  //             userId: user.id,
-  //           },
-  //         });
-  //       }
-  //     }
-  //   },
-  // },
+  
   // ✅ AUTO-LINK OAUTH LOGINS HERE
   callbacks: {
     async redirect({ url, baseUrl }) {
@@ -441,253 +373,18 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         return `${HUB_URL}/failure?reason=invalid_redirect&error=${encodeURIComponent(error instanceof Error ? error.message : "unknown_error")}`;
       }
     },
-    // async redirect({ url, baseUrl }) {
-    //   const HUB_URL = "https://salesmanpro.site";
-    //   const AUTH_HOST = new URL(baseUrl).hostname;
-
-    //   const finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
-
-    //   try {
-    //     const targetUrlObj = new URL(finalRedirectUrl);
-    //     const targetHost = targetUrlObj.hostname;
-    //     const targetPath = targetUrlObj.pathname;
-
-    //     // ✅ CHECK 1: Internal Auth Server Paths
-    //     // Don't intercept calls to the auth server's own internal routes (callbacks, session, etc.)
-    //     // or the handover route itself.
-    //     if (targetHost === AUTH_HOST) {
-    //       if (targetPath.startsWith("/api/auth") || targetPath === "/signin") {
-    //         return finalRedirectUrl;
-    //       }
-    //     }
-
-    //     // const trueOrigin = targetHost; // fallback
-
-    //     // OPTIONAL (better if you pass reqHost into authOptions)
-    //     const trueOrigin = getTrueOrigin(reqHost);
-
-    //     const mainHubDomains = ["salesmanpro.site", "www.salesmanpro.site"];
-
-    //     // ✅ 1. INTERNAL auth routes (safe, session exists)z
-    //     // if (targetHost === AUTH_HOST && targetUrlObj.pathname !== "/") {
-    //     //   return finalRedirectUrl;
-    //     // }
-
-    //     // ✅ 2. EVERYTHING ELSE (hub, tenants, custom domains)
-    //     // MUST go through handover to preserve session
-    //     const handoverUrl = new URL("/api/auth/handover", baseUrl);
-
-    //     // 👉 If going to root hub, upgrade to /dashboards
-    //     if (mainHubDomains.includes(trueOrigin)) {
-    //       handoverUrl.searchParams.set("target", `${HUB_URL}/dashboards`);
-    //     } else {
-    //       handoverUrl.searchParams.set("target", finalRedirectUrl);
-    //     }
-
-    //     return handoverUrl.toString();
-    //   } catch (error) {
-    //     return `${HUB_URL}/failure?reason=invalid_redirect`;
-    //   }
-    // },
-    // async redirect({ url, baseUrl }) {
-    //     // Define your Main Hub clearly
-    //     const HUB_URL = "https://salesmanpro.site";
-    //     const AUTH_HOST = new URL(baseUrl).hostname; // auth.salesmanpro.site
-
-    //     // 1. Resolve the absolute destination URL
-    //     const finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
-
-    //     try {
-    //       const targetUrlObj = new URL(finalRedirectUrl);
-    //       const targetHost = targetUrlObj.hostname;
-
-    //       // 2. Define your "Main Hub" domains
-    //       const mainHubDomains = ["salesmanpro.site", "www.salesmanpro.site"];
-
-    //       /**
-    //        * LOGIC A: If the target is the Auth Server itself OR the Main Hub
-    //        * We FORCE them to the dashboards page on the Main Hub.
-    //        * This prevents them from landing on auth.salesmanpro.site/anything
-    //        */
-    //       if (targetHost === AUTH_HOST || mainHubDomains.includes(targetHost)) {
-    //         return `${HUB_URL}/dashboards`;
-    //       }
-
-    //       /**
-    //        * LOGIC B: If the target is a Tenant (subdomain.salesmanpro.site or customdomain.com)
-    //        * We use the Handover route to sync the session safely.
-    //        */
-    //       const handoverUrl = new URL("/api/auth/handover", baseUrl);
-    //       handoverUrl.searchParams.set("target", finalRedirectUrl);
-
-    //       return handoverUrl.toString();
-
-    //     } catch (error) {
-    //       /**
-    //        * FALLBACK: If anything goes wrong or the URL is weird,
-    //        * NEVER return baseUrl (auth). Always send to the Hub Dashboard.
-    //        */
-    //       return `${HUB_URL}/dashboards`;
-    //     }
-    //   },
-
-    // async redirect({ url, baseUrl }) {
-    //   // 1. Resolve the absolute destination URL
-    //   const finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
-
-    //   try {
-    //     const targetHost = new URL(finalRedirectUrl).hostname;
-    //     const baseHost = new URL(baseUrl).hostname; // e.g., auth.salesmanpro.site or salesmanpro.site
-
-    //     // 2. Define your "Main Hub" domains
-    //     const mainHubDomains = ["salesmanpro.site", "www.salesmanpro.site"];
-
-    //     // 3. Logic for Main Hub
-    //     if (mainHubDomains.includes(targetHost)) {
-    //       // Force them to the dashboards page on the hub
-    //       return `${baseUrl}/dashboards`;
-    //     }
-
-    //     // 4. Logic for Internal Auth Redirects
-    //     // If it's just going back to the auth server itself (e.g., /settings)
-    //     if (finalRedirectUrl.startsWith(baseUrl)) {
-    //       return finalRedirectUrl;
-    //     }
-
-    //     // 5. Logic for Tenants (Subdomains/Custom Domains)
-    //     // Send them to your handover route to pass the session token safely
-    //     const handoverUrl = new URL("/api/auth/handover", baseUrl);
-    //     handoverUrl.searchParams.set("target", finalRedirectUrl);
-
-    //     return handoverUrl.toString();
-
-    //   } catch (error) {
-    //     // Fallback if URL parsing fails
-    //     return baseUrl;
-    //   }
-    // },
-
-    // async redirect({ url, baseUrl }) {
-    //   // The `url` parameter is the destination URL after a successful login.
-    //   // It's already the `callbackUrl` you passed to `signIn`.
-
-    //   // `url` might be a relative path (e.g., "/dashboard").
-    //   // Check if the URL is relative.
-    //   const isRelative = url.startsWith("/");
-
-    //   // If it's relative, combine it with the baseUrl to make it absolute.
-    //   // Otherwise, the `url` is already the absolute `callbackUrl` from the client.
-    //   const finalRedirectUrl = isRelative ? `${baseUrl}${url}` : url;
-
-    //   // The problem is that after the first login, the session isn't available
-    //   // yet to generate a token inside the redirect callback.
-    //   // The better pattern is to just return the URL and have the
-    //   // client-side handle the token.
-
-    //   // For your cross-domain authentication, you need to append the token.
-    //   // Instead of getting the session here, we will redirect to an
-    //   // intermediary page on your auth domain that will have the session.
-
-    //   // 1. Redirect to a page on your auth domain, like `/redirecting`
-    //   // const tempRedirect = new URL("/redirecting", baseUrl);
-
-    //   // 2. Pass the final destination (the tenant URL) as a query parameter.
-    //   // tempRedirect.searchParams.set("callbackUrl", finalRedirectUrl);
-
-    //   // Let next-auth handle the session creation, then send the user to this temp page.
-    //   // This works because by the time the user hits "/redirecting", the session cookie is set.
-    //   // if (finalRedirectUrl.startsWith(baseUrl)) {
-    //   // It's an internal redirect, just go there.
-    //   // return finalRedirectUrl;
-    //   // } else {
-    //   // It's an external redirect, go via the temp page.
-    //   // return tempRedirect.toString();
-    //   // }
-    //   // const finalRedirectUrl = isRelative ? `${baseUrl}${url}` : url;
-
-    //   // If it's internal, just go there
-    //   if (finalRedirectUrl.startsWith(baseUrl)) return finalRedirectUrl;
-
-    //   // If it's cross-domain, send them to your SERVER-SIDE handover route
-    //   const handoverUrl = new URL("/api/auth/callback", baseUrl); // Points to your route.ts
-    //   handoverUrl.searchParams.set("target", finalRedirectUrl);
-    //   return handoverUrl.toString();
-    // },
-
-    //import { headers } from "next/headers";
-    //// ... other imports
-    // async signIn({ user, account, profile }) {
-    //   if (!account || account.provider === "credentials") return true;
-    //   if (!user.email) return false;
-
-    //   const host = reqHost || "";
-
-    //   const trueHost = getTrueOrigin(reqHost);
-    //   // const cleanHost = host.split(":")[0].replace(/^www\./, "");
-    //   const mainDomains = ["salesmanpro.site"];
-    //   // const isMainApp = mainDomains.includes(cleanHost) || host.includes("localhost");
-    //   const isMainApp =
-    //     mainDomains.includes(trueHost) || host.includes("localhost");
-
-    //   // 1. Check if user exists BEFORE NextAuth tries to create them
-    //   // const existingUser = await prisma.user.findUnique({
-    //   //   where: { email: user.email },
-    //   // });
-
-    //   // if (existingUser) {
-    //   //   // If logging into main app, ensure they have ADMIN role
-    //   //   if (isMainApp && existingUser.role === "USER") {
-    //   //     await prisma.user.update({
-    //   //       where: { id: existingUser.id },
-    //   //       data: { role: "ADMIN" },
-    //   //     });
-    //   //   }
-    //   // }
-
-    //   // if (existingUser && isMainApp && existingUser.role !== "ADMIN") {
-    //   //   await prisma.user.update({
-    //   //     where: { id: existingUser.id },
-    //   //     data: { role: "ADMIN" },
-    //   //   });
-    //   // }
-
-    //   if (!isMainApp) {
-    //     const possibleSlug = trueHost.split(".")[0];
-    //     const company = await prisma.company.findFirst({
-    //       where: { OR: [{ domain: trueHost }, { slug: possibleSlug }] },
-    //     });
-
-    //     if (company && user.id) {
-    //       // Link them to the consumer table so they have access to this specific tenant
-    //       await prisma.consumer.upsert({
-    //         where: {
-    //           userId_companyId: { userId: user.id, companyId: company.id },
-    //           // userId: user.id,
-    //           // companyId: company.id,
-    //         },
-    //         update: {}, // Do nothing if link already exists
-    //         create: {
-    //           userId: user.id,
-    //           companyId: company.id,
-    //         },
-    //       });
-    //     }
-    //   }
-
-    //   // 2. DO NOT manually create the User or Account here.
-    //   // Returning true allows the PrismaAdapter to do it safely.
-    //   return true;
-    // },
 
     async signIn({ user, account, profile }) {
       if (!account || account.provider === "credentials") return true;
       if (!user.email) return false;
 
+      const host = reqHost || "";
+
       const trueHost = getTrueOrigin(reqHost);
+
       const mainDomains = ["salesmanpro.site"];
-      const isMainApp =
-        mainDomains.includes(trueHost) ||
-        (reqHost && reqHost.includes("localhost"));
+
+      const isMainApp = mainDomains.includes(trueHost) || host.includes("localhost");
 
       if (!isMainApp) {
         const possibleSlug = trueHost.split(".")[0];
@@ -695,258 +392,27 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
           where: { OR: [{ domain: trueHost }, { slug: possibleSlug }] },
         });
 
-        // IMPORTANT: For new users, user.id is missing here.
-        // We only run this logic if the user ALREADY exists in our DB.
-        const dbUser = await prisma.user.findUnique({
-          where: { email: user.email },
-        });
-
-        if (company && dbUser) {
+        if (company && user.id) {
+          // Link them to the consumer table so they have access to this specific tenant
           await prisma.consumer.upsert({
             where: {
-              userId_companyId: { userId: dbUser.id, companyId: company.id },
+              userId_companyId: { userId: user.id, companyId: company.id },
+              // userId: user.id,
+              // companyId: company.id,
             },
-            update: {},
+            update: {}, // Do nothing if link already exists
             create: {
-              userId: dbUser.id,
+              userId: user.id,
               companyId: company.id,
             },
           });
         }
       }
 
+      // 2. DO NOT manually create the User or Account here.
+      // Returning true allows the PrismaAdapter to do it safely.
       return true;
     },
-
-    // async signIn({ user, account, profile }) {
-    //   // 1. Skip if not OAuth
-    //   if (!account || account.provider === "credentials") return true;
-    //   if (!user.email) return false;
-
-    //   // 2. Determine the origin (Server-side)
-    //   // const host = (await headers()).get("host") || ""; // e.g., "tenant1.salesmanpro.site"
-    //   const host = reqHost || "";
-    //   // const isSalesmanPro = host === "salesmanpro.site" || host === "www.salesmanpro.site";
-
-    //   // Removes the port (e.g., :3000) and the "www." prefix
-    //   const cleanHost = host.split(":")[0].replace(/^www\./, "");
-
-    //   // 1. Define your primary domains
-    //   const mainDomains = ["salesmanpro.site"];
-
-    //   // 2. Check for exact match + allow localhost to be ADMIN for testing
-    //   const isMainApp =
-    //     mainDomains.includes(cleanHost) ||
-    //     host.includes("localhost") ||
-    //     host.includes("127.0.0.1");
-
-    //   // 3. Assign role
-    //   const assignedRole = isMainApp ? "ADMIN" : "USER";
-
-    //   // 3. Look for existing user
-    //   const existingUser = await prisma.user.findUnique({
-    //     where: { email: user.email },
-    //   });
-
-    //   if (existingUser) {
-    //     // 1. ROLE ELEVATION LOGIC
-    //     // If an existing tenant-user logs into the main site, upgrade them to ADMIN
-    //     if (isMainApp && existingUser.role === "USER") {
-    //       await prisma.user.update({
-    //         where: { id: existingUser.id },
-    //         data: { role: "ADMIN" },
-    //       });
-    //     }
-
-    //     // Check if this specific account (provider + providerId) is already linked
-    //     const existingAccount = await prisma.account.findUnique({
-    //       where: {
-    //         provider_providerAccountId: {
-    //           provider: account.provider,
-    //           providerAccountId: account.providerAccountId,
-    //         },
-    //       },
-    //     });
-
-    //     if (!existingAccount) {
-    //       // ✅ LINK: The user exists but hasn't used this provider before
-    //       await prisma.account.create({
-    //         data: {
-    //           userId: existingUser.id, // Use DB ID, not OAuth ID
-    //           provider: account.provider,
-    //           providerAccountId: account.providerAccountId,
-    //           type: account.type,
-    //           access_token: account.access_token,
-    //           refresh_token: account.refresh_token,
-    //           expires_at: account.expires_at,
-    //           token_type: account.token_type,
-    //           scope: account.scope,
-    //           id_token: account.id_token,
-    //           session_state: account.session_state,
-    //         },
-    //       });
-    //     }
-    //     return true;
-    //   }
-
-    //   // 4. NEW USER PATH
-    //   // const assignedRole = isSalesmanPro ? "ADMIN" : "USER";
-
-    //   const newUser = await prisma.user.create({
-    //     data: {
-    //       email: user.email,
-    //       name: user.name ?? "",
-    //       image: user.image,
-    //       role: assignedRole,
-    //       accounts: {
-    //         create: {
-    //           provider: account.provider,
-    //           providerAccountId: account.providerAccountId,
-    //           type: account.type,
-    //           access_token: account.access_token,
-    //           refresh_token: account.refresh_token,
-    //           expires_at: account.expires_at,
-    //           token_type: account.token_type,
-    //           scope: account.scope,
-    //           id_token: account.id_token,
-    //           session_state: account.session_state,
-    //         },
-    //       },
-    //     },
-    //   });
-
-    //   // 5. TENANT LOGIC
-    //   if (!isMainApp) {
-    //     // Extract domain (remove port if local dev)
-    //     const domain = host.split(":")[0].replace("www.", "");
-
-    //     const company = await prisma.company.findFirst({
-    //       where: { domain: domain },
-    //     });
-
-    //     if (company) {
-    //       await prisma.consumer.upsert({
-    //         where: { userId: newUser.id },
-    //         update: {},
-    //         create: {
-    //           companyId: company.id,
-    //           userId: newUser.id,
-    //         },
-    //       });
-    //     }
-    //   }
-
-    //   return true;
-    // },
-    // async signIn({ user, account, profile, credentials }) {
-    //   // Skip if not OAuth
-    //   if (!account || account.provider === "credentials") return true;
-
-    //   if (!user.email) return false;
-
-    //   // Determine the origin (which domain the request came from)
-    //   // Use Next.js server headers() because NextAuth's signIn callback type does not provide `req`
-    //   let origin = "";
-
-    //   if (typeof window === "undefined") {
-    //     // We're on the server – use process.env or baseUrl fallback
-    //     origin = baseUrl;
-    //   } else {
-    //     // We're on the client
-    //     origin = window.location.origin;
-    //   }
-
-    //   //is origin or baseUrl the parent domain of salesmanpro.site? This is important for determining if the user should be an ADMIN or USER
-    //   // user might be coming from salesmanpro.site or from a tenant domain like tenant1.salesmanpro.site and if so they should be a USER not an ADMIN
-    //   const isSalesmanPro =
-    //     origin.includes("salesmanpro.site") ||
-    //     baseUrl.includes("salesmanpro.site");
-
-    //   const existingUser = await prisma.user.findUnique({
-    //     where: { email: user.email },
-    //   });
-
-    //   if (existingUser) {
-    //     // ✅ Check if this OAuth provider is already linked
-    //     const existingAccount = await prisma.account.findUnique({
-    //       where: {
-    //         provider_providerAccountId: {
-    //           provider: account.provider,
-    //           providerAccountId: account.providerAccountId,
-    //         },
-    //       },
-    //     });
-
-    //     if (!existingAccount) {
-    //       // ✅ Link the new OAuth provider to the existing user
-    //       await prisma.account.create({
-    //         data: {
-    //           userId: existingUser.id,
-    //           provider: account.provider,
-    //           providerAccountId: account.providerAccountId,
-    //           type: account.type,
-    //           access_token: account.access_token,
-    //           refresh_token: account.refresh_token,
-    //           expires_at: account.expires_at,
-    //           token_type: account.token_type,
-    //           scope: account.scope,
-    //           id_token: account.id_token,
-    //           session_state: account.session_state,
-    //         },
-    //       });
-    //     }
-
-    //     // ✅ Allow sign in — this fixes OAuthAccountNotLinked
-    //     return true;
-    //   }
-
-    //   // New OAuth signup → decide role based on origin
-    //   const assignedRole = isSalesmanPro ? "ADMIN" : "USER";
-
-    //   // ✅ If no existing user, create a new one
-    //   await prisma.user.create({
-    //     data: {
-    //       email: user.email,
-    //       name: user.name ?? "",
-    //       image: user.image,
-    //       role: assignedRole, // Default role
-    //       accounts: {
-    //         create: {
-    //           provider: account.provider,
-    //           providerAccountId: account.providerAccountId,
-    //           type: account.type,
-    //           access_token: account.access_token,
-    //           refresh_token: account.refresh_token,
-    //           expires_at: account.expires_at,
-    //           token_type: account.token_type,
-    //           scope: account.scope,
-    //           id_token: account.id_token,
-    //           session_state: account.session_state,
-    //         },
-    //       },
-    //     },
-    //   });
-
-    //   if (!isSalesmanPro) {
-    //     const company = await prisma.company.findFirst({
-    //       where: { domain: origin.replace("www.", "") },
-    //     });
-
-    //     if (company) {
-    //       const consumer = await prisma.consumer.upsert({
-    //         where: { userId: user.id },
-    //         update: {},
-    //         create: {
-    //           companyId: company.id,
-    //           userId: user.id,
-    //         },
-    //         include: { user: true },
-    //       });
-    //     }
-    //   }
-
-    //   return true;
-    // },
 
     async jwt({ token, user }) {
       if (user) {
@@ -966,11 +432,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
     },
 
     async session({ session, token }) {
-      // if (!token.isActive) {
-      //   // ⛔ immediately invalidate session
-      //   return null;
-      // }
-
+      
       if (session.user) {
         Object.assign(session.user, {
           id: token.id as string,
@@ -993,69 +455,43 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
     signIn: "/signin",
   },
 
-  // events: {
-  //   async createUser({ user }) {
-  //     // This runs ONLY for brand new users right after they are saved to the DB
-  //     const host = reqHost || "";
-  //     const trueHost = getTrueOrigin(reqHost);
-
-  //     // const cleanHost = host.split(":")[0].replace(/^www\./, "");
-  //     const isMainApp =
-  //       trueHost === "salesmanpro.site" || host.includes("localhost");
-
-  //     if (!isMainApp) {
-  //       // 1. Find the company matching this subdomain/custom domain
-  //       const company = await prisma.company.findFirst({
-  //         where: { domain: trueHost },
-  //       });
-
-  //       if (company) {
-  //         // 2. Link them as a consumer and ensure their role is USER
-  //         await prisma.$transaction([
-  //           prisma.user.update({
-  //             where: { id: user.id },
-  //             data: { role: "USER" },
-  //           }),
-  //           prisma.consumer.create({
-  //             data: {
-  //               userId: user.id,
-  //               companyId: company.id,
-  //             },
-  //           }),
-  //         ]);
-  //       }
-  //     } else {
-  //       // If they created an account on the main site, make them an ADMIN
-  //       await prisma.user.update({
-  //         where: { id: user.id },
-  //         data: { role: "ADMIN" },
-  //       });
-  //     }
-  //   },
-  // },
   events: {
     async createUser({ user }) {
-      // This runs ONLY when a new user is created in the DB
+      // This runs ONLY for brand new users right after they are saved to the DB
       const host = reqHost || "";
       const trueHost = getTrueOrigin(reqHost);
-      const mainDomains = ["salesmanpro.site"];
-      const isMainApp =
-        mainDomains.includes(trueHost) || host.includes("localhost");
 
-      if (!isMainApp && user.email) {
-        const possibleSlug = trueHost.split(".")[0];
+      // const cleanHost = host.split(":")[0].replace(/^www\./, "");
+      const isMainApp =
+        trueHost === "salesmanpro.site" || host.includes("localhost");
+
+      if (!isMainApp) {
+        // 1. Find the company matching this subdomain/custom domain
         const company = await prisma.company.findFirst({
-          where: { OR: [{ domain: trueHost }, { slug: possibleSlug }] },
+          where: { domain: trueHost },
         });
 
         if (company) {
-          await prisma.consumer.create({
-            data: {
-              companyId: company.id,
-              userId: user.id, // Now user.id is guaranteed to exist
-            },
-          });
+          // 2. Link them as a consumer and ensure their role is USER
+          await prisma.$transaction([
+            prisma.user.update({
+              where: { id: user.id },
+              data: { role: "USER" },
+            }),
+            prisma.consumer.create({
+              data: {
+                userId: user.id,
+                companyId: company.id,
+              },
+            }),
+          ]);
         }
+      } else {
+        // If they created an account on the main site, make them an ADMIN
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { role: "ADMIN" },
+        });
       }
     },
   },
