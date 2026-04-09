@@ -94,6 +94,24 @@ async function createDefaultUser({
   });
 }
 
+// Add this helper inside or above your authOptions function
+const getTrueOrigin = (req: any) => {
+  // 1. Check the query params for callbackUrl
+  const callbackUrl = req?.query?.callbackUrl || "";
+
+  if (callbackUrl.startsWith("http")) {
+    try {
+      const url = new URL(callbackUrl);
+      return url.hostname.replace(/^www\./, "");
+    } catch (e) {
+      return "";
+    }
+  }
+
+  // 2. Fallback to the current host if no callbackUrl is present
+  return (req?.headers?.host || "").split(":")[0].replace(/^www\./, "");
+};
+
 // export const authOptions: NextAuthOptions = {
 export const authOptions = (reqHost?: string): NextAuthOptions => ({
   adapter: PrismaAdapter(prisma),
@@ -369,13 +387,23 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       try {
         const targetUrlObj = new URL(finalRedirectUrl);
         const targetHost = targetUrlObj.hostname;
+        const targetPath = targetUrlObj.pathname;
+
+        // ✅ CHECK 1: Internal Auth Server Paths
+        // Don't intercept calls to the auth server's own internal routes (callbacks, session, etc.)
+        // or the handover route itself.
+        if (targetHost === AUTH_HOST) {
+          if (targetPath.startsWith("/api/auth") || targetPath === "/signin") {
+            return finalRedirectUrl;
+          }
+        }
 
         const mainHubDomains = ["salesmanpro.site", "www.salesmanpro.site"];
 
         // ✅ 1. INTERNAL auth routes (safe, session exists)z
-        if (targetHost === AUTH_HOST && targetUrlObj.pathname !== "/") {
-          return finalRedirectUrl;
-        }
+        // if (targetHost === AUTH_HOST && targetUrlObj.pathname !== "/") {
+        //   return finalRedirectUrl;
+        // }
 
         // ✅ 2. EVERYTHING ELSE (hub, tenants, custom domains)
         // MUST go through handover to preserve session
@@ -390,7 +418,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
 
         return handoverUrl.toString();
       } catch (error) {
-        return `${HUB_URL}/dashboards`;
+        return `${HUB_URL}/failure?reason=invalid_redirect`;
       }
     },
     // async redirect({ url, baseUrl }) {
@@ -525,10 +553,12 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       if (!user.email) return false;
 
       const host = reqHost || "";
-      const cleanHost = host.split(":")[0].replace(/^www\./, "");
+
+      const trueHost = getTrueOrigin(reqHost);
+      // const cleanHost = host.split(":")[0].replace(/^www\./, "");
       const mainDomains = ["salesmanpro.site"];
-      const isMainApp =
-        mainDomains.includes(cleanHost) || host.includes("localhost");
+      // const isMainApp = mainDomains.includes(cleanHost) || host.includes("localhost");
+      const isMainApp = mainDomains.includes(trueHost) || host.includes("localhost");
 
       // 1. Check if user exists BEFORE NextAuth tries to create them
       // const existingUser = await prisma.user.findUnique({
@@ -553,9 +583,9 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       // }
 
       if (!isMainApp) {
-        const possibleSlug = cleanHost.split(".")[0];
+        const possibleSlug = trueHost.split(".")[0];
         const company = await prisma.company.findFirst({
-          where: { OR: [{ domain: cleanHost }, { slug: possibleSlug }] },
+          where: { OR: [{ domain: trueHost }, { slug: possibleSlug }] },
         });
 
         if (company && user.id) {
@@ -859,14 +889,15 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
     async createUser({ user }) {
       // This runs ONLY for brand new users right after they are saved to the DB
       const host = reqHost || "";
-      const cleanHost = host.split(":")[0].replace(/^www\./, "");
-      const isMainApp =
-        cleanHost === "salesmanpro.site" || host.includes("localhost");
+      const trueHost = getTrueOrigin(reqHost);
+
+      // const cleanHost = host.split(":")[0].replace(/^www\./, "");
+      const isMainApp = trueHost === "salesmanpro.site" || host.includes("localhost");
 
       if (!isMainApp) {
         // 1. Find the company matching this subdomain/custom domain
         const company = await prisma.company.findFirst({
-          where: { domain: cleanHost },
+          where: { domain: trueHost },
         });
 
         if (company) {
