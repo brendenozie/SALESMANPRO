@@ -388,34 +388,28 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         const targetUrlObj = new URL(finalRedirectUrl);
         const targetHost = targetUrlObj.hostname;
         const targetPath = targetUrlObj.pathname;
+        const trueHost = getTrueOrigin(reqHost);
 
-        // ✅ CHECK 1: Internal Auth Server Paths
-        // Don't intercept calls to the auth server's own internal routes (callbacks, session, etc.)
-        // or the handover route itself.
+        // ✅ جلوگیری infinite loops
+        if (
+          finalRedirectUrl.includes("/api/auth/handover") ||
+          finalRedirectUrl.includes("/failure")
+        ) {
+          return finalRedirectUrl;
+        }
+
+        // ✅ Allow internal auth routes
         if (targetHost === AUTH_HOST) {
           if (targetPath.startsWith("/api/auth") || targetPath === "/signin") {
             return finalRedirectUrl;
           }
         }
 
-        // const trueOrigin = targetHost; // fallback
+        const mainDomains = ["salesmanpro.site", "www.salesmanpro.site"];
 
-        // OPTIONAL (better if you pass reqHost into authOptions)
-        const trueOrigin = getTrueOrigin(reqHost);
-
-        const mainHubDomains = ["salesmanpro.site", "www.salesmanpro.site"];
-
-        // ✅ 1. INTERNAL auth routes (safe, session exists)z
-        // if (targetHost === AUTH_HOST && targetUrlObj.pathname !== "/") {
-        //   return finalRedirectUrl;
-        // }
-
-        // ✅ 2. EVERYTHING ELSE (hub, tenants, custom domains)
-        // MUST go through handover to preserve session
         const handoverUrl = new URL("/api/auth/handover", baseUrl);
 
-        // 👉 If going to root hub, upgrade to /dashboards
-        if (mainHubDomains.includes(trueOrigin)) {
+        if (mainDomains.includes(trueHost)) {
           handoverUrl.searchParams.set("target", `${HUB_URL}/dashboards`);
         } else {
           handoverUrl.searchParams.set("target", finalRedirectUrl);
@@ -426,6 +420,54 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         return `${HUB_URL}/failure?reason=invalid_redirect`;
       }
     },
+    // async redirect({ url, baseUrl }) {
+    //   const HUB_URL = "https://salesmanpro.site";
+    //   const AUTH_HOST = new URL(baseUrl).hostname;
+
+    //   const finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
+
+    //   try {
+    //     const targetUrlObj = new URL(finalRedirectUrl);
+    //     const targetHost = targetUrlObj.hostname;
+    //     const targetPath = targetUrlObj.pathname;
+
+    //     // ✅ CHECK 1: Internal Auth Server Paths
+    //     // Don't intercept calls to the auth server's own internal routes (callbacks, session, etc.)
+    //     // or the handover route itself.
+    //     if (targetHost === AUTH_HOST) {
+    //       if (targetPath.startsWith("/api/auth") || targetPath === "/signin") {
+    //         return finalRedirectUrl;
+    //       }
+    //     }
+
+    //     // const trueOrigin = targetHost; // fallback
+
+    //     // OPTIONAL (better if you pass reqHost into authOptions)
+    //     const trueOrigin = getTrueOrigin(reqHost);
+
+    //     const mainHubDomains = ["salesmanpro.site", "www.salesmanpro.site"];
+
+    //     // ✅ 1. INTERNAL auth routes (safe, session exists)z
+    //     // if (targetHost === AUTH_HOST && targetUrlObj.pathname !== "/") {
+    //     //   return finalRedirectUrl;
+    //     // }
+
+    //     // ✅ 2. EVERYTHING ELSE (hub, tenants, custom domains)
+    //     // MUST go through handover to preserve session
+    //     const handoverUrl = new URL("/api/auth/handover", baseUrl);
+
+    //     // 👉 If going to root hub, upgrade to /dashboards
+    //     if (mainHubDomains.includes(trueOrigin)) {
+    //       handoverUrl.searchParams.set("target", `${HUB_URL}/dashboards`);
+    //     } else {
+    //       handoverUrl.searchParams.set("target", finalRedirectUrl);
+    //     }
+
+    //     return handoverUrl.toString();
+    //   } catch (error) {
+    //     return `${HUB_URL}/failure?reason=invalid_redirect`;
+    //   }
+    // },
     // async redirect({ url, baseUrl }) {
     //     // Define your Main Hub clearly
     //     const HUB_URL = "https://salesmanpro.site";
@@ -563,7 +605,8 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       // const cleanHost = host.split(":")[0].replace(/^www\./, "");
       const mainDomains = ["salesmanpro.site"];
       // const isMainApp = mainDomains.includes(cleanHost) || host.includes("localhost");
-      const isMainApp = mainDomains.includes(trueHost) || host.includes("localhost");
+      const isMainApp =
+        mainDomains.includes(trueHost) || host.includes("localhost");
 
       // 1. Check if user exists BEFORE NextAuth tries to create them
       // const existingUser = await prisma.user.findUnique({
@@ -897,7 +940,8 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       const trueHost = getTrueOrigin(reqHost);
 
       // const cleanHost = host.split(":")[0].replace(/^www\./, "");
-      const isMainApp = trueHost === "salesmanpro.site" || host.includes("localhost");
+      const isMainApp =
+        trueHost === "salesmanpro.site" || host.includes("localhost");
 
       if (!isMainApp) {
         // 1. Find the company matching this subdomain/custom domain
