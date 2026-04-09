@@ -403,6 +403,13 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         const trueHosst = getTrueOrigin(reqHost);
         const trueHost = targetHost;
 
+        console.log("Redirect Callback Invoked:", {
+          finalRedirectUrl,
+          targetHost,
+          trueHost,
+          targetPath,
+          trueHosst,
+        });
         // ✅ جلوگیری infinite loops
         if (
           finalRedirectUrl.includes("/api/auth/handover") ||
@@ -609,104 +616,56 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
 
     //import { headers } from "next/headers";
     //// ... other imports
-    // async signIn({ user, account, profile }) {
-    //   if (!account || account.provider === "credentials") return true;
-    //   if (!user.email) return false;
-
-    //   const host = reqHost || "";
-
-    //   const trueHost = getTrueOrigin(reqHost);
-    //   // const cleanHost = host.split(":")[0].replace(/^www\./, "");
-    //   const mainDomains = ["salesmanpro.site"];
-    //   // const isMainApp = mainDomains.includes(cleanHost) || host.includes("localhost");
-    //   const isMainApp =
-    //     mainDomains.includes(trueHost) || host.includes("localhost");
-
-    //   // 1. Check if user exists BEFORE NextAuth tries to create them
-    //   // const existingUser = await prisma.user.findUnique({
-    //   //   where: { email: user.email },
-    //   // });
-
-    //   // if (existingUser) {
-    //   //   // If logging into main app, ensure they have ADMIN role
-    //   //   if (isMainApp && existingUser.role === "USER") {
-    //   //     await prisma.user.update({
-    //   //       where: { id: existingUser.id },
-    //   //       data: { role: "ADMIN" },
-    //   //     });
-    //   //   }
-    //   // }
-
-    //   // if (existingUser && isMainApp && existingUser.role !== "ADMIN") {
-    //   //   await prisma.user.update({
-    //   //     where: { id: existingUser.id },
-    //   //     data: { role: "ADMIN" },
-    //   //   });
-    //   // }
-
-    //   if (!isMainApp) {
-    //     const possibleSlug = trueHost.split(".")[0];
-    //     const company = await prisma.company.findFirst({
-    //       where: { OR: [{ domain: trueHost }, { slug: possibleSlug }] },
-    //     });
-
-    //     if (company && user.id) {
-    //       // Link them to the consumer table so they have access to this specific tenant
-    //       await prisma.consumer.upsert({
-    //         where: {
-    //           userId_companyId: { userId: user.id, companyId: company.id },
-    //           // userId: user.id,
-    //           // companyId: company.id,
-    //         },
-    //         update: {}, // Do nothing if link already exists
-    //         create: {
-    //           userId: user.id,
-    //           companyId: company.id,
-    //         },
-    //       });
-    //     }
-    //   }
-
-    //   // 2. DO NOT manually create the User or Account here.
-    //   // Returning true allows the PrismaAdapter to do it safely.
-    //   return true;
-    // },
-    async signIn({ user, account }) {
+    async signIn({ user, account, profile }) {
       if (!account || account.provider === "credentials") return true;
       if (!user.email) return false;
 
-      let trueHost = "";
+      const host = reqHost || "";
 
-      try {
-        if (account?.callbackUrl) {
-          const parsed = new URL(account.callbackUrl);
-          trueHost = parsed.hostname.replace(/^www\./, "");
-        }
-      } catch {}
-
-      const mainDomains = ["salesmanpro.site", "www.salesmanpro.site"];
-
+      const trueHost = getTrueOrigin(reqHost);
+      // const cleanHost = host.split(":")[0].replace(/^www\./, "");
+      const mainDomains = ["salesmanpro.site"];
+      // const isMainApp = mainDomains.includes(cleanHost) || host.includes("localhost");
       const isMainApp =
-        mainDomains.includes(trueHost) || trueHost.includes("localhost");
+        mainDomains.includes(trueHost) || host.includes("localhost");
 
-      if (!isMainApp && trueHost) {
+      // 1. Check if user exists BEFORE NextAuth tries to create them
+      // const existingUser = await prisma.user.findUnique({
+      //   where: { email: user.email },
+      // });
+
+      // if (existingUser) {
+      //   // If logging into main app, ensure they have ADMIN role
+      //   if (isMainApp && existingUser.role === "USER") {
+      //     await prisma.user.update({
+      //       where: { id: existingUser.id },
+      //       data: { role: "ADMIN" },
+      //     });
+      //   }
+      // }
+
+      // if (existingUser && isMainApp && existingUser.role !== "ADMIN") {
+      //   await prisma.user.update({
+      //     where: { id: existingUser.id },
+      //     data: { role: "ADMIN" },
+      //   });
+      // }
+
+      if (!isMainApp) {
         const possibleSlug = trueHost.split(".")[0];
-
         const company = await prisma.company.findFirst({
-          where: {
-            OR: [{ domain: trueHost }, { slug: possibleSlug }],
-          },
+          where: { OR: [{ domain: trueHost }, { slug: possibleSlug }] },
         });
 
         if (company && user.id) {
+          // Link them to the consumer table so they have access to this specific tenant
           await prisma.consumer.upsert({
             where: {
-              userId_companyId: {
-                userId: user.id,
-                companyId: company.id,
-              },
+              userId_companyId: { userId: user.id, companyId: company.id },
+              // userId: user.id,
+              // companyId: company.id,
             },
-            update: {},
+            update: {}, // Do nothing if link already exists
             create: {
               userId: user.id,
               companyId: company.id,
@@ -715,8 +674,11 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         }
       }
 
+      // 2. DO NOT manually create the User or Account here.
+      // Returning true allows the PrismaAdapter to do it safely.
       return true;
     },
+
     // async signIn({ user, account, profile }) {
     //   // 1. Skip if not OAuth
     //   if (!account || account.provider === "credentials") return true;
@@ -992,86 +954,46 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
     signIn: "/signin",
   },
 
-  // events: {
-  //   async createUser({ user }) {
-  //     // This runs ONLY for brand new users right after they are saved to the DB
-  //     const host = reqHost || "";
-  //     const trueHost = getTrueOrigin(reqHost);
+  events: {
+    async createUser({ user }) {
+      // This runs ONLY for brand new users right after they are saved to the DB
+      const host = reqHost || "";
+      const trueHost = getTrueOrigin(reqHost);
 
-  //     // const cleanHost = host.split(":")[0].replace(/^www\./, "");
-  //     const isMainApp =
-  //       trueHost === "salesmanpro.site" || host.includes("localhost");
+      // const cleanHost = host.split(":")[0].replace(/^www\./, "");
+      const isMainApp =
+        trueHost === "salesmanpro.site" || host.includes("localhost");
 
-  //     if (!isMainApp) {
-  //       // 1. Find the company matching this subdomain/custom domain
-  //       const company = await prisma.company.findFirst({
-  //         where: { domain: trueHost },
-  //       });
+      if (!isMainApp) {
+        // 1. Find the company matching this subdomain/custom domain
+        const company = await prisma.company.findFirst({
+          where: { domain: trueHost },
+        });
 
-  //       if (company) {
-  //         // 2. Link them as a consumer and ensure their role is USER
-  //         await prisma.$transaction([
-  //           prisma.user.update({
-  //             where: { id: user.id },
-  //             data: { role: "USER" },
-  //           }),
-  //           prisma.consumer.create({
-  //             data: {
-  //               userId: user.id,
-  //               companyId: company.id,
-  //             },
-  //           }),
-  //         ]);
-  //       }
-  //     } else {
-  //       // If they created an account on the main site, make them an ADMIN
-  //       await prisma.user.update({
-  //         where: { id: user.id },
-  //         data: { role: "ADMIN" },
-  //       });
-  //     }
-  //   },
-  // },
-  // events: {
-  //   async createUser({ user }) {
-  //     const originHost = (user as any).originHost || "";
-
-  //     const isMainApp =
-  //       originHost === "salesmanpro.site" ||
-  //       originHost === "www.salesmanpro.site";
-
-  //     if (!isMainApp && originHost) {
-  //       const company = await prisma.company.findFirst({
-  //         where: {
-  //           OR: [
-  //             { domain: originHost },
-  //             { slug: originHost.split(".")[0] }, // 🔥 handles subdomains
-  //           ],
-  //         },
-  //       });
-
-  //       if (company) {
-  //         await prisma.$transaction([
-  //           prisma.user.update({
-  //             where: { id: user.id },
-  //             data: { role: "USER" },
-  //           }),
-  //           prisma.consumer.create({
-  //             data: {
-  //               userId: user.id,
-  //               companyId: company.id,
-  //             },
-  //           }),
-  //         ]);
-  //       }
-  //     } else {
-  //       await prisma.user.update({
-  //         where: { id: user.id },
-  //         data: { role: "ADMIN" },
-  //       });
-  //     }
-  //   },
-  // },
+        if (company) {
+          // 2. Link them as a consumer and ensure their role is USER
+          await prisma.$transaction([
+            prisma.user.update({
+              where: { id: user.id },
+              data: { role: "USER" },
+            }),
+            prisma.consumer.create({
+              data: {
+                userId: user.id,
+                companyId: company.id,
+              },
+            }),
+          ]);
+        }
+      } else {
+        // If they created an account on the main site, make them an ADMIN
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { role: "ADMIN" },
+        });
+      }
+    },
+  },
 });
 
 // ✅ For Next.js App Router
