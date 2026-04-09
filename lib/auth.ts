@@ -128,39 +128,58 @@ export const authOptions = (req?: any): NextAuthOptions => {
   // const isMainApp =
   //   mainDomains.includes(trueHost) || trueHost.includes("localhost");
   // 1. Try to get it from the query param (Initial hit)
-  let rawUrl = req?.query?.callbackUrl;
+  // let rawUrl = req?.query?.callbackUrl;
 
-  // 2. Fallback: Check the NextAuth internal cookie (During OAuth callback)
-  if (!rawUrl && req?.cookies) {
-    // Note: Use '__Secure-next-auth.callback-url' if in production/SSL
-    rawUrl =
-      req.cookies["next-auth.callback-url"] ||
-      req.cookies["__Secure-next-auth.callback-url"];
-  }
+  // // 2. Fallback: Check the NextAuth internal cookie (During OAuth callback)
+  // if (!rawUrl && req?.cookies) {
+  //   // Note: Use '__Secure-next-auth.callback-url' if in production/SSL
+  //   rawUrl =
+  //     req.cookies["next-auth.callback-url"] ||
+  //     req.cookies["__Secure-next-auth.callback-url"];
+  // }
 
-  // 3. Last Resort: Referer header
-  if (!rawUrl && req?.headers?.referer) {
-    rawUrl = req.headers.referer;
-  }
+  // // 3. Last Resort: Referer header
+  // if (!rawUrl && req?.headers?.referer) {
+  //   rawUrl = req.headers.referer;
+  // }
+
+  // let trueHost = "";
+  // try {
+  //   if (rawUrl) {
+  //     // Decode if it's double-encoded from the browser
+  //     const decodedUrl = decodeURIComponent(rawUrl);
+  //     const targetUrlObj = new URL(
+  //       decodedUrl.startsWith("/")
+  //         ? `https://salesmanpro.site${decodedUrl}`
+  //         : decodedUrl,
+  //     );
+  //     trueHost = targetUrlObj.hostname;
+  //   }
+  // } catch (e) {
+  //   console.error("Failed to parse trueHost:", e);
+  // }
+
+  // // Fallback to baseUrl if everything else fails
+  // if (!trueHost) trueHost = new URL(baseUrl).hostname;
+
+  // 1. Get the original URL from the NextAuth callback cookie (most reliable during Sign-In)
+  const callbackCookie =
+    req?.cookies?.["next-auth.callback-url"] ||
+    req?.cookies?.["__Secure-next-auth.callback-url"];
+
+  // 2. Fallback to the query string
+  const callbackQuery = req?.query?.callbackUrl;
+
+  // 3. Final fallback to the system baseUrl
+  const finalUrl = callbackQuery || callbackCookie || baseUrl;
 
   let trueHost = "";
   try {
-    if (rawUrl) {
-      // Decode if it's double-encoded from the browser
-      const decodedUrl = decodeURIComponent(rawUrl);
-      const targetUrlObj = new URL(
-        decodedUrl.startsWith("/")
-          ? `https://salesmanpro.site${decodedUrl}`
-          : decodedUrl,
-      );
-      trueHost = targetUrlObj.hostname;
-    }
+    const targetUrlObj = new URL(decodeURIComponent(finalUrl));
+    trueHost = targetUrlObj.hostname;
   } catch (e) {
-    console.error("Failed to parse trueHost:", e);
+    trueHost = new URL(baseUrl).hostname;
   }
-
-  // Fallback to baseUrl if everything else fails
-  if (!trueHost) trueHost = new URL(baseUrl).hostname;
 
   const mainDomains = ["salesmanpro.site", "www.salesmanpro.site"];
   const isMainApp =
@@ -459,12 +478,19 @@ export const authOptions = (req?: any): NextAuthOptions => {
         });
 
         if (!isMainApp && existingUser) {
+          console.log(
+            `Attempting to link ${user.email} to a company based on host ${trueHost}...`,
+          );
           const possibleSlug = trueHost.split(".")[0];
           const company = await prisma.company.findFirst({
             where: { OR: [{ domain: trueHost }, { slug: possibleSlug }] },
           });
 
           if (company) {
+            console.log(
+              `Linking ${user.email} to company ${company.name} as CONSUMER.`,
+            );
+
             await prisma.consumer.upsert({
               where: {
                 userId_companyId: {
@@ -544,6 +570,9 @@ export const authOptions = (req?: any): NextAuthOptions => {
         });
 
         if (isMainApp) {
+          console.log(
+            `Registering ${user.email} as ADMIN since they signed up via the main app.`,
+          );
           // ✅ Register as ADMIN if they joined via the main site
           await prisma.user.update({
             where: { id: user.id },
@@ -555,8 +584,15 @@ export const authOptions = (req?: any): NextAuthOptions => {
           const company = await prisma.company.findFirst({
             where: { OR: [{ domain: trueHost }, { slug: possibleSlug }] },
           });
-
+          console.log(`Company lookup for ${user.email}:`, {
+            trueHost,
+            possibleSlug,
+            companyId: company?.id,
+          });
           if (company) {
+            console.log(
+              `Linking ${user.email} to company ${company.name} as CONSUMER.`,
+            );
             await prisma.$transaction([
               prisma.user.update({
                 where: { id: user.id },
@@ -574,7 +610,7 @@ export const authOptions = (req?: any): NextAuthOptions => {
       },
     },
   };
-};;
+};
 
 // ✅ For Next.js App Router
 export const getAuthSession = () => getServerSession(authOptions());
