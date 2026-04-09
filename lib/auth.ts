@@ -388,9 +388,10 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         const targetUrlObj = new URL(finalRedirectUrl);
         const targetHost = targetUrlObj.hostname;
         const targetPath = targetUrlObj.pathname;
-        // const trueHost = getTrueOrigin(reqHost);
+        const trueHosst = getTrueOrigin(reqHost);
         const trueHost = targetHost;
 
+        console.log("Redirect Callback Invoked:", { finalRedirectUrl, targetHost, trueHost, targetPath, trueHosst });  
         // ✅ جلوگیری infinite loops
         if (
           finalRedirectUrl.includes("/api/auth/handover") ||
@@ -418,8 +419,9 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
 
         return handoverUrl.toString();
       } catch (error) {
-        return `${HUB_URL}/failure?reason=invalid_redirect`;
-      }
+        console.log("Redirect Callback Error:", error);
+        return `${HUB_URL}/failure?reason=invalid_redirect&error=${encodeURIComponent(error instanceof Error ? error.message : "unknown_error")}`;
+        }
     },
     // async redirect({ url, baseUrl }) {
     //   const HUB_URL = "https://salesmanpro.site";
