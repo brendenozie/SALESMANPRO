@@ -1381,7 +1381,7 @@ model User {
   isActive  Boolean   @default(true)
   deletedAt DateTime?
 
-  role ROLES? @default(ADMIN)
+  role ROLES? @default(USER) // Assuming ROLES enum exists with values like USER, ADMIN, etc.
 
   status UserStatus? @default(ACTIVE)
 

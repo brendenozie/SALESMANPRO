@@ -330,7 +330,34 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
     generateSessionToken: () =>
       randomUUID?.() ?? randomBytes(32).toString("hex"),
   },
+  // inside authOptions
+  // events: {
+  //   async createUser({ user }) {
+  //     // This runs ONLY when a new user is created in the DB
+  //     const host = reqHost || "";
+  //     const cleanHost = host.split(":")[0].replace(/^www\./, "");
+  //     const mainDomains = ["salesmanpro.site"];
+  //     const isMainApp =
+  //       mainDomains.includes(cleanHost) || host.includes("localhost");
+  //     // const isMainApp = host.includes("salesmanpro.site") && !host.includes("tenant");
 
+  //     if (!isMainApp && user.email) {
+  //       const domain = host.split(":")[0].replace("www.", "");
+  //       const company = await prisma.company.findFirst({
+  //         where: { domain: domain },
+  //       });
+
+  //       if (company) {
+  //         await prisma.consumer.create({
+  //           data: {
+  //             companyId: company.id,
+  //             userId: user.id,
+  //           },
+  //         });
+  //       }
+  //     }
+  //   },
+  // },
   // ✅ AUTO-LINK OAUTH LOGINS HERE
   callbacks: {
     async redirect({ url, baseUrl }) {
@@ -493,127 +520,163 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
 
     //import { headers } from "next/headers";
     //// ... other imports
-
     async signIn({ user, account, profile }) {
-      // 1. Skip if not OAuth
       if (!account || account.provider === "credentials") return true;
       if (!user.email) return false;
 
-      // 2. Determine the origin (Server-side)
-      // const host = (await headers()).get("host") || ""; // e.g., "tenant1.salesmanpro.site"
       const host = reqHost || "";
-      // const isSalesmanPro = host === "salesmanpro.site" || host === "www.salesmanpro.site";
-
-      // Removes the port (e.g., :3000) and the "www." prefix
       const cleanHost = host.split(":")[0].replace(/^www\./, "");
-
-      // 1. Define your primary domains
       const mainDomains = ["salesmanpro.site"];
-
-      // 2. Check for exact match + allow localhost to be ADMIN for testing
       const isMainApp =
-        mainDomains.includes(cleanHost) ||
-        host.includes("localhost") ||
-        host.includes("127.0.0.1");
+        mainDomains.includes(cleanHost) || host.includes("localhost");
 
-      // 3. Assign role
-      const assignedRole = isMainApp ? "ADMIN" : "USER";
-
-      // 3. Look for existing user
+      // 1. Check if user exists BEFORE NextAuth tries to create them
       const existingUser = await prisma.user.findUnique({
         where: { email: user.email },
       });
 
-      if (existingUser) {
-        // 1. ROLE ELEVATION LOGIC
-        // If an existing tenant-user logs into the main site, upgrade them to ADMIN
-        if (isMainApp && existingUser.role === "USER") {
-          await prisma.user.update({
-            where: { id: existingUser.id },
-            data: { role: "ADMIN" },
-          });
-        }
+      // if (existingUser) {
+      //   // If logging into main app, ensure they have ADMIN role
+      //   if (isMainApp && existingUser.role === "USER") {
+      //     await prisma.user.update({
+      //       where: { id: existingUser.id },
+      //       data: { role: "ADMIN" },
+      //     });
+      //   }
+      // }
 
-        // Check if this specific account (provider + providerId) is already linked
-        const existingAccount = await prisma.account.findUnique({
-          where: {
-            provider_providerAccountId: {
-              provider: account.provider,
-              providerAccountId: account.providerAccountId,
-            },
-          },
+      if (existingUser && isMainApp && existingUser.role !== "ADMIN") {
+        await prisma.user.update({
+          where: { id: existingUser.id },
+          data: { role: "ADMIN" },
         });
-
-        if (!existingAccount) {
-          // ✅ LINK: The user exists but hasn't used this provider before
-          await prisma.account.create({
-            data: {
-              userId: existingUser.id, // Use DB ID, not OAuth ID
-              provider: account.provider,
-              providerAccountId: account.providerAccountId,
-              type: account.type,
-              access_token: account.access_token,
-              refresh_token: account.refresh_token,
-              expires_at: account.expires_at,
-              token_type: account.token_type,
-              scope: account.scope,
-              id_token: account.id_token,
-              session_state: account.session_state,
-            },
-          });
-        }
-        return true;
       }
 
-      // 4. NEW USER PATH
-      // const assignedRole = isSalesmanPro ? "ADMIN" : "USER";
-
-      const newUser = await prisma.user.create({
-        data: {
-          email: user.email,
-          name: user.name ?? "",
-          image: user.image,
-          role: assignedRole,
-          accounts: {
-            create: {
-              provider: account.provider,
-              providerAccountId: account.providerAccountId,
-              type: account.type,
-              access_token: account.access_token,
-              refresh_token: account.refresh_token,
-              expires_at: account.expires_at,
-              token_type: account.token_type,
-              scope: account.scope,
-              id_token: account.id_token,
-              session_state: account.session_state,
-            },
-          },
-        },
-      });
-
-      // 5. TENANT LOGIC
-      if (!isMainApp) {
-        // Extract domain (remove port if local dev)
-        const domain = host.split(":")[0].replace("www.", "");
-
-        const company = await prisma.company.findFirst({
-          where: { domain: domain },
-        });
-
-        if (company) {
-          await prisma.consumer.upsert({
-            where: { userId: newUser.id },
-            update: {},
-            create: {
-              companyId: company.id,
-              userId: newUser.id,
-            },
-          });
-        }
-      }
-
+      // 2. DO NOT manually create the User or Account here.
+      // Returning true allows the PrismaAdapter to do it safely.
       return true;
     },
+
+    // async signIn({ user, account, profile }) {
+    //   // 1. Skip if not OAuth
+    //   if (!account || account.provider === "credentials") return true;
+    //   if (!user.email) return false;
+
+    //   // 2. Determine the origin (Server-side)
+    //   // const host = (await headers()).get("host") || ""; // e.g., "tenant1.salesmanpro.site"
+    //   const host = reqHost || "";
+    //   // const isSalesmanPro = host === "salesmanpro.site" || host === "www.salesmanpro.site";
+
+    //   // Removes the port (e.g., :3000) and the "www." prefix
+    //   const cleanHost = host.split(":")[0].replace(/^www\./, "");
+
+    //   // 1. Define your primary domains
+    //   const mainDomains = ["salesmanpro.site"];
+
+    //   // 2. Check for exact match + allow localhost to be ADMIN for testing
+    //   const isMainApp =
+    //     mainDomains.includes(cleanHost) ||
+    //     host.includes("localhost") ||
+    //     host.includes("127.0.0.1");
+
+    //   // 3. Assign role
+    //   const assignedRole = isMainApp ? "ADMIN" : "USER";
+
+    //   // 3. Look for existing user
+    //   const existingUser = await prisma.user.findUnique({
+    //     where: { email: user.email },
+    //   });
+
+    //   if (existingUser) {
+    //     // 1. ROLE ELEVATION LOGIC
+    //     // If an existing tenant-user logs into the main site, upgrade them to ADMIN
+    //     if (isMainApp && existingUser.role === "USER") {
+    //       await prisma.user.update({
+    //         where: { id: existingUser.id },
+    //         data: { role: "ADMIN" },
+    //       });
+    //     }
+
+    //     // Check if this specific account (provider + providerId) is already linked
+    //     const existingAccount = await prisma.account.findUnique({
+    //       where: {
+    //         provider_providerAccountId: {
+    //           provider: account.provider,
+    //           providerAccountId: account.providerAccountId,
+    //         },
+    //       },
+    //     });
+
+    //     if (!existingAccount) {
+    //       // ✅ LINK: The user exists but hasn't used this provider before
+    //       await prisma.account.create({
+    //         data: {
+    //           userId: existingUser.id, // Use DB ID, not OAuth ID
+    //           provider: account.provider,
+    //           providerAccountId: account.providerAccountId,
+    //           type: account.type,
+    //           access_token: account.access_token,
+    //           refresh_token: account.refresh_token,
+    //           expires_at: account.expires_at,
+    //           token_type: account.token_type,
+    //           scope: account.scope,
+    //           id_token: account.id_token,
+    //           session_state: account.session_state,
+    //         },
+    //       });
+    //     }
+    //     return true;
+    //   }
+
+    //   // 4. NEW USER PATH
+    //   // const assignedRole = isSalesmanPro ? "ADMIN" : "USER";
+
+    //   const newUser = await prisma.user.create({
+    //     data: {
+    //       email: user.email,
+    //       name: user.name ?? "",
+    //       image: user.image,
+    //       role: assignedRole,
+    //       accounts: {
+    //         create: {
+    //           provider: account.provider,
+    //           providerAccountId: account.providerAccountId,
+    //           type: account.type,
+    //           access_token: account.access_token,
+    //           refresh_token: account.refresh_token,
+    //           expires_at: account.expires_at,
+    //           token_type: account.token_type,
+    //           scope: account.scope,
+    //           id_token: account.id_token,
+    //           session_state: account.session_state,
+    //         },
+    //       },
+    //     },
+    //   });
+
+    //   // 5. TENANT LOGIC
+    //   if (!isMainApp) {
+    //     // Extract domain (remove port if local dev)
+    //     const domain = host.split(":")[0].replace("www.", "");
+
+    //     const company = await prisma.company.findFirst({
+    //       where: { domain: domain },
+    //     });
+
+    //     if (company) {
+    //       await prisma.consumer.upsert({
+    //         where: { userId: newUser.id },
+    //         update: {},
+    //         create: {
+    //           companyId: company.id,
+    //           userId: newUser.id,
+    //         },
+    //       });
+    //     }
+    //   }
+
+    //   return true;
+    // },
     // async signIn({ user, account, profile, credentials }) {
     //   // Skip if not OAuth
     //   if (!account || account.provider === "credentials") return true;
@@ -767,6 +830,45 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
   secret: aSharedSecret, //process.env.NEXTAUTH_SECRET,
   pages: {
     signIn: "/signin",
+  },
+
+  events: {
+    async createUser({ user }) {
+      // This runs ONLY for brand new users right after they are saved to the DB
+      const host = reqHost || "";
+      const cleanHost = host.split(":")[0].replace(/^www\./, "");
+      const isMainApp =
+        cleanHost === "salesmanpro.site" || host.includes("localhost");
+
+      if (!isMainApp) {
+        // 1. Find the company matching this subdomain/custom domain
+        const company = await prisma.company.findFirst({
+          where: { domain: cleanHost },
+        });
+
+        if (company) {
+          // 2. Link them as a consumer and ensure their role is USER
+          await prisma.$transaction([
+            prisma.user.update({
+              where: { id: user.id },
+              data: { role: "USER" },
+            }),
+            prisma.consumer.create({
+              data: {
+                userId: user.id,
+                companyId: company.id,
+              },
+            }),
+          ]);
+        }
+      } else {
+        // If they created an account on the main site, make them an ADMIN
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { role: "ADMIN" },
+        });
+      }
+    },
   },
 });
 
