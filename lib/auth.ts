@@ -531,9 +531,9 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         mainDomains.includes(cleanHost) || host.includes("localhost");
 
       // 1. Check if user exists BEFORE NextAuth tries to create them
-      const existingUser = await prisma.user.findUnique({
-        where: { email: user.email },
-      });
+      // const existingUser = await prisma.user.findUnique({
+      //   where: { email: user.email },
+      // });
 
       // if (existingUser) {
       //   // If logging into main app, ensure they have ADMIN role
@@ -545,11 +545,34 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       //   }
       // }
 
-      if (existingUser && isMainApp && existingUser.role !== "ADMIN") {
-        await prisma.user.update({
-          where: { id: existingUser.id },
-          data: { role: "ADMIN" },
+      // if (existingUser && isMainApp && existingUser.role !== "ADMIN") {
+      //   await prisma.user.update({
+      //     where: { id: existingUser.id },
+      //     data: { role: "ADMIN" },
+      //   });
+      // }
+
+      if (!isMainApp) {
+        const possibleSlug = cleanHost.split(".")[0];
+        const company = await prisma.company.findFirst({
+          where: { OR: [{ domain: cleanHost }, { slug: possibleSlug }] },
         });
+
+        if (company && user.id) {
+          // Link them to the consumer table so they have access to this specific tenant
+          await prisma.consumer.upsert({
+            where: {
+              userId_companyId: { userId: user.id, companyId: company.id },
+              // userId: user.id,
+              // companyId: company.id,
+            },
+            update: {}, // Do nothing if link already exists
+            create: {
+              userId: user.id,
+              companyId: company.id,
+            },
+          });
+        }
       }
 
       // 2. DO NOT manually create the User or Account here.

@@ -2278,6 +2278,7 @@ model Consumer {
   ConsumerInventoryLog ConsumerInventoryLog[]
 
   // @@index([userId])
+  @@unique([userId, companyId])
   @@index([companyId])
 }
 
