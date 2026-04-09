@@ -398,6 +398,11 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
           }
         }
 
+        // const trueOrigin = targetHost; // fallback
+
+        // OPTIONAL (better if you pass reqHost into authOptions)
+        const trueOrigin = getTrueOrigin(reqHost);
+
         const mainHubDomains = ["salesmanpro.site", "www.salesmanpro.site"];
 
         // ✅ 1. INTERNAL auth routes (safe, session exists)z
@@ -410,7 +415,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         const handoverUrl = new URL("/api/auth/handover", baseUrl);
 
         // 👉 If going to root hub, upgrade to /dashboards
-        if (mainHubDomains.includes(targetHost)) {
+        if (mainHubDomains.includes(trueOrigin)) {
           handoverUrl.searchParams.set("target", `${HUB_URL}/dashboards`);
         } else {
           handoverUrl.searchParams.set("target", finalRedirectUrl);
