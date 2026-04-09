@@ -113,8 +113,16 @@ const getTrueOrigin = (req: any) => {
 };
 
 // export const authOptions: NextAuthOptions = {
-export const authOptions = (reqHost?: string): NextAuthOptions => ({
-  adapter: PrismaAdapter(prisma),
+// export const authOptions = (reqHost?: string): NextAuthOptions => ({
+
+export const authOptions = (req?: any): NextAuthOptions => {
+  // 1. Determine the "True Origin" (where the user actually came from)
+  let trueHost = getTrueOrigin(req); 
+  const mainDomains = ["salesmanpro.site", "www.salesmanpro.site"];
+  const isMainApp = mainDomains.includes(trueHost) || trueHost.includes("localhost");
+
+  return {
+    adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
       // An ID for this custom provider
@@ -307,7 +315,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
     generateSessionToken: () =>
       randomUUID?.() ?? randomBytes(32).toString("hex"),
   },
-  
+
   // ✅ AUTO-LINK OAUTH LOGINS HERE
   callbacks: {
     async redirect({ url, baseUrl }) {
@@ -332,7 +340,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         const targetUrlObj = new URL(finalRedirectUrl);
         const targetHost = targetUrlObj.hostname;
         const targetPath = targetUrlObj.pathname;
-        const trueHosst = getTrueOrigin(reqHost);
+        // const trueHosst = getTrueOrigin();
         const trueHost = targetHost;
 
         console.log("Redirect Callback Invoked:", {
@@ -340,7 +348,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
           targetHost,
           trueHost,
           targetPath,
-          trueHosst,
+          // trueHosst,
         });
         // ✅ جلوگیری infinite loops
         if (
@@ -374,43 +382,46 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       }
     },
 
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       if (!account || account.provider === "credentials") return true;
       if (!user.email) return false;
 
-      const host = reqHost || "";
+      // const host = reqHost || "";
+      // const trueHost = getTrueOrigin(reqHost);
+      // const mainDomains = ["salesmanpro.site", "www.salesmanpro.site"];
+      // const isMainApp =
+      //   mainDomains.includes(trueHost) || host.includes("localhost");
 
-      const trueHost = getTrueOrigin(reqHost);
+      // 🚨 FIX 1: Check if user actually exists in DB before trying to link a Consumer
+      // This prevents the "First Login Error"
+      const existingUser = await prisma.user.findUnique({
+        where: { email: user.email },
+        select: { id: true },
+      });
 
-      const mainDomains = ["salesmanpro.site"];
-
-      const isMainApp = mainDomains.includes(trueHost) || host.includes("localhost");
-
-      if (!isMainApp) {
+      if (!isMainApp && existingUser) {
         const possibleSlug = trueHost.split(".")[0];
         const company = await prisma.company.findFirst({
           where: { OR: [{ domain: trueHost }, { slug: possibleSlug }] },
         });
 
-        if (company && user.id) {
-          // Link them to the consumer table so they have access to this specific tenant
+        if (company) {
           await prisma.consumer.upsert({
             where: {
-              userId_companyId: { userId: user.id, companyId: company.id },
-              // userId: user.id,
-              // companyId: company.id,
+              userId_companyId: {
+                userId: existingUser.id,
+                companyId: company.id,
+              },
             },
-            update: {}, // Do nothing if link already exists
+            update: {},
             create: {
-              userId: user.id,
+              userId: existingUser.id,
               companyId: company.id,
             },
           });
         }
       }
 
-      // 2. DO NOT manually create the User or Account here.
-      // Returning true allows the PrismaAdapter to do it safely.
       return true;
     },
 
@@ -432,7 +443,6 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
     },
 
     async session({ session, token }) {
-      
       if (session.user) {
         Object.assign(session.user, {
           id: token.id as string,
@@ -457,22 +467,30 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
 
   events: {
     async createUser({ user }) {
-      // This runs ONLY for brand new users right after they are saved to the DB
-      const host = reqHost || "";
-      const trueHost = getTrueOrigin(reqHost);
+      // 🚨 FIX 2: Handle "First Login" logic here.
+      // This fires AFTER the user is safely in the DB.
+      // const host = reqHost || "";
+      // const trueHost = getTrueOrigin(reqHost);
 
-      // const cleanHost = host.split(":")[0].replace(/^www\./, "");
-      const isMainApp =
-        trueHost === "salesmanpro.site" || host.includes("localhost");
+      // // Improved main app detection
+      // const mainDomains = ["salesmanpro.site", "www.salesmanpro.site"];
+      // const isMainApp =
+      //   mainDomains.includes(trueHost) || host.includes("localhost");
 
-      if (!isMainApp) {
-        // 1. Find the company matching this subdomain/custom domain
+      if (isMainApp) {
+        // ✅ Register as ADMIN if they joined via the main site
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { role: "ADMIN" },
+        });
+      } else {
+        // Register as tenant user
+        const possibleSlug = trueHost.split(".")[0];
         const company = await prisma.company.findFirst({
-          where: { domain: trueHost },
+          where: { OR: [{ domain: trueHost }, { slug: possibleSlug }] },
         });
 
         if (company) {
-          // 2. Link them as a consumer and ensure their role is USER
           await prisma.$transaction([
             prisma.user.update({
               where: { id: user.id },
@@ -486,16 +504,11 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
             }),
           ]);
         }
-      } else {
-        // If they created an account on the main site, make them an ADMIN
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { role: "ADMIN" },
-        });
       }
     },
   },
-});
+};
+}
 
 // ✅ For Next.js App Router
 export const getAuthSession = () => getServerSession(authOptions());

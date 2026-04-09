@@ -59,7 +59,7 @@ const Categories = () => {
               {categories.map(({ name, icon }, index) => (
                 <motion.div
                   key={index}
-                  onClick={() => router.push(`/shop/productlist?category=${name}`)}
+                  onClick={() => router.push(`/ghuba/productlist?category=${name}`)}
                   whileHover={{ scale: 1.06 }}
                   whileTap={{ scale: 0.97 }}
                   className="relative bg-gradient-to-br from-yellow-400 to-yellow-500 dark:from-yellow-500 dark:to-yellow-600 text-white p-5 rounded-2xl shadow-lg flex flex-col items-center justify-center cursor-pointer hover:shadow-2xl transition-all overflow-hidden"
