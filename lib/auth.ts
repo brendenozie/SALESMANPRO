@@ -388,7 +388,8 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         const targetUrlObj = new URL(finalRedirectUrl);
         const targetHost = targetUrlObj.hostname;
         const targetPath = targetUrlObj.pathname;
-        const trueHost = getTrueOrigin(reqHost);
+        // const trueHost = getTrueOrigin(reqHost);
+        const trueHost = targetHost;
 
         // ✅ جلوگیری infinite loops
         if (
