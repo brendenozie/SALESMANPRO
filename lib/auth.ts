@@ -383,6 +383,9 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       const AUTH_HOST = new URL(baseUrl).hostname;
 
       // const finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
+      if (url.includes("/api/auth/handover")) {
+        return url; // 🚀 STOP processing immediately
+      }
 
       let finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
 
