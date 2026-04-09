@@ -382,7 +382,16 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       const HUB_URL = "https://salesmanpro.site";
       const AUTH_HOST = new URL(baseUrl).hostname;
 
-      const finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
+      // const finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
+
+      let finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
+
+      // 🔥 FIX: decode if encoded
+      try {
+        finalRedirectUrl = decodeURIComponent(finalRedirectUrl);
+      } catch (e) {
+        // ignore if already decoded
+      }
 
       try {
         const targetUrlObj = new URL(finalRedirectUrl);
@@ -391,7 +400,13 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         const trueHosst = getTrueOrigin(reqHost);
         const trueHost = targetHost;
 
-        console.log("Redirect Callback Invoked:", { finalRedirectUrl, targetHost, trueHost, targetPath, trueHosst });  
+        console.log("Redirect Callback Invoked:", {
+          finalRedirectUrl,
+          targetHost,
+          trueHost,
+          targetPath,
+          trueHosst,
+        });
         // ✅ جلوگیری infinite loops
         if (
           finalRedirectUrl.includes("/api/auth/handover") ||
@@ -421,7 +436,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       } catch (error) {
         console.log("Redirect Callback Error:", error);
         return `${HUB_URL}/failure?reason=invalid_redirect&error=${encodeURIComponent(error instanceof Error ? error.message : "unknown_error")}`;
-        }
+      }
     },
     // async redirect({ url, baseUrl }) {
     //   const HUB_URL = "https://salesmanpro.site";
