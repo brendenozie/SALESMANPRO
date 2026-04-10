@@ -429,7 +429,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
 
       const host = reqHost || "";
 
-      const { isMainApp, tenantIdentifier } = getTenantInfo(host);
+      const { isMainApp, isHub, tenantIdentifier } = getTenantInfo(host);
 
       if (!isMainApp) {
         // const possibleSlug = trueHost.split(".")[0];
@@ -440,9 +440,6 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         });
 
         if (company && user.id) {
-          console.log(
-            `Linking user ${user.email} to company ${company.name} (ID: ${company.id})`,
-          );
           // Link them to the consumer table so they have access to this specific tenant
           await prisma.consumer.upsert({
             where: {
@@ -456,6 +453,12 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
               companyId: company.id,
             },
           });
+        }
+      }else{
+        console.log(`OAuth Sign-In for ${user.email} on main app or hub domain.`);
+        console.log("Host Info:", { host, isMainApp, isHub, tenantIdentifier });
+        if (!isHub) {
+          console.log(`User ${user.email} signed in on auth domain. They will be linked to the tenant based on their callbackUrl after sign-in completes.`);
         }
       }
 
@@ -511,7 +514,23 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
   events: {
     async createUser({ user }) {
       const host = reqHost || "";
-      const { isMainApp, isHub, tenantIdentifier } = getTenantInfo(host);
+      // const { isMainApp, isHub, tenantIdentifier } = getTenantInfo(host);
+      // 2. Get the callbackUrl (where the user is going next)
+      // This helps us identify if they started at a tenant site or the main hub
+      const url = new URL(reqHost || "", `https://${host}`);
+      const callbackUrl = url.searchParams.get("callbackUrl") || "";
+      const callbackHost = callbackUrl ? new URL(callbackUrl).host.split(":")[0] : "";
+
+      // 3. Re-run tenant info on the CALLBACK host if we are on the auth domain
+      const { isHub, isMainApp, tenantIdentifier } = getTenantInfo(
+        host === "auth.salesmanpro.site" ? callbackHost : host
+      );
+
+      console.log("CreateUser Logic:", { 
+        currentHost: host, 
+        originalOrigin: callbackHost, 
+        isHub 
+      });
 
       console.log("CreateUser Event:", {
         host,
