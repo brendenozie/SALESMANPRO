@@ -219,11 +219,7 @@ export const authOptions = (req?: any): NextAuthOptions => {
 
   // 🔥 THEN fallback to query/callbacks ONLY if empty
   if (!rawTarget) {
-    const candidates = [
-      query.target,
-      query.callbackUrl,
-      callbackCookie,
-    ];
+    const candidates = [query.target, query.callbackUrl, callbackCookie];
 
     for (const candidate of candidates) {
       if (isValidTarget(candidate)) {
@@ -232,6 +228,22 @@ export const authOptions = (req?: any): NextAuthOptions => {
       }
     }
   }
+
+  //  const candidates = [
+  //    query.target,
+  //    query.callbackUrl,
+  //    callbackCookie,
+  //    req?.cookies?.auth_target,
+  //    req?.cookies?.["__Secure-auth_target"],
+  //  ];
+  console.log("Raw Target Candidates:", {
+    queryTarget: query.target,
+    queryCallbackUrl: query.callbackUrl,
+    callbackCookie,
+    authTargetCookie: req?.cookies?.auth_target,
+    secureAuthTargetCookie: req?.cookies?.["__Secure-auth_target"],
+    
+  });
 
   const context = {
     target: rawTarget,
@@ -248,7 +260,6 @@ export const authOptions = (req?: any): NextAuthOptions => {
       console.log("Failed to set auth_target cookie");
     }
   }
-
 
   try {
     const cookie = req?.cookies?.auth_target;
@@ -306,7 +317,7 @@ export const authOptions = (req?: any): NextAuthOptions => {
   trueHost = trueHost.replace("www.", "");
 
   const mainDomains = ["salesmanpro.site", "www.salesmanpro.site"];
-  const isMainApp = mainDomains.includes(trueHost) || trueHost === "localhost";;
+  const isMainApp = mainDomains.includes(trueHost) || trueHost === "localhost";
 
   return {
     adapter: PrismaAdapter(prisma),
