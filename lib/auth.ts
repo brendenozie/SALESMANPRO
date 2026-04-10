@@ -163,23 +163,52 @@ export const authOptions = (req?: any): NextAuthOptions => {
   // if (!trueHost) trueHost = new URL(baseUrl).hostname;
 
   // 1. Get the original URL from the NextAuth callback cookie (most reliable during Sign-In)
-  const callbackCookie =
-    req?.cookies?.["next-auth.callback-url"] ||
-    req?.cookies?.["__Secure-next-auth.callback-url"];
+  // const callbackCookie =
+  //   req?.cookies?.["next-auth.callback-url"] ||
+  //   req?.cookies?.["__Secure-next-auth.callback-url"];
 
-  // 2. Fallback to the query string
-  const callbackQuery = req?.query?.callbackUrl;
+  // // 2. Fallback to the query string
+  // const callbackQuery = req?.query?.callbackUrl;
 
-  // 3. Final fallback to the system baseUrl
-  const finalUrl = callbackQuery || callbackCookie || baseUrl;
+  // // 3. Final fallback to the system baseUrl
+  // const finalUrl = callbackQuery || callbackCookie || baseUrl;
+
+  // let trueHost = "";
+  // try {
+  //   const targetUrlObj = new URL(decodeURIComponent(finalUrl));
+  //   trueHost = targetUrlObj.hostname;
+  // } catch (e) {
+  //   trueHost = new URL(baseUrl).hostname;
+  // }
+  // Inside your authOptions(req)
+  const query = req?.query || {};
+
+  // 1. Check for the 'target' param (specific to your handover logic)
+  // 2. Check for 'callbackUrl' (NextAuth standard)
+  const rawTarget = query.target || query.callbackUrl;
 
   let trueHost = "";
-  try {
-    const targetUrlObj = new URL(decodeURIComponent(finalUrl));
-    trueHost = targetUrlObj.hostname;
-  } catch (e) {
-    trueHost = new URL(baseUrl).hostname;
+
+  if (rawTarget) {
+    try {
+      // If it's a full URL, parse it. If it's just a path, it's the Main App.
+      const decodedTarget = decodeURIComponent(rawTarget);
+      if (decodedTarget.startsWith('http')) {
+        trueHost = new URL(decodedTarget).hostname;
+      } else {
+        // It's a relative path like "/dashboard", so the host is the current baseUrl
+        trueHost = new URL(baseUrl).hostname;
+      }
+    } catch (e) {
+      trueHost = new URL(baseUrl).hostname;
+    }
+  } else {
+    // No target/callback? Fallback to the physical host of the request
+    trueHost = req?.headers?.host || new URL(baseUrl).hostname;
   }
+
+  // Clean up: remove "www." to keep slugs consistent
+  trueHost = trueHost.replace("www.", "");
 
   const mainDomains = ["salesmanpro.site", "www.salesmanpro.site"];
   const isMainApp =
