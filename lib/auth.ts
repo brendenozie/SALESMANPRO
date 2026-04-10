@@ -112,6 +112,39 @@ const getTrueOrigin = (req: any) => {
   return (req?.headers?.host || "").split(":")[0].replace(/^www\./, "");
 };
 
+const getTenantFromCallback = (url?: string) => {
+  if (!url) return null;
+  try {
+    const parsedUrl = new URL(url);
+    const host = parsedUrl.hostname;
+    const mainDomains = ["salesmanpro.site", "www.salesmanpro.site"];
+
+    if (mainDomains.includes(host)) return null;
+
+    // Return the subdomain or custom domain
+    return host.replace(/^www\./, "");
+  } catch {
+    return null;
+  }
+};
+
+// Helper to extract tenant info
+const getTenantInfo = (host: string) => {
+  const mainDomains = [
+    "salesmanpro.site",
+    "www.salesmanpro.site",
+    "localhost:3000",
+  ];
+  const isMainApp = mainDomains.some((d) => host.includes(d));
+
+  // If not main app, extract subdomain or use custom domain
+  // e.g., "client.salesmanpro.site" -> "client"
+  // e.g., "customdomain.com" -> "customdomain.com"
+  const tenantIdentifier = host.split(":")[0].replace(/^www\./, "");
+
+  return { isMainApp, tenantIdentifier };
+};
+
 // export const authOptions: NextAuthOptions = {
 export const authOptions = (reqHost?: string): NextAuthOptions => ({
   adapter: PrismaAdapter(prisma),
@@ -378,8 +411,22 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       // const cleanHost = host.split(":")[0].replace(/^www\./, "");
       const mainDomains = ["salesmanpro.site"];
       // const isMainApp = mainDomains.includes(cleanHost) || host.includes("localhost");
-      const isMainApp =
-        mainDomains.includes(trueHost) || host.includes("localhost");
+      // const isMainApp =        mainDomains.includes(trueHost) || host.includes("localhost");
+
+      const { isMainApp, tenantIdentifier } = getTenantInfo(host);
+
+      // const trueHost = getTrueOrigin(reqHost);
+      // Note: If reqHost is the main hub, check if there's a specific tenant in the URL
+
+      const companyIdentifier = getTenantFromCallback(trueHost); // Or check reqHost
+
+      console.log("Sign-In Callback Invoked:", {
+        host,
+        trueHost,
+        isMainApp,
+        tenantIdentifier,
+        companyIdentifier,
+      });
 
       if (!isMainApp) {
         const possibleSlug = trueHost.split(".")[0];
@@ -460,8 +507,19 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       const trueHost = getTrueOrigin(reqHost);
 
       // const cleanHost = host.split(":")[0].replace(/^www\./, "");
-      const isMainApp =
-        trueHost === "salesmanpro.site" || host.includes("localhost");
+      // const isMainApp =
+      //   trueHost === "salesmanpro.site" || host.includes("localhost");
+
+      const { isMainApp, tenantIdentifier } = getTenantInfo(host);
+      const companyIdentifier = getTenantFromCallback(trueHost); // Or check reqHost
+
+      console.log("CreateUser Event Invoked:", {
+        host,
+        trueHost,
+        isMainApp,
+        tenantIdentifier,
+        companyIdentifier,
+      });
 
       if (!isMainApp) {
         // 1. Find the company matching this subdomain/custom domain
