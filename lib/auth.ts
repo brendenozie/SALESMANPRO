@@ -130,23 +130,28 @@ const getTenantFromCallback = (url?: string) => {
 
 // Helper to extract tenant info
 const getTenantInfo = (host: string) => {
+  // Use exact matches for main domains
   const mainDomains = [
     "salesmanpro.site",
     "www.salesmanpro.site",
-    "localhost:3000",
+    "auth.salesmanpro.site",
   ];
-  const isMainApp = mainDomains.some((d) => host.includes(d));
 
-  // If not main app, extract subdomain or use custom domain
-  // e.g., "client.salesmanpro.site" -> "client"
-  // e.g., "customdomain.com" -> "customdomain.com"
-  const tenantIdentifier = host.split(":")[0].replace(/^www\./, "");
+  // Split host to remove port if present (e.g., localhost:3000)
+  const cleanHost = host.split(":")[0].toLowerCase();
 
-  return { isMainApp, tenantIdentifier };
+  // isMainApp is ONLY true if it is exactly one of the hub domains
+  const isMainApp =
+    mainDomains.includes(cleanHost) || cleanHost.includes("localhost");
+
+  return { isMainApp, tenantIdentifier: cleanHost };
 };
 
 // export const authOptions: NextAuthOptions = {
 export const authOptions = (reqHost?: string): NextAuthOptions => ({
+  // httpOptions: {
+  //   timeout: 10000, // Increase to 10s for slower network environments
+  // },
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -314,6 +319,9 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       clientId: googleClientId!,
       clientSecret: googleClientSecret!,
       allowDangerousEmailAccountLinking: true,
+      httpOptions: {
+        timeout: 10000,
+      },
     }),
     // FacebookProvider({
     //   clientId: process.env.FACEBOOK_CLIENT_ID!,
@@ -433,8 +441,11 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         const company = await prisma.company.findFirst({
           where: { OR: [{ domain: trueHost }, { slug: possibleSlug }] },
         });
-
+        console.log("Company Lookup Result:", company);
         if (company && user.id) {
+          console.log(
+            `Linking user ${user.email} to company ${company.name} (ID: ${company.id})`,
+          );
           // Link them to the consumer table so they have access to this specific tenant
           await prisma.consumer.upsert({
             where: {
