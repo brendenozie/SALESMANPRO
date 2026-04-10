@@ -419,38 +419,18 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
 
       const host = reqHost || "";
 
-      const trueHost = getTrueOrigin(reqHost);
-      // const cleanHost = host.split(":")[0].replace(/^www\./, "");
-      const mainDomains = ["salesmanpro.site"];
-      // const isMainApp = mainDomains.includes(cleanHost) || host.includes("localhost");
-      // const isMainApp =        mainDomains.includes(trueHost) || host.includes("localhost");
-
       const { isMainApp, tenantIdentifier } = getTenantInfo(host);
 
-      // const trueHost = getTrueOrigin(reqHost);
-      // Note: If reqHost is the main hub, check if there's a specific tenant in the URL
-
-      const companyIdentifier = getTenantFromCallback(host); // Or check reqHost
-
-      console.log("Sign-In Callback Invoked:", {
-        host,
-        trueHost,
-        isMainApp,
-        tenantIdentifier,
-        companyIdentifier,
-      });
-
       if (!isMainApp) {
-        const possibleSlug = trueHost.split(".")[0];
+        // const possibleSlug = trueHost.split(".")[0];
         const company = await prisma.company.findFirst({
           where: {
             OR: [
-              { domain: trueHost || host || tenantIdentifier },
-              { slug: possibleSlug },
+              { domain: host || tenantIdentifier },
             ],
           },
         });
-        console.log("Company Lookup Result:", company);
+        
         if (company && user.id) {
           console.log(
             `Linking user ${user.email} to company ${company.name} (ID: ${company.id})`,
@@ -522,48 +502,38 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
 
   events: {
     async createUser({ user }) {
-      // This runs ONLY for brand new users right after they are saved to the DB
       const host = reqHost || "";
-      const trueHost = getTrueOrigin(reqHost);
-
-      // const cleanHost = host.split(":")[0].replace(/^www\./, "");
-      // const isMainApp =
-      //   trueHost === "salesmanpro.site" || host.includes("localhost");
-
       const { isMainApp, tenantIdentifier } = getTenantInfo(host);
-      const companyIdentifier = getTenantFromCallback(trueHost); // Or check reqHost
 
-      console.log("CreateUser Event Invoked:", {
-        host,
-        trueHost,
-        isMainApp,
-        tenantIdentifier,
-        companyIdentifier,
-      });
+      console.log("CreateUser Event:", { host, isMainApp, tenantIdentifier });
 
       if (!isMainApp) {
-        // 1. Find the company matching this subdomain/custom domain
+        const possibleSlug = tenantIdentifier.split(".")[0];
         const company = await prisma.company.findFirst({
-          where: { domain: trueHost },
+          where: {
+            OR: [{ domain: host || tenantIdentifier }, { slug: possibleSlug }],
+          },
         });
 
         if (company) {
-          // 2. Link them as a consumer and ensure their role is USER
+          console.log(
+            `[CreateUser] New tenant user: ${user.email} -> ${company.slug}`,
+          );
           await prisma.$transaction([
+            // 1. Force role to USER for tenant signups
             prisma.user.update({
               where: { id: user.id },
               data: { role: "USER" },
             }),
+            // 2. Create the consumer record
             prisma.consumer.create({
-              data: {
-                userId: user.id,
-                companyId: company.id,
-              },
+              data: { userId: user.id, companyId: company.id },
             }),
           ]);
         }
       } else {
-        // If they created an account on the main site, make them an ADMIN
+        // User signed up on salesmanpro.site or localhost
+        console.log(`[CreateUser] New Hub Admin: ${user.email}`);
         await prisma.user.update({
           where: { id: user.id },
           data: { role: "ADMIN" },
