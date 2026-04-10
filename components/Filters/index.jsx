@@ -1,101 +1,90 @@
-
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AdjustmentsVerticalIcon, StarIcon, ChevronDoubleDownIcon, CheckCircleIcon, MagnifyingGlassIcon, ChevronDownIcon, XCircleIcon, AdjustmentsHorizontalIcon, XMarkIcon, CheckIcon, MagnifyingGlassCircleIcon } from "@heroicons/react/24/outline";
-import debounce from "lodash/debounce";
+import { 
+  AdjustmentsVerticalIcon, 
+  StarIcon, 
+  ChevronDoubleDownIcon, 
+  CheckCircleIcon, 
+  MagnifyingGlassIcon, 
+  ChevronDownIcon, 
+  XCircleIcon, 
+  AdjustmentsHorizontalIcon, 
+  XMarkIcon, 
+  CheckIcon, 
+  MagnifyingGlassCircleIcon 
+} from "@heroicons/react/24/outline";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-const Filters = ({ filters, setFilters }) => {
+const FiltersV1 = ({ filters, setFilters }) => {
   const [localFilters, setLocalFilters] = useState(filters);
   const [isOpen, setIsOpen] = useState(true);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedSubCategories, setSelectedSubCategories] = useState([]);
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [error, setError] = useState(null);
   const isFirstRender = useRef(true);
 
-  // Only update local filters when parent filters change
   useEffect(() => {
     setLocalFilters(filters);
   }, [filters]);
 
-  // Fetch categories once
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await fetch(`${apiBaseUrl}/shop/categories?limit=30`);
-        if (!response.ok) throw new Error("Failed to fetch categories.");
         const data = await response.json();
         setCategories(data.categories || []);
       } catch (err) {
-        setError(err.message);
+        console.error("Filter fetch error:", err);
       }
     };
-
     fetchCategories();
   }, []);
 
-  // Memoized filtered subcategories and brands
   const filteredSubCategories = useMemo(() => {
     if (!selectedCategories.length) return [];
-    return Array.from(
-      new Set(selectedCategories.flatMap((category) => category?.subcategories || []))
-    );
+    return Array.from(new Set(selectedCategories.flatMap((c) => c?.subcategories || [])));
   }, [selectedCategories]);
 
   const filteredBrands = useMemo(() => {
     if (!selectedCategories.length) return [];
-    return Array.from(
-      new Set(selectedCategories.flatMap((category) => category?.allBrands || []))
-    );
+    return Array.from(new Set(selectedCategories.flatMap((c) => c?.allBrands || [])));
   }, [selectedCategories]);
 
-  // Optimized handleFilterChange
-  const handleFilterChange = useCallback(
-    (key, value) => {
-      setLocalFilters((prev) => {
-        const updatedFilters = { ...prev, [key]: value };
+  const handleFilterChange = useCallback((key, value) => {
+    setLocalFilters((prev) => {
+      const updatedFilters = { ...prev, [key]: value };
+      if (JSON.stringify(updatedFilters) !== JSON.stringify(prev)) {
+        setFilters(updatedFilters);
+      }
+      return updatedFilters;
+    });
+  }, [setFilters]);
 
-        // Prevent unnecessary updates if filters didn't change
-        if (JSON.stringify(updatedFilters) !== JSON.stringify(prev)) {
-          setFilters(updatedFilters);
-        }
-        
-        return updatedFilters;
-      });
-    },
-    [setFilters]
-  );
-
-  // Handle category changes without extra renders
   useEffect(() => {
     if (!isFirstRender.current) {
       handleFilterChange("category", selectedCategories.map((c) => c.name));
     }
-  }, [selectedCategories]);
+  }, [selectedCategories, handleFilterChange]);
 
   useEffect(() => {
     if (!isFirstRender.current) {
       handleFilterChange("subCategory", selectedSubCategories.map((c) => c.name));
     }
-  }, [selectedSubCategories]);
+  }, [selectedSubCategories, handleFilterChange]);
 
   useEffect(() => {
     if (!isFirstRender.current) {
       handleFilterChange("brand", selectedBrands);
     }
-  }, [selectedBrands]);
+  }, [selectedBrands, handleFilterChange]);
 
-  // Prevent useEffect from running on first render
-  useEffect(() => {
-    isFirstRender.current = false;
-  }, []);
+  useEffect(() => { isFirstRender.current = false; }, []);
 
-  // Clear filters efficiently
   const clearFilters = useCallback(() => {
-    const clearedFilters = {
+    const cleared = {
       brand: [],
       category: [],
       subCategory: [],
@@ -104,91 +93,330 @@ const Filters = ({ filters, setFilters }) => {
       availability: "",
       sort: "desc",
     };
-    setLocalFilters(clearedFilters);
-    setFilters(clearedFilters);
+    setLocalFilters(cleared);
+    setFilters(cleared);
     setSelectedCategories([]);
     setSelectedSubCategories([]);
     setSelectedBrands([]);
   }, [setFilters]);
 
+  // Common Filter UI to be used in both Desktop and Mobile
+  const SharedFilterContent = () => (
+    <div className="space-y-4">
+      <CategoryFilter selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories} categories={categories} />
+      <SubCategoryFilter selectedSubCategory={selectedSubCategories} setSelectedSubCategory={setSelectedSubCategories} categories={filteredSubCategories} />
+      <BrandFilter selectedBrands={selectedBrands} setSelectedBrands={setSelectedBrands} brands={filteredBrands} />
+      <RatingFilter selectedRating={localFilters.rating} setSelectedRating={(val) => handleFilterChange("rating", val)} />
+      <PriceRangeFilter priceRange={localFilters.priceRange} setPriceRange={(val) => handleFilterChange("priceRange", val)} />
+      <AvailabilityFilter availability={localFilters.availability} setAvailability={(val) => handleFilterChange("availability", val)} />
+      <SortFilter sortOption={localFilters.sort} setSortOption={(val) => handleFilterChange("sort", val)} />
+    </div>
+  );
+
   return (
     <>
-    <div className="relative hidden md:block">
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg w-full max-w-md sticky top-4 transition-all duration-300 ease-in-out">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold flex items-center gap-2 text-gray-800 dark:text-white">
-            <AdjustmentsVerticalIcon className="w-6 h-6 text-yellow-500" /> Filters
-          </h3>
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="text-gray-600 dark:text-gray-300 hover:text-yellow-500 transition-transform duration-200"
-            aria-label="Toggle Filters"
-            aria-expanded={isOpen}
-          >
-            <ChevronDoubleDownIcon
-              className={`w-6 h-6 transform transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-            />
+      {/* Desktop View */}
+      <div className="hidden md:block">
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg w-full max-w-md sticky top-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold flex items-center gap-2 dark:text-white">
+              <AdjustmentsVerticalIcon className="w-6 h-6 text-yellow-500" /> Filters
+            </h3>
+            <button onClick={() => setIsOpen(!isOpen)}>
+              <ChevronDoubleDownIcon className={`w-6 h-6 transform transition-transform ${isOpen ? "rotate-180" : ""}`} />
+            </button>
+          </div>
+          <AnimatePresence>
+            {isOpen && (
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
+                <SharedFilterContent />
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <button onClick={clearFilters} className="mt-4 w-full py-2 bg-red-400 text-white rounded-xl hover:bg-red-500 transition-all">
+            Clear All
           </button>
         </div>
+      </div>
+
+      {/* Mobile View */}
+      <div className="block md:hidden">
+        <button
+          className="fixed bottom-24 left-6 bg-amber-500 text-white p-4 rounded-full shadow-2xl z-[60] flex items-center gap-2 font-bold"
+          onClick={() => setIsMobileOpen(true)}
+        >
+          <AdjustmentsHorizontalIcon className="h-6 w-6" />
+          <span>Filters</span>
+        </button>
 
         <AnimatePresence>
-          {isOpen && (
+          {isMobileOpen && (
+            <>
+              {/* Overlay */}
+              <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={() => setIsMobileOpen(false)}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70]"
+              />
+              {/* Drawer */}
+              <motion.div
+                initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="fixed bottom-0 left-0 w-full h-[85vh] bg-zinc-50 dark:bg-zinc-900 z-[80] rounded-t-[2.5rem] shadow-2xl flex flex-col"
+              >
+                <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center shrink-0">
+                  <h2 className="text-xl font-black uppercase dark:text-white">Refine Search</h2>
+                  <button onClick={() => setIsMobileOpen(false)} className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-full">
+                    <XMarkIcon className="h-6 w-6" />
+                  </button>
+                </div>
+
+                <div className="p-6 overflow-y-auto flex-grow pb-32">
+                   <SharedFilterContent />
+                </div>
+
+                <div className="absolute bottom-0 left-0 w-full p-6 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 flex gap-4">
+                  <button onClick={clearFilters} className="flex-1 py-4 font-bold text-zinc-500 dark:text-zinc-400 uppercase text-xs tracking-widest">
+                    Reset
+                  </button>
+                  <button 
+                    onClick={() => setIsMobileOpen(false)}
+                    className="flex-[2] py-4 bg-amber-500 text-white font-bold rounded-2xl shadow-lg shadow-amber-500/20 uppercase text-xs tracking-widest"
+                  >
+                    Apply Filters
+                  </button>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
+    </>
+  );
+};
+
+// 1. (Optional) Define Shared UI outside if you want to keep it a component
+// Or just inline it as shown below to avoid prop-drilling.
+
+const Filters = ({ filters, setFilters }) => {
+  const [localFilters, setLocalFilters] = useState(filters);
+  const [isOpen, setIsOpen] = useState(true);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedSubCategories, setSelectedSubCategories] = useState([]);
+  const [selectedBrands, setSelectedBrands] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const isFirstRender = useRef(true);
+
+  // Sync props to local state
+  useEffect(() => {
+    setLocalFilters(filters);
+  }, [filters]);
+
+  // Fetch logic...
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(`${apiBaseUrl}/shop/categories?limit=30`);
+        const data = await response.json();
+        setCategories(data.categories || []);
+      } catch (err) { console.error(err); }
+    };
+    fetchCategories();
+  }, []);
+
+  const handleFilterChange = useCallback((key, value) => {
+    setLocalFilters((prev) => {
+      const updatedFilters = { ...prev, [key]: value };
+      if (JSON.stringify(updatedFilters) !== JSON.stringify(prev)) {
+        setFilters(updatedFilters);
+      }
+      return updatedFilters;
+    });
+  }, [setFilters]);
+
+  // CATEGORY/BRAND SYNC: 
+  // To stop flickering, we ensure these only fire when the values actually change
+  useEffect(() => {
+    if (isFirstRender.current) return;
+    handleFilterChange("category", selectedCategories.map((c) => c.name));
+  }, [selectedCategories, handleFilterChange]);
+
+  useEffect(() => {
+    if (isFirstRender.current) return;
+    handleFilterChange("subCategory", selectedSubCategories.map((c) => c.name));
+  }, [selectedSubCategories, handleFilterChange]);
+
+  useEffect(() => {
+    if (isFirstRender.current) { 
+        isFirstRender.current = false; 
+        return; 
+    }
+    handleFilterChange("brand", selectedBrands);
+  }, [selectedBrands, handleFilterChange]);
+
+  // Memos for derived data
+  const filteredSubCategories = useMemo(() => 
+    selectedCategories.flatMap((c) => c?.subcategories || []), 
+  [selectedCategories]);
+
+  const filteredBrands = useMemo(() => 
+    selectedCategories.flatMap((c) => c?.allBrands || []), 
+  [selectedCategories]);
+
+    const clearFilters = useCallback(() => {
+      const cleared = {
+        brand: [],
+        category: [],
+        subCategory: [],
+        priceRange: [0, 1000000000],
+        rating: "",
+        availability: "",
+        sort: "desc",
+      };
+      setLocalFilters(cleared);
+      setFilters(cleared);
+      setSelectedCategories([]);
+      setSelectedSubCategories([]);
+      setSelectedBrands([]);
+    }, [setFilters]);
+
+  // Helper for the JSX to avoid the "Inner Component" bug
+  const renderFilterList = () => (
+    <div className="space-y-4">
+      <CategoryFilter selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories} categories={categories} />
+      <SubCategoryFilter selectedSubCategory={selectedSubCategories} setSelectedSubCategory={setSelectedSubCategories} categories={filteredSubCategories} />
+      <BrandFilter selectedBrands={selectedBrands} setSelectedBrands={setSelectedBrands} brands={filteredBrands} />
+      <RatingFilter selectedRating={localFilters.rating} setSelectedRating={(val) => handleFilterChange("rating", val)} />
+      <PriceRangeFilter priceRange={localFilters.priceRange} setPriceRange={(val) => handleFilterChange("priceRange", val)} />
+      <AvailabilityFilter availability={localFilters.availability} setAvailability={(val) => handleFilterChange("availability", val)} />
+      <SortFilter sortOption={localFilters.sort} setSortOption={(val) => handleFilterChange("sort", val)} />
+    </div>
+  );
+
+  return (
+    <>
+      {/* Desktop View */}
+      <div className="hidden md:block">
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg w-full max-w-md sticky top-4">
+          <div className="flex items-center justify-between mb-4">
+             <h3 className="text-xl font-bold flex items-center gap-2 dark:text-white">
+               <AdjustmentsVerticalIcon className="w-6 h-6 text-yellow-500" /> Filters
+             </h3>
+             <button onClick={() => setIsOpen(!isOpen)}>
+               <ChevronDoubleDownIcon className={`w-6 h-6 transform transition-transform ${isOpen ? "rotate-180" : ""}`} />
+             </button>
+          </div>
+          <AnimatePresence initial={false}>
+            {isOpen && (
+              <motion.div 
+                key="filter-content" // Key helps Framer Motion track the element
+                initial={{ opacity: 0, height: 0 }} 
+                animate={{ opacity: 1, height: "auto" }} 
+                exit={{ opacity: 0, height: 0 }}
+                style={{ overflow: 'hidden' }}
+              >
+                {renderFilterList()}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Mobile View */}
+      {/* Mobile View */}
+      <div className="block md:hidden">
+        <button
+          className="fixed bottom-24 left-6 bg-amber-500 text-white p-4 rounded-full shadow-2xl z-[60] flex items-center gap-2 font-bold"
+          onClick={() => setIsMobileOpen(true)}
+        >
+          <AdjustmentsHorizontalIcon className="h-6 w-6" />
+          <span>Filters</span>
+        </button>
+
+        <AnimatePresence>
+          {isMobileOpen && (
+            <>
+              {/* Overlay */}
+              <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={() => setIsMobileOpen(false)}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70]"
+              />
+              {/* Drawer */}
+              <motion.div
+                initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="fixed bottom-0 left-0 w-full h-[85vh] bg-zinc-50 dark:bg-zinc-900 z-[80] rounded-t-[2.5rem] shadow-2xl flex flex-col"
+              >
+                <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center shrink-0">
+                  <h2 className="text-xl font-black uppercase dark:text-white">Refine Search</h2>
+                  <button onClick={() => setIsMobileOpen(false)} className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-full">
+                    <XMarkIcon className="h-6 w-6" />
+                  </button>
+                </div>
+
+                
+                {isMobileOpen && (
+                    <motion.div
+                      initial={{ y: "100%" }} 
+                      animate={{ y: 0 }} 
+                      exit={{ y: "100%" }}
+                      className="fixed bottom-0 left-0 w-full h-[85vh] bg-zinc-50 dark:bg-zinc-900 z-[80] rounded-t-[2.5rem]"
+                    >
+                      <div className="p-6 overflow-y-auto h-full pb-32">
+                        {renderFilterList()}
+                      </div>
+                    </motion.div>
+                  )}
+
+                <div className="absolute bottom-0 left-0 w-full p-6 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 flex gap-4">
+                  <button onClick={clearFilters} className="flex-1 py-4 font-bold text-zinc-500 dark:text-zinc-400 uppercase text-xs tracking-widest">
+                    Reset
+                  </button>
+                  <button 
+                    onClick={() => setIsMobileOpen(false)}
+                    className="flex-[2] py-4 bg-amber-500 text-white font-bold rounded-2xl shadow-lg shadow-amber-500/20 uppercase text-xs tracking-widest"
+                  >
+                    Apply Filters
+                  </button>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* <div className="block md:hidden">
+        <div className="flex items-center justify-between mb-4">
+             <h3 className="text-xl font-bold flex items-center gap-2 dark:text-white">
+               <AdjustmentsVerticalIcon className="w-6 h-6 text-yellow-500" /> Filters
+             </h3>
+             <button onClick={() => setIsMobileOpen(!isMobileOpen)}>
+               <ChevronDoubleDownIcon className={`w-6 h-6 transform transition-transform ${isMobileOpen ? "rotate-180" : ""}`} />
+             </button>
+          </div>
+        <AnimatePresence>
+          {isMobileOpen && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="flex flex-wrap gap-4 w-full max-w-full"
-              transition={{ duration: 0.3, ease: "easeInOut" }}
+              initial={{ y: "100%" }} 
+              animate={{ y: 0 }} 
+              exit={{ y: "100%" }}
+              className="fixed bottom-0 left-0 w-full h-[85vh] bg-zinc-50 dark:bg-zinc-900 z-[80] rounded-t-[2.5rem]"
             >
-              <CategoryFilter selectedCategories={selectedCategories} setSelectedCategories={setSelectedCategories} categories={categories} />
-              <SubCategoryFilter selectedSubCategory={selectedSubCategories} setSelectedSubCategory={setSelectedSubCategories} categories={filteredSubCategories} />
-              <BrandFilter selectedBrands={selectedBrands} setSelectedBrands={setSelectedBrands} brands={filteredBrands} />
-              <RatingFilter selectedRating={localFilters.rating} setSelectedRating={(value) => handleFilterChange("rating", value)} />
-              <PriceRangeFilter priceRange={localFilters.priceRange} setPriceRange={(value) => handleFilterChange("priceRange", value)} />
-              <AvailabilityFilter availability={localFilters.availability} setAvailability={(value) => handleFilterChange("availability", value)} />
-              <SortFilter sortOption={localFilters.sort} setSortOption={(value) => handleFilterChange("sort", value)} />
+               <div className="p-6 overflow-y-auto h-full pb-32">
+                 {renderFilterList()}
+               </div>
             </motion.div>
           )}
         </AnimatePresence>
-
-        <button onClick={clearFilters} className="mt-4 w-full py-2 bg-red-400 text-white rounded-xl hover:bg-red-500 transition-transform duration-200 hover:scale-105">
-          Clear All Filters
-        </button>
-      </div>
-    </div>
-    {/* Mobile Component (hidden on desktop) */}
-      <div className="block md:hidden">
-        <MobileUIFilters categories={categories} subCategories={filteredSubCategories} brands={filteredBrands} filters={filters} setFilters={setFilters}/>
-      </div>
+      </div> */}
     </>
   );
 };
 
 export default Filters;
 
-
-const FilterButton = ({ label, isSelected, onClick }) => {
-  return (
-    <button
-      onClick={onClick}
-       className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all border border-gray-300 dark:border-gray-700 
-                ${isSelected ? "bg-yellow-500 text-white dark:bg-yellow-400" : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200"}`}
-             
-      // className={`flex items-center justify-between w-full p-3 rounded-xl border font-medium text-sm transition-all duration-200
-      //   ${
-      //     isSelected
-      //       ? "bg-yellow-500 text-white shadow-md dark:bg-yellow-400 dark:text-gray-900"
-      //       : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-      //   }
-        // hover:scale-105 active:scale-95 focus:ring-2 focus:ring-yellow-400 dark:focus:ring-yellow-300 outline-none`}
-      aria-pressed={isSelected}
-      aria-label={`Filter by ${label}`}
-    >
-      <span className="truncate w-full text-left">{label}</span>
-      {isSelected && <CheckCircleIcon className="w-5 h-5 flex-shrink-0 text-white dark:text-gray-900" />}
-    </button>
-  );
-};
 
 const SearchInput = ({ value, onChange, placeholder }) => (
   <div className="relative">
@@ -536,268 +764,3 @@ const SortFilter = ({ sortOption, setSortOption }) => (
     </select>
   </motion.div>
 );
-
-const MobileUIFilters = ({ categories, subCategories, brands, filters, setFilters }) => {
-  const [localFilters, setLocalFilters] = useState(filters);
-  const [isOpen, setIsOpen] = useState(false);
-  const [expandedSection, setExpandedSection] = useState(null);
-
-  useEffect(() => {
-    setLocalFilters(filters);
-  }, [filters]);
-
-  const handleFilterChange = useCallback(
-    debounce((key, value) => {
-      setLocalFilters((prev) => {
-        if (JSON.stringify(prev[key]) !== JSON.stringify(value)) {
-          const updatedFilters = { ...prev, [key]: value };
-          setFilters(updatedFilters);
-          return updatedFilters;
-        }
-        return prev;
-      });
-    }, 300),
-    [setFilters]
-  );
-
-  const toggleSection = (section) => {
-    setExpandedSection(expandedSection === section ? null : section);
-  };
-
-  return (
-    <div className="relative">
-      {/* Floating Button for Mobile - Positioned Above BottomNav */}
-      <button
-        className="fixed bottom-20 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg flex items-center z-50"
-        onClick={() => setIsOpen(true)}
-      >
-        <AdjustmentsHorizontalIcon className="h-6 w-6" />
-      </button>
-
-      {/* Bottom Sheet Modal - Starts Above BottomNav */}
-      {isOpen && (
-        <motion.div
-          initial={{ y: "100%" }}
-          animate={{ y: 0 }}
-          exit={{ y: "100%" }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="fixed bottom-14 left-0 w-full h-3/4 bg-white shadow-2xl rounded-t-2xl p-4 z-50 overflow-y-auto"
-        >
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold">Filters</h2>
-            <button onClick={() => setIsOpen(false)}>
-              <XMarkIcon className="h-6 w-6" />
-            </button>
-          </div>
-
-          {/* Categories */}
-          <div className="mt-4">
-            <button
-              className="flex justify-between w-full text-left py-2 text-lg font-medium border-b"
-              onClick={() => toggleSection("categories")}
-            >
-              Categories <ChevronDownIcon className="h-5 w-5" />
-            </button>
-            {expandedSection === "categories" && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                className="pl-4 mt-2 space-y-2"
-              >
-                {categories.map((category) => (
-                  <div key={category}>
-                    <input
-                      type="checkbox"
-                      checked={localFilters.categories?.includes(category)}
-                      onChange={() => {
-                        const newCategories = localFilters.categories?.includes(category)
-                          ? localFilters.categories.filter((c) => c !== category)
-                          : [...(localFilters.categories || []), category];
-                        handleFilterChange("categories", newCategories);
-                      }}
-                    />
-                    <label className="ml-2">{category}</label>
-                  </div>
-                ))}
-              </motion.div>
-            )}
-          </div>
-
-          {/* Brands */}
-          <div className="mt-4">
-            <button
-              className="flex justify-between w-full text-left py-2 text-lg font-medium border-b"
-              onClick={() => toggleSection("brands")}
-            >
-              Brands <ChevronDownIcon className="h-5 w-5" />
-            </button>
-            {expandedSection === "brands" && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                className="pl-4 mt-2 space-y-2"
-              >
-                {brands.map((brand) => (
-                  <div key={brand}>
-                    <input
-                      type="checkbox"
-                      checked={localFilters.brands?.includes(brand)}
-                      onChange={() => {
-                        const newBrands = localFilters.brands?.includes(brand)
-                          ? localFilters.brands.filter((b) => b !== brand)
-                          : [...(localFilters.brands || []), brand];
-                        handleFilterChange("brands", newBrands);
-                      }}
-                    />
-                    <label className="ml-2">{brand}</label>
-                  </div>
-                ))}
-              </motion.div>
-            )}
-          </div>
-
-          {/* Apply Filters Button */}
-          <button
-            className="w-full bg-blue-600 text-white py-3 mt-6 rounded-lg"
-            onClick={() => setIsOpen(false)}
-          >
-            Apply Filters
-          </button>
-        </motion.div>
-      )}
-    </div>
-  );
-};
-
-
-const MobileUIFiltersV1 = ({ categories, subCategories, brands, filters, setFilters }) => {
-  const [localFilters, setLocalFilters] = useState(filters);
-  const [isOpen, setIsOpen] = useState(false);
-  const [expandedSection, setExpandedSection] = useState(null);
-
-  useEffect(() => {
-    setLocalFilters(filters);
-  }, [filters]);
-
-  const handleFilterChange = useCallback(
-    debounce((key, value) => {
-      setLocalFilters((prev) => {
-        if (JSON.stringify(prev[key]) !== JSON.stringify(value)) {
-          const updatedFilters = { ...prev, [key]: value };
-          setFilters(updatedFilters);
-          return updatedFilters;
-        }
-        return prev;
-      });
-    }, 300),
-    [setFilters]
-  );
-
-  const toggleSection = (section) => {
-    setExpandedSection(expandedSection === section ? null : section);
-  };
-
-  return (
-    <div className="relative">
-      {/* Floating Button for Mobile */}
-      <button
-        className="fixed bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg flex items-center"
-        onClick={() => setIsOpen(true)}
-      >
-        <AdjustmentsHorizontalIcon className="h-6 w-6" />
-      </button>
-
-      {/* Bottom Sheet Modal */}
-      {isOpen && (
-        <motion.div
-          initial={{ y: "100%" }}
-          animate={{ y: 0 }}
-          exit={{ y: "100%" }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="fixed bottom-0 left-0 w-full h-3/4 bg-white shadow-2xl rounded-t-2xl p-4 z-50 overflow-y-auto"
-        >
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold">Filters</h2>
-            <button onClick={() => setIsOpen(false)}>
-              <XMarkIcon className="h-6 w-6" />
-            </button>
-          </div>
-
-          {/* Categories */}
-          <div className="mt-4">
-            <button
-              className="flex justify-between w-full text-left py-2 text-lg font-medium border-b"
-              onClick={() => toggleSection("categories")}
-            >
-              Categories <ChevronDownIcon className="h-5 w-5" />
-            </button>
-            {expandedSection === "categories" && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                className="pl-4 mt-2 space-y-2"
-              >
-                {categories.map((category) => (
-                  <div key={category}>
-                    <input
-                      type="checkbox"
-                      checked={localFilters.categories?.includes(category)}
-                      onChange={() => {
-                        const newCategories = localFilters.categories?.includes(category)
-                          ? localFilters.categories.filter((c) => c !== category)
-                          : [...(localFilters.categories || []), category];
-                        handleFilterChange("categories", newCategories);
-                      }}
-                    />
-                    <label className="ml-2">{category}</label>
-                  </div>
-                ))}
-              </motion.div>
-            )}
-          </div>
-
-          {/* Brands */}
-          <div className="mt-4">
-            <button
-              className="flex justify-between w-full text-left py-2 text-lg font-medium border-b"
-              onClick={() => toggleSection("brands")}
-            >
-              Brands <ChevronDownIcon className="h-5 w-5" />
-            </button>
-            {expandedSection === "brands" && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                className="pl-4 mt-2 space-y-2"
-              >
-                {brands.map((brand) => (
-                  <div key={brand}>
-                    <input
-                      type="checkbox"
-                      checked={localFilters.brands?.includes(brand)}
-                      onChange={() => {
-                        const newBrands = localFilters.brands?.includes(brand)
-                          ? localFilters.brands.filter((b) => b !== brand)
-                          : [...(localFilters.brands || []), brand];
-                        handleFilterChange("brands", newBrands);
-                      }}
-                    />
-                    <label className="ml-2">{brand}</label>
-                  </div>
-                ))}
-              </motion.div>
-            )}
-          </div>
-
-          {/* Apply Filters Button */}
-          <button
-            className="w-full bg-blue-600 text-white py-3 mt-6 rounded-lg"
-            onClick={() => setIsOpen(false)}
-          >
-            Apply Filters
-          </button>
-        </motion.div>
-      )}
-    </div>
-  );
-};

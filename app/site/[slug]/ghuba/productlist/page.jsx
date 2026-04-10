@@ -1,13 +1,9 @@
 "use client"
 
-import { useState, useMemo, useEffect, useCallback, memo } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import debounce from "lodash.debounce";
-import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { ShoppingCartIcon } from "@heroicons/react/24/outline";
 import Filters from "@/components/Filters";
-import load from "@/assets/load.png";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useStateContext } from '@/contexts/ContextProvider';
 import GhubaProductCard from "@/components/site/layouts/GhubaLayout/body/components/GhubaProductCard";
@@ -15,8 +11,10 @@ import GhubaProductCard from "@/components/site/layouts/GhubaLayout/body/compone
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // Custom product search hook
+// Loader for next/image
+
+// Updated useProductSearch Hook
 function useProductSearch({ searchTerm, filters }) {
-  
   const [products, setProducts] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -24,63 +22,72 @@ function useProductSearch({ searchTerm, filters }) {
   const [error, setError] = useState(null);
   const [hasMore, setHasMore] = useState(true);
 
-  // Fetch logic: only depends on inputs
+  // Use a ref to track loading internally to avoid dependency loops
+  const isFetching = useRef(false);
+
   const fetchPage = useCallback(async (pageNum) => {
-    if (loading || !hasMore) return;
+    // Silent guard using the ref
+    if (isFetching.current || (pageNum > 1 && !hasMore)) return;
+
+    isFetching.current = true;
     setLoading(true);
     setError(null);
+
     try {
       const params = new URLSearchParams({
-        page: pageNum,
-        limit: 8,
+        page: pageNum.toString(),
+        limit: "8",
         search: searchTerm,
-        minPrice: filters.priceRange[0],
-        maxPrice: filters.priceRange[1],
+        minPrice: filters.priceRange[0].toString(),
+        maxPrice: filters.priceRange[1].toString(),
         sort: filters.sort,
       });
+
       filters.brand.forEach(b => params.append('brand', b));
       filters.category.forEach(c => params.append('category', c));
       filters.subCategory.forEach(s => params.append('subCategory', s));
 
       const res = await fetch(`${apiBaseUrl}/shop/products?${params}`);
       if (!res.ok) throw new Error('Failed to fetch products');
-      const data = (await res.json()).data;
-      setProducts(prev => pageNum === 1 ? data : [...prev, ...data]);
-      setTotalPages(data.totalPages);
-      setHasMore(pageNum < data.totalPages && data.length > 0);
+      
+      const json = await res.json(); 
+      const newProducts = json.data || [];
+      const meta = json.meta;
+
+      setProducts(prev => (pageNum === 1 ? newProducts : [...prev, ...newProducts]));
+      
+      if (meta) {
+        setTotalPages(meta.totalPages);
+        setHasMore(pageNum < meta.totalPages);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
+      isFetching.current = false;
     }
-  }, [searchTerm, filters]);
+  }, [searchTerm, filters]); // Removed loading/hasMore from here!
 
-  // Reset when search or filters change
+  // 1. Reset and load page 1 when search/filters change
   useEffect(() => {
-    setProducts([]);
     setPage(1);
     setHasMore(true);
     fetchPage(1);
   }, [searchTerm, filters, fetchPage]);
 
-  // Load next page
+  // 2. Load next pages when page state increments (Infinite Scroll)
   useEffect(() => {
-    if (page > 1) fetchPage(page);
+    if (page > 1) {
+      fetchPage(page);
+    }
   }, [page, fetchPage]);
 
   return { products, loading, error, hasMore, setPage, page, totalPages };
 }
 
-// Loader for next/image
-const loaderProp = ({ src, width, quality }) => {
-  const params = [`w=${width || 800}`];
-  if (quality) params.push(`q=${quality}`);
-  return `${src}?${params.join('&')}`;
-};
-
 const ProductList = () => {
   
-  const { cart, isCartOpen, setIsCartOpen, addToCart, decreaseQuantity, removeFromCart, clearCart } = useStateContext();
+  const { addToCart } = useStateContext();
   const router = useRouter();
   const { query } = router;
   const [likedItems, setLikedItems] = useState({});
@@ -127,7 +134,7 @@ const ProductList = () => {
   }, [filters, searchTerm, router]);
 
   // Use custom hook
-  const { products, loading, error, hasMore, setPage, page } = useProductSearch({ searchTerm, filters });
+  const { products, loading, error, hasMore, setPage } = useProductSearch({ searchTerm, filters });
 
   // infinite scroll ref
   const { ref, inView } = useInView({ threshold: 0, rootMargin: '200px' });
@@ -138,97 +145,56 @@ const ProductList = () => {
   }, [inView, hasMore, loading, setPage]);
 
 
+    // inside ProductList.js
   return (
-    <>
-      <div className="mx-auto p-4 bg-white dark:bg-gray-900">
-        <h2 className="text-3xl font-bold text-center mb-6 text-gray-800 dark:text-gray-100">
-          Explore Our Collection
-        </h2>
+    <div className="mx-auto p-4 bg-white dark:bg-gray-900 min-h-screen">
+      <h2 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-gray-100">
+        Explore Our Collection
+      </h2>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="sticky top-4">
-            <Filters filters={filters} setFilters={setFilters} onSearch={debouncedSetSearch} />
-          </div>
+      {/* Added items-start to allow sticky to work correctly */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
+        
+        {/* Sidebar - Desktop Filters */}
+        <aside className="md:sticky md:top-8 z-10">
+          <Filters 
+            filters={filters} 
+            setFilters={setFilters} 
+            onSearch={debouncedSetSearch} 
+          />
+        </aside>
 
-          <div className="lg:col-span-3">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {products && products.map(product => (
-                // <ProductCard key={product.id} product={product} addToCart={addToCart} />
+        {/* Main Content - Product Grid */}
+        <main className="md:col-span-3">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {products.length > 0 ? (
+              products.map((product) => (
                 <GhubaProductCard 
-                              // key={index}
-                              product={product} 
-                              toggleLike={toggleLike} 
-                              likedItems={likedItems} 
-                              addToCart={addToCart} 
-                            />
-              ))}
-            </div>
-
-            {loading && <div className="text-center py-6">Loading...</div>}
-            {error && <p className="text-red-500 text-center mt-4">{error}</p>}
-
-            {/* Observer element */}
-            <div ref={ref} className="h-1"></div>
+                  key={product._id || product.id}
+                  product={product} 
+                  toggleLike={toggleLike} 
+                  likedItems={likedItems} 
+                  addToCart={addToCart} 
+                />
+              ))
+            ) : !loading && (
+              <div className="col-span-full text-center py-20 text-gray-500">
+                No products found matching your criteria.
+              </div>
+            )}
           </div>
-        </div>
+
+          {loading && <div className="text-center py-10 font-medium">Loading products...</div>}
+          {error && <p className="text-red-500 text-center mt-4 bg-red-50 p-3 rounded-lg">{error}</p>}
+
+          {/* Observer element */}
+          <div ref={ref} className="h-10 w-full"></div>
+        </main>
       </div>
-    </>
+    </div>
   );
 };
 
-
-const ProductCard = memo(({ product,addToCart }) => {
-  const router = useRouter();
-  const [imageError, setImageError] = useState(false);
-
-  return (
-    <motion.div
-      onClick={() => router.push(`/ghuba/product/${product.id}`)}
-      whileHover={{ scale: 1.03 }}
-      className="relative bg-white dark:bg-gray-800 p-3 md:p-4 rounded-2xl shadow-xl transition-all cursor-pointer hover:shadow-2xl hover:-translate-y-1 hover:ring-2 hover:ring-yellow-500 dark:hover:ring-yellow-400 mb-4 break-inside-avoid"
-    >
-      {/* Product Image */}
-      <div className="relative w-full h-44 md:h-52 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700 shadow-md">
-        <Image
-            width={300}
-            height={300}
-            loader = {loaderProp}
-            src={imageError ? load.src : product.image}
-            alt={`Product image of ${product.title}`}
-            className="w-full h-56 object-cover rounded-t-2xl group-hover:scale-105 transition-transform duration-300"
-            onError={() => setImageError(true)}
-          />
-      </div>
-
-      {/* Product Info */}
-      <div className="w-full mt-3 flex flex-col items-center">
-        <h3 className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white text-center truncate w-full">
-          {product.title}
-        </h3>
-        <p className="text-xs text-gray-500 dark:text-gray-400 text-center truncate w-full">
-          {product.description || "No description available"}
-        </p>
-
-        {/* Price & Add to Cart Button */}
-        <div className="flex justify-between items-center w-full mt-2">
-          <span className="text-yellow-600 dark:text-yellow-400 font-bold text-xs md:text-xl">
-            ${product.finalPrice ? product.finalPrice.toFixed(2) : 0}
-          </span>
-
-           <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => addToCart(product)}
-              className="flex items-center bg-yellow-500 text-black p-3 rounded-xl shadow-lg hover:shadow-xl transition"
-              aria-label="Add to Cart"
-            >
-              <ShoppingCartIcon className="w-5 h-5 mr-1" /> Add
-            </motion.button>
-        </div>
-      </div>
-    </motion.div>
-  );
-});
 
 
 export default ProductList;

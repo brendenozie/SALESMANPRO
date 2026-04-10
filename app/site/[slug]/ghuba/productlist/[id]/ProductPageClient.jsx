@@ -54,7 +54,7 @@ const ProductPageClient = ({ listing, similarListings }) => {
         <div className="flex flex-col lg:flex-row gap-12 items-start">
           
           {/* LEFT: Media Gallery */}
-          <div className="w-full lg:w-3/5 sticky top-6">
+          <div className="w-full lg:w-3/5  top-6">
             <ProductImages 
               images={images} 
               currentImageIndex={currentImage} 
@@ -125,7 +125,7 @@ const ProductPageClient = ({ listing, similarListings }) => {
       </main>
 
        {isZoomed && (
-      <Modal isOpen={isZoomed} onClose={() => setIsZoomed(false)}  showCloseButton={false}>
+        <Modal isOpen={isZoomed} onClose={() => setIsZoomed(false)}  showCloseButton={false}>
           <div className="flex justify-center items-center ">
             <button
               onClick={() => setIsZoomed(false)}
@@ -139,10 +139,13 @@ const ProductPageClient = ({ listing, similarListings }) => {
             >
               <ArrowLeftIcon className="h-6 w-6" />
             </button>
-            <img
+            <Image
+              width={800}
+              height={800}
+              loader={loaderProp}
               src={images[currentImage] || images[currentImage].url || 'https://image.unsplash.com/photo-1559526324-551c9e75d510'}
-              alt="Enlarged Product"
-              className="max-h-[80vh] max-w-[90vw] object-contain"
+              alt={`Enlarged Product Image ${currentImage + 1}`}
+              className="max-h-[80vh] max-w-[90vw] object-contain rounded-2xl shadow-lg"
             />
             <button
               onClick={nextImage}
@@ -160,52 +163,71 @@ const ProductPageClient = ({ listing, similarListings }) => {
 
 /* --- SUB-COMPONENTS --- */
 
-const ProductImages = ({ images, currentImageIndex, setCurrentImageIndex, prevImage, nextImage, isZoomed, setIsZoomed }) => {
+
+const ProductImages = ({ images, currentImageIndex, setCurrentImageIndex, setIsZoomed }) => {
   
+  // Helper to get URL regardless of object or string structure
+  const getImageUrl = (img) => (typeof img === 'string' ? img : img?.url) || 'https://image.unsplash.com/photo-1559526324-551c9e75d510';
 
   return (
-    <>
     <div className="space-y-4">
-      <div className="relative aspect-square rounded-[2rem] overflow-hidden bg-gray-100 dark:bg-gray-900 group">
+      {/* --- MAIN FEATURED IMAGE --- */}
+      <div className="relative aspect-square rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-gray-100 dark:bg-gray-900 group">
         <AnimatePresence mode="wait">
-          <motion.img
+          <motion.div
             key={currentImageIndex}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            src={images[currentImageIndex] || images[currentImageIndex].url || 'https://image.unsplash.com/photo-1559526324-551c9e75d510' }
-            className="w-full h-full object-cover cursor-zoom-in"
-            onClick={() => setIsZoomed(true)}
-            alt={`Product Image ${currentImageIndex + 1}`}
-          />
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="w-full h-full"
+          >
+            <Image
+              fill
+              priority // Tells Next.js to load this immediately (LCP optimization)
+              loader={loaderProp}
+              src={getImageUrl(images[currentImageIndex])}
+              alt={`Product Image ${currentImageIndex + 1}`}
+              className="object-cover cursor-zoom-in transition-transform duration-500 group-hover:scale-105"
+              onClick={() => setIsZoomed(true)}
+              sizes="(max-width: 768px) 100vw, 50vw"
+            />
+          </motion.div>
         </AnimatePresence>
         
         {/* Scarcity Overlay */}
-        <div className="absolute top-6 left-6 bg-white/90 dark:bg-black/80 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-bold text-red-600 shadow-sm">
+        <div className="absolute top-4 left-4 md:top-6 md:left-6 bg-white/90 dark:bg-black/80 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] md:text-xs font-black text-red-600 shadow-sm z-10">
           🔥 Limited Stock
         </div>
       </div>
 
-      <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-        {images.map((img, i) => (
+      {/* --- THUMBNAIL GALLERY --- */}
+      <div className="flex gap-3 md:gap-4 overflow-x-auto pb-2 scrollbar-hide">
+        {images.map((img , i) => (
           <button
             key={i}
             onClick={() => setCurrentImageIndex(i)}
-            className={`relative flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all ${
-              i === currentImageIndex ? "border-yellow-500 scale-105 shadow-lg" : "border-transparent opacity-60"
+            className={`relative flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 transition-all ${
+              i === currentImageIndex 
+                ? "border-amber-500 scale-105 shadow-lg" 
+                : "border-transparent opacity-60 hover:opacity-100"
             }`}
           >
-            <img src={img || img.url || 'https://image.unsplash.com/photo-1559526324-551c9e75d510'} className="w-full h-full object-cover"  alt={`Product Image ${i + 1}`} />
+            <Image
+              fill
+              loader={loaderProp}
+              src={getImageUrl(img)}
+              alt={`Thumbnail ${i + 1}`}
+              className="object-cover"
+              sizes="80px"
+            />
           </button>
         ))}
       </div>
     </div>
-
-   
-
-    </>
   );
 };
+
 
 const ProductHeader = ({ listing }) => (
   <div className="space-y-2">

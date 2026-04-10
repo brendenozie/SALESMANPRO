@@ -14,7 +14,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import GhubaProductCard from "../GhubaProductCard";
 
-// --- CUSTOM ARROWS ---
+// --- CUSTOM ARROWS (Desktop Only) ---
 const CustomPrevArrow = ({ onClick }: any) => (
   <button
     onClick={onClick}
@@ -52,7 +52,7 @@ const NewArrivals = ({ productItems, addToCart }: any) => {
 
   const settings = {
     dots: false,
-    infinite: productItems?.length > 4,
+    infinite: productItems?.length > 2,
     speed: 600,
     autoplay: true,
     autoplaySpeed: 4000,
@@ -61,30 +61,39 @@ const NewArrivals = ({ productItems, addToCart }: any) => {
     pauseOnHover: true,
     nextArrow: <CustomNextArrow />,
     prevArrow: <CustomPrevArrow />,
+    swipeToSlide: true, // Smooth swiping
     responsive: [
       { breakpoint: 1280, settings: { slidesToShow: 3 } },
       { breakpoint: 1024, settings: { slidesToShow: 2 } },
-      { breakpoint: 640, settings: { slidesToShow: 1 } }
+      { 
+        breakpoint: 640, 
+        settings: { 
+          slidesToShow: 1.15, // Peek effect
+          centerMode: true,
+          centerPadding: "15px",
+          arrows: false 
+        } 
+      }
     ]
   };
 
   return (
     <motion.section
-      className="relative py-20 bg-white dark:bg-[#080808] transition-colors duration-500"
+      className="relative py-12 md:py-20 bg-white dark:bg-[#080808] transition-colors duration-500"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
     >
-      <div className="max-w-[1600px] mx-auto px-6">
+      <div className="max-w-[1600px] mx-auto px-4 md:px-6">
         
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
-          <div className="space-y-4">
+        {/* Header Section - Better Mobile Alignment */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12 gap-6">
+          <div className="space-y-3 md:space-y-4">
             <div className="flex items-center gap-2">
-              <span className="h-[2px] w-8 bg-amber-500" />
-              <span className="text-amber-500 text-xs font-black uppercase tracking-[0.3em]">Fresh in stock</span>
+              <span className="h-[2px] w-6 md:w-8 bg-amber-500" />
+              <span className="text-amber-500 text-[10px] md:text-xs font-black uppercase tracking-[0.3em]">Fresh in stock</span>
             </div>
-            <h2 className="text-4xl md:text-6xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase">
+            <h2 className="text-3xl md:text-6xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase leading-none">
               Latest <span className="text-amber-500 italic">Arrivals</span>
             </h2>
           </div>
@@ -93,7 +102,7 @@ const NewArrivals = ({ productItems, addToCart }: any) => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => router.push('/ghuba/productlist')}
-            className="group flex items-center gap-3 px-8 py-4 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white font-bold rounded-2xl border border-zinc-200 dark:border-zinc-800 hover:border-amber-500 transition-all"
+            className="group w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white font-bold rounded-2xl border border-zinc-200 dark:border-zinc-800 hover:border-amber-500 transition-all text-sm"
           >
             <span>Explore All</span>
             <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -102,20 +111,20 @@ const NewArrivals = ({ productItems, addToCart }: any) => {
 
         {/* Content Area */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             {Array.from({ length: 4 }).map((_, index) => (
               <div key={index} className="space-y-4">
-                <div className="w-full h-[350px] bg-zinc-100 dark:bg-zinc-900 animate-pulse rounded-[2rem]"></div>
+                <div className="w-full h-[300px] md:h-[350px] bg-zinc-100 dark:bg-zinc-900 animate-pulse rounded-[1.5rem] md:rounded-[2rem]"></div>
                 <div className="h-4 w-2/3 bg-zinc-100 dark:bg-zinc-900 animate-pulse rounded-full"></div>
                 <div className="h-4 w-1/3 bg-zinc-100 dark:bg-zinc-900 animate-pulse rounded-full"></div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="relative px-2">
+          <div className="relative -mx-2 md:mx-0">
              <Slider {...settings}>
               {productItems.map((product: any, index: any) => (
-                <div key={index} className="px-3 py-4">
+                <div key={index} className="px-2 md:px-3 py-4">
                   <GhubaProductCard 
                     product={product} 
                     toggleLike={toggleLike} 
@@ -129,8 +138,8 @@ const NewArrivals = ({ productItems, addToCart }: any) => {
         )}
       </div>
 
-      {/* Aesthetic Background Detail */}
-      <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-amber-500/5 to-transparent pointer-events-none" />
+      {/* Aesthetic Background Detail - Hidden on smallest screens for performance */}
+      <div className="hidden sm:block absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-amber-500/5 to-transparent pointer-events-none" />
     </motion.section>
   );
 };
