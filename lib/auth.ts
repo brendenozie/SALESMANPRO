@@ -117,7 +117,11 @@ const getTenantFromCallback = (url?: string) => {
   try {
     const parsedUrl = new URL(url);
     const host = parsedUrl.hostname;
-    const mainDomains = ["salesmanpro.site", "www.salesmanpro.site"];
+    const mainDomains = [
+      "salesmanpro.site",
+      "www.salesmanpro.site",
+      "auth.salesmanpro.site",
+    ];
 
     if (mainDomains.includes(host)) return null;
 
@@ -426,7 +430,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       // const trueHost = getTrueOrigin(reqHost);
       // Note: If reqHost is the main hub, check if there's a specific tenant in the URL
 
-      const companyIdentifier = getTenantFromCallback(trueHost); // Or check reqHost
+      const companyIdentifier = getTenantFromCallback(host); // Or check reqHost
 
       console.log("Sign-In Callback Invoked:", {
         host,
@@ -439,7 +443,12 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       if (!isMainApp) {
         const possibleSlug = trueHost.split(".")[0];
         const company = await prisma.company.findFirst({
-          where: { OR: [{ domain: trueHost }, { slug: possibleSlug }] },
+          where: {
+            OR: [
+              { domain: trueHost || host || tenantIdentifier },
+              { slug: possibleSlug },
+            ],
+          },
         });
         console.log("Company Lookup Result:", company);
         if (company && user.id) {
