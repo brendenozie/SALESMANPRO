@@ -55,7 +55,7 @@ const Shop = ({ addToCart, category, shopItems }: any) => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
           
           {/* Brand Curator Sidebar - Collapsible spacing on mobile */}
-          <aside className="lg:col-span-3 space-y-6 md:space-y-8 order-2 lg:order-1">
+          <aside className="lg:col-span-3 space-y-6 md:space-y-8 order-1 lg:order-1">
             <div className="relative overflow-hidden rounded-[1.5rem] md:rounded-[2.5rem] bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 p-5 md:p-8">
               <div className="relative z-10">
                 <h3 className="text-lg md:text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight mb-4 md:mb-6 flex items-center gap-2">
@@ -98,7 +98,7 @@ const Shop = ({ addToCart, category, shopItems }: any) => {
           </aside>
 
           {/* Product Grid - 2 COLUMNS ON MOBILE */}
-          <div className="lg:col-span-9 order-1 lg:order-2">
+          <div className="lg:col-span-9 order-2 lg:order-2">
             <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-8">
               {shopItems?.data?.map((product: any) => (
                 <div key={product.id} className="w-full">

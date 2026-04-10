@@ -53,7 +53,7 @@ export default function WhatsAppInquiry({
   return (
     <>
       {/* 1. FLOATING TRIGGER BUTTON */}
-      <div className="fixed bottom-24 right-6 md:bottom-16 md:right-10 z-[60]">
+      <div className="fixed bottom-24 right-2 md:bottom-16 md:right-10 z-[100]">
         <motion.button
           onClick={toggleModal}
           whileHover={{ scale: 1.1 }}
