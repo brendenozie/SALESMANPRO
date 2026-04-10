@@ -229,6 +229,46 @@ export const authOptions = (req?: any): NextAuthOptions => {
     }
   }
 
+  const callbackUrl =
+    req?.cookies?.["__Secure-next-auth.callback-url"] ||
+    req?.cookies?.["next-auth.callback-url"];
+
+  // Now extract the host from THIS url
+  // let trueHost = "";
+  const baseUrl = process.env.NEXTAUTH_URL || "https://salesmanpro.site";
+
+  // 1. EXTRACT THE CALLBACK URL FROM COOKIES (The "Source of Truth")
+  // NextAuth uses __Secure- prefix in production
+  const callbackUrlV1 =
+    req?.cookies?.["__Secure-next-auth.callback-url"] ||
+    req?.cookies?.["next-auth.callback-url"] ||
+    req?.query?.callbackUrl ||
+    baseUrl;
+
+  // 2. PARSE THE HOST
+  let trueHostV2 = "";
+  try {
+    // If it's a relative path like "/dashboards", we attach the baseUrl to parse it
+    const urlToParse = callbackUrlV1.startsWith("/")
+      ? `${baseUrl}${callbackUrlV1}`
+      : callbackUrlV1;
+
+    trueHostV2 = new URL(urlToParse).hostname;
+  } catch (e) {
+    trueHostV2 = new URL(baseUrl).hostname;
+  }
+
+  console.log("Callback URL Candidates:", {
+    queryTarget: query.target,
+    queryCallbackUrl: query.callbackUrl,
+    callbackCookie,
+    authTargetCookie: req?.cookies?.auth_target,
+    secureAuthTargetCookie: req?.cookies?.["__Secure-auth_target"],
+    callbackUrlV1,
+    trueHostV2,
+  });
+
+
   //  const candidates = [
   //    query.target,
   //    query.callbackUrl,
@@ -242,7 +282,7 @@ export const authOptions = (req?: any): NextAuthOptions => {
     callbackCookie,
     authTargetCookie: req?.cookies?.auth_target,
     secureAuthTargetCookie: req?.cookies?.["__Secure-auth_target"],
-    
+
   });
 
   const context = {

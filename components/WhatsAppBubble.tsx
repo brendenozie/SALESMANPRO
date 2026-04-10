@@ -7,6 +7,14 @@ import { useStoreContext } from '@/contexts/StoreContext';
 
 const WHATSAPP_NUMBER = "254700000000"; // Your Business Number
 
+const WhatsAppBubbleIcon = () => {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+      <path d="M12 2C6.477 2 2 6.477 2 12c0 1.657.42 3.215 1.15 4.593L2 22l5.414-1.422A9.953 9.953 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm-.002 18c-1.66 0-3.29-.434-4.693-1.25l-.335-.198-3.214.844.858-3.132-.217-.344A7.963 7.963 0 014.002 20h-.004zm3.707-4a1 1 0 00-1.414-1L9.586 15a1 1 0 000 2l1.707.707a1 1 0 001.414-1z" />
+    </svg>
+  );
+};
+
 export default function WhatsAppBubble(store: any) {
   const [isOpen, setIsOpen] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
@@ -24,7 +32,7 @@ export default function WhatsAppBubble(store: any) {
   };
 
   return (
-    <div className="fixed bottom-8 right-8 z-[9999] flex flex-col items-end gap-4">
+    <div className="fixed bottom-14 right-8 z-[9999] flex flex-col items-end gap-4">
       
       {/* Mini Preview Prompt */}
       <AnimatePresence>
