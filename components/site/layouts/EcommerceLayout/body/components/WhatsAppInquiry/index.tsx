@@ -9,6 +9,7 @@ import {
   PaperAirplaneIcon
 } from "@heroicons/react/24/solid";
 import Image from "next/image";
+import { useStoreContext } from "@/contexts/StoreContext";
 
 interface WhatsAppModalProps {
   productName: string;
@@ -40,9 +41,11 @@ export default function WhatsAppInquiry({
   const [isOpen, setIsOpen] = useState(false);
   const [showPulse, setShowPulse] = useState(true);
 
+  const { storeFormData } = useStoreContext();
+
   // Pre-filled message for the customer
   const message = `Hi! I'm interested in the *${productName}* (KES ${productPrice?.toLocaleString()}). Is it still in stock? \n\nLink: ${window.location.href}`;
-  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+  const whatsappUrl = `https://wa.me/${storeFormData?.contactPhone || phoneNumber}?text=${encodeURIComponent(message)}`;
 
   // Hide pulse after first interaction
   const toggleModal = () => {
@@ -105,7 +108,7 @@ export default function WhatsAppInquiry({
                 </div>
                 <div>
                   <div className="flex items-center gap-1">
-                    <p className="font-bold text-sm tracking-tight">Brenden @ SalesmanPro</p>
+                    <p className="font-bold text-sm tracking-tight">Admin @ {storeFormData?.name || "Store"}</p>
                     <CheckBadgeIcon className="w-4 h-4 text-sky-400" />
                   </div>
                   <p className="text-[10px] uppercase tracking-widest opacity-70">Typically replies in 5 mins</p>
