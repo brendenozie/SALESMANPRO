@@ -38,7 +38,7 @@ const getRealTargetHost = (fullUrl: string, currentHost: string) => {
       return new URL(target).host.split(":")[0];
     }
   } catch (e) {
-    console.error("Error parsing target host:", e);
+    // console.error("Error parsing target host:", e);
   }
   return null;
 };
@@ -194,14 +194,14 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       },
       async authorize(credentials) {
         if (!credentials?.token) {
-          console.error("Authorize: No token provided.");
+          // console.error("Authorize: No token provided.");
           return null;
         }
 
         // 🚨 CRITICAL DEBUGGING LINE: Log the received token's length
-        console.log(
-          `Authorize: Token received. Length: ${credentials.token.length}.`,
-        );
+        // console.log(
+        //   `Authorize: Token received. Length: ${credentials.token.length}.`,
+        // );
 
         try {
           // Decode the token using the shared secret
@@ -211,16 +211,16 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
           });
 
           if (!decodedToken || !decodedToken.email) {
-            console.error(
-              "Authorize: Token decoding failed or no email/data found.",
-            );
-            // Log the result of the decode attempt if it failed without an exception
-            console.log("Decoded Result (if available):", decodedToken);
+            // console.error(
+            //   "Authorize: Token decoding failed or no email/data found.",
+            // );
+            // // Log the result of the decode attempt if it failed without an exception
+            // console.log("Decoded Result (if available):", decodedToken);
             return null;
           }
 
           // 🚀 SUCCESS: Log the email/user ID to confirm decoding worked
-          console.log(`Token Sign-In SUCCESS for email: ${decodedToken.email}`);
+          // console.log(`Token Sign-In SUCCESS for email: ${decodedToken.email}`);
 
           // The decoded token is trusted. Return it as the user object.
           // Note: Since this token comes from the other app, we trust its contents and skip a DB lookup here.
@@ -234,16 +234,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
           };
         } catch (error) {
           // ❌ FAILURE: The error here is usually due to Expiration or Secret Mismatch
-          console.error("-----------------------------------------------");
-          console.error(
-            "TOKEN AUTHORIZATION FAILED! Reason:",
-            (error as Error).message,
-          );
-          console.error("Full Error Object:", error);
-          console.error(
-            "Action needed: Check NEXTAUTH_SECRET on both domains.",
-          );
-          console.error("-----------------------------------------------");
+          
           return null;
         }
       },
@@ -399,16 +390,8 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         const targetUrlObj = new URL(finalRedirectUrl);
         const targetHost = targetUrlObj.hostname;
         const targetPath = targetUrlObj.pathname;
-        const trueHosst = getTrueOrigin(reqHost);
         const trueHost = targetHost;
 
-        console.log("Redirect Callback Invoked:", {
-          finalRedirectUrl,
-          targetHost,
-          trueHost,
-          targetPath,
-          trueHosst,
-        });
         // ✅ جلوگیری infinite loops
         if (
           finalRedirectUrl.includes("/api/auth/handover") ||
@@ -436,7 +419,6 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
 
         return handoverUrl.toString();
       } catch (error) {
-        console.log("Redirect Callback Error:", error);
         return `${HUB_URL}/failure?reason=invalid_redirect&error=${encodeURIComponent(error instanceof Error ? error.message : "unknown_error")}`;
       }
     },
@@ -472,22 +454,12 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
           });
         }
       } else {
-        console.log(
-          `OAuth Sign-In for ${user.email} on main app or hub domain.`,
-        );
-        console.log("Host Info:", { host, isMainApp, isHub, tenantIdentifier });
         if (!isHub) {
-          console.log(
-            `User ${user.email} signed in on auth domain. They will be linked to the tenant based on their callbackUrl after sign-in completes.`,
-          );
+          // console.log(
+          //   `User ${user.email} signed in on auth domain. They will be linked to the tenant based on their callbackUrl after sign-in completes.`,
+          // );
         } else {
-          console.log(
-            `User ${user.email} signed in on hub domain. They will be treated as a potential admin or regular user based on existing records.`,
-          );
           if (isHub && user.id && (user as { role?: string }).role === "USER") {
-            console.log(
-              `Upgrading ${user.email} to ADMIN role since they signed in via the Hub and have USER role.`,
-            );
             // Only upgrade to ADMIN if they are signing in via the main Hub
             await prisma.user.update({
               where: { id: user.id },
@@ -546,72 +518,6 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
     signIn: "/signin",
   },
 
-  events: {
-    async createUser({ user }) {
-      const host = reqHost || "";
-      // const { isMainApp, isHub, tenantIdentifier } = getTenantInfo(host);
-      // 2. Get the callbackUrl (where the user is going next)
-      // This helps us identify if they started at a tenant site or the main hub
-      const url = new URL(reqHost || "", `https://${host}`);
-      const callbackUrl = url.searchParams.get("callbackUrl") || "";
-      const callbackHost = callbackUrl
-        ? new URL(callbackUrl).host.split(":")[0]
-        : "";
-
-      // 3. Re-run tenant info on the CALLBACK host if we are on the auth domain
-      const { isHub, isMainApp, tenantIdentifier } = getTenantInfo(
-        host === "auth.salesmanpro.site" ? callbackHost : host,
-      );
-
-      console.log("CreateUser Logic:", {
-        currentHost: host,
-        originalOrigin: callbackHost,
-        isHub,
-      });
-
-      console.log("CreateUser Event:", {
-        host,
-        isMainApp,
-        isHub,
-        tenantIdentifier,
-      });
-
-      if (!isMainApp) {
-        const possibleSlug = tenantIdentifier.split(".")[0];
-        const company = await prisma.company.findFirst({
-          where: {
-            OR: [{ domain: host || tenantIdentifier }, { slug: possibleSlug }],
-          },
-        });
-
-        if (company) {
-          console.log(
-            `[CreateUser] New tenant user: ${user.email} -> ${company.slug}`,
-          );
-          await prisma.$transaction([
-            // 1. Force role to USER for tenant signups
-            prisma.user.update({
-              where: { id: user.id },
-              data: { role: "USER" },
-            }),
-            // 2. Create the consumer record
-            prisma.consumer.create({
-              data: { userId: user.id, companyId: company.id },
-            }),
-          ]);
-        }
-      } else if (isHub) {
-        // User signed up on salesmanpro.site or localhost
-        console.log(`[CreateUser] New Hub Admin: ${user.email}`);
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { role: "ADMIN" },
-        });
-      } else {
-        console.log(`[CreateUser] System Auth event for: ${user.email}`);
-      }
-    },
-  },
 });
 
 // ✅ For Next.js App Router
