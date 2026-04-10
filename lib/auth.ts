@@ -26,6 +26,23 @@ const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET!; // || process.env.
 //   throw new Error("NEXTAUTH_SECRET is not set!");
 // }
 
+// Helper to find where the user is actually going
+const getRealTargetHost = (fullUrl: string, currentHost: string) => {
+  try {
+    const url = new URL(fullUrl, `https://${currentHost}`);
+    // Check for common redirect params
+    const target =
+      url.searchParams.get("target") || url.searchParams.get("callbackUrl");
+
+    if (target) {
+      return new URL(target).host.split(":")[0];
+    }
+  } catch (e) {
+    console.error("Error parsing target host:", e);
+  }
+  return null;
+};
+
 // ✅ Utility: find existing user by email
 async function findExistingUserByEmail(email: string) {
   const user = await prisma.user.findUnique({ where: { email } });
@@ -454,11 +471,29 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
             },
           });
         }
-      }else{
-        console.log(`OAuth Sign-In for ${user.email} on main app or hub domain.`);
+      } else {
+        console.log(
+          `OAuth Sign-In for ${user.email} on main app or hub domain.`,
+        );
         console.log("Host Info:", { host, isMainApp, isHub, tenantIdentifier });
         if (!isHub) {
-          console.log(`User ${user.email} signed in on auth domain. They will be linked to the tenant based on their callbackUrl after sign-in completes.`);
+          console.log(
+            `User ${user.email} signed in on auth domain. They will be linked to the tenant based on their callbackUrl after sign-in completes.`,
+          );
+        } else {
+          console.log(
+            `User ${user.email} signed in on hub domain. They will be treated as a potential admin or regular user based on existing records.`,
+          );
+          if (isHub && user.id && (user as { role?: string }).role === "USER") {
+            console.log(
+              `Upgrading ${user.email} to ADMIN role since they signed in via the Hub and have USER role.`,
+            );
+            // Only upgrade to ADMIN if they are signing in via the main Hub
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { role: "ADMIN" },
+            });
+          }
         }
       }
 
@@ -519,17 +554,19 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       // This helps us identify if they started at a tenant site or the main hub
       const url = new URL(reqHost || "", `https://${host}`);
       const callbackUrl = url.searchParams.get("callbackUrl") || "";
-      const callbackHost = callbackUrl ? new URL(callbackUrl).host.split(":")[0] : "";
+      const callbackHost = callbackUrl
+        ? new URL(callbackUrl).host.split(":")[0]
+        : "";
 
       // 3. Re-run tenant info on the CALLBACK host if we are on the auth domain
       const { isHub, isMainApp, tenantIdentifier } = getTenantInfo(
-        host === "auth.salesmanpro.site" ? callbackHost : host
+        host === "auth.salesmanpro.site" ? callbackHost : host,
       );
 
-      console.log("CreateUser Logic:", { 
-        currentHost: host, 
-        originalOrigin: callbackHost, 
-        isHub 
+      console.log("CreateUser Logic:", {
+        currentHost: host,
+        originalOrigin: callbackHost,
+        isHub,
       });
 
       console.log("CreateUser Event:", {
