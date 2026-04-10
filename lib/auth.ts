@@ -299,7 +299,7 @@ export const authOptions = (req?: any): NextAuthOptions => {
 
     // FINAL fallback
     if (trueHost === "auth.salesmanpro.site") {
-      trueHost = "salesmanpro.site";
+      trueHost = "";
     }
   }
   // Clean up: remove "www." to keep slugs consistent
