@@ -134,20 +134,31 @@ const getTenantFromCallback = (url?: string) => {
 
 // Helper to extract tenant info
 const getTenantInfo = (host: string) => {
-  // Use exact matches for main domains
-  const mainDomains = [
-    "salesmanpro.site",
-    "www.salesmanpro.site",
-    // "auth.salesmanpro.site",
-  ];
-
   // Split host to remove port if present (e.g., localhost:3000)
   const cleanHost = host.split(":")[0].toLowerCase();
+  // Use exact matches for main domains
+  // const mainDomains = [
+  //   "salesmanpro.site",
+  //   "www.salesmanpro.site",
+  //   // "auth.salesmanpro.site",
+  // ];
+  // These are the only domains where we want to trigger "Admin" logic
+  const hubDomains = ["salesmanpro.site", "www.salesmanpro.site", "localhost"];
+
+  // This is infrastructure; it's not a tenant, but it's not the "Admin" entry point either
+  const systemDomains = ["auth.salesmanpro.site"];
+
+  const isHub = hubDomains.includes(cleanHost);
+  const isSystem = systemDomains.includes(cleanHost);
+
+  // isMainApp remains true for both to prevent the code from looking for
+  // a company with the slug "auth" or "salesmanpro"
+  const isMainApp = isHub || isSystem;
 
   // isMainApp is ONLY true if it is exactly one of the hub domains
-  const isMainApp = mainDomains.includes(cleanHost) || cleanHost.includes("localhost");
+  // const isMainApp =   mainDomains.includes(cleanHost) || cleanHost.includes("localhost");
 
-  return { isMainApp, tenantIdentifier: cleanHost };
+  return { isMainApp, isHub, tenantIdentifier: cleanHost };
 };
 
 // export const authOptions: NextAuthOptions = {
@@ -424,12 +435,10 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         // const possibleSlug = trueHost.split(".")[0];
         const company = await prisma.company.findFirst({
           where: {
-            OR: [
-              { domain: host || tenantIdentifier },
-            ],
+            OR: [{ domain: host || tenantIdentifier }],
           },
         });
-        
+
         if (company && user.id) {
           console.log(
             `Linking user ${user.email} to company ${company.name} (ID: ${company.id})`,
@@ -502,9 +511,14 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
   events: {
     async createUser({ user }) {
       const host = reqHost || "";
-      const { isMainApp, tenantIdentifier } = getTenantInfo(host);
+      const { isMainApp, isHub, tenantIdentifier } = getTenantInfo(host);
 
-      console.log("CreateUser Event:", { host, isMainApp, tenantIdentifier });
+      console.log("CreateUser Event:", {
+        host,
+        isMainApp,
+        isHub,
+        tenantIdentifier,
+      });
 
       if (!isMainApp) {
         const possibleSlug = tenantIdentifier.split(".")[0];
@@ -530,13 +544,15 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
             }),
           ]);
         }
-      } else {
+      } else if (isHub) {
         // User signed up on salesmanpro.site or localhost
         console.log(`[CreateUser] New Hub Admin: ${user.email}`);
         await prisma.user.update({
           where: { id: user.id },
           data: { role: "ADMIN" },
         });
+      } else {
+        console.log(`[CreateUser] System Auth event for: ${user.email}`);
       }
     },
   },
