@@ -234,7 +234,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
           };
         } catch (error) {
           // ❌ FAILURE: The error here is usually due to Expiration or Secret Mismatch
-          
+
           return null;
         }
       },
@@ -342,7 +342,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       clientSecret: googleClientSecret!,
       allowDangerousEmailAccountLinking: true,
       httpOptions: {
-        timeout: 10000,
+        timeout: 40000,
       },
     }),
     // FacebookProvider({
@@ -517,7 +517,6 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
   pages: {
     signIn: "/signin",
   },
-
 });
 
 // ✅ For Next.js App Router
