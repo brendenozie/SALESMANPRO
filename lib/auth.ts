@@ -112,6 +112,27 @@ const getTrueOrigin = (req: any) => {
   return (req?.headers?.host || "").split(":")[0].replace(/^www\./, "");
 };
 
+function isValidTarget(url?: string) {
+  if (!url) return false;
+
+  try {
+    const decoded = decodeURIComponent(url);
+    const parsed = new URL(decoded);
+
+    const host = parsed.hostname.replace(/^www\./, "");
+
+    // ❌ Reject auth domain
+    if (host === "auth.salesmanpro.site") return false;
+
+    // ❌ Reject internal NextAuth routes
+    if (parsed.pathname.startsWith("/api/auth")) return false;
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // export const authOptions: NextAuthOptions = {
 // export const authOptions = (reqHost?: string): NextAuthOptions => ({
 
@@ -163,9 +184,9 @@ export const authOptions = (req?: any): NextAuthOptions => {
   // if (!trueHost) trueHost = new URL(baseUrl).hostname;
 
   // 1. Get the original URL from the NextAuth callback cookie (most reliable during Sign-In)
-  // const callbackCookie =
-  //   req?.cookies?.["next-auth.callback-url"] ||
-  //   req?.cookies?.["__Secure-next-auth.callback-url"];
+  const callbackCookie =
+    req?.cookies?.["next-auth.callback-url"] ||
+    req?.cookies?.["__Secure-next-auth.callback-url"];
 
   // // 2. Fallback to the query string
   // const callbackQuery = req?.query?.callbackUrl;
@@ -185,7 +206,47 @@ export const authOptions = (req?: any): NextAuthOptions => {
 
   // 1. Check for the 'target' param (specific to your handover logic)
   // 2. Check for 'callbackUrl' (NextAuth standard)
-  const rawTarget = query.target || query.callbackUrl;
+  const candidates = [
+    query.target,
+    query.callbackUrl,
+    callbackCookie,
+    req?.cookies?.auth_target,
+    req?.cookies?.["__Secure-auth_target"],
+  ];
+
+  let rawTarget = "";
+
+  for (const candidate of candidates) {
+    if (isValidTarget(candidate)) {
+      rawTarget = candidate!;
+      break;
+    }
+  }
+
+  const context = {
+    target: rawTarget,
+    timestamp: Date.now(),
+  };
+
+  if (rawTarget && req?.res) {
+    try {
+      req.res.setHeader(
+        "Set-Cookie",
+        `auth_target=${encodeURIComponent(JSON.stringify(context))}; Path=/; HttpOnly; Secure; SameSite=Lax`,
+      );
+    } catch (e) {
+      console.log("Failed to set auth_target cookie");
+    }
+  }
+
+
+  try {
+    const cookie = req?.cookies?.auth_target;
+    if (cookie) {
+      const parsed = JSON.parse(decodeURIComponent(cookie));
+      rawTarget = parsed.target;
+    }
+  } catch {}
 
   let trueHost = "";
 
@@ -193,7 +254,7 @@ export const authOptions = (req?: any): NextAuthOptions => {
     try {
       // If it's a full URL, parse it. If it's just a path, it's the Main App.
       const decodedTarget = decodeURIComponent(rawTarget);
-      if (decodedTarget.startsWith('http')) {
+      if (decodedTarget.startsWith("http")) {
         trueHost = new URL(decodedTarget).hostname;
       } else {
         // It's a relative path like "/dashboard", so the host is the current baseUrl
@@ -385,6 +446,12 @@ export const authOptions = (req?: any): NextAuthOptions => {
         clientId: googleClientId!,
         clientSecret: googleClientSecret!,
         allowDangerousEmailAccountLinking: true,
+        authorization: {
+          params: {
+            prompt: "consent",
+            access_type: "offline",
+          },
+        },
         // authorization: {
         //   params: {
         //     redirect_uri: `https://auth.salesmanpro.site/api/auth/callback/google`,
@@ -404,11 +471,10 @@ export const authOptions = (req?: any): NextAuthOptions => {
       //   from: process.env.EMAIL_FROM,
       // }),
     ],
-
     session: {
       strategy: "jwt",
-      maxAge: 30 * 24 * 60 * 60,
-      updateAge: 24 * 60 * 60,
+      maxAge: 30 * 24 * 60 * 60, // 30 days
+      updateAge: 24 * 60 * 60, // 24 hours
       generateSessionToken: () =>
         randomUUID?.() ?? randomBytes(32).toString("hex"),
     },
@@ -425,6 +491,8 @@ export const authOptions = (req?: any): NextAuthOptions => {
         }
 
         let finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
+
+        req?.res?.setHeader("Set-Cookie", "auth_target=; Path=/; Max-Age=0");
 
         // 🔥 FIX: decode if encoded
         try {
@@ -551,6 +619,8 @@ export const authOptions = (req?: any): NextAuthOptions => {
             address: (user as any).address,
             role: (user as any).role,
             profilePicture: (user as any).profilePicture,
+            trueHost: trueHost, // 🔥 PERSIST THE TENANT HOST
+            isMainApp: isMainApp,
           });
         }
         return token;
@@ -568,6 +638,8 @@ export const authOptions = (req?: any): NextAuthOptions => {
             address: token.address,
             role: token.role,
             profilePicture: token.profilePicture,
+            trueHost: token.trueHost, // 🔥 EXPOSE TO CLIENT
+            isMainApp: token.isMainApp,
           });
         }
         return session;
