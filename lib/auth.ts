@@ -206,20 +206,30 @@ export const authOptions = (req?: any): NextAuthOptions => {
 
   // 1. Check for the 'target' param (specific to your handover logic)
   // 2. Check for 'callbackUrl' (NextAuth standard)
-  const candidates = [
-    query.target,
-    query.callbackUrl,
-    callbackCookie,
-    req?.cookies?.auth_target,
-    req?.cookies?.["__Secure-auth_target"],
-  ];
-
   let rawTarget = "";
 
-  for (const candidate of candidates) {
-    if (isValidTarget(candidate)) {
-      rawTarget = candidate!;
-      break;
+  // 🔥 FIRST: Try cookie (most reliable after OAuth)
+  try {
+    const cookie = req?.cookies?.auth_target;
+    if (cookie) {
+      const parsed = JSON.parse(decodeURIComponent(cookie));
+      rawTarget = parsed.target;
+    }
+  } catch {}
+
+  // 🔥 THEN fallback to query/callbacks ONLY if empty
+  if (!rawTarget) {
+    const candidates = [
+      query.target,
+      query.callbackUrl,
+      callbackCookie,
+    ];
+
+    for (const candidate of candidates) {
+      if (isValidTarget(candidate)) {
+        rawTarget = candidate!;
+        break;
+      }
     }
   }
 
@@ -265,15 +275,38 @@ export const authOptions = (req?: any): NextAuthOptions => {
     }
   } else {
     // No target/callback? Fallback to the physical host of the request
-    trueHost = req?.headers?.host || new URL(baseUrl).hostname;
+    // trueHost = req?.headers?.host || new URL(baseUrl).hostname;
+    const fallbackHost = new URL(baseUrl).hostname;
+
+    trueHost = fallbackHost;
   }
 
+  if (trueHost === "auth.salesmanpro.site") {
+    console.warn("🚫 Blocking auth domain as trueHost");
+
+    // try recover from cookie again
+    try {
+      const cookie = req?.cookies?.auth_target;
+      if (cookie) {
+        const parsed = JSON.parse(decodeURIComponent(cookie));
+        const recovered = new URL(parsed.target).hostname;
+
+        if (recovered !== "auth.salesmanpro.site") {
+          trueHost = recovered;
+        }
+      }
+    } catch {}
+
+    // FINAL fallback
+    if (trueHost === "auth.salesmanpro.site") {
+      trueHost = "salesmanpro.site";
+    }
+  }
   // Clean up: remove "www." to keep slugs consistent
   trueHost = trueHost.replace("www.", "");
 
   const mainDomains = ["salesmanpro.site", "www.salesmanpro.site"];
-  const isMainApp =
-    mainDomains.includes(trueHost) || trueHost.includes("localhost");
+  const isMainApp = mainDomains.includes(trueHost) || trueHost === "localhost";;
 
   return {
     adapter: PrismaAdapter(prisma),
