@@ -138,15 +138,14 @@ const getTenantInfo = (host: string) => {
   const mainDomains = [
     "salesmanpro.site",
     "www.salesmanpro.site",
-    "auth.salesmanpro.site",
+    // "auth.salesmanpro.site",
   ];
 
   // Split host to remove port if present (e.g., localhost:3000)
   const cleanHost = host.split(":")[0].toLowerCase();
 
   // isMainApp is ONLY true if it is exactly one of the hub domains
-  const isMainApp =
-    mainDomains.includes(cleanHost) || cleanHost.includes("localhost");
+  const isMainApp = mainDomains.includes(cleanHost) || cleanHost.includes("localhost");
 
   return { isMainApp, tenantIdentifier: cleanHost };
 };
