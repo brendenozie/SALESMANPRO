@@ -112,21 +112,39 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/transport`,
       icon: HomeIcon,
       subItems: [
-        { label: "Vehicles", href: `/admin/${adminSlug}/transport-vehicles` },
-        { label: "Routes", href: `/admin/${adminSlug}/transport-routes` },
-        { label: "Drivers", href: `/admin/${adminSlug}/transport-drivers` },
-        { label: "Schedules", href: `/admin/${adminSlug}/transport-schedules` },
+        {
+          label: "Vehicles",
+          href: `/admin/${adminSlug}/store-transport-vehicles`,
+        },
+        { label: "Routes", href: `/admin/${adminSlug}/store-transport-routes` },
+        {
+          label: "Drivers",
+          href: `/admin/${adminSlug}/store-transport-drivers`,
+        },
+        {
+          label: "Schedules",
+          href: `/admin/${adminSlug}/store-transport-schedules`,
+        },
         {
           label: "Maintenance Records",
-          href: `/admin/${adminSlug}/transport-maintenance-records`,
+          href: `/admin/${adminSlug}/store-transport-maintenance-records`,
         },
-        { label: "Fuel Logs", href: `/admin/${adminSlug}/transport-fuel-logs` },
+        {
+          label: "Fuel Logs",
+          href: `/admin/${adminSlug}/store-transport-fuel-logs`,
+        },
         {
           label: "Assignments",
-          href: `/admin/${adminSlug}/transport-assignments`,
+          href: `/admin/${adminSlug}/store-transport-assignments`,
         },
-        { label: "Incidents", href: `/admin/${adminSlug}/transport-incidents` },
-        { label: "Reports", href: `/admin/${adminSlug}/transport-reports` },
+        {
+          label: "Incidents",
+          href: `/admin/${adminSlug}/store-transport-incidents`,
+        },
+        {
+          label: "Reports",
+          href: `/admin/${adminSlug}/store-transport-reports`,
+        },
       ],
     },
     {
@@ -197,21 +215,39 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/transport`,
       icon: HomeIcon,
       subItems: [
-        { label: "Vehicles", href: `/admin/${adminSlug}/transport-vehicles` },
-        { label: "Routes", href: `/admin/${adminSlug}/transport-routes` },
-        { label: "Drivers", href: `/admin/${adminSlug}/transport-drivers` },
-        { label: "Schedules", href: `/admin/${adminSlug}/transport-schedules` },
+        {
+          label: "Vehicles",
+          href: `/admin/${adminSlug}/store-transport-vehicles`,
+        },
+        { label: "Routes", href: `/admin/${adminSlug}/store-transport-routes` },
+        {
+          label: "Drivers",
+          href: `/admin/${adminSlug}/store-transport-drivers`,
+        },
+        {
+          label: "Schedules",
+          href: `/admin/${adminSlug}/store-transport-schedules`,
+        },
         {
           label: "Maintenance Records",
-          href: `/admin/${adminSlug}/transport-maintenance-records`,
+          href: `/admin/${adminSlug}/store-transport-maintenance-records`,
         },
-        { label: "Fuel Logs", href: `/admin/${adminSlug}/transport-fuel-logs` },
+        {
+          label: "Fuel Logs",
+          href: `/admin/${adminSlug}/store-transport-fuel-logs`,
+        },
         {
           label: "Assignments",
-          href: `/admin/${adminSlug}/transport-assignments`,
+          href: `/admin/${adminSlug}/store-transport-assignments`,
         },
-        { label: "Incidents", href: `/admin/${adminSlug}/transport-incidents` },
-        { label: "Reports", href: `/admin/${adminSlug}/transport-reports` },
+        {
+          label: "Incidents",
+          href: `/admin/${adminSlug}/store-transport-incidents`,
+        },
+        {
+          label: "Reports",
+          href: `/admin/${adminSlug}/store-transport-reports`,
+        },
       ],
     },
     {
@@ -282,21 +318,39 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/transport`,
       icon: HomeIcon,
       subItems: [
-        { label: "Vehicles", href: `/admin/${adminSlug}/transport-vehicles` },
-        { label: "Routes", href: `/admin/${adminSlug}/transport-routes` },
-        { label: "Drivers", href: `/admin/${adminSlug}/transport-drivers` },
-        { label: "Schedules", href: `/admin/${adminSlug}/transport-schedules` },
+        {
+          label: "Vehicles",
+          href: `/admin/${adminSlug}/store-transport-vehicles`,
+        },
+        { label: "Routes", href: `/admin/${adminSlug}/store-transport-routes` },
+        {
+          label: "Drivers",
+          href: `/admin/${adminSlug}/store-transport-drivers`,
+        },
+        {
+          label: "Schedules",
+          href: `/admin/${adminSlug}/store-transport-schedules`,
+        },
         {
           label: "Maintenance Records",
-          href: `/admin/${adminSlug}/transport-maintenance-records`,
+          href: `/admin/${adminSlug}/store-transport-maintenance-records`,
         },
-        { label: "Fuel Logs", href: `/admin/${adminSlug}/transport-fuel-logs` },
+        {
+          label: "Fuel Logs",
+          href: `/admin/${adminSlug}/store-transport-fuel-logs`,
+        },
         {
           label: "Assignments",
-          href: `/admin/${adminSlug}/transport-assignments`,
+          href: `/admin/${adminSlug}/store-transport-assignments`,
         },
-        { label: "Incidents", href: `/admin/${adminSlug}/transport-incidents` },
-        { label: "Reports", href: `/admin/${adminSlug}/transport-reports` },
+        {
+          label: "Incidents",
+          href: `/admin/${adminSlug}/store-transport-incidents`,
+        },
+        {
+          label: "Reports",
+          href: `/admin/${adminSlug}/store-transport-reports`,
+        },
       ],
     },
     {
@@ -367,21 +421,39 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/transport`,
       icon: HomeIcon,
       subItems: [
-        { label: "Vehicles", href: `/admin/${adminSlug}/transport-vehicles` },
-        { label: "Routes", href: `/admin/${adminSlug}/transport-routes` },
-        { label: "Drivers", href: `/admin/${adminSlug}/transport-drivers` },
-        { label: "Schedules", href: `/admin/${adminSlug}/transport-schedules` },
+        {
+          label: "Vehicles",
+          href: `/admin/${adminSlug}/store-transport-vehicles`,
+        },
+        { label: "Routes", href: `/admin/${adminSlug}/store-transport-routes` },
+        {
+          label: "Drivers",
+          href: `/admin/${adminSlug}/store-transport-drivers`,
+        },
+        {
+          label: "Schedules",
+          href: `/admin/${adminSlug}/store-transport-schedules`,
+        },
         {
           label: "Maintenance Records",
-          href: `/admin/${adminSlug}/transport-maintenance-records`,
+          href: `/admin/${adminSlug}/store-transport-maintenance-records`,
         },
-        { label: "Fuel Logs", href: `/admin/${adminSlug}/transport-fuel-logs` },
+        {
+          label: "Fuel Logs",
+          href: `/admin/${adminSlug}/store-transport-fuel-logs`,
+        },
         {
           label: "Assignments",
-          href: `/admin/${adminSlug}/transport-assignments`,
+          href: `/admin/${adminSlug}/store-transport-assignments`,
         },
-        { label: "Incidents", href: `/admin/${adminSlug}/transport-incidents` },
-        { label: "Reports", href: `/admin/${adminSlug}/transport-reports` },
+        {
+          label: "Incidents",
+          href: `/admin/${adminSlug}/store-transport-incidents`,
+        },
+        {
+          label: "Reports",
+          href: `/admin/${adminSlug}/store-transport-reports`,
+        },
       ],
     },
     {
@@ -452,21 +524,39 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/transport`,
       icon: HomeIcon,
       subItems: [
-        { label: "Vehicles", href: `/admin/${adminSlug}/transport-vehicles` },
-        { label: "Routes", href: `/admin/${adminSlug}/transport-routes` },
-        { label: "Drivers", href: `/admin/${adminSlug}/transport-drivers` },
-        { label: "Schedules", href: `/admin/${adminSlug}/transport-schedules` },
+        {
+          label: "Vehicles",
+          href: `/admin/${adminSlug}/store-transport-vehicles`,
+        },
+        { label: "Routes", href: `/admin/${adminSlug}/store-transport-routes` },
+        {
+          label: "Drivers",
+          href: `/admin/${adminSlug}/store-transport-drivers`,
+        },
+        {
+          label: "Schedules",
+          href: `/admin/${adminSlug}/store-transport-schedules`,
+        },
         {
           label: "Maintenance Records",
-          href: `/admin/${adminSlug}/transport-maintenance-records`,
+          href: `/admin/${adminSlug}/store-transport-maintenance-records`,
         },
-        { label: "Fuel Logs", href: `/admin/${adminSlug}/transport-fuel-logs` },
+        {
+          label: "Fuel Logs",
+          href: `/admin/${adminSlug}/store-transport-fuel-logs`,
+        },
         {
           label: "Assignments",
-          href: `/admin/${adminSlug}/transport-assignments`,
+          href: `/admin/${adminSlug}/store-transport-assignments`,
         },
-        { label: "Incidents", href: `/admin/${adminSlug}/transport-incidents` },
-        { label: "Reports", href: `/admin/${adminSlug}/transport-reports` },
+        {
+          label: "Incidents",
+          href: `/admin/${adminSlug}/store-transport-incidents`,
+        },
+        {
+          label: "Reports",
+          href: `/admin/${adminSlug}/store-transport-reports`,
+        },
       ],
     },
     {
@@ -537,21 +627,39 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/transport`,
       icon: HomeIcon,
       subItems: [
-        { label: "Vehicles", href: `/admin/${adminSlug}/transport-vehicles` },
-        { label: "Routes", href: `/admin/${adminSlug}/transport-routes` },
-        { label: "Drivers", href: `/admin/${adminSlug}/transport-drivers` },
-        { label: "Schedules", href: `/admin/${adminSlug}/transport-schedules` },
+        {
+          label: "Vehicles",
+          href: `/admin/${adminSlug}/store-transport-vehicles`,
+        },
+        { label: "Routes", href: `/admin/${adminSlug}/store-transport-routes` },
+        {
+          label: "Drivers",
+          href: `/admin/${adminSlug}/store-transport-drivers`,
+        },
+        {
+          label: "Schedules",
+          href: `/admin/${adminSlug}/store-transport-schedules`,
+        },
         {
           label: "Maintenance Records",
-          href: `/admin/${adminSlug}/transport-maintenance-records`,
+          href: `/admin/${adminSlug}/store-transport-maintenance-records`,
         },
-        { label: "Fuel Logs", href: `/admin/${adminSlug}/transport-fuel-logs` },
+        {
+          label: "Fuel Logs",
+          href: `/admin/${adminSlug}/store-transport-fuel-logs`,
+        },
         {
           label: "Assignments",
-          href: `/admin/${adminSlug}/transport-assignments`,
+          href: `/admin/${adminSlug}/store-transport-assignments`,
         },
-        { label: "Incidents", href: `/admin/${adminSlug}/transport-incidents` },
-        { label: "Reports", href: `/admin/${adminSlug}/transport-reports` },
+        {
+          label: "Incidents",
+          href: `/admin/${adminSlug}/store-transport-incidents`,
+        },
+        {
+          label: "Reports",
+          href: `/admin/${adminSlug}/store-transport-reports`,
+        },
       ],
     },
     {
@@ -615,7 +723,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/transport`,
       icon: HomeIcon,
       subItems: [
-        { label: "Vehicles", href: `/admin/${adminSlug}/transport-vehicles` },
+        {
+          label: "Vehicles",
+          href: `/admin/${adminSlug}/service-transport-vehicles`,
+        },
         { label: "Routes", href: `/admin/${adminSlug}/transport-routes` },
         { label: "Drivers", href: `/admin/${adminSlug}/transport-drivers` },
         { label: "Schedules", href: `/admin/${adminSlug}/transport-schedules` },
@@ -681,7 +792,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/transport`,
       icon: HomeIcon,
       subItems: [
-        { label: "Vehicles", href: `/admin/${adminSlug}/transport-vehicles` },
+        {
+          label: "Vehicles",
+          href: `/admin/${adminSlug}/booking-transport-vehicles`,
+        },
         { label: "Routes", href: `/admin/${adminSlug}/transport-routes` },
         { label: "Drivers", href: `/admin/${adminSlug}/transport-drivers` },
         { label: "Schedules", href: `/admin/${adminSlug}/transport-schedules` },
@@ -766,7 +880,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/transport`,
       icon: HomeIcon,
       subItems: [
-        { label: "Vehicles", href: `/admin/${adminSlug}/transport-vehicles` },
+        {
+          label: "Vehicles",
+          href: `/admin/${adminSlug}/portfolio-transport-vehicles`,
+        },
         { label: "Routes", href: `/admin/${adminSlug}/transport-routes` },
         { label: "Drivers", href: `/admin/${adminSlug}/transport-drivers` },
         { label: "Schedules", href: `/admin/${adminSlug}/transport-schedules` },
@@ -897,21 +1014,39 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/transport`,
       icon: HomeIcon,
       subItems: [
-        { label: "Vehicles", href: `/admin/${adminSlug}/transport-vehicles` },
-        { label: "Routes", href: `/admin/${adminSlug}/transport-routes` },
-        { label: "Drivers", href: `/admin/${adminSlug}/transport-drivers` },
-        { label: "Schedules", href: `/admin/${adminSlug}/transport-schedules` },
+        {
+          label: "Vehicles",
+          href: `/admin/${adminSlug}/store-transport-vehicles`,
+        },
+        { label: "Routes", href: `/admin/${adminSlug}/store-transport-routes` },
+        {
+          label: "Drivers",
+          href: `/admin/${adminSlug}/store-transport-drivers`,
+        },
+        {
+          label: "Schedules",
+          href: `/admin/${adminSlug}/store-transport-schedules`,
+        },
         {
           label: "Maintenance Records",
-          href: `/admin/${adminSlug}/transport-maintenance-records`,
+          href: `/admin/${adminSlug}/store-transport-maintenance-records`,
         },
-        { label: "Fuel Logs", href: `/admin/${adminSlug}/transport-fuel-logs` },
+        {
+          label: "Fuel Logs",
+          href: `/admin/${adminSlug}/store-transport-fuel-logs`,
+        },
         {
           label: "Assignments",
-          href: `/admin/${adminSlug}/transport-assignments`,
+          href: `/admin/${adminSlug}/store-transport-assignments`,
         },
-        { label: "Incidents", href: `/admin/${adminSlug}/transport-incidents` },
-        { label: "Reports", href: `/admin/${adminSlug}/transport-reports` },
+        {
+          label: "Incidents",
+          href: `/admin/${adminSlug}/store-transport-incidents`,
+        },
+        {
+          label: "Reports",
+          href: `/admin/${adminSlug}/store-transport-reports`,
+        },
       ],
     },
     {
@@ -1225,7 +1360,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/transport`,
       icon: HomeIcon,
       subItems: [
-        { label: "Vehicles", href: `/admin/${adminSlug}/transport-vehicles` },
+        {
+          label: "Vehicles",
+          href: `/admin/${adminSlug}/non-profit-transport-vehicles`,
+        },
         { label: "Routes", href: `/admin/${adminSlug}/transport-routes` },
         { label: "Drivers", href: `/admin/${adminSlug}/transport-drivers` },
         { label: "Schedules", href: `/admin/${adminSlug}/transport-schedules` },
@@ -1282,21 +1420,39 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/transport`,
       icon: HomeIcon,
       subItems: [
-        { label: "Vehicles", href: `/admin/${adminSlug}/transport-vehicles` },
-        { label: "Routes", href: `/admin/${adminSlug}/transport-routes` },
-        { label: "Drivers", href: `/admin/${adminSlug}/transport-drivers` },
-        { label: "Schedules", href: `/admin/${adminSlug}/transport-schedules` },
+        {
+          label: "Vehicles",
+          href: `/admin/${adminSlug}/store-transport-vehicles`,
+        },
+        { label: "Routes", href: `/admin/${adminSlug}/store-transport-routes` },
+        {
+          label: "Drivers",
+          href: `/admin/${adminSlug}/store-transport-drivers`,
+        },
+        {
+          label: "Schedules",
+          href: `/admin/${adminSlug}/store-transport-schedules`,
+        },
         {
           label: "Maintenance Records",
-          href: `/admin/${adminSlug}/transport-maintenance-records`,
+          href: `/admin/${adminSlug}/store-transport-maintenance-records`,
         },
-        { label: "Fuel Logs", href: `/admin/${adminSlug}/transport-fuel-logs` },
+        {
+          label: "Fuel Logs",
+          href: `/admin/${adminSlug}/store-transport-fuel-logs`,
+        },
         {
           label: "Assignments",
-          href: `/admin/${adminSlug}/transport-assignments`,
+          href: `/admin/${adminSlug}/store-transport-assignments`,
         },
-        { label: "Incidents", href: `/admin/${adminSlug}/transport-incidents` },
-        { label: "Reports", href: `/admin/${adminSlug}/transport-reports` },
+        {
+          label: "Incidents",
+          href: `/admin/${adminSlug}/store-transport-incidents`,
+        },
+        {
+          label: "Reports",
+          href: `/admin/${adminSlug}/store-transport-reports`,
+        },
       ],
     },
     { label: "Orders", href: `/admin/${adminSlug}/orders`, icon: UsersIcon },
@@ -2089,7 +2245,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/transport`,
       icon: HomeIcon,
       subItems: [
-        { label: "Vehicles", href: `/admin/${adminSlug}/transport-vehicles` },
+        {
+          label: "Vehicles",
+          href: `/admin/${adminSlug}/travel-transport-vehicles`,
+        },
         { label: "Routes", href: `/admin/${adminSlug}/transport-routes` },
         { label: "Drivers", href: `/admin/${adminSlug}/transport-drivers` },
         { label: "Schedules", href: `/admin/${adminSlug}/transport-schedules` },
@@ -2415,21 +2574,39 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/transport`,
       icon: HomeIcon,
       subItems: [
-        { label: "Vehicles", href: `/admin/${adminSlug}/transport-vehicles` },
-        { label: "Routes", href: `/admin/${adminSlug}/transport-routes` },
-        { label: "Drivers", href: `/admin/${adminSlug}/transport-drivers` },
-        { label: "Schedules", href: `/admin/${adminSlug}/transport-schedules` },
+        {
+          label: "Vehicles",
+          href: `/admin/${adminSlug}/store-transport-vehicles`,
+        },
+        { label: "Routes", href: `/admin/${adminSlug}/store-transport-routes` },
+        {
+          label: "Drivers",
+          href: `/admin/${adminSlug}/store-transport-drivers`,
+        },
+        {
+          label: "Schedules",
+          href: `/admin/${adminSlug}/store-transport-schedules`,
+        },
         {
           label: "Maintenance Records",
-          href: `/admin/${adminSlug}/transport-maintenance-records`,
+          href: `/admin/${adminSlug}/store-transport-maintenance-records`,
         },
-        { label: "Fuel Logs", href: `/admin/${adminSlug}/transport-fuel-logs` },
+        {
+          label: "Fuel Logs",
+          href: `/admin/${adminSlug}/store-transport-fuel-logs`,
+        },
         {
           label: "Assignments",
-          href: `/admin/${adminSlug}/transport-assignments`,
+          href: `/admin/${adminSlug}/store-transport-assignments`,
         },
-        { label: "Incidents", href: `/admin/${adminSlug}/transport-incidents` },
-        { label: "Reports", href: `/admin/${adminSlug}/transport-reports` },
+        {
+          label: "Incidents",
+          href: `/admin/${adminSlug}/store-transport-incidents`,
+        },
+        {
+          label: "Reports",
+          href: `/admin/${adminSlug}/store-transport-reports`,
+        },
       ],
     },
     {
@@ -2690,21 +2867,24 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/transport`,
       icon: HomeIcon,
       subItems: [
-        { label: "Vehicles", href: `/admin/${adminSlug}/transport-vehicles` },
-        { label: "Routes", href: `/admin/${adminSlug}/transport-routes` },
-        { label: "Drivers", href: `/admin/${adminSlug}/transport-drivers` },
-        { label: "Schedules", href: `/admin/${adminSlug}/transport-schedules` },
+        {
+          label: "Vehicles",
+          href: `/admin/${adminSlug}/store-transport-vehicles`,
+        },
+        { label: "Routes", href: `/admin/${adminSlug}/store-transport-routes` },
+        { label: "Drivers", href: `/admin/${adminSlug}/store-transport-drivers` },
+        { label: "Schedules", href: `/admin/${adminSlug}/store-transport-schedules` },
         {
           label: "Maintenance Records",
-          href: `/admin/${adminSlug}/transport-maintenance-records`,
+          href: `/admin/${adminSlug}/store-transport-maintenance-records`,
         },
-        { label: "Fuel Logs", href: `/admin/${adminSlug}/transport-fuel-logs` },
+        { label: "Fuel Logs", href: `/admin/${adminSlug}/store-transport-fuel-logs` },
         {
           label: "Assignments",
-          href: `/admin/${adminSlug}/transport-assignments`,
+          href: `/admin/${adminSlug}/store-transport-assignments`,
         },
-        { label: "Incidents", href: `/admin/${adminSlug}/transport-incidents` },
-        { label: "Reports", href: `/admin/${adminSlug}/transport-reports` },
+        { label: "Incidents", href: `/admin/${adminSlug}/store-transport-incidents` },
+        { label: "Reports", href: `/admin/${adminSlug}/store-transport-reports` },
       ],
     },
     {
