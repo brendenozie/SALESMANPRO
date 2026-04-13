@@ -1,7 +1,7 @@
 "use client"
 import React from "react";
 import { usePathname } from 'next/navigation';
-
+import Link from "next/link";
 // import CookieConsentBar from "./components/CookieConsentBar";
 import ClientCookieWrapper from "../body/components/ClientCookieWrapper";
 
@@ -52,9 +52,11 @@ const Footer = () => {
             <h2 className="text-2xl font-bold text-yellow-500 border-b-2 border-yellow-500 pb-2">About Us</h2>
             <ul className="space-y-3 text-gray-800 dark:text-gray-300">
               {["Careers", "Our Stores", "Our Cares", "Terms & Conditions", "Privacy Policy"].map((item, index) => (
-                <li key={index} className="opacity-80 hover:opacity-100 hover:text-yellow-500 transition-transform transform hover:translate-x-2 duration-300 cursor-pointer">
-                  {item}
-                </li>
+                <Link href={`/ghuba/${item.toLowerCase().replace(/\s+/g, '-')}`} key={index} className="opacity-80 hover:opacity-100 hover:text-yellow-500 transition-transform transform hover:translate-x-2 duration-300 cursor-pointer">
+                  <li key={index} className="opacity-80 hover:opacity-100 hover:text-yellow-500 transition-transform transform hover:translate-x-2 duration-300 cursor-pointer">
+                    {item}
+                  </li>
+                </Link>
               ))}
             </ul>
           </div>
@@ -63,9 +65,11 @@ const Footer = () => {
             <h2 className="text-2xl font-bold text-yellow-500 border-b-2 border-yellow-500 pb-2">Customer Care</h2>
             <ul className="space-y-3 text-gray-800 dark:text-gray-300">
               {["Help Center", "How to Buy", "Track Your Order", "Bulk Purchasing", "Returns & Refunds"].map((item, index) => (
-                <li key={index} className="opacity-80 hover:opacity-100 hover:text-yellow-500 transition-transform transform hover:translate-x-2 duration-300 cursor-pointer">
-                  {item}
-                </li>
+                <Link href={`/ghuba/${item.toLowerCase().replace(/\s+/g, '-')}`} key={index} className="opacity-80 hover:opacity-100 hover:text-yellow-500 transition-transform transform hover:translate-x-2 duration-300 cursor-pointer">
+                  <li key={index} className="opacity-80 hover:opacity-100 hover:text-yellow-500 transition-transform transform hover:translate-x-2 duration-300 cursor-pointer">
+                    {item}
+                  </li>
+                </Link>
               ))}
             </ul>
           </div>
@@ -74,9 +78,11 @@ const Footer = () => {
             <h2 className="text-2xl font-bold text-yellow-500 border-b-2 border-yellow-500 pb-2">Contact Us</h2>
             <ul className="space-y-3 text-gray-800 dark:text-gray-300">
               {["Nairobi, Kenya", "Email: ghuba@gmail.com", "Phone: +254 732 771 353"].map((item, index) => (
-                <li key={index} className="opacity-80 hover:opacity-100 hover:text-yellow-500 transition-transform transform hover:translate-x-2 duration-300 cursor-pointer">
-                  {item}
-                </li>
+                <Link href="#" key={index} className="opacity-80 hover:opacity-100 hover:text-yellow-500 transition-transform transform hover:translate-x-2 duration-300 cursor-pointer">
+                  <li key={index} className="opacity-80 hover:opacity-100 hover:text-yellow-500 transition-transform transform hover:translate-x-2 duration-300 cursor-pointer">
+                    {item}
+                  </li>
+                </Link>
               ))}
             </ul>
           </div>
