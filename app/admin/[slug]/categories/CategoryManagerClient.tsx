@@ -59,54 +59,89 @@ export default function CategoryManagerClient({ initialCategories, apiBaseUrl, c
               
           const resJson = await res.json();
           // Ensure the response has the expected structure
-          if (!resJson || !resJson.results) {
+          if (!resJson || !resJson.data.results || !Array.isArray(resJson.data.results)) {
             throw new Error('Invalid response structure');
           }
     
-          const data = resJson.results || resJson.data; // Handle both cases
+          const data = resJson.data.results || resJson.results || resJson.data ; // Handle both cases
+
+          console.log('Fetched store categories: Client', data);
           
           let storeCategories = data.map((sc: any) => ({
             id: sc.id,
             companyId: sc.companyId,
             categoryId: sc.categoryId,
             displayName: sc.displayName,
-            icon: sc.icon || sc.category.icon,
+            icon: sc.icon || sc.category?.icon,
             sortOrder: sc.sortOrder,
             visible: sc.visible,
-            subcategories: Array.isArray(sc.items)
-              ? sc.items.map((sub: any) => ({
-                  id: sub.id,
-                  name: sub.name,
-                  slug: sub.slug,
-                  sortOrder: sub.sortOrder,
-                  visible: sub.visible,
-                }))
-              : Array.isArray(sc.category.subcategories)
-                ? sc.category.subcategories.map((sub: any) => ({
-                    id: sub._id?.$oid || sub.id,
-                    name: sub.name,
-                    slug: sub.slug,
-                    sortOrder: sub.sortOrder,
-                    visible: sub.visible,
-                  }))
-                : [],
+            subcategories: Array.isArray(sc.subcategories)
+                          ? sc.subcategories.map((sub: any) => ({
+                              id: sub._id?.$oid || sub.id,
+                              name: sub.name,
+                              slug: sub.slug,
+                              sortOrder: sub.sortOrder,
+                              visible: sub.visible,
+                            }))
+                          : Array.isArray(sc.items)
+                            ? sc.items.map((sub: any) => ({
+                                id: sub._id?.$oid || sub.id,
+                                name: sub.name,
+                                slug: sub.slug,
+                                sortOrder: sub.sortOrder,
+                                visible: sub.visible,
+                              }))
+                            : Array.isArray(sc.category?.subcategories) // Safe check for sc.category
+                              ? sc.category.subcategories.map((sub: any) => ({
+                                  id: sub._id?.$oid || sub.id,
+                                  name: sub.name,
+                                  slug: sub.slug,
+                                  sortOrder: sub.sortOrder,
+                                  visible: sub.visible,
+                                }))
+                              : [],
+            // subcategories: Array.isArray(sc.items)
+            //   ? sc.items?.map((sub: any) => ({
+            //       id: sub._id?.$oid || sub.id,
+            //       name: sub.name,
+            //       slug: sub.slug,
+            //       sortOrder: sub.sortOrder,
+            //       visible: sub.visible,
+            //     }))
+            //   : (sc.category?.subcategories && Array.isArray(sc.category?.subcategories))
+            //       ? sc.category?.subcategories?.map((sub: any) => ({
+            //           id: sub._id?.$oid || sub.id,
+            //           name: sub.name,
+            //           slug: sub.slug,
+            //           sortOrder: sub.sortOrder,
+            //           visible: sub.visible,
+            //         }))
+            //     : Array.isArray(sc.subcategories)
+            //         ? sc.subcategories?.map((sub: any) => ({
+            //             id: sub._id?.$oid || sub.id,
+            //             name: sub.name,
+            //             slug: sub.slug,
+            //             sortOrder: sub.sortOrder,
+            //             visible: sub.visible,
+            //           }))
+            //         : [],
             allBrands: sc.allBrands || [],
             category: {
-              id: sc.category.id,
-              name: sc.category.name,
-              slug: sc.category.slug,
-              description: sc.category.description,
-              longDescription: sc.category.longDescription,
-              seoTitle: sc.category.seoTitle,
-              seoDescription: sc.category.seoDescription,
-              metaKeywords: sc.category.metaKeywords,
-              sortOrder: sc.category.sortOrder,
-              visible: sc.category.visible,
-              isFeatured: sc.category.isFeatured,
-              showInHomepage: sc.category.showInHomepage,
-              attributes: sc.category.attributes,
-              subcategories: Array.isArray(sc.category.subcategories)
-                ? sc.category.subcategories.map((sub: any) => ({
+              id: sc.category?.id,
+              name: sc.category?.name,
+              slug: sc.category?.slug,
+              description: sc.category?.description,
+              longDescription: sc.category?.longDescription,
+              seoTitle: sc.category?.seoTitle,
+              seoDescription: sc.category?.seoDescription,
+              metaKeywords: sc.category?.metaKeywords,
+              sortOrder: sc.category?.sortOrder,
+              visible: sc.category?.visible,
+              isFeatured: sc.category?.isFeatured,
+              showInHomepage: sc.category?.showInHomepage,
+              attributes: sc.category?.attributes,
+              subcategories: Array.isArray(sc.category?.subcategories)
+                ? sc.category?.subcategories?.map((sub: any) => ({
                     id: sub._id?.$oid || sub.id,
                     name: sub.name,
                     slug: sub.slug,
@@ -114,8 +149,8 @@ export default function CategoryManagerClient({ initialCategories, apiBaseUrl, c
                     visible: sub.visible,
                   }))
                 : [],
-              icon: sc.category.icon,
-              image: sc.category.image,
+              icon: sc.category?.icon,
+              image: sc.category?.image,
             },
           }));
           

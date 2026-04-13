@@ -1,8 +1,6 @@
-// app/admin/targets/TargetsClient.tsx
-
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -12,15 +10,22 @@ import {
   Title,
   Tooltip,
   Legend,
+  Filler
 } from "chart.js";
 import { format, parseISO } from "date-fns";
-import { CheckCircleIcon, ExclamationCircleIcon, XCircleIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
+import { 
+  CheckBadgeIcon, 
+  ClockIcon, 
+  XCircleIcon, 
+  ArrowPathIcon, 
+  PresentationChartBarIcon,
+  UserGroupIcon,
+  CurrencyDollarIcon
+} from "@heroicons/react/24/solid";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, Filler);
 
-// Register Chart.js components
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
-
+// --- Types & Constants ---
 type Target = {
   id: string;
   salesAgent: { name: string };
@@ -28,160 +33,199 @@ type Target = {
   targetValue: number;
   achievedValue: number;
   status: "Achieved" | "Pending" | "Failed";
-  startDate: string; // ISO date
-  endDate: string;   // ISO date
+  startDate: string;
+  endDate: string;
 };
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 const TargetsClient: React.FC = () => {
   const [targets, setTargets] = useState<Target[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [chartData, setChartData] = useState<any>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch(`${apiBaseUrl}/admin/targets`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch targets");
-        }
         const result = await response.json();
-        const data: Target[] = result.data || [];
-
-        setTargets(data);
-
-        // Transform data for the bar chart
-        const labels = data.map((t) => t.salesAgent.name);
-        const targetValues = data.map((t) => t.targetValue);
-        const achievedValues = data.map((t) => t.achievedValue);
-
-        setChartData({
-          labels,
-          datasets: [
-            {
-              label: "Target Value",
-              data: targetValues,
-              backgroundColor: "rgba(75, 192, 192, 0.2)",
-              borderColor: "rgba(75, 192, 192, 1)",
-              borderWidth: 1,
-            },
-            {
-              label: "Achieved Value",
-              data: achievedValues,
-              backgroundColor: "rgba(255, 99, 132, 0.2)",
-              borderColor: "rgba(255, 99, 132, 1)",
-              borderWidth: 1,
-            },
-          ],
-        });
-
-        setLoading(false);
-      } catch (err: any) {
-        setError(err.message || "Failed to load data");
+        setTargets(result.data || []);
+      } catch (err) {
+        console.error("Error fetching data", err);
+      } finally {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
+  // Compute High-Level Stats
+  const stats = useMemo(() => {
+    const totalTarget = targets.reduce((acc, t) => acc + t.targetValue, 0);
+    const totalAchieved = targets.reduce((acc, t) => acc + t.achievedValue, 0);
+    const avgProgress = targets.length ? (totalAchieved / totalTarget) * 100 : 0;
+    return { totalTarget, totalAchieved, avgProgress };
+  }, [targets]);
+
+  const chartData = {
+    labels: targets.map((t) => t.salesAgent.name),
+    datasets: [
+      {
+        label: "Achieved",
+        data: targets.map((t) => t.achievedValue),
+        backgroundColor: "rgba(99, 102, 241, 0.8)", // Indigo
+        borderRadius: 6,
+      },
+      {
+        label: "Target",
+        data: targets.map((t) => t.targetValue),
+        backgroundColor: "rgba(226, 232, 240, 0.8)", // Slate
+        borderRadius: 6,
+      },
+    ],
+  };
+
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-50">
-        <ArrowPathIcon className="h-12 w-12 text-blue-500 animate-spin" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex justify-center items-center h-screen bg-gray-50">
-        <div className="bg-red-100 text-red-700 px-4 py-3 rounded flex items-center">
-          <XCircleIcon className="h-6 w-6 mr-2" />
-          <p>Error: {error}</p>
-        </div>
+      <div className="flex flex-col justify-center items-center h-screen bg-slate-50">
+        <ArrowPathIcon className="h-10 w-10 text-indigo-600 animate-spin" />
+        <p className="mt-4 text-slate-500 font-medium">Loading Performance Data...</p>
       </div>
     );
   }
 
   return (
-        <div className="container mx-auto p-4">
-          <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Sales Targets</h1>
+    <div className="min-h-screen bg-[#F8FAFC] p-6 lg:p-10">
+      <div className="max-w-7xl mx-auto">
+        
+        {/* Header Section */}
+        <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Performance Dashboard</h1>
+            <p className="text-slate-500 mt-1">Track and manage sales targets across your team.</p>
+          </div>
+          <div className="flex gap-2">
+            <button className="px-4 py-2 bg-white border border-slate-200 rounded-lg shadow-sm text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+              Export PDF
+            </button>
+            <button className="px-4 py-2 bg-indigo-600 rounded-lg shadow-md shadow-indigo-200 text-sm font-semibold text-white hover:bg-indigo-700 transition">
+              Set New Target
+            </button>
+          </div>
+        </header>
 
-          {/* Bar Chart */}
-          {chartData && (
-            <div className="w-4/5 mx-auto mb-8">
-              <Bar
-                data={chartData}
-                options={{
-                  responsive: true,
-                  plugins: {
-                    legend: { position: "top" as const },
-                    title: { display: true, text: "Targets vs. Achieved by Sales Agent" },
-                  },
-                }}
-              />
-            </div>
-          )}
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          <StatCard title="Total Volume" value={`$${stats.totalTarget.toLocaleString()}`} icon={<CurrencyDollarIcon className="w-6 h-6 text-indigo-600"/>} color="bg-indigo-50" />
+          <StatCard title="Total Achieved" value={`$${stats.totalAchieved.toLocaleString()}`} icon={<PresentationChartBarIcon className="w-6 h-6 text-emerald-600"/>} color="bg-emerald-50" />
+          <StatCard title="Avg. Completion" value={`${stats.avgProgress.toFixed(1)}%`} icon={<UserGroupIcon className="w-6 h-6 text-amber-600"/>} color="bg-amber-50" />
+        </div>
 
-          {/* Targets List */}
-          <div className="w-4/5 mx-auto mb-8">
-            <h2 className="text-2xl font-bold mb-4 text-gray-800 text-center">Target Details</h2>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {targets.map((target) => {
-                const progressPercent = Math.min(
-                  (target.achievedValue / target.targetValue) * 100,
-                  100
-                );
+        {/* Chart Section */}
+        <section className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 mb-10">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-xl font-bold text-slate-800">Agent Comparison</h2>
+            <select className="text-sm border-none bg-slate-100 rounded-md focus:ring-0">
+              <option>Last 30 Days</option>
+            </select>
+          </div>
+          <div className="h-[350px]">
+            <Bar 
+              data={chartData} 
+              options={{ 
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { border: { display: false }, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } }
+              }} 
+            />
+          </div>
+        </section>
 
-                return (
-                  <div
-                    key={target.id}
-                    className="bg-white shadow-lg rounded-lg p-6 border border-gray-200"
-                  >
-                    <h2 className="text-xl font-semibold text-gray-700 mb-2">
-                      {target.salesAgent.name}
-                    </h2>
-                    <p className="text-gray-600 text-sm mb-4">{target.product.name}</p>
+        {/* Targets Grid */}
+        <h2 className="text-2xl font-bold text-slate-800 mb-6">Detailed Targets</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {targets.map((target) => (
+            <TargetCard key={target.id} target={target} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
-                    <div className="mb-4">
-                      <div className="flex justify-between text-sm text-gray-500">
-                        <span>Target: {target.targetValue}</span>
-                        <span>Achieved: {target.achievedValue}</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                        <div
-                          className={`h-2 rounded-full ${
-                            target.achievedValue / target.targetValue >= 1
-                              ? "bg-green-500"
-                              : "bg-blue-500"
-                          }`}
-                          style={{ width: `${progressPercent}%` }}
-                        />
-                      </div>
-                    </div>
+// --- Sub-Components ---
 
-                    <div className="flex items-center text-gray-500 text-sm mb-4">
-                      <span>Status:</span>
-                      {target.status === "Achieved" ? (
-                        <CheckCircleIcon className="h-5 w-5 text-green-500 ml-2" />
-                      ) : (
-                        <ExclamationCircleIcon className="h-5 w-5 text-red-500 ml-2" />
-                      )}
-                    </div>
+const StatCard = ({ title, value, icon, color }: any) => (
+  <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 transition hover:shadow-md">
+    <div className={`p-3 rounded-xl ${color}`}>{icon}</div>
+    <div>
+      <p className="text-sm font-medium text-slate-500">{title}</p>
+      <p className="text-2xl font-bold text-slate-900">{value}</p>
+    </div>
+  </div>
+);
 
-                    <p className="text-sm text-gray-500">
-                      Start: {format(parseISO(target.startDate), "MMM dd, yyyy")}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      End: {format(parseISO(target.endDate), "MMM dd, yyyy")}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
+const TargetCard = ({ target }: { target: Target }) => {
+  const progress = (target.achievedValue / target.targetValue) * 100;
+  const isAchieved = target.status === "Achieved";
+
+  return (
+    <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm hover:border-indigo-200 transition-all group">
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <h3 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{target.salesAgent.name}</h3>
+          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{target.product.name}</p>
+        </div>
+        <StatusBadge status={target.status} />
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex justify-between text-sm">
+          <span className="text-slate-500">Progress</span>
+          <span className="font-bold text-slate-900">{progress.toFixed(0)}%</span>
+        </div>
+        
+        {/* Modern Progress Bar */}
+        <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+          <div 
+            className={`h-full rounded-full transition-all duration-1000 ${
+              progress >= 100 ? "bg-emerald-500" : progress >= 50 ? "bg-indigo-500" : "bg-amber-500"
+            }`}
+            style={{ width: `${Math.min(progress, 100)}%` }}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 pt-2">
+          <div>
+            <p className="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">Goal</p>
+            <p className="text-sm font-bold text-slate-700">${target.targetValue.toLocaleString()}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">Achieved</p>
+            <p className="text-sm font-bold text-slate-700">${target.achievedValue.toLocaleString()}</p>
           </div>
         </div>
+
+        <div className="pt-4 border-t border-slate-50 flex items-center gap-2 text-slate-400">
+          <ClockIcon className="w-4 h-4" />
+          <p className="text-[11px]">Ends {format(parseISO(target.endDate), "MMM dd, yyyy")}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const StatusBadge = ({ status }: { status: string }) => {
+  const styles = {
+    Achieved: "bg-emerald-50 text-emerald-700 border-emerald-100",
+    Pending: "bg-amber-50 text-amber-700 border-amber-100",
+    Failed: "bg-rose-50 text-rose-700 border-rose-100",
+  };
+  
+  return (
+    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wide ${styles[status as keyof typeof styles]}`}>
+      {status}
+    </span>
   );
 };
 

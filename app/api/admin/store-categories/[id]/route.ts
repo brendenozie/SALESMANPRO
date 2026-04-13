@@ -141,7 +141,7 @@ async function deleteStoreCategory(req: Request) {
 
     await prisma.storeCategory.delete({ where: { id } });
     
-    try { await cacheDel(`admin:store-categories:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:store-categories:${existingStoreCategory.companyId || "global"}:*`); } catch (e) {}
     return formatResponse(true, null, "Store category deleted successfully");
   } catch (err: any) {
     console.error("Error deleting store category:", err);

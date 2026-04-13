@@ -74,7 +74,7 @@ async function deleteSubcategory(req: Request, { params }: { params: { id: strin
     await prisma.storeCategory.update({ where: { id }, data: { subcategories: reorderedItems } });
 
     
-    try { await cacheDel(`admin:subcategories:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:subcategories:${ id || 'global'}:*`); } catch (e) {}
     return formatResponse(true, { deletedSubId: subId }, "Subcategory deleted successfully", 200);
   } catch (err: any) {
     console.error(`Error deleting subcategory ${subId} from store category ${id}:`, err);

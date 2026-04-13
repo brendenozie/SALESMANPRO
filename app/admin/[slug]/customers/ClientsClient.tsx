@@ -1,21 +1,30 @@
-// app/admin/clients/ClientsClient.tsx
-
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Bar } from "react-chartjs-2";
+import { Doughnut } from "react-chartjs-2";
 import {
   Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
+  ArcElement,
   Tooltip,
   Legend,
 } from "chart.js";
 import { format, parseISO } from "date-fns";
+import { 
+  UsersIcon, 
+  UserPlusIcon, 
+  ChartBarIcon, 
+  CurrencyDollarIcon,
+  MagnifyingGlassIcon,
+  PencilSquareIcon,
+  TrashIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  PlusIcon,
+  EnvelopeIcon,
+  PhoneIcon
+} from "@heroicons/react/24/outline";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 export type Client = {
   id: string;
@@ -37,274 +46,202 @@ export default function ClientsClient({ initialClients }: ClientProps) {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 6;
 
-  // Filtered list based on search term
   const filteredClients = useMemo(() => {
     return initialClients.filter((client) =>
-      client.name.toLowerCase().includes(searchTerm.toLowerCase())
+      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [initialClients, searchTerm]);
 
-  // Separate new vs. active
-  const newClients = useMemo(
-    () => filteredClients.filter((c) => c.status === "new"),
-    [filteredClients]
-  );
-  const activeClients = useMemo(
-    () => filteredClients.filter((c) => c.status === "active"),
-    [filteredClients]
-  );
+  const stats = useMemo(() => ({
+    total: initialClients.length,
+    new: initialClients.filter(c => c.status === "new").length,
+    active: initialClients.filter(c => c.status === "active").length,
+    revenue: initialClients.reduce((sum, c) => sum + c.totalSales, 0),
+  }), [initialClients]);
 
-  // Total sales
-  const totalSales = useMemo(
-    () =>
-      initialClients.reduce((sum, client) => sum + client.totalSales, 0),
-    [initialClients]
-  );
-
-  // Pagination
   const totalPages = Math.ceil(filteredClients.length / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const paginatedClients = filteredClients.slice(
-    indexOfFirstItem,
-    indexOfLastItem
-  );
+  const paginatedClients = filteredClients.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  // Chart data
-  const chartData = {
+  const doughnutData = {
     labels: ["New Clients", "Active Clients"],
     datasets: [
       {
-        label: "Number of Clients",
-        data: [newClients.length, activeClients.length],
-        backgroundColor: ["#FFA726", "#29B6F6"],
-        borderColor: ["#FB8C00", "#0288D1"],
-        borderWidth: 1,
+        data: [stats.new, stats.active],
+        backgroundColor: ["#6366f1", "#10b981"],
+        borderColor: "transparent",
+        hoverOffset: 10,
+        borderRadius: 10,
+        spacing: 5,
       },
     ],
   };
 
-  // Handlers
-  const handleDelete = (id: string) => {
-    alert(`Client with ID ${id} deleted.`);
-  };
-  const handleEdit = (id: string) => {
-    alert(`Editing client with ID ${id}.`);
-  };
+  return (
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 p-4 lg:p-8 transition-colors duration-300">
+      <div className="max-w-7xl mx-auto">
+        
+        {/* Header Section */}
+        <header className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div>
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white flex items-center gap-3 tracking-tight">
+              <span className="p-3 bg-indigo-500/10 rounded-2xl border border-indigo-500/20">
+                <UsersIcon className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+              </span>
+              Client <span className="text-indigo-600 dark:text-indigo-400">Portfolio</span>
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">Manage and monitor customer lifecycle and lifetime value.</p>
+          </div>
+          <button className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95">
+            <PlusIcon className="h-5 w-5" />
+            <span>ADD NEW CLIENT</span>
+          </button>
+        </header>
 
-  const PaginationButton = ({
-    label,
-    onClick,
-    disabled,
-  }: {
-    label: string;
-    onClick: () => void;
-    disabled: boolean;
-  }) => (
-    <button
-      disabled={disabled}
-      onClick={onClick}
-      className="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 disabled:opacity-50"
-    >
-      {label}
-    </button>
+        {/* Search & Bento Stats */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-10">
+          <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <SummaryCard title="Lifetime Value" value={`$${stats.revenue.toLocaleString()}`} icon={CurrencyDollarIcon} color="emerald" />
+            <SummaryCard title="Acquisition" value={stats.new} icon={UserPlusIcon} color="indigo" />
+            <SummaryCard title="Retention" value={stats.active} icon={ChartBarIcon} color="blue" />
+            
+            {/* Embedded Search Bar in the Bento Grid */}
+            <div className="sm:col-span-3 relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2 rounded-3xl shadow-sm">
+              <MagnifyingGlassIcon className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+              <input 
+                type="text" 
+                placeholder="Search by name or email address..."
+                value={searchTerm}
+                onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                className="w-full bg-transparent border-none focus:ring-0 pl-14 py-4 text-slate-900 dark:text-white font-medium"
+              />
+            </div>
+          </div>
+
+          {/* Mini Chart Card */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-[2rem] flex flex-col items-center justify-center relative overflow-hidden shadow-xl shadow-slate-200/50 dark:shadow-none">
+             <div className="h-40 w-40">
+                <Doughnut data={doughnutData} options={{ cutout: '70%', plugins: { legend: { display: false } } }} />
+             </div>
+             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none translate-y-2">
+                <span className="text-2xl font-black">{stats.total}</span>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Clients</span>
+             </div>
+          </div>
+        </div>
+
+        {/* Client Grid */}
+        <section>
+          {paginatedClients.length === 0 ? (
+            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border-2 border-dashed border-slate-200 dark:border-slate-800 py-20 text-center">
+              <UsersIcon className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+              <p className="text-slate-400 font-bold uppercase tracking-widest">No clients match your criteria</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {paginatedClients.map((client) => (
+                <ClientCard key={client.id} client={client} />
+              ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          <footer className="mt-12 flex justify-center items-center gap-8 pb-10">
+            <button 
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+              className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 disabled:opacity-20 hover:border-indigo-500 transition-colors shadow-sm"
+            >
+              <ChevronLeftIcon className="h-6 w-6" />
+            </button>
+            <div className="flex items-center gap-2 font-black">
+              <span className="text-2xl text-slate-900 dark:text-white">{currentPage}</span>
+              <span className="text-slate-400">/ {totalPages}</span>
+            </div>
+            <button 
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+              className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 disabled:opacity-20 hover:border-indigo-500 transition-colors shadow-sm"
+            >
+              <ChevronRightIcon className="h-6 w-6" />
+            </button>
+          </footer>
+        </section>
+      </div>
+    </div>
   );
+}
+
+// --- Sub-components ---
+
+const SummaryCard = ({ title, value, icon: Icon, color }: any) => {
+  const themes: any = {
+    emerald: "text-emerald-600 bg-emerald-50 border-emerald-100 dark:bg-emerald-500/10 dark:border-emerald-500/20",
+    indigo: "text-indigo-600 bg-indigo-50 border-indigo-100 dark:bg-indigo-500/10 dark:border-indigo-500/20",
+    blue: "text-blue-600 bg-blue-50 border-blue-100 dark:bg-blue-500/10 dark:border-blue-500/20",
+  };
 
   return (
-      <main className="flex-grow container mx-auto px-6 py-8">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-5xl font-extrabold text-center text-indigo-400 mb-10 drop-shadow-lg">
-            Clients Overview
-          </h1>
-
-          {/* Search Bar */}
-          <div className="flex justify-center mb-8">
-            <input
-              type="text"
-              placeholder="Search clients by name..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="w-full max-w-md p-4 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-md"
-              aria-label="Search clients"
-            />
-            {searchTerm && (
-              <button
-                onClick={() => {
-                  setSearchTerm("");
-                  setCurrentPage(1);
-                }}
-                className="ml-3 px-4 py-2 bg-red-500 text-white rounded-lg shadow-lg hover:bg-red-600 transition-all"
-                aria-label="Clear search"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-
-          {/* Summary Section */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-            <SummaryCard
-              title="Total Clients"
-              value={initialClients.length}
-              bgColor="bg-indigo-500"
-            />
-            <SummaryCard
-              title="New Clients"
-              value={newClients.length}
-              bgColor="bg-green-500"
-            />
-            <SummaryCard
-              title="Active Clients"
-              value={activeClients.length}
-              bgColor="bg-blue-500"
-            />
-            <SummaryCard
-              title="Total Sales"
-              value={`$${totalSales.toFixed(2)}`}
-              bgColor="bg-yellow-500"
-            />
-          </div>
-
-          {/* Chart Section */}
-          <section className="bg-gray-800 p-6 rounded-lg shadow-xl flex flex-col mb-10">
-            <h2 className="text-xl font-semibold text-gray-100 mb-4">
-              Customer Growth
-            </h2>
-            <div className="flex-grow">
-              <div className="chart-container" style={{ height: "300px" }}>
-                <Bar
-                  data={chartData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: { position: "top" },
-                    },
-                    scales: {
-                      x: { grid: { display: false }, ticks: { color: "#ddd" } },
-                      y: { grid: { color: "#444" }, ticks: { color: "#ddd" } },
-                    },
-                  }}
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Clients List Section */}
-          <section className="mb-10">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-indigo-400">Clients List</h2>
-              <button className="px-4 py-2 bg-indigo-500 text-white rounded-lg shadow hover:bg-indigo-600">
-                Add Client
-              </button>
-            </div>
-
-            {paginatedClients.length === 0 ? (
-              <div className="text-center py-16">
-                <p className="text-lg text-gray-400">
-                  No clients match your search.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                {paginatedClients.map((client) => (
-                  <ClientCard
-                    key={client.id}
-                    client={client}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Pagination */}
-            <div className="flex justify-center mt-6 space-x-4">
-              <PaginationButton
-                label="Previous"
-                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                disabled={currentPage === 1}
-              />
-              <PaginationButton
-                label="Next"
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(p + 1, totalPages))
-                }
-                disabled={currentPage === totalPages}
-              />
-            </div>
-          </section>
-        </div>
-      </main>
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-lg transition-transform hover:-translate-y-1">
+      <div className={`p-3 w-fit rounded-2xl mb-4 ${themes[color]}`}>
+        <Icon className="h-6 w-6" />
+      </div>
+      <p className="text-slate-400 dark:text-slate-500 text-xs font-black uppercase tracking-widest">{title}</p>
+      <p className="text-2xl font-black mt-1">{value}</p>
+    </div>
   );
-}
+};
 
-// ----------------------
-// Helper Components
-// ----------------------
+const ClientCard = ({ client }: { client: Client }) => {
+  const isNew = client.status === "new";
 
-interface SummaryCardProps {
-  title: string;
-  value: string | number;
-  bgColor: string;
-}
+  return (
+    <div className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-[2.5rem] shadow-lg hover:border-indigo-500/50 transition-all relative overflow-hidden">
+      <div className="flex justify-between items-start mb-6">
+        <div className="flex items-center gap-3">
+          <div className="h-12 w-12 bg-indigo-500 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-500/20">
+            {client.name.charAt(0)}
+          </div>
+          <div>
+            <h3 className="font-black text-slate-900 dark:text-white uppercase truncate w-32 tracking-tight">{client.name}</h3>
+            <span className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase ${isNew ? 'bg-indigo-500/10 text-indigo-600' : 'bg-emerald-500/10 text-emerald-600'}`}>
+              {client.status}
+            </span>
+          </div>
+        </div>
+        <div className="flex gap-2">
+           <button className="p-2 bg-slate-50 dark:bg-white/5 rounded-xl text-slate-400 hover:text-indigo-500 transition-colors">
+              <PencilSquareIcon className="h-5 w-5" />
+           </button>
+           <button className="p-2 bg-slate-50 dark:bg-white/5 rounded-xl text-slate-400 hover:text-rose-500 transition-colors">
+              <TrashIcon className="h-5 w-5" />
+           </button>
+        </div>
+      </div>
 
-const SummaryCard: React.FC<SummaryCardProps> = ({ title, value, bgColor }) => (
-  <div
-    className={`${bgColor} text-white p-5 rounded-lg shadow-md hover:shadow-lg transition`}
-  >
-    <h2 className="text-lg font-semibold">{title}</h2>
-    <p className="text-3xl font-bold mt-2">{value}</p>
-  </div>
-);
+      <div className="space-y-3 mb-6">
+        <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
+           <EnvelopeIcon className="h-4 w-4" />
+           <span className="text-xs font-bold truncate">{client.email}</span>
+        </div>
+        <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
+           <PhoneIcon className="h-4 w-4" />
+           <span className="text-xs font-bold">{client.phone}</span>
+        </div>
+      </div>
 
-interface ClientCardProps {
-  client: Client;
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
-}
-
-const ClientCard: React.FC<ClientCardProps> = ({ client, onEdit, onDelete }) => (
-  <div className="bg-gray-800 text-gray-200 p-6 rounded-lg shadow-lg hover:shadow-xl transition relative flex flex-col justify-between">
-    <div>
-      <h3 className="text-2xl font-bold text-indigo-400 mb-2">{client.name}</h3>
-      <p className="text-sm text-gray-400 mb-1">
-        Email: <span className="text-gray-300">{client.email}</span>
-      </p>
-      <p className="text-sm text-gray-400 mb-1">
-        Phone: <span className="text-gray-300">{client.phone}</span>
-      </p>
-      <p className="text-sm text-gray-400 mb-1">
-        Total Sales:{" "}
-        <span className="text-green-400 font-medium">
-          ${client.totalSales.toFixed(2)}
-        </span>
-      </p>
-      <p className="text-sm text-gray-400 mb-4">
-        Last Transaction:{" "}
-        <span className="text-green-400 font-medium">
-          $
-          {client.recentTransactionAmount.toFixed(2)} on{" "}
-          {format(parseISO(client.recentTransactionDate), "MMM dd, yyyy")}
-        </span>
-      </p>
+      <div className="pt-6 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-4">
+        <div>
+           <p className="text-[10px] font-black text-slate-400 uppercase">LTV</p>
+           <p className="text-lg font-black text-emerald-600 dark:text-emerald-400">${client.totalSales.toFixed(0)}</p>
+        </div>
+        <div>
+           <p className="text-[10px] font-black text-slate-400 uppercase">Last Order</p>
+           <p className="text-xs font-bold text-slate-600 dark:text-slate-300">
+              {format(parseISO(client.recentTransactionDate), "MMM dd, yyyy")}
+           </p>
+        </div>
+      </div>
     </div>
-    <div className="flex space-x-2 self-end">
-      <button
-        className="px-3 py-1 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition"
-        onClick={() => onEdit(client.id)}
-      >
-        Edit
-      </button>
-      <button
-        className="px-3 py-1 bg-red-500 text-white rounded-lg shadow hover:bg-red-600 transition"
-        onClick={() => onDelete(client.id)}
-      >
-        Delete
-      </button>
-    </div>
-  </div>
-);
+  );
+};
