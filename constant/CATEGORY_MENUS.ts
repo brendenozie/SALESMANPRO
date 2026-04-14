@@ -133,10 +133,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           label: "Fuel Logs",
           href: `/admin/${adminSlug}/store-transport-fuel-logs`,
         },
-        {
-          label: "Assignments",
-          href: `/admin/${adminSlug}/store-transport-assignments`,
-        },
+        // {
+        //   label: "Assignments",
+        //   href: `/admin/${adminSlug}/store-transport-assignments`,
+        // },
         {
           label: "Incidents",
           href: `/admin/${adminSlug}/store-transport-incidents`,
@@ -236,10 +236,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           label: "Fuel Logs",
           href: `/admin/${adminSlug}/store-transport-fuel-logs`,
         },
-        {
-          label: "Assignments",
-          href: `/admin/${adminSlug}/store-transport-assignments`,
-        },
+        // {
+        //   label: "Assignments",
+        //   href: `/admin/${adminSlug}/store-transport-assignments`,
+        // },
         {
           label: "Incidents",
           href: `/admin/${adminSlug}/store-transport-incidents`,
@@ -339,10 +339,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           label: "Fuel Logs",
           href: `/admin/${adminSlug}/store-transport-fuel-logs`,
         },
-        {
-          label: "Assignments",
-          href: `/admin/${adminSlug}/store-transport-assignments`,
-        },
+        // {
+        //   label: "Assignments",
+        //   href: `/admin/${adminSlug}/store-transport-assignments`,
+        // },
         {
           label: "Incidents",
           href: `/admin/${adminSlug}/store-transport-incidents`,
@@ -442,10 +442,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           label: "Fuel Logs",
           href: `/admin/${adminSlug}/store-transport-fuel-logs`,
         },
-        {
-          label: "Assignments",
-          href: `/admin/${adminSlug}/store-transport-assignments`,
-        },
+        // {
+        //   label: "Assignments",
+        //   href: `/admin/${adminSlug}/store-transport-assignments`,
+        // },
         {
           label: "Incidents",
           href: `/admin/${adminSlug}/store-transport-incidents`,
@@ -545,10 +545,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           label: "Fuel Logs",
           href: `/admin/${adminSlug}/store-transport-fuel-logs`,
         },
-        {
-          label: "Assignments",
-          href: `/admin/${adminSlug}/store-transport-assignments`,
-        },
+        // {
+        //   label: "Assignments",
+        //   href: `/admin/${adminSlug}/store-transport-assignments`,
+        // },
         {
           label: "Incidents",
           href: `/admin/${adminSlug}/store-transport-incidents`,
@@ -648,10 +648,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           label: "Fuel Logs",
           href: `/admin/${adminSlug}/store-transport-fuel-logs`,
         },
-        {
-          label: "Assignments",
-          href: `/admin/${adminSlug}/store-transport-assignments`,
-        },
+        // {
+        //   label: "Assignments",
+        //   href: `/admin/${adminSlug}/store-transport-assignments`,
+        // },
         {
           label: "Incidents",
           href: `/admin/${adminSlug}/store-transport-incidents`,
@@ -735,10 +735,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           href: `/admin/${adminSlug}/transport-maintenance-records`,
         },
         { label: "Fuel Logs", href: `/admin/${adminSlug}/transport-fuel-logs` },
-        {
-          label: "Assignments",
-          href: `/admin/${adminSlug}/transport-assignments`,
-        },
+        // {
+        //   label: "Assignments",
+        //   href: `/admin/${adminSlug}/transport-assignments`,
+        // },
         { label: "Incidents", href: `/admin/${adminSlug}/transport-incidents` },
         { label: "Reports", href: `/admin/${adminSlug}/transport-reports` },
       ],
@@ -804,10 +804,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           href: `/admin/${adminSlug}/transport-maintenance-records`,
         },
         { label: "Fuel Logs", href: `/admin/${adminSlug}/transport-fuel-logs` },
-        {
-          label: "Assignments",
-          href: `/admin/${adminSlug}/transport-assignments`,
-        },
+        // {
+        //   label: "Assignments",
+        //   href: `/admin/${adminSlug}/transport-assignments`,
+        // },
         { label: "Incidents", href: `/admin/${adminSlug}/transport-incidents` },
         { label: "Reports", href: `/admin/${adminSlug}/transport-reports` },
       ],
@@ -892,10 +892,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           href: `/admin/${adminSlug}/transport-maintenance-records`,
         },
         { label: "Fuel Logs", href: `/admin/${adminSlug}/transport-fuel-logs` },
-        {
-          label: "Assignments",
-          href: `/admin/${adminSlug}/transport-assignments`,
-        },
+        // {
+        //   label: "Assignments",
+        //   href: `/admin/${adminSlug}/transport-assignments`,
+        // },
         { label: "Incidents", href: `/admin/${adminSlug}/transport-incidents` },
         { label: "Reports", href: `/admin/${adminSlug}/transport-reports` },
       ],
@@ -1035,10 +1035,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           label: "Fuel Logs",
           href: `/admin/${adminSlug}/store-transport-fuel-logs`,
         },
-        {
-          label: "Assignments",
-          href: `/admin/${adminSlug}/store-transport-assignments`,
-        },
+        // {
+        //   label: "Assignments",
+        //   href: `/admin/${adminSlug}/store-transport-assignments`,
+        // },
         {
           label: "Incidents",
           href: `/admin/${adminSlug}/store-transport-incidents`,
@@ -1198,10 +1198,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           href: `/admin/${adminSlug}/transport-maintenance-records`,
         },
         { label: "Fuel Logs", href: `/admin/${adminSlug}/transport-fuel-logs` },
-        {
-          label: "Assignments",
-          href: `/admin/${adminSlug}/transport-assignments`,
-        },
+        // {
+        //   label: "Assignments",
+        //   href: `/admin/${adminSlug}/transport-assignments`,
+        // },
         { label: "Incidents", href: `/admin/${adminSlug}/transport-incidents` },
         { label: "Reports", href: `/admin/${adminSlug}/transport-reports` },
       ],
@@ -1372,10 +1372,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           href: `/admin/${adminSlug}/transport-maintenance-records`,
         },
         { label: "Fuel Logs", href: `/admin/${adminSlug}/transport-fuel-logs` },
-        {
-          label: "Assignments",
-          href: `/admin/${adminSlug}/transport-assignments`,
-        },
+        // {
+        //   label: "Assignments",
+        //   href: `/admin/${adminSlug}/transport-assignments`,
+        // },
         { label: "Incidents", href: `/admin/${adminSlug}/transport-incidents` },
         { label: "Reports", href: `/admin/${adminSlug}/transport-reports` },
       ],
@@ -1441,10 +1441,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           label: "Fuel Logs",
           href: `/admin/${adminSlug}/store-transport-fuel-logs`,
         },
-        {
-          label: "Assignments",
-          href: `/admin/${adminSlug}/store-transport-assignments`,
-        },
+        // {
+        //   label: "Assignments",
+        //   href: `/admin/${adminSlug}/store-transport-assignments`,
+        // },
         {
           label: "Incidents",
           href: `/admin/${adminSlug}/store-transport-incidents`,
@@ -2257,10 +2257,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           href: `/admin/${adminSlug}/transport-maintenance-records`,
         },
         { label: "Fuel Logs", href: `/admin/${adminSlug}/transport-fuel-logs` },
-        {
-          label: "Assignments",
-          href: `/admin/${adminSlug}/transport-assignments`,
-        },
+        // {
+        //   label: "Assignments",
+        //   href: `/admin/${adminSlug}/transport-assignments`,
+        // },
         { label: "Incidents", href: `/admin/${adminSlug}/transport-incidents` },
         { label: "Reports", href: `/admin/${adminSlug}/transport-reports` },
       ],
@@ -2595,10 +2595,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           label: "Fuel Logs",
           href: `/admin/${adminSlug}/store-transport-fuel-logs`,
         },
-        {
-          label: "Assignments",
-          href: `/admin/${adminSlug}/store-transport-assignments`,
-        },
+        // {
+        //   label: "Assignments",
+        //   href: `/admin/${adminSlug}/store-transport-assignments`,
+        // },
         {
           label: "Incidents",
           href: `/admin/${adminSlug}/store-transport-incidents`,
@@ -2879,10 +2879,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           href: `/admin/${adminSlug}/store-transport-maintenance-records`,
         },
         { label: "Fuel Logs", href: `/admin/${adminSlug}/store-transport-fuel-logs` },
-        {
-          label: "Assignments",
-          href: `/admin/${adminSlug}/store-transport-assignments`,
-        },
+        // {
+        //   label: "Assignments",
+        //   href: `/admin/${adminSlug}/store-transport-assignments`,
+        // },
         { label: "Incidents", href: `/admin/${adminSlug}/store-transport-incidents` },
         { label: "Reports", href: `/admin/${adminSlug}/store-transport-reports` },
       ],
