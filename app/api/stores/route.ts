@@ -280,7 +280,7 @@ if (paymentSettingsData) {
     });
 
     try {
-      await cacheDel(`company:${newCompany.id}`); // Cache the new company for 5 minutes
+      await cacheDel(`user:${user.id}:companies`); // Cache the new company for 5 minutes
     } catch (e) {
       console.error("Failed to invalidate new company cache:", e);
     }

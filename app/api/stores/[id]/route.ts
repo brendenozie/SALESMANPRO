@@ -14,7 +14,10 @@ export const dynamic = "force-dynamic";
 // =======================
 // GET: Retrieve a single company by ID
 // =======================
-async function getCompany(req: Request, { params }: { params: { id: string } }) {
+async function getCompany(
+  req: Request,
+  { params }: { params: { id: string } },
+) {
   const session = await getAuthSession();
   if (!session?.user) {
     return formatResponse(false, null, "Unauthorized", 401);
@@ -67,7 +70,10 @@ async function getCompany(req: Request, { params }: { params: { id: string } }) 
 // =======================
 // PUT: Update a company
 // =======================
-async function updateCompany(req: Request, { params }: { params: { id: string } }) {
+async function updateCompany(
+  req: Request,
+  { params }: { params: { id: string } },
+) {
   const session = await getAuthSession();
   if (!session?.user?.id) {
     return formatResponse(false, null, "Unauthorized", 401);
@@ -82,7 +88,12 @@ async function updateCompany(req: Request, { params }: { params: { id: string } 
   const parseResult = companySchema.safeParse(body);
 
   if (!parseResult.success) {
-    return formatResponse(false, parseResult.error.errors, "Validation failed", 400);
+    return formatResponse(
+      false,
+      parseResult.error.errors,
+      "Validation failed",
+      400,
+    );
   }
 
   const {
@@ -106,68 +117,75 @@ async function updateCompany(req: Request, { params }: { params: { id: string } 
   });
 
   if (!companyToUpdate) {
-    return formatResponse(false, null, "Company not found or unauthorized", 404);
+    return formatResponse(
+      false,
+      null,
+      "Company not found or unauthorized",
+      404,
+    );
   }
-  
+
   const cacheKey = `company:${id}`;
 
   const existingPaymentSettingsId = companyToUpdate.paymentSettingsId;
   // Remove `id` from the nested PaymentSettings payload because Prisma's update/create inputs do not accept the related record's id field.
-  const paymentSettingsData = paymentSettings ? (({ id, ...rest }: any) => rest)(paymentSettings) : undefined;
+  const paymentSettingsData = paymentSettings
+    ? (({ id, ...rest }: any) => rest)(paymentSettings)
+    : undefined;
 
   // =========================
-// 🔐 PREPARE ENCRYPTED PAYMENT SETTINGS
-// =========================
-let encryptedPaymentSettings: any = null;
+  // 🔐 PREPARE ENCRYPTED PAYMENT SETTINGS
+  // =========================
+  let encryptedPaymentSettings: any = null;
 
-if (paymentSettingsData) {
-  encryptedPaymentSettings = { ...paymentSettingsData };
+  if (paymentSettingsData) {
+    encryptedPaymentSettings = { ...paymentSettingsData };
 
-  // M-PESA SECRET
-  if (paymentSettingsData.mpesaConsumerSecret) {
-    const encrypted = encrypt(paymentSettingsData.mpesaConsumerSecret);
-    encryptedPaymentSettings.mpesaSecret_encrypted = encrypted.value;
-    encryptedPaymentSettings.mpesaSecret_iv = encrypted.iv;
-    encryptedPaymentSettings.mpesaSecret_tag = encrypted.tag;
-    encryptedPaymentSettings.mpesaConsumerSecret = null;
+    // M-PESA SECRET
+    if (paymentSettingsData.mpesaConsumerSecret) {
+      const encrypted = encrypt(paymentSettingsData.mpesaConsumerSecret);
+      encryptedPaymentSettings.mpesaSecret_encrypted = encrypted.value;
+      encryptedPaymentSettings.mpesaSecret_iv = encrypted.iv;
+      encryptedPaymentSettings.mpesaSecret_tag = encrypted.tag;
+      encryptedPaymentSettings.mpesaConsumerSecret = null;
+    }
+
+    // STRIPE SECRET
+    if (paymentSettingsData.stripeSecretKey) {
+      const encrypted = encrypt(paymentSettingsData.stripeSecretKey);
+      encryptedPaymentSettings.stripeSecret_encrypted = encrypted.value;
+      encryptedPaymentSettings.stripeSecret_iv = encrypted.iv;
+      encryptedPaymentSettings.stripeSecret_tag = encrypted.tag;
+      encryptedPaymentSettings.stripeSecretKey = null;
+    }
+
+    // PAYPAL SECRET
+    if (paymentSettingsData.paypalClientSecret) {
+      const encrypted = encrypt(paymentSettingsData.paypalClientSecret);
+      encryptedPaymentSettings.paypalSecret_encrypted = encrypted.value;
+      encryptedPaymentSettings.paypalSecret_iv = encrypted.iv;
+      encryptedPaymentSettings.paypalSecret_tag = encrypted.tag;
+      encryptedPaymentSettings.paypalClientSecret = null;
+    }
+
+    // PAYSTACK SECRET
+    if (paymentSettingsData.paystackSecretKey) {
+      const encrypted = encrypt(paymentSettingsData.paystackSecretKey);
+      encryptedPaymentSettings.paystackSecret_encrypted = encrypted.value;
+      encryptedPaymentSettings.paystackSecret_iv = encrypted.iv;
+      encryptedPaymentSettings.paystackSecret_tag = encrypted.tag;
+      encryptedPaymentSettings.paystackSecretKey = null;
+    }
+
+    // GHUBA API SECRET
+    if (paymentSettingsData.ghubaApiKey) {
+      const encrypted = encrypt(paymentSettingsData.ghubaApiKey);
+      encryptedPaymentSettings.ghubaSecret_encrypted = encrypted.value;
+      encryptedPaymentSettings.ghubaSecret_iv = encrypted.iv;
+      encryptedPaymentSettings.ghubaSecret_tag = encrypted.tag;
+      encryptedPaymentSettings.ghubaApiKey = null;
+    }
   }
-
-  // STRIPE SECRET
-  if (paymentSettingsData.stripeSecretKey) {
-    const encrypted = encrypt(paymentSettingsData.stripeSecretKey);
-    encryptedPaymentSettings.stripeSecret_encrypted = encrypted.value;
-    encryptedPaymentSettings.stripeSecret_iv = encrypted.iv;
-    encryptedPaymentSettings.stripeSecret_tag = encrypted.tag;
-    encryptedPaymentSettings.stripeSecretKey = null;
-  }
-
-  // PAYPAL SECRET
-  if (paymentSettingsData.paypalClientSecret) {
-    const encrypted = encrypt(paymentSettingsData.paypalClientSecret);
-    encryptedPaymentSettings.paypalSecret_encrypted = encrypted.value;
-    encryptedPaymentSettings.paypalSecret_iv = encrypted.iv;
-    encryptedPaymentSettings.paypalSecret_tag = encrypted.tag;
-    encryptedPaymentSettings.paypalClientSecret = null;
-  }
-
-  // PAYSTACK SECRET
-  if (paymentSettingsData.paystackSecretKey) {
-    const encrypted = encrypt(paymentSettingsData.paystackSecretKey);
-    encryptedPaymentSettings.paystackSecret_encrypted = encrypted.value;
-    encryptedPaymentSettings.paystackSecret_iv = encrypted.iv;
-    encryptedPaymentSettings.paystackSecret_tag = encrypted.tag;
-    encryptedPaymentSettings.paystackSecretKey = null;
-  }
-
-  // GHUBA API SECRET
-  if (paymentSettingsData.ghubaApiKey) {
-    const encrypted = encrypt(paymentSettingsData.ghubaApiKey);
-    encryptedPaymentSettings.ghubaSecret_encrypted = encrypted.value;
-    encryptedPaymentSettings.ghubaSecret_iv = encrypted.iv;
-    encryptedPaymentSettings.ghubaSecret_tag = encrypted.tag;
-    encryptedPaymentSettings.ghubaApiKey = null;
-  }
-}
 
   const updatedCompany = await prisma.company.update({
     where: { id },
@@ -210,7 +228,9 @@ if (paymentSettingsData) {
           }
         : undefined,
 
-      AnalyticsConfig: analyticsConfig ? { update: analyticsConfig } : undefined,
+      AnalyticsConfig: analyticsConfig
+        ? { update: analyticsConfig }
+        : undefined,
       // PaymentSettings: paymentSettings
       //           ? {
       //                 // Use upsert to handle both creation and updates
@@ -218,7 +238,7 @@ if (paymentSettingsData) {
       //                     // 1. Where: Targets the related record using the foreign key
       //                     where: {
       //                         // If an ID exists, use it. If not, use a dummy value to trigger the 'create' block.
-      //                         id: existingPaymentSettingsId || "non-existent-id", 
+      //                         id: existingPaymentSettingsId || "non-existent-id",
       //                     },
       //                     // 2. Update: What to do if the record is found
       //                     update: paymentSettingsData as any,
@@ -227,7 +247,7 @@ if (paymentSettingsData) {
       //                 },
       //             }
       //           : undefined,
-      
+
       PaymentSettings: paymentSettings
         ? {
             upsert: {
@@ -240,13 +260,18 @@ if (paymentSettingsData) {
           }
         : undefined,
 
+      ShippingSettings: shippingSettings
+        ? { update: shippingSettings }
+        : undefined,
 
-      ShippingSettings: shippingSettings ? { update: shippingSettings } : undefined,
-
-      socialLinks: socialLinks ? { deleteMany: {}, create: socialLinks } : undefined,
+      socialLinks: socialLinks
+        ? { deleteMany: {}, create: socialLinks }
+        : undefined,
       policies: policies ? { deleteMany: {}, create: policies } : undefined,
       faqs: faqs ? { deleteMany: {}, create: faqs } : undefined,
-      testimonials: testimonials ? { deleteMany: {}, create: testimonials } : undefined,
+      testimonials: testimonials
+        ? { deleteMany: {}, create: testimonials }
+        : undefined,
 
       heroSlides: heroSlides
         ? {
@@ -264,8 +289,18 @@ if (paymentSettingsData) {
             create: promotions.map((p) => ({
               ...p,
               title: p.title || "Untitled", // Ensure title is always a string
-              perks: p.perks ? p.perks.map((perk: any) => ({ ...perk, id: perk.id || undefined })) : [],
-              trustLogos: p.trustLogos ? p.trustLogos.map((logo: any) => ({ ...logo, id: logo.id || undefined })) : [],
+              perks: p.perks
+                ? p.perks.map((perk: any) => ({
+                    ...perk,
+                    id: perk.id || undefined,
+                  }))
+                : [],
+              trustLogos: p.trustLogos
+                ? p.trustLogos.map((logo: any) => ({
+                    ...logo,
+                    id: logo.id || undefined,
+                  }))
+                : [],
               startsAt: p.startsAt ? new Date(p.startsAt) : undefined,
               endsAt: p.endsAt ? new Date(p.endsAt) : undefined,
             })),
@@ -286,14 +321,13 @@ if (paymentSettingsData) {
             })),
           }
         : undefined,
-
-        
     },
   });
 
   revalidateCompanyCache(updatedCompany.slug || "");
 
   try {
+    await cacheDel(`user:${session.user.id}:companies`);
     await cacheDel(cacheKey);
   } catch (e) {
     console.error("Failed to invalidate company cache:", e);
@@ -305,13 +339,15 @@ if (paymentSettingsData) {
 // =======================
 // DELETE: Delete a company
 // =======================
-async function deleteCompany(req: Request, { params }: { params: { companyId: string } }) {
+async function deleteCompany(
+  req: Request,
+  { params }: { params: { companyId: string } },
+) {
   const session = await getAuthSession();
   if (!session?.user?.id) {
     return formatResponse(false, null, "Unauthorized", 401);
   }
 
-  
   const companyToDelete = await prisma.company.findFirst({
     where: { id: params.companyId, userId: session.user.id },
     select: {
@@ -324,17 +360,37 @@ async function deleteCompany(req: Request, { params }: { params: { companyId: st
   });
 
   if (!companyToDelete) {
-    return formatResponse(false, null, "Company not found or unauthorized", 404);
+    return formatResponse(
+      false,
+      null,
+      "Company not found or unauthorized",
+      404,
+    );
   }
 
   await prisma.$transaction(async (tx) => {
-    if (companyToDelete.sEOId) await tx.sEO.delete({ where: { id: companyToDelete.sEOId } });
-    if (companyToDelete.analyticsConfigId) await tx.analyticsConfig.delete({ where: { id: companyToDelete.analyticsConfigId } });
-    if (companyToDelete.paymentSettingsId) await tx.paymentSettings.delete({ where: { id: companyToDelete.paymentSettingsId } });
-    if (companyToDelete.shippingSettingsId) await tx.shippingSettings.delete({ where: { id: companyToDelete.shippingSettingsId } });
+    if (companyToDelete.sEOId)
+      await tx.sEO.delete({ where: { id: companyToDelete.sEOId } });
+    if (companyToDelete.analyticsConfigId)
+      await tx.analyticsConfig.delete({
+        where: { id: companyToDelete.analyticsConfigId },
+      });
+    if (companyToDelete.paymentSettingsId)
+      await tx.paymentSettings.delete({
+        where: { id: companyToDelete.paymentSettingsId },
+      });
+    if (companyToDelete.shippingSettingsId)
+      await tx.shippingSettings.delete({
+        where: { id: companyToDelete.shippingSettingsId },
+      });
 
     await tx.company.delete({ where: { id: params.companyId } });
   });
+
+  try {
+    await cacheDel(`user:${session.user.id}:companies`);
+    await cacheDel(`company:${params.companyId}`);
+  } catch {}
 
   return formatResponse(true, null, "Company deleted successfully");
 }
