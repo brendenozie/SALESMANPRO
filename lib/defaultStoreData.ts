@@ -6543,6 +6543,365 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         },
       ],
     }),
+  
+    "Meat Store": withOverrides({
+      tagline: "**Fresh & Quality Meats** for Every Meal",
+      description:
+        "Discover our wide selection of fresh and high-quality meats, sourced from trusted farms and suppliers to provide you with the best options for your meals.",
+      socialLinks: [
+        {
+          channel: SocialChannel.INSTAGRAM,
+          url: "https://insta.com/meatstore",
+        },
+      ],
+      faqs: [
+        {
+          question: "Do you offer delivery services?",
+          answer:
+            "Yes, we provide delivery services for our meat products. Contact us for more details.",
+          order: 1,
+        },
+      ],
+      testimonials: [
+        {
+          authorName: "Lisa K.",
+          quote:
+            "The quality of their meats is exceptional. I always find the freshest cuts for my family!",
+          rating: 5,
+        },
+      ],
+      heroSlides: [
+        {
+          imageUrl: getSampleImageUrl("meat-store"),
+          headline: "New Arrivals of Fresh Meats",
+          subline:
+            "Explore our latest selection of fresh and high-quality meats for your meals.",
+          ctaText: "Shop Now",
+          ctaLink: "/shop",
+          id: "",
+          companyId: "",
+          price: null,
+          productImageUrl: null,
+          badgeText: "Fresh Meats",
+          endsAt: null,
+          order: 0,
+          iconKey: null,
+          backgroundColor: null,
+          textColor: null,
+          videoLink: null,
+          type: "image",
+        },
+      ],
+      metrics: [
+        { label: "Meat Varieties", value: 50 },
+        { label: "Satisfied Customers", value: 300 },
+        { label: "Delivery Services", value: 1 },
+      ],
+      seo: {
+        id: "",
+        title:
+          "Meat Store | Fresh and Quality Meats for Every Meal",
+        description:
+          "Discover our wide selection of fresh and high-quality meats, sourced from trusted farms and suppliers to provide you with the best options for your meals. Shop now and enjoy the freshest cuts.",
+        keywords: [
+          "meat store",
+          "fresh meats",
+          "quality meats",
+          "meat delivery",
+          "trusted meat suppliers",
+        ],
+      },
+      stats: [
+        { label: "Meat Varieties", value: 50 },
+        { label: "Satisfied Customers", value: 300 },
+        { label: "Delivery Services", value: "Yes" },
+      ],
+      awards: [
+        { name: "Best Meat Store 2024", iconUrl: "/icons/award.svg" },
+        { name: "Top 20 Food Retailers 2024", iconUrl: "/icons/award.svg" },
+      ],
+      policies: [
+        {
+          type: PolicyType.CANCELLATION,
+          content:
+            "Returns accepted within 24 hours of delivery. Perishable items are non-refundable.",
+        },
+      ],
+      promotions: [
+        {
+          title: "Weekend Meat Sale",
+          description:
+            "Get 10% off all meat products during our weekend sale. Stock up for your meals!",
+          ctaText: "Shop Now",
+          ctaLink: "/sale",
+          companyId: "",
+          perks: [{ id: "", label: "10% Off", icon: "StarIcon" }],
+          trustLogos: [],
+        },
+      ],
+
+      sectionSubtitle: "Fresh & Quality Meats for Your Meals",
+      sectionTitle: "Meat Store",
+      sectionDescription:
+        "Discover our wide selection of fresh and high-quality meats, sourced from trusted farms and suppliers to provide you with the best options for your meals.",
+      partnerLogos: [
+        {
+          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
+          alt: "Brand A",
+        },
+        {
+          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
+          alt: "Brand B",
+        },
+        {
+          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
+          alt: "Brand C",
+        },
+        {
+          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
+          alt: "Brand D",
+        },
+        {
+          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
+          alt: "Brand E",
+        },
+      ],
+    }),
+
+    "Hardware Shop": withOverrides({
+      tagline: "**Tools & Supplies** for Every Project",
+      description:
+        "Discover our wide selection of high-quality tools and hardware supplies, designed to help you complete your projects with ease and efficiency.",
+      socialLinks: [
+        {
+          channel: SocialChannel.INSTAGRAM,
+          url: "https://insta.com/hardwarestore",
+        },
+      ],
+      faqs: [
+        {
+          question: "Do you offer tool rentals?",
+          answer:
+            "Yes, we provide tool rental services for a wide range of equipment. Contact us for more details.",
+          order: 1,
+        },
+      ],
+      testimonials: [
+        {
+          authorName: "Mark D.",
+          quote:
+            "The quality of their tools is excellent. I found everything I needed for my home improvement projects!",
+          rating: 5,
+        },
+      ],
+      heroSlides: [
+        {
+          imageUrl: getSampleImageUrl("hardware-store"),
+          headline: "New Arrivals of Tools & Supplies",
+          subline:
+            "Explore our latest collection of high-quality tools and hardware supplies for your projects.",
+          ctaText: "Shop Now",
+          ctaLink: "/shop",
+          id: "",
+          companyId: "",
+          price: null,
+          productImageUrl: null,
+          badgeText: "New Arrivals",
+          endsAt: null,
+          order: 0,
+          iconKey: null,
+          backgroundColor: null,
+          textColor: null,
+          videoLink: null,
+          type: "image",
+        },
+      ],
+      metrics: [
+        { label: "Tool Varieties", value: 200 },
+        { label: "Satisfied Customers", value: 600 },
+        { label: "Tool Rentals", value: 1 },
+      ],
+      seo: {
+        id: "",
+        title:
+          "Hardware Store | Tools and Supplies for Every Project",
+        description:
+          "Discover our wide selection of high-quality tools and hardware supplies, designed to help you complete your projects with ease and efficiency. Shop now and find the right tools for your next project.",
+        keywords: [
+          "hardware store", 
+          "tools and supplies",
+          "home improvement",
+          "construction tools",
+        ],
+      },
+      stats: [
+        { label: "Tool Varieties", value: 200 },
+        { label: "Satisfied Customers", value: 600 },
+        { label: "Tool Rentals", value: "Yes" },
+      ],
+      awards: [
+        { name: "Best Hardware Store 2024", iconUrl: "/icons/award.svg" },
+        { name: "Top 50 Retailers 2024", iconUrl: "/icons/award.svg" },
+      ],
+      policies: [
+        {
+          type: PolicyType.CANCELLATION,
+          content:
+            "Returns accepted within 30 days. Tool rentals must be returned on time to avoid additional fees.",
+        },
+      ],
+      promotions: [
+        {
+          title: "Spring Hardware Sale",
+          description:
+            "Get 20% off all tools and hardware supplies during our Spring Sale. Stock up for your projects!",
+          ctaText: "Shop Now",
+          ctaLink: "/sale",
+          companyId: "",
+          perks: [{ id: "", label: "20% Off", icon: "StarIcon" }],
+          trustLogos: [],
+        },
+      ],
+
+      sectionSubtitle: "Tools & Supplies for Your Projects",
+      sectionTitle: "Hardware Store",
+      sectionDescription:
+        "Discover our wide selection of high-quality tools and hardware supplies, designed to help you complete your projects with ease and efficiency.",
+      partnerLogos: [
+        {
+          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
+          alt: "Brand A",
+        },
+        {
+          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
+          alt: "Brand B",
+        },
+        {
+          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
+          alt: "Brand C",
+        },
+        {
+          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
+          alt: "Brand D",
+        },
+        {
+          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
+          alt: "Brand E",
+        },
+      ],
+    }),
+
+    "Book Store": withOverrides({
+      tagline: "**Discover Your Next Read** with Our Curated Selection",
+      description:
+        "Explore our wide range of books across various genres, carefully curated to provide you with the best reading experience for every interest and age group.",
+      socialLinks: [
+        {
+          channel: SocialChannel.INSTAGRAM,
+          url: "https://insta.com/bookstore",
+        },
+      ],
+      faqs: [
+        {
+          question: "Do you offer book recommendations?",
+          answer:
+            "Yes, our staff is always happy to provide personalized book recommendations based on your interests. Contact us for more details.",
+          order: 1,
+        },
+      ],
+      testimonials: [
+        {
+          authorName: "Anna M.",
+          quote:
+            "The selection of books is fantastic. I always find something new and exciting to read!",
+          rating: 5,
+        },
+      ],
+      heroSlides: [
+        {
+          imageUrl: getSampleImageUrl("book-store"),
+          headline: "New Arrivals in Every Genre",
+          subline:
+            "Discover our latest collection of books for every interest and age group.",
+          ctaText: "Shop Now",
+          ctaLink: "/shop",
+          id: "",
+          companyId: "",
+          price: null,
+          productImageUrl: null,
+          badgeText: "New Arrivals",
+          endsAt: null,
+          order: 0,
+          iconKey: null,
+          backgroundColor: null,
+          textColor: null,
+          videoLink: null,
+          type: "image",
+        },
+      ],
+      metrics: [
+        { label: "Book Titles", value: 5000 },
+        { label: "Satisfied Customers", value: 2000 },
+        { label: "Personalized Recommendations", value: 1 },
+      ],
+      seo: {
+        id: "",
+        title:
+          "Book Store | Discover Your Next Read with Our Curated Selection",
+        description:
+          "Explore our wide range of books across various genres, carefully curated to provide you with the best reading experience for every interest and age group. Shop now and find your next favorite book.",
+        keywords: [
+          "book store",
+          "books for sale",
+          "personalized book recommendations",
+          "curated book selection",
+          "new book arrivals",
+        ],
+      },
+      stats: [
+        { label: "Book Titles", value: 5000 },
+        { label: "Satisfied Customers", value: 2000 },
+        { label: "Personalized Recommendations", value: "Yes" },
+      ],
+      awards: [
+        { name: "Best Book Store 2024", iconUrl: "/icons/award.svg" },
+        { name: "Top 20 Retailers 2024", iconUrl: "/icons/award.svg" },
+      ],
+      policies: [
+        {
+          type: PolicyType.CANCELLATION,
+          content:
+            "Returns accepted within 30 days. Personalized recommendations are non-refundable.",
+        },
+      ],
+      promotions: [
+        {
+          title: "Summer Reading Sale",
+          description:
+            "Get 15% off all books during our Summer Reading Sale. Find your next great read for less!",
+          ctaText: "Shop Now",
+          ctaLink: "/sale",
+          companyId: "",
+          perks: [{ id: "", label: "15% Off", icon: "StarIcon" }],
+          trustLogos: [],
+        },
+      ],
+
+      sectionSubtitle: "Discover Your Next Favorite Book",
+      sectionTitle: "Book Store",
+      sectionDescription:
+        "Explore our wide range of books across various genres, carefully curated to provide you with the best reading experience for every interest and age group.",
+      partnerLogos: [
+        {
+          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
+          alt: "Brand A",
+        },
+        {
+          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",  
+          alt: "Brand B",
+        },
+      ],
+    }),
 
     "Motorcycle Store": withOverrides({
       tagline: "**Ride in Style** with Our Premium Motorcycles",
