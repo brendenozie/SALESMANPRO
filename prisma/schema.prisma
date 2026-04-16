@@ -1714,7 +1714,7 @@ model CommissionRate {
 
   name      String
   rate      Float // e.g., 0.10 for 10%
-  appliesTo String // e.g., "ALL_PRODUCTS", "CATEGORY_ID", "PRODUCT_ID"
+  appliesTo String? // e.g., "ALL_PRODUCTS", "CATEGORY_ID", "PRODUCT_ID"
   targetId  String? @db.ObjectId // Optional: Category or Product ID if appliesTo is specific
   isActive  Boolean @default(true)
 
@@ -1762,6 +1762,8 @@ model Commission {
 enum CommissionType {
   COST // Commission based on total sales value
   QUANTITY // Commission based on quantity sold
+  FIXED // Fixed amount per sale
+  PERCENTAGE // Percentage of the sale amount
 }
 
 enum CommissionStatus {
@@ -6393,7 +6395,7 @@ model TransportVehicle {
   registration    String                 @unique
   make            String
   model           String
-  mileage        Float? @default(0) // Total mileage of the vehicle
+  mileage         Float?                 @default(0) // Total mileage of the vehicle
   year            Int? // Manufacturing year of the vehicle
   type            TransportVehicleType
   status          TransportVehicleStatus @default(ACTIVE)
