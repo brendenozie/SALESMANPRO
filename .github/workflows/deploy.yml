@@ -56,6 +56,7 @@ jobs:
             ## 1. Free up RAM for the build
             #echo "📉 Scaling down PM2 to 1 instance..."
             pm2 scale salesmanpro 0
+            pm2 scale ssl-worker 0
 
             echo "🏗️ Building Next.js app..."
             export NODE_OPTIONS="--max-old-space-size=6144"
