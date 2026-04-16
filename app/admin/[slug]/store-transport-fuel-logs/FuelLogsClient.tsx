@@ -24,13 +24,11 @@ function formatCurrency(value: number) {
   }).format(value);
 }
 
-
 const FuelLogsClient = ({ initialData, schoolId }: any) => {
   const [logs, setLogs] = useState(initialData.logs || []);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Form State
   const [formData, setFormData] = useState({
     vehicleId: "",
     quantity: "",
@@ -43,7 +41,6 @@ const FuelLogsClient = ({ initialData, schoolId }: any) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
     try {
       const res = await fetch(`/api/admin/transport/fuel?companyId=${schoolId}`, {
         method: 'POST',
@@ -70,15 +67,18 @@ const FuelLogsClient = ({ initialData, schoolId }: any) => {
   const avgPrice = totalVolume > 0 ? (totalSpent / totalVolume) : 0;
 
   const formatDate = (date: Date, format: string) => {
-    const options: Intl.DateTimeFormatOptions = {};
-    if (format.includes("MMM")) options.month = "short";
+    const options: Intl.DateTimeFormatOptions = { month: "short", day: "2-digit", year: "numeric" };
     return date.toLocaleDateString("en-US", options);
   };
 
-
   return (
-    <main className="min-h-screen bg-[#05070A] text-slate-200 p-4 md:p-8 font-sans">
-      <Toaster position="top-right" toastOptions={{ style: { background: '#0F1115', color: '#fff', border: '1px solid #1e293b' }}} />
+    <main className="min-h-screen bg-slate-50 dark:bg-[#05070A] text-slate-900 dark:text-slate-200 p-4 md:p-8 font-sans transition-colors duration-300">
+      <Toaster 
+        position="top-right" 
+        toastOptions={{ 
+            className: 'dark:bg-[#0F1115] dark:text-white dark:border-slate-800 border border-slate-200 bg-white text-slate-900'
+        }} 
+      />
       
       {/* Background Ambience */}
       <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-emerald-500/5 blur-[120px] rounded-full -z-10" />
@@ -88,22 +88,22 @@ const FuelLogsClient = ({ initialData, schoolId }: any) => {
         <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-12">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="h-1 w-10 bg-emerald-400 rounded-full" />
-              <span className="text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em]">Energy Consumption</span>
+              <span className="h-1 w-10 bg-emerald-500 rounded-full" />
+              <span className="text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em]">Energy Consumption</span>
             </div>
-            <h1 className="text-4xl font-extrabold text-white tracking-tight">
-              Fuel <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">Intelligence.</span>
+            <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              Fuel <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-cyan-500 dark:from-emerald-400 dark:to-cyan-400">Intelligence.</span>
             </h1>
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <button className="flex items-center gap-2 px-6 py-4 bg-slate-900/50 border border-slate-800 rounded-[1.2rem] text-slate-400 hover:text-white transition-all font-bold text-xs uppercase tracking-widest">
+            <button className="flex items-center gap-2 px-6 py-4 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-[1.2rem] text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-white transition-all font-bold text-xs uppercase tracking-widest shadow-sm">
               <DocumentArrowDownIcon className="h-4 w-4" />
               Dataset Export
             </button>
             <button 
               onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-2 px-6 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-[1.2rem] font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-emerald-900/20 active:scale-95"
+              className="flex items-center gap-2 px-6 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-[1.2rem] font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-emerald-600/20 active:scale-95"
             >
               <BeakerIcon className="h-5 w-5 stroke-[2px]" />
               Initialize Log
@@ -113,54 +113,44 @@ const FuelLogsClient = ({ initialData, schoolId }: any) => {
 
         {/* Intelligence KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <div className="bg-slate-900/30 border border-slate-800/60 p-6 rounded-[2rem] relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-                <BoltIcon className="h-12 w-12 text-emerald-400" />
+          {[
+            { label: "Market Avg. Price/L", val: `$${avgPrice.toFixed(2)}`, icon: BoltIcon, color: "text-emerald-500", sub: "Optimal efficiency", subIcon: ArrowTrendingDownIcon },
+            { label: "Gross Volume (30d)", val: `${totalVolume.toLocaleString()}`, unit: "Liters", icon: ChartBarIcon, color: "text-cyan-500", sub: "Total Fleet Draw" },
+            { label: "Projected Expenditure", val: `$${totalSpent.toLocaleString(undefined, {minimumFractionDigits: 2})}`, icon: CurrencyDollarIcon, color: "text-emerald-600", sub: "Settled Accounts", highlight: true }
+          ].map((kpi, i) => (
+            <div key={i} className="bg-white dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800/60 p-6 rounded-[2rem] relative overflow-hidden group shadow-sm dark:shadow-none">
+              <div className="absolute top-0 right-0 p-4 opacity-10">
+                  <kpi.icon className={`h-12 w-12 ${kpi.color}`} />
+              </div>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{kpi.label}</p>
+              <h3 className={`text-3xl font-black ${kpi.highlight ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}`}>
+                {kpi.val} {kpi.unit && <span className="text-sm font-medium text-slate-400">{kpi.unit}</span>}
+              </h3>
+              <div className={`flex items-center gap-1 text-[10px] mt-2 font-bold uppercase ${kpi.subIcon ? 'text-emerald-500' : 'text-slate-400 italic'}`}>
+                {kpi.subIcon && <kpi.subIcon className="h-3 w-3" />}
+                {kpi.sub}
+              </div>
             </div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Market Avg. Price/L</p>
-            <h3 className="text-3xl font-black text-white">${avgPrice.toFixed(2)}</h3>
-            <div className="flex items-center gap-1 text-emerald-400 text-[10px] mt-2 font-bold uppercase">
-              <ArrowTrendingDownIcon className="h-3 w-3" />
-              Optimal efficiency
-            </div>
-          </div>
-
-          <div className="bg-slate-900/30 border border-slate-800/60 p-6 rounded-[2rem] relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-                <ChartBarIcon className="h-12 w-12 text-cyan-400" />
-            </div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Gross Volume (30d)</p>
-            <h3 className="text-3xl font-black text-white">{totalVolume.toLocaleString()} <span className="text-sm font-medium text-slate-500">Liters</span></h3>
-            <p className="text-[10px] text-slate-600 mt-2 font-bold uppercase tracking-tighter italic">Total Fleet Draw</p>
-          </div>
-
-          <div className="bg-slate-900/30 border border-slate-800/60 p-6 rounded-[2rem] relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-                <CurrencyDollarIcon className="h-12 w-12 text-emerald-500" />
-            </div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Projected Expenditure</p>
-            <h3 className="text-3xl font-black text-emerald-400">${totalSpent.toLocaleString(undefined, {minimumFractionDigits: 2})}</h3>
-            <p className="text-[10px] text-slate-600 mt-2 font-bold uppercase tracking-widest">Settled Accounts</p>
-          </div>
+          ))}
         </div>
 
         {/* Telemetry Matrix */}
-        <div className="bg-slate-900/20 border border-slate-800/40 rounded-[2.5rem] overflow-hidden backdrop-blur-md">
-          <div className="p-6 border-b border-slate-800/50 flex justify-between items-center bg-slate-900/50">
-            <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
-              <FunnelIcon className="h-4 w-4 text-emerald-400" />
+        <div className="bg-white dark:bg-slate-900/20 border border-slate-200 dark:border-slate-800/40 rounded-[2.5rem] overflow-hidden backdrop-blur-md shadow-sm">
+          <div className="p-6 border-b border-slate-100 dark:border-slate-800/50 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
+            <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
+              <FunnelIcon className="h-4 w-4 text-emerald-500" />
               Consumption Logs
             </h3>
             <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Real-time Stream</span>
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Real-time Stream</span>
             </div>
           </div>
           
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="text-[9px] font-black uppercase text-slate-600 tracking-[0.2em]">
+                <tr className="text-[9px] font-black uppercase text-slate-400 dark:text-slate-600 tracking-[0.2em]">
                   <th className="p-6">Temporal Stamp</th>
                   <th className="p-6">Asset Unit</th>
                   <th className="p-6">Vendor Hub</th>
@@ -169,38 +159,36 @@ const FuelLogsClient = ({ initialData, schoolId }: any) => {
                   <th className="p-6 text-right">Settlement</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/30">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/30">
                 {logs.map((log: any) => (
-                  <tr key={log.id} className="hover:bg-emerald-500/[0.02] transition-colors group">
+                  <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-emerald-500/[0.02] transition-colors group">
                     <td className="p-6">
-                      <p className="text-xs text-slate-300 font-bold">{formatDate(new Date(log.date || Date.now()), "MMM dd, yyyy")}</p>
-                      <p className="text-[9px] font-mono text-slate-600 mt-0.5 tracking-tighter">ID: {log.id.slice(-8).toUpperCase()}</p>
+                      <p className="text-xs text-slate-700 dark:text-slate-300 font-bold">{formatDate(new Date(log.date || Date.now()), "MMM dd, yyyy")}</p>
+                      <p className="text-[9px] font-mono text-slate-400 dark:text-slate-600 mt-0.5 tracking-tighter">ID: {log.id?.slice(-8).toUpperCase()}</p>
                     </td>
                     <td className="p-6">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-slate-800 rounded-lg group-hover:border-emerald-500/30 border border-transparent transition-all">
-                            <TruckIcon className="h-4 w-4 text-slate-400" />
+                        <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg border border-transparent dark:group-hover:border-emerald-500/30 transition-all">
+                            <TruckIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
                         </div>
-                        <span className="text-sm font-black text-white">{log.vehicle?.registration || log.vehicle}</span>
+                        <span className="text-sm font-black text-slate-900 dark:text-white">{log.vehicle?.registration || log.vehicle}</span>
                       </div>
                     </td>
                     <td className="p-6">
                         <div className="flex items-center gap-1.5">
-                            <MapPinIcon className="h-3 w-3 text-slate-600" />
-                            <span className="text-xs text-slate-400 font-medium">{log.station || "Global Vendor"}</span>
+                            <MapPinIcon className="h-3 w-3 text-slate-400" />
+                            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{log.station || "Global Vendor"}</span>
                         </div>
                     </td>
                     <td className="p-6">
-                        <div className="flex flex-col">
-                            <span className="font-mono text-xs text-slate-500">{Number(log.odometer).toLocaleString()} KM</span>
-                        </div>
+                        <span className="font-mono text-xs text-slate-500">{Number(log.odometer).toLocaleString()} KM</span>
                     </td>
                     <td className="p-6 text-center">
-                      <span className="inline-flex px-3 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-black rounded-lg border border-emerald-500/20 uppercase tracking-widest">
+                      <span className="inline-flex px-3 py-1 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black rounded-lg border border-emerald-200 dark:border-emerald-500/20 uppercase tracking-widest">
                         {log.quantity || log.volume} L
                       </span>
                     </td>
-                    <td className="p-6 text-right font-black text-sm text-white">
+                    <td className="p-6 text-right font-black text-sm text-slate-900 dark:text-white">
                       ${Number(log.cost).toFixed(2)}
                     </td>
                   </tr>
@@ -214,18 +202,18 @@ const FuelLogsClient = ({ initialData, schoolId }: any) => {
       {/* Log Entry Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/90 backdrop-blur-xl" onClick={() => !loading && setIsModalOpen(false)} />
+          <div className="absolute inset-0 bg-slate-900/60 dark:bg-black/90 backdrop-blur-sm dark:backdrop-blur-xl" onClick={() => !loading && setIsModalOpen(false)} />
           
-          <div className="relative bg-[#0F1115] border border-slate-800 w-full max-w-lg rounded-[3rem] p-10 shadow-2xl overflow-hidden">
+          <div className="relative bg-white dark:bg-[#0F1115] border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-[3rem] p-10 shadow-2xl overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full -mr-16 -mt-16" />
             
             <div className="flex justify-between items-start mb-10 relative">
                 <div>
-                    <h2 className="text-3xl font-black text-white italic">Record Refuel</h2>
+                    <h2 className="text-3xl font-black text-slate-900 dark:text-white italic">Record Refuel</h2>
                     <p className="text-[10px] text-slate-500 uppercase tracking-[0.2em] mt-1">Resource Input Command</p>
                 </div>
-                <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-800 rounded-full transition-colors">
-                    <XMarkIcon className="h-6 w-6 text-slate-500" />
+                <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                    <XMarkIcon className="h-6 w-6 text-slate-400" />
                 </button>
             </div>
 
@@ -236,7 +224,7 @@ const FuelLogsClient = ({ initialData, schoolId }: any) => {
                   <TruckIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-500" />
                   <select 
                     required
-                    className="w-full bg-slate-900 border border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-sm text-white focus:border-emerald-500 outline-none transition-all appearance-none cursor-pointer"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-sm text-slate-900 dark:text-white focus:border-emerald-500 outline-none transition-all appearance-none cursor-pointer"
                     onChange={(e) => setFormData({...formData, vehicleId: e.target.value})}
                   >
                     <option value="">Select Vehicle Registry</option>
@@ -252,7 +240,7 @@ const FuelLogsClient = ({ initialData, schoolId }: any) => {
                     <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 tracking-widest">Volume (L)</label>
                     <input 
                         type="number" step="0.01" placeholder="0.00" required
-                        className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 text-sm text-white focus:border-emerald-500 outline-none transition-all"
+                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-sm text-slate-900 dark:text-white focus:border-emerald-500 outline-none transition-all"
                         onChange={(e) => setFormData({...formData, quantity: e.target.value})}
                     />
                 </div>
@@ -260,29 +248,29 @@ const FuelLogsClient = ({ initialData, schoolId }: any) => {
                     <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 tracking-widest">Settlement ($)</label>
                     <input 
                         type="number" step="0.01" placeholder="0.00" required
-                        className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 text-sm text-white focus:border-emerald-500 outline-none transition-all"
+                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-sm text-slate-900 dark:text-white focus:border-emerald-500 outline-none transition-all"
                         onChange={(e) => setFormData({...formData, cost: e.target.value})}
                     />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2 col-span-1">
+                <div className="space-y-2">
                     <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 tracking-widest">Odometer</label>
                     <div className="relative">
-                        <CalculatorIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                        <CalculatorIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                         <input 
                             type="number" placeholder="Km reading" required
-                            className="w-full bg-slate-900 border border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-sm text-white focus:border-emerald-500 outline-none transition-all"
+                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-sm text-slate-900 dark:text-white focus:border-emerald-500 outline-none transition-all"
                             onChange={(e) => setFormData({...formData, odometer: e.target.value})}
                         />
                     </div>
                 </div>
-                <div className="space-y-2 col-span-1">
+                <div className="space-y-2">
                     <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 tracking-widest">Vendor</label>
                     <input 
                         type="text" placeholder="Station name"
-                        className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 text-sm text-white focus:border-emerald-500 outline-none transition-all"
+                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-sm text-slate-900 dark:text-white focus:border-emerald-500 outline-none transition-all"
                         onChange={(e) => setFormData({...formData, station: e.target.value})}
                     />
                 </div>
@@ -291,7 +279,7 @@ const FuelLogsClient = ({ initialData, schoolId }: any) => {
               <button 
                 type="submit" 
                 disabled={loading} 
-                className="w-full py-5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl shadow-emerald-900/20 flex items-center justify-center gap-3 active:scale-95"
+                className="w-full py-5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-200 dark:disabled:bg-slate-800 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl shadow-emerald-600/20 flex items-center justify-center gap-3 active:scale-95"
               >
                 {loading ? <ArrowPathIcon className="h-5 w-5 animate-spin" /> : "Commit Telemetry Log"}
               </button>

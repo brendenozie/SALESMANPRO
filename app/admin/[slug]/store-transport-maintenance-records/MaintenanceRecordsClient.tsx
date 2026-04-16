@@ -49,7 +49,6 @@ const MaintenanceRecordsClient = ({ initialData, schoolId }: any) => {
         setRecords([result.data, ...records]);
         setIsModalOpen(false);
         toast.success("Maintenance event synchronized with fleet records");
-        // Reset form
         setFormData({ ...formData, description: "", cost: "", vehicleId: "" });
       }
     } catch (err) {
@@ -60,11 +59,17 @@ const MaintenanceRecordsClient = ({ initialData, schoolId }: any) => {
   };
 
   return (
-    <main className="min-h-screen bg-[#05070A] text-slate-200 p-4 md:p-8 font-sans">
-      <Toaster position="top-right" toastOptions={{ style: { background: '#0F1115', color: '#fff', border: '1px solid #1e293b' }}} />
+    <main className="min-h-screen bg-slate-50 dark:bg-[#05070A] text-slate-900 dark:text-slate-200 p-4 md:p-8 font-sans transition-colors duration-300">
+      <Toaster 
+        position="top-right" 
+        toastOptions={{ 
+            className: 'bg-white dark:bg-[#0F1115] text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800 shadow-xl' 
+        }} 
+      />
       
-      <div className="fixed top-0 right-0 w-full h-full opacity-[0.03] pointer-events-none -z-10" 
-           style={{ backgroundImage: 'radial-gradient(#ea7e08 1px, transparent 0)', backgroundSize: '40px 40px' }} />
+      {/* Dynamic Background Pattern */}
+      <div className="fixed top-0 right-0 w-full h-full opacity-[0.05] dark:opacity-[0.03] pointer-events-none -z-10" 
+           style={{ backgroundImage: 'radial-gradient(#f97316 1px, transparent 0)', backgroundSize: '40px 40px' }} />
 
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -72,21 +77,21 @@ const MaintenanceRecordsClient = ({ initialData, schoolId }: any) => {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className="h-1 w-10 bg-orange-500 rounded-full" />
-              <span className="text-orange-500 text-[10px] font-black uppercase tracking-[0.2em]">Lifecycle Management</span>
+              <span className="text-orange-600 dark:text-orange-500 text-[10px] font-black uppercase tracking-[0.2em]">Lifecycle Management</span>
             </div>
-            <h1 className="text-4xl font-extrabold text-white tracking-tight">
-              Maintenance <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500">Intelligence.</span>
+            <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              Maintenance <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-600 dark:from-orange-400 dark:to-amber-500">Intelligence.</span>
             </h1>
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <button className="flex items-center gap-2 px-6 py-4 bg-slate-900/50 border border-slate-800 rounded-[1.2rem] text-slate-400 hover:text-white transition-all font-bold text-xs uppercase tracking-widest">
+            <button className="flex items-center gap-2 px-6 py-4 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-[1.2rem] text-slate-500 dark:text-slate-400 hover:text-orange-600 dark:hover:text-white transition-all font-bold text-xs uppercase tracking-widest shadow-sm">
               <ArrowDownTrayIcon className="h-4 w-4" />
               Export
             </button>
             <button 
               onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-2 px-6 py-4 bg-orange-600 hover:bg-orange-500 text-white rounded-[1.2rem] font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-orange-900/20 active:scale-95"
+              className="flex items-center gap-2 px-6 py-4 bg-orange-600 hover:bg-orange-500 text-white rounded-[1.2rem] font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-orange-500/20 active:scale-95"
             >
               <PlusIcon className="h-5 w-5 stroke-[3px]" />
               Initialize Service
@@ -96,91 +101,74 @@ const MaintenanceRecordsClient = ({ initialData, schoolId }: any) => {
 
         {/* Diagnostic KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <div className="bg-slate-900/30 border border-slate-800/60 p-6 rounded-[2rem] relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <CogIcon className="h-12 w-12 animate-spin-slow text-orange-500" />
+          {[
+            { label: "Active Workshops", val: activeRepairs.toString().padStart(2, '0'), unit: "Units", icon: CogIcon, color: "text-orange-500", bar: "bg-orange-500", progress: "w-1/3" },
+            { label: "Fleet Readiness", val: "94.2%", unit: "Optimal", icon: CheckBadgeIcon, color: "text-emerald-500", bar: "bg-emerald-500", progress: "w-[94%]" },
+            { label: "MTD Opex", val: `$${monthlySpend.toLocaleString(undefined, {minimumFractionDigits: 2})}`, unit: "", icon: CurrencyDollarIcon, color: "text-blue-500", bar: "bg-blue-500", progress: "w-1/2" }
+          ].map((kpi, i) => (
+            <div key={i} className="bg-white dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800/60 p-6 rounded-[2rem] relative overflow-hidden group shadow-sm">
+                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <kpi.icon className={`h-12 w-12 ${kpi.icon === CogIcon ? 'animate-spin-slow' : ''} ${kpi.color}`} />
+                </div>
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">{kpi.label}</p>
+                <h3 className="text-3xl font-black text-slate-900 dark:text-white">{kpi.val} <span className="text-sm font-medium text-slate-400 dark:text-slate-500">{kpi.unit}</span></h3>
+                <div className="mt-4 h-1 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div className={`h-full ${kpi.bar} ${kpi.progress}`} />
+                </div>
             </div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Active Workshops</p>
-            <h3 className="text-3xl font-black text-white">{activeRepairs.toString().padStart(2, '0')} <span className="text-sm font-medium text-slate-500">Units</span></h3>
-            <div className="mt-4 h-1 w-full bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-orange-500 w-1/3" />
-            </div>
-          </div>
-
-          <div className="bg-slate-900/30 border border-slate-800/60 p-6 rounded-[2rem] relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-                <CheckBadgeIcon className="h-12 w-12 text-emerald-500" />
-            </div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Fleet Readiness</p>
-            <h3 className="text-3xl font-black text-white">94.2% <span className="text-sm font-medium text-slate-500">Optimal</span></h3>
-            <div className="mt-4 h-1 w-full bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-500 w-[94%]" />
-            </div>
-          </div>
-
-          <div className="bg-slate-900/30 border border-slate-800/60 p-6 rounded-[2rem] relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-                <CurrencyDollarIcon className="h-12 w-12 text-blue-500" />
-            </div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">MTD Opex</p>
-            <h3 className="text-3xl font-black text-white">${monthlySpend.toLocaleString(undefined, {minimumFractionDigits: 2})}</h3>
-            <div className="mt-4 h-1 w-full bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-blue-500 w-1/2" />
-            </div>
-          </div>
+          ))}
         </div>
 
         {/* Log Matrix */}
-        <div className="bg-slate-900/20 border border-slate-800/40 rounded-[2.5rem] overflow-hidden backdrop-blur-sm">
+        <div className="bg-white dark:bg-slate-900/20 border border-slate-200 dark:border-slate-800/40 rounded-[2.5rem] overflow-hidden backdrop-blur-sm shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-slate-900/50">
-                  <th className="p-6 text-[9px] font-black uppercase text-slate-500 tracking-[0.2em]">Service ID</th>
-                  <th className="p-6 text-[9px] font-black uppercase text-slate-500 tracking-[0.2em]">Asset Unit</th>
-                  <th className="p-6 text-[9px] font-black uppercase text-slate-500 tracking-[0.2em]">Protocol Detail</th>
-                  <th className="p-6 text-[9px] font-black uppercase text-slate-500 tracking-[0.2em]">Assigned Tech</th>
-                  <th className="p-6 text-[9px] font-black uppercase text-slate-500 tracking-[0.2em]">Allocation</th>
-                  <th className="p-6 text-[9px] font-black uppercase text-slate-500 tracking-[0.2em]">Status</th>
+                <tr className="bg-slate-50 dark:bg-slate-900/50">
+                  {["Service ID", "Asset Unit", "Protocol Detail", "Assigned Tech", "Allocation", "Status"].map((th) => (
+                    <th key={th} className="p-6 text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em]">{th}</th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/30">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/30">
                 {records.map((log: any) => (
-                  <tr key={log.id} className="hover:bg-orange-500/[0.02] transition-colors group">
+                  <tr key={log.id} className="hover:bg-orange-500/[0.03] dark:hover:bg-orange-500/[0.02] transition-colors group">
                     <td className="p-6">
-                        <span className="font-mono text-[10px] text-slate-500 py-1 px-2 bg-slate-800/40 rounded-md">
+                        <span className="font-mono text-[10px] text-slate-500 py-1 px-2 bg-slate-100 dark:bg-slate-800/40 rounded-md">
                             #{log.id.slice(-6).toUpperCase()}
                         </span>
                     </td>
                     <td className="p-6">
                         <div className="flex flex-col">
-                            <span className="font-black text-white text-sm">{log.vehicle?.registration}</span>
-                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">{log.vehicle?.model}</span>
+                            <span className="font-black text-slate-900 dark:text-white text-sm">{log.vehicle?.registration}</span>
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-tighter">{log.vehicle?.model}</span>
                         </div>
                     </td>
                     <td className="p-6">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-orange-500/10 rounded-lg">
-                            <WrenchScrewdriverIcon className="h-4 w-4 text-orange-500" />
+                            <WrenchScrewdriverIcon className="h-4 w-4 text-orange-600 dark:text-orange-500" />
                         </div>
                         <div>
-                            <span className="text-sm font-bold text-slate-200 block">{log.description}</span>
-                            <span className="text-[10px] text-slate-500">{format(new Date(log.scheduledDate), "MMMM dd, yyyy")}</span>
+                            <span className="text-sm font-bold text-slate-700 dark:text-slate-200 block">{log.description}</span>
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500">{format(new Date(log.scheduledDate), "MMMM dd, yyyy")}</span>
                         </div>
                       </div>
                     </td>
                     <td className="p-6">
                         <div className="flex items-center gap-2">
-                            <div className="h-6 w-6 bg-slate-800 rounded-full flex items-center justify-center border border-slate-700">
-                                <UserIcon className="h-3 w-3 text-slate-500" />
+                            <div className="h-6 w-6 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center border border-slate-200 dark:border-slate-700">
+                                <UserIcon className="h-3 w-3 text-slate-400 dark:text-slate-500" />
                             </div>
-                            <span className="text-xs font-medium text-slate-400">{log.technician || "Internal Tech"}</span>
+                            <span className="text-xs font-medium text-slate-600 dark:text-slate-400">{log.technician || "Internal Tech"}</span>
                         </div>
                     </td>
-                    <td className="p-6 font-mono text-sm text-white/80">${Number(log.cost).toFixed(2)}</td>
+                    <td className="p-6 font-mono text-sm text-slate-900 dark:text-white/80 font-bold">${Number(log.cost).toFixed(2)}</td>
                     <td className="p-6">
-                      <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${
-                        log.status === 'COMPLETED' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-orange-500/10 border-orange-500/20 text-orange-400'
+                      <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border transition-colors ${
+                        log.status === 'COMPLETED' 
+                          ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400' 
+                          : 'bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20 text-orange-600 dark:text-orange-400'
                       }`}>
                         {log.status === 'IN_PROGRESS' && <ArrowPathIcon className="h-3 w-3 animate-spin" />}
                         {log.status.replace('_', ' ')}
@@ -197,66 +185,68 @@ const MaintenanceRecordsClient = ({ initialData, schoolId }: any) => {
       {/* Initialize Service Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => !loading && setIsModalOpen(false)} />
+          <div className="absolute inset-0 bg-slate-900/60 dark:bg-black/90 backdrop-blur-md" onClick={() => !loading && setIsModalOpen(false)} />
           
-          <div className="relative bg-[#0F1115] border border-slate-800 w-full max-w-lg rounded-[3rem] p-10 shadow-2xl overflow-hidden">
+          <div className="relative bg-white dark:bg-[#0F1115] border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-[3rem] p-10 shadow-2xl overflow-hidden transition-all">
             <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 blur-3xl rounded-full -mr-16 -mt-16" />
             
             <div className="flex justify-between items-start mb-8 relative">
                 <div>
-                    <h2 className="text-3xl font-black text-white italic">Service Entry</h2>
-                    <p className="text-[10px] text-slate-500 uppercase tracking-[0.2em] mt-1">Maintenance Command Interface</p>
+                    <h2 className="text-3xl font-black text-slate-900 dark:text-white italic">Service Entry</h2>
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mt-1">Maintenance Command Interface</p>
                 </div>
-                <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-800 rounded-full transition-colors">
-                    <XMarkIcon className="h-6 w-6 text-slate-500" />
+                <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                    <XMarkIcon className="h-6 w-6 text-slate-400 dark:text-slate-500" />
                 </button>
             </div>
 
             <form onSubmit={handleCreate} className="space-y-6 relative">
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 tracking-widest">Select Unit</label>
+                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase ml-1 tracking-widest">Select Unit</label>
                 <select 
-                  required className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 text-sm text-white focus:border-orange-500 outline-none transition-all appearance-none cursor-pointer"
+                  required className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-sm text-slate-900 dark:text-white focus:border-orange-500 outline-none transition-all appearance-none cursor-pointer"
                   onChange={(e) => setFormData({...formData, vehicleId: e.target.value})}
                 >
-                  <option value="">Choose Vehicle Account</option>
+                  <option value="" className="text-slate-400">Choose Vehicle Account</option>
                   {initialData.vehicles.map((v: any) => (
-                    <option key={v.id} value={v.id}>{v.registration} — {v.model}</option>
+                    <option key={v.id} value={v.id} className="text-slate-900 dark:text-white bg-white dark:bg-slate-900">
+                      {v.registration} — {v.model}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 tracking-widest">Service Description</label>
+                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase ml-1 tracking-widest">Service Description</label>
                 <input 
                   type="text" placeholder="e.g. System Diagnostic & Brake Flush" required
-                  className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 text-sm text-white focus:border-orange-500 outline-none transition-all"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-orange-500 outline-none transition-all"
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 tracking-widest">Date</label>
+                    <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase ml-1 tracking-widest">Date</label>
                     <input 
-                      type="date" required className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 text-sm text-white focus:border-orange-500 outline-none transition-all color-scheme-dark"
+                      type="date" required className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-sm text-slate-900 dark:text-white focus:border-orange-500 outline-none transition-all [color-scheme:light] dark:[color-scheme:dark]"
                       value={formData.scheduledDate}
                       onChange={(e) => setFormData({...formData, scheduledDate: e.target.value})}
                     />
                 </div>
                 <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 tracking-widest">Projected Cost</label>
+                    <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase ml-1 tracking-widest">Projected Cost</label>
                     <input 
-                      type="number" placeholder="0.00" className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 text-sm text-white focus:border-orange-500 outline-none transition-all"
+                      type="number" placeholder="0.00" className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-orange-500 outline-none transition-all"
                       onChange={(e) => setFormData({...formData, cost: e.target.value})}
                     />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 tracking-widest">Operational Status</label>
+                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase ml-1 tracking-widest">Operational Status</label>
                 <select 
-                  className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 text-sm text-white font-bold focus:border-orange-500 outline-none transition-all appearance-none cursor-pointer"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-sm text-slate-900 dark:text-white font-bold focus:border-orange-500 outline-none transition-all appearance-none cursor-pointer"
                   onChange={(e) => setFormData({...formData, status: e.target.value})}
                 >
                   <option value="SCHEDULED">Status: Scheduled</option>
@@ -268,7 +258,7 @@ const MaintenanceRecordsClient = ({ initialData, schoolId }: any) => {
               <button 
                 type="submit" 
                 disabled={loading} 
-                className="w-full py-5 bg-orange-600 hover:bg-orange-500 disabled:bg-slate-800 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl shadow-orange-900/20 flex items-center justify-center gap-3"
+                className="w-full py-5 bg-orange-600 hover:bg-orange-500 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-600 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl shadow-orange-600/20 flex items-center justify-center gap-3"
               >
                 {loading ? <ArrowPathIcon className="h-5 w-5 animate-spin" /> : "Commit Service Record"}
               </button>

@@ -663,7 +663,7 @@ export default function DeliveriesPage() {
           method: 'GET',
           headers: { 'Content-Type': 'application/json', 'Credentials': 'include' }
         }),
-        fetch(`${apiBaseUrl}/admin/riders?${riderParams}`, {
+        fetch(`${apiBaseUrl}/admin/transport/store-drivers?${riderParams}`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json', 'Credentials': 'include' }
         }),

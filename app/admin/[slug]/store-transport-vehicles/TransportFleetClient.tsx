@@ -8,7 +8,8 @@ import {
   PlusIcon, GlobeAltIcon, 
   XMarkIcon,
   IdentificationIcon,
-  CogIcon
+  CogIcon,
+  CalendarIcon
 } from "@heroicons/react/24/outline";
 
 interface Vehicle {
@@ -40,7 +41,9 @@ const TransportFleetClient = ({ initialVehicles, schoolId }: Props) => {
     make: "",
     model: "",
     capacity: 30,
-    type: "BUS"
+    type: "BUS",
+    mileage: 0,
+    year: new Date().getFullYear(), 
   });
 
   const toggleMaintenance = async (vehicleId: string, currentStatus: string) => {
@@ -78,7 +81,7 @@ const TransportFleetClient = ({ initialVehicles, schoolId }: Props) => {
         setFleet((prev) => [result.data, ...prev]);
         toast.success(`Vehicle ${formData.registration} added!`);
         setIsModalOpen(false);
-        setFormData({ registration: "", make: "", model: "", capacity: 30, type: "BUS" });
+        setFormData({ registration: "", make: "", model: "", capacity: 30, type: "BUS", mileage: 0, year: new Date().getFullYear() });
       } else {
         toast.error(result.message || "Failed to add vehicle");
       }
@@ -243,6 +246,33 @@ const TransportFleetClient = ({ initialVehicles, schoolId }: Props) => {
                     />
                   </div>
                 </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Year</label>
+                  <div className="relative">
+                    <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <input
+                      type="number"
+                      required
+                      className="w-full bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 pl-11 pr-4 text-sm text-slate-900 dark:text-white focus:border-yellow-500 outline-none transition-all"
+                      value={formData.year}
+                      onChange={(e) => setFormData({...formData, year: parseInt(e.target.value)})}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Mileage</label>
+                  <div className="relative">
+                    <Battery50Icon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <input
+                      type="number"
+                      required
+                      className="w-full bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 pl-11 pr-4 text-sm text-slate-900 dark:text-white focus:border-yellow-500 outline-none transition-all"
+                      value={formData.mileage}
+                      onChange={(e) => setFormData({...formData, mileage: parseInt(e.target.value)})}
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Vehicle Type</label>
                   <select 

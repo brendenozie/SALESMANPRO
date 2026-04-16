@@ -92,7 +92,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: UsersIcon,
       subItems: [
         { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
-        { label: "Riders", href: `/admin/${adminSlug}/riders` },
+        // { label: "Riders", href: `/admin/${adminSlug}/riders` },
         { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
         { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
@@ -147,11 +147,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         },
       ],
     },
-    {
-      label: "Vehicles",
-      href: `/admin/${adminSlug}/deliveries-vehicles`,
-      icon: TruckIcon,
-    },
+    // {
+    //   label: "Vehicles",
+    //   href: `/admin/${adminSlug}/deliveries-vehicles`,
+    //   icon: TruckIcon,
+    // },
     {
       label: "Reports",
       href: `/admin/${adminSlug}/revenuereport`,
@@ -194,7 +194,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: UsersIcon,
       subItems: [
         { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
-        { label: "Riders", href: `/admin/${adminSlug}/riders` },
+        // { label: "Riders", href: `/admin/${adminSlug}/riders` },
         { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
         { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
         // { label: "Suppliers", href: `/admin/${adminSlug}/suppliers` },
@@ -250,11 +250,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         },
       ],
     },
-    {
-      label: "Vehicles",
-      href: `/admin/${adminSlug}/deliveries-vehicles`,
-      icon: TruckIcon,
-    },
+    // {
+    //   label: "Vehicles",
+    //   href: `/admin/${adminSlug}/deliveries-vehicles`,
+    //   icon: TruckIcon,
+    // },
     {
       label: "Reports",
       href: `/admin/${adminSlug}/revenuereport`,
@@ -297,7 +297,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: UsersIcon,
       subItems: [
         { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
-        { label: "Riders", href: `/admin/${adminSlug}/riders` },
+        // { label: "Riders", href: `/admin/${adminSlug}/riders` },
         { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
         { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
         // { label: "Suppliers", href: `/admin/${adminSlug}/suppliers` },
@@ -353,11 +353,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         },
       ],
     },
-    {
-      label: "Vehicles",
-      href: `/admin/${adminSlug}/deliveries-vehicles`,
-      icon: TruckIcon,
-    },
+    // {
+    //   label: "Vehicles",
+    //   href: `/admin/${adminSlug}/deliveries-vehicles`,
+    //   icon: TruckIcon,
+    // },
     {
       label: "Reports",
       href: `/admin/${adminSlug}/revenuereport`,
@@ -400,7 +400,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: UsersIcon,
       subItems: [
         { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
-        { label: "Riders", href: `/admin/${adminSlug}/riders` },
+        // { label: "Riders", href: `/admin/${adminSlug}/riders` },
         { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
         { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
         // { label: "Suppliers", href: `/admin/${adminSlug}/suppliers` },
@@ -456,11 +456,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         },
       ],
     },
-    {
-      label: "Vehicles",
-      href: `/admin/${adminSlug}/deliveries-vehicles`,
-      icon: TruckIcon,
-    },
+    // {
+    //   label: "Vehicles",
+    //   href: `/admin/${adminSlug}/deliveries-vehicles`,
+    //   icon: TruckIcon,
+    // },
     {
       label: "Reports",
       href: `/admin/${adminSlug}/revenuereport`,
@@ -503,7 +503,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: UsersIcon,
       subItems: [
         { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
-        { label: "Riders", href: `/admin/${adminSlug}/riders` },
+        // { label: "Riders", href: `/admin/${adminSlug}/riders` },
         { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
         { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
         // { label: "Suppliers", href: `/admin/${adminSlug}/suppliers` },
@@ -559,11 +559,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         },
       ],
     },
-    {
-      label: "Vehicles",
-      href: `/admin/${adminSlug}/deliveries-vehicles`,
-      icon: TruckIcon,
-    },
+    // {
+    //   label: "Vehicles",
+    //   href: `/admin/${adminSlug}/deliveries-vehicles`,
+    //   icon: TruckIcon,
+    // },
     {
       label: "Reports",
       href: `/admin/${adminSlug}/revenuereport`,
@@ -606,7 +606,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: UsersIcon,
       subItems: [
         { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
-        { label: "Riders", href: `/admin/${adminSlug}/riders` },
+        // { label: "Riders", href: `/admin/${adminSlug}/riders` },
         { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
         { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
         // { label: "Suppliers", href: `/admin/${adminSlug}/suppliers` },
@@ -662,11 +662,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         },
       ],
     },
-    {
-      label: "Vehicles",
-      href: `/admin/${adminSlug}/deliveries-vehicles`,
-      icon: TruckIcon,
-    },
+    // {
+    //   label: "Vehicles",
+    //   href: `/admin/${adminSlug}/deliveries-vehicles`,
+    //   icon: TruckIcon,
+    // },
     {
       label: "Reports",
       href: `/admin/${adminSlug}/revenuereport`,
@@ -994,7 +994,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: UsersIcon,
       subItems: [
         { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
-        { label: "Riders", href: `/admin/${adminSlug}/riders` },
+        // { label: "Riders", href: `/admin/${adminSlug}/riders` },
         { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
         { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
@@ -1049,11 +1049,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         },
       ],
     },
-    {
-      label: "Vehicles",
-      href: `/admin/${adminSlug}/deliveries-vehicles`,
-      icon: TruckIcon,
-    },
+    // {
+    //   label: "Vehicles",
+    //   href: `/admin/${adminSlug}/deliveries-vehicles`,
+    //   icon: TruckIcon,
+    // },
     {
       label: "Reports",
       href: `/admin/${adminSlug}/revenuereport`,
@@ -2872,19 +2872,34 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           href: `/admin/${adminSlug}/store-transport-vehicles`,
         },
         { label: "Routes", href: `/admin/${adminSlug}/store-transport-routes` },
-        { label: "Drivers", href: `/admin/${adminSlug}/store-transport-drivers` },
-        { label: "Schedules", href: `/admin/${adminSlug}/store-transport-schedules` },
+        {
+          label: "Drivers",
+          href: `/admin/${adminSlug}/store-transport-drivers`,
+        },
+        {
+          label: "Schedules",
+          href: `/admin/${adminSlug}/store-transport-schedules`,
+        },
         {
           label: "Maintenance Records",
           href: `/admin/${adminSlug}/store-transport-maintenance-records`,
         },
-        { label: "Fuel Logs", href: `/admin/${adminSlug}/store-transport-fuel-logs` },
+        {
+          label: "Fuel Logs",
+          href: `/admin/${adminSlug}/store-transport-fuel-logs`,
+        },
         // {
         //   label: "Assignments",
         //   href: `/admin/${adminSlug}/store-transport-assignments`,
         // },
-        { label: "Incidents", href: `/admin/${adminSlug}/store-transport-incidents` },
-        { label: "Reports", href: `/admin/${adminSlug}/store-transport-reports` },
+        {
+          label: "Incidents",
+          href: `/admin/${adminSlug}/store-transport-incidents`,
+        },
+        {
+          label: "Reports",
+          href: `/admin/${adminSlug}/store-transport-reports`,
+        },
       ],
     },
     {

@@ -62,7 +62,7 @@ export default async function ProductsPage({ params }: Props) {
         next: { revalidate: 60 },
       }),
       // Fetch from the riders API endpoint we created previously
-      fetch(`${apiBaseUrl}/admin/riders?companyId=${encodeURIComponent(companyId)}`, {
+      fetch(`${apiBaseUrl}/admin/transport/store-drivers?companyId=${encodeURIComponent(companyId)}`, {
         method: "GET",
         headers: { Cookie: cookieStore || "" },
         next: { revalidate: 3600 }, // Riders list doesn't change as often

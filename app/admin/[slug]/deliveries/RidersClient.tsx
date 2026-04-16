@@ -572,7 +572,7 @@ export default function RidersPage({ params }: RidersPageProps) { // Renamed
     setError(null);
     try {
       // Simulate API call with a delay
-      const res = await fetch(`${apiBaseUrl}/admin/riders?companyId=${companyId}`, { method: 'GET' }); // Updated endpoint
+      const res = await fetch(`${apiBaseUrl}/admin/transport/store-drivers?companyId=${companyId}`, { method: 'GET' }); // Updated endpoint
       if (!res.ok) throw new Error(`Error fetching riders: ${res.statusText}`);
       const rawData = await res.json();
       let data = Array.isArray(rawData.data) ? rawData.data : [];

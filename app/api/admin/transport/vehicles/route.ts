@@ -52,7 +52,9 @@ const postVehicle = async (request: Request) => {
     model, 
     type, 
     capacity, 
-    companyId 
+    companyId,
+    mileage,
+    year 
   } = body;
 
   // Validation
@@ -69,7 +71,9 @@ const postVehicle = async (request: Request) => {
         type,
         capacity: parseInt(capacity),
         companyId,
-        status: "ACTIVE"
+        status: "ACTIVE",
+        mileage,
+        year
       }
     });
 

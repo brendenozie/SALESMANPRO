@@ -6393,6 +6393,8 @@ model TransportVehicle {
   registration    String                 @unique
   make            String
   model           String
+  mileage        Float? @default(0) // Total mileage of the vehicle
+  year            Int? // Manufacturing year of the vehicle
   type            TransportVehicleType
   status          TransportVehicleStatus @default(ACTIVE)
   capacity        Int // Number of passengers
