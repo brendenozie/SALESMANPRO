@@ -52,6 +52,7 @@ import EcommerceBikeSite from './layouts/EcommerceBikeLayout/body/EcommerceBikeS
 import EcommerceMotorCycleSite from './layouts/EcommerceMotorCycleLayout/body/EcommerceMotorCycleSite';
 import EcommerceMeatSite from './layouts/EcommerceMeatLayout/body/EcommerceMeatSite';
 import EcommerceHardwareSite from './layouts/EcommerceHardwareLayout/body/EcommerceHardwareSite';
+import EcommerceBookSite from './layouts/EcommerceBookLayout/body/EcommerceBookSite';
 
 // A single, clean map from component name to the component itself.
 export const BodyComponentMap: Record<string, React.ComponentType<{ pageData: StoreForm; companyId: string; paymentMethods: PublicPaymentMethod[] }>> = {
@@ -60,6 +61,7 @@ export const BodyComponentMap: Record<string, React.ComponentType<{ pageData: St
   'AutomotiveSite': AutomotiveSite,
   'EcommerceSite': EcommerceSite,
   'EcommerceShoesSite': EcommerceShoesSite,
+  'EcommerceBookSite': EcommerceBookSite,
   'EcommerceAgrovetSite': EcommerceAgrovetSite,
   'EcommerceMeatSite': EcommerceMeatSite,
   'EcommerceHardwareSite': EcommerceHardwareSite,

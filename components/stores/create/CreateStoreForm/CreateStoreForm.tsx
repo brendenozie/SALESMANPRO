@@ -1372,6 +1372,7 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
   
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
   
   // AI-related state
   const [isAiProcessing, setIsAiProcessing] = useState(false);
@@ -1802,8 +1803,9 @@ const handleSubmit = async (e: FormEvent) => {
   } catch (err: any) {
     console.error("❌ Error uploading or saving store:", err);
     toast.error(`Error: ${err.message}`);
+    setSubmissionError(err.message || "An unexpected error occurred");
   } finally {
-    setIsSubmitting(false);
+    // setIsSubmitting(false);
     console.log("🟡 Submit finished.");
   }
 };
@@ -1956,43 +1958,114 @@ const StepContent = useMemo(() => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row relative">
     {/* Full-Page Submitting Overlay - Enhanced Version */}
-    {isSubmitting && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.3 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-gray-900 to-black bg-opacity-95 backdrop-blur-md"
-      >
-        <motion.div
-          initial={{ y: -50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{
-            delay: 0.2,
-            duration: 0.5,
-            type: "spring",
-            stiffness: 100,
-          }}
-          className="bg-white p-10 rounded-xl shadow-2xl flex flex-col items-center max-w-sm text-center transform scale-105"
-        >
+    {/* {isSubmitting && (
+      // <motion.div
+      //   initial={{ opacity: 0 }}
+      //   animate={{ opacity: 1 }}
+      //   exit={{ opacity: 0 }}
+      //   transition={{ duration: 0.3 }}
+      //   className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-gray-900 to-black bg-opacity-95 backdrop-blur-md"
+      // >
+      //   <motion.div
+      //     initial={{ y: -50, opacity: 0 }}
+      //     animate={{ y: 0, opacity: 1 }}
+      //     transition={{
+      //       delay: 0.2,
+      //       duration: 0.5,
+      //       type: "spring",
+      //       stiffness: 100,
+      //     }}
+      //     className="bg-white p-10 rounded-xl shadow-2xl flex flex-col items-center max-w-sm text-center transform scale-105"
+      //   >
           {/* Advanced Spinner: Concentric Circles */}
-          <div className="relative w-16 h-16 mb-6">
-            <div className="absolute inset-0 border-4 border-t-4 border-gray-300 rounded-full animate-spin-slow"></div>
-            <div className="absolute inset-2 border-4 border-r-4 border-gray-400 rounded-full animate-spin-medium"></div>
-            <div className="absolute inset-4 border-4 border-b-4 border-gray-600 rounded-full animate-spin-fast"></div>
-          </div>
+    {/* //       <div className="relative w-16 h-16 mb-6">
+    //         <div className="absolute inset-0 border-4 border-t-4 border-gray-300 rounded-full animate-spin-slow"></div>
+    //         <div className="absolute inset-2 border-4 border-r-4 border-gray-400 rounded-full animate-spin-medium"></div>
+    //         <div className="absolute inset-4 border-4 border-b-4 border-gray-600 rounded-full animate-spin-fast"></div>
+    //       </div> */}
 
-          <p className="text-2xl font-bold text-gray-900 mb-2 leading-snug">
-            Just a moment, we're uploading...
-          </p>
-          <p className="text-md text-gray-600 font-medium">
-            Please hold tight! We're preparing everything for you.
-          </p>
-          <p className="text-sm text-gray-400 mt-4 animate-pulse">
-            This might take a moment, grab a coffee!
-          </p>
+    {/* //       <p className="text-2xl font-bold text-gray-900 mb-2 leading-snug">
+    //         Just a moment, we're uploading...
+    //       </p>
+    //       <p className="text-md text-gray-600 font-medium">
+    //         Please hold tight! We're preparing everything for you.
+    //       </p>
+    //       <p className="text-sm text-gray-400 mt-4 animate-pulse">
+    //         This might take a moment, grab a coffee!
+    //       </p>
+    //     </motion.div> */}
+    {/* //   </motion.div> */}
+    {/* // )} */}
+
+    {(isSubmitting || submissionError) && (    
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/90 backdrop-blur-md p-4"
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            className="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center max-w-sm w-full text-center relative overflow-hidden"
+          >
+            {!submissionError ? (
+              /* --- LOADING STATE --- */
+              <>
+                <div className="relative w-20 h-20 mb-6">
+                  <div className="absolute inset-0 border-4 border-t-purple-500 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+                  <div className="absolute inset-2 border-4 border-t-transparent border-r-blue-500 border-b-transparent border-l-transparent rounded-full animate-spin-slow"></div>
+                  <div className="absolute inset-4 border-4 border-t-transparent border-r-transparent border-b-pink-500 border-l-transparent rounded-full animate-spin-fast"></div>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Syncing your Store</h3>
+                <p className="text-gray-500">We're uploading your media and securing your data. Please don't refresh.</p>
+              </>
+            ) : (
+              /* --- ERROR STATE --- */
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="w-full"
+              >
+                <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-10 h-10">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                  </svg>
+                </div>
+                
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Upload Failed</h3>
+                <div className="bg-red-50 border border-red-100 rounded-lg p-3 mb-6">
+                  <p className="text-sm text-red-700 font-mono break-words">
+                    {submissionError}
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={() => setSubmissionError(null)}
+                    className="w-full py-3 px-4 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-semibold transition-all active:scale-95"
+                  >
+                    Edit Form & Try Again
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSubmissionError(null);
+                      setIsSubmitting(false);
+                    }}
+                    className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Subtle Background Accent */}
+            <div className={`absolute top-0 left-0 w-full h-1 ${submissionError ? 'bg-red-500' : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500'}`} />
+          </motion.div>
         </motion.div>
-      </motion.div>
+      </AnimatePresence>
     )}
 
     {/* AI Processing Overlay */}

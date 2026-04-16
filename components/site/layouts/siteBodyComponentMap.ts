@@ -38,6 +38,8 @@ export const folderMap: Record<string, string> = {
   "meat-store": "EcommerceMeatLayout",
   "digital-goods-store-v2": "EcommerceLayout",
   "gaming-store": "EcommerceGamingLayout",
+  "book-store": "EcommerceBookLayout",
+  "book store": "EcommerceBookLayout",
   "earphones-store": "EcommerceEarphonesLayout",
   "glasses-store": "EcommerceGlassesLayout",
   "flowers-store": "EcommerceFlowersLayout",
@@ -134,6 +136,7 @@ export const folderMap: Record<string, string> = {
 export const siteComponentNameMap: Record<string, string> = {
   EcommerceLayout: "EcommerceSite",
   EcommerceAgrovetLayout: "EcommerceAgrovetSite",
+  EcommerceBookLayout: "EcommerceBookSite",
   EcommerceMeatLayout: "EcommerceMeatSite",
   EcommerceHardwareLayout: "EcommerceHardwareSite",
   EcommerceShoesLayout: "EcommerceShoesSite",

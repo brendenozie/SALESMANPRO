@@ -106,12 +106,12 @@ style={{ backgroundColor: primaryColor }}
 <div className="flex items-center space-x-6 font-medium">
 <div className="flex items-center space-x-2">
 <PhoneIcon className="h-4 w-4"/>
-<span>+221 33 66 22</span>
+<span>{ storeFormData?.contactPhone || "+221 33 66 22" }</span>
 </div>
 
 <div className="flex items-center space-x-2">
 <EnvelopeIcon className="h-4 w-4"/>
-<span>support@{slug || 'store'}.com</span>
+<span>{ storeFormData?.contactEmail || "support@{slug || 'store'}.com" }</span>
 </div>
 </div>
 
@@ -126,7 +126,7 @@ className="hover:underline flex items-center space-x-1"
 </Link>
 
 <div className="flex items-center cursor-pointer">
-<span>$ Dollar (US)</span>
+<span>{storeFormData?.currency || "$ Dollar (US)"}</span>
 <ChevronDownIcon className="h-3 w-3 ml-1"/>
 </div>
 

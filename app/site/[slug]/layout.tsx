@@ -94,7 +94,7 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
         <LayoutComponent params={{ storeFormData }}>
           {/* Suspense is key for streaming UI while page data loads */}
           <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
-          <WhatsAppBubble />
+          <WhatsAppBubble productName={''} />
         </LayoutComponent>
       </div>
     </StoreContextProvider>

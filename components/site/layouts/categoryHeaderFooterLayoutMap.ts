@@ -167,6 +167,11 @@ const DeliveryLayout = dynamic(
   () => import("@/components/site/layouts/DeliveryLayout/DeliveryLayout"),
 );
 
+const EcommerceBookLayout = dynamic(
+  () =>
+    import("@/components/site/layouts/EcommerceBookLayout/EcommerceBookLayout"),
+);
+
 import { ReactNode } from "react";
 import { StoreForm } from "../../../types/typings";
 
@@ -196,6 +201,7 @@ const categoryHeaderFooterLayoutMap: Record<
   "peanuts store": EcommercePeanutsLayout,
   "watch store": EcommerceWatchLayout,
   "baby store": EcommerceBabyLayout,
+  "book store": EcommerceBookLayout,
   "hardware store": EcommerceHardwareLayout,
   "cake store": EcommerceCakeLayout,
   "bike store": EcommerceBikeLayout,

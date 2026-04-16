@@ -65,624 +65,154 @@ import { sub } from "date-fns";
 
 // Helper to inject dynamic adminSlug
 //accessLevel is the users different user roles that allows for users to access some paths or not
+const commonEcommerce = (adminSlug: string) => {
+  return [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    {
+      label: "POS",
+      href: `/admin/${adminSlug}/storepos`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Products",
+      icon: ClipboardDocumentListIcon,
+      subItems: [
+        { label: "Browse Catalog", href: `/admin/${adminSlug}/inventory` },
+        { label: "Market List", href: `/admin/${adminSlug}/mymarketplace` },
+      ],
+    },
+    {
+      label: "Users",
+      icon: UsersIcon,
+      subItems: [
+        { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
+        // { label: "Riders", href: `/admin/${adminSlug}/riders` },
+        { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
+        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
+      ],
+    },
+    {
+      label: "Orders",
+      icon: UsersIcon,
+      subItems: [
+        { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
+        { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
+        { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
+        { label: "Delivery", href: `/admin/${adminSlug}/deliveries` },
+      ],
+    },
+    {
+      label: "Transport",
+      href: `/admin/${adminSlug}/transport`,
+      icon: HomeIcon,
+      subItems: [
+        {
+          label: "Vehicles",
+          href: `/admin/${adminSlug}/store-transport-vehicles`,
+        },
+        { label: "Routes", href: `/admin/${adminSlug}/store-transport-routes` },
+        {
+          label: "Drivers",
+          href: `/admin/${adminSlug}/store-transport-drivers`,
+        },
+        {
+          label: "Schedules",
+          href: `/admin/${adminSlug}/store-transport-schedules`,
+        },
+        {
+          label: "Maintenance Records",
+          href: `/admin/${adminSlug}/store-transport-maintenance-records`,
+        },
+        {
+          label: "Fuel Logs",
+          href: `/admin/${adminSlug}/store-transport-fuel-logs`,
+        },
+        // {
+        //   label: "Assignments",
+        //   href: `/admin/${adminSlug}/store-transport-assignments`,
+        // },
+        {
+          label: "Incidents",
+          href: `/admin/${adminSlug}/store-transport-incidents`,
+        },
+        {
+          label: "Reports",
+          href: `/admin/${adminSlug}/store-transport-reports`,
+        },
+      ],
+    },
+    // {
+    //   label: "Vehicles",
+    //   href: `/admin/${adminSlug}/deliveries-vehicles`,
+    //   icon: TruckIcon,
+    // },
+    {
+      label: "Reports",
+      href: `/admin/${adminSlug}/revenuereport`,
+      icon: ChartBarIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
+  ];
+};
 
 export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
-  "E-commerce": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    {
-      label: "POS",
-      href: `/admin/${adminSlug}/storepos`,
-      icon: ClipboardDocumentListIcon,
-    },
-    {
-      label: "Categories",
-      href: `/admin/${adminSlug}/categories`,
-      icon: ClipboardDocumentListIcon,
-    },
-    {
-      label: "Products",
-      icon: ClipboardDocumentListIcon,
-      subItems: [
-        { label: "Browse Catalog", href: `/admin/${adminSlug}/inventory` },
-        { label: "Market List", href: `/admin/${adminSlug}/mymarketplace` },
-      ],
-    },
-    {
-      label: "Users",
-      icon: UsersIcon,
-      subItems: [
-        { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
-        // { label: "Riders", href: `/admin/${adminSlug}/riders` },
-        { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
-        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
-      ],
-    },
-    {
-      label: "Orders",
-      icon: UsersIcon,
-      subItems: [
-        { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
-        { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
-        { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
-        { label: "Delivery", href: `/admin/${adminSlug}/deliveries` },
-      ],
-    },
-    {
-      label: "Transport",
-      href: `/admin/${adminSlug}/transport`,
-      icon: HomeIcon,
-      subItems: [
-        {
-          label: "Vehicles",
-          href: `/admin/${adminSlug}/store-transport-vehicles`,
-        },
-        { label: "Routes", href: `/admin/${adminSlug}/store-transport-routes` },
-        {
-          label: "Drivers",
-          href: `/admin/${adminSlug}/store-transport-drivers`,
-        },
-        {
-          label: "Schedules",
-          href: `/admin/${adminSlug}/store-transport-schedules`,
-        },
-        {
-          label: "Maintenance Records",
-          href: `/admin/${adminSlug}/store-transport-maintenance-records`,
-        },
-        {
-          label: "Fuel Logs",
-          href: `/admin/${adminSlug}/store-transport-fuel-logs`,
-        },
-        // {
-        //   label: "Assignments",
-        //   href: `/admin/${adminSlug}/store-transport-assignments`,
-        // },
-        {
-          label: "Incidents",
-          href: `/admin/${adminSlug}/store-transport-incidents`,
-        },
-        {
-          label: "Reports",
-          href: `/admin/${adminSlug}/store-transport-reports`,
-        },
-      ],
-    },
-    // {
-    //   label: "Vehicles",
-    //   href: `/admin/${adminSlug}/deliveries-vehicles`,
-    //   icon: TruckIcon,
-    // },
-    {
-      label: "Reports",
-      href: `/admin/${adminSlug}/revenuereport`,
-      icon: ChartBarIcon,
-    },
-    {
-      label: "Messages",
-      href: `/admin/${adminSlug}/messages`,
-      icon: ChatBubbleBottomCenterTextIcon,
-    },
-    {
-      label: "Settings",
-      href: `/admin/${adminSlug}/settings`,
-      icon: Cog6ToothIcon,
-    },
-  ],
+  "E-commerce": commonEcommerce(adminSlug),
 
-  "Shoes Store": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    {
-      label: "POS",
-      href: `/admin/${adminSlug}/storepos`,
-      icon: ClipboardDocumentListIcon,
-    },
-    {
-      label: "Categories",
-      href: `/admin/${adminSlug}/categories`,
-      icon: ClipboardDocumentListIcon,
-    },
-    {
-      label: "Products",
-      icon: ClipboardDocumentListIcon,
-      subItems: [
-        { label: "Browse Catalog", href: `/admin/${adminSlug}/inventory` },
-        { label: "Market List", href: `/admin/${adminSlug}/mymarketplace` },
-      ],
-    },
-    {
-      label: "Users",
-      icon: UsersIcon,
-      subItems: [
-        { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
-        // { label: "Riders", href: `/admin/${adminSlug}/riders` },
-        { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
-        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
-        // { label: "Suppliers", href: `/admin/${adminSlug}/suppliers` },
-      ],
-    },
-    {
-      label: "Orders",
-      icon: UsersIcon,
-      subItems: [
-        { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
-        { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
-        { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
-        { label: "Delivery", href: `/admin/${adminSlug}/deliveries` },
-      ],
-    },
-    {
-      label: "Transport",
-      href: `/admin/${adminSlug}/transport`,
-      icon: HomeIcon,
-      subItems: [
-        {
-          label: "Vehicles",
-          href: `/admin/${adminSlug}/store-transport-vehicles`,
-        },
-        { label: "Routes", href: `/admin/${adminSlug}/store-transport-routes` },
-        {
-          label: "Drivers",
-          href: `/admin/${adminSlug}/store-transport-drivers`,
-        },
-        {
-          label: "Schedules",
-          href: `/admin/${adminSlug}/store-transport-schedules`,
-        },
-        {
-          label: "Maintenance Records",
-          href: `/admin/${adminSlug}/store-transport-maintenance-records`,
-        },
-        {
-          label: "Fuel Logs",
-          href: `/admin/${adminSlug}/store-transport-fuel-logs`,
-        },
-        // {
-        //   label: "Assignments",
-        //   href: `/admin/${adminSlug}/store-transport-assignments`,
-        // },
-        {
-          label: "Incidents",
-          href: `/admin/${adminSlug}/store-transport-incidents`,
-        },
-        {
-          label: "Reports",
-          href: `/admin/${adminSlug}/store-transport-reports`,
-        },
-      ],
-    },
-    // {
-    //   label: "Vehicles",
-    //   href: `/admin/${adminSlug}/deliveries-vehicles`,
-    //   icon: TruckIcon,
-    // },
-    {
-      label: "Reports",
-      href: `/admin/${adminSlug}/revenuereport`,
-      icon: ChartBarIcon,
-    },
-    {
-      label: "Messages",
-      href: `/admin/${adminSlug}/messages`,
-      icon: ChatBubbleBottomCenterTextIcon,
-    },
-    {
-      label: "Settings",
-      href: `/admin/${adminSlug}/settings`,
-      icon: Cog6ToothIcon,
-    },
-  ],
+  "Agrovet Store": commonEcommerce(adminSlug),
 
-  "Fashion Shop": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    {
-      label: "POS",
-      href: `/admin/${adminSlug}/storepos`,
-      icon: ClipboardDocumentListIcon,
-    },
-    {
-      label: "Categories",
-      href: `/admin/${adminSlug}/categories`,
-      icon: ClipboardDocumentListIcon,
-    },
-    {
-      label: "Products",
-      icon: ClipboardDocumentListIcon,
-      subItems: [
-        { label: "Browse Catalog", href: `/admin/${adminSlug}/inventory` },
-        { label: "Market List", href: `/admin/${adminSlug}/mymarketplace` },
-      ],
-    },
-    {
-      label: "Users",
-      icon: UsersIcon,
-      subItems: [
-        { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
-        // { label: "Riders", href: `/admin/${adminSlug}/riders` },
-        { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
-        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
-        // { label: "Suppliers", href: `/admin/${adminSlug}/suppliers` },
-      ],
-    },
-    {
-      label: "Orders",
-      icon: UsersIcon,
-      subItems: [
-        { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
-        { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
-        { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
-        { label: "Delivery", href: `/admin/${adminSlug}/deliveries` },
-      ],
-    },
-    {
-      label: "Transport",
-      href: `/admin/${adminSlug}/transport`,
-      icon: HomeIcon,
-      subItems: [
-        {
-          label: "Vehicles",
-          href: `/admin/${adminSlug}/store-transport-vehicles`,
-        },
-        { label: "Routes", href: `/admin/${adminSlug}/store-transport-routes` },
-        {
-          label: "Drivers",
-          href: `/admin/${adminSlug}/store-transport-drivers`,
-        },
-        {
-          label: "Schedules",
-          href: `/admin/${adminSlug}/store-transport-schedules`,
-        },
-        {
-          label: "Maintenance Records",
-          href: `/admin/${adminSlug}/store-transport-maintenance-records`,
-        },
-        {
-          label: "Fuel Logs",
-          href: `/admin/${adminSlug}/store-transport-fuel-logs`,
-        },
-        // {
-        //   label: "Assignments",
-        //   href: `/admin/${adminSlug}/store-transport-assignments`,
-        // },
-        {
-          label: "Incidents",
-          href: `/admin/${adminSlug}/store-transport-incidents`,
-        },
-        {
-          label: "Reports",
-          href: `/admin/${adminSlug}/store-transport-reports`,
-        },
-      ],
-    },
-    // {
-    //   label: "Vehicles",
-    //   href: `/admin/${adminSlug}/deliveries-vehicles`,
-    //   icon: TruckIcon,
-    // },
-    {
-      label: "Reports",
-      href: `/admin/${adminSlug}/revenuereport`,
-      icon: ChartBarIcon,
-    },
-    {
-      label: "Messages",
-      href: `/admin/${adminSlug}/messages`,
-      icon: ChatBubbleBottomCenterTextIcon,
-    },
-    {
-      label: "Settings",
-      href: `/admin/${adminSlug}/settings`,
-      icon: Cog6ToothIcon,
-    },
-  ],
+  "Baby Store": commonEcommerce(adminSlug),
 
-  "Furniture Shop": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    {
-      label: "POS",
-      href: `/admin/${adminSlug}/storepos`,
-      icon: ClipboardDocumentListIcon,
-    },
-    {
-      label: "Categories",
-      href: `/admin/${adminSlug}/categories`,
-      icon: ClipboardDocumentListIcon,
-    },
-    {
-      label: "Products",
-      icon: ClipboardDocumentListIcon,
-      subItems: [
-        { label: "Browse Catalog", href: `/admin/${adminSlug}/inventory` },
-        { label: "Market List", href: `/admin/${adminSlug}/mymarketplace` },
-      ],
-    },
-    {
-      label: "Users",
-      icon: UsersIcon,
-      subItems: [
-        { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
-        // { label: "Riders", href: `/admin/${adminSlug}/riders` },
-        { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
-        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
-        // { label: "Suppliers", href: `/admin/${adminSlug}/suppliers` },
-      ],
-    },
-    {
-      label: "Orders",
-      icon: UsersIcon,
-      subItems: [
-        { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
-        { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
-        { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
-        { label: "Delivery", href: `/admin/${adminSlug}/deliveries` },
-      ],
-    },
-    {
-      label: "Transport",
-      href: `/admin/${adminSlug}/transport`,
-      icon: HomeIcon,
-      subItems: [
-        {
-          label: "Vehicles",
-          href: `/admin/${adminSlug}/store-transport-vehicles`,
-        },
-        { label: "Routes", href: `/admin/${adminSlug}/store-transport-routes` },
-        {
-          label: "Drivers",
-          href: `/admin/${adminSlug}/store-transport-drivers`,
-        },
-        {
-          label: "Schedules",
-          href: `/admin/${adminSlug}/store-transport-schedules`,
-        },
-        {
-          label: "Maintenance Records",
-          href: `/admin/${adminSlug}/store-transport-maintenance-records`,
-        },
-        {
-          label: "Fuel Logs",
-          href: `/admin/${adminSlug}/store-transport-fuel-logs`,
-        },
-        // {
-        //   label: "Assignments",
-        //   href: `/admin/${adminSlug}/store-transport-assignments`,
-        // },
-        {
-          label: "Incidents",
-          href: `/admin/${adminSlug}/store-transport-incidents`,
-        },
-        {
-          label: "Reports",
-          href: `/admin/${adminSlug}/store-transport-reports`,
-        },
-      ],
-    },
-    // {
-    //   label: "Vehicles",
-    //   href: `/admin/${adminSlug}/deliveries-vehicles`,
-    //   icon: TruckIcon,
-    // },
-    {
-      label: "Reports",
-      href: `/admin/${adminSlug}/revenuereport`,
-      icon: ChartBarIcon,
-    },
-    {
-      label: "Messages",
-      href: `/admin/${adminSlug}/messages`,
-      icon: ChatBubbleBottomCenterTextIcon,
-    },
-    {
-      label: "Settings",
-      href: `/admin/${adminSlug}/settings`,
-      icon: Cog6ToothIcon,
-    },
-  ],
+  "Bike Store": commonEcommerce(adminSlug),
 
-  "Meat Store": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    {
-      label: "POS",
-      href: `/admin/${adminSlug}/storepos`,
-      icon: ClipboardDocumentListIcon,
-    },
-    {
-      label: "Categories",
-      href: `/admin/${adminSlug}/categories`,
-      icon: ClipboardDocumentListIcon,
-    },
-    {
-      label: "Products",
-      icon: ClipboardDocumentListIcon,
-      subItems: [
-        { label: "Browse Catalog", href: `/admin/${adminSlug}/inventory` },
-        { label: "Market List", href: `/admin/${adminSlug}/mymarketplace` },
-      ],
-    },
-    {
-      label: "Users",
-      icon: UsersIcon,
-      subItems: [
-        { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
-        // { label: "Riders", href: `/admin/${adminSlug}/riders` },
-        { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
-        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
-        // { label: "Suppliers", href: `/admin/${adminSlug}/suppliers` },
-      ],
-    },
-    {
-      label: "Orders",
-      icon: UsersIcon,
-      subItems: [
-        { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
-        { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
-        { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
-        { label: "Delivery", href: `/admin/${adminSlug}/deliveries` },
-      ],
-    },
-    {
-      label: "Transport",
-      href: `/admin/${adminSlug}/transport`,
-      icon: HomeIcon,
-      subItems: [
-        {
-          label: "Vehicles",
-          href: `/admin/${adminSlug}/store-transport-vehicles`,
-        },
-        { label: "Routes", href: `/admin/${adminSlug}/store-transport-routes` },
-        {
-          label: "Drivers",
-          href: `/admin/${adminSlug}/store-transport-drivers`,
-        },
-        {
-          label: "Schedules",
-          href: `/admin/${adminSlug}/store-transport-schedules`,
-        },
-        {
-          label: "Maintenance Records",
-          href: `/admin/${adminSlug}/store-transport-maintenance-records`,
-        },
-        {
-          label: "Fuel Logs",
-          href: `/admin/${adminSlug}/store-transport-fuel-logs`,
-        },
-        // {
-        //   label: "Assignments",
-        //   href: `/admin/${adminSlug}/store-transport-assignments`,
-        // },
-        {
-          label: "Incidents",
-          href: `/admin/${adminSlug}/store-transport-incidents`,
-        },
-        {
-          label: "Reports",
-          href: `/admin/${adminSlug}/store-transport-reports`,
-        },
-      ],
-    },
-    // {
-    //   label: "Vehicles",
-    //   href: `/admin/${adminSlug}/deliveries-vehicles`,
-    //   icon: TruckIcon,
-    // },
-    {
-      label: "Reports",
-      href: `/admin/${adminSlug}/revenuereport`,
-      icon: ChartBarIcon,
-    },
-    {
-      label: "Messages",
-      href: `/admin/${adminSlug}/messages`,
-      icon: ChatBubbleBottomCenterTextIcon,
-    },
-    {
-      label: "Settings",
-      href: `/admin/${adminSlug}/settings`,
-      icon: Cog6ToothIcon,
-    },
-  ],
+  "Book Store": commonEcommerce(adminSlug),
 
-  "Hardware Shop": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    {
-      label: "POS",
-      href: `/admin/${adminSlug}/storepos`,
-      icon: ClipboardDocumentListIcon,
-    },
-    {
-      label: "Categories",
-      href: `/admin/${adminSlug}/categories`,
-      icon: ClipboardDocumentListIcon,
-    },
-    {
-      label: "Products",
-      icon: ClipboardDocumentListIcon,
-      subItems: [
-        { label: "Browse Catalog", href: `/admin/${adminSlug}/inventory` },
-        { label: "Market List", href: `/admin/${adminSlug}/mymarketplace` },
-      ],
-    },
-    {
-      label: "Users",
-      icon: UsersIcon,
-      subItems: [
-        { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
-        // { label: "Riders", href: `/admin/${adminSlug}/riders` },
-        { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
-        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
-        // { label: "Suppliers", href: `/admin/${adminSlug}/suppliers` },
-      ],
-    },
-    {
-      label: "Orders",
-      icon: UsersIcon,
-      subItems: [
-        { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
-        { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
-        { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
-        { label: "Delivery", href: `/admin/${adminSlug}/deliveries` },
-      ],
-    },
-    {
-      label: "Transport",
-      href: `/admin/${adminSlug}/transport`,
-      icon: HomeIcon,
-      subItems: [
-        {
-          label: "Vehicles",
-          href: `/admin/${adminSlug}/store-transport-vehicles`,
-        },
-        { label: "Routes", href: `/admin/${adminSlug}/store-transport-routes` },
-        {
-          label: "Drivers",
-          href: `/admin/${adminSlug}/store-transport-drivers`,
-        },
-        {
-          label: "Schedules",
-          href: `/admin/${adminSlug}/store-transport-schedules`,
-        },
-        {
-          label: "Maintenance Records",
-          href: `/admin/${adminSlug}/store-transport-maintenance-records`,
-        },
-        {
-          label: "Fuel Logs",
-          href: `/admin/${adminSlug}/store-transport-fuel-logs`,
-        },
-        // {
-        //   label: "Assignments",
-        //   href: `/admin/${adminSlug}/store-transport-assignments`,
-        // },
-        {
-          label: "Incidents",
-          href: `/admin/${adminSlug}/store-transport-incidents`,
-        },
-        {
-          label: "Reports",
-          href: `/admin/${adminSlug}/store-transport-reports`,
-        },
-      ],
-    },
-    // {
-    //   label: "Vehicles",
-    //   href: `/admin/${adminSlug}/deliveries-vehicles`,
-    //   icon: TruckIcon,
-    // },
-    {
-      label: "Reports",
-      href: `/admin/${adminSlug}/revenuereport`,
-      icon: ChartBarIcon,
-    },
-    {
-      label: "Messages",
-      href: `/admin/${adminSlug}/messages`,
-      icon: ChatBubbleBottomCenterTextIcon,
-    },
-    {
-      label: "Settings",
-      href: `/admin/${adminSlug}/settings`,
-      icon: Cog6ToothIcon,
-    },
-  ],
+  "Cake Store": commonEcommerce(adminSlug),
+
+  "Directory & Listings": commonEcommerce(adminSlug),
+
+  "Earphones Store": commonEcommerce(adminSlug),
+
+  "Fashion Shop": commonEcommerce(adminSlug),
+
+  "Flowers Store": commonEcommerce(adminSlug),
+
+  "Furniture Shop": commonEcommerce(adminSlug),
+
+  "Gaming Store": commonEcommerce(adminSlug),
+
+  "Glasses Store": commonEcommerce(adminSlug),
+
+  "Groceries Store": commonEcommerce(adminSlug),
+
+  "Hardware Shop": commonEcommerce(adminSlug),
+
+  "Honey Store": commonEcommerce(adminSlug),
+
+  "Meat Store": commonEcommerce(adminSlug),
+
+  "Motorcycle Store": commonEcommerce(adminSlug),
+
+  "Peanuts Store": commonEcommerce(adminSlug),
+
+  "Pets Store": commonEcommerce(adminSlug),
+
+  "Shoes Store": commonEcommerce(adminSlug),
+
+  "Watch Store": commonEcommerce(adminSlug),
 
   "Service Provider": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
@@ -969,107 +499,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     },
   ],
 
-  "Directory & Listings": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    {
-      label: "POS",
-      href: `/admin/${adminSlug}/storepos`,
-      icon: ClipboardDocumentListIcon,
-    },
-    {
-      label: "Categories",
-      href: `/admin/${adminSlug}/categories`,
-      icon: ClipboardDocumentListIcon,
-    },
-    {
-      label: "Products",
-      icon: ClipboardDocumentListIcon,
-      subItems: [
-        { label: "Browse Catalog", href: `/admin/${adminSlug}/inventory` },
-        { label: "Market List", href: `/admin/${adminSlug}/mymarketplace` },
-      ],
-    },
-    {
-      label: "Users",
-      icon: UsersIcon,
-      subItems: [
-        { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
-        // { label: "Riders", href: `/admin/${adminSlug}/riders` },
-        { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
-        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
-      ],
-    },
-    {
-      label: "Orders",
-      icon: UsersIcon,
-      subItems: [
-        { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
-        { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
-        { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
-        { label: "Delivery", href: `/admin/${adminSlug}/deliveries` },
-      ],
-    },
-    {
-      label: "Transport",
-      href: `/admin/${adminSlug}/transport`,
-      icon: HomeIcon,
-      subItems: [
-        {
-          label: "Vehicles",
-          href: `/admin/${adminSlug}/store-transport-vehicles`,
-        },
-        { label: "Routes", href: `/admin/${adminSlug}/store-transport-routes` },
-        {
-          label: "Drivers",
-          href: `/admin/${adminSlug}/store-transport-drivers`,
-        },
-        {
-          label: "Schedules",
-          href: `/admin/${adminSlug}/store-transport-schedules`,
-        },
-        {
-          label: "Maintenance Records",
-          href: `/admin/${adminSlug}/store-transport-maintenance-records`,
-        },
-        {
-          label: "Fuel Logs",
-          href: `/admin/${adminSlug}/store-transport-fuel-logs`,
-        },
-        // {
-        //   label: "Assignments",
-        //   href: `/admin/${adminSlug}/store-transport-assignments`,
-        // },
-        {
-          label: "Incidents",
-          href: `/admin/${adminSlug}/store-transport-incidents`,
-        },
-        {
-          label: "Reports",
-          href: `/admin/${adminSlug}/store-transport-reports`,
-        },
-      ],
-    },
-    // {
-    //   label: "Vehicles",
-    //   href: `/admin/${adminSlug}/deliveries-vehicles`,
-    //   icon: TruckIcon,
-    // },
-    {
-      label: "Reports",
-      href: `/admin/${adminSlug}/revenuereport`,
-      icon: ChartBarIcon,
-    },
-    {
-      label: "Messages",
-      href: `/admin/${adminSlug}/messages`,
-      icon: ChatBubbleBottomCenterTextIcon,
-    },
-    {
-      label: "Settings",
-      href: `/admin/${adminSlug}/settings`,
-      icon: Cog6ToothIcon,
-    },
-  ],
+  // "Directory & Listings": commonEcommerce(adminSlug),
 
   // OLD PAth
   // "Directory & Listings": [
@@ -2530,101 +1960,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     },
   ],
 
-  Marketplace: [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    {
-      label: "POS",
-      href: `/admin/${adminSlug}/storepos`,
-      icon: ClipboardDocumentListIcon,
-    },
-    {
-      label: "Categories",
-      href: `/admin/${adminSlug}/categories`,
-      icon: ClipboardDocumentListIcon,
-    },
-    {
-      label: "Products",
-      icon: ClipboardDocumentListIcon,
-      subItems: [
-        { label: "Browse Catalog", href: `/admin/${adminSlug}/inventory` },
-        { label: "Market List", href: `/admin/${adminSlug}/mymarketplace` },
-      ],
-    },
-    {
-      label: "Users",
-      icon: UsersIcon,
-      subItems: [
-        { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
-        { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
-        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
-      ],
-    },
-    {
-      label: "Orders",
-      icon: UsersIcon,
-      subItems: [
-        { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
-        { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
-        { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
-        { label: "Delivery", href: `/admin/${adminSlug}/deliveries` },
-      ],
-    },
-    {
-      label: "Transport",
-      href: `/admin/${adminSlug}/transport`,
-      icon: HomeIcon,
-      subItems: [
-        {
-          label: "Vehicles",
-          href: `/admin/${adminSlug}/store-transport-vehicles`,
-        },
-        { label: "Routes", href: `/admin/${adminSlug}/store-transport-routes` },
-        {
-          label: "Drivers",
-          href: `/admin/${adminSlug}/store-transport-drivers`,
-        },
-        {
-          label: "Schedules",
-          href: `/admin/${adminSlug}/store-transport-schedules`,
-        },
-        {
-          label: "Maintenance Records",
-          href: `/admin/${adminSlug}/store-transport-maintenance-records`,
-        },
-        {
-          label: "Fuel Logs",
-          href: `/admin/${adminSlug}/store-transport-fuel-logs`,
-        },
-        // {
-        //   label: "Assignments",
-        //   href: `/admin/${adminSlug}/store-transport-assignments`,
-        // },
-        {
-          label: "Incidents",
-          href: `/admin/${adminSlug}/store-transport-incidents`,
-        },
-        {
-          label: "Reports",
-          href: `/admin/${adminSlug}/store-transport-reports`,
-        },
-      ],
-    },
-    {
-      label: "Reports",
-      href: `/admin/${adminSlug}/revenuereport`,
-      icon: ChartBarIcon,
-    },
-    {
-      label: "Messages",
-      href: `/admin/${adminSlug}/messages`,
-      icon: ChatBubbleBottomCenterTextIcon,
-    },
-    {
-      label: "Settings",
-      href: `/admin/${adminSlug}/settings`,
-      icon: Cog6ToothIcon,
-    },
-  ],
+  Marketplace: commonEcommerce(adminSlug),
 
   "Consultant & Coach": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
@@ -3387,6 +2723,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: Cog6ToothIcon,
     },
   ],
+
   "Head Teacher": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     {
@@ -3423,6 +2760,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: Cog6ToothIcon,
     },
   ],
+
   Other: [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     {

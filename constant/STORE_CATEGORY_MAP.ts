@@ -38,6 +38,7 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Watch Store",
     "Peanuts Store",
     "Books",
+    "Book Store",
     "Clothing",
     "Electronics",
     "Home Appliances",
@@ -255,6 +256,7 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Baby Toys",
     "Groceries",
     "Books",
+    "Book Store",
     "Clothing",
     "Electronics",
     "Home Appliances",
@@ -421,6 +423,8 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Feeding Supplies",
     "Nursery Furniture",
     "Toys & Books",
+    "Books",
+    "Book Store",
     "Health & Safety Products",
     "Strollers & Car Seats",
     "Baby Care Products",
@@ -489,6 +493,7 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
   "Educational & Online Courses": [
     "Subjects",
     "Books", // maybe also sell books/resources
+    "Book Store", // for educational materials
   ],
 
   "Nonprofit & Community": [
@@ -517,7 +522,7 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
 
   "SaaS & Web Apps": ["SaaS & Web Apps", "Digital Goods & Subscriptions"],
 
-  "Media & Entertainment": ["Media & Entertainment", "Music", "Books"],
+  "Media & Entertainment": ["Media & Entertainment", "Music", "Books", "Book Store"],
 
   "Finance & Legal": ["Finance & Legal", "Services"],
 
@@ -550,9 +555,9 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
 
   Teacher: ["Teacher", "Subjects"],
 
-  Students: ["Students", "Books"],
+  Students: ["Students", "Books", "Book Store"],
 
-  Pupils: ["Pupils", "Books"],
+  Pupils: ["Pupils", "Books", "Book Store"],
 
   Principal: ["Principal"],
 
@@ -603,6 +608,19 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Electrical Supplies",
     "Lawn & Garden Equipment",
     "Home Improvement",
+    "Other",
+  ],
+
+  "Book Store": [
+    "Book Store",
+    "Books",
+    "Fiction",
+    "Non-Fiction",
+    "Children's Books",
+    "Educational Books",
+    "Comics & Graphic Novels",
+    "E-books",
+    "Audiobooks",
     "Other",
   ],
 
