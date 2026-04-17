@@ -23,7 +23,7 @@ import Modal from "@/components/Modal";
 
 // next/image loader
 const loaderProp = ({ src, width, quality }) => {
-  const params = [`w=${width || 800}`];
+  const params = [`w=${width}`];
   if (quality) params.push(`q=${quality}`);
   return `${src}?${params.join("&")}`;
 };

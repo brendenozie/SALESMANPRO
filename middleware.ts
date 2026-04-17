@@ -67,13 +67,17 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   const isLocalNetwork = isPrivateIp(clientIp);
 
   // We explicitly pass the secret and handle both secure and non-secure cookie names
+  // const session = await getToken({ 
+  //   req: request,
+  //   secret: process.env.NEXTAUTH_SECRET!,
+  //   // This ensures it works on both localhost (http) and production (https)
+  //   cookieName: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token'
+  // });
   const session = await getToken({ 
     req: request,
-    secret: process.env.NEXTAUTH_SECRET!,
-    // This ensures it works on both localhost (http) and production (https)
-    cookieName: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token'
+    secret: process.env.NEXTAUTH_SECRET!
   });
-
+  
   // 1. PREVENT REDIRECT LOOPS
   // Only redirect to login if we are NOT already there and NOT in an auth API call
   const isAuthPage = pathname.startsWith("/desktop-login") || pathname.startsWith("/api/auth");

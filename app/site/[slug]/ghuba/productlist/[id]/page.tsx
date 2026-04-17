@@ -1,4 +1,6 @@
 // ./app/site/[slug]/ghuba/productlist/[id]/page.jsx
+export const revalidate = 300; // 5 minutes
+
 import { PrismaClient } from "@prisma/client";
 import ProductPageClient from "./ProductPageClient"; // We will create this next
 import prisma from '@/server/db/prismadb'; // This import is for server-side
