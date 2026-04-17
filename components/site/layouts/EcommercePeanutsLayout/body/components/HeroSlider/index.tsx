@@ -29,17 +29,19 @@ export default function PeanutHeroIntuitive({ heroSlides }: any) {
   const slides = (heroSlides && heroSlides.length > 0) ? heroSlides : [
     {
       headline: "The Art of the Roast.",
-      subline: "Batch No. 042",
-      badgeText: "Discover a deeper, more complex peanut butter. Slow-roasted in small batches to unlock hidden notes of caramel and smoke.",
+      badgeText: "Batch No. 042",
+      subline: "Discover a deeper, more complex peanut butter. Slow-roasted in small batches to unlock hidden notes of caramel and smoke.",
       ctaText: "Explore the Collection",
       imageUrl: "https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?q=80&w=1000&auto=format&fit=crop",
+      productImageUrl: "https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?q=80&w=1000&auto=format&fit=crop",
     },
     {
       headline: "Texture, Refined.",
-      subline: "Velvet Smoothness",
-      badgeText: "Our triple-milled process ensures a silk-like consistency that melts instantly. No stabilizers, just pure nut oils.",
+      badgeText: "Velvet Smoothness",
+      subline: "Our triple-milled process ensures a silk-like consistency that melts instantly. No stabilizers, just pure nut oils.",
       ctaText: "Shop Creamy",
       imageUrl: "https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?q=80&w=1000&auto=format&fit=crop",
+      productImageUrl: "https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?q=80&w=1000&auto=format&fit=crop",
     }
   ];
 
@@ -114,7 +116,7 @@ export default function PeanutHeroIntuitive({ heroSlides }: any) {
                 <div className="absolute inset-0 bg-white rounded-full shadow-[0_40px_80px_rgba(0,0,0,0.03)] scale-90" />
                 
                 <Image
-                  src={slides[current].imageUrl}
+                  src={slides[current].imageUrl || slides[current].productImageUrl || 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=1200&auto=format&fit=crop'}
                   alt="Product"
                   fill
                   className="object-contain drop-shadow-[0_20px_40px_rgba(62,39,35,0.15)] p-12"

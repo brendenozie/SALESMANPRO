@@ -19,11 +19,13 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
   const slides = heroSlides?.length ? heroSlides : [
     {
       id: 'default-1',
+      badgeText: 'New Arrival',
       headline: 'MAMMOTH MOUNTING PONICS',
       subline: 'The peak of electric performance. Engineered for those who refuse to compromise.',
       ctaText: 'Explore Series',
       ctaLink: '/bikeecommerce/products',
       imageUrl: 'https://i.ibb.co/v4m8YmP/orange-bike.png',
+      productImageUrl: 'https://i.ibb.co/v4m8YmP/orange-bike.png',
       price: '€2,499',
       backgroundColor: '#FAFAFA',
     }
@@ -92,7 +94,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
             >
               <div className="flex items-center gap-3 mb-6">
                 <div className="h-px w-8 bg-gray-400" />
-                <span className="text-xs font-bold tracking-[0.3em] uppercase text-gray-500">Edition 2026</span>
+                <span className="text-xs font-bold tracking-[0.3em] uppercase text-gray-500">{slide.badgeText || "Edition 2026"}</span>
               </div>
               
               <h1 className="text-6xl md:text-8xl font-black text-gray-900 leading-[0.85] tracking-tighter uppercase italic">
@@ -134,47 +136,55 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
 
         {/* 3. THE PRODUCT: Depth & Shadow Play */}
         <div className="lg:col-span-7 order-1 lg:order-2 relative h-full flex items-center justify-center">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`img-${slide.id}`}
-              initial={{ opacity: 0, x: 100, scale: 0.9 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -100, scale: 1.1 }}
-              transition={{ type: "spring", damping: 20, stiffness: 100 }}
-              className="relative w-full h-[60%] lg:h-[80%] drop-shadow-[0_50px_50px_rgba(0,0,0,0.15)]"
-            >
-              <Image
-                src={slide.imageUrl || 'https://i.ibb.co/v4m8YmP/orange-bike.png'}
-                alt={slide.headline || 'Product'}
-                fill
-                loader={loader}
-                className="object-contain"
-                priority
-              />
-
-              {/* Dynamic Glow Shadow */}
-              <div className="absolute inset-0 -z-10 blur-[120px] opacity-20 rounded-full scale-75 translate-y-20"
-                   style={{ backgroundColor: primary }} />
-
-              {/* Functional Tech-Badges */}
-              <motion.div 
-                initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.5 }}
-                className="absolute top-[20%] right-[10%] p-4 bg-white/80 backdrop-blur-xl border border-white/50 shadow-2xl rounded-2xl hidden md:block"
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`img-${slide.id}`}
+                initial={{ opacity: 0, x: 100, scale: 0.9 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: -100, scale: 1.1 }}
+                transition={{ type: "spring", damping: 20, stiffness: 100 }}
+                /* Changed h-[60%] to h-[85vw] on mobile for massive impact.
+                  Added -mt-10 to pull it higher up on mobile screens. 
+                */
+                className="relative w-full h-[85vw] sm:h-[500px] lg:h-[80%] -mt-10 lg:mt-0 drop-shadow-[0_50px_50px_rgba(0,0,0,0.15)]"
               >
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg text-white" style={{ backgroundColor: primary }}>
-                    <BoltIcon className="w-5 h-5" />
+                <Image
+                  src={slide.imageUrl || slide.productImageUrl || 'https://i.ibb.co/v4m8YmP/orange-bike.png'}
+                  alt={slide.headline || 'Product'}
+                  fill
+                  loader={loader}
+                  /* Using object-contain ensures the full hardware is visible, 
+                    while the larger container above ensures it's "much larger".
+                  */
+                  className="object-contain"
+                  priority
+                />
+
+                {/* Dynamic Glow Shadow - Enhanced for the larger mobile image */}
+                <div className="absolute inset-0 -z-10 blur-[120px] opacity-30 rounded-full scale-90 translate-y-10 lg:translate-y-20"
+                    style={{ backgroundColor: primary }} />
+
+                {/* Functional Tech-Badges */}
+                <motion.div 
+                  initial={{ scale: 0 }} 
+                  animate={{ scale: 1 }} 
+                  transition={{ delay: 0.5 }}
+                  className="absolute top-[20%] right-[5%] p-4 bg-white/80 backdrop-blur-xl border border-white/50 shadow-2xl rounded-2xl hidden md:block"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg text-white" style={{ backgroundColor: primary }}>
+                      <BoltIcon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase font-black text-gray-400">Torque</p>
+                      <p className="text-sm font-bold text-gray-800">85Nm Motor</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-[10px] uppercase font-black text-gray-400">Torque</p>
-                    <p className="text-sm font-bold text-gray-800">85Nm Motor</p>
-                  </div>
-                </div>
+                </motion.div>
               </motion.div>
-            </motion.div>
-          </AnimatePresence>
+            </AnimatePresence>
+          </div>
         </div>
-      </div>
 
       {/* 4. NAVIGATION: Modern Glass UI */}
       <div className="absolute bottom-12 left-1/2 -translate-x-1/2 lg:left-auto lg:right-12 lg:translate-x-0 z-20">

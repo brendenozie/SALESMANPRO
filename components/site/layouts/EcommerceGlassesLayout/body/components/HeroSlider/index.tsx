@@ -12,12 +12,14 @@ const opticalSlides = [
   {
     id: '1',
     headline: 'CLARITY & STYLE',
+    title: 'CLARITY & STYLE',
     highlight: 'ALL IN ONE',
-    subline: '2026 LUXE COLLECTION',
-    description: 'Bespoke eyewear crafted for those who see the world differently. Merging clinical precision with runway aesthetics.',
+    badgeText: '2026 LUXE COLLECTION',
+    subline: 'Bespoke eyewear crafted for those who see the world differently. Merging clinical precision with runway aesthetics.',
+    description: 'Experience the perfect blend of visionary design and optical excellence. Our 2026 Luxe Collection redefines eyewear with cutting-edge materials, innovative lens technology, and bold, fashion-forward styles. Each pair is a masterpiece of craftsmanship, designed to elevate your vision and your style to new heights.',
     ctaText: 'Explore Collection',
     imageUrl: 'https://dozi4r4ug9739.cloudfront.net/images/1772312106481-zeelool-glasses-aShmUdodJ3w-unsplash.jpg', // Better High-Res Model
-    productImage: 'https://images.unsplash.com/photo-1574258495973-f010dfbb5371?q=80&w=500&auto=format&fit=crop', // Isolated Glasses
+    productImageUrl: 'https://images.unsplash.com/photo-1574258495973-f010dfbb5371?q=80&w=500&auto=format&fit=crop', // Isolated Glasses
     productName: 'Metal Lennons',
     price: '$175.00',
     oldPrice: '$199.00',
@@ -95,17 +97,17 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
               <div className="inline-flex items-center gap-3 mb-6">
                 <span className="h-[1px] w-12 bg-[#F3A852]" />
                 <span className="text-xs font-bold tracking-[0.4em] text-[#F3A852] uppercase">
-                  {heroSlides && heroSlides.length > 0 ? heroSlides[0].subline : 'Default Subline'}
+                  {heroSlides && heroSlides.length > 0 ? heroSlides[0].badgeText : 'Default Subline'}
                 </span>
               </div>
               
               <h1 className="text-7xl md:text-8xl xl:text-9xl font-serif text-gray-900 leading-[0.85] tracking-tighter mb-8">
                 {heroSlides && heroSlides.length > 0 ? heroSlides[0].headline : 'Default Headline'} <br />
-                <span className="text-transparent italic stroke-text">{opticalSlides[0].highlight}</span>
+                <span className="text-transparent italic stroke-text">{opticalSlides[0].highlight || ''}</span>
               </h1>
               
               <p className="text-xl text-gray-600 max-w-md leading-relaxed font-light">
-                {opticalSlides[0].description}
+                {opticalSlides[0].subline || opticalSlides[0].description || ''}
               </p>
             </motion.div>
 
@@ -181,7 +183,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
               >
                 <div className="absolute top-4 right-4 bg-[#F3A852] text-white text-[10px] font-black px-2 py-0.5">SALE</div>
                 <div className="h-32 w-full relative mb-4">
-                  <Image src={opticalSlides[0].productImage} loader={imageLoader} alt="Product" fill className="object-contain" />
+                  <Image src={opticalSlides[0].productImageUrl} loader={imageLoader} alt="Product" fill className="object-contain" />
                 </div>
                 <div className="space-y-1">
                     <p className="text-[10px] text-[#F3A852] font-black tracking-widest uppercase">New Arrival</p>

@@ -1,13 +1,20 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { AnimatePresence, motion, PanInfo } from 'framer-motion';
-import { ChevronLeftIcon, ChevronRightIcon, BeakerIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+// Hero Icons as per saved preference
+import { 
+  ChevronLeftIcon, 
+  ChevronRightIcon, 
+  BeakerIcon, 
+  SunIcon, 
+  SparklesIcon 
+} from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
 import { HeroSlide } from '@/types/typings';
 
-const autoAdvanceDelay = 7000;
+const autoAdvanceDelay = 8000;
 const loader = ({ src }: { src: string }) => src;
 
 export default function HoneyHero({ heroSlides }: { heroSlides: HeroSlide[] | null }) {
@@ -17,12 +24,14 @@ export default function HoneyHero({ heroSlides }: { heroSlides: HeroSlide[] | nu
   const slides = useMemo(() => {
     const fallback = 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=1200&auto=format&fit=crop';
     if (!heroSlides || heroSlides.length === 0) return [{
-      headline: "NATURE'S GOLDEN\nALCHEMY.",
-      subline: "Batch No. 724 / Wildflower",
-      badgeText: "Unfiltered, raw honey harvested from the sun-drenched meadows of the valley. A complex profile with notes of clover and citrus.",
-      ctaText: "Shop the Harvest",
-      ctaLink: "/honeyecommerce/products",
-      imageUrl: fallback
+      headline: "PURE GOLD\nFROM THE HIVE.",
+      badgeText: "Limited Harvest / Batch 724",
+      subline: "Experience unfiltered, raw honey sourced from remote sun-drenched meadows. Each jar tells a story of the season.",
+      ctaText: "Explore the Harvest",
+      ctaLink: "/shop",
+      imageUrl: fallback,
+      productImageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200&auto=format&fit=crop',
+      price: "From $24.00"
     }];
     return heroSlides;
   }, [heroSlides]);
@@ -43,138 +52,161 @@ export default function HoneyHero({ heroSlides }: { heroSlides: HeroSlide[] | nu
   }, [nextSlide]);
 
   return (
-    <section className="relative min-h-[90vh] flex items-center bg-[#FDFCF7] overflow-hidden">
-      {/* Organic Background Elements */}
-      <div className="absolute inset-0 pointer-events-none">
-        {/* Animated Pollen Particles */}
-        {[...Array(6)].map((_, i) => (
+    <section className="relative min-h-[85vh] lg:min-h-screen flex items-center bg-[#FFFCF5] overflow-hidden pt-20 lg:pt-0">
+      
+      {/* 1. LAYERED DECORATIVE BACKGROUND */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Honeycomb Pattern */}
+        <div className="absolute inset-0 opacity-[0.03]" 
+             style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l25.98 15v30L30 60 4.02 45V15z' fill-rule='evenodd' stroke='%23B8860B' stroke-width='2' fill='none'/%3E%3C/svg%3E")`, backgroundSize: '60px' }} />
+        
+        {/* Floating Particles */}
+        {[...Array(8)].map((_, i) => (
           <motion.div
             key={i}
             animate={{ 
-              y: [0, -100, 0], 
-              x: [0, 50, 0],
-              opacity: [0, 0.4, 0] 
+              y: [0, -120, 0], 
+              x: [0, 40, 0],
+              scale: [1, 1.2, 1],
+              opacity: [0.1, 0.4, 0.1] 
             }}
-            transition={{ duration: 10 + i * 2, repeat: Infinity, delay: i * 1.5 }}
-            className="absolute w-1 h-1 bg-[#D4AF37] rounded-full"
-            style={{ top: `${20 + i * 15}%`, left: `${10 + i * 12}%` }}
+            transition={{ duration: 8 + i * 2, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute w-2 h-2 bg-[#D4AF37] rounded-full blur-[1px]"
+            style={{ top: `${Math.random() * 100}%`, left: `${Math.random() * 100}%` }}
           />
         ))}
-        {/* Decorative Golden Blur */}
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#F3A852] opacity-10 blur-[120px] rounded-full" />
+
+        {/* Large Sun Glow */}
+        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-amber-200/20 blur-[150px] rounded-full" />
       </div>
 
-      <div className="container mx-auto px-6 lg:px-20 relative z-10">
+      <div className="container mx-auto px-6 lg:px-16 relative z-10">
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={current}
-            initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: direction > 0 ? -50 : 50 }}
-            transition={{ duration: 0.8, ease: [0.19, 1, 0.22, 1] }}
-            className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8 }}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center"
           >
-            {/* 01. Text Block */}
-            <div className="lg:col-span-5 order-2 lg:order-1">
-              <motion.span 
-                initial={{ opacity: 0, y: 10 }}
+            {/* TEXT CONTENT */}
+            <div className="lg:col-span-6 order-2 lg:order-1">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="inline-block text-[10px] font-black uppercase tracking-[0.5em] text-[#B8860B] mb-6"
+                className="space-y-8"
               >
-                {slides[current].subline}
-              </motion.span>
-              
-              <h1 className="text-5xl md:text-7xl font-serif italic text-[#3E2723] leading-[0.9] mb-8 tracking-tight">
-                {slides[current].headline?.split('\n').map((text, i) => (
-                  <span key={i} className="block">{text}</span>
-                ))}
-              </h1>
-
-              <p className="text-stone-500 text-sm md:text-base max-w-sm mb-10 leading-relaxed font-medium">
-                {slides[current].badgeText}
-              </p>
-
-              <div className="flex flex-col sm:flex-row items-start gap-8">
-                <Link
-                  href={slides[current].ctaLink || '/honeyecommerce/products'}
-                  className="px-10 py-4 bg-[#3E2723] text-white text-[11px] font-black uppercase tracking-widest rounded-full hover:bg-[#B8860B] transition-colors shadow-xl shadow-stone-200"
-                >
-                  {slides[current].ctaText}
-                </Link>
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center">
-                        <BeakerIcon className="w-5 h-5 text-amber-600" />
-                    </div>
-                    <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Lab-Tested Purity</span>
+                <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-amber-50 border border-amber-100/50">
+                  <SparklesIcon className="w-4 h-4 text-amber-600" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-800">
+                    {slides[current].badgeText}
+                  </span>
                 </div>
-              </div>
+
+                <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif text-stone-900 leading-[0.95] tracking-tight">
+                  {slides[current].headline?.split('\n').map((text, i) => (
+                    <span key={i} className="block last:italic last:text-amber-600">
+                      {text}
+                    </span>
+                  ))}
+                </h1>
+
+                <p className="text-stone-600 text-lg md:text-xl max-w-md leading-relaxed">
+                  {slides[current].subline}
+                </p>
+
+                <div className="flex flex-col sm:flex-row items-center gap-6 pt-4">
+                  <Link
+                    href={slides[current].ctaLink || '/shop'}
+                    className="w-full sm:w-auto px-12 py-5 bg-[#3E2723] text-white text-xs font-bold uppercase tracking-widest rounded-full hover:bg-amber-600 transition-all duration-500 shadow-2xl shadow-amber-900/20 hover:scale-105 flex justify-center"
+                  >
+                    {slides[current].ctaText}
+                  </Link>
+                  <div className="flex items-center gap-4 text-stone-400">
+                    <div className="w-12 h-12 rounded-full border border-stone-200 flex items-center justify-center">
+                      <BeakerIcon className="w-5 h-5" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-[10px] font-black uppercase tracking-widest leading-none">Purity Verified</p>
+                      <p className="text-[10px] font-medium italic">100% Organic & Raw</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
             </div>
 
-            {/* 02. Image Composition */}
-            <div className="lg:col-span-7 order-1 lg:order-2 relative h-[400px] md:h-[600px]">
-              <div className="relative w-full h-full flex items-center justify-center">
-                {/* Main Image Frame */}
-                <motion.div 
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="relative w-4/5 h-[90%] z-10 rounded-t-[200px] rounded-b-2xl overflow-hidden border-[12px] border-white shadow-2xl"
+            {/* VISUAL COMPOSITION */}
+            <div className="lg:col-span-6 order-1 lg:order-2">
+              <div className="relative w-full aspect-[4/5] max-w-[500px] mx-auto">
+                {/* Main Image Arch */}
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0, rotate: -2 }}
+                  animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                  transition={{ duration: 1.2, ease: "circOut" }}
+                  className="relative w-full h-full z-10 rounded-t-[240px] rounded-b-3xl overflow-hidden border-[16px] border-white shadow-[0_32px_64px_-16px_rgba(184,134,11,0.3)]"
                 >
                   <Image 
-                    src={slides[current].imageUrl || 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=1200&auto=format&fit=crop'} 
-                    alt="Honey" 
+                    src={slides[current].imageUrl || slides[current].productImageUrl || 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=1200&auto=format&fit=crop'} 
+                    alt="Artisanal Honey" 
                     fill 
                     loader={loader}
-                    className="object-cover"
+                    className="object-cover scale-105 hover:scale-110 transition-transform duration-[3s]"
                   />
-                </motion.div>
-                
-                {/* Accent Detail Frame */}
-                <motion.div 
-                  initial={{ x: 50, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                  className="absolute -right-4 bottom-10 w-48 h-64 z-20 rounded-2xl overflow-hidden border-8 border-white shadow-xl hidden md:block"
-                >
-                  <Image 
-                    src={slides[current].imageUrl || 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=1200&auto=format&fit=crop'} 
-                    alt="Detail" 
-                    fill 
-                    loader={loader}
-                    className="object-cover scale-150" 
-                  />
-                  <div className="absolute inset-0 bg-amber-900/10" />
+                  {/* Subtle Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-amber-900/5 to-transparent" />
                 </motion.div>
 
-                {/* Decorative "Honey Drop" SVG */}
-                <svg className="absolute -left-10 top-20 w-32 h-32 text-amber-100 fill-current -z-10" viewBox="0 0 100 100">
-                    <path d="M50 0 C20 40 20 70 50 100 C80 70 80 40 50 0" />
-                </svg>
+                {/* Floating "Nectar" Card */}
+                <motion.div 
+                  animate={{ y: [0, -20, 0] }}
+                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute -right-8 bottom-12 z-20 bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white hidden md:block"
+                >
+                  <div className="flex flex-col items-center text-center">
+                    <SunIcon className="w-8 h-8 text-amber-500 mb-2" />
+                    <p className="text-[10px] font-black uppercase text-stone-400 tracking-tighter">Vitamin Content</p>
+                    <p className="text-xl font-serif text-stone-900">Naturally Rich</p>
+                  </div>
+                </motion.div>
+
+                {/* Organic Decorative Blob */}
+                <div className="absolute -z-10 -bottom-10 -left-10 w-64 h-64 bg-amber-100 rounded-full blur-3xl opacity-60" />
               </div>
             </div>
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* Navigation Layer */}
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-12 z-30">
-        <button onClick={prevSlide} className="group flex items-center gap-2">
-            <ChevronLeftIcon className="w-5 h-5 text-stone-300 group-hover:text-[#3E2723] transition-colors" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-stone-300 group-hover:text-[#3E2723]">Prev</span>
-        </button>
-        
-        <div className="flex gap-3">
+      {/* REFINED NAVIGATION CONTROLS */}
+      <div className="absolute bottom-10 left-0 right-0 z-30 container mx-auto px-6 lg:px-16 flex justify-between items-end pointer-events-none">
+        {/* Progress Bars */}
+        <div className="flex gap-4 mb-4 pointer-events-auto">
           {slides.map((_, i) => (
-            <div 
+            <button 
               key={i} 
-              className={`h-1 rounded-full transition-all duration-500 ${i === current ? 'w-12 bg-[#B8860B]' : 'w-2 bg-stone-200'}`} 
+              onClick={() => setCurrent(i)}
+              className={`h-[3px] transition-all duration-700 rounded-full ${i === current ? 'w-16 bg-amber-600' : 'w-4 bg-stone-200'}`} 
             />
           ))}
         </div>
 
-        <button onClick={nextSlide} className="group flex items-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-widest text-stone-300 group-hover:text-[#3E2723]">Next</span>
-            <ChevronRightIcon className="w-5 h-5 text-stone-300 group-hover:text-[#3E2723] transition-colors" />
-        </button>
+        {/* Action Arrows */}
+        <div className="flex gap-[1px] rounded-full overflow-hidden border border-stone-200 bg-white pointer-events-auto shadow-lg">
+          <button 
+            onClick={prevSlide} 
+            className="p-5 hover:bg-amber-50 text-stone-400 hover:text-amber-900 transition-all"
+          >
+            <ChevronLeftIcon className="w-5 h-5" />
+          </button>
+          <div className="w-[1px] bg-stone-100" />
+          <button 
+            onClick={nextSlide} 
+            className="p-5 hover:bg-amber-50 text-stone-400 hover:text-amber-900 transition-all"
+          >
+            <ChevronRightIcon className="w-5 h-5" />
+          </button>
+        </div>
       </div>
     </section>
   );

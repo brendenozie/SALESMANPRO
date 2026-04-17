@@ -41,10 +41,7 @@ export default function WhatsAppBubble({
   const [isOpen, setIsOpen] = useState(false);
   const [showPulse, setShowPulse] = useState(true);  
   const { storeFormData } = useStoreContext();
-
-  // Pre-filled message for the customer
-  const message = `Hi! I'm interested in the *${productName}* (KES ${productPrice?.toLocaleString()}). Is it still in stock? \n\nLink: ${window.location.href}`;
-  const whatsappUrl = `https://wa.me/${ storeFormData?.contactPhone || phoneNumber }?text=${encodeURIComponent(message)}`;
+  const [currentUrl, setCurrentUrl] = useState("");
 
   // Hide pulse after first interaction
   const toggleModal = () => {
@@ -52,6 +49,16 @@ export default function WhatsAppBubble({
     setShowPulse(false);
   };
 
+  useEffect(() => {
+    setCurrentUrl(window.location.href);
+  }, []);
+
+  
+  // Pre-filled message for the customer
+  const message = `Hi! I'm interested in the *${productName}* (KES ${productPrice?.toLocaleString()}). Is it still in stock? \n\nLink: ${currentUrl}`;
+  const whatsappUrl = `https://wa.me/${ storeFormData?.contactPhone || phoneNumber }?text=${encodeURIComponent(message)}`;
+
+  
   return (
     <>
       {/* 1. FLOATING TRIGGER BUTTON */}

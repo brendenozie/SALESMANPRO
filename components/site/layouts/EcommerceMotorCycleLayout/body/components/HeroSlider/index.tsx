@@ -19,11 +19,13 @@ export default function MotoHero({ heroSlides, themeSettings }: HeroSliderProps)
   const slides = heroSlides?.length ? heroSlides : [
     {
       id: 'moto-1',
+      badgeText: 'Next-Gen Performance',
       headline: 'APEX PREDATOR V.4',
       subline: '1200cc of pure adrenaline. Engineered for the fearless, built for the track.',
       ctaText: 'Pre-Order Now',
       ctaLink: '/shop',
       imageUrl: 'https://images.unsplash.com/photo-1558981403-c5f91cbba527?auto=format&fit=crop&w=1600&q=80',
+      productImageUrl: 'https://images.unsplash.com/photo-1558981403-c5f91cbba527?auto=format&fit=crop&w=800&q=80',
       price: '$18,500',
     }
   ];
@@ -73,7 +75,7 @@ export default function MotoHero({ heroSlides, themeSettings }: HeroSliderProps)
             >
               <div className="flex items-center gap-3 mb-6">
                 <span className="h-1 w-10" style={{ backgroundColor: primary }} />
-                <span className="text-[11px] font-black uppercase tracking-[0.5em] text-gray-400">Next-Gen Performance</span>
+                <span className="text-[11px] font-black uppercase tracking-[0.5em] text-gray-400">{slide.badgeText || 'Next-Gen Performance'}</span>
               </div>
               
               <h1 className="text-6xl md:text-8xl font-black text-black leading-[0.9] uppercase tracking-tighter mb-8">
@@ -90,7 +92,7 @@ export default function MotoHero({ heroSlides, themeSettings }: HeroSliderProps)
 
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
                 <Link
-                  href={slide.ctaLink || '#'}
+                  href={slide.ctaLink || '/motorcycleecommerce/products'}
                   className="group relative px-10 py-5 bg-black text-white font-black uppercase tracking-widest text-xs flex items-center gap-4 hover:pr-14 transition-all duration-300"
                 >
                   {slide.ctaText}
@@ -109,7 +111,7 @@ export default function MotoHero({ heroSlides, themeSettings }: HeroSliderProps)
         </div>
 
         {/* 4. MOTORCYCLE IMAGE & SPECS */}
-        <div className="lg:col-span-7 relative h-[60%] lg:h-[80%] flex items-center justify-center">
+        <div className="lg:col-span-7 relative h-[50vh] sm:h-[60vh] lg:h-[80%] flex items-center justify-center">
           <AnimatePresence mode="wait">
             <motion.div
               key={`img-${slide.id}`}
@@ -117,19 +119,23 @@ export default function MotoHero({ heroSlides, themeSettings }: HeroSliderProps)
               animate={{ opacity: 1, scale: 1, rotate: 0 }}
               exit={{ opacity: 0, scale: 1.1 }}
               transition={{ duration: 0.8, type: "spring" }}
-              className="relative w-full h-full drop-shadow-[0_30px_60px_rgba(0,0,0,0.15)]"
+              /* On mobile, we use scale-110 to make the product feel massive.
+                -mt-8 helps reduce the gap between the header and the bike.
+              */
+              className="relative w-full h-full drop-shadow-[0_30px_60px_rgba(0,0,0,0.15)] scale-110 md:scale-100 -mt-8 lg:mt-0"
             >
               <Image
-                src={slide.imageUrl || 'https://images.unsplash.com/photo-1558981403-c5f91cbba527?auto=format&fit=crop&w=1600&q=80'}
+                src={ slide.productImageUrl || slide.imageUrl || 'https://images.unsplash.com/photo-1558981403-c5f91cbba527?auto=format&fit=crop&w=1600&q=80'}
                 alt={slide.headline || 'Motorcycle Image'}
                 fill
                 loader={loader}
+                /* object-contain ensures no parts of the bike are cut off despite the larger scale */
                 className="object-contain drop-shadow-2xl"
                 priority
               />
 
-              {/* FLOATING GLASS SPECS */}
-              <div className="absolute top-10 right-0 space-y-3">
+              {/* FLOATING GLASS SPECS - Repositioned for mobile visibility */}
+              <div className="absolute top-4 right-2 md:top-10 md:right-0 space-y-2 md:space-y-3">
                 {[
                   { label: 'Power', val: '215 HP' },
                   { label: 'Weight', val: '168 KG' }
@@ -139,10 +145,14 @@ export default function MotoHero({ heroSlides, themeSettings }: HeroSliderProps)
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 + i * 0.1 }}
-                    className="bg-white/40 backdrop-blur-xl border border-white/50 p-4 w-32 shadow-sm"
+                    className="bg-white/40 backdrop-blur-xl border border-white/50 p-3 md:p-4 w-24 md:w-32 shadow-sm"
                   >
-                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">{spec.label}</p>
-                    <p className="text-xl font-black text-black italic">{spec.val}</p>
+                    <p className="text-[8px] md:text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-tighter">
+                      {spec.label}
+                    </p>
+                    <p className="text-base md:text-xl font-black text-black italic">
+                      {spec.val}
+                    </p>
                   </motion.div>
                 ))}
               </div>

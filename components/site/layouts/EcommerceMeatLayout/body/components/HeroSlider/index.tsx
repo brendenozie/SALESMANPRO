@@ -1,162 +1,180 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { 
-  ArrowRightIcon,
   MapPinIcon,
   SunIcon,
   CloudIcon,
-  ArrowLongRightIcon
-} from '@heroicons/react/24/outline';
+  ArrowLongRightIcon,
+  ChevronRightIcon
+} from '@heroicons/react/24/solid'; // Solid icons for better mobile visibility
 import Image from 'next/image';
 
 const farmChapters = [
   {
     tag: "The Origin",
+    badgeText: "The Origin",
     title: "Tuyia $ Highlands",
-    description: "Nestled in the lush valleys of Laikipia, where the air is crisp and the pastures are endless. This is where the story of quality begins.",
+    description: "Nestled in the lush valleys of Laikipia, where the air is crisp and the pastures are endless. This is where the story begins.",
     image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=2000",
+    imageUrl: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=2000",
+    productImageUrl: "https://images.unsplash.com/photo-1551028150-64b9f398f678?auto=format&fit=crop&q=80&w=2000",
     stats: { elevation: "2,100m", rainfall: "950mm" }
   },
   {
     tag: "The Ethics",
+    badgeText: "The Ethics",
     title: "Pasture $ Raised",
     description: "Our livestock roams free, grazing on organic clover and Kikuyu grass. No shortcuts, no hormones—just nature's pace.",
-    image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=2000",
+    image: "https://images.unsplash.com/photo-1544965838-54ef8406f868?auto=format&fit=crop&q=80&w=2000",
+    imageUrl: "https://images.unsplash.com/photo-1544965838-54ef8406f868?auto=format&fit=crop&q=80&w=2000",
+    productImageUrl: "https://images.unsplash.com/photo-1551028150-64b9f398f678?auto=format&fit=crop&q=80&w=2000",
     stats: { roaming: "Free", diet: "100% Grass" }
   },
   {
     tag: "The Craft",
+    badgeText: "The Craft",
     title: "Master $ Butchery",
-    description: "From our farm to your table. Every cut is hand-selected and dry-aged in our Himalayan salt cellar for unparalleled flavor.",
-    image: "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&q=80&w=2000",
+    description: "Every cut is hand-selected and dry-aged in our Himalayan salt cellar for unparalleled depth of flavor.",
+    image: "https://images.unsplash.com/photo-1551028150-64b9f398f678?auto=format&fit=crop&q=80&w=2000",
+    imageUrl: "https://images.unsplash.com/photo-1551028150-64b9f398f678?auto=format&fit=crop&q=80&w=2000",
+    productImageUrl: "https://images.unsplash.com/photo-1551028150-64b9f398f678?auto=format&fit=crop&q=80&w=2000",
     stats: { aging: "28 Days", grade: "Premium" }
   },
 ];
 
-export default function TuyiaFarmImmersiveHero({heroSlides, themeSettings}: {heroSlides: any[], themeSettings: any}) {
+export default function TuyiaFarmImmersiveHero({ heroSlides = [] }) {
   const [active, setActive] = useState(0);
-  const [slides, setSlides] = useState(heroSlides.length > 0 ? heroSlides : farmChapters);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const slides = heroSlides.length > 0 ? heroSlides : farmChapters;
 
+  // 1. AUTO-ADVANCE LOGIC
   useEffect(() => {
-    const timer = setInterval(() => setActive((prev) => (prev + 1) % slides.length), 12000);
+    const timer = setInterval(() => {
+      setActive((prev) => (prev + 1) % slides.length);
+    }, 12000);
     return () => clearInterval(timer);
-  }, []);
+  }, [slides.length]);
+
+  // 2. MOUSE PARALLAX EFFECT (Desktop Only)
+  const handleMouseMove = (e: React.MouseEvent) => {
+    setMousePos({
+      x: (e.clientX / window.innerWidth - 0.5) * 20,
+      y: (e.clientY / window.innerHeight - 0.5) * 20,
+    });
+  };
 
   return (
-    <section className="relative h-screen w-full bg-[#080807] overflow-hidden selection:bg-red-500 selection:text-black py-24 px-6">
-      
-      {/* 1. LAYERED BACKGROUND TYPOGRAPHY (The 'Tuyia' Soul) */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
+    <section 
+      onMouseMove={handleMouseMove}
+      className="relative h-[100vh] w-full bg-[#080807] overflow-hidden flex flex-col justify-end lg:justify-center"
+    >
+      {/* BACKGROUND TYPOGRAPHY - Integrated into the space */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden z-10">
         <motion.h1 
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 0.05 }}
-          className="text-[40vw] font-black text-white uppercase leading-none tracking-tighter"
+          animate={{ x: mousePos.x * -1, y: mousePos.y * -1 }}
+          className="text-[45vw] font-black text-white/[0.03] uppercase leading-none tracking-tighter"
         >
-          Tuyia
+          {slides[active]?.title?.split('$')[0] || "Tuyia Heritage"}
         </motion.h1>
       </div>
 
-      {/* 2. DYNAMIC BACKGROUND IMAGE CANVAS */}
+      {/* DYNAMIC IMAGE CANVAS - LARGER ON MOBILE */}
       <AnimatePresence mode="wait">
         <motion.div
           key={active}
           initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 0.6, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 2, ease: [0.19, 1, 0.22, 1] }}
-          className="absolute inset-0 z-0"
+          animate={{ opacity: 0.7, scale: 1.05, x: mousePos.x, y: mousePos.y }}
+          exit={{ opacity: 0, scale: 1 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+          className="absolute inset-0 z-0 h-[75vh] lg:h-full"
         >
           <Image 
-            src={slides[active]?.imageUrl || slides[active]?.image || "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=2000"} 
-            alt="Farm Scenery" 
+            src={slides[active]?.image || slides[active]?.imageUrl || slides[active]?.productImageUrl || "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=2000"} 
+            alt={slides[active]?.title || "Tuyia Heritage"}
             fill 
             className="object-cover"
             priority
             loader={({ src }) => src}
           />
-          {/* Cinematic Vignette */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#080807] via-transparent to-[#080807]" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#080807] via-transparent to-transparent" />
+          {/* Advanced Mobile Gradient: Fades image into the content card */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#080807] via-transparent to-[#080807]/50 lg:via-[#080807]/20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#080807] via-transparent to-transparent hidden lg:block" />
         </motion.div>
       </AnimatePresence>
 
-      {/* 3. FLOATING DASHBOARD (TOP RIGHT) */}
-      <div className="absolute top-12 right-12 z-30 hidden lg:flex items-center gap-8">
-        <div className="flex flex-col items-end">
-          <span className="text-[10px] font-black uppercase tracking-widest text-red-500">Farm Status</span>
-          <span className="text-sm font-bold text-white uppercase tracking-tighter flex items-center gap-2">
+      {/* DESKTOP TOP HUD */}
+      <div className="absolute top-16 right-12 z-40 hidden lg:flex items-center gap-8">
+        <div className="text-right">
+          <span className="text-[10px] font-black uppercase tracking-widest text-red-600 block">System Status</span>
+          <span className="text-sm font-bold text-white uppercase flex items-center gap-2">
             <SunIcon className="w-4 h-4 text-red-500" /> Optimal Conditions
           </span>
         </div>
-        <div className="h-10 w-px bg-white/10" />
-        <div className="flex flex-col items-end">
-          <span className="text-[10px] font-black uppercase tracking-widest text-red-500">Location</span>
-          <span className="text-sm font-bold text-white uppercase tracking-tighter flex items-center gap-2">
-            <MapPinIcon className="w-4 h-4 text-red-500" /> Laikipia, Kenya
+        <div className="h-8 w-[1px] bg-white/20" />
+        <div className="text-right">
+          <span className="text-[10px] font-black uppercase tracking-widest text-red-600 block">Origin</span>
+          <span className="text-sm font-bold text-white uppercase flex items-center gap-2">
+            <MapPinIcon className="w-4 h-4 text-red-500" /> Laikipia, KE
           </span>
         </div>
       </div>
 
-      {/* 4. MAIN CONTENT AREA */}
-      <div className="relative z-20 h-full container mx-auto px-8 flex flex-col justify-center">
-        <div className="max-w-4xl">
+      {/* MAIN CONTENT AREA */}
+      <div className="relative z-30 container mx-auto px-6 lg:px-12 pb-12 lg:pb-0">
+        <div className="max-w-5xl">
           <motion.div
             key={active}
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="bg-black/40 lg:bg-transparent backdrop-blur-md lg:backdrop-blur-none p-6 lg:p-0 rounded-3xl border border-white/5 lg:border-none"
           >
-            {/* Tagline */}
-            <div className="flex items-center gap-4 mb-6">
+            {/* Chapter Tag */}
+            <div className="flex items-center gap-3 mb-4 lg:mb-8">
                <motion.div 
-                 initial={{ width: 0 }}
-                 animate={{ width: 48 }}
-                 className="h-[2px] bg-red-500"
+                 initial={{ width: 0 }} animate={{ width: 40 }}
+                 className="h-[2px] bg-red-600"
                />
-               <span className="text-red-500 text-[10px] font-black uppercase tracking-[0.5em]">
-                 {slides[active]?.tag || "Chapter " + (active + 1)}
+               <span className="text-red-500 text-[10px] lg:text-xs font-black uppercase tracking-[0.4em]">
+                 {slides[active]?.tag || slides[active]?.badgeText || ''}
                </span>
             </div>
 
-            {/* Split Serif Title */}
-            <h2 className="text-[6rem] md:text-[9rem] font-black text-white leading-[0.8] tracking-tighter mb-10">
+            {/* Aggressive Headline: Scaled for Mobile Impact */}
+            <h2 className="text-[14vw] lg:text-[9rem] font-black text-white leading-[0.85] tracking-tighter mb-6 lg:mb-10 uppercase">
               {slides[active]?.title?.split('$').map((word: string, i: number) => (
-                <span key={i} className="block">
-                  {i === 1 ? (
-                    <span className="text-transparent italic font-serif font-light pr-4" style={{ WebkitTextStroke: '1px rgba(255,255,255,0.6)' }}>
-                      {word}
-                    </span>
-                  ) : word}
+                <span key={i} className="block overflow-hidden">
+                  <motion.span 
+                    initial={{ y: "100%" }} animate={{ y: 0 }}
+                    transition={{ delay: i * 0.1, duration: 0.8 }}
+                    className={`block ${i === 1 ? "text-transparent italic font-serif" : ""}`}
+                    style={i === 1 ? { WebkitTextStroke: '1px rgba(255,255,255,0.5)' } : {}}
+                  >
+                    {word}
+                  </motion.span>
                 </span>
-              )) || "Tuyia Highlands"}
+              ))}
             </h2>
 
-            <p className="text-xl md:text-2xl text-stone-400 max-w-xl mb-12 font-medium leading-snug">
-              {slides[active]?.description || "Experience the essence of ethical farming and masterful butchery with Tuyia Farm. From our pastures to your plate, savor the story behind every cut."}
+            <p className="text-stone-300 text-base lg:text-2xl max-w-xl mb-8 lg:mb-12 font-medium leading-relaxed">
+              {slides[active]?.description}
             </p>
 
-            {/* Actions & Stats */}
-            <div className="flex flex-col md:flex-row gap-12 items-start md:items-center">
-              <button className="group relative flex items-center gap-6 bg-white px-10 py-6 rounded-2xl overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-white/5">
-                 <span className="relative z-10 text-black font-black text-xs uppercase tracking-widest">Explore the Farm</span>
-                 <ArrowLongRightIcon className="relative z-10 w-6 h-6 text-black group-hover:translate-x-2 transition-transform" />
-                 <div className="absolute inset-0 bg-red-500 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+            {/* Actions & Stats Container */}
+            <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 items-start lg:items-center">
+              <button className="group relative w-full lg:w-auto flex items-center justify-center lg:justify-start gap-6 bg-white px-8 lg:px-12 py-5 lg:py-6 rounded-full lg:rounded-2xl overflow-hidden transition-all hover:pr-14 active:scale-95">
+                  <span className="relative z-10 text-black font-black text-xs uppercase tracking-widest">Explore Heritage</span>
+                  <ArrowLongRightIcon className="relative z-10 w-6 h-6 text-black group-hover:translate-x-2 transition-transform" />
+                  <div className="absolute inset-0 bg-red-600 translate-x-[-101%] group-hover:translate-x-0 transition-transform duration-500" />
               </button>
 
-              <div className="flex gap-12 border-l border-white/10 pl-12">
-                {Object.entries(slides[active]?.stats || {
-                    elevation: "",
-                    rainfall: "",
-                    roaming: "",
-                    diet: "",
-                    aging: "",
-                    grade: ""
-                }).map(([key, value]) => (
+              <div className="grid grid-cols-2 gap-8 lg:flex lg:gap-16 border-t lg:border-t-0 lg:border-l border-white/10 pt-8 lg:pt-0 lg:pl-16 w-full lg:w-auto">
+                {Object.entries(slides[active]?.stats || {}).map(([key, value]) => (
                   <div key={key} className="flex flex-col">
-                    <span className="text-[9px] font-black text-red-500 uppercase tracking-widest mb-1">{key}</span>
-                    <span className="text-3xl font-black text-white italic tracking-tighter">{typeof value === 'string' ? value : ""}</span>
+                    <span className="text-[10px] font-black text-red-600 uppercase tracking-widest mb-1">{key}</span>
+                    <span className="text-2xl lg:text-4xl font-black text-white italic tracking-tighter">{value as string}</span>
                   </div>
                 ))}
               </div>
@@ -165,48 +183,47 @@ export default function TuyiaFarmImmersiveHero({heroSlides, themeSettings}: {her
         </div>
       </div>
 
-      {/* 5. SIDEBAR NAVIGATION */}
-      <div className="absolute left-12 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-4">
+      {/* NAVIGATION: Mobile (Bottom Center) / Desktop (Left Vertical) */}
+      <div className="absolute bottom-32 lg:bottom-auto lg:left-12 lg:top-1/2 lg:-translate-y-1/2 z-50 flex lg:flex-col gap-4 w-full lg:w-auto justify-center">
         {slides.map((_, i) => (
           <button 
             key={i}
             onClick={() => setActive(i)}
-            className="group flex items-center gap-4"
+            className="group flex items-center gap-3 p-2"
           >
-            <div className={`h-[2px] transition-all duration-500 ${active === i ? 'w-12 bg-red-500' : 'w-4 bg-white/20 group-hover:bg-white/50'}`} />
-            <span className={`text-[10px] font-black uppercase tracking-widest transition-opacity duration-500 ${active === i ? 'opacity-100' : 'opacity-0'}`}>
+            <div className={`transition-all duration-500 rounded-full ${active === i ? 'w-8 lg:w-14 h-[3px] bg-red-600' : 'w-2 lg:w-4 h-[3px] bg-white/20 group-hover:bg-white/50'}`} />
+            <span className={`text-[10px] font-black text-white uppercase tracking-widest hidden lg:block transition-opacity duration-500 ${active === i ? 'opacity-100' : 'opacity-0'}`}>
               0{i + 1}
             </span>
           </button>
         ))}
       </div>
 
-      {/* 6. BOTTOM TRUST BAR */}
-      <div className="absolute bottom-6 left-12 right-12 z-30 flex flex-col md:flex-row justify-between items-end md:items-center gap-8 border-t border-white/5 pt-8">
-        <div className="flex items-center gap-8">
+      {/* BOTTOM TRUST BAR */}
+      <div className="absolute bottom-4 left-6 right-6 lg:left-12 lg:right-12 z-40 flex flex-row justify-between items-center border-t border-white/5 pt-8">
+        <div className="flex items-center gap-4 lg:gap-12">
           <div className="flex items-center gap-3">
-             <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center bg-white/5 backdrop-blur-md">
-               <CloudIcon className="w-5 h-5 text-stone-500" />
+             <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center bg-white/5 backdrop-blur-md">
+               <CloudIcon className="w-4 h-4 text-stone-400" />
              </div>
-             <p className="text-[10px] font-bold text-stone-500 uppercase tracking-widest leading-tight">
-               Verified Organic <br /> <span className="text-white">Eco-System</span>
+             <p className="text-[8px] lg:text-[10px] font-bold text-stone-500 uppercase tracking-widest leading-none hidden sm:block">
+               Certified <br /> <span className="text-white">Organic</span>
              </p>
           </div>
           <div className="flex items-center gap-3">
-             <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center bg-white/5 backdrop-blur-md">
-               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+             <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center bg-white/5 backdrop-blur-md">
+               <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
              </div>
-             <p className="text-[10px] font-bold text-stone-500 uppercase tracking-widest leading-tight">
-               Live Harvest <br /> <span className="text-white">Traceability</span>
+             <p className="text-[8px] lg:text-[10px] font-bold text-stone-500 uppercase tracking-widest leading-none">
+               Live <br /> <span className="text-white">Traceable</span>
              </p>
           </div>
         </div>
 
-        <div className="text-right">
-           <p className="text-[10px] font-black text-stone-600 uppercase tracking-[0.5em]">Tuyia Farm Operating System v1.0</p>
+        <div className="text-right hidden sm:block">
+           <p className="text-[9px] font-black text-stone-600 uppercase tracking-[0.4em]">{slides[active]?.badgeText || ''}</p>
         </div>
       </div>
-
     </section>
   );
 }

@@ -179,11 +179,11 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
               {/* Floating "Vogue" Style Image Panel */}
               <motion.div 
                 className="hidden md:block relative aspect-[4/5] w-full max-w-sm ml-auto"
-                initial={{ opacity: 0, y: 40, rotate: 2 }}
-                animate={{ opacity: 1, y: 0, rotate: -2 }}
+                // initial={{ opacity: 0, y: 40, rotate: 2 }}
+                // animate={{ opacity: 1, y: 0, rotate: 2 }}
                 transition={{ delay: 0.6, duration: 1 }}
               >
-                <div className="absolute inset-0 border border-white/40 rounded-2xl transform translate-x-4 translate-y-4 z-0" />
+                <div className="absolute inset-0 border border-white/40 rounded-2xl z-0" />
                 <div className="relative h-full w-full overflow-hidden rounded-2xl shadow-2xl border-8 border-white">
                    <Image 
                     src={slide.productImageUrl || slide.imageUrl || 'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&w=600&q=80'} 

@@ -40,18 +40,22 @@ export default function WhatsAppInquiry({
 }: WhatsAppModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showPulse, setShowPulse] = useState(true);
-
+  const [currentUrl, setCurrentUrl] = useState("");
   const { storeFormData } = useStoreContext();
-
-  // Pre-filled message for the customer
-  const message = `Hi! I'm interested in the *${productName}* (KES ${productPrice?.toLocaleString()}). Is it still in stock? \n\nLink: ${window.location.href}`;
-  const whatsappUrl = `https://wa.me/${storeFormData?.contactPhone || phoneNumber}?text=${encodeURIComponent(message)}`;
 
   // Hide pulse after first interaction
   const toggleModal = () => {
     setIsOpen(!isOpen);
     setShowPulse(false);
   };
+
+  useEffect(() => {
+    setCurrentUrl(window.location.href);
+  }, []);
+
+  // Pre-filled message for the customer
+  const message = `Hi! I'm interested in the *${productName}* (KES ${productPrice?.toLocaleString()}). Is it still in stock? \n\nLink: ${currentUrl}`;
+  const whatsappUrl = `https://wa.me/${storeFormData?.contactPhone || phoneNumber}?text=${encodeURIComponent(message)}`;
 
   return (
     <>

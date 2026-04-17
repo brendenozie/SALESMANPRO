@@ -23,20 +23,22 @@ export default function BookDukaResponsiveHero({ heroSlides }: any) {
       imageUrl: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f', // Direct product focus
       productImgUrl: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f',
       headline: 'The Silence of Modern Ink',
-      subline: 'COLLECTION 001',
+      badgeText: 'COLLECTION 001',
+      subline: 'A deep dive into contemporary African literature and the power of silent narratives.',
       description: 'A deep dive into contemporary African literature and the power of silent narratives.',
       ctaText: 'Shop Now',
-      ctaLink: '/products',
+      ctaLink: '/bookecommerce/products',
       price: 'KES 2,450',
     },
     {
       imageUrl: 'https://images.unsplash.com/photo-1512820790803-83ca734da794',
       productImgUrl: 'https://images.unsplash.com/photo-1512820790803-83ca734da794',
       headline: 'Heritage in Hardback',
-      subline: 'LIMITED EDITION',
+      badgeText: 'LIMITED EDITION',
+      subline: 'Collector’s editions featuring hand-pressed covers and archival-quality paper.',
       description: 'Collector’s editions featuring hand-pressed covers and archival-quality paper.',
       ctaText: 'Explore',
-      ctaLink: '/products',
+      ctaLink: '/bookecommerce/products',
       price: 'KES 4,200',
     }
   ];
@@ -69,7 +71,7 @@ export default function BookDukaResponsiveHero({ heroSlides }: any) {
             className="relative w-[60%] lg:w-[70%] aspect-[3/4] z-10 cursor-grab active:cursor-grabbing"
           >
             <Image
-              src={slides[current].productImgUrl || slides[current].imageUrl || slides[current].imageUrl}
+              src={slides[current].productImgUrl || slides[current].imageUrl || slides[current].imageUrl || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f'}
               alt={slides[current].headline || 'Hero Image'}
               fill
               className="object-contain drop-shadow-[20px_30px_50px_rgba(0,0,0,0.2)] dark:drop-shadow-[0_0_60px_rgba(20,184,166,0.15)]"
@@ -101,7 +103,7 @@ export default function BookDukaResponsiveHero({ heroSlides }: any) {
             >
               <div className="space-y-2">
                 <p className="text-teal-600 dark:text-teal-400 font-black text-[10px] lg:text-xs tracking-[0.4em] uppercase">
-                  {slides[current].subline}
+                  {slides[current].badgeText || 'COLLECTION 001'}
                 </p>
                 <h1 className="text-4xl md:text-7xl font-bold text-zinc-900 dark:text-white leading-tight lg:leading-[1.05]">
                   {slides[current].headline}
@@ -109,7 +111,7 @@ export default function BookDukaResponsiveHero({ heroSlides }: any) {
               </div>
 
               <p className="text-zinc-500 dark:text-zinc-400 text-sm lg:text-lg max-w-md leading-relaxed">
-                {slides[current].description}
+                {slides[current].description || slides[current].subline || 'A deep dive into contemporary African literature and the power of silent narratives.'}
               </p>
 
               <div className="flex flex-wrap items-center gap-4 lg:gap-8 pt-2 ">
