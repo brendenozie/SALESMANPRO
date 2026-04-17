@@ -1,126 +1,113 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
-import{ cacheGet, cacheSet } from "@/lib/cache";
-import { formatResponse } from "@/lib/formatResponse";
-import { request } from "http";
+import { cacheGet, cacheSet } from "@/lib/cache";
 
-// ---------------------------
-// GLOBAL CORS HEADERS
-// ---------------------------
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, cache-control",
 };
 
-function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
-  return new NextResponse(JSON.stringify(json), {
-    status,
-    headers: {
-      "Content-Type": "application/json",
-      ...CORS_HEADERS,
-      ...extraHeaders,
-    },
-  });
-}
+const JSON_HEADER = { "Content-Type": "application/json", ...CORS_HEADERS };
 
-// ---------------------------
-// OPTIONS (PRE-FLIGHT)
-// ---------------------------
-export function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: CORS_HEADERS,
-  });
-}
-
-
-// GET /api/marketplace-listings?agentId=&flag=&page=&limit=&sortBy=&order=
 export async function GET(req: Request) {
   try {
-    
     const { searchParams } = new URL(req.url);
     const agentId = searchParams.get("agentId");
-    const flag = searchParams.get("flag") || "";
-
-    // Pagination params
-    const pageParam = parseInt(searchParams.get("page") || "1", 10);
-    const limitParam = parseInt(searchParams.get("limit") || "25", 10);
-    if (isNaN(pageParam) || pageParam < 1 || isNaN(limitParam) || limitParam < 1) {
-      return withCors({ error: "Invalid pagination parameters." }, 400);
-      
-    }
-    const skip = (pageParam - 1) * limitParam;
-    const take = limitParam;
-
-    // Sorting params
+    const flag = searchParams.get("flag");
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+    const limit = Math.max(1, parseInt(searchParams.get("limit") || "25", 10));
     const sortBy = searchParams.get("sortBy") || "createdAt";
-    const orderParam = (searchParams.get("order") || "desc").toLowerCase();
-    const order = orderParam === "asc" ? "asc" : "desc";
+    const order =
+      searchParams.get("order")?.toLowerCase() === "asc" ? "asc" : "desc";
 
-    // Build where filter
+    const skip = (page - 1) * limit;
+
+    // Optimized Cache Key including sorting
+    const cacheKey = `mkt:list:a:${agentId ?? "all"}:f:${flag ?? "none"}:p:${page}:l:${limit}:s:${sortBy}:${order}`;
+
+    try {
+      const cached = await cacheGet(cacheKey);
+      if (cached) {
+        return new NextResponse(JSON.stringify(cached), {
+          status: 200,
+          headers: JSON_HEADER,
+        });
+      }
+    } catch (e) {}
+
     const whereFilter: any = {};
     if (flag) whereFilter[flag] = true;
     if (agentId) whereFilter.companyId = agentId;
 
-    const cacheKey = `shop:productsByFlag:agent:${agentId || 'all'}:flag:${flag}:page:${pageParam}:limit:${limitParam}`;
-
-    try {
-      const cached = await cacheGet(cacheKey);
-      if (cached) return withCors(cached, 200);
-    } catch (e) {}
-
-    // Fetch data and count in parallel
-    const [total, listings] = await Promise.all([
+    // 1. Specific Select to avoid over-fetching large fields
+    // 2. Transaction for single round-trip execution
+    const [total, listings] = await prisma.$transaction([
       prisma.marketplaceListings.count({ where: whereFilter }),
       prisma.marketplaceListings.findMany({
         where: whereFilter,
         skip,
-        take,
+        take: limit,
         orderBy: { [sortBy]: order },
-        // include: {
-        //   product: true,
-        //   inventoryItem: { include: { product: true } },
-        // },
+        select: {
+          id: true,
+          sellingPrice: true,
+          finalPrice: true,
+          createdAt: true,
+          // If you need flags:
+          isFeatured: true,
+          name: true,
+          images: true,
+          isNewArrival: true,
+          isAvailable:true,
+          isOnOffer:true,
+          isFlashDeal:true,
+          isDiscounted:true,
+          // Nested selection instead of full 'include'
+          product: {
+            select: {
+              id: true,
+              // name: true,
+              // image: true,
+              // slug: true,
+            },
+          },
+        },
       }),
     ]);
 
-    const totalPages = Math.ceil(total / take);
-
-    try {
-      await cacheSet(cacheKey, {
-        data: listings,
-        meta: {
-          total,
-          perPage: take,
-          currentPage: pageParam,
-          totalPages,
-          sortBy,
-          order,
-        },
-      }, 60); // Cache for 1 minute
-    } catch (e) {
-      console.error("Failed to cache marketplace listings by flag data:", e);
-    }
-
-    return withCors(
-      {
-        data: listings,
-        meta: {
-          total,
-          perPage: take,
-          currentPage: pageParam,
-          totalPages,
-          sortBy,
-          order,
-        },
+    const totalPages = Math.ceil(total / limit);
+    const responseData = {
+      data: listings,
+      meta: {
+        total,
+        perPage: limit,
+        currentPage: page,
+        totalPages,
+        sortBy,
+        order,
       },
-      200
-    );
+    };
+
+    // Increase TTL to 5 minutes - listings don't need real-time precision
+    cacheSet(cacheKey, responseData, 300).catch(() => {});
+
+    return new NextResponse(JSON.stringify(responseData), {
+      status: 200,
+      headers: {
+        ...JSON_HEADER,
+        // Browser/CDN cache: Fresh for 30s, background update for 10m
+        "Cache-Control": "public, s-maxage=30, stale-while-revalidate=600",
+      },
+    });
   } catch (error: any) {
-    console.error("Error fetching marketplace listings:", error);
-    return withCors(
-      { error: "Failed to fetch listings", detail: error.message }, 500); 
+    return new NextResponse(JSON.stringify({ error: "Internal Error" }), {
+      status: 500,
+      headers: JSON_HEADER,
+    });
   }
+}
+
+export function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
 }

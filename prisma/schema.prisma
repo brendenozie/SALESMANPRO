@@ -2013,6 +2013,8 @@ model marketplaceListings {
   delivery      Boolean  @default(false)
   paymentOption String   @default("AT SHOP")
   showOnGhuba   Boolean? @default(true)
+  ghubaAdminApproved Boolean? @default(true)
+  ghubaStatus String? @default("APPROVED") // e.g., APPROVED, PENDING, REJECTED
 
   // Admin & Auditing
   status    ListingStatus @default(ACTIVE)

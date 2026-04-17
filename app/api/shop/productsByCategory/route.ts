@@ -1,111 +1,103 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { cacheGet, cacheSet } from "@/lib/cache";
-import { formatResponse } from "@/lib/formatResponse";
-import { request } from "http";
 
-// ---------------------------
-// GLOBAL CORS HEADERS
-// ---------------------------
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, cache-control",
 };
 
-function withCors(
-  json: any,
-  status = 200,
-  extraHeaders: Record<string, string> = {},
-) {
-  return new NextResponse(JSON.stringify(json), {
-    status,
-    headers: {
-      "Content-Type": "application/json",
-      ...CORS_HEADERS,
-      ...extraHeaders,
-    },
-  });
-}
+const JSON_HEADER = { "Content-Type": "application/json", ...CORS_HEADERS };
 
-// ---------------------------
-// OPTIONS (PRE-FLIGHT)
-// ---------------------------
-export function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: CORS_HEADERS,
-  });
-}
-
-// GET /api/marketplace-by-category?agentId=&categoryId=&page=&limit=
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const agentId = searchParams.get("agentId");
     const categoryId = searchParams.get("categoryId");
+    const pageParam = Math.max(
+      1,
+      parseInt(searchParams.get("page") || "1", 10),
+    );
+    const limitParam = Math.max(
+      1,
+      parseInt(searchParams.get("limit") || "6", 10),
+    );
 
-    // Pagination params
-    const pageParam = parseInt(searchParams.get("page") || "1", 10);
-    const limitParam = parseInt(searchParams.get("limit") || "6", 10);
-    if (
-      isNaN(pageParam) ||
-      pageParam < 1 ||
-      isNaN(limitParam) ||
-      limitParam < 1
-    ) {
-      return withCors({ error: "Invalid pagination parameters." }, 400);
-    }
     const skip = (pageParam - 1) * limitParam;
-    const take = limitParam;
+    const cacheKey = `mkt:list:a:${agentId ?? "all"}:c:${categoryId ?? "all"}:p:${pageParam}:l:${limitParam}`;
 
-    // Build where filter
+    // 1. Internal Cache Check
+    try {
+      const cached = await cacheGet(cacheKey);
+      if (cached) {
+        return new NextResponse(JSON.stringify(cached), {
+          status: 200,
+          headers: JSON_HEADER,
+        });
+      }
+    } catch (e) {}
+
     const whereFilter: any = {};
     if (agentId) whereFilter.companyId = agentId;
     if (categoryId) whereFilter.productCategoryId = categoryId;
 
-    const cacheKey = `shop:productsByCategory:agent:${agentId || "all"}:category:${categoryId || "all"}:page:${pageParam}:limit:${limitParam}`;
-
-    try {
-      const cached = await cacheGet(cacheKey);
-      if (cached) return withCors(cached, 200);
-    } catch (e) {}
-
-    // Fetch listings and total count
-    const [total, listings] = await Promise.all([
+    // 2. Parallel Database Operations with specific field selection
+    const [total, listings] = await prisma.$transaction([
       prisma.marketplaceListings.count({ where: whereFilter }),
       prisma.marketplaceListings.findMany({
         where: whereFilter,
         skip,
-        take,
-        include: { product: true },
+        take: limitParam,
         orderBy: { createdAt: "desc" },
+        // OPTIMIZATION: Only select what the UI needs to reduce data transfer
+        select: {
+          id: true,
+          sellingPrice: true,
+          finalPrice: true,
+          images: true,
+          createdAt: true,
+          name: true,
+          product: {
+            select: {
+              id: true,
+              // slug: true,
+              // Avoid selecting huge description strings here if not needed for the card view
+            },
+          },
+        },
       }),
     ]);
 
-    const totalPages = Math.ceil(total / take);
-
     const response = {
       data: listings,
-      meta: { total, perPage: take, currentPage: pageParam, totalPages },
+      meta: {
+        total,
+        perPage: limitParam,
+        currentPage: pageParam,
+        totalPages: Math.ceil(total / limitParam),
+      },
     };
 
-    try {
-      await cacheSet(cacheKey, response, 60); // Cache for 1 minute
-    } catch (e) {
-      console.error(
-        "Failed to cache marketplace listings by category data:",
-        e,
-      );
-    }
+    // 3. Background Cache & CDN headers
+    cacheSet(cacheKey, response, 300).catch(() => {}); // Cache internally for 5 mins
 
-    return withCors(response, 200);
+    return new NextResponse(JSON.stringify(response), {
+      status: 200,
+      headers: {
+        ...JSON_HEADER,
+        // CDN Cache: Fresh for 30s, background refresh for 10 mins
+        "Cache-Control": "public, s-maxage=30, stale-while-revalidate=600",
+      },
+    });
   } catch (error: any) {
-    console.error("Error fetching marketplace listings by category:", error);
-    return withCors(
-      { error: "Failed to fetch listings", detail: error.message },
-      500,
-    );
+    return new NextResponse(JSON.stringify({ error: "Internal Error" }), {
+      status: 500,
+      headers: JSON_HEADER,
+    });
   }
+}
+
+export function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
 }

