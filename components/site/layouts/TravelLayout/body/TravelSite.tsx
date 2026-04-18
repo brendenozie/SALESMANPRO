@@ -398,12 +398,6 @@ export default function TravelSite({ pageData, companyId }: { pageData: StoreFor
         {/* Newsletter Signup */}
         <NewsletterSignup />
 
-        {/* Chat Button */}
-        <motion.div whileHover={{ scale: 1.2 }} className="fixed bottom-8 right-8">
-          <button className="bg-indigo-500 text-white p-4 rounded-full shadow-2xl hover:bg-indigo-600 transition">
-            💬
-          </button>
-        </motion.div>
     </div>
   );
 }

@@ -11,6 +11,7 @@ import {
   HeartIcon as HeartSolid,
 } from "@heroicons/react/24/solid";
 import { HeartIcon as HeartOutline, ArrowRightIcon } from "@heroicons/react/24/outline";
+import TravelCard from "../TravelCard";
 
 // --- Utilities --- //
 const customLoader = ({ src, width, quality }: any) =>
@@ -257,7 +258,7 @@ export default function ListingsSection({ listings, title, subtitle, name, descr
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {activeListings.map((listing: any) => (
-            <ListingCard key={listing.id} listing={listing} />
+            <TravelCard key={listing.id} listing={listing} />
           ))}
         </div>
 

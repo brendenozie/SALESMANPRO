@@ -422,21 +422,7 @@ export default function RealEstateSite({ pageData, companyId }: { pageData: Stor
 
   return (
     <div className="font-sans text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-900 min-h-screen">
-      {/* Sticky Contact Agent Button (WhatsApp) */}
-      <a
-        href={`https://wa.me/${contactPhone}?text=Hi%20DreamNest%20Realty,%20I'd%20like%20to%20inquire%20about%20a%20listing`}
-        target="_blank"
-        rel="noopener noreferrer" // Added for security best practice
-        className="fixed bottom-6 right-6 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700
-                   text-white p-4 rounded-full shadow-lg hover:shadow-xl z-50 transition-all duration-300 transform hover:scale-105
-                   flex items-center justify-center group"
-        aria-label="Chat with us on WhatsApp"
-      >
-        {/* Using Heroicon for consistency, if you have a custom SVG keep it */}
-        <ChatBubbleBottomCenterTextIcon className="h-7 w-7 transition-transform duration-300 group-hover:rotate-6" />
-        <span className="sr-only">Chat on WhatsApp</span> {/* Screen reader only text */}
-      </a>
-
+      
       {/* Hero Section */}
       <HeroSection
         store={storeData}

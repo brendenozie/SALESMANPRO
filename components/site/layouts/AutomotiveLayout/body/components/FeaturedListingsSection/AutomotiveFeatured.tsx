@@ -16,6 +16,7 @@ import {
   BeakerIcon,    // For Fuel (implied)
   ScaleIcon,     // For Mileage
 } from "@heroicons/react/24/solid";
+import AutomotiveCard from "../AutomotiveCard";
 
 /* -------------------------------------------------------------------------- */
 /* Helpers & Constants */
@@ -243,11 +244,7 @@ export default function AutomotiveFeatured({
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
               >
-                <VehicleCard
-                  item={item}
-                  slug={slug}
-                  badge={index === 0 ? "New" : index === 1 ? "Hot" : undefined}
-                />
+                <AutomotiveCard item={item} slug={slug} badge={index === 0 ? "Hot" : index === 1 ? "New" : undefined} />
               </motion.div>
             ))}
           </AnimatePresence>
