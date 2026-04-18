@@ -153,7 +153,7 @@ const ProductList = () => {
       </h2>
 
       {/* Added items-start to allow sticky to work correctly */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
         
         {/* Sidebar - Desktop Filters */}
         <aside className="md:sticky md:top-8 z-10">
@@ -166,7 +166,7 @@ const ProductList = () => {
 
         {/* Main Content - Product Grid */}
         <main className="md:col-span-3">
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1">
             {products.length > 0 ? (
               products.map((product) => (
                 <GhubaProductCard 
@@ -182,9 +182,9 @@ const ProductList = () => {
                 No products found matching your criteria.
               </div>
             )}
-          </div>
+          </div> 
 
-          {loading && <div className="text-center py-10 font-medium">Loading products...</div>}
+          {loading && <div className="text-center py-10 font-medium text-gray-500">Loading products...</div>}
           {error && <p className="text-red-500 text-center mt-4 bg-red-50 p-3 rounded-lg">{error}</p>}
 
           {/* Observer element */}
