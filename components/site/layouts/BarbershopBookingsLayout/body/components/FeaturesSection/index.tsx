@@ -2,8 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
-// Using Heroicons as requested
+import { motion } from 'framer-motion';
 import {
     BoltIcon,
     ShieldCheckIcon,
@@ -22,7 +21,7 @@ const loader = ({ src }: { src: string }) => src;
 
 export default function FeaturesSection({ name, description, themeSettings, CoreValues }: any) {
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-    const primaryColor = themeSettings?.primaryColor || '#C5A267'; // Premium Gold
+    const primaryColor = themeSettings?.primaryColor || '#C5A267';
 
     const defaultFeatures = [
         {
@@ -51,9 +50,9 @@ export default function FeaturesSection({ name, description, themeSettings, Core
     const features = CoreValues?.length ? CoreValues : defaultFeatures;
 
     return (
-        <section className="relative py-24 px-6 bg-[#0a0a0a] overflow-hidden">
-            {/* Background Texture - Subtle Grain */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
+        <section className="relative py-24 px-6 bg-white dark:bg-[#0a0a0a] transition-colors duration-500 overflow-hidden">
+            {/* Background Texture - Adapted for Light/Dark */}
+            <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] invert dark:invert-0" />
 
             <div className="max-w-7xl mx-auto relative z-10">
                 
@@ -63,15 +62,16 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                         <motion.span 
                             initial={{ opacity: 0 }}
                             whileInView={{ opacity: 1 }}
-                            className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#C5A267] mb-4 block"
+                            className="text-[10px] font-bold uppercase tracking-[0.4em] mb-4 block"
+                            style={{ color: primaryColor }}
                         >
                             The Excellence Standard
                         </motion.span>
-                        <h2 className="text-4xl md:text-6xl font-light text-white leading-tight">
-                            Why choose <span className="font-serif italic text-[#C5A267]">{name || 'the Craft'}?</span>
+                        <h2 className="text-4xl md:text-6xl font-light text-neutral-900 dark:text-white leading-tight">
+                            Why choose <span className="font-serif italic" style={{ color: primaryColor }}>{name || 'the Craft'}?</span>
                         </h2>
                     </div>
-                    <p className="text-gray-400 text-lg max-w-sm font-light leading-relaxed border-l border-white/10 pl-6">
+                    <p className="text-neutral-500 dark:text-gray-400 text-lg max-w-sm font-light leading-relaxed border-l border-neutral-200 dark:border-white/10 pl-6">
                         {description || "Elevating the standard of male grooming through precision, atmosphere, and heritage."}
                     </p>
                 </div>
@@ -87,44 +87,49 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                                 key={idx}
                                 onMouseEnter={() => setHoveredIndex(idx)}
                                 onMouseLeave={() => setHoveredIndex(null)}
-                                className="relative group h-[500px] rounded-3xl overflow-hidden cursor-pointer bg-neutral-900 border border-white/5"
+                                className="relative group h-[500px] rounded-3xl overflow-hidden cursor-pointer bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-white/5 shadow-sm dark:shadow-none"
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: idx * 0.1 }}
                             >
-                                {/* Background Image with Parallax effect */}
+                                {/* Background Image */}
                                 <div className="absolute inset-0 z-0 transition-transform duration-700 ease-out scale-110 group-hover:scale-100">
                                     <Image
                                         src={feature.imageUrl}
                                         alt={feature.title}
                                         fill
-                                        className="object-cover opacity-40 group-hover:opacity-60 transition-opacity"
+                                        className="object-cover opacity-60 dark:opacity-40 group-hover:opacity-80 dark:group-hover:opacity-60 transition-opacity"
                                         loader={loader}
                                     />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent" />
+                                    {/* Adaptive Overlay Gradient */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 dark:from-[#0a0a0a] dark:via-[#0a0a0a]/40 to-transparent" />
                                 </div>
 
                                 {/* Content */}
                                 <div className="absolute inset-0 z-10 p-10 flex flex-col justify-end">
                                     <div className="mb-6">
                                         <div 
-                                            className="w-12 h-12 rounded-full flex items-center justify-center mb-6 border border-[#C5A267]/30 bg-[#C5A267]/10 backdrop-blur-sm"
+                                            className="w-12 h-12 rounded-full flex items-center justify-center mb-6 border backdrop-blur-sm transition-colors"
+                                            style={{ 
+                                                borderColor: `${primaryColor}4D`, // 30% opacity hex
+                                                backgroundColor: `${primaryColor}1A` // 10% opacity hex
+                                            }}
                                         >
-                                            <Icon className="w-6 h-6 text-[#C5A267]" />
+                                            <Icon className="w-6 h-6" style={{ color: primaryColor }} />
                                         </div>
-                                        <h3 className="text-2xl font-bold text-white mb-2 tracking-tight">
+                                        <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2 tracking-tight">
                                             {feature.title}
                                         </h3>
-                                        <p className="text-[#C5A267] font-serif italic text-lg mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        <p className="font-serif italic text-lg mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ color: primaryColor }}>
                                             Mastering {feature.highlight || 'the details'}
                                         </p>
                                     </div>
 
                                     <div className="overflow-hidden h-0 group-hover:h-24 transition-all duration-500 ease-in-out">
-                                        <p className="text-gray-400 text-sm leading-relaxed">
+                                        <p className="text-neutral-600 dark:text-gray-400 text-sm leading-relaxed">
                                             {feature.description}
                                         </p>
-                                        <div className="mt-4 flex items-center text-[10px] font-bold uppercase tracking-widest text-white">
+                                        <div className="mt-4 flex items-center text-[10px] font-bold uppercase tracking-widest text-neutral-900 dark:text-white">
                                             Explore more <ArrowRightIcon className="w-3 h-3 ml-2" />
                                         </div>
                                     </div>
@@ -132,7 +137,8 @@ export default function FeaturesSection({ name, description, themeSettings, Core
 
                                 {/* Bottom Accent Line */}
                                 <motion.div 
-                                    className="absolute bottom-0 left-0 h-1 bg-[#C5A267] z-20"
+                                    className="absolute bottom-0 left-0 h-1 z-20"
+                                    style={{ backgroundColor: primaryColor }}
                                     initial={{ width: 0 }}
                                     animate={{ width: isHovered ? "100%" : "0%" }}
                                 />
@@ -141,22 +147,21 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                     })}
                 </div>
 
-                {/* 3. SUBTLE FOOTER TRUST BAR */}
+                {/* 3. TRUST BAR */}
                 <motion.div 
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     transition={{ delay: 0.5 }}
-                    className="mt-16 pt-8 border-t border-white/5 flex flex-wrap justify-center md:justify-between items-center gap-8"
+                    className="mt-16 pt-8 border-t border-neutral-200 dark:border-white/5 flex flex-wrap justify-center md:justify-between items-center gap-8"
                 >
-                    <div className="flex items-center gap-2 text-white/40 text-xs font-bold uppercase tracking-widest">
-                        <StarIcon className="w-4 h-4 text-[#C5A267]" />
+                    <div className="flex items-center gap-2 text-neutral-400 dark:text-white/40 text-xs font-bold uppercase tracking-widest">
+                        <StarIcon className="w-4 h-4" style={{ color: primaryColor }} />
                         Top Rated in the District
                     </div>
-                    <div className="flex gap-12 opacity-30 grayscale hover:grayscale-0 transition-all">
-                        {/* Placeholder for partner logos/awards */}
-                        <span className="text-white font-serif text-xl italic">GQ Magazine</span>
-                        <span className="text-white font-serif text-xl italic">Vogue Men</span>
-                        <span className="text-white font-serif text-xl italic">Barber Digest</span>
+                    <div className="flex gap-12 opacity-40 dark:opacity-30 grayscale hover:grayscale-0 transition-all">
+                        <span className="text-neutral-900 dark:text-white font-serif text-xl italic">GQ Magazine</span>
+                        <span className="text-neutral-900 dark:text-white font-serif text-xl italic">Vogue Men</span>
+                        <span className="text-neutral-900 dark:text-white font-serif text-xl italic">Barber Digest</span>
                     </div>
                 </motion.div>
             </div>

@@ -9,7 +9,6 @@ import {
     ArrowUpRightIcon,
     PaperAirplaneIcon,
     CheckCircleIcon,
-    ExclamationCircleIcon,
     SparklesIcon
 } from '@heroicons/react/24/solid';
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -19,7 +18,7 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api
 export default function ContactCTASection() {
     const { storeFormData } = useStoreContext();
     const companyId = storeFormData?.id;
-    const { themeSettings, name } = storeFormData || {};
+    const { themeSettings } = storeFormData || {};
     const primaryColor = themeSettings?.primaryColor || '#C5A267';
 
     const [form, setForm] = useState({ fullName: '', email: '', message: '' });
@@ -53,9 +52,12 @@ export default function ContactCTASection() {
     };
 
     return (
-        <section id="contact" className="relative py-24 lg:py-48 bg-[#050505] overflow-hidden">
+        <section id="contact" className="relative py-24 lg:py-48 bg-white dark:bg-[#050505] transition-colors duration-500 overflow-hidden">
             {/* Background Kinetic Energy */}
-            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#C5A267]/10 blur-[150px] rounded-full pointer-events-none" />
+            <div 
+                className="absolute top-0 right-0 w-[600px] h-[600px] blur-[150px] rounded-full pointer-events-none opacity-20 dark:opacity-100" 
+                style={{ backgroundColor: `${primaryColor}1A` }} // 10% opacity
+            />
             <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none" />
 
             <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -70,14 +72,14 @@ export default function ContactCTASection() {
                             className="mb-16"
                         >
                             <div className="flex items-center gap-3 mb-6">
-                                <SparklesIcon className="w-5 h-5 text-[#C5A267]" />
-                                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-[#C5A267]">Initiate Protocol</span>
+                                <SparklesIcon className="w-5 h-5" style={{ color: primaryColor }} />
+                                <span className="text-[10px] font-black uppercase tracking-[0.5em]" style={{ color: primaryColor }}>Initiate Protocol</span>
                             </div>
-                            <h2 className="text-6xl md:text-8xl font-black text-white leading-[0.85] tracking-tighter mb-8">
+                            <h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.85] tracking-tighter mb-8">
                                 READY TO <br />
-                                <span className="font-serif italic font-light text-zinc-600">Ascend?</span>
+                                <span className="font-serif italic font-light text-zinc-300 dark:text-zinc-700">Ascend?</span>
                             </h2>
-                            <p className="text-xl text-zinc-400 font-light leading-relaxed max-w-md">
+                            <p className="text-xl text-zinc-500 dark:text-zinc-400 font-light leading-relaxed max-w-md">
                                 Whether you're seeking a specific ritual or have a bespoke request, our concierge team is standing by.
                             </p>
                         </motion.div>
@@ -94,18 +96,19 @@ export default function ContactCTASection() {
                                     initial={{ opacity: 0, y: 10 }}
                                     whileInView={{ opacity: 1, y: 0 }}
                                     transition={{ delay: i * 0.1 }}
-                                    className="flex items-center justify-between p-8 rounded-[2rem] bg-zinc-900/40 border border-white/5 group hover:bg-zinc-800/60 transition-all duration-500"
+                                    className="flex items-center justify-between p-8 rounded-[2rem] bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/5 group hover:bg-white dark:hover:bg-zinc-800/60 transition-all duration-500 shadow-sm hover:shadow-xl dark:shadow-none"
                                 >
                                     <div className="flex items-center gap-6">
-                                        <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-zinc-800 group-hover:bg-[#C5A267] transition-colors duration-500">
-                                            <item.icon className="w-6 h-6 text-zinc-400 group-hover:text-black" />
+                                        <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-zinc-200 dark:bg-zinc-800 group-hover:bg-opacity-100 transition-colors duration-500"
+                                             style={{ backgroundColor: `var(--icon-bg)` }}>
+                                            <item.icon className="w-6 h-6 text-zinc-500 dark:text-zinc-400 group-hover:text-white dark:group-hover:text-black transition-colors" />
                                         </div>
                                         <div>
-                                            <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">{item.label}</p>
-                                            <p className="text-lg font-bold text-white tracking-tight">{item.value}</p>
+                                            <p className="text-[10px] font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">{item.label}</p>
+                                            <p className="text-lg font-bold text-zinc-900 dark:text-white tracking-tight">{item.value}</p>
                                         </div>
                                     </div>
-                                    <ArrowUpRightIcon className="w-5 h-5 text-zinc-700 group-hover:text-[#C5A267] group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+                                    <ArrowUpRightIcon className="w-5 h-5 text-zinc-300 dark:text-zinc-700 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" style={{ color: `var(--arrow-hover)` }} />
                                 </motion.a>
                             ))}
                         </div>
@@ -117,10 +120,13 @@ export default function ContactCTASection() {
                         whileInView={{ opacity: 1, y: 0 }}
                         className="lg:col-span-7"
                     >
-                        <div className="relative p-[1px] rounded-[3.5rem] bg-gradient-to-b from-white/10 to-transparent">
-                            <div className="bg-[#0A0A0A] rounded-[3.5rem] p-10 md:p-16 relative overflow-hidden">
+                        <div className="relative p-[1px] rounded-[3.5rem] bg-gradient-to-b from-zinc-200 dark:from-white/10 to-transparent">
+                            <div className="bg-white dark:bg-[#0A0A0A] rounded-[3.5rem] p-10 md:p-16 relative overflow-hidden shadow-2xl dark:shadow-none">
                                 {/* Inner Glow */}
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-[#C5A267]/5 blur-[80px]" />
+                                <div 
+                                    className="absolute top-0 right-0 w-64 h-64 blur-[80px] opacity-10 dark:opacity-100" 
+                                    style={{ backgroundColor: `${primaryColor}0D` }} 
+                                />
                                 
                                 <form onSubmit={handleSubmit} className="relative z-10 space-y-10">
                                     <div className="grid md:grid-cols-2 gap-10">
@@ -131,10 +137,12 @@ export default function ContactCTASection() {
                                                 value={form.fullName}
                                                 onChange={handleChange}
                                                 required
-                                                className="w-full bg-transparent border-b border-zinc-800 py-4 text-white text-lg placeholder:text-zinc-700 focus:outline-none focus:border-[#C5A267] transition-colors peer"
+                                                className="w-full bg-transparent border-b border-zinc-200 dark:border-zinc-800 py-4 text-zinc-900 dark:text-white text-lg placeholder:text-transparent focus:outline-none transition-colors peer"
+                                                style={{ '--tw-ring-color': primaryColor } as any}
                                                 placeholder=" "
                                             />
-                                            <label className="absolute left-0 top-4 text-zinc-500 transition-all pointer-events-none peer-focus:-top-4 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:text-[#C5A267] peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-[10px]">Your Name</label>
+                                            <label className="absolute left-0 top-4 text-zinc-400 dark:text-zinc-500 transition-all pointer-events-none peer-focus:-top-4 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-[10px]"
+                                                   style={{ color: 'var(--label-color)' }}>Your Name</label>
                                         </div>
                                         <div className="relative group">
                                             <input
@@ -143,10 +151,11 @@ export default function ContactCTASection() {
                                                 value={form.email}
                                                 onChange={handleChange}
                                                 required
-                                                className="w-full bg-transparent border-b border-zinc-800 py-4 text-white text-lg placeholder:text-zinc-700 focus:outline-none focus:border-[#C5A267] transition-colors peer"
+                                                className="w-full bg-transparent border-b border-zinc-200 dark:border-zinc-800 py-4 text-zinc-900 dark:text-white text-lg placeholder:text-transparent focus:outline-none transition-colors peer"
                                                 placeholder=" "
                                             />
-                                            <label className="absolute left-0 top-4 text-zinc-500 transition-all pointer-events-none peer-focus:-top-4 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:text-[#C5A267] peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-[10px]">Email Address</label>
+                                            <label className="absolute left-0 top-4 text-zinc-400 dark:text-zinc-500 transition-all pointer-events-none peer-focus:-top-4 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-[10px]"
+                                                   style={{ color: 'var(--label-color)' }}>Email Address</label>
                                         </div>
                                     </div>
 
@@ -157,10 +166,11 @@ export default function ContactCTASection() {
                                             value={form.message}
                                             onChange={handleChange}
                                             required
-                                            className="w-full bg-transparent border-b border-zinc-800 py-4 text-white text-lg placeholder:text-zinc-700 focus:outline-none focus:border-[#C5A267] transition-colors peer resize-none"
+                                            className="w-full bg-transparent border-b border-zinc-200 dark:border-zinc-800 py-4 text-zinc-900 dark:text-white text-lg placeholder:text-transparent focus:outline-none transition-colors peer resize-none"
                                             placeholder=" "
                                         />
-                                        <label className="absolute left-0 top-4 text-zinc-500 transition-all pointer-events-none peer-focus:-top-4 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-focus:text-[#C5A267] peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-[10px]">How can we elevate your journey?</label>
+                                        <label className="absolute left-0 top-4 text-zinc-400 dark:text-zinc-500 transition-all pointer-events-none peer-focus:-top-4 peer-focus:text-[10px] peer-focus:uppercase peer-focus:tracking-widest peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-[10px]"
+                                               style={{ color: 'var(--label-color)' }}>How can we elevate your journey?</label>
                                     </div>
 
                                     <motion.button
@@ -168,7 +178,11 @@ export default function ContactCTASection() {
                                         disabled={isSubmitting}
                                         whileHover={{ scale: 1.01 }}
                                         whileTap={{ scale: 0.99 }}
-                                        className="w-full py-6 rounded-2xl font-black text-black bg-[#C5A267] flex items-center justify-center gap-4 shadow-[0_20px_40px_-10px_rgba(197,162,103,0.4)] hover:shadow-[#C5A267]/60 transition-all disabled:opacity-50"
+                                        className="w-full py-6 rounded-2xl font-black text-white dark:text-black flex items-center justify-center gap-4 transition-all disabled:opacity-50"
+                                        style={{ 
+                                            backgroundColor: primaryColor,
+                                            boxShadow: `0 20px 40px -10px ${primaryColor}66` 
+                                        }}
                                     >
                                         <span className="uppercase tracking-widest text-xs">
                                             {isSubmitting ? 'Transmitting...' : 'Send Inquiry'}
@@ -181,14 +195,15 @@ export default function ContactCTASection() {
                                             <motion.div 
                                                 initial={{ opacity: 0, scale: 0.9 }}
                                                 animate={{ opacity: 1, scale: 1 }}
-                                                className="absolute inset-0 bg-[#0A0A0A] z-20 flex flex-col items-center justify-center text-center p-6 rounded-[3.5rem]"
+                                                className="absolute inset-0 bg-white dark:bg-[#0A0A0A] z-20 flex flex-col items-center justify-center text-center p-6 rounded-[3.5rem]"
                                             >
-                                                <div className="w-20 h-20 bg-[#C5A267]/20 rounded-full flex items-center justify-center mb-6">
-                                                    <CheckCircleIcon className="w-10 h-10 text-[#C5A267]" />
+                                                <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
+                                                     style={{ backgroundColor: `${primaryColor}33` }}>
+                                                    <CheckCircleIcon className="w-10 h-10" style={{ color: primaryColor }} />
                                                 </div>
-                                                <h3 className="text-3xl font-black text-white mb-2">Received.</h3>
+                                                <h3 className="text-3xl font-black text-zinc-900 dark:text-white mb-2">Received.</h3>
                                                 <p className="text-zinc-500">Expect a response within 2 business hours.</p>
-                                                <button onClick={() => setSubmitStatus('idle')} className="mt-8 text-[10px] uppercase tracking-widest text-[#C5A267] font-bold">Send another message</button>
+                                                <button onClick={() => setSubmitStatus('idle')} className="mt-8 text-[10px] uppercase tracking-widest font-bold" style={{ color: primaryColor }}>Send another message</button>
                                             </motion.div>
                                         )}
                                     </AnimatePresence>
@@ -198,6 +213,28 @@ export default function ContactCTASection() {
                     </motion.div>
                 </div>
             </div>
+
+            {/* Global Theme Logic for Custom Properties */}
+            <style jsx>{`
+                input:focus, textarea:focus { border-color: ${primaryColor} !important; }
+                .group:hover { --icon-bg: ${primaryColor}; --arrow-hover: ${primaryColor}; }
+                
+                :global(.dark) {
+                    --label-color: #71717a;
+                    --icon-bg: #27272a;
+                }
+                :global(:not(.dark)) {
+                    --label-color: #a1a1aa;
+                    --icon-bg: #e4e4e7;
+                }
+
+                input:focus + label, 
+                textarea:focus + label,
+                input:not(:placeholder-shown) + label,
+                textarea:not(:placeholder-shown) + label {
+                    color: ${primaryColor} !important;
+                }
+            `}</style>
         </section>
     );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -19,9 +19,19 @@ export default function Footer() {
     contactEmail,
     contactPhone,
     socialLinks = [],
+    themeSettings
   } = storeFormData || {};
 
-  const goldAccent = '#D4AF37';
+  const primaryColor = themeSettings?.primaryColor || '#D4AF37';
+  const [scrolled, setScrolled] = React.useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const iconMapper: Record<string, React.ReactNode> = {
     facebook: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.522-4.477-10-10-10S2 6.478 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54v-2.89h2.54V9.845c0-2.507 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562v1.875h2.773l-.443 2.89h-2.33v6.987C18.343 21.128 22 16.991 22 12z"/></svg>,
@@ -30,14 +40,14 @@ export default function Footer() {
   };
 
   return (
-    <footer className="relative bg-[#050505] text-white pt-32 pb-12 overflow-hidden">
+    <footer className="relative bg-white dark:bg-[#050505] text-zinc-900 dark:text-white pt-32 pb-12 overflow-hidden transition-colors duration-500">
       
       {/* 1. MASSIVE BACKGROUND MARQUEE */}
-      <div className="absolute top-0 left-0 w-full overflow-hidden opacity-[0.03] select-none pointer-events-none">
+      <div className="absolute top-0 left-0 w-full overflow-hidden opacity-[0.05] dark:opacity-[0.03] select-none pointer-events-none">
         <motion.div 
           animate={{ x: [0, -1000] }}
           transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-          className="text-[20vw] font-black uppercase whitespace-nowrap leading-none"
+          className="text-[20vw] font-black uppercase whitespace-nowrap leading-none text-zinc-200 dark:text-white"
         >
           {name} • THE ELITE STANDARD • {name} • THE ELITE STANDARD •
         </motion.div>
@@ -46,17 +56,25 @@ export default function Footer() {
       <div className="max-w-[1400px] mx-auto px-6 relative z-10">
         
         {/* 2. TOP CTA SECTION */}
-        <div className="flex flex-col md:flex-row justify-between items-end gap-12 mb-32 border-b border-white/10 pb-20">
+        <div className="flex flex-col md:flex-row justify-between items-end gap-12 mb-32 border-b border-zinc-200 dark:border-white/10 pb-20">
           <div className="max-w-2xl">
             <h2 className="text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9] mb-8">
               Ready for the <br />
-              <span className="italic font-serif font-light text-[#D4AF37]">Next Level?</span>
+              <span className="italic font-serif font-light" style={{ color: primaryColor }}>Next Level?</span>
             </h2>
-            <p className="text-gray-400 text-lg font-light max-w-md">
+            <p className="text-zinc-500 dark:text-zinc-400 text-lg font-light max-w-md">
               {description || 'Join the ranks of the well-groomed. Experience architectural precision and timeless style.'}
             </p>
           </div>
-          <Link href="/booking" className="group flex items-center gap-4 bg-white px-10 py-6 rounded-full text-black font-black uppercase tracking-widest text-sm hover:bg-[#D4AF37] transition-all">
+          <Link 
+            href="/booking" 
+            className="group flex items-center gap-4 bg-zinc-950 dark:bg-white px-10 py-6 rounded-full text-white dark:text-black font-black uppercase tracking-widest text-sm hover:opacity-90 transition-all"
+            style={{ backgroundColor: scrolled ? undefined : 'var(--cta-bg)' } as any}
+          >
+            <style jsx>{`
+                :global(.dark) { --cta-bg: white; --cta-text: black; }
+                :global(:not(.dark)) { --cta-bg: #18181b; --cta-text: white; }
+            `}</style>
             Book the Chair
             <ArrowUpRightIcon className="h-5 w-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
           </Link>
@@ -69,22 +87,22 @@ export default function Footer() {
             <div>
               <h3 className="text-2xl font-black tracking-tighter uppercase mb-4">{name || 'THE CRAFT'}</h3>
               <div className="flex items-center gap-2 mb-6">
-                <span className="h-[1px] w-8 bg-[#D4AF37]" />
-                <span className="text-[10px] uppercase tracking-[0.4em] text-[#D4AF37] font-bold">Bespoke Grooming</span>
+                <span className="h-[1px] w-8" style={{ backgroundColor: primaryColor }} />
+                <span className="text-[10px] uppercase tracking-[0.4em] font-bold" style={{ color: primaryColor }}>Bespoke Grooming</span>
               </div>
             </div>
             
             <div className="space-y-4">
-              <div className="flex items-center gap-4 text-gray-400 hover:text-white transition-colors cursor-pointer group">
-                <EnvelopeIcon className="h-5 w-5 text-[#D4AF37]" />
+              <div className="flex items-center gap-4 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer group">
+                <EnvelopeIcon className="h-5 w-5" style={{ color: primaryColor }} />
                 <span className="text-sm font-medium">{contactEmail || 'hello@thecraft.com'}</span>
               </div>
-              <div className="flex items-center gap-4 text-gray-400 hover:text-white transition-colors cursor-pointer">
-                <PhoneIcon className="h-5 w-5 text-[#D4AF37]" />
+              <div className="flex items-center gap-4 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer">
+                <PhoneIcon className="h-5 w-5" style={{ color: primaryColor }} />
                 <span className="text-sm font-medium">{contactPhone || '+1 (555) 000-0000'}</span>
               </div>
-              <div className="flex items-center gap-4 text-gray-400">
-                <MapPinIcon className="h-5 w-5 text-[#D4AF37]" />
+              <div className="flex items-center gap-4 text-zinc-500 dark:text-zinc-400">
+                <MapPinIcon className="h-5 w-5" style={{ color: primaryColor }} />
                 <span className="text-sm font-medium">123 Master Way, Luxury District, NY</span>
               </div>
             </div>
@@ -93,9 +111,9 @@ export default function Footer() {
               {socialLinks.map((s, idx) => (
                 <motion.a
                   key={idx}
-                  whileHover={{ y: -5, color: goldAccent }}
+                  whileHover={{ y: -5, color: primaryColor }}
                   href={s.url}
-                  className="text-white/40 transition-colors"
+                  className="text-zinc-400 dark:text-white/40 transition-colors"
                 >
                   {iconMapper[String(s.channel).toLowerCase()] || <span className="text-xs">{s.channel}</span>}
                 </motion.a>
@@ -105,39 +123,39 @@ export default function Footer() {
 
           <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-12">
             <div className="space-y-8">
-              <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-[#D4AF37]">Experience</h4>
-              <ul className="space-y-5 text-sm font-bold uppercase tracking-widest text-white/40">
-                <li><Link href="/services" className="hover:text-white transition-colors">Our Services</Link></li>
-                <li><Link href="/team" className="hover:text-white transition-colors">The Barbers</Link></li>
-                <li><Link href="/gallery" className="hover:text-white transition-colors">Gallery</Link></li>
-                <li><Link href="/academy" className="hover:text-white transition-colors">Academy</Link></li>
+              <h4 className="text-[11px] font-black uppercase tracking-[0.3em]" style={{ color: primaryColor }}>Experience</h4>
+              <ul className="space-y-5 text-sm font-bold uppercase tracking-widest text-zinc-400 dark:text-white/40">
+                <li><Link href="/services" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Our Services</Link></li>
+                <li><Link href="/team" className="hover:text-zinc-900 dark:hover:text-white transition-colors">The Barbers</Link></li>
+                <li><Link href="/gallery" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Gallery</Link></li>
+                <li><Link href="/academy" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Academy</Link></li>
               </ul>
             </div>
 
             <div className="space-y-8">
-              <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-[#D4AF37]">Shop</h4>
-              <ul className="space-y-5 text-sm font-bold uppercase tracking-widest text-white/40">
-                <li><Link href="/ecommerce/products" className="hover:text-white transition-colors">Pomades</Link></li>
-                <li><Link href="/ecommerce/products" className="hover:text-white transition-colors">Beard Care</Link></li>
-                <li><Link href="/ecommerce/products" className="hover:text-white transition-colors">Apparel</Link></li>
-                <li><Link href="/gift-cards" className="hover:text-white transition-colors">Gift Cards</Link></li>
+              <h4 className="text-[11px] font-black uppercase tracking-[0.3em]" style={{ color: primaryColor }}>Shop</h4>
+              <ul className="space-y-5 text-sm font-bold uppercase tracking-widest text-zinc-400 dark:text-white/40">
+                <li><Link href="/ecommerce/products" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Pomades</Link></li>
+                <li><Link href="/ecommerce/products" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Beard Care</Link></li>
+                <li><Link href="/ecommerce/products" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Apparel</Link></li>
+                <li><Link href="/gift-cards" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Gift Cards</Link></li>
               </ul>
             </div>
 
             <div className="space-y-8 col-span-2 md:col-span-1">
-              <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-[#D4AF37]">Hours</h4>
-              <div className="space-y-4 text-xs font-bold uppercase tracking-[0.2em] text-white/40">
-                <div className="flex justify-between border-b border-white/5 pb-2">
+              <h4 className="text-[11px] font-black uppercase tracking-[0.3em]" style={{ color: primaryColor }}>Hours</h4>
+              <div className="space-y-4 text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 dark:text-white/40">
+                <div className="flex justify-between border-b border-zinc-200 dark:border-white/5 pb-2">
                   <span>Mon - Fri</span>
-                  <span className="text-white">9am - 8pm</span>
+                  <span className="text-zinc-900 dark:text-white">9am - 8pm</span>
                 </div>
-                <div className="flex justify-between border-b border-white/5 pb-2">
+                <div className="flex justify-between border-b border-zinc-200 dark:border-white/5 pb-2">
                   <span>Saturday</span>
-                  <span className="text-white">10am - 6pm</span>
+                  <span className="text-zinc-900 dark:text-white">10am - 6pm</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Sunday</span>
-                  <span className="text-white">Closed</span>
+                  <span className="text-zinc-900 dark:text-white">Closed</span>
                 </div>
               </div>
             </div>
@@ -145,21 +163,21 @@ export default function Footer() {
         </div>
 
         {/* 4. FOOTER BOTTOM */}
-        <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-10">
-          <div className="flex flex-wrap justify-center md:justify-start gap-10 text-[10px] font-bold uppercase tracking-[0.3em] text-white/20">
+        <div className="pt-12 border-t border-zinc-200 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-10">
+          <div className="flex flex-wrap justify-center md:justify-start gap-10 text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 dark:text-white/20">
             <span>&copy; {new Date().getFullYear()} {name}</span>
-            <Link href="/privacy" className="hover:text-[#D4AF37] transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-[#D4AF37] transition-colors">Terms of Service</Link>
+            <Link href="/privacy" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Terms of Service</Link>
           </div>
 
           <motion.a 
             href="https://salesmanpro.site" 
             target="_blank"
             whileHover={{ scale: 1.05 }}
-            className="flex items-center gap-3 bg-white/[0.03] px-6 py-3 rounded-full border border-white/10"
+            className="flex items-center gap-3 bg-zinc-100 dark:bg-white/[0.03] px-6 py-3 rounded-full border border-zinc-200 dark:border-white/10"
           >
-            <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/30">Crafted by</span>
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#D4AF37]">SalesmanPro</span>
+            <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-zinc-500 dark:text-white/30">Crafted by</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.4em]" style={{ color: primaryColor }}>SalesmanPro</span>
           </motion.a>
         </div>
       </div>
