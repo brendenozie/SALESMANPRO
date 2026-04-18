@@ -116,9 +116,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[9px] font-black uppercase text-emerald-600 hover:text-emerald-800 underline underline-offset-4 decoration-2"
+            className="text-[9px] flex gap-2 font-black uppercase text-emerald-600 hover:text-emerald-800 underline underline-offset-4 decoration-2"
           >
-            Get Advice
+           < WhatsAppIcon className="w-4 h-4" />  Order Via WhatsApp
           </a>
         </div>
 
@@ -156,7 +156,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
                 className="w-full flex items-center justify-center gap-3 py-4 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all duration-300 shadow-sm hover:shadow-emerald-200"
               >
                 <ShoppingBagIcon className="w-4 h-4" />
-                Harvest to Cart
+                Add to Cart
               </motion.button>
             )}
           </AnimatePresence>

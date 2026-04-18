@@ -95,7 +95,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             target="_blank"
             className="text-[9px] font-mono font-bold text-[#25D366] hover:text-red-500 transition-colors flex items-center gap-1"
           >
-            <ChatBubbleLeftRightIcon className="w-3 h-3" /> COMMS_LINK
+            <WhatsAppIcon className="w-3 h-3" /> Order Via WhatsApp
           </a>
         </div>
 

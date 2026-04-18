@@ -47,7 +47,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const quantity = cart.find((item: any) => item.id === id)?.quantity || 0;
 
   // WhatsApp Logic
-  const whatsappNumber = "1234567890";
+  const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
   const message = encodeURIComponent(`I'm interested in the ${name} (${brand}). Please let me know more!`);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
@@ -201,9 +201,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           href={whatsappUrl}
           target="_blank" 
           rel="noopener noreferrer"
-          className="mt-3 text-[8px] uppercase tracking-[0.3em] text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+          className="flex mt-3 text-[10px] uppercase tracking-[0.3em] text-green-500 hover:text-zinc-900 dark:hover:text-white transition-colors p-4 rounded-2xl shadow-lg bg-green-50/50 hover:bg-green-100/50 dark:bg-green-900/10 dark:hover:bg-green-900/20 gap-2"
         >
-          Direct Inquiry
+          <WhatsAppIcon className="w-4 h-4" />  Order Via WhatsApp
         </a>
 
         {/* Status Indicator Bar */}

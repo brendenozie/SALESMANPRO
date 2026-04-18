@@ -79,7 +79,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
       </div>
 
       {/* Content */}
-      <div className="p-5 flex flex-col flex-grow">
+      <div className="p-2 flex flex-col flex-grow">
         <div className="flex justify-between items-start mb-2">
           <Link href={`/petsecommerce/products/${product.id}`}>
             <h4 className="text-lg font-black text-slate-900 leading-tight line-clamp-2 hover:text-blue-500 transition-colors">
@@ -88,7 +88,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
           </Link>
         </div>
         
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 text-sm text-slate-500 leading-tight ">
           <div className="flex items-center gap-1">
             <StarIcon className="w-3.5 h-3.5 text-amber-400" />
             <span className="text-xs font-bold text-slate-500">4.9</span>
@@ -99,24 +99,27 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-[9px] font-black text-[#25D366] uppercase tracking-widest hover:underline"
+            className="flex items-center gap-1 text-[9px] font-black text-[#25D366] uppercase tracking-widest hover:underline transition-colors "
           >
-            <ChatBubbleOvalLeftEllipsisIcon className="w-3 h-3" />
-            Inquire
+            <WhatsAppIcon className="w-3 h-3" />  Order Via WhatsApp
           </a>
         </div>
 
         <div className="mt-auto pt-4 flex items-center justify-between border-t border-slate-50">
-          <div className="flex flex-col">
+          <div className="flex flex-col leading-tight">
+            {/* The Actual Price */}
             <span className="text-xl font-black text-slate-900">
-              Kes {(product.finalPrice ?? 0).toLocaleString()}
+              Kes {(product.finalPrice ?? product.sellingPrice ).toLocaleString()}
             </span>
-            {product.sellingPrice && product.sellingPrice > (product.finalPrice ?? 0) && (
+
+            {/* The "Was" Price - Only shows if finalPrice is strictly less than sellingPrice */}
+            {product.finalPrice < product.sellingPrice && (
               <span className="text-xs text-slate-400 line-through">
                 Kes {product.sellingPrice.toLocaleString()}
               </span>
             )}
           </div>
+
 
           <AnimatePresence mode="wait">
             {quantity > 0 ? (
@@ -137,9 +140,9 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             ) : (
               <button 
                 onClick={() => addToCart(product)}
-                className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors"
+                className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors"
               >
-                + Add to Cart
+                <ShoppingCartIcon className='w-4 h-4' /> Add to Cart
               </button>
             )}
           </AnimatePresence>

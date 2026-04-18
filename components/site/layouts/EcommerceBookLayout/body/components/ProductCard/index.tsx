@@ -85,7 +85,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </div>
 
         {/* Quick Interaction Icons */}
-        <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-20">
+        <div className="absolute top-3 right-3 flex flex-col gap-2 translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-20">
           <a 
             href={whatsappUrl}
             target="_blank"
@@ -153,6 +153,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               Kes {(finalPrice || sellingPrice)?.toLocaleString()}
            </span>
         </div>
+
+        {/* Whatsapp Contact for Literary Consultation */}
+        <a 
+          href={whatsappUrl} 
+          target="_blank"
+          className="mt-2 inline-flex uppercase items-center gap-1 text-sm text-[#25D366] hover:underline transition-all"
+        >
+          <WhatsAppIcon className="w-4 h-4" /> Order Via WhatsApp
+        </a>
 
         {/* Metadata Footer */}
         <div className="flex items-center justify-center gap-4 pt-3 mt-2 border-t border-zinc-50 dark:border-zinc-800">

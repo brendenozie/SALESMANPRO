@@ -2,15 +2,12 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { 
-  HeartIcon, 
-  ShoppingCartIcon, 
-  StarIcon, 
-  BoltIcon,
-  CheckBadgeIcon,
-  ChatBubbleLeftEllipsisIcon
-} from '@heroicons/react/24/solid';
+import { AnimatePresence, motion } from 'framer-motion';
+import { HeartIcon, ShoppingCartIcon, StarIcon, BoltIcon,
+  TrashIcon,
+  MinusIcon,
+  PlusIcon,
+  ShoppingBagIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useStateContext } from '@/contexts/ContextProvider';
@@ -28,166 +25,165 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-export default function GhubaProductCard({ product, toggleLike, likedItems, }: any) {
+
+export default function GhubaProductCard({ product, toggleLike, likedItems,  }: any) {
   const [imageError, setImageError] = useState(false);
   const router = useRouter();
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
   
+  const quantity = cart.find((item: any) => item.id === product.id)?.quantity || 0;
+  
   // WhatsApp Retail Config
-  const whatsappNumber = `{ storeFormData?.contactPhone || "254700000000"}`;
+  const whatsappNumber = `${ storeFormData?.contactPhone || "254700000000"}`;
   const message = encodeURIComponent(`I'd like to order: ${product.name}. Is this available for delivery today?`);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      whileInView={{ opacity: 1, scale: 1 }}
+      initial={{ opacity: 0, y: 15 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="relative p-1 sm:p-2 group h-full"
+      whileHover={{ y: -5 }}
+      className="relative p-1.5 sm:p-4 group h-full"
     >
       <div 
-        className="relative h-full cursor-pointer bg-white dark:bg-[#0A0A0A] border border-zinc-100 dark:border-zinc-800 rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden transition-all duration-500 hover:shadow-2xl flex flex-col"
+        onClick={() => router.push(`/ghuba/productlist/${product.id}`)}
+        className="relative h-full cursor-pointer bg-white dark:bg-[#0F0F0F] border border-zinc-200 dark:border-zinc-800 rounded-[1.2rem] sm:rounded-[2rem] overflow-hidden transition-all duration-500 hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_20px_40px_-10px_rgba(230,57,70,0.15)] flex flex-col"
       >
         
-        {/* --- VISUAL HEADER --- */}
-        <div 
-          onClick={() => router.push(`/ghuba/productlist/${product.id}`)}
-          className="relative aspect-square overflow-hidden bg-zinc-50 dark:bg-zinc-900 shrink-0"
-        >
-          {/* Status Badges */}
-          <div className="absolute top-2 left-0 z-20 flex flex-col gap-1 items-start">
-            {product.discount > 0 && (
-              <div className="bg-[#E63946] text-white text-[7px] sm:text-[10px] font-black px-2 sm:px-3 py-1 rounded-r-lg shadow-lg">
-                -{product.discount}%
-              </div>
-            )}
-            <div className="bg-emerald-500 text-white text-[7px] sm:text-[9px] font-black px-2 py-1 rounded-r-lg shadow-md flex items-center gap-1">
-              <CheckBadgeIcon className="w-2 sm:w-3 h-2 sm:h-3" />
-              IN STOCK
+        {/* --- IMAGE HEADER --- */}
+        <div className="relative aspect-square overflow-hidden bg-zinc-100 dark:bg-zinc-900 shrink-0">
+          {/* Discount Badge - Scaled for Mobile */}
+          {product.discount > 0 && (
+            <div className="absolute top-2 sm:top-4 left-0 z-20 bg-[#E63946] text-white text-[8px] sm:text-[10px] font-black px-2 sm:px-4 py-0.5 sm:py-1 rounded-r-full shadow-lg">
+              {product.discount}% OFF
             </div>
-          </div>
+          )}
 
           <Image
             width={400}
             height={400}
             loader={loaderProp}
-            src={imageError ? 'https://via.placeholder.com/400x400?text=Retail+Item' : product.images?.[0]}
+            src={imageError ? 'https://via.placeholder.com/400x400?text=Image+Not+Found' : product.images[0]}
             alt={product.title}
-            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             onError={() => setImageError(true)}
           />
 
-          {/* Quick Contact Overlay */}
-          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-4">
-             <a 
-               href={whatsappUrl}
-               target="_blank"
-               onClick={(e) => e.stopPropagation()}
-               className="w-full bg-[#25D366] text-white py-2 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-transform"
-             >
-               <WhatsAppIcon className="w-4 h-4" />
-               Order via WA
-             </a>
+
+          {/* Quick Action Overlay - Subtle on Mobile */}
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[1px]">
+             <span className="bg-white text-black font-black text-[8px] sm:text-[10px] uppercase tracking-widest px-4 py-2 sm:px-6 sm:py-3 rounded-full translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+               View Specs
+             </span>
           </div>
 
-          {/* Wishlist Button */}
+          {/* Wishlist Button - Scaled down for 2-col mobile */}
           <button
             onClick={(e) => { e.stopPropagation(); toggleLike(product.id); }}
-            className={`absolute top-2 right-2 z-20 p-2 rounded-full backdrop-blur-md border border-white/20 transition-all ${
-              likedItems[product.id] ? "bg-[#E63946] text-white" : "bg-white/80 text-zinc-900 hover:bg-[#E63946] hover:text-white"
+            className={`absolute top-2 right-2 sm:top-4 sm:right-4 z-20 p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl backdrop-blur-md border border-white/20 transition-all active:scale-90 ${
+              likedItems[product.id]
+                ? "bg-[#E63946] text-white"
+                : "bg-black/20 text-white hover:bg-black/40"
             }`}
           >
-            <HeartIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <HeartIcon className="h-4 w-4 sm:h-5 sm:h-5" />
           </button>
         </div>
 
         {/* --- PRODUCT INFO --- */}
-        <div className="p-3 sm:p-5 flex flex-col flex-grow">
-          <div className="mb-auto">
-            <div className="flex justify-between items-start mb-1">
-              <h3 
-                onClick={() => router.push(`/ghuba/productlist/${product.id}`)}
-                className="text-[12px] sm:text-base font-black uppercase tracking-tight text-zinc-900 dark:text-white line-clamp-2 leading-none hover:text-[#E63946] transition-colors"
-              >
+        <div className="p-3 sm:p-6 flex flex-col flex-grow justify-between gap-2 sm:gap-4">
+          <div className="space-y-1">
+            <div className="flex justify-between items-start gap-1">
+              <h3 className="text-[11px] sm:text-lg font-black uppercase tracking-tighter text-zinc-900 dark:text-white line-clamp-2 leading-tight">
                 {product.name || product.title}
               </h3>
+              
+              {/* Condition Badge - Only show icon on mobile to save space */}
+              <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-md shrink-0">
+                 <BoltIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#E63946]" />
+                 <span className="hidden sm:block text-[8px] font-black dark:text-zinc-300 uppercase">New</span>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 mt-1.5">
-              <div className="flex items-center">
-                {[...Array(5)].map((_, i) => (
-                  <StarIcon
-                    key={i}
-                    className={`h-2.5 w-2.5 sm:h-3 sm:w-3 ${i < (product.rating || 5) ? "text-amber-400" : "text-zinc-200"}`}
-                  />
-                ))}
-              </div>
-              <span className="text-[8px] font-black text-zinc-400">({product.reviews || '12'})</span>
+            {/* Rating - Hidden on very small mobile if necessary, or scaled down */}
+            <div className="flex items-center space-x-0.5">
+              {[...Array(5)].map((_, i) => (
+                <StarIcon
+                  key={i}
+                  className={`h-2 w-2 sm:h-3 sm:w-3 ${i < product.rating ? "text-[#E63946]" : "text-zinc-300 dark:text-zinc-800"}`}
+                />
+              ))}
+              <span className="text-[8px] text-zinc-400 font-bold ml-1 sm:ml-2 uppercase">({product.reviews || 24})</span>
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-zinc-50 dark:border-zinc-800 flex items-center justify-between">
+          <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800/50 mt-auto">
             <div className="flex flex-col">
-              {product.discount > 0 && (
-                <span className="text-[8px] font-bold text-zinc-400 line-through leading-none mb-1">
-                  KSH {(product.finalPrice * 1.2).toLocaleString()}
-                </span>
-              )}
-              <span className="text-sm sm:text-xl font-black text-zinc-900 dark:text-white leading-none tracking-tighter italic">
-                <span className="text-[8px] sm:text-[10px] not-italic mr-0.5 text-[#E63946]">KSH</span>
-                {product.finalPrice.toLocaleString()}
+              <span className="text-[8px] sm:text-[10px] font-bold text-zinc-400 uppercase tracking-widest leading-none">Price</span>
+              <span className="text-sm sm:text-2xl font-black text-zinc-900 dark:text-white mt-0.5 sm:mt-1 italic">
+                <span className="text-[9px] sm:text-sm not-italic mr-0.5 font-bold">KSH</span>{product.finalPrice.toLocaleString()}
               </span>
             </div>
 
-            {/* <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={(e) => { e.stopPropagation(); addToCart(product); }}
-              className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl hover:bg-[#E63946] dark:hover:bg-[#E63946] hover:text-white transition-all shadow-lg"
+            {/* Action Tray */}
+              <div className="mt-auto">
+                <AnimatePresence mode="wait">
+                  {quantity > 0 ? (
+                    <motion.div 
+                      key="in-cart"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="flex items-center justify-between bg-slate-900 rounded-2xl p-1 shadow-xl"
+                    >
+                      <button 
+                        onClick={() => decreaseQuantity(product.id)}
+                        className="p-3 text-white hover:bg-white/10 rounded-xl transition-colors"
+                      >
+                        {quantity === 1 ? <TrashIcon className="w-4 h-4 text-red-400" /> : <MinusIcon className="w-4 h-4" />}
+                      </button>
+                      <span className="text-white font-black text-sm">{quantity}</span>
+                      <button 
+                        onClick={() => addToCart(product)}
+                        className="p-3 text-white hover:bg-white/10 rounded-xl transition-colors"
+                      >
+                        <PlusIcon className="w-4 h-4 text-emerald-400" />
+                      </button>
+                    </motion.div>
+                  ) : (
+                    <motion.button
+                      key="add-btn"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => addToCart(product)}
+                      className="w-full flex items-center justify-center gap-3 py-4 text-black dark:text-white border  rounded-2xl font-black text-[10px] uppercase tracking-widest  transition-all duration-300 shadow-sm "
+                    >
+                      <ShoppingBagIcon className="w-4 h-4" />
+                      Add to Cart
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+              </div>
+          </div>
+              
+          {/* Quick Contact Overlay */}
+          <div className=" flex items-end justify-center ">
+            <a 
+              href={whatsappUrl}
+              target="_blank"
+              onClick={(e) => e.stopPropagation()}
+              className="w-full bg-[#25D366] text-white py-2 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-transform"
             >
-              <ShoppingCartIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-            </motion.button> */}
-             {/* Action Tray */}
-                    <div className="mt-auto">
-                      <AnimatePresence mode="wait">
-                        {quantity > 0 ? (
-                          <motion.div 
-                            key="in-cart"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="flex items-center justify-between bg-slate-900 rounded-2xl p-1 shadow-xl"
-                          >
-                            <button 
-                              onClick={() => decreaseQuantity(product.id)}
-                              className="p-3 text-white hover:bg-white/10 rounded-xl transition-colors"
-                            >
-                              {quantity === 1 ? <TrashIcon className="w-4 h-4 text-red-400" /> : <MinusIcon className="w-4 h-4" />}
-                            </button>
-                            <span className="text-white font-black text-sm">{quantity}</span>
-                            <button 
-                              onClick={() => addToCart(product)}
-                              className="p-3 text-white hover:bg-white/10 rounded-xl transition-colors"
-                            >
-                              <PlusIcon className="w-4 h-4 text-emerald-400" />
-                            </button>
-                          </motion.div>
-                        ) : (
-                          <motion.button
-                            key="add-btn"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => addToCart(product)}
-                            className="w-full flex items-center justify-center gap-3 py-4 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all duration-300 shadow-sm hover:shadow-emerald-200"
-                          >
-                            <ShoppingBagIcon className="w-4 h-4" />
-                            Harvest to Cart
-                          </motion.button>
-                        )}
-                      </AnimatePresence>
-                    </div>
+              <WhatsAppIcon className="w-4 h-4" />
+              Order via WhatsApp
+            </a>
           </div>
         </div>
+
+        {/* Bottom Accent Bar */}
+        <div className="h-1 w-full bg-gradient-to-r from-transparent via-[#E63946]/20 to-transparent shrink-0" />
       </div>
     </motion.div>
   );

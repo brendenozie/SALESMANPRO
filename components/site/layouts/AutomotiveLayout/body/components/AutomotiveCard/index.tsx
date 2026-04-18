@@ -40,7 +40,7 @@ const AutomotiveCard = ({ item, badge, location, mileage, transmission, fuelType
   const { storeFormData } = useStoreContext();
   
   // WhatsApp "Dealer Inquiry" Config
-  const whatsappNumber =  `${storeFormData?.contactPhone || "254700000000"}`;
+  const whatsappNumber =  `${storeFormData?.contactPhone || "254732771353"}`;
 
   const message = encodeURIComponent(`AUTOMOTIVE_INQUIRY: I'm interested in the "${item.name}". Please let me know the availability for a test drive and if financing is available.`);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;

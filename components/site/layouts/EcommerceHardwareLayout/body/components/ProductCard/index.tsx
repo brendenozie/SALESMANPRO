@@ -93,7 +93,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute top-4 right-4 z-20 p-2.5 bg-white shadow-xl text-[#25D366] rounded-sm opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-zinc-900"
+          className="absolute top-4 right-4 z-20 p-2.5 bg-white shadow-xl text-[#25D366] rounded-sm transition-all duration-300 hover:bg-zinc-900"
           title="Consult Technical Specialist"
         >
           <WhatsAppIcon className="w-4 h-4" />
@@ -183,6 +183,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </AnimatePresence>
         </div>
       </div>
+
+      {/* WhatsApp Inquiry Button */}
+        <a
+          href={whatsappUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 w-full py-2 bg-green-500 text-white text-[9px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-green-600 transition-colors"
+        >
+          <WhatsAppIcon className="w-4 h-4" />
+          Order Via Whatsapp
+        </a>
+
 
       {/* Industrial Warning Stripe Detail */}
       <div className="h-1 w-full flex">

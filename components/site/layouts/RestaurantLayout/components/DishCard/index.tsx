@@ -62,6 +62,20 @@ const DishCard: React.FC<DishCardProps> = ({ dish }) => {
         />
         
         {/* Floating Culinary Badges */}
+        <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
+          {/* Whatsapp */}
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-green-500 text-white px-3 py-2 rounded-full flex items-center gap-1.5 shadow-lg hover:bg-green-600 transition-colors"
+            title="Ask Kitchen Concierge"
+          >
+            <WhatsAppIcon className="w-3 h-3" />
+            <span className="text-[8px] font-black uppercase tracking-widest">Order On Whatsapp</span>
+          </a>
+        </div>
+
         <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
           <div className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-xl border border-orange-100 dark:border-zinc-800">
             <FireIcon className="w-3.5 h-3.5 text-orange-600 animate-pulse" />
@@ -82,14 +96,6 @@ const DishCard: React.FC<DishCardProps> = ({ dish }) => {
           >
             <EyeIcon className="w-5 h-5" />
           </button>
-          <a 
-            href={whatsappUrl}
-            target="_blank"
-            className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-[#25D366] shadow-2xl hover:scale-110 transition-transform"
-            title="Chat with Chef"
-          >
-            <WhatsAppIcon className="w-5 h-5" />
-          </a>
         </div>
       </div>
 
@@ -165,6 +171,26 @@ const DishCard: React.FC<DishCardProps> = ({ dish }) => {
               </motion.button>
             )}
           </AnimatePresence>
+          {/* Order Via Whatsapp */}
+          <AnimatePresence>
+            {(
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-3 flex items-center justify-center"
+              >
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex uppercase items-center gap-1 text-sm text-[#25D366] hover:underline transition-all font-bold "
+                >
+                  <WhatsAppIcon className="w-4 h-4" /> Order Via WhatsApp
+                </a>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
         </div>
       </div>
 

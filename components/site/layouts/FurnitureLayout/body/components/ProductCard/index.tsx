@@ -39,7 +39,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const quantity = cart.find((item: any) => item.id === product.id)?.quantity || 0;
 
   // WhatsApp Concierge Config
-  const whatsappNumber = "1234567890";
+  const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
   const message = encodeURIComponent(`I am interested in commissioning the "${product.name}" piece. Could you provide more details on lead times and materials?`);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
@@ -212,12 +212,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <div>
               <p className="text-[8px] font-black text-zinc-400 uppercase tracking-widest leading-none">Inquiry</p>
               <a 
-                href={whatsappUrl} 
+                href={whatsappUrl}
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-[10px] font-bold dark:text-[#25D366] text-[#128C7E] tracking-tight mt-1 hover:underline"
+                className="flex text-[8px] uppercase tracking-[0.3em] text-green-500 hover:text-zinc-900 dark:hover:text-white transition-colors p-4 bg-green-50/50 hover:bg-green-100/50 dark:bg-green-900/10 dark:hover:bg-green-900/20 gap-2"
               >
-                Ask Designer
+                <WhatsAppIcon className="w-4 h-4" />  Order Via WhatsApp
               </a>
             </div>
           </div>

@@ -44,7 +44,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             alt={product.name || 'Product Image'}
             fill
             loader={loader}
-            className="object-cover transition-transform duration-1000 group-hover:scale-110"
+            className="object-cover transition-transform duration-1000 group-hover:scale-110 "
           />
         </Link>
 
@@ -65,7 +65,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute top-4 right-4 z-10 p-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-sm text-black opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white hover:scale-110"
+          className="absolute top-4 right-4 z-10 p-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-sm text-black transition-all duration-300 hover:bg-white hover:scale-110"
           title="Consult Stylist"
         >
           <WhatsAppIcon className="w-4 h-4" />
@@ -138,8 +138,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 text-[9px] font-black text-gray-800 uppercase tracking-widest hover:text-[#0D4C4F] transition-colors"
           >
-            <ChatBubbleLeftRightIcon className="w-3 h-3" />
-            Fit Guide
+            <WhatsAppIcon className="w-3 h-3" /> Order Via WhatsApp
           </a>
         </div>
       </div>

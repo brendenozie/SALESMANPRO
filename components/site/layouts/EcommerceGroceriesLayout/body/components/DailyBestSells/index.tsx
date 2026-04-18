@@ -46,7 +46,7 @@ export default function DailyBestSells({ id }: { id: string }) {
   });
 
   const sliderSettings = {
-    slidesToShow: 4,
+    slidesToShow: 3,
     slidesToScroll: 1,
     infinite: false,
     nextArrow: <SlickArrow direction="right" />,
@@ -111,6 +111,7 @@ export default function DailyBestSells({ id }: { id: string }) {
             </div>
             
             <button 
+              onClick={() => window.location.href = `/groceriesecommerce/products`}
               className="relative z-10 mt-8 w-full py-4 bg-green-600 rounded-2xl font-bold hover:bg-green-500 transition-colors shadow-lg shadow-green-900/20"
               style={{ backgroundColor: primary }}
             >

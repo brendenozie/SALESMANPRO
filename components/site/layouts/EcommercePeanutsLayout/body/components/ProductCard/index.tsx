@@ -47,7 +47,7 @@ export default function ProductCard({ product }: { product: MarketListingForm })
             alt={product.name}
             loader={loader}
             fill
-            className="object-contain p-6 transition-transform duration-700 group-hover:scale-110"
+            className="transition-transform duration-700 group-hover:scale-110 object-cover object-center "
           />
         </Link>
         
@@ -74,15 +74,15 @@ export default function ProductCard({ product }: { product: MarketListingForm })
       {/* Content */}
       <div className="mt-6 px-2 space-y-1 flex-grow">
         <div className="flex justify-between items-center mb-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Small Batch</span>
             <div className="h-1 w-1 rounded-full bg-stone-200" />
             <a 
               href={whatsappUrl} 
               target="_blank" 
-              className="text-[9px] font-black text-[#128C7E] uppercase hover:underline"
+              className="text-[9px] font-black text-[#128C7E] uppercase hover:underline transition-colors flex items-center gap-1"
             >
-              Ask Roaster
+              <WhatsAppIcon className="w-3 h-3 inline-block" /> Order Via WhatsApp
             </a>
           </div>
         </div>

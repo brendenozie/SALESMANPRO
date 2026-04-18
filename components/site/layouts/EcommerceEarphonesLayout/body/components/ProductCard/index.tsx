@@ -71,7 +71,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute top-4 right-4 z-10 p-2.5 bg-white/5 backdrop-blur-md text-[#25D366] rounded-full border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+          className="absolute top-4 right-4 z-10 p-2.5 bg-white/5 backdrop-blur-md text-[#25D366] rounded-full border border-white/10 transition-all duration-300 hover:scale-110"
           title="Speak to Audio Expert"
         >
           <WhatsAppIcon className="w-4 h-4" />
@@ -94,9 +94,9 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
           <a 
             href={whatsappUrl}
             target="_blank"
-            className="text-[9px] font-mono font-bold text-[#25D366] uppercase hover:underline"
+            className="text-[9px] font-mono font-bold text-[#25D366] uppercase hover:underline transition-colors flex items-center gap-1"
           >
-            Ask Expert
+            <WhatsAppIcon className='w-4 h-4'/> Order Via Whatsapp
           </a>
         </div>
 

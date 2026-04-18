@@ -77,7 +77,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute top-4 right-4 z-20 p-2.5 bg-white/90 backdrop-blur-md text-[#25D366] rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white hover:scale-110"
+          className="absolute top-4 right-4 z-20 p-2.5 bg-white/90 backdrop-blur-md text-[#25D366] rounded-full shadow-sm transition-all duration-300 hover:bg-white hover:scale-110"
           title="Ask the Florist"
         >
           <WhatsAppIcon className="w-4 h-4" />
@@ -147,9 +147,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <a 
             href={whatsappUrl}
             target="_blank"
-            className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-rose-500 transition-colors"
+            className="text-[9px] font-black uppercase tracking-[0.2em] text-green-500 hover:text-rose-500 transition-colors flex items-center gap-1"
           >
-            Custom Order
+            <WhatsAppIcon className="w-3 h-3" /> Order Via WhatsApp
           </a>
           <div className="h-[1px] w-6 bg-slate-200 group-hover:bg-rose-200" />
         </div>

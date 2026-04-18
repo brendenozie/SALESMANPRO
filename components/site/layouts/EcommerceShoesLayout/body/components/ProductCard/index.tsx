@@ -33,7 +33,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   const quantity = cart.find((item: any) => item.id === product.id)?.quantity || 0;
 
   // WhatsApp Config
-  const whatsappNumber = "1234567890"; // Update with actual number
+  const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`; // Update with actual number
   const message = encodeURIComponent(`Hi, I'm interested in the ${product.name} (KES ${product.finalPrice?.toLocaleString()}). Do you have size UK ${selectedSize || '...'} in stock?`);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
@@ -83,7 +83,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             alt={product.name}
             loader={loader}
             fill
-            className="object-contain p-10 transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-3"
+            className="transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-3"
           />
         </Link>
 

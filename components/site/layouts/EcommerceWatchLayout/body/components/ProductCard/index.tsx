@@ -25,7 +25,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   const imageSrc = images?.[0] || 'https://via.placeholder.com/600';
 
   // WhatsApp Link Helper
-  const whatsappNumber = "1234567890"; // Replace with your actual number
+  const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`; // Replace with your actual number
   const message = encodeURIComponent(`Hi! I'm interested in the ${name} ($${finalPrice}). Is it still available?`);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
@@ -120,9 +120,10 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             href={whatsappUrl} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-[10px] uppercase tracking-[0.2em] text-gray-400 hover:text-[#c5a059] transition-colors mt-1"
+            className="flex gap-1 text-[10px] uppercase tracking-[0.2em] text-green-500 hover:text-[#c5a059] transition-colors mt-1 "
           >
-            Inquire via WhatsApp
+           
+           <WhatsAppIcon className='w-4 h-4'/>  Order via WhatsApp
           </a>
         </div>
       </div>

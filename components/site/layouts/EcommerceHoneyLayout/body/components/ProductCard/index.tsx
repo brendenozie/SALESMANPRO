@@ -58,7 +58,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             alt={name}
             fill
             loader={loader}
-            className="object-contain p-6 transition-transform duration-700 group-hover:scale-110"
+            className="transition-transform duration-700 group-hover:scale-110"
           />
         </Link>
         
@@ -93,19 +93,19 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       </div>
 
       {/* Info Section */}
-      <div className="mt-6 px-2 pb-2">
+      <div className="mt-6 pb-2">
         <div className="flex justify-between items-start mb-2">
            <div>
-             <div className="flex items-center gap-2">
+             <div className="flex items-center gap-1">
                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Premium Harvest</span>
                <div className="h-1 w-1 rounded-full bg-stone-200" />
                <a 
                  href={whatsappUrl}
                  target="_blank"
                  rel="noopener noreferrer"
-                 className="text-[9px] font-black text-[#128C7E] uppercase hover:underline"
+                 className="text-[9px] font-black text-[#128C7E] uppercase hover:underline transition-colors flex items-center gap-1"
                >
-                 Inquire
+                 <WhatsAppIcon className="w-3 h-3 inline-block" /> Order Via WhatsApp
                </a>
              </div>
              <h4 className="text-lg font-bold text-[#3E2723] leading-tight mt-1">{name}</h4>

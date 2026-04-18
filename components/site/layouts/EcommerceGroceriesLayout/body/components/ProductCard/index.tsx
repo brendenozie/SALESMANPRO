@@ -46,7 +46,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             alt={product.name}
             loader={loader}
             fill
-            className="object-contain p-6 transition-transform duration-700 group-hover:scale-110"
+            className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
           />
           
           <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
@@ -68,7 +68,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="absolute top-3 right-3 z-20 p-2 bg-white/90 backdrop-blur-md text-[#25D366] rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+            className="absolute top-3 right-3 z-20 p-2 bg-white/90 backdrop-blur-md text-[#25D366] rounded-full shadow-sm transition-all duration-300 hover:scale-110"
             title="Check Freshness"
           >
             <WhatsAppIcon className="w-4 h-4" />
@@ -154,6 +154,20 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
           <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Available for Express Delivery</span>
         </div>
+
+        {/* oRDER vIA WHATSAPP */}
+        <div className="mt-2 pt-2 border-t border-gray-50 flex items-center gap-2">
+          <a 
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex uppercase text-[10px] items-center gap-2 text-[#25D366] font-bold transition-all duration-300 hover:scale-105"
+          >
+            <WhatsAppIcon className="w-4 h-4" />
+            Order via WhatsApp
+          </a>
+        </div>
+        
       </div>
     </motion.div>
   );

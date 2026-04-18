@@ -4,93 +4,124 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { StarIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
+import { StarIcon, ArrowRightIcon, ShoppingBagIcon } from '@heroicons/react/24/solid';
 import { MarketListingForm } from '@/types/typings';
 import useSWR from 'swr';
 import { createCachedFetcher } from '@/lib/swrCachedFetcher';
 import { SkeletonGrid } from '../SkeletonGrid/SkeletonGrid';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
+// WhatsApp Icon for Quick Size Inquiries
+const WhatsAppIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.72.937 3.658 1.435 5.63 1.435h.008c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+  </svg>
+);
+
 const productVariants = {
   initial: { y: 30, opacity: 0 },
-  animate: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } },
+  animate: { y: 0, opacity: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
 };
 
-const ProductGridItem = ({ product, isFeatured = false, primary, secondary }: { product: MarketListingForm, isFeatured?: boolean, primary: string, secondary: string, slug: string }) => {
+const ProductGridItem = ({ product, isFeatured = false, primary, secondary, contactPhone }: { product: MarketListingForm, isFeatured?: boolean, primary: string, secondary: string, slug: string, contactPhone: string }) => {
+
   const discount = product.sellingPrice && product.finalPrice && product.sellingPrice > product.finalPrice
     ? Math.round(((product.sellingPrice - product.finalPrice) / product.sellingPrice) * 100)
     : null;
 
   const rawImage = product.images?.[0];
-  const imageSrc = (typeof rawImage === 'string' ? rawImage : (rawImage as any)?.url) || 'https://via.placeholder.com/300';
+  const imageSrc = (typeof rawImage === 'string' ? rawImage : (rawImage as any)?.url) || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff';
+
+  // WhatsApp Bridge Config
+  const whatsappNumber = `${contactPhone || "254732 771 353"}`;
+  const message = encodeURIComponent(`Hi! Checking availability for the "${product.name}" in size [Input Size]. Is it in stock?`);
+  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
   return (
     <motion.div
       variants={productVariants}
-      className={`relative flex flex-col bg-white dark:bg-slate-900 rounded-3xl shadow-xl shadow-black/5 dark:shadow-white/5 overflow-hidden group border border-gray-100 dark:border-slate-800 transition-all duration-500 hover:-translate-y-2 ${isFeatured ? 'md:col-span-2' : ''}`}
+      className={`group relative flex flex-col bg-white dark:bg-[#0c0c0c] rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 transition-all duration-500 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] ${isFeatured ? 'md:col-span-2' : ''}`}
     >
-      {/* Image Area */}
-      <Link href={`/ecommerceshoes/products/${product.id}`} className="relative block w-full bg-gray-50 dark:bg-slate-800/50 overflow-hidden" style={{ height: isFeatured ? '450px' : '280px' }}>
+      {/* Image Section */}
+      <Link href={`/ecommerceshoes/products/${product.id}`} className="relative block w-full bg-zinc-50 dark:bg-zinc-900/50 overflow-hidden rounded-t-[2.5rem]" style={{ height: isFeatured ? '480px' : '320px' }}>
         <Image
           src={imageSrc}
           alt={product.name}
           fill
-          style={{ objectFit: isFeatured ? 'cover' : 'contain' }}
-          className="p-6 transition-transform duration-700 group-hover:scale-110"
+          // style={{ objectFit: 'contain' }}
+          className="transition-transform duration-1000 group-hover:scale-110 group-hover:-rotate-3"
           loader={loader}
         />
         
-        {/* Hover Overlay */}
-        <div className="absolute inset-0 bg-black/20 dark:bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
-          <span className="bg-white text-gray-900 px-6 py-2.5 rounded-full font-bold text-sm shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-            Quick View
-          </span>
+        {/* Floating Utility Overlay */}
+        <div className="absolute top-6 right-6 flex flex-col gap-2 z-20">
+          <a 
+            href={whatsappUrl}
+            target="_blank"
+            onClick={(e) => e.stopPropagation()}
+            className="p-3 bg-[#25D366] text-white rounded-2xl shadow-xl hover:scale-110 transition-transform"
+            title="Check Availability"
+          >
+            <WhatsAppIcon className="w-5 h-5" />
+          </a>
         </div>
 
-        {/* Discount Badge */}
-        {discount && (
-          <div className="absolute top-4 left-4 z-10 text-white text-xs font-black px-3 py-1.5 rounded-full shadow-lg" style={{ backgroundColor: secondary }}>
-            {discount}% OFF
-          </div>
-        )}
+        {/* Quick Labels */}
+        <div className="absolute bottom-6 left-6 flex items-center gap-2">
+           {discount && (
+            <span className="bg-red-600 text-white text-[10px] font-black px-3 py-1.5 rounded-xl shadow-lg uppercase tracking-widest">
+              {discount}% OFF
+            </span>
+          )}
+          {isFeatured && (
+            <span className="bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 text-[10px] font-black px-3 py-1.5 rounded-xl shadow-lg uppercase tracking-widest">
+              Top Pick
+            </span>
+          )}
+        </div>
       </Link>
 
       {/* Details Area */}
-      <div className="p-6 flex flex-col flex-grow">
-        <div className="flex justify-between items-start gap-2 mb-2">
-          <h4 className="text-lg font-bold text-gray-900 dark:text-white truncate group-hover:text-clip" title={product.name}>
-            {product.name}
-          </h4>
-          <div className="flex items-center gap-1 text-yellow-500 shrink-0">
-            <StarIcon className="w-4 h-4" />
-            <span className="text-xs font-black">4.5</span>
+      <div className="p-8 flex flex-col flex-grow">
+        <div className="flex justify-between items-start mb-4">
+          <div className="flex flex-col gap-1">
+             <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Premium Footwear</span>
+             <h4 className="text-xl font-black text-zinc-900 dark:text-white leading-tight group-hover:text-indigo-600 transition-colors">
+               {product.name}
+             </h4>
+          </div>
+          <div className="flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-800 px-3 py-1.5 rounded-xl">
+            <StarIcon className="w-4 h-4 text-amber-500" />
+            <span className="text-xs font-black text-zinc-900 dark:text-zinc-300">4.9</span>
           </div>
         </div>
 
-        <div className="mt-auto flex items-center justify-between">
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black" style={{ color: primary }}>
-              ${(product.finalPrice ?? 0).toFixed(2)}
-            </span>
-            {product.sellingPrice && product.finalPrice && product.sellingPrice > product.finalPrice && (
-              <span className="text-sm line-through text-gray-400 dark:text-gray-500 font-medium">
-                ${product.sellingPrice.toFixed(2)}
+        <div className="mt-auto flex items-end justify-between">
+          <div className="flex flex-col">
+            {product.sellingPrice && (
+              <span className="text-xs line-through text-zinc-400 font-bold mb-1">
+                KSH {product.sellingPrice.toLocaleString()}
               </span>
             )}
+            <span className="text-3xl font-black italic tracking-tighter" style={{ color: primary }}>
+              <span className="text-sm not-italic mr-1">KSH</span>
+              {(product.finalPrice ?? 0).toLocaleString()}
+            </span>
           </div>
           
-          <button 
-            className="p-2 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-white hover:text-white transition-all"
-            style={{ '--hover-bg': primary } as any}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = primary)}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
-          >
-            <ArrowRightIcon className="w-5 h-5" />
-          </button>
+          <Link href={`/ecommerceshoes/products/${product.id}`}>
+            <div 
+              className="flex items-center justify-center w-14 h-14 rounded-2xl bg-zinc-900 dark:bg-zinc-800 text-white shadow-xl group-hover:bg-indigo-600 transition-all duration-300 group-hover:rotate-[360deg]"
+              style={{ backgroundColor: primary }}
+            >
+              <ShoppingBagIcon className="w-6 h-6" />
+            </div>
+          </Link>
         </div>
       </div>
     </motion.div>
@@ -98,8 +129,10 @@ const ProductGridItem = ({ product, isFeatured = false, primary, secondary }: { 
 };
 
 export default function PopularProducts({ id, themeSettings, marketplaceListings, slug = 'store' }: any) {
-  const primary = themeSettings?.primaryColor || '#f97316';
-  const secondary = themeSettings?.secondaryColor || '#3b82f6';
+  const { storeFormData } = useStoreContext();
+  
+  const primary = themeSettings?.primaryColor || '#6366f1'; // Modern Indigo Default
+  const secondary = themeSettings?.secondaryColor || '#f43f5e';
 
   const url = `${apiBaseUrl}/site/productsByFlag?companyId=${id}&flag=isFeatured&limit=5`;
   const { data, isLoading } = useSWR(url, createCachedFetcher(`products-${id}-featured`), {
@@ -110,37 +143,44 @@ export default function PopularProducts({ id, themeSettings, marketplaceListings
 
   if (isLoading && !productsToShow.length) {
     return (
-      <section className="py-20 bg-gray-50 dark:bg-slate-950 transition-colors">
+      <section className="py-20 bg-zinc-50 dark:bg-zinc-950">
         <div className="max-w-7xl mx-auto px-6"><SkeletonGrid count={5} /></div>
       </section>
     );
   }
 
   return (
-    <section className="py-24 bg-gray-50 dark:bg-slate-950 transition-colors duration-500">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+    <section className="py-32 bg-zinc-50 dark:bg-zinc-950 transition-colors duration-500 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 relative">
+        {/* Background Decorative Element */}
+        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
-          <div className="text-left">
-            <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white leading-tight">
-              Top Picks, <br /><span style={{ color: primary }}>Just for You</span>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm mb-6">
+               <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primary }} />
+               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Trending Now</span>
+            </div>
+            <h2 className="text-5xl md:text-7xl font-black text-zinc-900 dark:text-white leading-[0.9] tracking-tighter">
+              DRIP OR <br /><span style={{ color: primary }}>DROWN.</span>
             </h2>
-            <p className="mt-4 text-gray-600 dark:text-slate-400 max-w-xl font-medium">
-              Explore our most sought-after products, hand-picked for their style, comfort, and uncompromising quality.
+            <p className="mt-8 text-zinc-500 dark:text-zinc-400 text-lg font-medium leading-relaxed">
+              Curated street essentials designed for those who walk different. Hand-picked quality, certified original.
             </p>
           </div>
-          <Link href={`/ecommerceshoes/products?companyId=${id}&flag=isFeatured`} className="hidden md:flex items-center gap-2 font-bold text-sm uppercase tracking-widest hover:opacity-70 transition-opacity dark:text-white">
-            View Collection <ArrowRightIcon className="w-4 h-4" />
+          <Link href={`/ecommerceshoes/products?companyId=${id}&flag=isFeatured`} className="group flex items-center gap-4 font-black text-xs uppercase tracking-[0.3em] dark:text-white">
+             Browse All <div className="w-12 h-12 rounded-full border border-zinc-200 dark:border-zinc-800 flex items-center justify-center group-hover:bg-zinc-900 group-hover:text-white transition-all"><ArrowRightIcon className="w-4 h-4" /></div>
           </Link>
         </div>
 
         {/* Grid */}
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10"
+          className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12"
           initial="initial"
           whileInView="animate"
           viewport={{ once: true, amount: 0.1 }}
-          variants={{ animate: { transition: { staggerChildren: 0.1 } } }}
+          variants={{ animate: { transition: { staggerChildren: 0.15 } } }}
         >
           {productsToShow.slice(0, 5).map((product, index) => (
             <ProductGridItem
@@ -150,16 +190,10 @@ export default function PopularProducts({ id, themeSettings, marketplaceListings
               primary={primary}
               secondary={secondary}
               slug={slug}
+              contactPhone={storeFormData?.contactPhone || "254732 771 353"}
             />
           ))}
         </motion.div>
-
-        {/* Mobile View All */}
-        <div className="mt-12 md:hidden flex justify-center">
-          <Link href={`/ecommerceshoes/products?companyId=${id}&flag=isFeatured`} className="px-8 py-4 rounded-full text-white font-bold shadow-xl shadow-orange-500/20" style={{ backgroundColor: primary }}>
-            View All Products
-          </Link>
-        </div>
       </div>
     </section>
   );

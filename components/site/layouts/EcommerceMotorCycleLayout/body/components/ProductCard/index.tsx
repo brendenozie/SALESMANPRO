@@ -77,7 +77,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute top-4 right-4 z-20 p-2.5 bg-white shadow-2xl text-[#25D366] rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500 hover:scale-110 border border-gray-100"
+          className="absolute top-4 right-4 z-20 p-2.5 bg-white shadow-2xl text-[#25D366] rounded-full transition-all duration-500 hover:scale-110 border border-gray-100"
           title="Speak with a Consultant"
         >
           <WhatsAppIcon className="w-4 h-4" />
@@ -133,9 +133,9 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             <a 
               href={whatsappUrl} 
               target="_blank"
-              className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-black transition-colors py-2 border-b border-transparent hover:border-[#c5a059]"
+              className="text-[9px] font-black uppercase tracking-[0.2em] text-green-500 hover:text-black transition-colors py-2 border-b border-transparent hover:border-[#c5a059] flex gap-1 "
             >
-              Request Showroom View
+              <WhatsAppIcon className="w-3 h-3 inline-block mr-1" /> Order Via Whatsapp
             </a>
         </div>
       </div>

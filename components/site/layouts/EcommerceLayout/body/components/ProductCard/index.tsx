@@ -32,7 +32,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { name, images, finalPrice, sellingPrice } = product;
 
   // WhatsApp Config
-  const whatsappNumber = "1234567890"; // Update with actual number
+  const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`; // Update with actual number
   const message = encodeURIComponent(`Hello! I'd like to order: ${name} (Price: $${finalPrice})`);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 

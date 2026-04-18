@@ -124,8 +124,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-[10px] font-black text-[#25D366] uppercase tracking-widest hover:underline"
           >
-            <ChatBubbleOvalLeftIcon className="w-3 h-3" />
-            Ask Expert
+            <WhatsAppIcon className="w-3 h-3" />
+            Order Via WhatsApp
           </a>
         </div>
 
