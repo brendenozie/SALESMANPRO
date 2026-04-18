@@ -7066,6 +7066,123 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       ],
     }),
 
+    "Drycleaning": {
+      tagline: "**Professional Dry Cleaning** for Your Wardrobe",
+      description:
+        "Our dry cleaning services provide expert care for your garments, ensuring they look their best while maintaining their quality and longevity.",  
+      socialLinks: [
+        {
+          channel: SocialChannel.FACEBOOK,
+          url: "https://fb.com/drycleaning",
+        },
+      ],
+      faqs: [
+        {
+          question: "What types of garments do you clean?",
+          answer:
+            "We clean a wide range of garments including suits, dresses, coats, and delicate fabrics. Contact us for specific items.",
+          order: 1,
+        },
+      ],
+      testimonials: [
+        {
+          authorName: "Emily R.",
+          quote:
+            "Their dry cleaning service is exceptional. My clothes always come back looking fresh and well cared for!",
+          rating: 5,
+        },
+      ],
+      heroSlides: [
+        {
+          imageUrl: getSampleImageUrl("drycleaning"),
+          headline: "Expert Care for Your Clothes",
+          subline:
+            "Experience our professional dry cleaning services for your wardrobe.",
+          ctaText: "Learn More",
+          ctaLink: "/services/dry-cleaning",
+          id: "",
+          companyId: "",
+          price: null,
+          productImageUrl: null,
+          badgeText: "Professional Care",
+          endsAt: null,
+          order: 0,
+          iconKey: null,
+          backgroundColor: null,
+          textColor: null,
+          videoLink: null,
+          type: "image",
+        },
+      ],
+      metrics: [
+        { label: "Garments Cleaned", value: 5000 },
+        { label: "Satisfied Customers", value: 1500 },
+        { label: "Eco-Friendly Cleaning", value: 1 },
+      ],
+      seo: {
+        id: "",
+        title:
+          "Dry Cleaning Services | Professional Care for Your Wardrobe",
+        description:
+          "Our dry cleaning services provide expert care for your garments, ensuring they look their best while maintaining their quality and longevity. Experience our professional dry cleaning services today.",
+        keywords: [
+          "dry cleaning services",
+          "professional dry cleaning",
+          "garment care",
+          "eco-friendly cleaning",
+          "clothing maintenance",
+        ],
+      },
+      stats: [
+        { label: "Garments Cleaned", value: 5000 },
+        { label: "Satisfied Customers", value: 1500 },
+        { label: "Eco-Friendly Cleaning", value: "Yes" },
+      ],
+      awards: [
+        { name: "Best Dry Cleaning Service 2024", iconUrl: "/icons/award.svg" },
+        { name: "Top 20 Cleaners 2024", iconUrl: "/icons/award.svg" },
+      ],
+      policies: [
+        {
+          type: PolicyType.CANCELLATION,
+          content:
+            "Cancellations accepted up to 24 hours before scheduled pickup. Contact us for rescheduling.",
+        },
+      ],
+      promotions: [
+        {
+          title: "First-Time Customer Discount",
+          description:
+            "Get 20% off your first dry cleaning service. Experience our professional care for your wardrobe at a great price!",
+          ctaText: "Get Discount",
+          ctaLink: "/promotions/first-time-discount",
+          companyId: "",
+          perks: [{ id: "", label: "20% Off", icon: "StarIcon" }],
+          trustLogos: [],
+        },
+      ],
+
+      sectionSubtitle: "Professional Care for Your Clothes",
+      sectionTitle: "Dry Cleaning Services",
+      sectionDescription:
+        "Our dry cleaning services provide expert care for your garments, ensuring they look their best while maintaining their quality and longevity.",
+      partnerLogos: [
+        {
+          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
+          alt: "Brand A",
+        },
+        {
+          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
+          alt: "Brand B",
+        },
+        {
+          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",  
+          alt: "Brand C",
+        },
+      ],
+
+    },
+
     // --- Remaining Stubbed Categories ---
     Other: withOverrides({
       tagline: "Tailored Solutions for Your Unique Idea",

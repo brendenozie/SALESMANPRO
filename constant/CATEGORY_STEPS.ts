@@ -84,6 +84,7 @@ export const CATEGORY_STEPS: Record<string, number[]> = {
 
   // — Automotive & tools flow —
   "Automotive":          [1,3,4,5,7,8,10,12,14,11],
+  "Automotive Accessories":[1,3,4,5,7,8,10,12,14,11],
   "Cars":                [1,3,4,5,8,10,12,14,11],//7,
   "Car Accessories":     [1,3,4,5,7,8,10,12,14,11],
   "Tools":               [1,3,4,5,7,8,10,12,14,11],
@@ -92,6 +93,7 @@ export const CATEGORY_STEPS: Record<string, number[]> = {
   // — Services flow —
   "Services":            [1,2,7,15,16,17,8,9,10,12,11],
   "Cleaning":            [1,2,7,15,16,17,8,9,10,12,11],
+  "Drycleaning":         [1,2,7,15,16,17,8,9,10,12,11],
   "Plumbing":            [1,2,7,15,16,17,8,9,10,12,11],
   "Electrical":          [1,2,7,15,16,17,8,9,10,12,11],
   "Landscaping":         [1,2,7,15,16,17,8,9,10,12,11],
@@ -99,6 +101,7 @@ export const CATEGORY_STEPS: Record<string, number[]> = {
   "Transportation":      [1,2,7,15,16,17,8,9,10,12,11],
   "IT Services":         [1,2,7,15,16,17,8,9,10,12,11],
   "Beauty Services":     [1,2,7,15,16,17,8,9,10,12,11],
+  "Barbershop":          [1,2,7,15,16,17,8,9,10,12,11],
   "Tutoring":            [1,2,7,15,16,17,8,9,10,12,11],
   "Event Planning":      [1,2,7,15,16,17,8,9,10,12,11],
   "Tutors":              [1,2,7,15,16,17,8,9,10,12,11],

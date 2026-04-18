@@ -378,6 +378,172 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     },
   ],
 
+  "Barbershop": [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    {
+      label: "POS",
+      href: `/admin/${adminSlug}/service-pos`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Calendar",
+      href: `/admin/${adminSlug}/calendar`,
+      icon: CalendarIcon,
+    },
+    {
+      label: "Services",
+      href: `/admin/${adminSlug}/services`,
+      icon: WrenchScrewdriverIcon,
+    },
+    {
+      label: "Transport",
+      href: `/admin/${adminSlug}/transport`,
+      icon: HomeIcon,
+      subItems: [
+        {
+          label: "Vehicles",
+          href: `/admin/${adminSlug}/booking-transport-vehicles`,
+        },
+        { label: "Routes", href: `/admin/${adminSlug}/transport-routes` },
+        { label: "Drivers", href: `/admin/${adminSlug}/transport-drivers` },
+        { label: "Schedules", href: `/admin/${adminSlug}/transport-schedules` },
+        {
+          label: "Maintenance Records",
+          href: `/admin/${adminSlug}/transport-maintenance-records`,
+        },
+        { label: "Fuel Logs", href: `/admin/${adminSlug}/transport-fuel-logs` },
+        // {
+        //   label: "Assignments",
+        //   href: `/admin/${adminSlug}/transport-assignments`,
+        // },
+        { label: "Incidents", href: `/admin/${adminSlug}/transport-incidents` },
+        { label: "Reports", href: `/admin/${adminSlug}/transport-reports` },
+      ],
+    },
+    {
+      label: "Bookings",
+      icon: CalendarIcon,
+      subItems: [
+        {
+          label: "Manage Appointments",
+          href: `/admin/${adminSlug}/appointments`,
+        },
+        { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
+        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
+      ],
+    },
+    // { label: "Appointments", href: `/admin/${adminSlug}/appointments`, icon: ClipboardDocumentListIcon },
+    // { label: "Clients", href: `/admin/${adminSlug}/storeclients`, icon: UsersIcon },
+    {
+      label: "blogs",
+      href: `/admin/${adminSlug}/blogs`,
+      icon: WrenchScrewdriverIcon,
+    },
+    {
+      label: "Reports",
+      href: `/admin/${adminSlug}/revenuereport`,
+      icon: ChartBarIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
+  ],
+
+  "Drycleaning": [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    {
+      label: "POS",
+      href: `/admin/${adminSlug}/service-pos`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Calendar",
+      href: `/admin/${adminSlug}/calendar`,
+      icon: CalendarIcon,
+    },
+    {
+      label: "Services",
+      href: `/admin/${adminSlug}/services`,
+      icon: WrenchScrewdriverIcon,
+    },
+    {
+      label: "Transport",
+      href: `/admin/${adminSlug}/transport`,
+      icon: HomeIcon,
+      subItems: [
+        {
+          label: "Vehicles",
+          href: `/admin/${adminSlug}/booking-transport-vehicles`,
+        },
+        { label: "Routes", href: `/admin/${adminSlug}/transport-routes` },
+        { label: "Drivers", href: `/admin/${adminSlug}/transport-drivers` },
+        { label: "Schedules", href: `/admin/${adminSlug}/transport-schedules` },
+        {
+          label: "Maintenance Records",
+          href: `/admin/${adminSlug}/transport-maintenance-records`,
+        },
+        { label: "Fuel Logs", href: `/admin/${adminSlug}/transport-fuel-logs` },
+        // {
+        //   label: "Assignments",
+        //   href: `/admin/${adminSlug}/transport-assignments`,
+        // },
+        { label: "Incidents", href: `/admin/${adminSlug}/transport-incidents` },
+        { label: "Reports", href: `/admin/${adminSlug}/transport-reports` },
+      ],
+    },
+    {
+      label: "Bookings",
+      icon: CalendarIcon,
+      subItems: [
+        {
+          label: "Manage Appointments",
+          href: `/admin/${adminSlug}/appointments`,
+        },
+        { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
+        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
+      ],
+    },
+    // { label: "Appointments", href: `/admin/${adminSlug}/appointments`, icon: ClipboardDocumentListIcon },
+    // { label: "Clients", href: `/admin/${adminSlug}/storeclients`, icon: UsersIcon },
+    {
+      label: "blogs",
+      href: `/admin/${adminSlug}/blogs`,
+      icon: WrenchScrewdriverIcon,
+    },
+    {
+      label: "Reports",
+      href: `/admin/${adminSlug}/revenuereport`,
+      icon: ChartBarIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
+  ],
+
   "Portfolio & Personal Branding": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     {

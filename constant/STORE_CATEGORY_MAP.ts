@@ -475,11 +475,37 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
 
   "Service Provider": [
     "Services",
+    "Drycleaning",
+    "Plumbing",
+    "Electrical",
+    "Landscaping",
+    "Transportation",
+    "IT Services",
+    "Beauty Services",
+    "Barbershop",
+    "Tutoring",
+    "Booking & Appointments",
+    "Event Planning",
     "Home And Garden", // e.g., cleaning services + selling cleaning supplies
     "Health And Beauty", // e.g., spa services + related products
   ],
 
-  "Booking & Appointments": ["Booking & Appointments", "Services"],
+  "Booking & Appointments": [
+    "Booking & Appointments",
+    "Services",
+    "Drycleaning",
+    "Plumbing",
+    "Electrical",
+    "Landscaping",
+    "Transportation",
+    "IT Services",
+    "Beauty Services",
+    "Barbershop",
+    "Tutoring",
+    "Event Planning",
+    "Home And Garden", // e.g., cleaning services + selling cleaning supplies
+    "Health And Beauty", // e.g., spa services + related products
+  ],
 
   "Portfolio & Personal Branding": [
     "Portfolio & Personal Branding",
@@ -522,7 +548,12 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
 
   "SaaS & Web Apps": ["SaaS & Web Apps", "Digital Goods & Subscriptions"],
 
-  "Media & Entertainment": ["Media & Entertainment", "Music", "Books", "Book Store"],
+  "Media & Entertainment": [
+    "Media & Entertainment",
+    "Music",
+    "Books",
+    "Book Store",
+  ],
 
   "Finance & Legal": ["Finance & Legal", "Services"],
 
@@ -621,6 +652,52 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Comics & Graphic Novels",
     "E-books",
     "Audiobooks",
+    "Other",
+  ],
+
+  Drycleaning: [
+    "Drycleaning",
+    "Booking & Appointments",
+    "Services",
+    "Drycleaning",
+    "Plumbing",
+    "Electrical",
+    "Landscaping",
+    "Transportation",
+    "IT Services",
+    "Beauty Services",
+    "Barbershop",
+    "Tutoring",
+    "Event Planning",
+    "Home And Garden", // e.g., cleaning services + selling cleaning supplies
+    "Health And Beauty", // e.g., spa services + related products
+    "Clothing Care Services",
+    "Alterations & Tailoring",
+    "Laundry Services",
+    "Specialty Cleaning",
+    "Other",
+  ],
+
+  Barbershop: [
+    "Barbershop",
+    "Booking & Appointments",
+    "Services",
+    "Drycleaning",
+    "Plumbing",
+    "Electrical",
+    "Landscaping",
+    "Transportation",
+    "IT Services",
+    "Beauty Services",
+    "Barbershop",
+    "Tutoring",
+    "Event Planning",
+    "Home And Garden", // e.g., cleaning services + selling cleaning supplies
+    "Health And Beauty", // e.g., spa services + related products
+    "Haircuts & Styling",
+    "Shaving & Grooming",
+    "Beard Care",
+    "Hair Treatments",
     "Other",
   ],
 

@@ -172,6 +172,13 @@ const EcommerceBookLayout = dynamic(
     import("@/components/site/layouts/EcommerceBookLayout/EcommerceBookLayout"),
 );
 
+const DrycleaningBookingsLayout = dynamic(
+  () =>
+    import(
+      "@/components/site/layouts/DrycleaningBookingsLayout/DrycleaningBookingsLayout"
+    ),
+);
+
 import { ReactNode } from "react";
 import { StoreForm } from "../../../types/typings";
 
@@ -284,6 +291,9 @@ const categoryHeaderFooterLayoutMap: Record<
   "modern fashion store": FashionLayout,
 
   "delivery & logistics": DeliveryLayout,
+
+  "barbershop": BarbershopBookingsLayout,
+  "drycleaning": DrycleaningBookingsLayout,
 
   other: DefaultLayout,
   Other: DefaultLayout,
