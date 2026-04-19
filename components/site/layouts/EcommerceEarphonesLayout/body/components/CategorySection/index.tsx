@@ -12,13 +12,16 @@ import {
   ChevronRightIcon
 } from "@heroicons/react/24/outline";
 
-const FALLBACK_IMAGE_URL = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2000&auto=format&fit=crop";
+const FALLBACK_IMAGE_URL =
+  "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2000&auto=format&fit=crop";
 
-const customLoader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
+const customLoader = ({ src, width, quality }: any) =>
+  `${src}?w=${width}&q=${quality || 75}`;
 
 /* -------------------------------------------------------------------------- */
 /* Animations */
 /* -------------------------------------------------------------------------- */
+
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.15 } },
@@ -26,16 +29,16 @@ const containerVariants: Variants = {
 
 const cardVariants: Variants = {
   hidden: { opacity: 0, y: 30, scale: 0.95 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
+  visible: {
+    opacity: 1,
+    y: 0,
     scale: 1,
-    transition: { type: "spring", stiffness: 80, damping: 15 } 
+    transition: { type: "spring", stiffness: 80, damping: 15 },
   },
 };
 
 /* -------------------------------------------------------------------------- */
-/* Sub-Components */
+/* Sub Components */
 /* -------------------------------------------------------------------------- */
 
 function SubcategoryPill({ sub, index }: { sub: ISubcategory; index: number }) {
@@ -45,26 +48,50 @@ function SubcategoryPill({ sub, index }: { sub: ISubcategory; index: number }) {
       whileInView={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.05 }}
     >
-      <Link href={`/earphonesecommerce/products?subcategory=${sub.slug || sub.name}`}>
-        <div className="group relative bg-white/5 border border-white/10 p-6 rounded-3xl transition-all duration-500 hover:bg-white/10 hover:border-white/20 overflow-hidden">
+      <Link
+        href={`/earphonesecommerce/products?subcategory=${sub.slug || sub.name}`}
+      >
+        <div
+          className="
+            group relative p-6 rounded-3xl transition-all duration-500 overflow-hidden
+            border bg-black/5 border-black/10
+            hover:bg-black/10
+            dark:bg-white/5 dark:border-white/10 dark:hover:bg-white/10
+          "
+        >
           <div className="relative flex items-center justify-between z-10">
             <div>
-               <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-1 block">Series {index + 1}</span>
-               <span className="font-black text-lg text-white uppercase tracking-tighter">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] block mb-1
+                text-gray-500 dark:text-white/30">
+                Series {index + 1}
+              </span>
+              <span className="font-black text-lg uppercase tracking-tighter
+                text-gray-900 dark:text-white">
                 {sub.name}
               </span>
             </div>
-            <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-500">
+
+            <div
+              className="
+                w-10 h-10 rounded-full border flex items-center justify-center transition-all duration-500
+                border-black/10 group-hover:bg-black group-hover:text-white
+                dark:border-white/10 dark:group-hover:bg-white dark:group-hover:text-black
+              "
+            >
               <ChevronRightIcon className="h-5 w-5" />
             </div>
           </div>
-          {/* Audio Waveform Decor */}
+
+          {/* Decorative waveform */}
           <div className="absolute bottom-0 right-10 flex gap-1 opacity-10 group-hover:opacity-30 transition-opacity">
             {[...Array(5)].map((_, i) => (
-              <div 
-                key={i} 
-                className="w-1 bg-white rounded-full animate-pulse" 
-                style={{ height: `${Math.random() * 20 + 10}px`, animationDelay: `${i * 0.2}s` }} 
+              <div
+                key={i}
+                className="w-1 rounded-full bg-black dark:bg-white animate-pulse"
+                style={{
+                  height: `${Math.random() * 20 + 10}px`,
+                  animationDelay: `${i * 0.2}s`,
+                }}
               />
             ))}
           </div>
@@ -76,7 +103,8 @@ function SubcategoryPill({ sub, index }: { sub: ISubcategory; index: number }) {
 
 function CategoryPortal({ cat, index }: { cat: IStoreCategory; index: number }) {
   const [hovered, setHovered] = useState(false);
-  const imageUrl = (cat as any).imageUrl || (cat as any).image || FALLBACK_IMAGE_URL;
+  const imageUrl =
+    (cat as any).imageUrl || (cat as any).image || FALLBACK_IMAGE_URL;
 
   return (
     <motion.div
@@ -85,12 +113,21 @@ function CategoryPortal({ cat, index }: { cat: IStoreCategory; index: number }) 
       onMouseLeave={() => setHovered(false)}
       className="relative h-[500px] w-full group cursor-pointer"
     >
-      <Link href={`/earphonesecommerce/products?category=${cat.categoryId || cat.categoryId || cat.displayName}`} className="block h-full w-full">
-        <div className="relative h-full w-full overflow-hidden rounded-[3rem] border border-white/10 bg-[#0a0a0a]">
-          <motion.div 
+      <Link
+        href={`/earphonesecommerce/products?category=${cat.categoryId || cat.displayName}`}
+        className="block h-full w-full"
+      >
+        <div
+          className="
+            relative h-full w-full overflow-hidden rounded-[3rem] border
+            bg-black border-black/10
+            dark:bg-[#0a0a0a] dark:border-white/10
+          "
+        >
+          <motion.div
             animate={{ scale: hovered ? 1.05 : 1, opacity: hovered ? 0.7 : 0.5 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute inset-0 h-full w-full"
+            className="absolute inset-0"
           >
             <Image
               src={imageUrl}
@@ -106,26 +143,34 @@ function CategoryPortal({ cat, index }: { cat: IStoreCategory; index: number }) 
           <div className="absolute inset-0 p-10 flex flex-col justify-end">
             <div className="flex items-center gap-3 mb-4">
               <span className="h-[2px] w-10 bg-white" />
-              <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-white/40">Portal 0{index + 1}</span>
+              <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-white/40">
+                Portal 0{index + 1}
+              </span>
             </div>
-            
-            <h3 className="text-4xl font-black text-white tracking-tighter uppercase italic leading-none mb-6">
+
+            <h3 className="text-4xl font-black uppercase italic leading-none mb-6 tracking-tighter text-white">
               {cat.displayName}
             </h3>
 
-            <div className="overflow-hidden">
-               <motion.div 
-                 animate={{ y: hovered ? 0 : 40 }}
-                 className="flex items-center justify-between text-white"
-               >
-                 <span className="text-[10px] font-black uppercase tracking-widest border-b border-white/50 pb-1">Enter Frequency</span>
-                 <ArrowUpRightIcon className="w-6 h-6" />
-               </motion.div>
-            </div>
+            <motion.div
+              animate={{ y: hovered ? 0 : 40 }}
+              className="flex items-center justify-between text-white"
+            >
+              <span className="text-[10px] font-black uppercase tracking-widest border-b border-white/50 pb-1">
+                Enter Frequency
+              </span>
+              <ArrowUpRightIcon className="w-6 h-6" />
+            </motion.div>
           </div>
 
-          <div className="absolute top-8 right-8 h-14 w-14 rounded-full bg-white/5 backdrop-blur-2xl border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
-             <Squares2X2Icon className="w-6 h-6 text-white" />
+          <div
+            className="
+              absolute top-8 right-8 h-14 w-14 rounded-full backdrop-blur-2xl border
+              bg-white/5 border-white/10
+              flex items-center justify-center transition-transform duration-500 group-hover:scale-110
+            "
+          >
+            <Squares2X2Icon className="w-6 h-6 text-white" />
           </div>
         </div>
       </Link>
@@ -137,7 +182,11 @@ function CategoryPortal({ cat, index }: { cat: IStoreCategory; index: number }) 
 /* Main Section */
 /* -------------------------------------------------------------------------- */
 
-export default function CategoriesSectionAudiophile({ store }: { store: StoreForm | null }) {
+export default function CategoriesSectionAudiophile({
+  store,
+}: {
+  store: StoreForm | null;
+}) {
   const categories = useMemo(() => {
     return (store?.StoreCategory ?? [])
       .filter((c) => c.visible ?? true)
@@ -157,42 +206,50 @@ export default function CategoriesSectionAudiophile({ store }: { store: StoreFor
     return list.slice(0, 8);
   }, [categories, isFew]);
 
-  const primaryColor = store?.themeSettings?.primaryColor || '#FFFFFF';
-
   return (
-    <section className="relative bg-[#050505] py-32 overflow-hidden">
+    <section className="relative py-32 overflow-hidden bg-white dark:bg-[#050505]">
       <div className="container mx-auto max-w-7xl px-6 relative z-10">
-        
         {/* Editorial Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-12">
           <div className="max-w-2xl">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               className="flex items-center gap-4 mb-6"
             >
-              <SparklesIcon className="w-5 h-5 text-white/40" />
-              <span className="text-xs font-bold tracking-[.5em] uppercase text-white/30">Premium Audio Modules</span>
+              <SparklesIcon className="w-5 h-5 text-gray-400 dark:text-white/40" />
+              <span className="text-xs font-bold tracking-[.5em] uppercase text-gray-500 dark:text-white/30">
+                Premium Audio Modules
+              </span>
             </motion.div>
 
-            <motion.h2 
+            <motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              className="text-6xl md:text-8xl font-black text-white tracking-tighter leading-[0.85] uppercase italic"
+              className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.85] uppercase italic
+                text-gray-900 dark:text-white"
             >
               Select Your <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white/40 to-transparent">
+              <span
+                className="
+                  text-transparent bg-clip-text
+                  bg-gradient-to-r from-gray-900 via-gray-500 to-transparent
+                  dark:from-white dark:via-white/40
+                "
+              >
                 Sonic Path.
               </span>
             </motion.h2>
           </div>
 
-          <motion.p 
-             initial={{ opacity: 0 }}
-             whileInView={{ opacity: 1 }}
-             className="text-white/30 text-xl font-light max-w-xs leading-relaxed italic"
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            className="text-xl font-light max-w-xs leading-relaxed italic
+              text-gray-600 dark:text-white/30"
           >
-            Precision tuned categories for the discerning listener. Pure sound, zero compromise.
+            Precision tuned categories for the discerning listener. Pure sound,
+            zero compromise.
           </motion.p>
         </div>
 
@@ -202,27 +259,33 @@ export default function CategoriesSectionAudiophile({ store }: { store: StoreFor
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 ${isFew ? 'lg:flex lg:justify-center' : ''}`}
+          className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 ${
+            isFew ? "lg:flex lg:justify-center" : ""
+          }`}
         >
           {categories.map((cat, idx) => (
-            <div key={cat.id} className={isFew ? 'w-full lg:w-[450px]' : ''}>
-                <CategoryPortal cat={cat} index={idx} />
+            <div key={cat.id} className={isFew ? "w-full lg:w-[450px]" : ""}>
+              <CategoryPortal cat={cat} index={idx} />
             </div>
           ))}
         </motion.div>
 
-        {/* Subcategory Grid (Functional Integration) */}
+        {/* Subcategories */}
         <AnimatePresence>
           {isFew && subcategoriesForGrid.length > 0 && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 60 }}
               whileInView={{ opacity: 1, y: 0 }}
-              className="mt-32 pt-32 border-t border-white/5"
+              className="mt-32 pt-32 border-t border-black/5 dark:border-white/5"
             >
               <div className="flex items-center gap-8 mb-16">
-                <span className="font-black text-xs uppercase tracking-[0.6em] text-white/20 whitespace-nowrap">Dive into Detail</span>
-                <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+                <span className="font-black text-xs uppercase tracking-[0.6em] whitespace-nowrap
+                  text-gray-400 dark:text-white/20">
+                  Dive into Detail
+                </span>
+                <div className="h-px flex-1 bg-gradient-to-r from-black/10 to-transparent dark:from-white/10" />
               </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {subcategoriesForGrid.map((sub, idx) => (
                   <SubcategoryPill key={sub.id || idx} sub={sub} index={idx} />
@@ -232,15 +295,23 @@ export default function CategoriesSectionAudiophile({ store }: { store: StoreFor
           )}
         </AnimatePresence>
 
-        {/* Footer Link */}
-        <motion.div 
+        {/* Footer CTA */}
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           className="mt-32 flex justify-center"
         >
-          <Link href="/earphonesecommerce/categories" className="group relative px-16 py-6 rounded-full border border-white/10 transition-all">
-            <div className="absolute inset-0 bg-white scale-y-0 group-hover:scale-y-100 transition-transform duration-500 origin-bottom rounded-full" />
-            <span className="relative z-10 text-white group-hover:text-black font-black uppercase tracking-[0.2em] text-xs flex items-center gap-4">
+          <Link
+            href="/earphonesecommerce/categories"
+            className="
+              group relative px-16 py-6 rounded-full border transition-all
+              border-black/10 dark:border-white/10
+            "
+          >
+            <div className="absolute inset-0 scale-y-0 group-hover:scale-y-100 origin-bottom transition-transform duration-500 rounded-full
+              bg-black dark:bg-white" />
+            <span className="relative z-10 font-black uppercase tracking-[0.2em] text-xs flex items-center gap-4
+              text-black dark:text-white group-hover:text-white dark:group-hover:text-black">
               Explore Full Universe <ArrowUpRightIcon className="w-5 h-5" />
             </span>
           </Link>

@@ -35,10 +35,10 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
   const listToUse = testimonials && testimonials.length > 0 ? testimonials : sampletestimonials;
 
   return (
-    <section className="relative py-32 bg-[#050505] overflow-hidden border-t border-white/5">
+    <section className="relative py-32 bg-white dark:bg-[#050505] transition-colors duration-300 overflow-hidden border-t border-black/5 dark:border-white/5">
       {/* Background HUD Decals */}
-      <div className="absolute top-0 right-0 p-10 opacity-[0.02] pointer-events-none select-none">
-        <ChatBubbleBottomCenterIcon className="w-96 h-96 text-white" />
+      <div className="absolute top-0 right-0 p-10 opacity-[0.03] dark:opacity-[0.02] pointer-events-none select-none">
+        <ChatBubbleBottomCenterIcon className="w-96 h-96 text-black dark:text-white" />
       </div>
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -48,14 +48,14 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primary }} />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Network Feedback</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-black/40 dark:text-white/40">Network Feedback</span>
             </div>
-            <h2 className="text-5xl md:text-8xl font-black text-white tracking-tighter italic uppercase leading-[0.8]">
+            <h2 className="text-5xl md:text-8xl font-black text-black dark:text-white tracking-tighter italic uppercase leading-[0.8]">
               Trusted by <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white/40 to-white/5">The Squad.</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-black via-black/40 to-black/10 dark:from-white dark:via-white/40 dark:to-white/5">The Squad.</span>
             </h2>
           </div>
-          <p className="text-white/30 font-mono text-[10px] uppercase tracking-widest max-w-[180px] text-left md:text-right">
+          <p className="text-black/30 dark:text-white/30 font-mono text-[10px] uppercase tracking-widest max-w-[180px] text-left md:text-right">
             Real-time verified transmissions from our global operators.
           </p>
         </div>
@@ -69,45 +69,52 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: idx * 0.1 }}
               viewport={{ once: true }}
-              className={`relative p-8 md:p-12 rounded-[2.5rem] bg-white/[0.03] border border-white/5 group hover:bg-white/[0.06] hover:border-white/20 transition-all duration-500
+              className={`relative p-8 md:p-12 rounded-[2.5rem] bg-zinc-50 dark:bg-white/[0.03] border border-black/5 dark:border-white/5 group hover:bg-white dark:hover:bg-white/[0.06] hover:border-black/10 dark:hover:border-white/20 transition-all duration-500 shadow-sm hover:shadow-xl dark:shadow-none
                 ${idx === 0 ? 'lg:col-span-7' : idx === 1 ? 'lg:col-span-5' : 'lg:col-span-12'}`}
             >
               {/* Massive Quote Mark Decor */}
-              <span className="absolute top-6 right-10 text-8xl font-black italic text-white/[0.03] group-hover:text-white/[0.05] transition-colors pointer-events-none">
+              <span className="absolute top-6 right-10 text-8xl font-black italic text-black/[0.03] dark:text-white/[0.03] group-hover:text-black/[0.06] dark:group-hover:text-white/[0.05] transition-colors pointer-events-none">
                 &rdquo;
               </span>
 
               <div className="flex flex-col h-full justify-between">
                 <div>
                   <div className="flex items-center gap-4 mb-8">
-                    <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/10 p-1 group-hover:border-primary-color transition-colors" style={{ borderColor: idx % 2 === 0 ? primary : 'rgba(255,255,255,0.1)' }}>
+                    <div 
+                      className="relative w-12 h-12 rounded-full overflow-hidden border p-1 transition-colors" 
+                      style={{ borderColor: idx % 2 === 0 ? primary : 'rgba(0,0,0,0.05)' }}
+                    >
                       <img 
                         src={t.avatarUrl || ''} 
                         alt={t.authorName || ''} 
-                        className="w-full h-full rounded-full object-cover grayscale brightness-125"
+                        className="w-full h-full rounded-full object-cover grayscale brightness-110 dark:brightness-125"
                       />
                     </div>
                     <div>
-                      <h3 className="text-white font-black italic uppercase tracking-widest text-sm">
+                      <h3 className="text-black dark:text-white font-black italic uppercase tracking-widest text-sm">
                         {t.authorName}
                       </h3>
-                      <p className="text-[10px] text-white/40 uppercase font-bold tracking-tighter">Verified Client</p>
+                      <p className="text-[10px] text-black/40 dark:text-white/40 uppercase font-bold tracking-tighter">Verified Client</p>
                     </div>
                   </div>
 
-                  <p className="text-xl md:text-2xl font-medium text-white/80 leading-relaxed italic tracking-tight">
+                  <p className="text-xl md:text-2xl font-medium text-black/80 dark:text-white/80 leading-relaxed italic tracking-tight">
                     &ldquo;{t.quote}&rdquo;
                   </p>
                 </div>
 
-                {/* Tactical Footer for the card */}
-                <div className="mt-12 pt-6 border-t border-white/5 flex items-center justify-between">
+                {/* Tactical Footer */}
+                <div className="mt-12 pt-6 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
                   <div className="flex gap-1">
                     {[1, 2, 3, 4, 5].map((s) => (
-                      <div key={s} className="w-1.5 h-1.5 rounded-full bg-white/10 group-hover:bg-primary-color" style={{ backgroundColor: s <= 4 ? primary : undefined }} />
+                      <div 
+                        key={s} 
+                        className="w-1.5 h-1.5 rounded-full bg-black/10 dark:bg-white/10" 
+                        style={{ backgroundColor: s <= 4 ? primary : undefined }} 
+                      />
                     ))}
                   </div>
-                  <span className="font-mono text-[8px] text-white/10 uppercase tracking-widest group-hover:text-white/30 transition-colors">
+                  <span className="font-mono text-[8px] text-black/10 dark:text-white/10 uppercase tracking-widest group-hover:text-black/30 dark:group-hover:text-white/30 transition-colors">
                     REF_ID: #00{idx + 124}
                   </span>
                 </div>
@@ -118,11 +125,11 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
 
         {/* Dynamic Footer Counter */}
         <div className="mt-20 flex justify-center">
-          <div className="inline-flex items-center gap-4 px-6 py-3 rounded-full border border-white/5 bg-white/[0.02]">
-            <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Aggregate Rating</span>
+          <div className="inline-flex items-center gap-4 px-6 py-3 rounded-full border border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] transition-colors">
+            <span className="text-[10px] font-black text-black/40 dark:text-white/40 uppercase tracking-[0.3em]">Aggregate Rating</span>
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-black text-white italic">4.9</span>
-              <span className="text-[10px] font-bold text-white/20">/ 5.0</span>
+              <span className="text-2xl font-black text-black dark:text-white italic">4.9</span>
+              <span className="text-[10px] font-bold text-black/20 dark:text-white/20">/ 5.0</span>
             </div>
           </div>
         </div>

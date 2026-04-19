@@ -60,7 +60,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute top-4 right-4 z-10 p-2.5 bg-[#25D366] text-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+          className="absolute top-4 right-4 z-10 p-2.5 bg-[#25D366] text-white rounded-full shadow-lg transition-all duration-300 hover:scale-110"
           title="Ask an Expert"
         >
           <WhatsAppIcon className="w-5 h-5" />

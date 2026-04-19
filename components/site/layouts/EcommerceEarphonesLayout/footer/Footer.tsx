@@ -27,20 +27,23 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-[#050505] text-white pt-24 pb-12 border-t border-white/5 relative overflow-hidden">
+    <footer className="bg-zinc-50 dark:bg-[#050505] text-black dark:text-white pt-24 pb-12 border-t border-black/5 dark:border-white/5 relative overflow-hidden transition-colors duration-300">
       {/* Background Decor */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-primary-color/5 blur-[120px] pointer-events-none" style={{ backgroundColor: `${primary}11` }} />
+      <div 
+        className="absolute top-0 right-0 w-96 h-96 blur-[120px] pointer-events-none opacity-[0.08]" 
+        style={{ backgroundColor: primary }} 
+      />
       
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-20">
           
-          {/* Brand & Mission - Col Span 4 */}
+          {/* Brand & Mission */}
           <div className="lg:col-span-4 space-y-8">
             <div className="space-y-4">
-               <h2 className="text-3xl font-black italic tracking-tighter uppercase leading-none">
+              <h2 className="text-3xl font-black italic tracking-tighter uppercase leading-none">
                 {name || 'Storefront'}
               </h2>
-              <p className="text-white/40 text-sm font-medium leading-relaxed max-w-sm">
+              <p className="text-black/50 dark:text-white/40 text-sm font-medium leading-relaxed max-w-sm">
                 {description || 'Setting the benchmark for high-performance gear and digital architectural standards since 2026.'}
               </p>
             </div>
@@ -56,7 +59,7 @@ export default function Footer() {
                     href={`${s.url}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-white/20 transition-colors"
+                    className="text-black/20 dark:text-white/20 transition-colors"
                   >
                     {icon}
                   </motion.a>
@@ -65,15 +68,15 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Links Grid - Col Span 8 */}
+          {/* Links Grid */}
           <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-10">
             {/* Column 1: Directory */}
             <div className="space-y-6">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">Directory</h4>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-black/30 dark:text-white/20">Directory</h4>
               <ul className="space-y-4">
                 {['About', 'Contact', 'Privacy Policy', 'Terms of Service'].map((item) => (
                   <li key={item}>
-                    <Link href={`/earphonesecommerce/${item.toLowerCase().replace(/ /g, '-')}`} className="text-sm font-bold text-white/40 hover:text-white transition-colors">
+                    <Link href={`/earphonesecommerce/${item.toLowerCase().replace(/ /g, '-')}`} className="text-sm font-bold text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors">
                       {item}
                     </Link>
                   </li>
@@ -83,11 +86,11 @@ export default function Footer() {
 
             {/* Column 2: Logistics */}
             <div className="space-y-6">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">Logistics</h4>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-black/30 dark:text-white/20">Logistics</h4>
               <ul className="space-y-4">
                 {['Help Center', 'Returns', 'Shipping', 'Track Order'].map((item) => (
                   <li key={item}>
-                    <Link href={`/earphonesecommerce/${item.toLowerCase().replace(/ /g, '-')}`} className="text-sm font-bold text-white/40 hover:text-white transition-colors">
+                    <Link href={`/earphonesecommerce/${item.toLowerCase().replace(/ /g, '-')}`} className="text-sm font-bold text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors">
                       {item}
                     </Link>
                   </li>
@@ -97,21 +100,21 @@ export default function Footer() {
 
             {/* Column 3: Transmission */}
             <div className="space-y-6">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">Transmission</h4>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-black/30 dark:text-white/20">Transmission</h4>
               <div className="space-y-4">
                 {contactEmail && (
-                  <a href={`mailto:${contactEmail}`} className="block text-xs font-mono text-white/40 hover:text-white transition-colors">
+                  <a href={`mailto:${contactEmail}`} className="block text-xs font-mono text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors">
                     {contactEmail}
                   </a>
                 )}
                 {contactPhone && (
-                  <a href={`tel:${contactPhone}`} className="block text-xs font-mono text-white/40 hover:text-white transition-colors">
+                  <a href={`tel:${contactPhone}`} className="block text-xs font-mono text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors">
                     {contactPhone}
                   </a>
                 )}
                 <div className="pt-4 flex items-center gap-2">
                    <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primary }} />
-                   <span className="text-[8px] font-black uppercase tracking-widest text-white/20">Uplink Active</span>
+                   <span className="text-[8px] font-black uppercase tracking-widest text-black/30 dark:text-white/20">Uplink Active</span>
                 </div>
               </div>
             </div>
@@ -119,22 +122,22 @@ export default function Footer() {
         </div>
 
         {/* Bottom Utility Bar */}
-        <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="pt-10 border-t border-black/5 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-4">
-            <CpuChipIcon className="w-5 h-5 text-white/10" />
-            <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest">
+            <CpuChipIcon className="w-5 h-5 text-black/10 dark:text-white/10" />
+            <p className="text-[10px] font-bold text-black/30 dark:text-white/20 uppercase tracking-widest">
               &copy; {new Date().getFullYear()} {name}. Built on v3.0 Protocol.
             </p>
           </div>
           
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-2 grayscale opacity-20 hover:opacity-100 transition-opacity cursor-help">
-              <GlobeAltIcon className="w-4 h-4" />
-              <span className="text-[10px] font-black uppercase tracking-tighter">Global / EN</span>
+              <GlobeAltIcon className="w-4 h-4 text-black dark:text-white" />
+              <span className="text-[10px] font-black uppercase tracking-tighter text-black dark:text-white">Global / EN</span>
             </div>
             <div className="flex gap-4">
                {['Sitemap', 'FAQ', 'Support'].map(link => (
-                 <Link key={link} href={`/earphonesecommerce/${link.toLowerCase()}`} className="text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-white transition-colors">
+                 <Link key={link} href={`/earphonesecommerce/${link.toLowerCase()}`} className="text-[10px] font-black uppercase tracking-widest text-black/30 dark:text-white/20 hover:text-black dark:hover:text-white transition-colors">
                    {link}
                  </Link>
                ))}
@@ -142,16 +145,17 @@ export default function Footer() {
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-1.5 px-4 py-2 mt-8 border border-stone-800/50 rounded-full bg-stone-900/50 backdrop-blur-sm text-center mx-auto w-max">
-        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Powered by</span>
+
+      {/* Powered By Badge */}
+      <div className="flex items-center gap-1.5 px-4 py-2 mt-8 border border-black/5 dark:border-stone-800/50 rounded-full bg-black/[0.03] dark:bg-stone-900/50 backdrop-blur-sm text-center mx-auto w-max transition-colors">
+        <span className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-slate-400">Powered by</span>
         <a 
           href="https://salesmanpro.site" 
           className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-700 transition-colors"
         >
           SalesmanPro.site
         </a>
-    </div>
-
+      </div>
     </footer>
   );
 }

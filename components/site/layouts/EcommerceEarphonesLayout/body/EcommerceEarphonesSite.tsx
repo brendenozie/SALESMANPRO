@@ -4,16 +4,18 @@ import React, { useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import useSWR from 'swr';
 import HeroSlider from './components/HeroSlider';
-import { StoreForm, MarketListingForm } from '@/types/typings';
+import { StoreForm } from '@/types/typings';
 
-// Above-the-fold components - statically imported
+// Above-the-fold components - statically imported for LCP
 import CategorySection from './components/CategorySection';
 import ContactSection from './components/ContactSection/ContactSection';
 
-// Loading skeleton
-const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
+// Loading skeleton: Adapted for dual-mode visibility
+const SectionSkeleton = () => (
+  <div className="h-96 w-full animate-pulse bg-zinc-100 dark:bg-zinc-900/50 rounded-[2.5rem] my-12 border border-black/5 dark:border-white/5" />
+);
 
-// 🧠 Dynamically import client-side sections (with skeleton fallback)
+// 🧠 Dynamic imports for heavy or client-only sections
 const DynamicPopularProducts = dynamic(() => import('./components/PopularProducts'), {
   loading: () => <SectionSkeleton />,
   ssr: false,
@@ -42,9 +44,7 @@ type EcommerceSiteProps = {
   companyId: string;
 };
 
-// Generic fetcher
 const fetcher = (url: string) => fetch(url).then(res => res.json());
-
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProps) {
@@ -52,58 +52,55 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
     heroSlides,
     id,
     themeSettings = {},
-    StoreCategory = [],
     marketplaceListings = [],
-    testimonials = [],
     awards = [],
     promotions = [],
-    bannerUrl,
     CoreValues = [],
   } = pageData;
 
-  // Fetch client-side data
+  // Fetch client-side testimonials
   const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
 
-  // ⚙️ Only include featured listings on SSR
+  // Featured listings optimization
   const featured = useMemo(
     () => (marketplaceListings || []).filter((item) => item.isFeatured).slice(0, 12),
     [marketplaceListings]
   );
 
   return (
-    <div className="bg-[#050505] min-h-screen selection:bg-primary-color selection:text-white">
+    <div className="bg-white dark:bg-[#050505] min-h-screen transition-colors duration-500 selection:bg-zinc-900 dark:selection:bg-white selection:text-white dark:selection:text-black">
       
-      {/* 01. THE ENTRY: Full Bleed */}
+      {/* 01. THE ENTRY: Hero Layer */}
       <section className="relative z-30">
         <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
       </section>
 
-      {/* 02. DISCOVERY LAYER: Overlapping the Hero slightly */}
+      {/* 02. DISCOVERY LAYER: Overlapping Category Section */}
       <div className="relative z-40 mt-10 md:mt-20">
         <CategorySection store={pageData} />
       </div>
 
-      {/* 03. PRODUCT ENGINE: High contrast grid */}
+      {/* 03. PRODUCT ENGINE: High contrast grid surfaces */}
       <main className="relative z-10 space-y-32 py-24">
         
-        {/* Popular Products with subtle HUD background */}
+        {/* Popular Products with responsive grid overlay */}
         <div className="relative">
-           <div className="absolute top-0 left-0 w-full h-full bg-[url('/grid.svg')] bg-center opacity-[0.03] pointer-events-none" />
+           <div className="absolute top-0 left-0 w-full h-full bg-[url('/grid.svg')] bg-center opacity-[0.05] dark:opacity-[0.03] pointer-events-none invert dark:invert-0" />
            <DynamicPopularProducts id={id} />
         </div>
 
-        {/* First Promo: High-Impact Visual Break */}
+        {/* First Promo Break */}
         <PromoSection promotions={promotions} />
 
-        {/* Trending & Best Sells: Grouped by a shared background plate */}
-        <section className="bg-white/[0.02] py-24 border-y border-white/5">
+        {/* Trending & Best Sells: Unified background plate */}
+        <section className="bg-zinc-50 dark:bg-white/[0.02] py-24 border-y border-black/5 dark:border-white/5 transition-colors duration-300">
           <div className="space-y-32">
             <DynamicTrending id={id} />
             <DynamicDailyBestSells id={id} />
           </div>
         </section>
 
-        {/* Second Promo: The 'Glitch' or Neon break */}
+        {/* Second Promo Break */}
         <SecondPromoSection promotions={promotions} />
 
         {/* Comprehensive Product Feed */}
@@ -114,22 +111,17 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
         />
       </main>
 
-      {/* 04. VALIDATION STACK: The Grey/Dark Modules */}
-      <div className="relative z-20">
-        {/* Core Values / Metrics */}
+      {/* 04. VALIDATION STACK: Social Proof & Reliability */}
+      <div className="relative z-20 space-y-0">
         <MetricsSection coreValues={CoreValues} />
-        
-        {/* Recognition / Awards */}
         <AwardsSection awards={awards} />
-        
-        {/* Feedback / Testimonials */}
         {testimonialsData?.data && (
           <TestimonialsSection testimonials={testimonialsData.data} />
         )}
       </div>
 
-      {/* 05. TERMINAL STACK: The Final Sync */}
-      <footer className="relative z-10 border-t border-white/10 bg-[#030303]">
+      {/* 05. TERMINAL STACK: The Footer Sequence */}
+      <footer className="relative z-10 border-t border-black/5 dark:border-white/10 bg-zinc-50 dark:bg-[#030303] transition-colors duration-300">
         <NewsletterSection />
         <ContactSection />
       </footer>

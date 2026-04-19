@@ -73,7 +73,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute top-3 right-3 z-10 p-2.5 bg-white/90 backdrop-blur-sm text-[#128C7E] rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+          className="absolute top-3 right-3 z-10 p-2.5 bg-white/90 backdrop-blur-sm text-[#128C7E] rounded-full shadow-sm transition-all duration-300 hover:scale-110"
           title="Talk to Beekeeping Expert"
         >
           <WhatsAppIcon className="w-4 h-4" />

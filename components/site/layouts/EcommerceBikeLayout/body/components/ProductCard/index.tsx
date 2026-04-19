@@ -79,7 +79,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             alt={name}
             loader={loader}
             fill
-            className="object-contain p-6 transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-3"
+            className="object-cover transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-3"
           />
         </Link>
 

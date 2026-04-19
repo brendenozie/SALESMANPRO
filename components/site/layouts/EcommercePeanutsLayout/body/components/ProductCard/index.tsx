@@ -64,7 +64,7 @@ export default function ProductCard({ product }: { product: MarketListingForm })
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute top-4 right-4 z-10 p-2.5 bg-white/90 backdrop-blur-md text-[#128C7E] rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+          className="absolute top-4 right-4 z-10 p-2.5 bg-white/90 backdrop-blur-md text-[#128C7E] rounded-full shadow-sm transition-all duration-300 hover:scale-110"
           title="Ask the Roaster"
         >
           <WhatsAppIcon className="w-4 h-4" />

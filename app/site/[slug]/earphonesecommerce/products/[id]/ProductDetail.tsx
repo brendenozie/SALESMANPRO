@@ -16,6 +16,7 @@ import {
 } from '@heroicons/react/24/solid';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { MarketListingForm } from '@/types/typings';
+import ProductCard from '@/components/site/layouts/EcommerceEarphonesLayout/body/components/ProductCard';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -181,13 +182,7 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
         <h2 className="text-2xl font-black mb-10">Complete your setup</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {related?.slice(0, 4).map((item) => (
-            <motion.div key={item.id} whileHover={{ y: -10 }} className="group cursor-pointer">
-              <div className="relative aspect-square bg-white dark:bg-zinc-900 rounded-3xl mb-4 overflow-hidden border border-zinc-100 dark:border-zinc-800 p-6 transition-all group-hover:shadow-xl">
-                 <Image src={item.images[0]?.url || item.images[0]} alt={item.name} loader={loader} fill className="object-contain p-4 group-hover:scale-110 transition-transform duration-500" />
-              </div>
-              <h4 className="font-bold text-sm truncate">{item.name}</h4>
-              <p className="text-emerald-500 font-black text-xs">KSh {item.finalPrice?.toLocaleString()}</p>
-            </motion.div>
+            <ProductCard product={item} />
           ))}
         </div>
       </section>

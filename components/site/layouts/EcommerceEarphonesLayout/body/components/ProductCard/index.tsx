@@ -1,6 +1,6 @@
 'use client';
 
-import { MinusIcon, PlusIcon, StarIcon, TrashIcon, ShoppingCartIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
+import { MinusIcon, PlusIcon, StarIcon, TrashIcon, ShoppingCartIcon } from '@heroicons/react/24/solid';
 import React from 'react';
 import { MarketListingForm } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,7 +11,6 @@ import Image from 'next/image';
 
 const loader = ({ src }: { src: string }) => src;
 
-// Stealth-style WhatsApp Icon for Tech/Audio vibe
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24">
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.72.937 3.658 1.435 5.63 1.435h.008c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
@@ -25,9 +24,8 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   const primary = storeFormData?.themeSettings?.primaryColor || '#1d4ed8';
   const quantity = cart.find((item: any) => item.id === product.id)?.quantity || 0;
 
-  // WhatsApp Config - Tech Support Focused
   const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
-  const message = encodeURIComponent(`AUDIO_INQUIRY: I'm interested in the "${product.name}". How is the bass response and active noise cancellation (ANC) performance?`);
+  const message = encodeURIComponent(`INQUIRY: I'm interested in the "${product.name}"`);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
   const discount = product.sellingPrice && product.finalPrice && product.sellingPrice > product.finalPrice
@@ -37,51 +35,50 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   return (
     <motion.div 
       whileHover={{ y: -10 }}
-      className="group relative flex flex-col bg-[#0a0a0a] rounded-[2rem] border border-white/5 overflow-hidden transition-all duration-500 hover:border-white/20 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+      className="group relative flex flex-col bg-white dark:bg-[#0a0a0a] rounded-[2.5rem] border border-black/5 dark:border-white/5 overflow-hidden transition-all duration-500 hover:shadow-2xl dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
     >
       {/* Media Container */}
-      <div className="relative h-80 w-full bg-[#111] overflow-hidden">
+      <div className="relative h-80 w-full bg-zinc-50 dark:bg-[#111] transition-colors overflow-hidden">
         <Link href={`/earphonesecommerce/products/${product.id}`} className="block h-full w-full">
           <Image
             src={product.images?.[0] || 'https://via.placeholder.com/300'}
             alt={product.name}
             fill
             loader={loader}
-            className="object-contain p-8 transition-transform duration-700 group-hover:scale-110 group-hover:rotate-2"
+            className="object-contain p-10 transition-transform duration-700 group-hover:scale-110"
           />
         </Link>
         
-        {/* Dark Scrim */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent opacity-60 pointer-events-none" />
+        {/* Scrim */}
+        <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-[#0a0a0a] via-transparent to-transparent opacity-40 pointer-events-none" />
 
         {/* Badge Overlay */}
-        <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+        <div className="absolute top-6 left-6 z-10 flex flex-col gap-2">
           {discount && (
-            <div className="bg-white text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter italic">
+            <div className="bg-black dark:bg-white text-white dark:text-black text-[10px] font-black px-3 py-1 rounded-full uppercase italic">
               -{discount}% OFF
             </div>
           )}
-          <div className="bg-white/10 backdrop-blur-md text-white/70 text-[8px] font-bold px-3 py-1 rounded-full uppercase tracking-widest border border-white/5">
+          <div className="bg-black/5 dark:bg-white/10 backdrop-blur-md text-black/60 dark:text-white/70 text-[8px] font-bold px-3 py-1 rounded-full uppercase tracking-widest border border-black/5 dark:border-white/5">
             Original Global
           </div>
         </div>
 
-        {/* Floating WhatsApp Comms Icon */}
+        {/* WhatsApp Comms Icon */}
         <a 
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute top-4 right-4 z-10 p-2.5 bg-white/5 backdrop-blur-md text-[#25D366] rounded-full border border-white/10 transition-all duration-300 hover:scale-110"
-          title="Speak to Audio Expert"
+          className="absolute top-6 right-6 z-10 p-2.5 bg-white dark:bg-white/5 shadow-lg dark:shadow-none backdrop-blur-md text-[#25D366] rounded-full border border-black/5 dark:border-white/10 transition-all duration-300 hover:scale-110"
         >
           <WhatsAppIcon className="w-4 h-4" />
         </a>
       </div>
 
       {/* Content Area */}
-      <div className="p-6">
-        <div className="flex justify-between items-start mb-1">
-          <h4 className="text-lg font-bold text-white uppercase tracking-tighter leading-tight line-clamp-1">
+      <div className="p-8">
+        <div className="flex justify-between items-start mb-2">
+          <h4 className="text-xl font-black text-black dark:text-white italic tracking-tighter uppercase leading-tight line-clamp-1">
             {product.name}
           </h4>
         </div>
@@ -101,13 +98,13 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
         </div>
 
         {/* Price & Action Row */}
-        <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
+        <div className="flex items-center justify-between mt-auto pt-6 border-t border-black/5 dark:border-white/5">
           <div className="flex flex-col">
-            <span className="text-white font-black text-xl italic leading-none">
+            <span className="text-black dark:text-white font-black text-2xl italic leading-none">
               Kes {(product.finalPrice ?? 0).toLocaleString()}
             </span>
             {product.sellingPrice && product.sellingPrice > (product.finalPrice ?? 0) && (
-              <span className="text-white/30 line-through text-[10px] mt-1">
+              <span className="text-black/30 dark:text-white/30 line-through text-xs mt-1">
                 Kes {product.sellingPrice.toLocaleString()}
               </span>
             )}
@@ -120,23 +117,23 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                   initial={{ opacity: 0, scale: 0.5 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.5 }}
-                  className="flex items-center bg-white/5 rounded-full p-1 border border-white/10"
+                  className="flex items-center bg-zinc-100 dark:bg-white/5 rounded-2xl p-1 border border-black/5 dark:border-white/10"
                 >
-                  <button onClick={() => decreaseQuantity(product.id)} className="p-2 text-white hover:text-red-500 transition-colors">
+                  <button onClick={() => decreaseQuantity(product.id)} className="p-2 text-black dark:text-white hover:text-red-500 transition-colors">
                     {quantity === 1 ? <TrashIcon className="h-4 w-4" /> : <MinusIcon className="h-4 w-4" />}
                   </button>
-                  <span className="px-2 text-white font-bold text-xs">{quantity}</span>
-                  <button onClick={() => addToCart(product)} className="p-2 text-white hover:text-white/100 transition-colors">
+                  <span className="px-3 text-black dark:text-white font-black text-sm">{quantity}</span>
+                  <button onClick={() => addToCart(product)} className="p-2 text-black dark:text-white hover:opacity-70 transition-opacity">
                     <PlusIcon className="h-4 w-4" />
                   </button>
                 </motion.div>
               ) : (
                 <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => addToCart(product)}
-                  className="bg-white p-4 rounded-2xl text-black transition-all shadow-xl hover:shadow-white/10"
-                  style={{ backgroundColor: quantity === 0 ? 'white' : primary }}
+                  className="bg-black dark:bg-white p-5 rounded-[1.5rem] text-white dark:text-black transition-all shadow-xl"
+                  style={{ backgroundColor: quantity === 0 ? undefined : primary }}
                 >
                   <ShoppingCartIcon className="h-5 w-5" />
                 </motion.button>
