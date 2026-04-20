@@ -2,84 +2,86 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
-// Using Heroicons as requested
+import { motion } from 'framer-motion';
 import {
-    BoltIcon,
+    SparklesIcon,
     ShieldCheckIcon,
-    ChartBarIcon,
-    UserGroupIcon,
+    TruckIcon,
+    ArrowPathIcon,
     StarIcon,
     ArrowRightIcon,
-    CheckBadgeIcon,
-} from '@heroicons/react/24/solid';
+    CloudIcon,
+} from '@heroicons/react/24/outline';
 
 const IconMap: { [key: string]: React.ElementType } = {
-    BoltIcon, ShieldCheckIcon, ChartBarIcon, UserGroupIcon, StarIcon, CheckBadgeIcon
+    SparklesIcon, ShieldCheckIcon, TruckIcon, ArrowPathIcon, StarIcon, CloudIcon
 };
 
 const loader = ({ src }: { src: string }) => src;
 
-export default function FeaturesSection({ name, description, themeSettings, CoreValues }: any) {
+export default function FeaturesSection({ name, description, CoreValues }: any) {
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-    const primaryColor = themeSettings?.primaryColor || '#C5A267'; // Premium Gold
 
     const defaultFeatures = [
         {
-            icon: 'CheckBadgeIcon',
-            title: 'Master Craftsmanship',
-            highlight: 'Craft',
-            description: 'Our barbers are artisans trained in classic techniques and modern trends.',
-            imageUrl: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2070&auto=format&fit=crop',
+            icon: 'SparklesIcon',
+            title: 'Organic Cleaning',
+            highlight: 'Pure',
+            description: 'We use 100% eco-friendly, non-toxic detergents that are gentle on your skin and the planet.',
+            imageUrl: 'https://images.unsplash.com/photo-1545173153-936277f9f80a?q=80&w=2070&auto=format&fit=crop',
+        },
+        {
+            icon: 'TruckIcon',
+            title: 'Express Delivery',
+            highlight: 'Fast',
+            description: 'Scheduled pickups and 24-hour turnaround for your busiest days. We value your time.',
+            imageUrl: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070&auto=format&fit=crop',
         },
         {
             icon: 'ShieldCheckIcon',
-            title: 'Premium Sanctuary',
-            highlight: 'Privacy',
-            description: 'A private, high-end environment designed for the modern gentleman to unwind.',
-            imageUrl: 'https://images.unsplash.com/photo-1621605815841-aa887ad436b7?q=80&w=2070&auto=format&fit=crop',
-        },
-        {
-            icon: 'StarIcon',
-            title: 'Tailored Experience',
-            highlight: 'Style',
-            description: 'Every consultation is unique, ensuring your cut matches your lifestyle and face shape.',
-            imageUrl: 'https://images.unsplash.com/photo-1512690196236-407675713c32?q=80&w=2070&auto=format&fit=crop',
+            title: 'Fabric Protection',
+            highlight: 'Care',
+            description: 'Every garment is inspected by experts and handled with specialized care for long-lasting wear.',
+            imageUrl: 'https://images.unsplash.com/photo-1582735689369-4fe89db7114c?q=80&w=2070&auto=format&fit=crop',
         },
     ];
 
     const features = CoreValues?.length ? CoreValues : defaultFeatures;
 
     return (
-        <section className="relative py-24 px-6 bg-[#0a0a0a] overflow-hidden">
-            {/* Background Texture - Subtle Grain */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
+        <section className="relative py-32 px-6 bg-white dark:bg-[#080a0c] transition-colors duration-700 overflow-hidden">
+            {/* Soft Ambient Background Orbs */}
+            <div className="absolute top-0 right-0 w-[40%] h-[40%] bg-teal-100/30 dark:bg-teal-900/10 blur-[120px] rounded-full pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-[30%] h-[30%] bg-blue-100/20 dark:bg-blue-900/10 blur-[100px] rounded-full pointer-events-none" />
 
             <div className="max-w-7xl mx-auto relative z-10">
                 
-                {/* 1. EDITORIAL HEADER */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+                {/* 1. FRESH HEADER */}
+                <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-20 gap-10">
                     <div className="max-w-2xl">
-                        <motion.span 
-                            initial={{ opacity: 0 }}
-                            whileInView={{ opacity: 1 }}
-                            className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#C5A267] mb-4 block"
+                        <motion.div 
+                            initial={{ opacity: 0, x: -20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            className="flex items-center gap-2 mb-4"
                         >
-                            The Excellence Standard
-                        </motion.span>
-                        <h2 className="text-4xl md:text-6xl font-light text-white leading-tight">
-                            Why choose <span className="font-serif italic text-[#C5A267]">{name || 'the Craft'}?</span>
+                            <span className="h-[2px] w-8 bg-teal-500" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-teal-600 dark:text-teal-400">
+                                The Gold Standard
+                            </span>
+                        </motion.div>
+                        <h2 className="text-5xl md:text-7xl font-bold text-slate-900 dark:text-white leading-[1.1] tracking-tight">
+                            Elevating the <span className="italic font-serif font-light text-teal-500">Service</span> <br /> of {name || 'the Craft'}.
                         </h2>
                     </div>
-                    <p className="text-gray-400 text-lg max-w-sm font-light leading-relaxed border-l border-white/10 pl-6">
-                        {description || "Elevating the standard of male grooming through precision, atmosphere, and heritage."}
+                    <p className="text-slate-500 dark:text-slate-400 text-lg max-w-sm font-medium leading-relaxed border-l-2 border-teal-500/20 pl-8">
+                        {description || "Redefining garment care through sustainable technology, artisanal precision, and absolute convenience."}
                     </p>
                 </div>
 
-                {/* 2. INTERACTIVE FEATURE GRID */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* 2. BENTO FEATURE GRID */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {features.map((feature: any, idx: number) => {
-                        const Icon = IconMap[feature.icon] || CheckBadgeIcon;
+                        const Icon = IconMap[feature.icon] || SparklesIcon;
                         const isHovered = hoveredIndex === idx;
 
                         return (
@@ -87,76 +89,89 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                                 key={idx}
                                 onMouseEnter={() => setHoveredIndex(idx)}
                                 onMouseLeave={() => setHoveredIndex(null)}
-                                className="relative group h-[500px] rounded-3xl overflow-hidden cursor-pointer bg-neutral-900 border border-white/5"
-                                initial={{ opacity: 0, y: 20 }}
+                                className="relative group h-[550px] rounded-[2.5rem] overflow-hidden cursor-pointer bg-slate-50 dark:bg-[#111]/40 border border-slate-200 dark:border-white/5 transition-all duration-500"
+                                initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ delay: idx * 0.1 }}
+                                transition={{ delay: idx * 0.1, duration: 0.8 }}
                             >
-                                {/* Background Image with Parallax effect */}
-                                <div className="absolute inset-0 z-0 transition-transform duration-700 ease-out scale-110 group-hover:scale-100">
+                                {/* High-Speed Background Image */}
+                                <div className="absolute inset-0 z-0 overflow-hidden">
                                     <Image
                                         src={feature.imageUrl}
                                         alt={feature.title}
                                         fill
-                                        className="object-cover opacity-40 group-hover:opacity-60 transition-opacity"
+                                        className="object-cover opacity-10 group-hover:opacity-30 group-hover:scale-105 transition-all duration-1000 grayscale group-hover:grayscale-0"
                                         loader={loader}
                                     />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent" />
+                                    {/* Glass Overlay */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-[#080a0c] via-transparent to-transparent" />
                                 </div>
 
-                                {/* Content */}
+                                {/* Content Container */}
                                 <div className="absolute inset-0 z-10 p-10 flex flex-col justify-end">
-                                    <div className="mb-6">
-                                        <div 
-                                            className="w-12 h-12 rounded-full flex items-center justify-center mb-6 border border-[#C5A267]/30 bg-[#C5A267]/10 backdrop-blur-sm"
-                                        >
-                                            <Icon className="w-6 h-6 text-[#C5A267]" />
-                                        </div>
-                                        <h3 className="text-2xl font-bold text-white mb-2 tracking-tight">
-                                            {feature.title}
-                                        </h3>
-                                        <p className="text-[#C5A267] font-serif italic text-lg mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                            Mastering {feature.highlight || 'the details'}
-                                        </p>
+                                    <div 
+                                        className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8 bg-white dark:bg-white/10 shadow-xl dark:shadow-none group-hover:scale-110 group-hover:bg-teal-500 transition-all duration-500"
+                                    >
+                                        <Icon className="w-8 h-8 text-teal-600 dark:text-teal-400 group-hover:text-white" />
                                     </div>
 
-                                    <div className="overflow-hidden h-0 group-hover:h-24 transition-all duration-500 ease-in-out">
-                                        <p className="text-gray-400 text-sm leading-relaxed">
+                                    <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-3 tracking-tight">
+                                        {feature.title}
+                                    </h3>
+                                    
+                                    <div className="overflow-hidden">
+                                        <p className="text-teal-600 dark:text-teal-400 font-serif italic text-xl mb-4 transform transition-transform duration-500 translate-y-0 group-hover:translate-y-0">
+                                            {feature.highlight || 'Impeccable'} Standards
+                                        </p>
+                                        
+                                        <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
                                             {feature.description}
                                         </p>
-                                        <div className="mt-4 flex items-center text-[10px] font-bold uppercase tracking-widest text-white">
-                                            Explore more <ArrowRightIcon className="w-3 h-3 ml-2" />
-                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors">
+                                        Learn More <ArrowRightIcon className="w-4 h-4 ml-2 group-hover:translate-x-2 transition-transform" />
                                     </div>
                                 </div>
 
-                                {/* Bottom Accent Line */}
+                                {/* Animated Top Edge Glow */}
                                 <motion.div 
-                                    className="absolute bottom-0 left-0 h-1 bg-[#C5A267] z-20"
+                                    className="absolute top-0 left-0 h-[2px] bg-gradient-to-r from-teal-400 to-blue-500 z-20"
                                     initial={{ width: 0 }}
                                     animate={{ width: isHovered ? "100%" : "0%" }}
+                                    transition={{ duration: 0.4 }}
                                 />
                             </motion.div>
                         );
                     })}
                 </div>
 
-                {/* 3. SUBTLE FOOTER TRUST BAR */}
+                {/* 3. TRUST FOOTER */}
                 <motion.div 
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    transition={{ delay: 0.5 }}
-                    className="mt-16 pt-8 border-t border-white/5 flex flex-wrap justify-center md:justify-between items-center gap-8"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    className="mt-24 pt-10 border-t border-slate-200 dark:border-white/5 flex flex-col md:flex-row items-center justify-between gap-10"
                 >
-                    <div className="flex items-center gap-2 text-white/40 text-xs font-bold uppercase tracking-widest">
-                        <StarIcon className="w-4 h-4 text-[#C5A267]" />
-                        Top Rated in the District
+                    <div className="flex items-center gap-3">
+                        <div className="flex -space-x-2">
+                            {[1, 2, 3, 4].map((i) => (
+                                <div key={i} className="w-10 h-10 rounded-full border-2 border-white dark:border-[#080a0c] bg-slate-200 overflow-hidden">
+                                    <Image src={`https://i.pravatar.cc/100?img=${i+10}`} alt="user" width={40} height={40} loader={loader} />
+                                </div>
+                            ))}
+                        </div>
+                        <div className="text-sm">
+                            <div className="flex items-center gap-1">
+                                {[1, 2, 3, 4, 5].map((s) => <StarIcon key={s} className="w-3 h-3 text-amber-400 fill-amber-400" />)}
+                            </div>
+                            <p className="text-slate-500 dark:text-slate-400 font-bold">4.9/5 from 2k+ Local Customers</p>
+                        </div>
                     </div>
-                    <div className="flex gap-12 opacity-30 grayscale hover:grayscale-0 transition-all">
-                        {/* Placeholder for partner logos/awards */}
-                        <span className="text-white font-serif text-xl italic">GQ Magazine</span>
-                        <span className="text-white font-serif text-xl italic">Vogue Men</span>
-                        <span className="text-white font-serif text-xl italic">Barber Digest</span>
+
+                    <div className="flex gap-8 opacity-40 grayscale hover:grayscale-0 transition-all duration-500 text-slate-900 dark:text-white font-serif text-lg italic">
+                        <span>The NY Times</span>
+                        <span>EcoWash Daily</span>
+                        <span>Urban Living</span>
                     </div>
                 </motion.div>
             </div>

@@ -1,25 +1,26 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
 import { 
     CheckIcon, 
     StarIcon, 
     UsersIcon, 
     CalendarDaysIcon, 
-    BriefcaseIcon,
+    TruckIcon,
     ArrowPathIcon,
     SparklesIcon,
     ShieldCheckIcon,
-    ChevronRightIcon
+    ChevronRightIcon,
+    GlobeAltIcon,
+    InboxStackIcon
 } from '@heroicons/react/24/outline'; 
-import { PricingTier, Stat } from '@/types/typings';
 
 const StatIconMap: { [key: string]: React.ElementType } = {
-    "Bookings Completed": CalendarDaysIcon,
-    "Verified Professionals": BriefcaseIcon,
-    "Happy Customers": UsersIcon,
-    "Average Rating": StarIcon,
+    "Items Processed": InboxStackIcon,
+    "Delivery Partners": TruckIcon,
+    "Active Subscriptions": UsersIcon,
+    "Satisfaction Score": StarIcon,
 };
 
 const CountUp = ({ end, duration = 2000, decimals = 0 }: { end: number; duration?: number; decimals?: number }) => {
@@ -45,42 +46,43 @@ const CountUp = ({ end, duration = 2000, decimals = 0 }: { end: number; duration
 
 export default function PricingAndStatsSection({ stats, pricingTiers }: any) {
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'annually'>('monthly');
-    const gold = '#C5A267';
 
     const sampleStats = [
-        { label: "Rituals Completed", value: 150.7, suffix: 'K', icon: "CalendarDaysIcon" },
-        { label: "Master Artisans", value: 12.5, suffix: 'K', icon: "BriefcaseIcon" },
-        { label: "Elite Members", value: 98.4, suffix: 'K', icon: "UsersIcon" },
-        { label: "Satisfaction", value: 4.9, suffix: '/5', icon: "StarIcon" },
+        { label: "Items Processed", value: 420.5, suffix: 'K+', icon: "InboxStackIcon" },
+        { label: "Delivery Partners", value: 85, suffix: '', icon: "TruckIcon" },
+        { label: "Active Subscriptions", value: 12.8, suffix: 'K', icon: "UsersIcon" },
+        { label: "Satisfaction Score", value: 4.9, suffix: '/5', icon: "StarIcon" },
     ];
     
     const normalizedStats = stats && stats.length > 0 ? stats : sampleStats;
 
     return (
-        <section className="relative py-24 lg:py-40 bg-[#050505] overflow-hidden text-white">
-            {/* Ambient Background Gradient */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-[#C5A267]/5 blur-[160px] rounded-full pointer-events-none" />
+        <section className="relative py-24 lg:py-40 bg-white dark:bg-[#080a0c] overflow-hidden transition-colors duration-700">
+            {/* Ambient Background Glow (Teal for Cleanliness) */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-teal-500/5 blur-[120px] rounded-full pointer-events-none" />
 
             <div className="max-w-7xl mx-auto px-6 relative z-10">
                 
-                {/* --- STATS: THE SCOREBOARD OF EXCELLENCE --- */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-800/50 border border-zinc-800 rounded-[2.5rem] overflow-hidden mb-40">
+                {/* --- STATS: THE OPERATIONAL PULSE --- */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-slate-200 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-[3rem] overflow-hidden mb-40 shadow-xl shadow-slate-200/50 dark:shadow-none">
                     {normalizedStats.map((stat: any, i: number) => {
                         const Icon = StatIconMap[stat.label] || SparklesIcon;
                         return (
                             <motion.div
                                 key={stat.label}
-                                initial={{ opacity: 0 }}
-                                whileInView={{ opacity: 1 }}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.1 }}
-                                className="bg-[#0A0A0A] p-10 lg:p-14 flex flex-col items-center text-center group hover:bg-[#0D0D0D] transition-colors"
+                                className="bg-white dark:bg-[#0A0A0A] p-10 lg:p-14 flex flex-col items-center text-center group hover:bg-slate-50 dark:hover:bg-[#0D0D0D] transition-colors"
                             >
-                                <Icon className="w-6 h-6 text-zinc-600 mb-6 group-hover:text-[#C5A267] transition-colors" />
-                                <h3 className="text-4xl lg:text-5xl font-black tracking-tighter mb-2">
-                                    <CountUp end={parseFloat(stat.value)} decimals={stat.label.includes('Satisfaction') ? 1 : 0} />
-                                    <span className="text-[#C5A267]">{stat.suffix || ''}</span>
+                                <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                    <Icon className="w-6 h-6 text-teal-600 dark:text-teal-400" />
+                                </div>
+                                <h3 className="text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
+                                    <CountUp end={parseFloat(stat.value)} decimals={stat.label.includes('Score') ? 1 : 0} />
+                                    <span className="text-teal-600 dark:text-teal-500">{stat.suffix || ''}</span>
                                 </h3>
-                                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500">{stat.label}</p>
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{stat.label}</p>
                             </motion.div>
                         );
                     })}
@@ -89,30 +91,30 @@ export default function PricingAndStatsSection({ stats, pricingTiers }: any) {
                 {/* --- PRICING HEADER --- */}
                 <div className="text-center mb-24">
                     <motion.div 
-                        initial={{ opacity: 0, y: 10 }}
-                        whileInView={{ opacity: 1, y: 0 }}
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
                         className="flex items-center justify-center gap-3 mb-6"
                     >
-                        <div className="h-px w-8 bg-[#C5A267]" />
-                        <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#C5A267]">Membership</span>
-                        <div className="h-px w-8 bg-[#C5A267]" />
+                        <div className="h-px w-8 bg-teal-500" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.5em] text-teal-600 dark:text-teal-400">Flexible Plans</span>
+                        <div className="h-px w-8 bg-teal-500" />
                     </motion.div>
-                    <h2 className="text-6xl md:text-8xl font-black tracking-tighter leading-none mb-12">
-                        CHOOSE YOUR <br />
-                        <span className="font-serif italic font-light text-zinc-700">Legacy.</span>
+                    <h2 className="text-6xl md:text-8xl font-bold tracking-tight text-slate-900 dark:text-white leading-none mb-12">
+                        CARE FOR EVERY <br />
+                        <span className="font-serif italic font-light text-slate-400 dark:text-zinc-700">Wardrobe.</span>
                     </h2>
 
-                    {/* Minimalist Toggle */}
-                    <div className="inline-flex items-center p-1 bg-zinc-900 border border-zinc-800 rounded-full">
+                    {/* Modern Toggle */}
+                    <div className="inline-flex items-center p-1.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl">
                         <button 
                             onClick={() => setBillingCycle('monthly')}
-                            className={`px-10 py-3 rounded-full text-[11px] font-black uppercase tracking-widest transition-all ${billingCycle === 'monthly' ? 'bg-[#C5A267] text-black' : 'text-zinc-500'}`}
+                            className={`px-10 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${billingCycle === 'monthly' ? 'bg-white dark:bg-teal-600 text-teal-600 dark:text-white shadow-lg shadow-teal-600/10' : 'text-slate-400'}`}
                         >
                             Monthly
                         </button>
                         <button 
                             onClick={() => setBillingCycle('annually')}
-                            className={`px-10 py-3 rounded-full text-[11px] font-black uppercase tracking-widest transition-all ${billingCycle === 'annually' ? 'bg-[#C5A267] text-black' : 'text-zinc-500'}`}
+                            className={`px-10 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${billingCycle === 'annually' ? 'bg-white dark:bg-teal-600 text-teal-600 dark:text-white shadow-lg shadow-teal-600/10' : 'text-slate-400'}`}
                         >
                             Annually
                         </button>
@@ -131,43 +133,45 @@ export default function PricingAndStatsSection({ stats, pricingTiers }: any) {
                                 transition={{ delay: i * 0.1, duration: 0.8 }}
                                 className={`relative flex flex-col p-12 rounded-[3rem] border transition-all duration-500 group ${
                                     featured 
-                                    ? 'bg-[#111] border-[#C5A267]/30 shadow-[0_0_80px_-20px_rgba(197,162,103,0.15)]' 
-                                    : 'bg-transparent border-zinc-800 hover:border-zinc-700'
+                                    ? 'bg-white dark:bg-[#111] border-teal-500/30 shadow-[0_40px_80px_-20px_rgba(20,184,166,0.1)]' 
+                                    : 'bg-transparent border-slate-200 dark:border-zinc-800 hover:border-teal-500/20'
                                 }`}
                             >
                                 {featured && (
-                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#C5A267] text-black text-[9px] font-black px-6 py-2 rounded-full tracking-[0.2em]">
-                                        RECOMMENDED
+                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-teal-600 text-white text-[9px] font-black px-6 py-2 rounded-full tracking-[0.2em] shadow-xl shadow-teal-600/20">
+                                        MOST POPULAR
                                     </div>
                                 )}
 
                                 <div className="mb-12">
-                                    <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-[#C5A267] mb-4">{tier.name}</h4>
+                                    <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-teal-600 dark:text-teal-500 mb-4">{tier.name}</h4>
                                     <div className="flex items-baseline gap-2">
-                                        <span className="text-6xl font-black tracking-tighter">
+                                        <span className="text-6xl font-bold tracking-tight text-slate-900 dark:text-white">
                                             ${billingCycle === 'monthly' ? tier.monthlyPrice : Math.round(tier.monthlyPrice * 0.8)}
                                         </span>
-                                        <span className="text-zinc-600 font-serif italic text-xl">
+                                        <span className="text-slate-400 font-serif italic text-xl">
                                             /{billingCycle === 'monthly' ? 'mo' : 'yr'}
                                         </span>
                                     </div>
                                 </div>
 
-                                <ul className="flex-1 space-y-5 mb-12">
+                                <ul className="flex-1 space-y-6 mb-12">
                                     {tier.features.map((feature: string, idx: number) => (
                                         <li key={idx} className="flex items-start gap-4 group/item">
-                                            <CheckIcon className="w-5 h-5 text-[#C5A267] shrink-0" />
-                                            <span className="text-sm text-zinc-400 font-medium group-hover/item:text-zinc-200 transition-colors">{feature}</span>
+                                            <div className="w-5 h-5 rounded-full bg-teal-500/10 flex items-center justify-center shrink-0">
+                                                <CheckIcon className="w-3 h-3 text-teal-600" />
+                                            </div>
+                                            <span className="text-sm text-slate-500 dark:text-zinc-400 font-medium group-hover/item:text-teal-600 transition-colors">{feature}</span>
                                         </li>
                                     ))}
                                 </ul>
 
                                 <button className={`w-full py-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] transition-all flex items-center justify-center gap-3 ${
                                     featured 
-                                    ? 'bg-[#C5A267] text-black hover:bg-[#d4b57e]' 
-                                    : 'bg-zinc-900 text-white border border-zinc-800 hover:bg-zinc-800'
+                                    ? 'bg-teal-600 text-white hover:bg-teal-700 shadow-xl shadow-teal-600/20' 
+                                    : 'bg-slate-900 dark:bg-zinc-900 text-white border border-transparent hover:bg-black'
                                 }`}>
-                                    Secure Membership
+                                    Select Plan
                                     <ChevronRightIcon className="w-4 h-4" />
                                 </button>
                             </motion.div>
@@ -176,21 +180,21 @@ export default function PricingAndStatsSection({ stats, pricingTiers }: any) {
                 </div>
 
                 {/* --- FOOTER SYNC --- */}
-                <div className="mt-32 pt-12 border-t border-zinc-900 flex flex-col md:flex-row items-center justify-between gap-8">
-                    <div className="flex items-center gap-6">
+                <div className="mt-32 pt-12 border-t border-slate-100 dark:border-zinc-900 flex flex-col md:flex-row items-center justify-between gap-8">
+                    <div className="flex items-center gap-8">
                         <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Systems Operational</span>
+                            <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Express Delivery Active</span>
                         </div>
-                        <span className="text-zinc-800">|</span>
+                        <div className="hidden md:block w-px h-4 bg-slate-200 dark:bg-zinc-800" />
                         <div className="flex items-center gap-2">
-                            <ShieldCheckIcon className="w-4 h-4 text-zinc-600" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">PCI DSS Compliant</span>
+                            <ShieldCheckIcon className="w-4 h-4 text-slate-400" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Eco-Friendly Solvents</span>
                         </div>
                     </div>
                     
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-700">
-                        Prices Adjusted March 2026 • © {new Date().getFullYear()} Elite Rituals
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-700">
+                        Updated 2026 • © {new Date().getFullYear()} Pristine Laundry Co.
                     </p>
                 </div>
             </div>

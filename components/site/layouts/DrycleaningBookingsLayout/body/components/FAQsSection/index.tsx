@@ -1,52 +1,58 @@
-'use client';
+"use client";
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PlusIcon, MinusIcon } from '@heroicons/react/24/outline';
-import { SparklesIcon } from '@heroicons/react/24/solid';
+import { PlusIcon, MinusIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
 
 const defaultFaqs = [
   {
-    question: 'How do I initiate a ritual?',
-    answer: 'Our bespoke digital interface allows you to curate your experience. Select your desired practitioner and time, and our system will handle the logistics of your transformation.',
+    question: 'How do I schedule a collection?',
+    answer: 'Our seamless digital concierge allows you to book a pickup in seconds. Simply select your preferred window, and our uniformed couriers will handle the transition of your garments.',
   },
   {
-    question: 'How are practitioners vetted?',
-    answer: 'We employ a rigorous 7-tier verification process. Only the top 2% of professionals who demonstrate technical mastery and emotional intelligence are invited to join our collective.',
+    question: 'What is the "Atelier" cleaning process?',
+    answer: 'We treat every garment as a masterpiece. Our process combines eco-friendly, biodegradable solvents with hand-finishing techniques that preserve fiber integrity and color vibrancy.',
   },
   {
-    question: 'What is the cancellation protocol?',
-    answer: 'Time is our most valuable asset. Rituals can be rescheduled through your private dashboard up to 24 hours prior to the appointment without incurring a preservation fee.',
+    question: 'Can I track my garments in real-time?',
+    answer: 'Transparency is our standard. You will receive live updates from the moment of collection, through the expert cleaning phase, to the final inspection and delivery.',
+  },
+  {
+    question: 'What is your turnaround commitment?',
+    answer: 'Our standard ritual is completed within 24 to 48 hours. For those in need of immediate restoration, our Express Tier offers same-day service for orders placed before 10 AM.',
   },
 ];
 
-const FAQItem = ({ faq, isOpen, onClick, primaryColor }: any) => (
+const FAQItem = ({ faq, isOpen, onClick }: any) => (
   <motion.div 
     layout
-    className={`group relative border-b border-white/5 transition-all duration-700 ${isOpen ? 'bg-zinc-900/40' : 'hover:bg-zinc-900/20'}`}
+    className={`group border-b border-slate-100 dark:border-white/5 transition-all duration-500 ${isOpen ? 'bg-teal-50/30 dark:bg-teal-500/5' : 'hover:bg-slate-50 dark:hover:bg-white/5'}`}
   >
     <div 
       onClick={onClick}
-      className="flex justify-between items-center py-10 px-8 cursor-pointer"
+      className="flex justify-between items-center py-12 px-8 md:px-12 cursor-pointer"
     >
-      <div className="flex items-center gap-8">
-        <span className={`text-[10px] font-bold tracking-widest transition-colors duration-500 ${isOpen ? 'text-[#C5A267]' : 'text-zinc-700'}`}>
-          0{faq.index + 1}
+      <div className="flex items-center gap-10">
+        <span className={`text-[10px] font-black tracking-[0.3em] transition-colors duration-500 ${isOpen ? 'text-teal-600' : 'text-slate-300'}`}>
+          {faq.index < 9 ? `0${faq.index + 1}` : faq.index + 1}
         </span>
-        <h3 className={`text-xl md:text-2xl font-light tracking-tight transition-all duration-500 ${isOpen ? 'text-white translate-x-4' : 'text-zinc-400 group-hover:text-zinc-200'}`}>
+        <h3 className={`text-xl md:text-3xl font-bold tracking-tighter transition-all duration-500 ${isOpen ? 'text-slate-900 dark:text-white translate-x-2' : 'text-slate-500 dark:text-slate-400'}`}>
           {faq.question}
         </h3>
       </div>
 
-      <div className="relative w-12 h-12 flex items-center justify-center overflow-hidden">
+      <div className="relative w-14 h-14 flex items-center justify-center">
         <motion.div
-          animate={{ rotate: isOpen ? 180 : 0 }}
-          className={`absolute inset-0 border rounded-full transition-colors duration-500 ${isOpen ? 'border-[#C5A267] bg-[#C5A267]' : 'border-zinc-800'}`}
+          animate={{ 
+            rotate: isOpen ? 180 : 0,
+            scale: isOpen ? 1.1 : 1
+          }}
+          className={`absolute inset-0 rounded-full border-2 transition-colors duration-500 ${isOpen ? 'border-teal-600 bg-teal-600 shadow-lg shadow-teal-600/20' : 'border-slate-200 dark:border-slate-800'}`}
         />
         {isOpen ? (
-          <MinusIcon className="w-5 h-5 text-black relative z-10" />
+          <MinusIcon className="w-5 h-5 text-white relative z-10 stroke-[3]" />
         ) : (
-          <PlusIcon className="w-5 h-5 text-zinc-500 relative z-10" />
+          <PlusIcon className="w-5 h-5 text-slate-400 relative z-10 stroke-[3]" />
         )}
       </div>
     </div>
@@ -57,10 +63,10 @@ const FAQItem = ({ faq, isOpen, onClick, primaryColor }: any) => (
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: 'auto', opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.5, ease: [0.19, 1, 0.22, 1] }}
         >
-          <div className="px-24 pb-12">
-            <p className="text-lg text-zinc-500 leading-relaxed font-light max-w-2xl">
+          <div className="pl-28 md:pl-36 pr-12 pb-14">
+            <p className="text-lg md:text-xl text-slate-500 dark:text-slate-400 leading-relaxed font-light max-w-3xl">
               {faq.answer}
             </p>
           </div>
@@ -70,58 +76,61 @@ const FAQItem = ({ faq, isOpen, onClick, primaryColor }: any) => (
   </motion.div>
 );
 
-export default function FAQsSection({ faqs = defaultFaqs, themeSettings }: any) {
-  const [openIndex, setOpenIndex] = useState<number | null>(0); // First one open for visual impact
-  const primaryColor = themeSettings?.primaryColor || '#C5A267';
+export default function FAQsSection({ faqs = defaultFaqs }: any) {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="relative py-24 lg:py-48 bg-[#050505] overflow-hidden">
-      {/* Texture Overlay */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+    <section id="faq" className="relative py-24 lg:py-48 bg-white dark:bg-[#080a0c] overflow-hidden">
+      {/* Background Subtle Accent */}
+      <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-teal-500/5 blur-[120px] rounded-full pointer-events-none" />
       
       <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="grid lg:grid-cols-12 gap-20">
+        <div className="grid lg:grid-cols-12 gap-24">
           
+          {/* Header Side */}
           <div className="lg:col-span-4">
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
               className="sticky top-32"
             >
-              <div className="flex items-center gap-3 mb-8">
-                <div className="w-2 h-2 rounded-full bg-[#C5A267] animate-pulse" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#C5A267]">Information Suite</span>
+              <div className="flex items-center gap-4 mb-8">
+                <div className="h-px w-10 bg-teal-600" />
+                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-teal-600">Common Queries</span>
               </div>
               
-              <h2 className="text-6xl md:text-7xl font-black text-white leading-[0.85] tracking-tighter mb-10">
-                OFTEN <br />
-                <span className="font-serif italic font-light text-zinc-700 text-5xl md:text-6xl">Enquired.</span>
+              <h2 className="text-6xl md:text-7xl font-bold text-slate-900 dark:text-white leading-[0.85] tracking-tighter mb-10">
+                CLARITY ON <br />
+                <span className="font-serif italic font-light text-slate-300 dark:text-slate-700">The Ritual.</span>
               </h2>
               
-              <p className="text-lg text-zinc-500 font-light leading-relaxed mb-12">
-                Clarity is the ultimate luxury. Explore the intricacies of our collective operations.
+              <p className="text-xl text-slate-500 dark:text-slate-400 font-light leading-relaxed mb-12">
+                Luxury is as much about peace of mind as it is about the finish. Explore how we redefine care.
               </p>
 
-              <div className="p-8 rounded-3xl bg-zinc-900/50 border border-white/5 backdrop-blur-xl">
-                <SparklesIcon className="w-6 h-6 text-[#C5A267] mb-4" />
-                <p className="text-sm font-bold text-white mb-2">Still curious?</p>
-                <p className="text-xs text-zinc-500 mb-6">Our concierge is available for private consultation.</p>
-                <button className="text-[10px] font-black uppercase tracking-widest text-[#C5A267] hover:tracking-[0.2em] transition-all">
-                  Contact Support →
+              <div className="p-10 rounded-[3rem] bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 backdrop-blur-xl">
+                <div className="w-12 h-12 rounded-2xl bg-teal-600 flex items-center justify-center mb-6 shadow-lg shadow-teal-600/20">
+                    <QuestionMarkCircleIcon className="w-6 h-6 text-white" />
+                </div>
+                <p className="text-lg font-bold text-slate-900 dark:text-white mb-2">Unanswered?</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">Our concierge is standing by for a bespoke consultation.</p>
+                <button className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-teal-600 transition-all">
+                  Connect with us 
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
                 </button>
               </div>
             </motion.div>
           </div>
 
+          {/* FAQ Accordion Side */}
           <div className="lg:col-span-8">
-            <div className="border-t border-white/5">
+            <div className="border-t border-slate-100 dark:border-white/5">
               {faqs.map((faq: any, index: number) => (
                 <FAQItem 
                   key={index}
                   faq={{ ...faq, index }}
                   isOpen={openIndex === index}
                   onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                  primaryColor={primaryColor}
                 />
               ))}
             </div>
