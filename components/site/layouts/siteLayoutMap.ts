@@ -87,6 +87,7 @@ const EcommerceBookLayout = dynamic(
 
 import { ReactNode } from "react";
 import { StoreForm } from "../../../types/typings";
+import EcommerceMeatLayout from "./EcommerceMeatLayout/EcommerceMeatLayout";
 
 type LayoutHeaderFooterComponent = React.ComponentType<{
   params: { storeFormData: StoreForm };
@@ -106,6 +107,7 @@ export const categoryHeaderFooterLayoutMap: Record<
   "shoes store": EcommerceShoesLayout,
   "book-store": EcommerceBookLayout,
   "book store": EcommerceBookLayout,
+  "meat store": EcommerceMeatLayout,
   services: ServicesLayout,
   "service provider": ServicesLayout,
   bookings: BookingsLayout,
@@ -160,6 +162,7 @@ export const folderMap: Record<string, string> = {
   "shoes store": "EcommerceShoesLayout",
   "books-store": "EcommerceBookLayout",
   "books store": "EcommerceBookLayout",
+  "meat store": "EcommerceMeatLayout",
   services: "ServicesLayout",
   "service provider": "ServicesLayout",
   bookings: "BookingsLayout",
