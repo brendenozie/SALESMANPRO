@@ -77,7 +77,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="absolute top-4 right-4 z-30 bg-white/90 dark:bg-gray-800/90 p-2.5 rounded-full shadow-xl text-[#25D366] opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+          className="absolute top-4 right-4 z-30 bg-white/90 dark:bg-gray-800/90 p-2.5 rounded-full shadow-xl text-[#25D366] transition-all duration-300 hover:scale-110"
         >
           <WhatsAppIcon className="w-5 h-5" />
         </a>
