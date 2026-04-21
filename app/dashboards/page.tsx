@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'framer-motion'; // Ensure you're using 'framer-motion' or 'motion/react'
 import {
   BuildingStorefrontIcon,
   ArrowRightIcon,
   ArrowLeftOnRectangleIcon,
-  PlusIcon
+  PlusIcon,
+  ComputerDesktopIcon,
+  DevicePhoneMobileIcon
 } from '@heroicons/react/24/outline';
 import fit1 from "@/assets/fit1.png";
 import { useSession, signOut } from 'next-auth/react';
@@ -25,10 +27,6 @@ const WelcomePage = () => {
 
   const launchActions = [
     { title: "My Stores", desc: "Access your active locations", icon: <BuildingStorefrontIcon />, color: "text-blue-600", bg: "bg-blue-50", href: "/stores" },
-    //for placeholder purposes only - these features are not yet implemented
-    // { title: "Analytics", desc: "Performance overview", icon: <ChartBarIcon />, color: "text-emerald-600", bg: "bg-emerald-50", href: "/#" },
-    // { title: "Team", desc: "Manage permissions", icon: <UserGroupIcon />, color: "text-purple-600", bg: "bg-purple-50", href: "/#" },
-    // { title: "Settings", desc: "Global configuration", icon: <Cog6ToothIcon />, color: "text-slate-600", bg: "bg-slate-50", href: "/#" },
   ];
 
   return (
@@ -36,23 +34,22 @@ const WelcomePage = () => {
       {/* Top Bar */}
       <nav className="max-w-7xl mx-auto flex justify-between items-center mb-12">
         <div className="flex items-center gap-2">
-          {/* Brand */}
-              <div className="flex items-center gap-2 group">
-                <div className="relative">
-                  <img
-                    src={fit1.src}
-                    alt="Logo"
-                    className="w-8 h-8 md:w-9 md:h-9 object-contain group-hover:rotate-12 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-orange-500/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-                <span className="text-xl font-black tracking-tighter text-slate-900 dark:text-white transition-colors">
-                  Salesman<span className="text-orange-600">Pro</span>
-                </span>
-              </div>
+          <div className="flex items-center gap-2 group">
+            <div className="relative">
+              <img
+                src={fit1.src}
+                alt="Logo"
+                className="w-8 h-8 md:w-9 md:h-9 object-contain group-hover:rotate-12 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 bg-orange-500/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+            <span className="text-xl font-black tracking-tighter text-slate-900 dark:text-white transition-colors">
+              Salesman<span className="text-orange-600">Pro</span>
+            </span>
+          </div>
         </div>
         <button 
-          onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` })}
+          onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin || "/"}` })}
           className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500"
         >
           <ArrowLeftOnRectangleIcon className="w-6 h-6" />
@@ -67,7 +64,6 @@ const WelcomePage = () => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
           >
-            
             <h1 className="text-5xl md:text-6xl font-black mt-4 mb-6 tracking-tight leading-none">
               {greeting},<br />
               <span className="text-slate-400">{userName}.</span>
@@ -76,14 +72,34 @@ const WelcomePage = () => {
               Your ecosystem is ready. Select a module below to begin managing your commerce operations.
             </p>
             
-            <button 
-              onClick={() => window.location.href = '/stores/create'}
-              className="flex items-center gap-3 bg-black text-white px-6 py-4 rounded-xl font-bold hover:bg-slate-800 transition-all group"
-            >
-              <PlusIcon className="w-5 h-5" />
-              Launch New Store
-              <ArrowRightIcon className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-            </button>
+            <div className="flex flex-col gap-4">
+              <button 
+                onClick={() => window.location.href = '/stores/create'}
+                className="flex items-center justify-center gap-3 bg-black text-white px-6 py-4 rounded-xl font-bold hover:bg-slate-800 transition-all group w-full sm:w-fit"
+              >
+                <PlusIcon className="w-5 h-5" />
+                Launch New Store
+                <ArrowRightIcon className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+              </button>
+
+              {/* Download Buttons Section */}
+              <div className="flex flex-wrap gap-3 mt-4">
+                <a 
+                  href="http://salesmanpro.site/download-desktop/SalesmanProDesktop.application"
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:border-orange-500 transition-all shadow-sm"
+                >
+                  <ComputerDesktopIcon className="w-5 h-5 text-orange-600" />
+                  Desktop App
+                </a>
+                <button 
+                  onClick={() => alert("Mobile app coming soon to App Store and Play Store!")}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:border-orange-500 transition-all shadow-sm"
+                >
+                  <DevicePhoneMobileIcon className="w-5 h-5 text-orange-600" />
+                  Mobile App
+                </button>
+              </div>
+            </div>
           </motion.div>
         </div>
 
@@ -100,7 +116,7 @@ const WelcomePage = () => {
               className="group cursor-pointer bg-white border border-slate-200 p-8 rounded-[2rem] flex flex-col justify-between min-h-[220px] transition-all"
             >
               <div className={`w-14 h-14 ${action.bg} ${action.color} rounded-2xl flex items-center justify-center mb-4`}>
-                {React.cloneElement(action.icon as React.ReactElement, { className: "w-8 h-8" })}
+                {React.cloneElement(action.icon, { className: "w-8 h-8" })}
               </div>
               <div>
                 <h3 className="text-xl font-bold mb-1 group-hover:text-orange-500 transition-colors">{action.title}</h3>
