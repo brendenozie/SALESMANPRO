@@ -92,7 +92,6 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
     pathname.includes("_next") || // Double check static assets
     pathname.includes("favicon.ico");
 
-
   if (isDesktop && !session && !isAuthPage) {
     return NextResponse.redirect(new URL("/desktop-login", request.url));
   }
