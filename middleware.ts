@@ -88,9 +88,9 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
 
   // 2. ESCAPE FROM LOGIN PAGE
   // If we are on the desktop, have a session, and are sitting on the login page -> Go to Dashboard
-  if (isDesktop && session && pathname === "/desktop-login") {
-    return NextResponse.redirect(new URL("/dashboards", request.url));
-  }
+  // if (isDesktop && session && pathname === "/desktop-login") {
+  //   return NextResponse.redirect(new URL("/dashboards", request.url));
+  // }
   // 3. DESKTOP REDIRECT LOGIC
   // If user is on desktop, NOT logged in, and NOT already on the desktop-login page
   // Only redirect if NOT already on the desktop-login page
