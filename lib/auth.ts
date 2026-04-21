@@ -179,7 +179,17 @@ const getTenantInfo = (host: string) => {
 };
 
 // export const authOptions: NextAuthOptions = {
-export const authOptions = (reqHost?: string): NextAuthOptions => ({
+export const authOptions = (reqHost?: string): NextAuthOptions => {
+
+  // 1. Determine the dynamic cookie domain
+  const cleanHost = reqHost?.split(":")[0].toLowerCase() || "";
+  
+  // If the host belongs to your main ecosystem, use the wildcard to share cookies
+  // Otherwise, let it be undefined (defaults to the specific domain/localhost)
+  const isMainEcosystem = cleanHost.endsWith("salesmanpro.site");
+  const cookieDomain = isMainEcosystem ? ".salesmanpro.site" : undefined;
+
+  return {
   // httpOptions: {
   //   timeout: 10000, // Increase to 10s for slower network environments
   // },
@@ -517,7 +527,101 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
   pages: {
     signIn: "/signin",
   },
-});
+
+  // cookies: {
+  //     sessionToken: {
+  //       name: `next-auth.session-token`,
+  //       options: {
+  //         httpOnly: true,
+  //         sameSite: 'lax',
+  //         path: '/',
+  //         domain: cookieDomain, 
+  //         secure: true,
+  //       },
+  //     },
+  //     callbackUrl: {
+  //       name: `next-auth.callback-url`,
+  //       options: {
+  //         sameSite: 'lax',
+  //         path: '/',
+  //         domain: cookieDomain,
+  //         secure: true,
+  //       },
+  //     },
+  //     csrfToken: {
+  //       name: `next-auth.csrf-token`,
+  //       options: {
+  //         httpOnly: true,
+  //         sameSite: 'lax',
+  //         path: '/',
+  //         domain: cookieDomain,
+  //         secure: true,
+  //       },
+  //     },
+  //     // Apply the same logic to 'state' and 'pkceCodeVerifier'
+  //     state: {
+  //       name: `next-auth.state`,
+  //       options: {
+  //         httpOnly: true,
+  //         sameSite: 'lax',
+  //         path: '/',
+  //         domain: cookieDomain,
+  //         secure: true,
+  //       },
+  //     },
+  //   },
+  // cookies: {
+  //   sessionToken: {
+  //     name: `next-auth.session-token`,
+  //     options: {
+  //       httpOnly: true,
+  //       sameSite: 'lax',
+  //       path: '/',
+  //       domain: '.salesmanpro.site', // 👈 THE FIX: Note the leading dot
+  //       secure: true,
+  //     },
+  //   },
+  //   callbackUrl: {
+  //     name: `next-auth.callback-url`,
+  //     options: {
+  //       sameSite: 'lax',
+  //       path: '/',
+  //       domain: '.salesmanpro.site', // 👈 REQUIRED
+  //       secure: true,
+  //     },
+  //   },
+  //   csrfToken: {
+  //     name: `next-auth.csrf-token`,
+  //     options: {
+  //       httpOnly: true,
+  //       sameSite: 'lax',
+  //       path: '/',
+  //       domain: '.salesmanpro.site', // 👈 REQUIRED
+  //       secure: true,
+  //     },
+  //   },
+  //   pkceCodeVerifier: {
+  //     name: `next-auth.pkce.code_verifier`,
+  //     options: {
+  //       httpOnly: true,
+  //       sameSite: 'lax',
+  //       path: '/',
+  //       domain: '.salesmanpro.site', // 👈 REQUIRED
+  //       secure: true,
+  //     },
+  //   },
+  //   state: {
+  //     name: `next-auth.state`, // 👈 THIS IS THE ONE FAILING IN YOUR LOGS
+  //     options: {
+  //       httpOnly: true,
+  //       sameSite: 'lax',
+  //       path: '/',
+  //       domain: '.salesmanpro.site', // 👈 REQUIRED
+  //       secure: true,
+  //     },
+  //   },
+  // },
+}};
 
 // ✅ For Next.js App Router
 export const getAuthSession = () => getServerSession(authOptions());

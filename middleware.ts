@@ -75,7 +75,8 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   // });
   const session = await getToken({ 
     req: request,
-    secret: process.env.NEXTAUTH_SECRET!
+    secret: process.env.NEXTAUTH_SECRET!,
+    secureCookie: true, // Force secure cookies in production, but allow non-secure in development
   });
 
   console.log("DEBUG: Is Desktop:", isDesktop);
@@ -109,9 +110,9 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   // }
 
   // // 🔥 FIX 2: If logged in on desktop, don't stay on the login page
-  // if (isDesktop && session && pathname === "/desktop-login") {
-  //   return NextResponse.redirect(new URL("/dashboards", request.url));
-  // }
+  if (isDesktop && session && pathname === "/desktop-login") {
+    return NextResponse.redirect(new URL("/dashboards", request.url));
+  }
 
   // ---- REST OF YOUR EXISTING MIDDLEWARE LOGIC ----
   const host = request.headers.get("host")?.split(":")[0] || "";
