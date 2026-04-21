@@ -528,48 +528,48 @@ export const authOptions = (reqHost?: string): NextAuthOptions => {
     signIn: "/signin",
   },
 
-  // cookies: {
-  //     sessionToken: {
-  //       name: `next-auth.session-token`,
-  //       options: {
-  //         httpOnly: true,
-  //         sameSite: 'lax',
-  //         path: '/',
-  //         domain: cookieDomain, 
-  //         secure: true,
-  //       },
-  //     },
-  //     callbackUrl: {
-  //       name: `next-auth.callback-url`,
-  //       options: {
-  //         sameSite: 'lax',
-  //         path: '/',
-  //         domain: cookieDomain,
-  //         secure: true,
-  //       },
-  //     },
-  //     csrfToken: {
-  //       name: `next-auth.csrf-token`,
-  //       options: {
-  //         httpOnly: true,
-  //         sameSite: 'lax',
-  //         path: '/',
-  //         domain: cookieDomain,
-  //         secure: true,
-  //       },
-  //     },
-  //     // Apply the same logic to 'state' and 'pkceCodeVerifier'
-  //     state: {
-  //       name: `next-auth.state`,
-  //       options: {
-  //         httpOnly: true,
-  //         sameSite: 'lax',
-  //         path: '/',
-  //         domain: cookieDomain,
-  //         secure: true,
-  //       },
-  //     },
-  //   },
+  cookies: {
+      sessionToken: {
+        name: `next-auth.session-token`,
+        options: {
+          httpOnly: true,
+          sameSite: 'lax',
+          path: '/',
+          domain: cookieDomain, 
+          secure: true,
+        },
+      },
+      callbackUrl: {
+        name: `next-auth.callback-url`,
+        options: {
+          sameSite: 'lax',
+          path: '/',
+          domain: cookieDomain,
+          secure: true,
+        },
+      },
+      csrfToken: {
+        name: `next-auth.csrf-token`,
+        options: {
+          httpOnly: true,
+          sameSite: 'lax',
+          path: '/',
+          domain: cookieDomain,
+          secure: true,
+        },
+      },
+      // Apply the same logic to 'state' and 'pkceCodeVerifier'
+      state: {
+        name: `next-auth.state`,
+        options: {
+          httpOnly: true,
+          sameSite: 'lax',
+          path: '/',
+          domain: cookieDomain,
+          secure: true,
+        },
+      },
+    },
   // cookies: {
   //   sessionToken: {
   //     name: `next-auth.session-token`,

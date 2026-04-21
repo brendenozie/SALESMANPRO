@@ -79,9 +79,9 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
     secureCookie: true, // Force secure cookies in production, but allow non-secure in development
   });
 
-  console.log("DEBUG: Is Desktop:", isDesktop);
-  console.log("DEBUG: Session Found:", !!session);
-  console.log("DEBUG: Cookies Present:", request.headers.get("cookie"));
+  // console.log("DEBUG: Is Desktop:", isDesktop);
+  // console.log("DEBUG: Session Found:", !!session);
+  // console.log("DEBUG: Cookies Present:", request.headers.get("cookie"));
   
   // 1. PREVENT REDIRECT LOOPS
   // Only redirect to login if we are NOT already there and NOT in an auth API call
