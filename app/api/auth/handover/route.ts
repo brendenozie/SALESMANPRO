@@ -7,8 +7,9 @@ import { encode } from "next-auth/jwt";
 const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET!;
 
 export async function GET(req: NextRequest) {
-  const rawTarget =
-    req.nextUrl.searchParams.get("target") || "https://salesmanpro.site";
+  const rawTarget = req.nextUrl.searchParams.get("target") || "https://salesmanpro.site";
+    
+  const isDesktop = req.headers.get("user-agent")?.includes("SalesmanProDesktop");
 
   // ✅ IMPORTANT: decode URL-encoded target
   const target = decodeURIComponent(rawTarget);
@@ -19,6 +20,8 @@ export async function GET(req: NextRequest) {
     if (!session) {
       return NextResponse.redirect(`${target}?auth=failed`);
     }
+    // Pass the host to your auth options
+    // const session = await getServerSession(authOptions(host));
 
     // ✅ SECURE: Encoding happens on the server where the secret is safe
     const token = await encode({
@@ -35,7 +38,13 @@ export async function GET(req: NextRequest) {
     destination.searchParams.set("auth_token", token);
     destination.searchParams.set("auth", "success");
 
-    return NextResponse.redirect(destination.toString());
+    if(isDesktop) {
+      const dashboards = new URL("/dashboards", destination);
+      
+      return NextResponse.redirect(dashboards.toString());
+    }else{
+      return NextResponse.redirect(destination.toString());
+    }
   } catch (err) {
     console.error("Critical Handover Error:", err);
     return NextResponse.redirect(`${target}?auth=error`);
