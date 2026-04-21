@@ -85,7 +85,7 @@ const WelcomePage = () => {
               {/* Download Buttons Section */}
               <div className="flex flex-wrap gap-3 mt-4">
                 <a 
-                  href="http://salesmanpro.site/download-desktop/SalesmanProDesktop.application"
+                  href="https://salesmanpro.site/download-desktop/SalesmanProDesktop.application"
                   className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:border-orange-500 transition-all shadow-sm"
                 >
                   <ComputerDesktopIcon className="w-5 h-5 text-orange-600" />
