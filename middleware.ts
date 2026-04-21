@@ -77,20 +77,30 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
     req: request,
     secret: process.env.NEXTAUTH_SECRET!
   });
+
+  console.log("DEBUG: Is Desktop:", isDesktop);
+  console.log("DEBUG: Session Found:", !!session);
+  console.log("DEBUG: Cookies Present:", request.headers.get("cookie"));
   
   // 1. PREVENT REDIRECT LOOPS
   // Only redirect to login if we are NOT already there and NOT in an auth API call
-  const isAuthPage = pathname.startsWith("/desktop-login") || pathname.startsWith("/api/auth");
-  
+  // const isAuthPage = pathname.startsWith("/desktop-login") || pathname.startsWith("/api/auth");
+  const isAuthPage =
+    pathname.startsWith("/desktop-login") ||
+    pathname.startsWith("/api/auth") ||
+    pathname.includes("_next") || // Double check static assets
+    pathname.includes("favicon.ico");
+
+
   if (isDesktop && !session && !isAuthPage) {
     return NextResponse.redirect(new URL("/desktop-login", request.url));
   }
 
   // 2. ESCAPE FROM LOGIN PAGE
   // If we are on the desktop, have a session, and are sitting on the login page -> Go to Dashboard
-  // if (isDesktop && session && pathname === "/desktop-login") {
-  //   return NextResponse.redirect(new URL("/dashboards", request.url));
-  // }
+  if (isDesktop && session && pathname === "/desktop-login") {
+    return NextResponse.redirect(new URL("/dashboards", request.url));
+  }
   // 3. DESKTOP REDIRECT LOGIC
   // If user is on desktop, NOT logged in, and NOT already on the desktop-login page
   // Only redirect if NOT already on the desktop-login page
