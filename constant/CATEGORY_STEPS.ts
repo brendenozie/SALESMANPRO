@@ -171,7 +171,88 @@ export const CATEGORY_STEPS: Record<string, number[]> = {
 
   "Security Services":     [1,2,7,15,16,17,8,9,10,12,11],
   "Security Consulting":   [1,2,7,15,16,17,8,9,10,12,11],
-  
+
+  "Agrovet":          [1,2,7,8,9,10,12,11],
+
+  "Baby Store":       [1,2,7,8,9,10,12,11],
+
+  "Bike Store":       [1,2,7,8,9,10,12,11],
+
+  "Blog & Content":   [1,2,7,8,9,10,12,11],
+
+  "Book Store":       [1,2,7,8,9,10,12,11],
+
+  "Booking & Appointments": [1,2,7,8,9,10,12,11],
+
+  "Cake Store":       [1,2,7,8,9,10,12,11],
+
+  "Cybersecurity":    [1,2,7,8,9,10,12,11],
+
+  "Dry Cleaning": [1,2,7,8,9,10,12,11],
+
+  "Earphones Store": [1,2,7,8,9,10,12,11],
+
+  "Electronic Security Systems": [1,2,7,8,9,10,12,11],
+
+  "Emergency Response Services": [1,2,7,8,9,10,12,11],
+
+  "Event & Ticketing": [1,2,7,8,9,10,12,11],
+
+  "Finance & Legal": [1,2,7,8,9,10,12,11],
+
+  "Fitness & Wellness": [1,2,7,8,9,10,12,11],
+
+  "Flowers Store": [1,2,7,8,9,10,12,11],
+
+  "Gaming Store": [1,2,7,8,9,10,12,11],
+
+  "Glasses & Spectacles Store": [1,2,7,8,9,10,12,11],
+
+  "Groceries Store": [1,2,7,8,9,10,12,11],
+
+  "Hardware Store": [1,2,7,8,9,10,12,11],
+
+  "Healthcare & Clinics": [1,2,7,8,9,10,12,11],
+
+  "Honey Store": [1,2,7,8,9,10,12,11],
+
+  "Lecturer": [1,2,7,8,9,10,12,11],
+
+  "Meat & Butchery": [1,2,7,8,9,10,12,11],
+
+  "Media & Entertainment": [1,2,7,8,9,10,12,11],
+
+  "Motorcycle Store": [1,2,7,8,9,10,12,11],
+
+  "Nonprofit & Community": [1,2,7,8,9,10,12,11],
+
+  "Peanuts Store": [1,2,7,8,9,10,12,11],
+
+  "Pets Store": [1,2,7,8,9,10,12,11],
+
+  "Physical Security": [1,2,7,8,9,10,12,11],
+
+  "Portfolio & Personal Branding": [1,2,7,8,9,10,12,11],
+
+  "Principal": [1,2,7,8,9,10,12,11],
+
+  "Property Management": [1,2,7,8,9,10,12,11],
+
+  "Pupils": [1,2,7,8,9,10,12,11],
+
+  "Restaurant & Food Delivery": [1,2,7,8,9,10,12,11],
+
+  "SaaS & Web Apps": [1,2,7,8,9,10,12,11],
+
+  "School Head": [1,2,7,8,9,10,12,11],
+
+  "Teacher": [1,2,7,8,9,10,12,11],
+
+  "VIP & Personal Protection": [1,2,7,8,9,10,12,11],
+  "vip-protection": [1,2,7,8,9,10,12,11],
+
+  "Watch Store": [1,2,7,8,9,10,12,11]
+
 };
 
 
