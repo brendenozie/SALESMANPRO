@@ -39,7 +39,6 @@ import { categoryReducer } from "@/hooks/categoryReducer";
 import toast from "react-hot-toast";
 import { PaymentSettings } from "../PaymentAccordion/PaymentAccordion";
 
-
 const SITE_CATEGORIES_WITH_PRICING = [
   "service provider",
   "booking & appointments",
@@ -134,10 +133,7 @@ const getAllDescendantIds = (
   }
   return ids;
 };
-
-
 // --- END MOCK DATA AND HELPER FUNCTIONS ---
-
 
 export default function CreateStoreForm({
   siteCategories,
@@ -218,7 +214,6 @@ export default function CreateStoreForm({
     ],
 
     // --- Settings Objects ---
-    // themeSettings: {},
     seo: {
       id: "",
       description: null,
@@ -244,9 +239,6 @@ export default function CreateStoreForm({
       isPaystackEnabled: false, // New: Default to false
       isGhubaEnabled: false, // New: Default to false
 
-
-
-
       // --- Configuration Keys ---
       // Stripe
       stripePublishableKey: null,
@@ -264,7 +256,6 @@ export default function CreateStoreForm({
       // --- Paystack Keys ---
       paystackPublicKey: null, // New: Paystack Public Key
       paystackSecretKey: null, // New: Paystack Secret Key
-
 
       // Ghuba (NEW FIELDS)
       ghubaMerchantId: null,
@@ -342,14 +333,13 @@ export default function CreateStoreForm({
 
 
   const [form, setForm] = useState<StoreForm>(() => {
-    const initialForm = initialData ? { ...defaultForm, ...initialData } : defaultForm;
+    const initialForm = initialData && initialData.id ? { ...defaultForm, ...initialData } : defaultForm;
     // FIX: Ensure companyLocations is always an array, even if initialData provides null/undefined
     initialForm.CompanyLocation = initialData?.CompanyLocation || [];
     return initialForm;
   });
 
     // NEW: State for all available locations
-  // const [allAvailableLocations, setAllAvailableLocations] = useState<Location[]>([]);
   // NEW: State for selected location IDs (flat set for efficient lookup)
   const [currentSelectedLocationIds, setCurrentSelectedLocationIds] = useState<Set<string>>(() =>
     initialData?.CompanyLocation ? flattenCompanyLocationsToIds(initialData.CompanyLocation) : new Set()
@@ -357,26 +347,6 @@ export default function CreateStoreForm({
 
   // ADD THIS useEffect hook to handle category changes
   const [categoryChanged, setCategoryChanged] = useState(false);
-
-  // useEffect(() => {
-  //   // Don't run on initial load or in edit mode
-  //   if (!categoryChanged || initialData) return;
-
-  //   // Get the sample data for the newly selected category
-  //   const sampleData = getCategoryDefaultData(form.category);
-
-  //   // Merge the sample data into the form state
-  //   // This preserves basic info like 'name' and 'slug' while updating
-  //   // content arrays like 'faqs', 'heroSlides', etc.
-  //   setForm(prevForm => ({
-  //     ...prevForm,
-  //     ...sampleData,
-  //   }));
-
-  //   // Reset the flag
-  //   setCategoryChanged(false);
-
-  // }, [form.category, categoryChanged, initialData,stepIndex]);
 
   // ----------------------------------------------------------------
   // REFACTORED HOOK: This now works without the 'categoryChanged' flag
@@ -410,42 +380,6 @@ export default function CreateStoreForm({
 
   }, [form.category, initialData?.id]);
   
-  // useEffect(() => {
-  //   // 1. Don't run this logic if we are editing (initialData is present)
-  //   if (initialData.id) return;
-
-  //   // 2. Check if the category has *actually* changed from the previous render.
-  //   //    This prevents it from running on the initial load.
-  //   const prevCategory = prevCategoryRef.current;
-  //   if (prevCategory === form.category) return;
-    
-  //   // 3. Update the ref for the next render
-  //   prevCategoryRef.current = form.category;
-
-  //   // console.log(`Loading sample data for new category: ${form.category}`);
-    
-  //   // 4. Get the sample data
-  //   const sampleData = getCategoryDefaultData(form.category);
-
-  //   // 5. Merge the sample data into the form state
-  //   setForm(prevForm => ({
-  //     ...prevForm,
-  //     ...sampleData,
-  //     // CRITICAL: Preserve key fields the user already entered
-  //     // The sample data should not overwrite these.
-  //     name: prevForm.name,
-  //     slug: prevForm.slug,
-  //     category: form.category, // Ensure we keep the one just selected
-  //     contactEmail: prevForm.contactEmail, // Already set by session
-  //   }));
-
-  // }, [form.category, initialData]); // Only depends on these!
-  // ----------------------------------------------------------------
-  // END OF REFACTORED HOOK
-  // ----------------------------------------------------------------
-
-
-
   // ─────────────────────────────────────────────────────────────────────
   // 1) File state (logo, banner, hero slides, promotion slides)
   // ─────────────────────────────────────────────────────────────────────
@@ -457,8 +391,7 @@ export default function CreateStoreForm({
     () => form.heroSlides.map(() => null)
   );
 
- 
-    // Memoize the selected locations in the hierarchical structure for display
+  // Memoize the selected locations in the hierarchical structure for display
 
   const selectedLocationsForDisplay: SelectedLocation[] = useMemo(() => {
       const allLocationsMap = new Map(availableLocations.map(loc => [loc.id, loc]));
@@ -482,7 +415,6 @@ export default function CreateStoreForm({
 const [promotionSlideFiles, setPromotionSlideFiles] = useState<PromotionFiles[]>(
   () => form.promotions.map(() => ({}))
 );
-
 
   // When initialData changes (edit mode), clear out these File states
   useEffect(() => {
@@ -596,13 +528,11 @@ const [promotionSlideFiles, setPromotionSlideFiles] = useState<PromotionFiles[]>
   // 3) Handlers for “Hero Slides” Accordion
   // ─────────────────────────────────────────────────────────────────────
 
-  
   const onAddHeroSlide = () => {
     setForm((prev) => ({
       ...prev,
       heroSlides: [
         ...prev.heroSlides,
-        // Correctly structured Banner object
         {
           id: "", // Will be generated by DB
           companyId: prev.id,
@@ -679,8 +609,6 @@ const [promotionSlideFiles, setPromotionSlideFiles] = useState<PromotionFiles[]>
   // ─────────────────────────────────────────────────────────────────────
   // 4) Handlers for “Promotions” Accordion
   // ─────────────────────────────────────────────────────────────────────
-
-  
   useEffect(() => {
     setForm(prev => {
       const normalizedPromotions = prev.promotions.map(promo => {
@@ -815,28 +743,6 @@ const onPromotionImageUpload = (
   });
 };
 
-// const onPromotionImageUpload = (
-//   index: number,
-//   file: File,
-//   field: keyof IPromotion = "bannerUrl"
-// ) => {
-//   // keep track of raw files if needed
-//   setPromotionSlideFiles((prev) => {
-//     const copy = [...prev];
-//     copy[index] = file;
-//     return copy;
-//   });
-
-//   // create preview
-//   const previewURL = URL.createObjectURL(file);
-
-//   setForm((prev) => {
-//     const promos = [...prev.promotions];
-//     promos[index] = { ...promos[index], [field]: previewURL };
-//     return { ...prev, promotions: promos };
-//   });
-// };
-
 // Add a new perk to a specific promotion
 
 const onAddPerk = (promoIndex: number) => {
@@ -886,7 +792,6 @@ const onUpdatePerk = (promoIndex: number, perkIndex: number, field: 'id' | 'icon
 };
 
 // You will also need to add onUpdatePerk to the props passed to PromotionsAccordion
-
 // Also add a dedicated function for removing a perk
 const onRemovePerk = (promoIndex: number, perkIndex: number) => {
   setForm((prev) => {
@@ -927,8 +832,6 @@ const onRemoveTrustLogo = (promoIndex: number, logoIndex: number) => {
   });
 };
 
-// In your Parent Form Component
-
 const onUpdateTrustLogo = (
   promoIndex: number, 
   logoIndex: number, 
@@ -966,34 +869,59 @@ const onUpdateTrustLogo = (
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)+/g, "");
-    const domain = slug ? `${slug}.yourdomain.com` : "";
+    const domain = slug ? `${slug}.salesmanpro.site` : "";
     setForm((prev) => ({ ...prev, slug, domain }));
   }, [form.name, initialData]);
 
   // Slug & domain generator
-  useEffect(() => {
-    if (initialData) return;
+  // useEffect(() => {
+  //   // if (initialData) return; removed this because if change happens on the name the slug and domain should change if a .salesmanpro.site sub domain 
+  //   if (!form.name) return;
+  //   const slug = form.name
+  //     .toLowerCase()
+  //     .replace(/[^a-z0-9]+/g, "-")
+  //     .replace(/^-+|-+$/g, "");
+  //   setForm((f) => ({ ...f, slug, domain: `${slug}.salesmanpro.site` }));
+  // }, [form.name, initialData]);
+
+    useEffect(() => {
     if (!form.name) return;
+
     const slug = form.name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
-    setForm((f) => ({ ...f, slug, domain: `${slug}.salesmanpro.site` }));
-  }, [form.name, initialData]);
+
+    setForm((prev) => {
+      const isSalesmanSubdomain =
+        prev.domain?.endsWith(".salesmanpro.site") ||
+        !prev.domain; // covers new entries
+
+      return {
+        ...prev,
+        slug,
+        domain: isSalesmanSubdomain
+          ? `${slug}.salesmanpro.site`
+          : prev.domain, // preserve custom domain
+      };
+    });
+  }, [form.name, form.slug]);
 
   // the locations below are for the selection of locations for items like travel and vehicle 
   // the map is for physical location
   // LocalStorage
   useEffect(() => {
-    if (initialData) return;
+    if (!initialData) return;
     const saved = localStorage.getItem("storeForm");
-    if (saved) {
+    if (saved && initialData) {
       try {
         const parsedForm: StoreForm = JSON.parse(saved);
-        setForm(parsedForm);
-        // Restore selected locations from companyLocations
-        if (parsedForm.CompanyLocation) {
-            setCurrentSelectedLocationIds(flattenCompanyLocationsToIds(parsedForm.CompanyLocation));
+        if(parsedForm.id == initialData.id){
+          setForm(parsedForm);
+          // Restore selected locations from companyLocations
+          if (parsedForm.CompanyLocation) {
+              setCurrentSelectedLocationIds(flattenCompanyLocationsToIds(parsedForm.CompanyLocation));
+          }
         }
       } catch (e) {
         console.error("Failed to parse stored form data:", e);
@@ -1002,7 +930,7 @@ const onUpdateTrustLogo = (
     }
   }, [initialData]);
 
-    useEffect(() => {
+  useEffect(() => {
     if (initialData) return;
     // Ensure companyLocations is always updated from selectedLocationsForDisplay
     // We need to convert SelectedLocation[] back to CompanyLocationType[] for storage
@@ -1032,15 +960,17 @@ const onUpdateTrustLogo = (
             }
         });
     };
+
     collectCompanyLocations(selectedLocationsForDisplay);
 
     const formToSave = {
         ...form,
         companyLocations: companyLocationsToSave,
     };
-    localStorage.setItem("storeForm", JSON.stringify(formToSave));
-  }, [form, initialData, selectedLocationsForDisplay]);// Add selectedLocationsForDisplay as dependency
 
+    localStorage.setItem("storeForm", JSON.stringify(formToSave));
+    
+  }, [form, initialData, selectedLocationsForDisplay]);// Add selectedLocationsForDisplay as dependency
 
   // Navigation guard
   useEffect(() => {
@@ -1193,11 +1123,7 @@ const [selectedState, dispatch] = useReducer(categoryReducer, form.StoreCategory
 // 3. Create the memoized array of selected categories to pass to the child component and for form submission.
 const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [selectedState]);
 
-  //............................
- 
-
   // NEW: Handlers for LocationSelectionAccordion
-
   const onToggleLocation = useCallback(
   (location: ILocation, isSelected: boolean) => {
     setForm((prevForm) => {
@@ -1308,7 +1234,6 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
     }
   };
 
-
   const addItem = (field: 'partnerLogos') => {
     let newItem: any = {};
     if (field === 'partnerLogos') newItem = { src: '', alt: '' };
@@ -1370,7 +1295,6 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
   const next = () => setStepIndex((i) => Math.min(i + 1, allSteps.length));
   const prev = () => setStepIndex((i) => Math.max(i - 1, 0));
   
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   
@@ -1593,10 +1517,6 @@ async function uploadFile(files: File[], type: "image" | "video" | "book") {
 
   const uploads = files.map(async (file, index) => {
     // 1. Request signed URL from your backend
-    // const res = await fetch(
-    //   `${API_URL}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}`
-    // );
-
     const res = await fetch(
       `${apiBaseUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
     );
@@ -1621,7 +1541,6 @@ async function uploadFile(files: File[], type: "image" | "video" | "book") {
   return Promise.all(uploads);
 }
 
-
 const handleSubmit = async (e: FormEvent) => {
   e.preventDefault();
   if (isSubmitting || !session?.user?.id) return;
@@ -1629,8 +1548,6 @@ const handleSubmit = async (e: FormEvent) => {
 
   const payload = { ...form };
   const uploadPromises: Promise<void>[] = [];
-
-  console.log("🟢 Starting store upload sequence...");
 
   // --- Logo Upload ---
   if (logoFile) {
@@ -1685,7 +1602,6 @@ const handleSubmit = async (e: FormEvent) => {
             return { ...prev, heroSlides: slides };
           });
 
-          console.log(`✅ Hero slide ${idx + 1} image uploaded:`, url);
         })()
       );
     }
@@ -1707,8 +1623,6 @@ const handleSubmit = async (e: FormEvent) => {
             slides[idx] = { ...slides[idx], productImageUrl: url };
             return { ...prev, heroSlides: slides };
           });
-
-          console.log(`✅ Hero slide ${idx + 1} product image uploaded:`, url);
         })()
       );
     }
@@ -1735,39 +1649,15 @@ const handleSubmit = async (e: FormEvent) => {
               return { ...prev, promotions: promos };
             });
 
-            console.log(`✅ Promotion ${idx} field "${field}" uploaded:`, url);
           })()
         );
       }
     }
   });
 
-  // promotionSlideFiles.forEach((file, idx) => {
-  //   if (file) {
-  //     uploadPromises.push(
-  //       (async () => {
-  //         const [{ url }] = await uploadFile([file], "image");
-  //         if (!payload.promotions) payload.promotions = [];
-
-  //         const existing = payload.promotions[idx] || {};
-  //         payload.promotions[idx] = { ...existing, bannerUrl: url };
-
-  //         setForm((prev) => {
-  //           const promos = [...prev.promotions];
-  //           promos[idx] = { ...promos[idx], bannerUrl: url };
-  //           return { ...prev, promotions: promos };
-  //         });
-
-  //         console.log(`✅ Promotion slide ${idx + 1} uploaded:`, url);
-  //       })()
-  //     );
-  //   }
-  // });
-
   try {
     // Wait for uploads to complete
     await Promise.all(uploadPromises);
-    console.log("🟢 All uploads complete. Saving store data...");
 
     const isEdit = Boolean(initialData?.id);
     const method = isEdit ? "PUT" : "POST";
@@ -1795,9 +1685,10 @@ const handleSubmit = async (e: FormEvent) => {
     }
 
     let data = await res.json();
-    console.log("🟢 Store data saved successfully:", data);
 
-    console.log("✅ Store saved successfully!");
+    //on successful update clear or empty local cache 
+    localStorage.removeItem("storeForm");
+
     toast.success(isEdit ? "Store updated successfully!" : "Store created!");
     router.push("/stores");
   } catch (err: any) {
@@ -1806,7 +1697,7 @@ const handleSubmit = async (e: FormEvent) => {
     setSubmissionError(err.message || "An unexpected error occurred");
   } finally {
     // setIsSubmitting(false);
-    console.log("🟡 Submit finished.");
+    // console.log("🟡 Submit finished.");
   }
 };
 
@@ -1879,7 +1770,6 @@ const StepContent = useMemo(() => {
               type="button"
               onClick={() => stepKey === 'basic' ? handleFullStoreAutopilot() : handleAiGenerate(currentAi.section)}
               disabled={isAiProcessing || !form.category}
-              // disabled={isAiProcessing || !form.name || !form.category}
               className={`whitespace-nowrap flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r ${currentAi.color} text-white rounded-lg font-semibold shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed transition-all`}
             >
               {isAiProcessing ? (
@@ -1957,46 +1847,7 @@ const StepContent = useMemo(() => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row relative">
-    {/* Full-Page Submitting Overlay - Enhanced Version */}
-    {/* {isSubmitting && (
-      // <motion.div
-      //   initial={{ opacity: 0 }}
-      //   animate={{ opacity: 1 }}
-      //   exit={{ opacity: 0 }}
-      //   transition={{ duration: 0.3 }}
-      //   className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-gray-900 to-black bg-opacity-95 backdrop-blur-md"
-      // >
-      //   <motion.div
-      //     initial={{ y: -50, opacity: 0 }}
-      //     animate={{ y: 0, opacity: 1 }}
-      //     transition={{
-      //       delay: 0.2,
-      //       duration: 0.5,
-      //       type: "spring",
-      //       stiffness: 100,
-      //     }}
-      //     className="bg-white p-10 rounded-xl shadow-2xl flex flex-col items-center max-w-sm text-center transform scale-105"
-      //   >
-          {/* Advanced Spinner: Concentric Circles */}
-    {/* //       <div className="relative w-16 h-16 mb-6">
-    //         <div className="absolute inset-0 border-4 border-t-4 border-gray-300 rounded-full animate-spin-slow"></div>
-    //         <div className="absolute inset-2 border-4 border-r-4 border-gray-400 rounded-full animate-spin-medium"></div>
-    //         <div className="absolute inset-4 border-4 border-b-4 border-gray-600 rounded-full animate-spin-fast"></div>
-    //       </div> */}
-
-    {/* //       <p className="text-2xl font-bold text-gray-900 mb-2 leading-snug">
-    //         Just a moment, we're uploading...
-    //       </p>
-    //       <p className="text-md text-gray-600 font-medium">
-    //         Please hold tight! We're preparing everything for you.
-    //       </p>
-    //       <p className="text-sm text-gray-400 mt-4 animate-pulse">
-    //         This might take a moment, grab a coffee!
-    //       </p>
-    //     </motion.div> */}
-    {/* //   </motion.div> */}
-    {/* // )} */}
-
+    
     {(isSubmitting || submissionError) && (    
       <AnimatePresence>
         <motion.div
