@@ -1291,7 +1291,6 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
 
   };
 
-  // const next = () => setStepIndex((i) => Math.min(i + 1, totalSteps - 1));
   const next = () => setStepIndex((i) => Math.min(i + 1, allSteps.length));
   const prev = () => setStepIndex((i) => Math.max(i - 1, 0));
   
@@ -1301,8 +1300,6 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
   // AI-related state
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [aiStatus, setAiStatus] = useState("");
-
-  // const getSiteCategories 
 
   // Constants
   const AI_GENERATION_DELAY_MS = 1000;
@@ -2120,7 +2117,7 @@ const StepContent = useMemo(() => {
           type="button"
           disabled={stepIndex === 0}
           onClick={prev}
-          className="px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 text-sm"
+          className={`px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 text-sm ${stepIndex === 0 ? "hidden" : ""}`}
         >
           ← Back
         </button>

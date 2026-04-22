@@ -11,7 +11,34 @@ const weekdays = [
   { key: 'sun', label: 'Sunday' },
 ];
 
+function normalizeWhatsAppNumber(
+  input: string,
+  defaultCountryCode = '254'
+): string {
+  if (!input) return '';
 
+  let digits = input.replace(/\D/g, '');
+
+  // 0712xxxxxx → 254712xxxxxx
+  if (digits.startsWith('0')) {
+    digits = defaultCountryCode + digits.slice(1);
+  }
+
+  // 712xxxxxx → 254712xxxxxx
+  if (digits.length === 9) {
+    digits = defaultCountryCode + digits;
+  }
+
+  // Already correct (2547...)
+  if (!digits.startsWith(defaultCountryCode)) {
+    return '';
+  }
+
+  return `+${digits}`;
+}
+
+export const isValidWhatsAppNumber = (phone: string) =>
+  /^\+\d{10,15}$/.test(phone);
 
 interface ContactAccordionProps {
   openingHours: OpeningHours | null;
@@ -53,8 +80,21 @@ export default function ContactAccordion({
   return `+${digits}`;
 };
 
-const isValidWhatsAppNumber = (phone: string) =>
-  /^\+\d{10,15}$/.test(phone);
+const handlePhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const raw = e.target.value;
+  const normalized = normalizeWhatsAppNumber(raw);
+
+  onChange({
+    ...e,
+    target: {
+      ...e.target,
+      name: 'contactPhone',
+      value: normalized || raw, // allow typing until valid
+    },
+  } as ChangeEvent<HTMLInputElement>);
+};
+
+
 
   return (
     <section className="max-w-3xl mx-auto overflow-hidden">
@@ -97,8 +137,8 @@ const isValidWhatsAppNumber = (phone: string) =>
                   type="tel"
                   name="contactPhone"
                   value={contactPhone || ''}
-                  onChange={onChange}
-                  placeholder="0712 345 678"
+                  onChange={handlePhoneChange}
+                  placeholder="0712345678"
                   className="mt-1 block w-full px-4 py-2 border rounded-lg
                     focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
                 />
@@ -106,36 +146,23 @@ const isValidWhatsAppNumber = (phone: string) =>
                 {/* WhatsApp formatting helper */}
                 {contactPhone && (
                   <div className="mt-2 text-sm">
-                    {(() => {
-                      const waNumber = formatForWhatsApp(contactPhone);
-
-                      if (!isValidWhatsAppNumber(waNumber)) {
-                        return (
-                          <span className="text-amber-600">
-                            WhatsApp format: +254712345678
-                          </span>
-                        );
-                      }
-
-                      return (
-                        <div className="flex items-center gap-2">
-                          <span className="text-green-600">
-                            WhatsApp ready:
-                          </span>
-
-                          <a
-                            href={`https://wa.me/${waNumber.replace('+', '')}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1
-                              text-green-700 font-medium hover:underline"
-                          >
-                            {waNumber}
-                            <span className="text-xs">↗</span>
-                          </a>
-                        </div>
-                      );
-                    })()}
+                    {!isValidWhatsAppNumber(contactPhone) ? (
+                      <span className="text-amber-600">
+                        Enter a valid WhatsApp number (e.g. 0712345678)
+                      </span>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-green-600">WhatsApp ready:</span>
+                        <a
+                          href={`https://wa.me/${contactPhone.replace('+', '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-green-700 font-medium hover:underline"
+                        >
+                          {contactPhone}
+                        </a>
+                      </div>
+                    )}
                   </div>
                 )}
               </label>
