@@ -14,11 +14,18 @@ import { createPaypalOrder } from "@/lib/paymentsv2/paypal";
 // ---------------------------
 // GLOBAL CORS HEADERS
 // ---------------------------
+// const CORS_HEADERS = {
+//   "Access-Control-Allow-Origin": "*",
+//   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+//   "Access-Control-Allow-Headers":
+//   "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
+// };
 const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "*", // Or your specific desktop app origin
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
   "Access-Control-Allow-Headers":
-  "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
+    "Content-Type, Authorization, X-Requested-With, Accept, cache-control",
+  "Access-Control-Max-Age": "86400",
 };
 
 function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {

@@ -30,7 +30,7 @@ import {
 } from 'chart.js';
 import { MarketListingForm, IStoreCategory } from '@/types/typings';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "https://salesmanpro.site/api" ||'http://127.0.0.1:3000/api';//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 /** usePersistentState - uses sessionStorage (session-lifetime) */
 function usePersistentState<T>(key: string, initial: T) {
@@ -617,6 +617,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       headers: { 
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify(orderPayload),
     });
 
