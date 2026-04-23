@@ -18,13 +18,12 @@ export default async function CategoryManagerPage({ params }: PageProps) {
   let storeCategories: IStoreCategory[] = [];
   const { slug : companyId } = await params;
 
-  // try {
-    const cookieHeader = (await cookies()).toString();
+  const cookieHeader = (await cookies()).toString();
 
-    const res = await fetch(
+  const res = await fetch(
       `${apiBaseUrl}/admin/get-store-categories?companyId=${companyId}`,
       { cache: 'no-store', headers: { Cookie: cookieHeader } },
-    );
+  );
 
     if (res.ok) {
       
@@ -70,49 +69,6 @@ export default async function CategoryManagerPage({ params }: PageProps) {
                                   visible: sub.visible,
                                 }))
                               : [],
-
-        // subcategories: Array.isArray(sc.items)
-        //       ? sc.items?.map((sub: any) => ({
-        //           id: sub._id?.$oid || sub.id,
-        //           name: sub.name,
-        //           slug: sub.slug,
-        //           sortOrder: sub.sortOrder,
-        //           visible: sub.visible,
-        //         }))
-        //       : sc.category?.subcategories
-        //           ? sc.category?.subcategories?.map((sub: any) => ({
-        //               id: sub._id?.$oid || sub.id,
-        //               name: sub.name,
-        //               slug: sub.slug,
-        //               sortOrder: sub.sortOrder,
-        //               visible: sub.visible,
-        //             }))
-        //         : Array.isArray(sc.subcategories)
-        //             ? sc.subcategories?.map((sub: any) => ({
-        //                 id: sub._id?.$oid || sub.id,
-        //                 name: sub.name,
-        //                 slug: sub.slug,
-        //                 sortOrder: sub.sortOrder,
-        //                 visible: sub.visible,
-        //               }))
-        //             : [],
-        // subcategories: Array.isArray(sc.items)
-        //   ? sc.items.map((sub: any) => ({
-        //       id: sub._id?.$oid || sub.id,
-        //       name: sub.name,
-        //       slug: sub.slug,
-        //       sortOrder: sub.sortOrder,
-        //       visible: sub.visible,
-        //     }))
-        //   : Array.isArray(sc.category.subcategories)
-        //     ? sc.category.subcategories.map((sub: any) => ({
-        //         id: sub._id?.$oid || sub.id,
-        //         name: sub.name,
-        //         slug: sub.slug,
-        //         sortOrder: sub.sortOrder,
-        //         visible: sub.visible,
-        //       }))
-        //     : [],
         allBrands: sc.allBrands || [],
         category: {
           id: sc.category?.id || sc.categoryId,
@@ -145,9 +101,6 @@ export default async function CategoryManagerPage({ params }: PageProps) {
     } else {
       console.error('Failed to fetch store categories', res.status, res.statusText);
     }
-  // } catch (e: any) {
-  //   console.error('Error fetching store categories', e.message);
-  // }
 
   return <CategoryManagerClient initialCategories={storeCategories} apiBaseUrl={apiBaseUrl} companyId={companyId} />;
 }

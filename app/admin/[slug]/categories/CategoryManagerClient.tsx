@@ -20,16 +20,6 @@ export type Subcategory = {
   visible: boolean;
 };
 
-// export type IStoreCategory = {
-//   id: string;
-//   displayName: string;
-//   icon?: string; // Emoji or icon class
-//   sortOrder: number;
-//   visible: boolean;
-//   subcategories: Subcategory[]; // Renamed from 'subcategories' for consistency with 'items' in your sample
-//   // Add other fields from your sample if needed, e.g., categoryId, companyId
-// };
-
 interface Props {
   initialCategories: IStoreCategory[];
   apiBaseUrl: string;
@@ -53,7 +43,7 @@ export default function CategoryManagerClient({ initialCategories, apiBaseUrl, c
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/get-store-categories?companyId=${companyId}`, { cache: 'no-store' });
+      const res = await fetch(`${apiBaseUrl}/admin/get-store-categories?companyId=${companyId}`, { cache: 'no-store', include: 'credentials' });
       
         if (res.ok) {
               
@@ -64,8 +54,6 @@ export default function CategoryManagerClient({ initialCategories, apiBaseUrl, c
           }
     
           const data = resJson.data.results || resJson.results || resJson.data ; // Handle both cases
-
-          console.log('Fetched store categories: Client', data);
           
           let storeCategories = data.map((sc: any) => ({
             id: sc.id,
@@ -100,31 +88,6 @@ export default function CategoryManagerClient({ initialCategories, apiBaseUrl, c
                                   visible: sub.visible,
                                 }))
                               : [],
-            // subcategories: Array.isArray(sc.items)
-            //   ? sc.items?.map((sub: any) => ({
-            //       id: sub._id?.$oid || sub.id,
-            //       name: sub.name,
-            //       slug: sub.slug,
-            //       sortOrder: sub.sortOrder,
-            //       visible: sub.visible,
-            //     }))
-            //   : (sc.category?.subcategories && Array.isArray(sc.category?.subcategories))
-            //       ? sc.category?.subcategories?.map((sub: any) => ({
-            //           id: sub._id?.$oid || sub.id,
-            //           name: sub.name,
-            //           slug: sub.slug,
-            //           sortOrder: sub.sortOrder,
-            //           visible: sub.visible,
-            //         }))
-            //     : Array.isArray(sc.subcategories)
-            //         ? sc.subcategories?.map((sub: any) => ({
-            //             id: sub._id?.$oid || sub.id,
-            //             name: sub.name,
-            //             slug: sub.slug,
-            //             sortOrder: sub.sortOrder,
-            //             visible: sub.visible,
-            //           }))
-            //         : [],
             allBrands: sc.allBrands || [],
             category: {
               id: sc.category?.id,
@@ -184,6 +147,7 @@ export default function CategoryManagerClient({ initialCategories, apiBaseUrl, c
       const res = await fetch(`${apiBaseUrl}/admin/reorder-store-categories`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        include: 'credentials',
         body: JSON.stringify({ companyId, categories: updatedCategories.map(c => ({ id: c.id, sortOrder: c.sortOrder })) })
       });
       if (!res.ok) {
@@ -211,6 +175,7 @@ export default function CategoryManagerClient({ initialCategories, apiBaseUrl, c
       const res = await fetch(url, {
         method: isEdit ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
+        include: 'credentials',
         body: JSON.stringify({ companyId, ...cat })
       });
 
@@ -234,7 +199,7 @@ export default function CategoryManagerClient({ initialCategories, apiBaseUrl, c
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/store-categories?id=${id}`, { method: 'DELETE' });
+      const res = await fetch(`${apiBaseUrl}/admin/store-categories?id=${id}`, { method: 'DELETE', include: 'credentials' });
       if (res.ok) {
         await fetchCategories();
       } else {
@@ -260,6 +225,7 @@ export default function CategoryManagerClient({ initialCategories, apiBaseUrl, c
       const res = await fetch(url, {
         method: isEdit ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
+        include: 'credentials',
         body: JSON.stringify(sub)
       });
 
@@ -283,7 +249,7 @@ export default function CategoryManagerClient({ initialCategories, apiBaseUrl, c
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/store-categories/${parentId}/subcategories/${subId}`, { method: 'DELETE' });
+      const res = await fetch(`${apiBaseUrl}/admin/store-categories/${parentId}/subcategories/${subId}`, { method: 'DELETE', include: 'credentials' });
       if (res.ok) {
         await fetchCategories();
       } else {
