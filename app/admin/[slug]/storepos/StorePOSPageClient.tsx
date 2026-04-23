@@ -624,7 +624,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     const result = await response.json();
 
     if (!response.ok || !result.success) {
-      throw new Error(result.error || 'Failed to process order');
+      throw new Error(`${result.error}` || 'Failed to process order');
     }
 
     // 2. Handle Payment Redirects (Stripe/Paystack/Paypal)
@@ -635,7 +635,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
 
     setPaymentStatus('success');
 
-    // 3. Print Receipt
+    // 3. Print Receipt             
     const now = new Date();
     const receiptDetails: ReceiptDetails = {
       cart,
