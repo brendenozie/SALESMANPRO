@@ -800,7 +800,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   // --- Render ---
   return (
      <div className="min-h-screen bg-zinc-50 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 font-sans transition-colors duration-300">
-      {/* <InlineStyles /> */}
+      <InlineStyles />
 
       {/* TOP NAVIGATION BAR */}
       <nav className="sticky top-0 z-30 glass-panel h-16 px-4 flex items-center justify-between shadow-sm">
