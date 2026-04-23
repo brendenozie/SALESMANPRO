@@ -2350,21 +2350,6 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: ClipboardDocumentListIcon,
     },
     {
-      label: "Drivers & Personnel",
-      href: `/admin/${adminSlug}/logistics-drivers`,
-      icon: UsersIcon,
-    },
-    {
-      label: "Consumers",
-      href: `/admin/${adminSlug}/consumers`,
-      icon: UserGroupIcon,
-    },
-    {
-      label: "Clients",
-      href: `/admin/${adminSlug}/logistics-clients`,
-      icon: UserGroupIcon,
-    },
-    {
       label: "Transport",
       href: `/admin/${adminSlug}/transport`,
       icon: HomeIcon,
@@ -2404,16 +2389,31 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         },
       ],
     },
+    // {
+    //   label: "Drivers & Personnel",
+    //   href: `/admin/${adminSlug}/logistics-drivers`,
+    //   icon: UsersIcon,
+    // },
     {
-      label: "Vehicles & Fleet",
-      href: `/admin/${adminSlug}/logistics-vehicles`,
-      icon: TruckIcon,
+      label: "Consumers",
+      href: `/admin/${adminSlug}/consumers`,
+      icon: UserGroupIcon,
     },
-    {
-      label: "Routes & Schedules",
-      href: `/admin/${adminSlug}/logistics-routes`,
-      icon: MapPinIcon,
-    },
+    // {
+    //   label: "Clients",
+    //   href: `/admin/${adminSlug}/logistics-clients`,
+    //   icon: UserGroupIcon,
+    // },
+    // {
+    //   label: "Vehicles & Fleet",
+    //   href: `/admin/${adminSlug}/logistics-vehicles`,
+    //   icon: TruckIcon,
+    // },
+    // {
+    //   label: "Routes & Schedules",
+    //   href: `/admin/${adminSlug}/logistics-routes`,
+    //   icon: MapPinIcon,
+    // },
     {
       label: "Shipments & Orders",
       href: `/admin/${adminSlug}/logistics-shipments`,
