@@ -14,6 +14,7 @@ import {
   PrinterIcon,
   ClipboardDocumentCheckIcon,
   ChevronLeftIcon,
+  UserIcon,
 } from '@heroicons/react/24/outline';
 import Modal from '@/components/Modal'; // Assuming you have a reusable Modal component
 
@@ -29,9 +30,7 @@ import {
 } from 'chart.js';
 import { MarketListingForm, IStoreCategory } from '@/types/typings';
 
-
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
-
 
 /** usePersistentState - uses sessionStorage (session-lifetime) */
 function usePersistentState<T>(key: string, initial: T) {
@@ -440,34 +439,21 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   // --- useEffect to fetch data on component mount ---
   useEffect(() => {
     // 1. Fetch Products
-    const fetchProducts = async () => {
+    // const fetchProducts = async () => {
       // console.log(`Fetching products for companyId: ${companyId}`);
       // Simulate API call for products
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
-      const fetchedProducts: Product[] = [
-        { id: 'prod-001', name: 'Wireless Headphones XYZ', description: 'Premium noise-cancelling headphones.', price: 199.99, imageUrl: 'https://placehold.co/100x100/A78BFA/ffffff?text=Headphones', stock: 50 },
-        { id: 'prod-002', name: 'Smartwatch Pro 2.0', description: 'Track your fitness and notifications.', price: 249.00, imageUrl: 'https://placehold.co/100x100/60A5FA/ffffff?text=Smartwatch', stock: 30 },
-        { id: 'prod-003', name: 'Portable Bluetooth Speaker', description: 'Powerful sound on the go.', price: 79.50, imageUrl: 'https://placehold.co/100x100/34D399/ffffff?text=Speaker', stock: 120 },
-        { id: 'prod-004', name: '4K UHD Smart TV 55"', description: 'Immersive viewing experience.', price: 799.00, imageUrl: 'https://placehold.co/100x100/F472B6/ffffff?text=SmartTV', stock: 15 },
-        { id: 'prod-005', name: 'Ergonomic Office Chair', description: 'Comfort and support for long hours.', price: 299.99, imageUrl: 'https://placehold.co/100x100/FBBF24/ffffff?text=Chair', stock: 40 },
-      ];
-      // setProducts(fetchedProducts);
-      // In a real app:
-      // try {
-      //   const response = await fetch(`${apiBaseUrl}/products?companyId=${companyId}`);
-      //   if (!response.ok) throw new Error('Failed to fetch products');
-      //   const data = await response.json();
-      //   setProducts(data);
-      // } catch (error) {
-      //   console.error("Error fetching products:", error);
-      //   // Fallback to empty or previous state, or show error message
-      //   setProducts([]);
-      // }
-    };
+    //   await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
+    //   const fetchedProducts: Product[] = [
+    //     { id: 'prod-001', name: 'Wireless Headphones XYZ', description: 'Premium noise-cancelling headphones.', price: 199.99, imageUrl: 'https://placehold.co/100x100/A78BFA/ffffff?text=Headphones', stock: 50 },
+    //     { id: 'prod-002', name: 'Smartwatch Pro 2.0', description: 'Track your fitness and notifications.', price: 249.00, imageUrl: 'https://placehold.co/100x100/60A5FA/ffffff?text=Smartwatch', stock: 30 },
+    //     { id: 'prod-003', name: 'Portable Bluetooth Speaker', description: 'Powerful sound on the go.', price: 79.50, imageUrl: 'https://placehold.co/100x100/34D399/ffffff?text=Speaker', stock: 120 },
+    //     { id: 'prod-004', name: '4K UHD Smart TV 55"', description: 'Immersive viewing experience.', price: 799.00, imageUrl: 'https://placehold.co/100x100/F472B6/ffffff?text=SmartTV', stock: 15 },
+    //     { id: 'prod-005', name: 'Ergonomic Office Chair', description: 'Comfort and support for long hours.', price: 299.99, imageUrl: 'https://placehold.co/100x100/FBBF24/ffffff?text=Chair', stock: 40 },
+    //   ];
+    // };
 
     // 2. Fetch Agent Info (assuming a current user/agent context)
     const fetchAgentInfo = async () => {
-      // console.log("Fetching current agent info");
       await new Promise(resolve => setTimeout(resolve, 300)); // Simulate network delay
       const fetchedAgent: Agent = {
         id: userId || 'agent-001',
@@ -476,22 +462,11 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
         dailySalesValue: 1250.75,
       };
       setCurrentAgent(fetchedAgent);
-      // In a real app:
-      // try {
-      //   // Assuming an endpoint like /api/auth/me or /api/users/{currentUserId}
-      //   const response = await fetch(`${apiBaseUrl}/users/current`); // Or get current user ID from auth context
-      //   if (!response.ok) throw new Error('Failed to fetch agent info');
-      //   const data = await response.json();
-      //   setCurrentAgent(data);
-      // } catch (error) {
-      //   console.error("Error fetching agent info:", error);
-      //   setCurrentAgent(null);
-      // }
     };
 
     // 3. Fetch Company Info
     const fetchCompanyInfo = async () => {
-      // console.log(`Fetching company info for companyId: ${companyId}`);
+      
       await new Promise(resolve => setTimeout(resolve, 400)); // Simulate network delay
       const fetchedCompany: CompanyInfo = {
         name: 'Your Awesome Store',
@@ -500,48 +475,13 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
         currency: 'KES', // Default from schema, or fetched
       };
       setCompanyInfo(fetchedCompany);
-      // In a real app:
-      // try {
-      //   const response = await fetch(`${apiBaseUrl}/companies/${companyId}`);
-      //   if (!response.ok) throw new Error('Failed to fetch company info');
-      //   const data = await response.json();
-      //   setCompanyInfo(data);
-      // } catch (error) {
-      //   console.error("Error fetching company info:", error);
-      //   setCompanyInfo(null);
-      // }
     };
 
-    fetchProducts();
+    // // fetchProducts();
     fetchAgentInfo();
     fetchCompanyInfo();
   }, [companyId]); // Dependency array: re-run if companyId changes
 
-
-  // --- Cart Actions ---
-  // const handleAddToCart = useCallback((product: MarketListingForm) => {
-  //   setCart(prevCart => {
-  //     const existingItem = prevCart.find(item => item.id === product.id);
-  //     if (existingItem) {
-  //       const newQuantity = existingItem.quantity + 1;
-  //       // if (newQuantity > product.stock) {
-  //       //   alert(`Cannot add more than available stock (${product.stock}) for ${product.name}`);
-  //       //   return prevCart;
-  //       // }
-  //       return prevCart.map(item =>
-  //         item.id === product.id
-  //           ? { ...item, quantity: newQuantity, subtotal: (product.finalPrice ?? 0) * newQuantity }
-  //           : item
-  //       );
-  //     } else {
-  //       // if (1 > product.stock) {
-  //       //   alert(`Cannot add ${product.name} as it's out of stock.`);
-  //       //   return prevCart;
-  //       // }
-  //       return [...prevCart, { ...product, quantity: 1, subtotal: product.finalPrice }];
-  //     }
-  //   });
-  // }, []);
   const handleAddToCart = useCallback((product: MarketListingForm) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.id === product.id);
@@ -599,8 +539,6 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     }
   }, []);
 
-  
-
   // Cart calculations
   const subtotal = useMemo(() => {
     return cart.reduce((sum, item) => sum + item.subtotal, 0);
@@ -609,12 +547,6 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   const totalDiscountAmount = useMemo(() => {
     return (subtotal * discountPercentage) / 100;
   }, [subtotal, discountPercentage]);
-
-  // const totalTax = useMemo(() => {
-  //   // Example: 8% tax on subtotal after discount
-  //   const taxableAmount = subtotal - totalDiscountAmount;
-  //   return taxableAmount * 0.08;
-  // }, [subtotal, totalDiscountAmount]);
 
   const totalTax = useMemo(() => {
     const taxRate = companyInfo?.taxRate ?? 0.08;
@@ -720,98 +652,6 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     alert(`Error: ${error.message}`);
   }
 }, [cart, finalTotal, subtotal, totalDiscountAmount, totalTax, companyId, userId, currentAgent, companyInfo, currencySymbol]);
-
-  // const finalizeSale = useCallback(async () => {
-  //   setPaymentStatus(null); // Reset status
-  //   console.log("Finalizing sale...");
-
-  //   // Prepare payload for the /api/customer-orders API
-  //   const orderPayload = {
-  //     userId: currentAgent?.id, // Get current agent's ID
-  //     companyId: companyId,
-  //     totalAmount: finalTotal,
-  //     discountAmount: totalDiscountAmount,
-  //     taxAmount: totalTax,
-  //     paymentDetails: {
-  //       amount: finalTotal,
-  //       status: 'COMPLETED', // Assuming immediate completion for this simulation
-  //       transactionId: `TXN-${Date.now()}`, // Generate unique ID
-  //     },
-  //     items: cart.map(item => ({
-  //       productId: item.id,
-  //       quantity: item.quantity,
-  //       priceAtSale: item.finalPrice,
-  //       subtotal: item.subtotal,
-  //     })),
-  //   };
-
-  //   // Simulate API call to /api/customer-orders
-  //   try {
-  //     // In a real app:
-  //     // const response = await fetch(`${apiBaseUrl}/customer-orders', {
-  //     //   method: 'POST',
-  //     //   headers: { 'Content-Type': 'application/json' },
-  //     //   body: JSON.stringify(orderPayload),
-  //     // });
-  //     // if (!response.ok) throw new Error('Failed to process order');
-  //     // const result = await response.json(); // May contain transaction ID or order ID
-
-  //     await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
-
-  //     const success = Math.random() > 0.1; // 90% success rate for simulation
-  //     if (success) {
-  //       setPaymentStatus('success');
-
-  //       // --- Receipt Printing (uses dynamic company and agent info) ---
-  //       const now = new Date();
-  //       const receiptDetails: ReceiptDetails = {
-  //         cart,
-  //         subtotal,
-  //         totalDiscountAmount,
-  //         totalTax,
-  //         finalTotal,
-  //         agentId: currentAgent?.id || 'N/A',
-  //         agentName: currentAgent?.name || 'N/A',
-  //         transactionId: orderPayload.paymentDetails.transactionId,
-  //         date: now.toLocaleDateString(),
-  //         time: now.toLocaleTimeString(),
-  //         storeName: companyInfo?.name || 'Your Awesome Store',
-  //         storeAddress: companyInfo?.address || '123 Main St, City, Country',
-  //         storePhone: companyInfo?.phone || '+1 (555) 123-4567',
-  //         currencySymbol: currencySymbol,
-  //       };
-  //       const receiptHtml = generateReceiptHtml(receiptDetails);
-  //       printReceipt(receiptHtml);
-  //       // --- End Receipt Printing ---
-
-  //       // Clear cart and reset discount
-  //       setCart([]);
-  //       setDiscountPercentage(0);
-
-  //       // Simulate stock update on the frontend (real app would rely on backend confirmation)
-  //       setProducts(prevProducts =>
-  //         prevProducts.map(p => {
-  //           const soldItem = cart.find(ci => ci.id === p.id);
-  //           // if (soldItem) {
-  //           //   return { ...p, stock: p.stock - soldItem.quantity };
-  //           // }
-  //           return p;
-  //         })
-  //       );
-  //       // Potentially update agent's displayed sales metrics if they are stateful on frontend
-  //       // setCurrentAgent(prev => prev ? { ...prev, dailySalesCount: prev.dailySalesCount + 1, dailySalesValue: prev.dailySalesValue + finalTotal } : null);
-
-  //     } else {
-  //       setPaymentStatus('failed');
-  //     }
-  //   } catch (error) {
-  //     console.error("Error during sale finalization:", error);
-  //     setPaymentStatus('failed');
-  //   } finally {
-  //     setShowPaymentModal(false);
-  //     setShowConfirmationModal(true); // Show confirmation of success/failure
-  //   }
-  // }, [cart, subtotal, totalDiscountAmount, totalTax, finalTotal, currentAgent, companyId, companyInfo, currencySymbol]);
 
   const handleProcessPayment = useCallback(() => {
     if (cart.length === 0) {
@@ -959,212 +799,180 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   
   // --- Render ---
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100 font-inter p-6 lg:p-10">
-      <h1 className="text-5xl lg:text-6xl font-extrabold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 drop-shadow-lg">
-        Store Point of Sale
-      </h1>
+     <div className="min-h-screen bg-zinc-50 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 font-sans transition-colors duration-300">
+      {/* <InlineStyles /> */}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-        {/* Left Column: Product Search & List */}
-        <div className="lg:col-span-2 bg-gray-800 p-6 rounded-2xl shadow-2xl border border-gray-700 flex flex-col">
-          <div className="flex items-center bg-gray-700 rounded-full px-5 py-3 mb-6 shadow-inner border border-gray-600">
-            <MagnifyingGlassIcon className="h-6 w-6 text-gray-400 mr-3" />
+      {/* TOP NAVIGATION BAR */}
+      <nav className="sticky top-0 z-30 glass-panel h-16 px-4 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold">S</span>
+          </div>
+          <h1 className="text-lg font-bold tracking-tight hidden md:block">
+            Salesman<span className="text-indigo-600">Pro</span>
+          </h1>
+        </div>
+
+        <div className="flex-1 max-w-xl mx-8 hidden sm:block">
+          <div className="relative group">
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
             <input
               type="text"
-              placeholder="Search products by name or description..."
-              className="flex-grow bg-transparent outline-none text-lg text-white placeholder-gray-400"
+              placeholder="Search SKU or product name (Ctrl + K)"
+              className="w-full bg-zinc-100 dark:bg-zinc-800 border-none rounded-xl py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-indigo-500 transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              aria-label="Search products"
             />
-            {searchTerm && (
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="text-right hidden md:block">
+            <p className="text-xs font-medium text-zinc-500">Active Agent</p>
+            <p className="text-sm font-bold">{userName}</p>
+          </div>
+          <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600">
+            <UserIcon className="h-5 w-5" />
+          </div>
+        </div>
+      </nav>
+
+      <main className="max-w-[1800px] mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-64px)]">
+        
+        {/* LEFT: PRODUCT CATALOGUE */}
+        <div className="lg:col-span-8 flex flex-col gap-4 overflow-hidden">
+          
+          {/* CATEGORIES */}
+          <div className="flex items-center gap-2 overflow-x-auto p-4 custom-scrollbar">
+            {['all', ...categories].map((cat: any) => (
               <button
-                onClick={() => setSearchTerm('')}
-                className="ml-3 text-gray-400 hover:text-gray-200 transition-colors"
-                aria-label="Clear search"
+                key={typeof cat === 'string' ? cat : cat.id}
+                onClick={() => setSelectedCategory(typeof cat === 'string' ? cat : cat.id)}
+                className={`px-6 py-2.5 rounded-xl text-sm font-semibold transition-all whitespace-nowrap border ${
+                  selectedCategory === (typeof cat === 'string' ? cat : cat.id)
+                    ? 'bg-zinc-900 dark:bg-white text-white dark:text-black border-transparent shadow-lg shadow-black/10'
+                    : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:border-zinc-400'
+                }`}
               >
-                <XMarkIcon className="h-6 w-6" />
+                {typeof cat === 'string' ? 'All Products' : cat.displayName}
               </button>
-            )}
+            ))}
           </div>
 
-          {/* Category Pills */}
-          <div className="flex space-x-3 mb-4 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory">
-            <button
-              onClick={() => setSelectedCategory('all')}
-              className={`snap-start flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${selectedCategory === 'all' ? 'bg-pink-600 text-white shadow-lg shadow-pink-500/40 scale-105' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
-            >
-              All Products
-            </button>
-            {categories.map((cat) => {
-              const id = (cat as any).categoryId || (cat as any).id;
-              return (
-                <button
-                  key={id}
-                  onClick={() => setSelectedCategory(id)}
-                  className={`snap-start flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${selectedCategory === id ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/40 scale-105' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
-                >
-                  {cat.displayName}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 overflow-y-auto flex-grow pr-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
-            {products.length === 0 && !searchTerm ? (
-              <div className="col-span-full text-center py-10 text-gray-400 text-xl">
-                Loading products...
-              </div>
-            ) : filteredProducts.length === 0 ? (
-              <div className="col-span-full text-center py-10 text-gray-400 text-xl">
-                No products found matching your search.
-              </div>
-            ) : (
-              filteredProducts.map(product => (
-                <div
-                  key={product.id}
-                  className="bg-gray-700 max-h-80 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1 flex flex-col overflow-hidden border border-gray-600"
-                >
+          {/* GRID */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto pr-2 custom-scrollbar">
+            {filteredProducts.map(product => (
+              <div
+                key={product.id}
+                onClick={() => handleAddToCart(product)}
+                className="group cursor-pointer bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 hover:ring-2 hover:ring-indigo-500 transition-all active:scale-95 shadow-sm"
+              >
+                <div className="relative aspect-square overflow-hidden rounded-xl mb-3">
                   <img
-                    src={product.images && product?.images?.length > 0 ? product.images[0] : `https://placehold.co/100x100/4B5563/ffffff?text=${product && product?.name || 'No+Image'}` }
-                    alt={product.name}
-                    className="w-full h-32 object-cover rounded-t-xl border-b border-gray-600"
-                    onError={(e) => { e.currentTarget.src = `https://placehold.co/100x100/4B5563/ffffff?text=${product && product?.name || 'No+Image'}`; }}
+                    src={product.images?.[0] || `https://placehold.co/200x200?text=${product.name}`}
+                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                    alt=""
                   />
-                  <div className="p-4 flex-grow flex flex-col justify-between">
-                    <div>
-                      <h3 className="text-xl font-semibold text-purple-300 mb-1 truncate">{product.name}</h3>
-                      <p className="text-sm text-gray-400 mb-2 line-clamp-2">{product.description}</p>
-                    </div>
-                    <div className="flex justify-between items-end mt-auto">
-                      <div>
-                        <p className="text-lg font-bold text-green-400">{currencySymbol} {product.finalPrice?.toFixed(2)}</p>
-                        <p className="text-xs text-gray-400">Stock: - </p> 
-                          {/* {product.stock}*/}
+                  {(product.stock) < 10 && (
+                    <span className="absolute top-2 left-2 bg-amber-500 text-[10px] font-bold text-white px-2 py-1 rounded-md uppercase">
+                      Low Stock
+                    </span>
+                  )}
+                </div>
+                <h3 className="font-bold text-sm truncate">{product.name}</h3>
+                <div className="flex justify-between items-center mt-2">
+                  <span className="text-indigo-600 dark:text-indigo-400 font-black">
+                    {currencySymbol}{product.finalPrice?.toLocaleString() || product.sellingPrice.toLocaleString()}
+                  </span>
+                  <div className="p-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-zinc-400 group-hover:text-indigo-500 transition-colors">
+                    <PlusIcon className="h-4 w-4" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* RIGHT: CART SYSTEM */}
+        <div className="hidden lg:flex lg:col-span-4 flex-col glass-panel rounded-[2rem] overflow-hidden border-none shadow-2xl">
+          <div className="p-6 flex flex-col h-full">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-black flex items-center gap-2">
+                Current Order <span className="bg-indigo-600 text-[10px] text-white px-2 py-0.5 rounded-full">{cart.length}</span>
+              </h2>
+              <button onClick={handleClearCart} className="text-xs font-bold text-zinc-400 hover:text-red-500 transition-colors uppercase tracking-widest">
+                Reset
+              </button>
+            </div>
+
+            {/* CART ITEMS */}
+            <div className="flex-grow overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+              {cart.map(item => (
+                <div key={item.id} className="flex gap-4 group">
+                  <div className="h-16 w-16 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 flex-shrink-0">
+                    <img src={item.images?.[0]} className="w-full h-full object-cover" alt="" />
+                  </div>
+                  <div className="flex-grow min-w-0">
+                    <p className="font-bold text-sm truncate">{item.name}</p>
+                    <div className="flex items-center gap-3 mt-1">
+                      <div className="flex items-center border border-zinc-200 dark:border-zinc-800 rounded-lg">
+                        <button onClick={() => handleQuantityChange(item.id, -1)} className="p-1 hover:text-indigo-500">
+                          <MinusIcon className="h-3 w-3" />
+                        </button>
+                        <span className="text-xs font-bold w-6 text-center">{item.quantity}</span>
+                        <button onClick={() => handleQuantityChange(item.id, 1)} className="p-1 hover:text-indigo-500">
+                          <PlusIcon className="h-3 w-3" />
+                        </button>
                       </div>
-                      <button
-                        onClick={() => handleAddToCart(product)}
-                        className="bg-purple-600 text-white p-3 rounded-full shadow-md hover:bg-purple-700 transition-all duration-200 transform hover:scale-110"
-                        aria-label={`Add ${product.name} to cart`}
-                        // disabled={product.stock <= 0}
-                      >
-                        <PlusIcon className="h-5 w-5" />
-                      </button>
+                      <span className="text-sm font-bold text-zinc-500">
+                        {currencySymbol}{((item.finalPrice || item.sellingPrice) * item.quantity).toLocaleString()}
+                      </span>
                     </div>
                   </div>
                 </div>
-              ))
-            )}
+              ))}
+            </div>
+
+            {/* TOTALS */}
+            <div className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-800 space-y-3">
+              <div className="flex justify-between text-sm font-medium text-zinc-500">
+                <span>Subtotal</span>
+                <span>{currencySymbol}{subtotal.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-2xl font-black pt-2">
+                <span>Total</span>
+                <span className="text-indigo-600 dark:text-indigo-400">{currencySymbol}{finalTotal.toLocaleString()}</span>
+              </div>
+              
+              <button
+                onClick={handleProcessPayment}
+                disabled={cart.length === 0}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-indigo-500/20 transition-all active:scale-95 mt-4 flex items-center justify-center gap-2"
+              >
+                <CreditCardIcon className="h-6 w-6" />
+                Complete Transaction
+              </button>
+            </div>
           </div>
         </div>
+      </main>
 
-        {/* Right Column: Cart & Checkout */}
-        
-        <div className="hidden lg:block">{CartSummary}</div>
-
+      {/* MOBILE BAR */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 glass-panel border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+        <div>
+          <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest">Total Pay</p>
+          <p className="text-xl font-black text-indigo-600">{currencySymbol}{finalTotal.toLocaleString()}</p>
+        </div>
+        <button 
+          onClick={() => setShowMobileCart(true)}
+          className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-indigo-500/30"
+        >
+          <ShoppingCartIcon className="h-5 w-5" />
+          Cart ({itemCount})
+        </button>
       </div>
-
-
-      {/* Mobile floating cart button */}
-            <div className="lg:hidden fixed bottom-6 right-6 z-50">
-              <button
-                onClick={() => setShowMobileCart(true)}
-                className={`relative bg-gradient-to-r from-pink-500 to-red-500 text-white p-5 rounded-full shadow-2xl transition-transform duration-300 transform ${itemCount > 0 ? 'animate-bounce-slow' : ''}`}
-                aria-label="Open cart"
-                onMouseDown={(e) => ripple.createRipple(e as any)}
-                ref={ripple.containerRef as any}
-              >
-                <ShoppingCartIcon className="h-7 w-7" />
-                {itemCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-green-500 text-xs font-bold px-2 py-1 rounded-full ring-2 ring-gray-900">
-                    {itemCount}
-                  </span>
-                )}
-              </button>
-            </div>
-      
-            {/* Mobile full-screen cart overlay */}
-            <div
-              className={`fixed inset-0 z-[60] transform transition-transform duration-500 ease-in-out lg:hidden ${showMobileCart ? 'translate-x-0' : 'translate-x-full'} bg-gray-900/95 backdrop-blur-sm p-4 overflow-y-auto`}
-              aria-hidden={!showMobileCart}
-            >
-              <div ref={mobileCartRef} className="max-w-[900px] mx-auto h-full">
-                <div className="flex items-center justify-between mb-4 border-b border-gray-700 pb-4 sticky top-0 bg-gray-900 z-10">
-                  <button
-                    onClick={() => setShowMobileCart(false)}
-                    className="text-white p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors"
-                    aria-label="Close cart"
-                  >
-                    <ChevronLeftIcon className="h-6 w-6" />
-                  </button>
-                  <h2 className="text-3xl font-bold text-purple-300 flex items-center">
-                    <ShoppingCartIcon className="h-8 w-8 mr-3 text-purple-400" /> Checkout
-                  </h2>
-                  <button
-                    onClick={handleClearCart}
-                    className="text-red-400 hover:text-red-300 transition-colors text-base font-medium"
-                    disabled={cart.length === 0}
-                  >
-                    Clear
-                  </button>
-                </div>
-      
-                <div className="h-[calc(100vh-6rem)]">
-                  {CartSummary}
-                </div>
-              </div>
-            </div>
-
-      {/* Confirmation Modal */}
-      <Modal title="Confirm Payment" isOpen={showConfirmationModal} onClose={() => setShowConfirmationModal(false)}>
-        <div className="bg-gray-800 text-gray-100 p-8 rounded-xl shadow-2xl w-full max-w-sm mx-auto text-center">
-          {paymentStatus === 'success' ? (
-            <>
-              <CheckCircleIcon className="h-20 w-20 text-green-500 mx-auto mb-6" />
-              <h2 className="text-3xl font-bold text-green-400 mb-4">Payment Successful!</h2>
-              <p className="text-lg text-gray-300 mb-7">Transaction completed. Your receipt should appear in a new window/tab for printing.</p>
-              <button
-                onClick={() => setShowConfirmationModal(false)}
-                className="px-6 py-3 bg-green-600 text-white rounded-lg shadow-md hover:bg-green-700 transition-all duration-200 font-semibold"
-              >
-                Done
-              </button>
-            </>
-          ) : (
-            <>
-              <XMarkIcon className="h-20 w-20 text-red-500 mx-auto mb-6" />
-              <h2 className="text-3xl font-bold text-red-400 mb-4">Payment Failed</h2>
-              <p className="text-lg text-gray-300 mb-7">There was an issue processing the payment. Please try again.</p>
-              <button
-                onClick={() => setShowConfirmationModal(false)}
-                className="px-6 py-3 bg-red-600 text-white rounded-lg shadow-md hover:bg-red-700 transition-all duration-200 font-semibold"
-              >
-                Close
-              </button>
-            </>
-          )}
-        </div>
-      </Modal>
-
-      {/* Payment Processing Modal (Simple) */}
-      <Modal title="Processing Payment" isOpen={showPaymentModal} onClose={() => setShowPaymentModal(false)}>
-        <div className="bg-gray-800 text-gray-100 p-8 rounded-xl shadow-2xl w-full max-w-sm mx-auto text-center">
-          <CreditCardIcon className="h-20 w-20 text-indigo-400 mx-auto mb-6 animate-pulse" />
-          <h2 className="text-3xl font-bold text-indigo-400 mb-4">Processing Payment...</h2>
-          <p className="text-lg text-gray-300 mb-7">Please wait while your transaction is being finalized.</p>
-          <button
-            onClick={finalizeSale}
-            className="px-6 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition-all duration-200 font-semibold flex items-center justify-center"
-            disabled={true}
-          >
-            <ClipboardDocumentCheckIcon className="h-5 w-5 mr-2" /> Finalizing...
-          </button>
-        </div>
-      </Modal>
-
-      
-
     </div>
+  
   );
 };
 
