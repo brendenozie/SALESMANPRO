@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
     destination.searchParams.set("auth", "success");
 
     if(isDesktop) {
-      const dashboards = new URL("/dashboards", destination);
+      const dashboards = new URL(`${destination.pathname}/dashboards`, destination);
       
       return NextResponse.redirect(dashboards.toString());
     }else{
