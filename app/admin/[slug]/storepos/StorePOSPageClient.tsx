@@ -215,15 +215,30 @@ const generateReceiptHtml = (details: ReceiptDetails): string => {
 
 // --- Print Function (remains mostly the same, now uses dynamic currencySymbol) ---
 // --- Updated Print Function for Desktop Integration ---
-const printReceipt = (htmlContent: string) => {
+const printReceipt = (htmlContent: string, receiptDetails: any) => {
   // 1. Check if we are running inside the SalesmanPro Desktop App
   if ((window as any).chrome?.webview) {
+    // (window as any).chrome.webview.postMessage({
+    //   type: 'PRINT_HTML_RECEIPT',
+    //   payload: htmlContent
+    // });
+
     (window as any).chrome.webview.postMessage({
-      type: 'PRINT_HTML_RECEIPT',
-      payload: htmlContent
+      type: 'PRINT_ESC_POS',
+      payload: {
+        businessName: receiptDetails.storeName || 'Your Store',
+        items: receiptDetails,
+        // .map((item: CartItem) => ({
+        //   name: item.name,
+        //   quantity: item.quantity,
+        //   price: item.
+        // })),
+        total: receiptDetails.finalTotal,
+        date: new Date().toISOString()
+      }
     });
-    // console.log("Sent receipt to Desktop Printer Service");
-      (window as any).chrome.webview.postMessage({ type: 'NOTIFY', message: 'Receipt sent to printer!' });
+
+    (window as any).chrome.webview.postMessage({ type: 'NOTIFY', message: 'Receipt sent to printer!' });
 
     return;
   }
@@ -639,7 +654,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     };
 
     const receiptHtml = generateReceiptHtml(receiptDetails);
-    printReceipt(receiptHtml);
+    printReceipt(receiptHtml, receiptDetails);
 
     // 4. Cleanup
     setCart([]);
@@ -649,7 +664,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   } catch (error: any) {
     console.error("Order creation failed:", error);
     setPaymentStatus('failed');
-    alert(`Error: ${error.message}`);
+    alert(`Error: ${error}`);
   }
 }, [cart, finalTotal, subtotal, totalDiscountAmount, totalTax, companyId, userId, currentAgent, companyInfo, currencySymbol]);
 
