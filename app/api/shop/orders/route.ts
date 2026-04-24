@@ -12,6 +12,8 @@ import { initiateStripePaymentIntent } from "@/lib/paymentsv2/stripe";
 import { createPaypalOrder } from "@/lib/paymentsv2/paypal";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
+import { formatResponse } from "@/lib/formatResponse";
+
 // ---------------------------
 // GLOBAL CORS HEADERS
 // ---------------------------
@@ -21,25 +23,25 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 //   "Access-Control-Allow-Headers":
 //   "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
 // };
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*", // Or your specific desktop app origin
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Credentials": "true",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Requested-With, Accept, cache-control",
-  "Access-Control-Max-Age": "86400",
-};
+// const CORS_HEADERS = {
+//   "Access-Control-Allow-Origin": "*", // Or your specific desktop app origin
+//   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+//   "Access-Control-Allow-Credentials": "true",
+//   "Access-Control-Allow-Headers":
+//     "Content-Type, Authorization, X-Requested-With, Accept, cache-control",
+//   "Access-Control-Max-Age": "86400",
+// };
 
-function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
-  return new NextResponse(JSON.stringify(json), {
-    status,
-    headers: {
-      "Content-Type": "application/json",
-      ...CORS_HEADERS,
-      ...extraHeaders,
-    },
-  });
-}
+// function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
+//   return new NextResponse(JSON.stringify(json), {
+//     status,
+//     headers: {
+//       "Content-Type": "application/json",
+//       ...CORS_HEADERS,
+//       ...extraHeaders,
+//     },
+//   });
+// }
 
 // ---------------------------
 // OPTIONS (PRE-FLIGHT)
@@ -51,17 +53,17 @@ function withCors(json: any, status = 200, extraHeaders: Record<string, string> 
 //   });
 // }
 
-export async function OPTIONS(request: Request) {
-  return new Response(null, {
-    status: 204, // 204 No Content is standard for preflight responses
-    headers: {
-      "Access-Control-Allow-Origin": "*", // Or '*' for testing
-      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      "Access-Control-Allow-Credentials": "true",
-    },
-  });
-}
+// export async function OPTIONS(request: Request) {
+//   return new Response(null, {
+//     status: 204, // 204 No Content is standard for preflight responses
+//     headers: {
+//       "Access-Control-Allow-Origin": "*", // Or '*' for testing
+//       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+//       "Access-Control-Allow-Headers": "Content-Type, Authorization",
+//       "Access-Control-Allow-Credentials": "true",
+//     },
+//   });
+// }
 
 /* Order schema - mirrors your existing schema (light validation) */
 const orderSchema = z.object({
@@ -97,14 +99,17 @@ function generateTrackingNumber() {
 export const POST = withApiHandler(async (req) => {
   try {
 
-    if (req.method === "OPTIONS") {
-      return NextResponse.next();
-    }
+    // if (req.method === "OPTIONS") {
+    //   return NextResponse.next();
+    // }
 
     const body = await req.json();
     const parsed = orderSchema.safeParse(body);
+
     if (!parsed.success) {
-      return withCors({ success: false, error: parsed.error.flatten() }, 400);
+      // return withCors({ success: false, error: parsed.error.flatten() }, 400);
+      // return formatResponse({ success: false, error: parsed.error.flatten() }, 400);
+      return formatResponse(false, null, "Invalid order data", 400);
     }
 
     const data = parsed.data;
@@ -135,7 +140,7 @@ export const POST = withApiHandler(async (req) => {
     switch (data.paymentOption) {
       case "mpesa": {
         const phoneNumber = data.paymentData?.mpesaPhone ?? data.mpesaPhone ?? data.phone;
-        if (!phoneNumber) return withCors({ success: false, error: "mpesaPhone required" }, 400);
+        if (!phoneNumber) return formatResponse(false, null, "mpesaPhone required", 400);
         paymentResponse = await initiateMpesaPayment(orderDb, phoneNumber, cfg.credentials);
         break;
       }
@@ -167,17 +172,24 @@ export const POST = withApiHandler(async (req) => {
         paymentResponse = { message: "Unknown payment option" };
     }
 
-    return withCors({
-      success: true,
-      data: {
-        order: orderDb,
-        trackingNumber,
-        paymentResponse,
-        authorizationUrl: paymentResponse?.data?.authorization_url ?? paymentResponse?.authorization_url ?? null,
-      },
-    });
+    return formatResponse(true, {
+      order: orderDb,
+      trackingNumber,
+      paymentResponse,
+      authorizationUrl: paymentResponse?.data?.authorization_url ?? paymentResponse?.authorization_url ?? null,
+    }, "Order created successfully", 201);
+
+    // return withCors({
+    //   success: true,
+    //   data: {
+    //     order: orderDb,
+    //     trackingNumber,
+    //     paymentResponse,
+    //     authorizationUrl: paymentResponse?.data?.authorization_url ?? paymentResponse?.authorization_url ?? null,
+    //   },
+    // });
   } catch (err: any) {
     console.error("Order creation failed:", err);
-    return withCors({ success: false, error: err?.message ?? String(err) }, 500);
+    return formatResponse(false, null, err.message || "Internal Server Error", 500);
   }
 });
