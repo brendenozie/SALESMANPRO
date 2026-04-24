@@ -223,19 +223,31 @@ const printReceipt = (htmlContent: string, receiptDetails: any) => {
     //   payload: htmlContent
     // });
 
+    // 1. Map the frontend data to the Desktop's OrderData class
+    const desktopPayload = {
+      BusinessName: receiptDetails.storeName,
+      Total: receiptDetails.finalTotal,
+      PaymentMethod: "Cash", // Or map from your payment logic
+      Date: receiptDetails.date + " " + receiptDetails.time,
+      Items: receiptDetails.cart.map((item:any) => ({
+        Name: item.name,
+        Quantity: item.quantity,
+        Price: item.finalPrice ?? 0,
+        Total: item.subtotal,
+        Category: (item as any).category || "General", // Match C# OrderItem
+        Route: (item as any).route || "dispatch"      // Match C# OrderItem
+      }))
+    };
+
     (window as any).chrome.webview.postMessage({
       type: 'PRINT_ESC_POS',
-      payload: {
-        businessName: receiptDetails.storeName || 'Your Store',
-        items: receiptDetails,
-        // .map((item: CartItem) => ({
-        //   name: item.name,
-        //   quantity: item.quantity,
-        //   price: item.
-        // })),
-        total: receiptDetails.finalTotal,
-        date: new Date().toISOString()
-      }
+      payload: desktopPayload
+    });
+
+    // Change this in your React code
+    (window as any).chrome.webview.postMessage({
+      type: 'PRINT_HTML_RECEIPT',
+      payload: htmlContent // Send the pre-rendered HTML string
     });
 
     (window as any).chrome.webview.postMessage({ type: 'NOTIFY', message: 'Receipt sent to printer!' });
