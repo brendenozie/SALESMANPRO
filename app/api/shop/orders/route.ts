@@ -23,6 +23,7 @@ import { createPaypalOrder } from "@/lib/paymentsv2/paypal";
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*", // Or your specific desktop app origin
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Credentials": "true",
   "Access-Control-Allow-Headers":
     "Content-Type, Authorization, X-Requested-With, Accept, cache-control",
   "Access-Control-Max-Age": "86400",
@@ -42,13 +43,24 @@ function withCors(json: any, status = 200, extraHeaders: Record<string, string> 
 // ---------------------------
 // OPTIONS (PRE-FLIGHT)
 // ---------------------------
-export function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: CORS_HEADERS,
+// export function OPTIONS() {
+//   return new NextResponse(null, {
+//     status: 204,
+//     headers: CORS_HEADERS,
+//   });
+// }
+
+export async function OPTIONS(request: Request) {
+  return new Response(null, {
+    status: 204, // 204 No Content is standard for preflight responses
+    headers: {
+      "Access-Control-Allow-Origin": "*", // Or '*' for testing
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Access-Control-Allow-Credentials": "true",
+    },
   });
 }
-
 
 /* Order schema - mirrors your existing schema (light validation) */
 const orderSchema = z.object({

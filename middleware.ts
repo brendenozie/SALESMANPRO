@@ -28,36 +28,55 @@ export const config = {
 
 const LOCAL_IPS = [
   "127.0.0.1",
-  "::1",              // IPv6 localhost
-  "localhost"
+  "::1", // IPv6 localhost
+  "localhost",
 ];
 
 const DEV_IP_RANGES = [
-  "192.168.",         // LAN
-  "10.",              // Private network
-  "172.16.", "172.17.", "172.18.", "172.19.",
-  "172.20.", "172.21.", "172.22.", "172.23.",
-  "172.24.", "172.25.", "172.26.", "172.27.",
-  "172.28.", "172.29.", "172.30.", "172.31."
+  "192.168.", // LAN
+  "10.", // Private network
+  "172.16.",
+  "172.17.",
+  "172.18.",
+  "172.19.",
+  "172.20.",
+  "172.21.",
+  "172.22.",
+  "172.23.",
+  "172.24.",
+  "172.25.",
+  "172.26.",
+  "172.27.",
+  "172.28.",
+  "172.29.",
+  "172.30.",
+  "172.31.",
 ];
 
 function isPrivateIp(ip: string | null) {
   if (!ip) return false;
 
   if (LOCAL_IPS.includes(ip)) return true;
-  return DEV_IP_RANGES.some(prefix => ip.startsWith(prefix));
+  return DEV_IP_RANGES.some((prefix) => ip.startsWith(prefix));
 }
 
-export default async function middleware(request: NextRequest, ev: NextFetchEvent) {
+export default async function middleware(
+  request: NextRequest,
+  ev: NextFetchEvent,
+) {
   const url = request.nextUrl.clone();
   const { pathname } = url;
   // const host = request.headers.get("host")?.split(":")[0] || "";
   // const origin = request.headers.get("origin");
-  
-// const url = request.nextUrl.clone();
-//   const { pathname } = url;
+
+  // const url = request.nextUrl.clone();
+  //   const { pathname } = url;
   const userAgent = request.headers.get("user-agent") || "";
-  
+
+  if (request.method === "OPTIONS") {
+    return NextResponse.next();
+  }
+
   // 1. Detect if it's our Desktop App
   const isDesktop = userAgent.includes("SalesmanProDesktop");
 
@@ -67,13 +86,13 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   const isLocalNetwork = isPrivateIp(clientIp);
 
   // We explicitly pass the secret and handle both secure and non-secure cookie names
-  // const session = await getToken({ 
+  // const session = await getToken({
   //   req: request,
   //   secret: process.env.NEXTAUTH_SECRET!,
   //   // This ensures it works on both localhost (http) and production (https)
   //   cookieName: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token'
   // });
-  const session = await getToken({ 
+  const session = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET!,
     secureCookie: true, // Force secure cookies in production, but allow non-secure in development
@@ -82,7 +101,7 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   // console.log("DEBUG: Is Desktop:", isDesktop);
   // console.log("DEBUG: Session Found:", !!session);
   // console.log("DEBUG: Cookies Present:", request.headers.get("cookie"));
-  
+
   // 1. PREVENT REDIRECT LOOPS
   // Only redirect to login if we are NOT already there and NOT in an auth API call
   // const isAuthPage = pathname.startsWith("/desktop-login") || pathname.startsWith("/api/auth");
@@ -118,12 +137,10 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   const fullHost = request.headers.get("host") || "";
 
   const isLocalHost =
-    host === "localhost" ||
-    host === "127.0.0.1" ||
-    fullHost.endsWith(":3000");
-    
+    host === "localhost" || host === "127.0.0.1" || fullHost.endsWith(":3000");
+
   // ---- 1. API & CORS HANDLING ----
-   if (pathname.startsWith("/api/")) {
+  if (pathname.startsWith("/api/")) {
     return NextResponse.next();
   }
 
@@ -150,7 +167,9 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
 
   // ---- 2. WWW REDIRECT ----
   if (host.startsWith("www.")) {
-    return NextResponse.redirect(`https://${host.replace("www.", "")}${pathname}`);
+    return NextResponse.redirect(
+      `https://${host.replace("www.", "")}${pathname}`,
+    );
   }
 
   // ---- 3. PRIMARY HOST & LOCALHOST HANDLING ----
@@ -180,16 +199,22 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   //   }
   // }
 
-  if(pathname.startsWith("/signin") || pathname.startsWith("/signup") || pathname.startsWith("/dashboards") || pathname.startsWith("/stores") || pathname.startsWith("/admin")){
+  if (
+    pathname.startsWith("/signin") ||
+    pathname.startsWith("/signup") ||
+    pathname.startsWith("/dashboards") ||
+    pathname.startsWith("/stores") ||
+    pathname.startsWith("/admin")
+  ) {
     return NextResponse.next();
   }
-  
+
   // ---- 4. AUTH DOMAIN HANDLING ----
   // Allow auth.salesmanpro.site to resolve normally
   if (host === AUTH_DOMAIN) {
     return NextResponse.next();
   }
-  
+
   // ---- 5. SUBDOMAIN HANDLING (slug.salesmanpro.site) ----
   if (host.endsWith(".salesmanpro.site") || host.endsWith(".test")) {
     const subdomain = host
@@ -202,7 +227,7 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
       } else {
         url.pathname = `/site/${subdomain}${pathname}`;
       }
-      
+
       const res = NextResponse.rewrite(url);
       res.headers.set("x-requested-subdomain", subdomain);
       res.headers.set("x-original-path", pathname);
@@ -229,34 +254,34 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
 
     const identifier = host; // e.g. "flourishhub.co.ke"
 
-    url.pathname = pathname === "/" || pathname === ""
+    url.pathname =
+      pathname === "/" || pathname === ""
         ? `/site/${identifier}`
         : `/site/${identifier}${pathname}`;
-
 
     const res = NextResponse.rewrite(url);
     res.headers.set("x-requested-host", host);
     res.headers.set("x-original-path", pathname);
     res.headers.set("x-rewritten-slug", normalizedHost);
-    
+
     return res;
   }
 
   if (host && SECONDARY_HOSTS.includes(host)) {
     // If the path is /site/duka-yangu, we don't want to rewrite it AGAIN
     // because it's already pointing to the correct internal directory.
-    
+
     if (pathname.startsWith("/site/")) {
-      return NextResponse.next(); 
+      return NextResponse.next();
     }
 
     // If you want to allow a "default" for the ngrok root, set it here
-    const defaultSlug = "duka-yangu"; 
+    const defaultSlug = "duka-yangu";
     url.pathname = `/site/${defaultSlug}${pathname === "/" ? "" : pathname}`;
 
     return NextResponse.rewrite(url);
   }
-  
+
   // ---- 7. DEFAULT ----
   // All other requests
   return NextResponse.next();
