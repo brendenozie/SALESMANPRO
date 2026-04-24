@@ -107,6 +107,20 @@ export default async function middleware(
     pathname.includes("_next") || // Double check static assets
     pathname.includes("favicon.ico");
 
+  // ✅ Allow preflight requests to pass through untouched
+  // if (request.method === "OPTIONS") {
+  //   return new NextResponse(null, {
+  //     status: 204,
+  //     headers: {
+  //       "Access-Control-Allow-Origin": request.headers.get("origin") || "*",
+  //       "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,PATCH,OPTIONS",
+  //       "Access-Control-Allow-Headers":
+  //         "Content-Type, Authorization, X-Requested-With, cache-control",
+  //       "Access-Control-Allow-Credentials": "true",
+  //     },
+  //   });
+  // }
+
   if (isDesktop && !session && !isAuthPage) {
     return NextResponse.redirect(new URL("/desktop-login", request.url));
   }

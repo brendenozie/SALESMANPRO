@@ -8,7 +8,10 @@ type HandlerContext = {
   user?: VerifiedUser;
 };
 
-type HandlerFn = (request: Request, context: HandlerContext) => Promise<Response>;
+type HandlerFn = (
+  request: Request,
+  context: HandlerContext,
+) => Promise<Response>;
 
 interface ApiHandlerOptions {
   requireAuth?: boolean;
@@ -23,6 +26,7 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
   "Access-Control-Allow-Headers":
     "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
+  "Access-Control-Allow-Credentials": "true",
 };
 
 /* -----------------------------------------
@@ -40,7 +44,7 @@ function applyCors(response: Response) {
 ------------------------------------------ */
 export function withApiHandler(
   handler: HandlerFn,
-  options: ApiHandlerOptions = { requireAuth: true, requireRateLimit: true }
+  options: ApiHandlerOptions = { requireAuth: true, requireRateLimit: true },
 ): HandlerFn {
   return async (request: Request, context: HandlerContext) => {
     try {
@@ -55,7 +59,7 @@ export function withApiHandler(
 
         if (!auth.success || !auth.user) {
           return applyCors(
-            formatResponse(false, null, auth.error || "Unauthorized", 401)
+            formatResponse(false, null, auth.error || "Unauthorized", 401),
           );
         }
 
@@ -72,7 +76,6 @@ export function withApiHandler(
       const response = await handler(request, context);
 
       return applyCors(response);
-
     } catch (error) {
       return applyCors(handlePrismaError(error));
     }

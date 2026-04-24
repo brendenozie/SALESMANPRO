@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import prisma from "@/server/db/prismadb";
-import { createOrder  as createOrderRecord } from "@/lib/orders/createOrder";// your createOrder helper path
+import { createOrder as createOrderRecord } from "@/lib/orders/createOrder"; // your createOrder helper path
 import { getCompanyPaymentConfig } from "@/lib/paymentsv2/index";
 import { initiateMpesaPayment } from "@/lib/paymentsv2/mpesa";
 import { initiatePaystackPayment } from "@/lib/paymentsv2/paystack";
@@ -72,7 +72,18 @@ const orderSchema = z.object({
   phone: z.string(),
   mpesaPhone: z.string().optional(),
   consumerId: z.string(),
-  paymentOption: z.enum(["cod", "pickupatshop", "mpesa", "card", "paystack", "ghuba", "stripe", "paypal"]).default("cod"),
+  paymentOption: z
+    .enum([
+      "cod",
+      "pickupatshop",
+      "mpesa",
+      "card",
+      "paystack",
+      "ghuba",
+      "stripe",
+      "paypal",
+    ])
+    .default("cod"),
   items: z.array(
     z.object({
       marketplaceListingId: z.string(),
@@ -80,7 +91,7 @@ const orderSchema = z.object({
       timeSlot: z.string().optional(),
       quantity: z.number().positive(),
       price: z.number().positive(),
-    })
+    }),
   ),
   trackingNumber: z.string().optional(),
   totalPrice: z.number().positive(),
@@ -96,100 +107,136 @@ function generateTrackingNumber() {
 }
 
 // export async function POST(req: Request) {
-export const POST = withApiHandler(async (req) => {
-  try {
+export const POST = withApiHandler(
+  async (req) => {
+    try {
+      // if (req.method === "OPTIONS") {
+      //   return NextResponse.next();
+      // }
 
-    // if (req.method === "OPTIONS") {
-    //   return NextResponse.next();
-    // }
+      const body = await req.json();
+      const parsed = orderSchema.safeParse(body);
 
-    const body = await req.json();
-    const parsed = orderSchema.safeParse(body);
+      if (!parsed.success) {
+        // return withCors({ success: false, error: parsed.error.flatten() }, 400);
+        // return formatResponse({ success: false, error: parsed.error.flatten() }, 400);
+        return formatResponse(false, null, "Invalid order data", 400);
+      }
 
-    if (!parsed.success) {
-      // return withCors({ success: false, error: parsed.error.flatten() }, 400);
-      // return formatResponse({ success: false, error: parsed.error.flatten() }, 400);
-      return formatResponse(false, null, "Invalid order data", 400);
+      const data = parsed.data;
+      const trackingNumber = data.trackingNumber ?? generateTrackingNumber();
+
+      const orderDb = await createOrderRecord({
+        consumerId: data.consumerId,
+        items: data.items,
+        totalPrice: data.totalPrice,
+        totalFinalPrice: data.totalFinalPrice ?? data.totalPrice,
+        mpesaPhone: data.mpesaPhone,
+        paymentOption: data.paymentOption,
+        shippingAddress: data.shippingAddress,
+        shippingMethod: data.shippingMethod,
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        promoCode: data.paymentData?.promoCode ?? undefined,
+        trackingNumber,
+        deliveryStatus: "Order Placed",
+        delivery: false,
+        notes: data.paymentData?.notes ?? undefined,
+      });
+
+      let paymentResponse = null;
+      const cfg = await getCompanyPaymentConfig(data.companyId);
+
+      switch (data.paymentOption) {
+        case "mpesa": {
+          const phoneNumber =
+            data.paymentData?.mpesaPhone ?? data.mpesaPhone ?? data.phone;
+          if (!phoneNumber)
+            return formatResponse(false, null, "mpesaPhone required", 400);
+          paymentResponse = await initiateMpesaPayment(
+            orderDb,
+            phoneNumber,
+            cfg.credentials,
+          );
+          break;
+        }
+        case "paystack": {
+          paymentResponse = await initiatePaystackPayment(
+            orderDb,
+            data.email,
+            cfg.credentials,
+          );
+          break;
+        }
+        case "ghuba": {
+          // paymentResponse = await initiateGhubaPayment(orderDb, cfg.credentials);
+          paymentResponse = await initiateGhubaPayment(orderDb, body.email);
+          break;
+        }
+        case "stripe": {
+          paymentResponse = await initiateStripePaymentIntent(
+            orderDb,
+            cfg.credentials,
+          );
+          break;
+        }
+        case "paypal": {
+          paymentResponse = await createPaypalOrder(orderDb, cfg.credentials);
+          break;
+        }
+        case "cod":
+        case "pickupatshop": {
+          paymentResponse = {
+            message: "Payment on delivery or pickup confirmed.",
+          };
+          // mark paymentStatus accordingly if you want
+          await prisma.customerOrder.update({
+            where: { id: orderDb.id },
+            data: { paymentStatus: "PENDING" },
+          });
+          break;
+        }
+        default:
+          paymentResponse = { message: "Unknown payment option" };
+      }
+
+      return formatResponse(
+        true,
+        {
+          order: orderDb,
+          trackingNumber,
+          paymentResponse,
+          authorizationUrl:
+            paymentResponse?.data?.authorization_url ??
+            paymentResponse?.authorization_url ??
+            null,
+        },
+        "Order created successfully",
+        201,
+      );
+
+      // return withCors({
+      //   success: true,
+      //   data: {
+      //     order: orderDb,
+      //     trackingNumber,
+      //     paymentResponse,
+      //     authorizationUrl: paymentResponse?.data?.authorization_url ?? paymentResponse?.authorization_url ?? null,
+      //   },
+      // });
+    } catch (err: any) {
+      console.error("Order creation failed:", err);
+      return formatResponse(
+        false,
+        null,
+        err.message || "Internal Server Error",
+        500,
+      );
     }
-
-    const data = parsed.data;
-    const trackingNumber = data.trackingNumber ?? generateTrackingNumber();
-
-    const orderDb = await createOrderRecord({
-      consumerId: data.consumerId,
-      items: data.items,
-      totalPrice: data.totalPrice,
-      totalFinalPrice: data.totalFinalPrice ?? data.totalPrice,
-      mpesaPhone: data.mpesaPhone,
-      paymentOption: data.paymentOption,
-      shippingAddress: data.shippingAddress,
-      shippingMethod: data.shippingMethod,
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      promoCode: data.paymentData?.promoCode ?? undefined,
-      trackingNumber,
-      deliveryStatus: "Order Placed",
-      delivery: false,
-      notes: data.paymentData?.notes ?? undefined,
-    });
-
-    let paymentResponse = null;
-    const cfg = await getCompanyPaymentConfig(data.companyId);
-
-    switch (data.paymentOption) {
-      case "mpesa": {
-        const phoneNumber = data.paymentData?.mpesaPhone ?? data.mpesaPhone ?? data.phone;
-        if (!phoneNumber) return formatResponse(false, null, "mpesaPhone required", 400);
-        paymentResponse = await initiateMpesaPayment(orderDb, phoneNumber, cfg.credentials);
-        break;
-      }
-      case "paystack": {
-        paymentResponse = await initiatePaystackPayment(orderDb, data.email, cfg.credentials);
-        break;
-      }
-      case "ghuba": {
-        // paymentResponse = await initiateGhubaPayment(orderDb, cfg.credentials);
-        paymentResponse = await initiateGhubaPayment(orderDb, body.email);
-        break;
-      }
-      case "stripe": {
-        paymentResponse = await initiateStripePaymentIntent(orderDb, cfg.credentials);
-        break;
-      }
-      case "paypal": {
-        paymentResponse = await createPaypalOrder(orderDb, cfg.credentials);
-        break;
-      }
-      case "cod":
-      case "pickupatshop": {
-        paymentResponse = { message: "Payment on delivery or pickup confirmed." };
-        // mark paymentStatus accordingly if you want
-        await prisma.customerOrder.update({ where: { id: orderDb.id }, data: { paymentStatus: "PENDING" } });
-        break;
-      }
-      default:
-        paymentResponse = { message: "Unknown payment option" };
-    }
-
-    return formatResponse(true, {
-      order: orderDb,
-      trackingNumber,
-      paymentResponse,
-      authorizationUrl: paymentResponse?.data?.authorization_url ?? paymentResponse?.authorization_url ?? null,
-    }, "Order created successfully", 201);
-
-    // return withCors({
-    //   success: true,
-    //   data: {
-    //     order: orderDb,
-    //     trackingNumber,
-    //     paymentResponse,
-    //     authorizationUrl: paymentResponse?.data?.authorization_url ?? paymentResponse?.authorization_url ?? null,
-    //   },
-    // });
-  } catch (err: any) {
-    console.error("Order creation failed:", err);
-    return formatResponse(false, null, err.message || "Internal Server Error", 500);
-  }
-});
+  },
+  {
+    requireAuth: false, // ✅ VERY IMPORTANT
+    requireRateLimit: true,
+  },
+);

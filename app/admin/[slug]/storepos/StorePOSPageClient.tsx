@@ -629,7 +629,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       headers: { 
         'Content-Type': 'application/json',
       },
-      credentials: 'include',
+      // credentials: 'include',
       body: JSON.stringify(orderPayload),
     });
 
