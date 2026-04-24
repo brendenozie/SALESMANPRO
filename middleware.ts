@@ -73,10 +73,6 @@ export default async function middleware(
   //   const { pathname } = url;
   const userAgent = request.headers.get("user-agent") || "";
 
-  if (request.method === "OPTIONS") {
-    return NextResponse.next();
-  }
-
   // 1. Detect if it's our Desktop App
   const isDesktop = userAgent.includes("SalesmanProDesktop");
 

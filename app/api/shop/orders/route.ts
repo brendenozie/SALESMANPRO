@@ -10,6 +10,7 @@ import { initiatePaystackPayment } from "@/lib/paymentsv2/paystack";
 import { initiatePaystackPayment as initiateGhubaPayment } from "@/lib/payments/paystack";
 import { initiateStripePaymentIntent } from "@/lib/paymentsv2/stripe";
 import { createPaypalOrder } from "@/lib/paymentsv2/paypal";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // ---------------------------
 // GLOBAL CORS HEADERS
@@ -92,8 +93,14 @@ function generateTrackingNumber() {
   return `TRK${Math.floor(100000 + Math.random() * 900000).toString()}`;
 }
 
-export async function POST(req: Request) {
+// export async function POST(req: Request) {
+export const POST = withApiHandler(async (req) => {
   try {
+
+    if (req.method === "OPTIONS") {
+      return NextResponse.next();
+    }
+
     const body = await req.json();
     const parsed = orderSchema.safeParse(body);
     if (!parsed.success) {
@@ -173,4 +180,4 @@ export async function POST(req: Request) {
     console.error("Order creation failed:", err);
     return withCors({ success: false, error: err?.message ?? String(err) }, 500);
   }
-}
+});
