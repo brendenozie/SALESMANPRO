@@ -624,7 +624,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   };
 
   try {
-    const response = await fetch(`${apiBaseUrl}/shop/orders`, {
+    const response = await fetch(`/api/shop/orders`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
