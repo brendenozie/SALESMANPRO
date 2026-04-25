@@ -130,7 +130,7 @@ export default function CheckoutPage() {
     };
 
 
-    const res = await fetch(`${apiBaseUrl}/shop/orders`, {
+    const res = await fetch(`/shop/orders`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -172,7 +172,7 @@ export default function CheckoutPage() {
   //       // TODO: trigger M-Pesa API or SDK
   //     }
 
-  //     const res = await fetch(`${apiBaseUrl}/shop/orders", {
+  //     const res = await fetch(`/shop/orders", {
   //       method: "POST",
   //       headers: {
   //         "Content-Type": "application/json",
@@ -668,7 +668,7 @@ export default function CheckoutPage() {
 
 //       console.log("Submitting order with payload:", payload);
       
-//       const res = await fetch(`${apiBaseUrl}/shop/orders`, {
+//       const res = await fetch(`/shop/orders`, {
 //         method: 'POST',
 //         headers: {
 //           'Content-Type': 'application/json',

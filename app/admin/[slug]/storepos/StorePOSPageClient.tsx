@@ -224,19 +224,50 @@ const printReceipt = (htmlContent: string, receiptDetails: any) => {
     // });
 
     // 1. Map the frontend data to the Desktop's OrderData class
+    // const desktopPayload = {
+    //   BusinessName: receiptDetails.storeName,
+    //   Total: receiptDetails.finalTotal,
+    //   PaymentMethod: "Cash", // Or map from your payment logic
+    //   Date: receiptDetails.date + " " + receiptDetails.time,
+    //   Items: receiptDetails.cart.map((item:any) => ({
+    //     Name: item.name,
+    //     Quantity: item.quantity,
+    //     Price: item.finalPrice ?? 0,
+    //     Total: item.subtotal,
+    //     Category: (item as any).category || "General", // Match C# OrderItem
+    //     Route: (item as any).route || "dispatch"      // Match C# OrderItem
+    //   }))
+    // };
+
     const desktopPayload = {
-      BusinessName: receiptDetails.storeName,
-      Total: receiptDetails.finalTotal,
-      PaymentMethod: "Cash", // Or map from your payment logic
-      Date: receiptDetails.date + " " + receiptDetails.time,
-      Items: receiptDetails.cart.map((item:any) => ({
-        Name: item.name,
-        Quantity: item.quantity,
-        Price: item.finalPrice ?? 0,
-        Total: item.subtotal,
-        Category: (item as any).category || "General", // Match C# OrderItem
-        Route: (item as any).route || "dispatch"      // Match C# OrderItem
-      }))
+        // Business Identity (Matches C# Properties)
+        BusinessName: receiptDetails.storeName || "Gourmet Bites Bistro",
+        BusinessAddress: receiptDetails.storeAddress || "123 Tech Lane, Silicon Valley",
+        TaxId: receiptDetails.taxId || "VAT-987654321",
+        PhoneNumber: receiptDetails.storePhone || "+1 (555) 012-3456",
+
+        // Transaction Details
+        InvoiceId: receiptDetails.invoiceId || `INV-${Date.now()}`,
+        ReceiptNumber: receiptDetails.receiptNumber || `RCP-${Date.now()}`,
+        CustomerName: receiptDetails.customerName || "Walking Customer",
+        StaffName: receiptDetails.cashierName || "Alex P.",
+        Date: `${receiptDetails.date} ${receiptDetails.time}`,
+
+        // Financials
+        Currency: receiptDetails.currency || "USD",
+        TaxRate: receiptDetails.taxRatePercentage / 100 || 0.10, // Pass as decimal (e.g., 0.10 for 10%)
+        ChangeGiven: receiptDetails.changeAmount || 0.00,
+        PaymentMethod: receiptDetails.paymentType || "Cash",
+
+        // Items List
+        Items: receiptDetails.cart.map((item) => ({
+            Name: item.name,
+            Quantity: parseInt(item.quantity),
+            Price: parseFloat(item.finalPrice || item.price || 0),
+            Discount: parseFloat(item.discountAmount || 0),
+            Category: item.category || "General",
+            Route: item.route || "dispatch"
+        }))
     };
 
     (window as any).chrome.webview.postMessage({
@@ -649,20 +680,57 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
 
     // 3. Print Receipt             
     const now = new Date();
+    // const receiptDetails: ReceiptDetails = {
+    //   cart,
+    //   subtotal,
+    //   totalDiscountAmount,
+    //   totalTax,
+    //   finalTotal,
+    //   agentId: currentAgent?.id || 'N/A',
+    //   agentName: currentAgent?.name || 'N/A',
+    //   transactionId: result.data.trackingNumber, // Use tracking number from API
+    //   date: now.toLocaleDateString(),
+    //   time: now.toLocaleTimeString(),
+    //   storeName: companyInfo?.name || 'Your Awesome Store',
+    //   storeAddress: companyInfo?.address || '123 Main St',
+    //   storePhone: companyInfo?.phone || '',
+    //   currencySymbol: currencySymbol,
+    // };
     const receiptDetails: ReceiptDetails = {
-      cart,
-      subtotal,
-      totalDiscountAmount,
-      totalTax,
-      finalTotal,
+      // Items & Totals
+      cart: cart.map(item => ({
+        ...item,
+        // Ensure these match the expected calculation: (Price * Qty) - Discount
+        finalPrice: item.price, 
+        subtotal: (item.price * item.quantity) - (item.discount || 0),
+        discountAmount: item.discount || 0,
+        category: item.category || "General",
+        route: item.route || "dispatch"
+      })),
+      
+      subtotal: subtotal,
+      totalDiscountAmount: totalDiscountAmount,
+      taxRatePercentage: 10, // Added: Store the numeric rate (e.g., 10 for 10%)
+      totalTax: totalTax,
+      finalTotal: finalTotal,
+      currency: "USD", // Added: Explicit currency code for C# string Currency
+
+      // Transaction & Personnel
       agentId: currentAgent?.id || 'N/A',
-      agentName: currentAgent?.name || 'N/A',
-      transactionId: result.data.trackingNumber, // Use tracking number from API
-      date: now.toLocaleDateString(),
-      time: now.toLocaleTimeString(),
-      storeName: companyInfo?.name || 'Your Awesome Store',
-      storeAddress: companyInfo?.address || '123 Main St',
-      storePhone: companyInfo?.phone || '',
+      staffName: currentAgent?.name || 'N/A', // Renamed to match C# StaffName
+      customerName: "Walking Customer", // Added: Default or from state
+      invoiceId: result.data.trackingNumber, 
+      receiptNumber: `RCP-${result.data.trackingNumber}`, // Consistent with InvoiceId
+      
+      // Temporal
+      date: now.toISOString().split('T')[0], // Format: YYYY-MM-DD
+      time: now.toTimeString().split(' ')[0], // Format: HH:mm:ss
+      
+      // Business Identity
+      storeName: companyInfo?.name || 'Gourmet Bites Bistro',
+      storeAddress: companyInfo?.address || '123 Tech Lane, Silicon Valley',
+      storePhone: companyInfo?.contactPhone || '+1 (555) 012-3456',
+      taxId: companyInfo?.taxId || 'VAT-987654321', // Added: Needed for professional receipt
       currencySymbol: currencySymbol,
     };
 

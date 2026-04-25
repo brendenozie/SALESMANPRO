@@ -178,7 +178,7 @@ const CheckoutPage = () => {
         paymentOption:formData.paymentMethod,
         totalPrice: parseFloat(total.toFixed(2)),
       };
-      const res = await fetch(`${apiBaseUrl}/shop/orders`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.NEXT_PUBLIC_API_SECRET_KEY }, body: JSON.stringify(orderPayload) });
+      const res = await fetch(`/shop/orders`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.NEXT_PUBLIC_API_SECRET_KEY }, body: JSON.stringify(orderPayload) });
       if (!res.ok) throw new Error();
       
       clearCart();

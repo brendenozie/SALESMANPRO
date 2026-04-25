@@ -232,7 +232,7 @@ export default function CheckoutPage(): JSX.Element {
         },
       };
 
-      const res = await fetch(`${apiBaseUrl}/shop/orders`, {
+      const res = await fetch(`/shop/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
