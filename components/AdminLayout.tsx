@@ -60,10 +60,6 @@ export default function AdminLayout({ children, params }: {
   const { storeFormData, userRole, userId } = useStoreContext();
   const pathname = usePathname();
 
-  // console.log("Current pathname:", pathname);
-  // console.log("User role from context:", userRole);
-  // console.log("Store form data:", storeFormData);
-
   const handleSignOut = () => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` });
   
   // 1. This is the core logic.

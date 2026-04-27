@@ -23,11 +23,10 @@ export default async function AdminStoreLayout({
   // Fetch the session to get the user's role
   const session = await getAuthSession();
 
-  console.log("Session data in layout:", session);
-
   // Redirect if no session or user, or if the user doesn't have a valid role
   // This check should ideally mirror the one in page.tsx for consistency
   if (!session?.user?.id ||
+      session.user.role?.toLowerCase() !== 'user' &&
       (session.user.role?.toLowerCase() !== 'admin' &&
       session.user.role?.toLowerCase() !== 'junior' &&
       session.user.role?.toLowerCase() !== 'senior' &&
@@ -37,8 +36,6 @@ export default async function AdminStoreLayout({
       session.user.role?.toLowerCase() !== 'store_driver' &&
       session.user.role?.toLowerCase() !== 'parent' &&
       session.user.role?.toLowerCase() !== 'consumer')) {
-
-      console.log(`Unauthorized access attempt by user ID: ${session?.user?.id} with role: ${session?.user?.role}`);
     notFound(); // Using notFound instead of redirect for layout, or redirect to a more appropriate unauthorized page
   }
 
@@ -68,11 +65,7 @@ export default async function AdminStoreLayout({
   // Get the user's role from the session
   const userRole = session.user.role?.toUpperCase() || 'OTHER'; // Default to 'OTHER' if role is not found
 
-  console.log(`User ID: ${session.user.id} with role: ${userRole} accessing company ID: ${companyId}`);
-
-  if (!raw && userRole === 'OTHER' || !raw && userRole === 'ADMIN') return notFound();
-
-  console.log("Raw company data fetched from database:", raw);
+  if (!raw && userRole === 'OTHER' || !raw && userRole === 'ADMIN' || !raw && userRole === 'USER' ) return notFound();
 
   let storeFormData = null;
 
