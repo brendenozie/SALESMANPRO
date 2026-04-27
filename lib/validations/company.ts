@@ -3,7 +3,7 @@ import { z } from "zod";
 // Schemas for nested JSON fields or related models
 const socialLinkSchema = z.object({
   channel: z
-    .enum(["TWITTER", "FACEBOOK", "INSTAGRAM", "LINKEDIN"])
+    .enum(["TWITTER", "FACEBOOK", "INSTAGRAM", "LINKEDIN", "YOUTUBE", "TIKTOK"])
     .default("TWITTER")
     .nullable()
     .optional()
@@ -13,7 +13,7 @@ const socialLinkSchema = z.object({
 
 const policySchema = z.object({
   type: z
-    .enum(["SHIPPING", "RETURNS", "PRIVACY", "TERMS"])
+    .enum(["SHIPPING", "RETURNS", "PRIVACY", "TERMS", "CANCELLATION","CONFIDENTIALITY"])
     .default("PRIVACY")
     .nullable()
     .optional()
@@ -32,20 +32,20 @@ const testimonialSchema = z.object({
   quote: z.string().min(1),
   authorName: z.string().min(1).nullable().optional(),
   authorTitle: z.string().nullable().optional(),
-  avatarUrl: z.string().url().nullable().optional().or(z.literal("")),
+  avatarUrl: z.string().nullable().optional().or(z.literal("")),
   rating: z.number().min(1).max(5).nullable().optional(),
   order: z.number().optional(),
 });
 
 const heroSlideSchema = z.object({
   imageUrl: z.string().nullable().optional().or(z.literal("")),
-  productImageUrl: z.string().url().nullable().optional().or(z.literal("")),
+  productImageUrl: z.string().nullable().optional().or(z.literal("")),
   headline: z.string().nullable().optional(),
   subline: z.string().nullable().optional(),
   ctaText: z.string().nullable().optional(),
-  ctaLink: z.string().nullable().optional().or(z.literal("")), //.url()
+  ctaLink: z.string().nullable().optional().or(z.literal("")), //
   badgeText: z.string().nullable().optional(),
-  videoLink: z.string().nullable().optional().or(z.literal("")), //.url()
+  videoLink: z.string().nullable().optional().or(z.literal("")), //
   price: z.string().nullable().optional(),
   endsAt: z.string().datetime().optional().nullable(),
   order: z.number().default(0),
@@ -58,8 +58,8 @@ const promotionSchema = z.object({
   startsAt: z.string().optional().nullable(), //.datetime()
   endsAt: z.string().optional().nullable(), //.datetime()
   ctaText: z.string().nullable().optional(),
-  ctaLink: z.string().url().nullable().optional().or(z.literal("")),
-  bannerUrl: z.string().url().nullable().optional().or(z.literal("")),
+  ctaLink: z.string().nullable().optional().or(z.literal("")),
+  bannerUrl: z.string().nullable().optional().or(z.literal("")),
   backgroundColor: z.string().nullable().optional(),
   textColor: z.string().nullable().optional(),
 
@@ -142,9 +142,9 @@ export const companySchema = z.object({
   description: z.string().optional(),
   category: z.string().min(1),
   variant: z.string().optional(),
-  logoUrl: z.string().optional().or(z.literal("")), //.url().optional().or(z.literal('')),
-  bannerUrl: z.string().url().optional().or(z.literal("")),
-  videoUrl: z.string().url().optional().or(z.literal("")),
+  logoUrl: z.string().optional().or(z.literal("")), //.optional().or(z.literal('')),
+  bannerUrl: z.string().optional().or(z.literal("")),
+  videoUrl: z.string().optional().or(z.literal("")),
   contactEmail: z.string().email(),
   contactPhone: z.string().optional(),
   address: z.string().optional(),
@@ -256,7 +256,7 @@ export const companySchema = z.object({
   shippingSettings: z
     .object({
       carrierName: z.string().nullable().optional(),
-      trackingUrl: z.string().nullable().optional().or(z.literal("")), //.url()
+      trackingUrl: z.string().nullable().optional().or(z.literal("")), //
       regions: z.any().nullable().optional(),
       enablePickup: z.boolean().nullable().optional(),
       pickupInstructions: z.string().nullable().optional(),

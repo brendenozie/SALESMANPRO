@@ -4843,7 +4843,7 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           headline: "Today's Special: Authentic Italian Pizza",
           subline: "Order now for 10% off your first online order.",
           ctaText: "View Menu",
-          ctaLink: "/menu",
+          ctaLink: "/restaurnt/products",
           id: "",
           companyId: "",
           price: null,

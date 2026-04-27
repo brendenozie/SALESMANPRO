@@ -11,90 +11,107 @@ const weekdays = [
   { key: 'sun', label: 'Sunday' },
 ];
 
-function normalizeWhatsAppNumber(
-  input: string,
-  defaultCountryCode = '254'
-): string {
+/* ================================
+   WhatsApp helpers (Kenya)
+================================ */
+
+const COUNTRY_CODE = '254';
+
+/** Normalize to E.164 (+2547XXXXXXXX) */
+function normalizeWhatsAppNumber(input: string): string {
   if (!input) return '';
 
   let digits = input.replace(/\D/g, '');
 
-  // 0712xxxxxx → 254712xxxxxx
-  if (digits.startsWith('0')) {
-    digits = defaultCountryCode + digits.slice(1);
+  // Already valid: 2547XXXXXXXX
+  if (digits.startsWith(COUNTRY_CODE) && digits.length === 12) {
+    return `+${digits}`;
   }
 
-  // 712xxxxxx → 254712xxxxxx
-  if (digits.length === 9) {
-    digits = defaultCountryCode + digits;
+  // 07XXXXXXXX → 2547XXXXXXXX
+  if (digits.startsWith('0') && digits.length === 10) {
+    return `+${COUNTRY_CODE}${digits.slice(1)}`;
   }
 
-  // Already correct (2547...)
-  if (!digits.startsWith(defaultCountryCode)) {
-    return '';
+  // 7XXXXXXXX → 2547XXXXXXXX
+  if (digits.startsWith('7') && digits.length === 9) {
+    return `+${COUNTRY_CODE}${digits}`;
   }
 
-  return `+${digits}`;
+  return '';
+}
+
+/** Format nicely while typing (not final value) */
+function formatWhileTyping(input: string): string {
+  let digits = input.replace(/\D/g, '');
+
+  if (digits.startsWith(COUNTRY_CODE)) {
+    digits = digits.slice(COUNTRY_CODE.length);
+  } else if (digits.startsWith('0')) {
+    digits = digits.slice(1);
+  }
+
+  // Limit to Kenyan mobile length
+  digits = digits.slice(0, 9);
+
+  if (!digits) return '';
+
+  // Display: +254 7XX XXX XXX
+  return `+254 ${digits.replace(
+    /(\d{1})(\d{0,2})(\d{0,3})(\d{0,3})/,
+    (_, a, b, c, d) => [a + b, c, d].filter(Boolean).join(' ')
+  )}`;
 }
 
 export const isValidWhatsAppNumber = (phone: string) =>
-  /^\+\d{10,15}$/.test(phone);
+  /^\+2547\d{8}$/.test(phone);
+
+/* ================================
+   Props
+================================ */
 
 interface ContactAccordionProps {
   openingHours: OpeningHours | null;
   contactEmail: string;
   contactPhone: string | null;
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  onToggleDay: (dayKey: string) => void; 
+  onToggleDay: (dayKey: string) => void;
 }
+
+/* ================================
+   Component
+================================ */
 
 export default function ContactAccordion({
   openingHours,
   contactEmail,
   contactPhone,
   onChange,
-  onToggleDay,   
+  onToggleDay,
 }: ContactAccordionProps) {
   const [expanded, setExpanded] = useState(true);
+  const [displayPhone, setDisplayPhone] = useState(
+    contactPhone ? formatWhileTyping(contactPhone) : ''
+  );
 
-  const toggleDay = (key: string) => {
-    onToggleDay(key);
+  const handlePhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+
+    // Show formatted version while typing
+    setDisplayPhone(formatWhileTyping(raw));
+
+    const normalized = normalizeWhatsAppNumber(raw);
+
+    // Only save normalized when valid
+    onChange({
+      ...e,
+      target: {
+        ...e.target,
+        name: 'contactPhone',
+        value: normalized || '',
+      },
+    } as ChangeEvent<HTMLInputElement>);
   };
-
-  const formatForWhatsApp = (phone: string, defaultCountryCode = '254') => {
-  if (!phone) return '';
-
-  // Remove everything except digits
-  let digits = phone.replace(/\D/g, '');
-
-  // If starts with 0 (e.g. 0712...), convert to country format
-  if (digits.startsWith('0')) {
-    digits = defaultCountryCode + digits.slice(1);
-  }
-
-  // If already starts with country code but missing +
-  if (!digits.startsWith(defaultCountryCode)) {
-    return '';
-  }
-
-  return `+${digits}`;
-};
-
-const handlePhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
-  const raw = e.target.value;
-  const normalized = normalizeWhatsAppNumber(raw);
-
-  onChange({
-    ...e,
-    target: {
-      ...e.target,
-      name: 'contactPhone',
-      value: normalized || raw, // allow typing until valid
-    },
-  } as ChangeEvent<HTMLInputElement>);
-};
-
-
 
   return (
     <section className="max-w-3xl mx-auto overflow-hidden">
@@ -124,48 +141,44 @@ const handlePhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
                 value={contactEmail}
                 onChange={onChange}
                 placeholder="you@domain.com"
-                className="mt-1 block w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+                className="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-400"
               />
             </label>
 
             <label className="block">
-                <span className="text-sm font-medium text-gray-700">
-                  Phone Number (WhatsApp)
-                </span>
+              <span className="text-sm font-medium text-gray-700">
+                Phone Number (WhatsApp)
+              </span>
+              <input
+                type="tel"
+                value={displayPhone}
+                onChange={handlePhoneChange}
+                placeholder="+254 7XX XXX XXX"
+                className="mt-1 block w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-400"
+              />
 
-                <input
-                  type="tel"
-                  name="contactPhone"
-                  value={contactPhone || ''}
-                  onChange={handlePhoneChange}
-                  placeholder="0712345678"
-                  className="mt-1 block w-full px-4 py-2 border rounded-lg
-                    focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
-                />
-
-                {/* WhatsApp formatting helper */}
-                {contactPhone && (
-                  <div className="mt-2 text-sm">
-                    {!isValidWhatsAppNumber(contactPhone) ? (
-                      <span className="text-amber-600">
-                        Enter a valid WhatsApp number (e.g. 0712345678)
-                      </span>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <span className="text-green-600">WhatsApp ready:</span>
-                        <a
-                          href={`https://wa.me/${contactPhone.replace('+', '')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-green-700 font-medium hover:underline"
-                        >
-                          {contactPhone}
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </label>
+              {contactPhone && (
+                <div className="mt-2 text-sm">
+                  {!isValidWhatsAppNumber(contactPhone) ? (
+                    <span className="text-amber-600">
+                      Enter a valid Kenyan WhatsApp number
+                    </span>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-600">WhatsApp ready:</span>
+                      <a
+                        href={`https://wa.me/${contactPhone.replace('+', '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-green-700 font-medium hover:underline"
+                      >
+                        {contactPhone}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
+            </label>
           </div>
 
           {/* Opening Hours */}
@@ -176,21 +189,20 @@ const handlePhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {weekdays.map(({ key, label }) => {
-                const day = openingHours && openingHours[key] || { open: '', close: '' };
+                const day = openingHours?.[key] || { open: '', close: '' };
                 const isClosed = !day.open && !day.close;
+
                 return (
                   <div
                     key={key}
                     className="bg-white p-4 rounded-xl border border-indigo-200 flex flex-col items-center space-y-3"
                   >
-                    {/* Day Label */}
                     <span className="font-medium text-gray-600">{label}</span>
 
-                    {/* Open/Closed Toggle */}
                     <button
                       type="button"
-                      onClick={() => toggleDay(key)}
-                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                      onClick={() => onToggleDay(key)}
+                      className={`px-3 py-1 rounded-full text-sm ${
                         isClosed
                           ? 'bg-gray-200 text-gray-600'
                           : 'bg-indigo-600 text-white'
@@ -199,29 +211,22 @@ const handlePhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
                       {isClosed ? 'Closed' : 'Open'}
                     </button>
 
-                    {/* Time Inputs */}
                     {!isClosed && (
-                      <div className="w-full flex flex-col space-y-2">
-                        <label className="flex flex-col text-xs text-gray-600">
-                          Open
-                          <input
-                            type="time"
-                            name={`openingHours.${key}.open`}
-                            value={day.open}
-                            onChange={onChange}
-                            className="mt-1 px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
-                          />
-                        </label>
-                        <label className="flex flex-col text-xs text-gray-600">
-                          Close
-                          <input
-                            type="time"
-                            name={`openingHours.${key}.close`}
-                            value={day.close}
-                            onChange={onChange}
-                            className="mt-1 px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
-                          />
-                        </label>
+                      <div className="w-full space-y-2">
+                        <input
+                          type="time"
+                          name={`openingHours.${key}.open`}
+                          value={day.open}
+                          onChange={onChange}
+                          className="w-full px-2 py-1 border rounded"
+                        />
+                        <input
+                          type="time"
+                          name={`openingHours.${key}.close`}
+                          value={day.close}
+                          onChange={onChange}
+                          className="w-full px-2 py-1 border rounded"
+                        />
                       </div>
                     )}
                   </div>

@@ -7,9 +7,13 @@ import { encode } from "next-auth/jwt";
 const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET!;
 
 export async function GET(req: NextRequest) {
-  const rawTarget = req.nextUrl.searchParams.get("target") || "https://salesmanpro.site";
-    
-  const isDesktop = req.headers.get("user-agent")?.includes("SalesmanProDesktop");
+  const rawTarget =
+    req.nextUrl.searchParams.get("target") || "https://salesmanpro.site";
+
+  const isDesktop =
+    req.headers.get("user-agent")?.includes("SalesmanProDesktop") ||
+    req.headers.get("user-agent")?.includes("SalesmanProAndroid") ||
+    false;
 
   // ✅ IMPORTANT: decode URL-encoded target
   const target = decodeURIComponent(rawTarget);
@@ -38,10 +42,10 @@ export async function GET(req: NextRequest) {
     destination.searchParams.set("auth_token", token);
     destination.searchParams.set("auth", "success");
 
-    if(isDesktop) {
+    if (isDesktop) {
       destination.pathname = "/dashboards";
       return NextResponse.redirect(destination.toString());
-    }else{
+    } else {
       return NextResponse.redirect(destination.toString());
     }
   } catch (err) {

@@ -74,7 +74,9 @@ export default async function middleware(
   const userAgent = request.headers.get("user-agent") || "";
 
   // 1. Detect if it's our Desktop App
-  const isDesktop = userAgent.includes("SalesmanProDesktop");
+  const isDesktop =
+    userAgent.includes("SalesmanProDesktop") ||
+    userAgent.includes("SalesmanProAndroid");
 
   const clientIp = getClientIp(request);
   // 2. Check for Next-Auth Session

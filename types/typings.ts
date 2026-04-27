@@ -70,21 +70,30 @@ export enum UserStatus {
 //   RENTED,
 // }
 
+// export enum SocialChannel {
+//   TWITTER,
+//   INSTAGRAM,
+//   FACEBOOK,
+//   LINKEDIN,
+//   YOUTUBE,
+// }
+
 export enum SocialChannel {
-  TWITTER,
-  INSTAGRAM,
-  FACEBOOK,
-  LINKEDIN,
-  YOUTUBE,
+  FACEBOOK = "FACEBOOK",
+  TWITTER = "TWITTER",
+  INSTAGRAM = "INSTAGRAM",
+  LINKEDIN = "LINKEDIN",
+  YOUTUBE = "YOUTUBE",
+  TIKTOK = "TIKTOK",
 }
 
 export enum PolicyType {
-  SHIPPING,
-  RETURNS,
-  PRIVACY,
-  TERMS,
-  CANCELLATION,
-  CONFIDENTIALITY,
+  SHIPPING = "SHIPPING",
+  RETURNS = "RETURNS",
+  PRIVACY = "PRIVACY",
+  TERMS = "TERMS",
+  CANCELLATION = "CANCELLATION",
+  CONFIDENTIALITY = "CONFIDENTIALITY",
 }
 
 export enum SectionType {

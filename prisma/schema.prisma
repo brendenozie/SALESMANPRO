@@ -694,11 +694,12 @@ enum SectionType {
 }
 
 enum SocialChannel {
+  FACEBOOK
   TWITTER
   INSTAGRAM
-  FACEBOOK
   LINKEDIN
   YOUTUBE
+  TIKTOK
 }
 
 enum PolicyType {
@@ -706,6 +707,8 @@ enum PolicyType {
   RETURNS
   PRIVACY
   TERMS
+  CANCELLATION
+  CONFIDENTIALITY
 }
 
 model Locations {

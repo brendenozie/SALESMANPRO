@@ -159,7 +159,7 @@ export default function CreateStoreForm({
     hasWebsite: false,
     tagline: "",
     description: "",
-    category: "E-commerce",
+    category: "",
     variant:"Standard",
     logoUrl: "",
     bannerUrl: "",
@@ -1676,8 +1676,10 @@ const handleSubmit = async (e: FormEvent) => {
 
     if (!res.ok) {
       const text = await res.text();
+      setIsSubmitting(false);
       console.error("❌ Save failed:", text);
       toast.error(`Error saving store: ${text}`);
+      setSubmissionError(text || err.message || "An unexpected error occurred");
       return;
     }
 
@@ -1871,25 +1873,30 @@ const StepContent = useMemo(() => {
               </>
             ) : (
               /* --- ERROR STATE --- */
-              <motion.div 
+             <motion.div 
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="w-full"
+                className="w-full max-h-[80vh] flex flex-col" // Added max-height and flex column
               >
-                <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-10 h-10">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                  </svg>
+                {/* Header Section - Fixed */}
+                <div className="flex-shrink-0">
+                  <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-10 h-10">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold text-center text-gray-900 mb-2">Upload Failed</h3>
                 </div>
-                
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Upload Failed</h3>
-                <div className="bg-red-50 border border-red-100 rounded-lg p-3 mb-6">
-                  <p className="text-sm text-red-700 font-mono break-words">
+
+                {/* Error Message Section - Scrollable */}
+                <div className="bg-red-50 border border-red-100 rounded-lg p-4 mb-6 overflow-y-auto custom-scrollbar">
+                  <p className="text-sm text-red-700 font-mono break-words whitespace-pre-wrap">
                     {submissionError}
                   </p>
                 </div>
 
-                <div className="flex flex-col gap-3">
+                {/* Footer Section - Fixed */}
+                <div className="flex flex-col gap-3 flex-shrink-0">
                   <button
                     onClick={() => setSubmissionError(null)}
                     className="w-full py-3 px-4 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-semibold transition-all active:scale-95"
