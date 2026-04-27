@@ -103,7 +103,7 @@ const dashboardComponents: Record<string, React.ComponentType<any>> = {
 };
 
 const allowedRoles = [
-  'ADMIN', 'STUDENT', 'EDUCATOR', 'CONSUMER', 'JUNIOR', 'SENIOR',
+  'ADMIN', 'STUDENT', 'USER', 'EDUCATOR', 'CONSUMER', 'JUNIOR', 'SENIOR',
   'TEACHER', 'LECTURER', 'TUTOR', 'HEAD_TEACHER', 'PRINCIPAL', 'HEAD_OF_SCHOOL',
   'SCHOOL_HEAD', 'EDUCATIONAL_ADMIN', 'EDUCATIONAL_LEADER', 'EDUCATIONAL_MANAGER',
   'EDUCATIONAL_COORDINATOR', 'EDUCATIONAL_DIRECTOR', 'EDUCATIONAL_SUPERVISOR',
@@ -446,7 +446,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
             const responseJson = await res.json();
             const data = responseJson.data;
             
-            console.log("[AdminDashboardPage] New Parent API response:", data);
+            // console.log("[AdminDashboardPage] New Parent API response:", data);
             parentDashboardData = data;
 
             // 2. Mapping the new API response to the ParentDashboard props
