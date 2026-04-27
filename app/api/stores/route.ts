@@ -3,7 +3,7 @@ import { companySchema } from "@/lib/validations/company";
 import { Prisma } from "@prisma/client";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { VerifiedUser } from "@/lib/verifyAuth"; 
+import { VerifiedUser } from "@/lib/verifyAuth";
 import { sl } from "date-fns/locale";
 import { encrypt } from "@/lib/crypto/aes";
 import { cacheDel, cacheGet, cacheSet } from "@/lib/cache";
@@ -19,37 +19,27 @@ type HandlerContext = {
 // =======================
 // GET all companies for the authenticated user
 // =======================
-// async function getCompanies(req: Request, context: HandlerContext) {
-//   // No need to check for the user's existence!
-//   // The withApiHandler wrapper guarantees that 'context.user' is present.
-//   const { user } = context;
-  
-//   if (!user) {
-//     return formatResponse(false, null, "Unauthorized", 401);
-//   }
-
-//   const companies = await prisma.company.findMany({
-//     where: { userId: user.id },
-//     orderBy: { createdAt: "asc" },
-//   });
-
-//   return formatResponse(true, companies, "Companies fetched successfully");
-// }
 
 async function getCompanies(req: Request, context: HandlerContext) {
   try {
     const url = new URL(req.url);
     const { user } = context;
 
-      if (!user) {
-        return formatResponse(false, null, "Unauthorized", 401);
-      }
+    if (!user) {
+      return formatResponse(false, null, "Unauthorized", 401);
+    }
 
     const cacheKey = `user:${user.id}:companies`;
 
     try {
       const cached = await cacheGet(cacheKey);
-      if (cached) return formatResponse(true, cached, "Companies retrieved from cache", 200);
+      if (cached)
+        return formatResponse(
+          true,
+          cached,
+          "Companies retrieved from cache",
+          200,
+        );
     } catch (e) {
       console.error("Failed to retrieve companies from cache:", e);
     }
@@ -61,13 +51,14 @@ async function getCompanies(req: Request, context: HandlerContext) {
       include: {
         subscriptionCompanies: {
           // ACTIVE or AWAITING_CONFIRMATION
-            where: {
-              status: {
-                in: ["ACTIVE", "AWAITING_CONFIRMATION"],
-              },
+          where: {
+            status: {
+              in: ["ACTIVE", "AWAITING_CONFIRMATION"],
             },
+          },
           select: {
-            status: true, renewalDate: true, 
+            status: true,
+            renewalDate: true,
           },
           // sort lates date first
           orderBy: { createdAt: "desc" },
@@ -91,7 +82,12 @@ async function getCompanies(req: Request, context: HandlerContext) {
       updatedAt: c.updatedAt,
 
       // If array contains at least 1 ACTIVE subscription → mark store as ACTIVE
-      subscriptionStatus: c.subscriptionCompanies.length > 0 && c.subscriptionCompanies[0]?.renewalDate && c.subscriptionCompanies[0].renewalDate > new Date()  ? "ACTIVE" : "INACTIVE",
+      subscriptionStatus:
+        c.subscriptionCompanies.length > 0 &&
+        c.subscriptionCompanies[0]?.renewalDate &&
+        c.subscriptionCompanies[0].renewalDate > new Date()
+          ? "ACTIVE"
+          : "INACTIVE",
     }));
 
     try {
@@ -100,13 +96,16 @@ async function getCompanies(req: Request, context: HandlerContext) {
       console.error("Failed to cache companies data:", e);
     }
 
-    return formatResponse(true, formattedStores, "Companies fetched successfully");
+    return formatResponse(
+      true,
+      formattedStores,
+      "Companies fetched successfully",
+    );
   } catch (error) {
     console.error("GET /api/stores error:", error);
     return formatResponse(false, null, "Server error", 500);
   }
 }
-
 
 // =======================
 // POST a new company
@@ -119,7 +118,12 @@ async function createCompany(req: Request, context: HandlerContext) {
   const parseResult = companySchema.safeParse(body);
 
   if (!parseResult.success) {
-    return formatResponse(false, parseResult.error.errors, "Validation failed", 400);
+    return formatResponse(
+      false,
+      parseResult.error.errors,
+      "Validation failed",
+      400,
+    );
   }
 
   if (!user) {
@@ -128,65 +132,62 @@ async function createCompany(req: Request, context: HandlerContext) {
 
   const data = parseResult.data;
 
-  const paymentSettingsData = data.paymentSettings 
-        ? (({ id, ...rest }: any) => rest)(
-            {
-              ...data.paymentSettings,
-            }
-        ) 
-        : undefined;
+  const paymentSettingsData = data.paymentSettings
+    ? (({ id, ...rest }: any) => rest)({
+        ...data.paymentSettings,
+      })
+    : undefined;
 
   let encryptedPaymentSettings: any = undefined;
 
-if (paymentSettingsData) {
-  encryptedPaymentSettings = { ...paymentSettingsData };
+  if (paymentSettingsData) {
+    encryptedPaymentSettings = { ...paymentSettingsData };
 
-  // Stripe Secret
-  if (paymentSettingsData.stripeSecretKey) {
-    const encrypted = encrypt(paymentSettingsData.stripeSecretKey);
-    encryptedPaymentSettings.stripeSecret_encrypted = encrypted.value;
-    encryptedPaymentSettings.stripeSecret_iv = encrypted.iv;
-    encryptedPaymentSettings.stripeSecret_tag = encrypted.tag;
-    encryptedPaymentSettings.stripeSecretKey = null;
+    // Stripe Secret
+    if (paymentSettingsData.stripeSecretKey) {
+      const encrypted = encrypt(paymentSettingsData.stripeSecretKey);
+      encryptedPaymentSettings.stripeSecret_encrypted = encrypted.value;
+      encryptedPaymentSettings.stripeSecret_iv = encrypted.iv;
+      encryptedPaymentSettings.stripeSecret_tag = encrypted.tag;
+      encryptedPaymentSettings.stripeSecretKey = null;
+    }
+
+    // PayPal Secret
+    if (paymentSettingsData.paypalClientSecret) {
+      const encrypted = encrypt(paymentSettingsData.paypalClientSecret);
+      encryptedPaymentSettings.paypalSecret_encrypted = encrypted.value;
+      encryptedPaymentSettings.paypalSecret_iv = encrypted.iv;
+      encryptedPaymentSettings.paypalSecret_tag = encrypted.tag;
+      encryptedPaymentSettings.paypalClientSecret = null;
+    }
+
+    // Paystack Secret
+    if (paymentSettingsData.paystackSecretKey) {
+      const encrypted = encrypt(paymentSettingsData.paystackSecretKey);
+      encryptedPaymentSettings.paystackSecret_encrypted = encrypted.value;
+      encryptedPaymentSettings.paystackSecret_iv = encrypted.iv;
+      encryptedPaymentSettings.paystackSecret_tag = encrypted.tag;
+      encryptedPaymentSettings.paystackSecretKey = null;
+    }
+
+    // Ghuba API Secret
+    if (paymentSettingsData.ghubaApiKey) {
+      const encrypted = encrypt(paymentSettingsData.ghubaApiKey);
+      encryptedPaymentSettings.ghubaSecret_encrypted = encrypted.value;
+      encryptedPaymentSettings.ghubaSecret_iv = encrypted.iv;
+      encryptedPaymentSettings.ghubaSecret_tag = encrypted.tag;
+      encryptedPaymentSettings.ghubaApiKey = null;
+    }
+
+    // Mpesa Secret
+    if (paymentSettingsData.mpesaConsumerSecret) {
+      const encrypted = encrypt(paymentSettingsData.mpesaConsumerSecret);
+      encryptedPaymentSettings.mpesaSecret_encrypted = encrypted.value;
+      encryptedPaymentSettings.mpesaSecret_iv = encrypted.iv;
+      encryptedPaymentSettings.mpesaSecret_tag = encrypted.tag;
+      encryptedPaymentSettings.mpesaConsumerSecret = null;
+    }
   }
-
-  // PayPal Secret
-  if (paymentSettingsData.paypalClientSecret) {
-    const encrypted = encrypt(paymentSettingsData.paypalClientSecret);
-    encryptedPaymentSettings.paypalSecret_encrypted = encrypted.value;
-    encryptedPaymentSettings.paypalSecret_iv = encrypted.iv;
-    encryptedPaymentSettings.paypalSecret_tag = encrypted.tag;
-    encryptedPaymentSettings.paypalClientSecret = null;
-  }
-
-  // Paystack Secret
-  if (paymentSettingsData.paystackSecretKey) {
-    const encrypted = encrypt(paymentSettingsData.paystackSecretKey);
-    encryptedPaymentSettings.paystackSecret_encrypted = encrypted.value;
-    encryptedPaymentSettings.paystackSecret_iv = encrypted.iv;
-    encryptedPaymentSettings.paystackSecret_tag = encrypted.tag;
-    encryptedPaymentSettings.paystackSecretKey = null;
-  }
-
-  // Ghuba API Secret
-  if (paymentSettingsData.ghubaApiKey) {
-    const encrypted = encrypt(paymentSettingsData.ghubaApiKey);
-    encryptedPaymentSettings.ghubaSecret_encrypted = encrypted.value;
-    encryptedPaymentSettings.ghubaSecret_iv = encrypted.iv;
-    encryptedPaymentSettings.ghubaSecret_tag = encrypted.tag;
-    encryptedPaymentSettings.ghubaApiKey = null;
-  }
-
-  // Mpesa Secret
-  if (paymentSettingsData.mpesaConsumerSecret) {
-    const encrypted = encrypt(paymentSettingsData.mpesaConsumerSecret);
-    encryptedPaymentSettings.mpesaSecret_encrypted = encrypted.value;
-    encryptedPaymentSettings.mpesaSecret_iv = encrypted.iv;
-    encryptedPaymentSettings.mpesaSecret_tag = encrypted.tag;
-    encryptedPaymentSettings.mpesaConsumerSecret = null;
-  }
-}
-
 
   try {
     const newCompany = await prisma.company.create({
@@ -221,17 +222,27 @@ if (paymentSettingsData) {
 
         // Nested One-to-One
         SEO: data.seo ? { create: data.seo } : undefined,
-        AnalyticsConfig: data.analyticsConfig ? { create: data.analyticsConfig } : undefined,
+        AnalyticsConfig: data.analyticsConfig
+          ? { create: data.analyticsConfig }
+          : undefined,
         // PaymentSettings: paymentSettingsData ? { create: paymentSettingsData } : undefined,
-        PaymentSettings: encryptedPaymentSettings ? { create: encryptedPaymentSettings } : undefined,
+        PaymentSettings: encryptedPaymentSettings
+          ? { create: encryptedPaymentSettings }
+          : undefined,
 
-        ShippingSettings: data.shippingSettings ? { create: data.shippingSettings } : undefined,
+        ShippingSettings: data.shippingSettings
+          ? { create: data.shippingSettings }
+          : undefined,
 
         // Nested One-to-Many
-        socialLinks: data.socialLinks ? { create: data.socialLinks } : undefined,
+        socialLinks: data.socialLinks
+          ? { create: data.socialLinks }
+          : undefined,
         policies: data.policies ? { create: data.policies } : undefined,
         faqs: data.faqs ? { create: data.faqs } : undefined,
-        testimonials: data.testimonials ? { create: data.testimonials } : undefined,
+        testimonials: data.testimonials
+          ? { create: data.testimonials }
+          : undefined,
         heroSlides: data.heroSlides
           ? {
               create: data.heroSlides.map((h) => ({
@@ -275,22 +286,31 @@ if (paymentSettingsData) {
         sectionTitle: data.sectionTitle,
         sectionSubtitle: data.sectionSubtitle,
         sectionDescription: data.sectionDescription,
-
       },
     });
 
-    try {
-      await cacheDel(`user:${user.id}:companies`); // Cache the new company for 5 minutes
-    } catch (e) {
-      console.error("Failed to invalidate new company cache:", e);
+    await cacheDel(`user:${user.id}:companies`); // Cache the new company for 5 minutes
+
+    return formatResponse(
+      true,
+      newCompany,
+      "Company created successfully",
+      201,
+    );
+
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return formatResponse(
+        false,
+        null,
+        "The slug or domain is already taken.",
+        409,
+      );
     }
 
-    return formatResponse(true, newCompany, "Company created successfully", 201);
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-      return formatResponse(false, null, "The slug or domain is already taken.", 409);
-    }
-    
     throw error;
   }
 }
@@ -300,4 +320,3 @@ if (paymentSettingsData) {
 // =======================
 export const GET = withApiHandler(getCompanies);
 export const POST = withApiHandler(createCompany);
-

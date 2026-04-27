@@ -212,6 +212,7 @@ function getDashboardapiBaseUrl(categoryKey: string, companyId: string) {
     logError('NEXT_PUBLIC_API_URL not set.');
     return null;
   }
+
   if (categoryKey === 'service provider') return `${apiBaseUrl}/admin/dashboard/serviceprovider/${companyId}`;
   if (categoryKey === 'booking & appointments') return `${apiBaseUrl}/admin/dashboard/booking/${companyId}`;
   if (categoryKey === 'consultant & coach') return `${apiBaseUrl}/admin/dashboard/coach/${companyId}`;
@@ -339,7 +340,9 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
     const { slug } = await params;
 
     if (!session) redirect('/login');
+
     const userRole = session.user?.role?.toUpperCase() || 'ADMIN';
+
     if (!session?.user?.id || !allowedRoles.includes(userRole)) redirect('/');
 
     const companyId =
@@ -571,59 +574,62 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
       if (isPrincipalLike) {
         let principalDashboardData: any;
         try {
-  isLoading = true;
-  // Note: Ensure the URL spelling matches your folder structure (principal vs principle)
-  const res = await fetch(
-    `${apiBaseUrl}/admin/dashboard/principle/${slug}?userId=${encodeURIComponent(currentUserId)}&companyId=${encodeURIComponent(companyId)}`,
-    { cache: 'no-store', headers: { cookie: cookiesHeader } }
-  );
-  isLoading = false;
+          isLoading = true;
+          // Note: Ensure the URL spelling matches your folder structure (principal vs principle)
+          const res = await fetch(
+            `${apiBaseUrl}/admin/dashboard/principle/${slug}?userId=${encodeURIComponent(currentUserId)}&companyId=${encodeURIComponent(companyId)}`,
+            { cache: 'no-store', headers: { cookie: cookiesHeader } }
+          );
 
-  if (res.ok) {
-    const jsonResponse =( await res.json());
-    
-    // console.log("[AdminDashboardPage] Raw Principal API response:", jsonResponse);
-    // Validate against the new schema (validating the nested 'data' property)
-    const parsed = PrincipalDashboardSchema.safeParse(jsonResponse.data);
+          isLoading = false;
 
-    if (!parsed.success) {
-      error = 'Principal dashboard data validation failed!';
-      logError(error, parsed.error);
-      // It's helpful to see exactly what failed in development
-      // console.error("Zod Issues:", parsed.error.format()); 
-      principalDashboardData = getFallbackDashboardData('principal');
-    } else {
-      // --- Data Transformation Layer ---
-      principalDashboardData = {
-        ...parsed.data,
-        // Map Prisma Announcement types to UI types (info/warning/error)
-        announcements: parsed.data.announcements?.map((a: any) => ({
-          id: a.id,
-          text: a.summary || a.title, // Use summary as display text
-          type: (a.type === 'ALERT' || a.type === 'POLICY_UPDATE') ? 'warning' : 'info'
-        })) || [],
-        
-        // Ensure recentStaffMessages has a fallback if the API returns null
-        recentStaffMessages: parsed.data.recentStaffMessages || [],
-        
-        // trendData and impactReport are passed through as-is from the validated schema
-      };
+          if (res.ok) {
+            const jsonResponse =( await res.json());
+            
+            // console.log("[AdminDashboardPage] Raw Principal API response:", jsonResponse);
+            // Validate against the new schema (validating the nested 'data' property)
+            const parsed = PrincipalDashboardSchema.safeParse(jsonResponse.data);
 
-      // console.log("[AdminDashboardPage] Successfully synced Principal Analytics:", {
-      //   trendPoints: principalDashboardData.trendData.series[0].data.length,
-      //   volatilityCount: principalDashboardData.impactReport.length
-      // });
-    }
-  } else {
-    error = `Principal API Error: ${res.status} ${res.statusText}`;
-    logError(error);
-    principalDashboardData = getFallbackDashboardData('principal');
-  }
-} catch (err) {
-  error = 'Critical failure fetching Principal dashboard';
-  logError(error, err);
-  principalDashboardData = getFallbackDashboardData('principal');
-}
+            if (!parsed.success) {
+              error = 'Principal dashboard data validation failed!';
+              logError(error, parsed.error);
+              // It's helpful to see exactly what failed in development
+              // console.error("Zod Issues:", parsed.error.format()); 
+              principalDashboardData = getFallbackDashboardData('principal');
+
+            } else {
+              // --- Data Transformation Layer ---
+              principalDashboardData = {
+                ...parsed.data,
+                // Map Prisma Announcement types to UI types (info/warning/error)
+                announcements: parsed.data.announcements?.map((a: any) => ({
+                  id: a.id,
+                  text: a.summary || a.title, // Use summary as display text
+                  type: (a.type === 'ALERT' || a.type === 'POLICY_UPDATE') ? 'warning' : 'info'
+                })) || [],
+                
+                // Ensure recentStaffMessages has a fallback if the API returns null
+                recentStaffMessages: parsed.data.recentStaffMessages || [],
+                
+                // trendData and impactReport are passed through as-is from the validated schema
+              };
+
+              // console.log("[AdminDashboardPage] Successfully synced Principal Analytics:", {
+              //   trendPoints: principalDashboardData.trendData.series[0].data.length,
+              //   volatilityCount: principalDashboardData.impactReport.length
+              // });
+            }
+          } else {
+            error = `Principal API Error: ${res.status} ${res.statusText}`;
+            logError(error);
+            principalDashboardData = getFallbackDashboardData('principal');
+          }
+        } catch (err) {
+          error = 'Critical failure fetching Principal dashboard';
+          logError(error, err);
+          principalDashboardData = getFallbackDashboardData('principal');
+        }
+
         if (isLoading) return <LoadingDashboard />;
         // if (error) return <ErrorDashboard error={error} />;
         return (
@@ -658,8 +664,11 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
           logError(error, err);
           tutorDashboardData = getFallbackDashboardData('tutor');
         }
+        
         if (isLoading) return <LoadingDashboard />;
+        
         // if (error) return <ErrorDashboard error={error} />;
+
         return (
           <TutorDashboard
             // {...tutorDashboardData}
@@ -677,28 +686,34 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
     let dashboardCategoryData: any = null;
 
     if (DashboardComponent) {
+
       const apiBaseUrl = getDashboardapiBaseUrl(categoryKey, companyId);
+
       if (apiBaseUrl) {
         try {
+
           isLoading = true;
+
           const res = await fetch(apiBaseUrl, {
             cache: 'no-store',
             headers: { cookie: cookiesHeader },
           });
+
           isLoading = false;
+
           if (res.ok) {
             dashboardCategoryData = (await res.json()).data;
-            // console.log("[AdminDashboardPage] Fetched dashboard data for category:", categoryKey, dashboardCategoryData);
-            // Add runtime validation here for each dashboard type as needed!
           } else {
             error = `Failed to fetch dashboard data for category "${categoryKey}": ${res.statusText}`;
             logError(error);
           }
+          
         } catch (err) {
           error = `Dashboard category fetch error for "${categoryKey}"`;
           logError(error, err);
         }
       }
+
       if (isLoading) return <LoadingDashboard />;
       // if (error) return <ErrorDashboard error={error} />;
       return (
