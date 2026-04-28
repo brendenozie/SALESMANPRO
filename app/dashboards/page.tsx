@@ -91,13 +91,14 @@ const WelcomePage = () => {
                   <ComputerDesktopIcon className="w-5 h-5 text-orange-600" />
                   Desktop App
                 </a>
-                <button 
-                  onClick={() => alert("Mobile app coming soon to App Store and Play Store!")}
+                <a 
+                  href="https://salesmanpro.site/download-mobile/app-release.apk"
+                  // onClick={() => alert("Mobile app coming soon to App Store and Play Store!")}
                   className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:border-orange-500 transition-all shadow-sm"
                 >
                   <DevicePhoneMobileIcon className="w-5 h-5 text-orange-600" />
                   Mobile App
-                </button>
+                </a>
               </div>
             </div>
           </motion.div>
