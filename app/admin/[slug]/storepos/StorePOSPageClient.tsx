@@ -29,6 +29,7 @@ import {
   Legend,
 } from 'chart.js';
 import { MarketListingForm, IStoreCategory } from '@/types/typings';
+import { Company } from '@prisma/client';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "https://salesmanpro.site/api" ||'http://127.0.0.1:3000/api';//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
@@ -75,7 +76,7 @@ export type Agent = {
   dailySalesValue: number;
 };
 
-export type CompanyInfo = {
+export type CompanyInfo = Company & {
   name: string;
   address: string;
   phone: string;
@@ -237,7 +238,7 @@ const printReceipt = (htmlContent: string, receiptDetails: any) => {
         PaymentMethod: receiptDetails.paymentType || "Cash",
 
         // Items List
-        Items: receiptDetails.cart.map((item) => ({
+        Items: receiptDetails.cart.map((item: any) => ({
             Name: item.name,
             Quantity: parseInt(item.quantity),
             Price: parseFloat(item.finalPrice || item.price || 0),
@@ -739,8 +740,8 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       cart: cart.map(item => ({
         ...item,
         // Ensure these match the expected calculation: (Price * Qty) - Discount
-        finalPrice: item.price, 
-        subtotal: (item.price * item.quantity) - (item.discount || 0),
+        finalPrice: (item.finalPrice || item.sellingPrice || item.price || 0), // Fallbacks for price
+        subtotal: ((item.finalPrice || item.sellingPrice || item.price || 0) * item.quantity) - (item.discount || 0),
         discountAmount: item.discount || 0,
         category: item.category || "General",
         route: item.route || "dispatch"
@@ -1105,6 +1106,66 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
           Cart ({itemCount})
         </button>
       </div>
+
+      {/* MOBILE CART OVERLAY */}
+      {showMobileCart && (
+        <div ref={mobileCartRef} className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm p-6 z-40 flex flex-col">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Your Cart</h2>
+            <button onClick={() => setShowMobileCart(false)} className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200">
+              <XMarkIcon className="h-6 w-6" />
+            </button>
+          </div>
+          <div className="flex-grow overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+            {cart.map(item => (
+              <div key={item.id} className="flex gap-4 group">
+                <div className="h-16 w-16 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 flex-shrink-0">
+                  <img src={item.images?.[0]} className="w-full h-full object-cover" alt="" />
+                </div>
+                <div className="flex-grow min-w-0">
+                  <p className="font-bold text-sm truncate">{item.name}</p>
+                  <div className="flex items-center gap-3 mt-1">
+                    <div className="flex items-center border border-zinc-200 dark:border-zinc-800 rounded-lg">
+                      <button onClick={() => handleQuantityChange(item.id, -1)} className="p-1 hover:text-indigo-500">
+                        <MinusIcon className="h-3 w-3" />
+                      </button>
+                      <span className="px-2 text-sm font-medium text-zinc-900 dark:text-white">
+                        {item.quantity}
+                      </span>
+                      <button onClick={() => handleQuantityChange(item.id, 1)} className="p-1 hover:text-indigo-500">
+                        <PlusIcon className="h-3 w-3" />
+                      </button>
+                    </div>
+                    <span className="text-sm font-bold text-zinc-500">
+                      {currencySymbol}{((item.finalPrice || item.sellingPrice) * item.quantity).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-800">
+            <div className="flex justify-between text-sm font-medium text-zinc-500">
+              <span>Subtotal</span>
+              <span>{currencySymbol}{subtotal.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between text-2xl font-black pt-2">
+              <span>Total</span>
+              <span className="text-indigo-600 dark:text-indigo-400">{currencySymbol}{finalTotal.toLocaleString()}</span>
+            </div>
+            <button
+              onClick={() => { setShowMobileCart(false); handleProcessPayment(); }}
+              disabled={cart.length === 0}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-indigo-500/20 transition-all active:scale-95 mt-4 flex items-center justify-center gap-2"
+            >
+              <CreditCardIcon className="h-6 w-6" />
+              Checkout
+            </button>
+          </div>
+        </div>
+      )}
+
+
     </div>
   
   );
