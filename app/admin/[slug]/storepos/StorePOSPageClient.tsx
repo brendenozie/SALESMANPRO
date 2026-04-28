@@ -251,11 +251,18 @@ const printReceipt = (htmlContent: string, receiptDetails: any) => {
   if ((window as any).AndroidBridge) {
         // This calls the Kotlin @JavascriptInterface
         //
-        
-        (window as any).AndroidBridge.postMessage({
-          type: 'PRINT_ESC_POS',
-          payload: desktopPayload
+        // Stringify the whole object so Kotlin can parse it easily
+        const message = JSON.stringify({
+            type: 'PRINT_ESC_POS',
+            payload: desktopPayload
         });
+        
+        (window as any).AndroidBridge.postMessage(message);
+        
+        // (window as any).AndroidBridge.postMessage({
+        //   type: 'PRINT_ESC_POS',
+        //   payload: desktopPayload
+        // });
     } else  if ((window as any).chrome?.webview) {
     // (window as any).chrome.webview.postMessage({
     //   type: 'PRINT_HTML_RECEIPT',
