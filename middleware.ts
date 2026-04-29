@@ -83,6 +83,24 @@ export default async function middleware(
   // const session = await getToken({ req: request });
   const isLocalNetwork = isPrivateIp(clientIp);
 
+  // const urlToken = request.nextUrl.searchParams.get("auth_token");
+
+  // if (urlToken) {
+  //   try {
+  //     const decoded = await getToken({
+  //       token: urlToken,
+  //       secret: process.env.NEXTAUTH_SECRET!,
+  //     });
+
+  //     if (decoded) {
+  //       // Treat user as authenticated
+  //       return NextResponse.next();
+  //     }
+  //   } catch {
+  //     // ignore invalid token
+  //   }
+  // }
+
   // We explicitly pass the secret and handle both secure and non-secure cookie names
   // const session = await getToken({
   //   req: request,
@@ -93,7 +111,11 @@ export default async function middleware(
   const session = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET!,
-    secureCookie: true, // Force secure cookies in production, but allow non-secure in development
+    // secureCookie: true, // Force secure cookies in production, but allow non-secure in development
+    cookieName:
+      process.env.NODE_ENV === "production"
+        ? "__Secure-next-auth.session-token"
+        : "next-auth.session-token",
   });
 
   // console.log("DEBUG: Is Desktop:", isDesktop);
@@ -126,9 +148,9 @@ export default async function middleware(
   // }
 
   // // 🔥 FIX 2: If logged in on desktop, don't stay on the login page
-  if (isDesktop && session && pathname === "/desktop-login") {
-    return NextResponse.redirect(new URL("/dashboards", request.url));
-  }
+  // if (isDesktop && session && pathname === "/desktop-login") {
+  //   return NextResponse.redirect(new URL("/dashboards", request.url));
+  // }
 
   // ---- REST OF YOUR EXISTING MIDDLEWARE LOGIC ----
   const host = request.headers.get("host")?.split(":")[0] || "";
