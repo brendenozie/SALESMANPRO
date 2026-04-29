@@ -525,7 +525,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
           : "next-auth.session-token",
       options: {
         httpOnly: true,
-        sameSite: "lax",
+        sameSite: "lax", // this is the default, but we set it explicitly for clarity
         path: "/",
         secure: process.env.NODE_ENV === "production",
       },
