@@ -1,103 +1,58 @@
 // app/admin/products/page.tsx
-
-import React from "react";
-import ProductsClient from "./ProductsClient";
-import { MarketListingForm } from "@/types/typings";
 import { cookies } from "next/headers";
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-// --- Type Definitions ---
-
-// Represents a user with the RIDER role
-export interface RiderInfo {
-  id: string;
-  name: string;
-}
-
-export interface OrderItem {
-  id: string;
-  price: number;
-  quantity: number;
-  status?: string;
-  marketplaceListing?: MarketListingForm | null;
-  riderId?: string; // Rider ID
-  order?: {
-    id: string;
-    totalAmount?: number;
-    status?: string;
-    rider?: string; // This will store the Rider's ID
-    riderId?: string; // This will store the Rider's ID
-    createdAt?: string;
-    name?: string;
-    email?: string;
-    phone?: string;
-    consumer?: {
-      name?: string;
-    };
-  };
-}
+import ProductsClient from "./ProductsClient";
 
 interface Props {
-  params:Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ page?: string; search?: string }>;
 }
 
-/**
- * Server Component: Fetches all order items AND available riders for the company
- * and passes them to the client component as initial props.
- */
-export default async function ProductsPage({ params }: Props) {
-  const { slug : companyId } = await params;
+export default async function ProductsPage({ params, searchParams }: Props) {
+  const { slug: companyId } = await params;
+  const { page = "1", search = "" } = await searchParams;
   const cookieStore = (await cookies()).toString();
 
-  let orderItems: OrderItem[] = [];
-  let riders: RiderInfo[] = [];
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
+  let orders = [];
+  let riders = [];
+  let pagination = { totalPages: 1, currentPage: 1, totalItems: 0 };
+  let revenue = { total: 0, pending: 0, monthly: [] };
 
   try {
-    // Fetch both orders and riders concurrently for better performance
-    const [ordersResponse, ridersResponse] = await Promise.all([
-      fetch(`${apiBaseUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}`, {
-        method: "GET",
-        headers: { Cookie: cookieStore || "" },
-        next: { revalidate: 60 },
+    const [ordersRes, ridersRes] = await Promise.all([
+      fetch(`${apiBaseUrl}/admin/orders?companyId=${companyId}&page=${page}&search=${search}&limit=10`, {
+        headers: { Cookie: cookieStore },
+        next: { revalidate: 0 },
       }),
-      // Fetch from the riders API endpoint we created previously
-      fetch(`${apiBaseUrl}/admin/transport/store-drivers?companyId=${encodeURIComponent(companyId)}`, {
-        method: "GET",
-        headers: { Cookie: cookieStore || "" },
-        next: { revalidate: 3600 }, // Riders list doesn't change as often
-      }),
+      fetch(`${apiBaseUrl}/admin/transport/store-drivers?companyId=${companyId}`, {
+        headers: { Cookie: cookieStore },
+        next: { revalidate: 3600 },
+      })
     ]);
 
-    // Process orders response
-    if (ordersResponse.ok) {
-      const jsonRes = (await ordersResponse.json()).data;
-      // console.log("Fetched order items:", jsonRes);
-      const json: { orderItems: OrderItem[] } = jsonRes;
-      orderItems = json.orderItems || [];
-    } else {
-      // console.error(
-      //   "[ProductsPage] Failed to fetch order items →",
-      //   ordersResponse.status,
-      //   ordersResponse.statusText
-      // );
-    }
-    
-    // Process riders response
-    if (ridersResponse.ok) {
-        const jsonRes = (await ridersResponse.json());
-        riders = jsonRes.data || [];
-    } else {
-        // console.error(
-        //     "[ProductsPage] Failed to fetch riders →",
-        //     ridersResponse.status,
-        //     ridersResponse.statusText
-        // );
+    if (ordersRes.ok) {
+      const res = await ordersRes.json();
+      orders = res.data.orders || [];
+      pagination = res.data.pagination;
+      revenue = res.data.revenue;
     }
 
-  } catch (err: any) {
-    console.error("[ProductsPage] Error during data fetching →", err.message);
+    if (ridersRes.ok) {
+      const res = await ridersRes.json();
+      riders = res.data || [];
+    }
+  } catch (error) {
+    console.error("Dashboard Fetch Error:", error);
   }
 
-  return <ProductsClient initialOrderItems={orderItems} initialRiders={riders} />;
+  return (
+    <ProductsClient 
+      initialOrders={orders} 
+      initialRiders={riders} 
+      pagination={pagination}
+      revenue={revenue}
+      companyId={companyId}
+    />
+  );
 }
