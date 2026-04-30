@@ -19,6 +19,7 @@ async function handleGetSellerOrdersv1(req: Request, { params }: RouteParams) {
   const page = parseInt(searchParams.get("page") || "1", 10);
   const companyId = searchParams.get("companyId");
   const search = searchParams.get("search") || "";
+  const status = searchParams.get("status") || "PENDING";
 
   const currentPage = page;
   const itemsPerPage = limit;
@@ -44,6 +45,9 @@ async function handleGetSellerOrdersv1(req: Request, { params }: RouteParams) {
 
   // 1. Build the filter for order items associated with the company
   const whereFilter: Prisma.OrderItemWhereInput = {
+    order: {
+      status: status as OrderStatus,
+    },
     marketplaceListing: {
       companyId: companyId,
       ...(search ? { name: { contains: search, mode: "insensitive" } } : {}),
