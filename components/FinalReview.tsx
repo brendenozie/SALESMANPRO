@@ -1,5 +1,5 @@
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   TagIcon,
   HomeIcon,
@@ -12,6 +12,7 @@ import {
   ShoppingBagIcon,
   SparklesIcon,
   WrenchScrewdriverIcon,
+  GlobeAltIcon,
 } from "@heroicons/react/24/outline";
 
 const SectionCard: React.FC<{
@@ -43,10 +44,33 @@ const KeyValue: React.FC<{ label: string; value: React.ReactNode }> = ({
   </div>
 );
 
-const FinalReview = ({ formData }: any) => {
+const GhubaToggle = ({ formData, setFormData }: { formData: any; setFormData: (name: string, value: any) => void}) => {
+  return (
+    <div 
+      onClick={() => setFormData("showOnGhuba", !formData.showOnGhuba)}
+      className={`relative flex h-8 w-14 cursor-pointer items-center rounded-full p-1 transition-colors duration-300 ease-in-out ${
+        formData.showOnGhuba ? "bg-indigo-600" : "bg-gray-300"
+      }`}
+    >
+      <motion.div
+        layout
+        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        className="h-6 w-6 rounded-full bg-white shadow-md flex items-center justify-center"
+      >
+        {formData.showOnGhuba && <SparklesIcon className="w-3 h-3 text-indigo-600" />}
+      </motion.div>
+    </div>
+  );
+};
+
+const FinalReview = ({ formData, setFormData }: {
+    formData: Record<string, any>;
+    // Corrected type to match the updateField function from the parent
+    setFormData: (name: string, value: any) => void;
+  }) => {
+
   // Helper to format N/A if missing or empty
-  const displayValue = (val: any) =>
-    val !== undefined && val !== "" ? val : "N/A";
+  const displayValue = (val: any) => val !== undefined && val !== "" ? val : "N/A";
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -62,6 +86,48 @@ const FinalReview = ({ formData }: any) => {
           <p className="text-gray-600">
             Double-check all details before submitting your listing.
           </p>
+        </motion.div>
+
+        
+        {/* PRO FEATURE: Ghuba.shop Market Toggle Section */}
+        <motion.div
+          whileHover={{ scale: 1.01 }}
+          className="relative overflow-hidden rounded-2xl p-[1px] bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 shadow-xl"
+        >
+          <div className="bg-white/90 backdrop-blur-xl rounded-[15px] p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="bg-indigo-100 p-3 rounded-xl">
+                <GlobeAltIcon className="w-8 h-8 text-indigo-600" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Market on ghuba.shop</h3>
+                <p className="text-sm text-gray-600 max-w-md">
+                  Boost visibility by automatically listing this item on the Ghuba marketplace for a wider reach.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4 bg-gray-100/50 p-3 rounded-2xl border border-gray-200">
+              <span className={`text-sm font-bold transition-colors ${formData.showOnGhuba ? "text-indigo-600" : "text-gray-400"}`}>
+                {formData.showOnGhuba ? "ENABLED" : "DISABLED"}
+              </span>
+              <GhubaToggle formData={formData} setFormData={setFormData} />
+            </div>
+          </div>
+
+          {/* Decorative Sparkle for Active State */}
+          <AnimatePresence>
+            {formData.showOnGhuba && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0 }}
+                className="absolute top-2 right-2"
+              >
+                <SparklesIcon className="w-5 h-5 text-indigo-400 animate-pulse" />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
 
         {/* Grid of Sections */}

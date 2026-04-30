@@ -122,16 +122,24 @@ export default function AdminLayout({ children, params }: {
       {/* Sidebar (fixed on desktop, slides in on mobile) */}
       <aside className={`fixed inset-y-0 left-0 w-64 bg-gradient-to-b from-sky-950 to-sky-900 text-white flex flex-col transition-transform duration-300 ease-in-out ${
         mobileOpen ? 'translate-x-0' : '-translate-x-full'
-      } lg:translate-x-0 z-20`}>
+      } lg:translate-x-0 z-50`}>
         {/* User/Company Info */}
-        <div className="flex items-center space-x-3 p-4 bg-white/10 rounded-lg m-4">
-          <div className="h-10 w-10 bg-white/30 rounded-full flex items-center justify-center">
-            <span className="text-xl font-bold text-white">{(userRole || 'A').charAt(0)}</span>
-          </div>
-          <div>
-            <p className="font-semibold capitalize">{userRole.toLowerCase() === 'consumer' ? 'Admin' : (userRole.toLowerCase() == 'senior'|| userRole.toLowerCase() === 'junior') ? 'Student' : userRole}</p>
-            <p className="text-xs text-white/70">{storeFormData?.name == 'Teacher' || storeFormData?.name == "Students" ? '' : storeFormData?.name || 'Company'}</p>
-          </div>
+        <div className="flex items-center space-x-3 p-4 bg-white/10 rounded-lg m-4 justify-between relative z-10">
+          <div className="flex items-center space-x-3">
+            <div className="h-10 w-10 bg-white/30 rounded-full flex items-center justify-center">
+              <span className="text-xl font-bold text-white">{(userRole || 'A').charAt(0)}</span>
+            </div>
+            <div>
+              <p className="font-semibold capitalize">{userRole.toLowerCase() === 'consumer' ? 'Admin' : (userRole.toLowerCase() == 'senior'|| userRole.toLowerCase() === 'junior') ? 'Student' : userRole}</p>
+              <p className="text-xs text-white/70">{storeFormData?.name == 'Teacher' || storeFormData?.name == "Students" ? '' : storeFormData?.name || 'Company'}</p>
+            </div>   
+          </div>       
+          {/* show close button on mobile */}
+          {mobileOpen && (
+            <button onClick={() => setMobileOpen(false)} className="p-1 rounded-md text-sky-600 hover:bg-gray-100 ml-auto">
+              <XMarkIcon className="h-6 w-6" />
+            </button>
+          )}
         </div>
 
         {/* Navigation Menu */}

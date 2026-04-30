@@ -17,16 +17,17 @@ export const GET = withApiHandler(
     try {
       // --- Get Company ID from Slug ---
       // IMPORTANT: All queries must use the company's ObjectId, not its slug.
-      
-    const cacheKey = `admin:ecommerce:${companyId || 'global'}:all`;
 
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
+      const cacheKey = `admin:ecommerce:${companyId || "global"}:all`;
 
-  const company = await prisma.company.findUnique({
-        where: { id : companyId },
+      try {
+        const cached = await cacheGet(cacheKey);
+        if (cached)
+          return formatResponse(true, cached, "Fetched (Cached)", 200);
+      } catch (e) {}
+
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
         select: { id: true, currency: true, name: true },
       });
 
@@ -43,11 +44,11 @@ export const GET = withApiHandler(
       const now = new Date();
 
       // --- Counts / Simple KPIs ---
-      const newClients = await prisma.client.count({
+      const newClients = await prisma.consumer.count({
         where: { createdAt: { gte: todayStart }, companyId }, // FIXED: Use companyId
       });
 
-      const totalClients = await prisma.client.count({
+      const totalClients = await prisma.consumer.count({
         where: { companyId }, // FIXED: Use companyId
       });
 
@@ -104,7 +105,13 @@ export const GET = withApiHandler(
         where: { companyId }, // FIXED: Use companyId
         orderBy: { createdAt: "desc" },
         take: 5,
-        select: { id: true, name: true, status: true, totalFinalPrice: true, createdAt: true },
+        select: {
+          id: true,
+          name: true,
+          status: true,
+          totalFinalPrice: true,
+          createdAt: true,
+        },
       });
 
       const recentOrders = recentOrdersRaw.map((o) => ({
@@ -112,8 +119,11 @@ export const GET = withApiHandler(
         name: o.name ?? "N/A",
         status: o.status ?? "UNKNOWN",
         // CHANGED: Using totalFinalPrice as it is more accurate than totalPrice.
-        totalPrice: typeof o.totalFinalPrice === "number" ? o.totalFinalPrice : 0,
-        createdAt: o.createdAt ? new Date(o.createdAt).toISOString() : undefined,
+        totalPrice:
+          typeof o.totalFinalPrice === "number" ? o.totalFinalPrice : 0,
+        createdAt: o.createdAt
+          ? new Date(o.createdAt).toISOString()
+          : undefined,
       }));
 
       // --- Active Promotions ---
@@ -144,7 +154,11 @@ export const GET = withApiHandler(
 
       const todaySales = customerOrderTodayAgg._sum.totalFinalPrice || 0;
       const completedOrdersToday = await prisma.customerOrder.count({
-        where: { status: "COMPLETED", createdAt: { gte: todayStart }, companyId },
+        where: {
+          status: "COMPLETED",
+          createdAt: { gte: todayStart },
+          companyId,
+        },
       });
       const totalOrdersToday = customerOrderTodayAgg._count.id || 0;
 
@@ -159,7 +173,11 @@ export const GET = withApiHandler(
       const commissionEarned = commissionAgg._sum.commissionEarned || 0;
 
       // --- Monthly Sales & Target Progress ---
-      const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      const monthStart = new Date(
+        new Date().getFullYear(),
+        new Date().getMonth(),
+        1,
+      );
       const monthlyAggOrders = await prisma.customerOrder.aggregate({
         where: { createdAt: { gte: monthStart }, companyId }, // FIXED: Use companyId
         _sum: { totalFinalPrice: true },
@@ -167,7 +185,9 @@ export const GET = withApiHandler(
 
       const totalRevenueMonth = monthlyAggOrders._sum.totalFinalPrice || 0;
       const monthlyTargetProgress =
-        monthlyTarget > 0 ? Math.min(100, (totalRevenueMonth / monthlyTarget) * 100) : 0;
+        monthlyTarget > 0
+          ? Math.min(100, (totalRevenueMonth / monthlyTarget) * 100)
+          : 0;
 
       // --- Activity Breakdown ---
       const activityBreakdown = {
@@ -221,7 +241,7 @@ export const GET = withApiHandler(
             name: date.toLocaleDateString("en-US", { weekday: "short" }),
             total: orderDay._sum.totalFinalPrice || 0,
           };
-        })
+        }),
       ).then((data) => data.reverse());
 
       // --- Final shaped response matching DashboardData ---
@@ -252,7 +272,8 @@ export const GET = withApiHandler(
         salesLast7Days: salesLast7DaysArr,
       };
 
-      try {        await cacheSet(cacheKey, response, 60); // Cache for 60 seconds
+      try {
+        await cacheSet(cacheKey, response, 60); // Cache for 60 seconds
       } catch (e) {
         console.error("Failed to cache ecommerce dashboard data:", e);
       }
@@ -260,11 +281,15 @@ export const GET = withApiHandler(
       return formatResponse(true, response);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      return formatResponse(false, { message: "Failed to fetch dashboard data", error: errorMessage });
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      return formatResponse(false, {
+        message: "Failed to fetch dashboard data",
+        error: errorMessage,
+      });
     }
   },
-  { requireAuth: true }
+  { requireAuth: true },
 );
 
 // export default GET;
