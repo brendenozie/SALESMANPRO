@@ -45,19 +45,33 @@ const KeyValue: React.FC<{ label: string; value: React.ReactNode }> = ({
 );
 
 const GhubaToggle = ({ formData, setFormData }: { formData: any; setFormData: (name: string, value: any) => void}) => {
+  const isActive = formData.showOnGhuba;
+
   return (
     <div 
-      onClick={() => setFormData("showOnGhuba", !formData.showOnGhuba)}
-      className={`relative flex h-8 w-14 cursor-pointer items-center rounded-full p-1 transition-colors duration-300 ease-in-out ${
-        formData.showOnGhuba ? "bg-indigo-600" : "bg-gray-300"
+      onClick={() => setFormData("showOnGhuba", !isActive)}
+      className={`relative flex h-8 w-14 cursor-pointer items-center rounded-full p-1 transition-all duration-300 ease-in-out ${
+        isActive ? "bg-indigo-600 justify-end" : "bg-gray-300 justify-start"
       }`}
     >
       <motion.div
         layout
         transition={{ type: "spring", stiffness: 500, damping: 30 }}
-        className="h-6 w-6 rounded-full bg-white shadow-md flex items-center justify-center"
+        className="h-6 w-6 rounded-full bg-white shadow-lg flex items-center justify-center"
       >
-        {formData.showOnGhuba && <SparklesIcon className="w-3 h-3 text-indigo-600" />}
+        <AnimatePresence mode="wait">
+          {isActive && (
+            <motion.div
+              key="icon"
+              initial={{ opacity: 0, scale: 0.2, rotate: -45 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              exit={{ opacity: 0, scale: 0.2, rotate: 45 }}
+              transition={{ duration: 0.15 }}
+            >
+              <SparklesIcon className="w-4 h-4 text-indigo-600" />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </div>
   );
