@@ -953,7 +953,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
             {['all', ...categories].map((cat: any) => (
               <button
                 key={typeof cat === 'string' ? cat : cat.id}
-                onClick={() => setSelectedCategory(typeof cat === 'string' ? cat : cat.id)}
+                onClick={() => setSelectedCategory(typeof cat === 'string' ? cat : (cat.categoryId || cat.category.id || cat.id))}
                 className={`px-6 py-2.5 rounded-xl text-sm font-semibold transition-all whitespace-nowrap border ${
                   selectedCategory === (typeof cat === 'string' ? cat : cat.id)
                     ? 'bg-zinc-900 dark:bg-white text-white dark:text-black border-transparent shadow-lg shadow-black/10'
@@ -994,13 +994,13 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
               // Attach the ref to the very last item in the list
               if (filteredProducts.length === index + 1) {
                 return (
-                  <div ref={lastProductElementRef} key={product.id}>
+                  <div ref={lastProductElementRef} key={`${product.id}-${index}`}>
                     <ProductCard product={product} handleAddToCart={handleAddToCart} currencySymbol={currencySymbol} />
                   </div>
                 );
               }
               // MISSING RETURN WAS HERE:
-              return <ProductCard key={product.id} product={product} handleAddToCart={handleAddToCart} currencySymbol={currencySymbol} />;
+              return <ProductCard key={`${product.id}-${index}`} product={product} handleAddToCart={handleAddToCart} currencySymbol={currencySymbol} />;
             })}
             
             {/* Loading Skeleton/Spinner */}
