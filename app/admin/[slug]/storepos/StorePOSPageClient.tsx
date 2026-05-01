@@ -671,7 +671,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     items: cart.map(item => ({
       marketplaceListingId: item.id,
       quantity: item.quantity,
-      price: item.finalPrice ?? 0,
+      price: item.finalPrice || item.sellingPrice || 0,
     })),
     paymentData: {
       notes: `POS Sale by ${currentAgent?.name}`,
