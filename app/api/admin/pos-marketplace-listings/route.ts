@@ -1,13 +1,10 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 // app/api/marketplace-list/route.ts
 import prisma from "@/server/db/prismadb";
-import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 const getMarketplaceListings = async (req: Request) => {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
   const { searchParams } = new URL(req.url);
   const companyId = searchParams.get("companyId");

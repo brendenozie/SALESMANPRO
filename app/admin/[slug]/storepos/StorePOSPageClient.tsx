@@ -15,9 +15,10 @@ import {
   ClipboardDocumentCheckIcon,
   ChevronLeftIcon,
   UserIcon,
+  ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 import Modal from '@/components/Modal'; // Assuming you have a reusable Modal component
-
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 // --- Chart.js Imports (if needed, not directly used in the POS core logic here but kept for completeness) ---
 import {
   Chart as ChartJS,
@@ -395,71 +396,6 @@ const printReceipt = (htmlContent: string, receiptDetails: any) => {
   }
 };
 
-const printReceiptV1 = (htmlContent: string) => {
-  const iframe = document.createElement('iframe');
-  iframe.style.display = 'none';
-  document.body.appendChild(iframe);
-
-  const iframeDoc = iframe.contentWindow?.document;
-  if (iframeDoc) {
-    iframeDoc.open();
-    iframeDoc.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Receipt</title>
-        <style>
-          @page {
-            size: 80mm auto;
-            margin: 0;
-          }
-          body {
-            margin: 0;
-            padding: 0;
-            -webkit-print-color-adjust: exact;
-          }
-          div { font-family: 'Inter', sans-serif; width: 300px; margin: 0 auto; padding: 20px; color: #333; background-color: #fff; border: 1px solid #eee; }
-          h2 { text-align: center; font-size: 24px; margin-bottom: 5px; color: #6A0572; }
-          p { text-align: center; font-size: 12px; margin-bottom: 10px; color: #555; }
-          hr { border: none; border-top: 1px dashed #ccc; margin: 15px 0; }
-          .flex-between { display: flex; justify-content: space-between; }
-          .item-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px; }
-          .item-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-          .item-qty { width: 40px; text-align: center; }
-          .item-price { width: 80px; text-align: right; }
-          .item-subtotal { width: 100px; text-align: right; font-weight: bold; }
-          .section-title { font-size: 15px; font-weight: bold; margin-bottom: 10px; color: #444; }
-          .summary-row { display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 5px; }
-          .total-row { display: flex; justify-content: space-between; font-size: 22px; font-weight: bold; border-top: 2px solid #6A0572; padding-top: 10px; margin-top: 10px; }
-          .thank-you { text-align: center; font-size: 16px; font-weight: bold; margin-top: 15px; color: #6A0572; }
-          .policy { text-align: center; font-size: 11px; color: #777; margin-top: 10px; }
-        </style>
-      </head>
-      <body>
-        ${htmlContent}
-      </body>
-      </html>
-    `);
-    iframeDoc.close();
-
-    iframe.onload = () => {
-      iframe.contentWindow?.focus();
-      iframe.contentWindow?.print();
-      document.body.removeChild(iframe);
-    };
-  } else {
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(htmlContent);
-      printWindow.document.close();
-      printWindow.print();
-    } else {
-      alert('Could not open print window. Please allow pop-ups for printing.');
-    }
-  }
-};
-
-
 // --- Main POS Component ---
 // Props for initial data and company ID, passed from the server-side Page.tsx
 interface StorePOSPageClientProps {
@@ -468,10 +404,22 @@ interface StorePOSPageClientProps {
   companyId: string; // The company ID is essential for fetching relevant data
   userName: string; // Current user's name for display
   userId: string | null; // Current user's ID for potential use
+  currentPage: number; // Current page number
+  totalPages: number; // Total number of pages
 }
 
-const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, initialProducts, initialCategories, userName, userId }) => {
+const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, initialProducts, initialCategories, userName, userId, currentPage, totalPages }) => {
   // --- State Variables (now initialized as empty, will be populated by API calls) ---
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', newPage.toString());
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
   const [products, setProducts] = useState<MarketListingForm[]>(initialProducts || []);
   const [categories, setCategories] = useState<IStoreCategory[]>(initialCategories || []);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -501,6 +449,50 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   const mobileCartRef = useRef<HTMLDivElement | null>(null);
   const touchStartY = useRef<number | null>(null);
   const currentTranslate = useRef<number>(0);
+
+
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(page < totalPages);
+  
+  const observer = useRef<IntersectionObserver | null>(null);
+
+  // The "Sentinel" ref: when this div enters the viewport, we load more
+  const lastProductElementRef = useCallback((node: HTMLDivElement) => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
+
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        setPage(prevPage => prevPage + 1);
+      }
+    });
+
+    if (node) observer.current.observe(node);
+  }, [loading, hasMore]);
+
+  // Fetch more products when page changes
+  useEffect(() => {
+    if (page === 1) return; // Skip initial load as it's handled by Server Component
+
+    const fetchMoreProducts = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/admin/pos-marketplace-listings?companyId=${companyId}&page=${page}&limit=20`);
+        const data = await res.json();
+        
+        const newProducts = data.data.results;
+        setProducts(prev => [...prev, ...newProducts]);
+        setHasMore(page < data.data.totalPages);
+      } catch (err) {
+        console.error("Failed to load products", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMoreProducts();
+  }, [page, companyId]);
 
   useEffect(() => {
     const el = mobileCartRef.current;
@@ -543,19 +535,6 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   // --- useEffect to fetch data on component mount ---
   useEffect(() => {
     // 1. Fetch Products
-    // const fetchProducts = async () => {
-      // console.log(`Fetching products for companyId: ${companyId}`);
-      // Simulate API call for products
-    //   await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
-    //   const fetchedProducts: Product[] = [
-    //     { id: 'prod-001', name: 'Wireless Headphones XYZ', description: 'Premium noise-cancelling headphones.', price: 199.99, imageUrl: 'https://placehold.co/100x100/A78BFA/ffffff?text=Headphones', stock: 50 },
-    //     { id: 'prod-002', name: 'Smartwatch Pro 2.0', description: 'Track your fitness and notifications.', price: 249.00, imageUrl: 'https://placehold.co/100x100/60A5FA/ffffff?text=Smartwatch', stock: 30 },
-    //     { id: 'prod-003', name: 'Portable Bluetooth Speaker', description: 'Powerful sound on the go.', price: 79.50, imageUrl: 'https://placehold.co/100x100/34D399/ffffff?text=Speaker', stock: 120 },
-    //     { id: 'prod-004', name: '4K UHD Smart TV 55"', description: 'Immersive viewing experience.', price: 799.00, imageUrl: 'https://placehold.co/100x100/F472B6/ffffff?text=SmartTV', stock: 15 },
-    //     { id: 'prod-005', name: 'Ergonomic Office Chair', description: 'Comfort and support for long hours.', price: 299.99, imageUrl: 'https://placehold.co/100x100/FBBF24/ffffff?text=Chair', stock: 40 },
-    //   ];
-    // };
-
     // 2. Fetch Agent Info (assuming a current user/agent context)
     const fetchAgentInfo = async () => {
       await new Promise(resolve => setTimeout(resolve, 300)); // Simulate network delay
@@ -596,7 +575,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
             ? {
                 ...item,
                 quantity: newQuantity,
-                subtotal: (product.finalPrice ?? 0) * newQuantity, // ✅ always number
+                subtotal: (product.finalPrice || product.sellingPrice || 0) * newQuantity, // ✅ always number
               }
             : item
         );
@@ -606,7 +585,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
           {
             ...product,
             quantity: 1,
-            subtotal: product.finalPrice ?? 0, // ✅ always number
+            subtotal: product.finalPrice || product.sellingPrice || 0, // ✅ always number
           },
         ];
       }
@@ -726,22 +705,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
 
     // 3. Print Receipt             
     const now = new Date();
-    // const receiptDetails: ReceiptDetails = {
-    //   cart,
-    //   subtotal,
-    //   totalDiscountAmount,
-    //   totalTax,
-    //   finalTotal,
-    //   agentId: currentAgent?.id || 'N/A',
-    //   agentName: currentAgent?.name || 'N/A',
-    //   transactionId: result.data.trackingNumber, // Use tracking number from API
-    //   date: now.toLocaleDateString(),
-    //   time: now.toLocaleTimeString(),
-    //   storeName: companyInfo?.name || 'Your Awesome Store',
-    //   storeAddress: companyInfo?.address || '123 Main St',
-    //   storePhone: companyInfo?.phone || '',
-    //   currencySymbol: currencySymbol,
-    // };
+
     const receiptDetails: ReceiptDetails = {
       // Items & Totals
       cart: cart.map(item => ({
@@ -1001,37 +965,50 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
             ))}
           </div>
 
+          {/* <div className="mt-6 flex items-center justify-between border-t border-zinc-200 dark:border-zinc-800 pt-4">
+            <p className="text-sm text-zinc-500">
+              Page <b>{currentPage}</b> of <b>{totalPages}</b>
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage <= 1}
+                className="px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 disabled:opacity-50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              >
+                <ChevronLeftIcon className="h-5 w-5" />
+              </button>
+              
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+                className="px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 disabled:opacity-50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              >
+                <ChevronRightIcon className="h-5 w-5" />
+              </button>
+            </div>
+          </div> */}
+
           {/* GRID */}
           <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto pr-2 custom-scrollbar">
-            {filteredProducts.map(product => (
-              <div
-                key={product.id}
-                onClick={() => handleAddToCart(product)}
-                className="group cursor-pointer bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 hover:ring-2 hover:ring-indigo-500 transition-all active:scale-95 shadow-sm"
-              >
-                <div className="relative aspect-square overflow-hidden rounded-xl mb-3">
-                  <img
-                    src={product.images?.[0] || `https://placehold.co/200x200?text=${product.name}`}
-                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                    alt=""
-                  />
-                  {(product.stock) < 10 && (
-                    <span className="absolute top-2 left-2 bg-amber-500 text-[10px] font-bold text-white px-2 py-1 rounded-md uppercase">
-                      Low Stock
-                    </span>
-                  )}
-                </div>
-                <h3 className="font-bold text-sm truncate">{product.name}</h3>
-                <div className="flex justify-between items-center mt-2">
-                  <span className="text-indigo-600 dark:text-indigo-400 font-black">
-                    {currencySymbol}{(product.finalPrice || product.sellingPrice || 0).toLocaleString()}
-                  </span>
-                  <div className="p-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-zinc-400 group-hover:text-indigo-500 transition-colors">
-                    <PlusIcon className="h-4 w-4" />
+            {filteredProducts.map((product, index) => {
+              // Attach the ref to the very last item in the list
+              if (filteredProducts.length === index + 1) {
+                return (
+                  <div ref={lastProductElementRef} key={product.id}>
+                    <ProductCard product={product} handleAddToCart={handleAddToCart} currencySymbol={currencySymbol} />
                   </div>
-                </div>
+                );
+              }
+              // MISSING RETURN WAS HERE:
+              return <ProductCard key={product.id} product={product} handleAddToCart={handleAddToCart} currencySymbol={currencySymbol} />;
+            })}
+            
+            {/* Loading Skeleton/Spinner */}
+            {loading && (
+              <div className="col-span-full py-10 flex justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
               </div>
-            ))}
+            )}
           </div>
         </div>
 
@@ -1216,3 +1193,35 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
 
 export default StorePOSPageClient;
 
+
+const ProductCard = ({ product, handleAddToCart, currencySymbol }: { product: MarketListingForm; handleAddToCart: (product: MarketListingForm) => void; currencySymbol: string }) => {
+  return (
+    <div
+      key={product.id}
+      onClick={() => handleAddToCart(product)}
+      className="group cursor-pointer bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 hover:ring-2 hover:ring-indigo-500 transition-all active:scale-95 shadow-sm"
+    >
+      <div className="relative aspect-square overflow-hidden rounded-xl mb-3">
+        <img
+          src={product.images?.[0] || `https://placehold.co/200x200?text=${product.name}`}
+          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+          alt=""
+        />
+        {(product.stock) < 10 && (
+          <span className="absolute top-2 left-2 bg-amber-500 text-[10px] font-bold text-white px-2 py-1 rounded-md uppercase">
+            Low Stock
+          </span>
+        )}
+      </div>
+      <h3 className="font-bold text-sm truncate">{product.name}</h3>
+      <div className="flex justify-between items-center mt-2">
+        <span className="text-indigo-600 dark:text-indigo-400 font-black">
+          {currencySymbol}{(product.finalPrice || product.sellingPrice || 0).toLocaleString()}
+        </span>
+        <div className="p-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-zinc-400 group-hover:text-indigo-500 transition-colors">
+          <PlusIcon className="h-4 w-4" />
+        </div>
+      </div>
+    </div>
+  );
+};
