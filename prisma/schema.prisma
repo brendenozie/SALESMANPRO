@@ -460,6 +460,7 @@ model Company {
 
   // sslStatus     SslStatus @default(PENDING)
   sslError String?
+  Hub      Hub[]
 
   @@index([userId])
 }
@@ -1536,6 +1537,7 @@ model User {
   leaveRequests           LeaveRequest[]
   // @@index([hardwareId])
   candidates              candidate[]
+  DeliveryTracking        DeliveryTracking[]
 
   @@index([companyId])
   // @@index([settingsId])
@@ -2383,6 +2385,7 @@ model CustomerOrder {
   totalDiscount   Float?
   totalShipping   Float?
   totalFinalPrice Float? // 💡 UPDATE: MUST be changed from Float to Float?
+  DeliveryStop    DeliveryStop[]
 
   @@index([consumerId])
   @@index([companyId])
@@ -5965,11 +5968,24 @@ model CompanySettings {
 
 // Add this new model to your schema.prisma file
 
-enum DeliveryStatus {
-  PENDING
-  INPROGRESS
-  DELIVERED
-  CANCELLED
+// ======================================================
+// HUBS / WAREHOUSES
+// ======================================================
+
+model Hub {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
+  name    String
+  address String
+  lat     Float?
+  lng     Float?
+
+  createdAt DateTime   @default(now())
+  Delivery  Delivery[]
+
+  @@index([companyId])
 }
 
 model Delivery {
@@ -5993,6 +6009,9 @@ model Delivery {
   totalWeight         Float?
   estimatedTravelTime Int? // in minutes
   totalDistanceKm     Float?
+
+  hubId String? @db.ObjectId
+  hub   Hub?    @relation(fields: [hubId], references: [id])
 
   pickupAddress   String?
   deliveryAddress String?
@@ -6024,9 +6043,152 @@ model Delivery {
 
   CustomerOrders CustomerOrder[] @relation("DeliveryToOrders")
 
+  stops    DeliveryStop[]
+  tracking DeliveryTracking[]
+
   @@index([companyId])
   @@index([riderId])
   @@index([status])
+}
+
+// ======================================================
+// DELIVERY STOPS (MULTI-DROP)
+// ======================================================
+
+enum DeliveryStatus {
+  DRAFT
+  PENDING
+  ASSIGNED
+  INPROGRESS
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum StopStatus {
+  PENDING
+  ARRIVED
+  DELIVERED
+  FAILED
+  SKIPPED
+}
+
+enum ProofType {
+  PHOTO
+  SIGNATURE
+  OTP
+}
+
+enum RiderStatus {
+  OFFLINE
+  ONLINE
+  IDLE
+  ON_DELIVERY
+  BREAK
+}
+
+model DeliveryStop {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  deliveryId String
+  delivery   Delivery @relation(fields: [deliveryId], references: [id])
+
+  orderId String
+  order   CustomerOrder @relation(fields: [orderId], references: [id])
+
+  sequence Int
+
+  customerName String?
+  phone        String?
+
+  address String
+  lat     Float?
+  lng     Float?
+
+  status StopStatus @default(PENDING)
+
+  etaMinutes Int?
+
+  arrivedAt   DateTime?
+  deliveredAt DateTime?
+  failedAt    DateTime?
+
+  failureReason String?
+
+  proofs DeliveryProof[]
+
+  @@index([deliveryId])
+  @@index([sequence])
+}
+
+// ======================================================
+// LIVE GPS TRACKING
+// ======================================================
+
+model DeliveryTracking {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  deliveryId String
+  delivery   Delivery @relation(fields: [deliveryId], references: [id])
+
+  riderId String?
+  rider   User?   @relation(fields: [riderId], references: [id])
+
+  lat Float
+  lng Float
+
+  speedKph Float?
+  heading  Float?
+
+  batteryLevel Int?
+
+  recordedAt DateTime @default(now())
+
+  @@index([deliveryId])
+  @@index([recordedAt])
+}
+
+// ======================================================
+// PROOF OF DELIVERY
+// ======================================================
+
+model DeliveryProof {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  stopId String
+  stop   DeliveryStop @relation(fields: [stopId], references: [id])
+
+  type ProofType
+
+  imageUrl      String?
+  signatureUrl  String?
+  otpCode       String?
+  recipientName String?
+
+  notes String?
+
+  createdAt DateTime @default(now())
+
+  @@index([stopId])
+}
+
+// ======================================================
+// RETURNS / FAILED ATTEMPTS
+// ======================================================
+
+model DeliveryException {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  deliveryId String  @db.ObjectId
+  stopId     String? @db.ObjectId
+  orderId    String? @db.ObjectId
+
+  reason String
+  notes  String?
+
+  createdAt DateTime @default(now())
+
+  @@index([deliveryId])
 }
 
 model Idempotency {

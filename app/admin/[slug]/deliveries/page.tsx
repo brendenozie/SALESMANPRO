@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useParams } from 'next/navigation';
-import toast, { Toaster } from 'react-hot-toast';
-import { 
-  PlusCircleIcon, 
-  MagnifyingGlassIcon, 
-  TruckIcon, 
-  MapPinIcon, 
-  ClockIcon, 
-  ClipboardDocumentCheckIcon, 
-  ArchiveBoxIcon, 
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useParams } from "next/navigation";
+import toast, { Toaster } from "react-hot-toast";
+import {
+  PlusCircleIcon,
+  MagnifyingGlassIcon,
+  TruckIcon,
+  MapPinIcon,
+  ClockIcon,
+  ClipboardDocumentCheckIcon,
+  ArchiveBoxIcon,
   ClipboardDocumentListIcon,
   ArrowPathIcon,
   XMarkIcon,
@@ -18,13 +18,20 @@ import {
   ChevronRightIcon,
   PencilSquareIcon,
   TrashIcon,
-  ExclamationTriangleIcon,
   QueueListIcon,
-  Square3Stack3DIcon
-} from '@heroicons/react/24/outline';
+  CurrencyDollarIcon,
+  UserCircleIcon,
+} from "@heroicons/react/24/outline";
 
-// --- Types & Constants ---
-type DeliveryStatus = 'Pending' | 'InProgress' | 'Delivered' | 'Cancelled';
+/* =========================================================
+   TYPES
+========================================================= */
+
+type DeliveryStatus =
+  | "PENDING"
+  | "INPROGRESS"
+  | "DELIVERED"
+  | "CANCELLED";
 
 interface Order {
   id: string;
@@ -35,7 +42,13 @@ interface Order {
   deliveryAddress: string;
   pickupAddress: string;
   customerName: string;
+  customerPhone?: string;
   weight?: number;
+}
+
+interface Rider {
+  id: string;
+  name: string;
 }
 
 interface Delivery {
@@ -44,607 +57,863 @@ interface Delivery {
   status: DeliveryStatus;
   riderId?: string;
   riderName?: string;
-  deliveryFee: number;
-  orderIds: string[];
-  pickupAddress: string;
-  deliveryAddress: string;
-  weightKg: number;
-  packageValue: number;
-  packageDescription: string;
+
+  pickupAddress?: string;
+  deliveryAddress?: string;
+
+  packageDescription?: string;
+  packageValue?: number;
+  weightKg?: number;
+  deliveryFee?: number;
+
+  orderIds?: string[];
   scheduledFor?: string;
+  createdAt?: string;
 }
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+/* =========================================================
+   CONFIG
+========================================================= */
 
-// --- Helpers ---
-const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-  const R = 6371; // km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "";
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+const statusLabel = (status: DeliveryStatus) => {
+  switch (status) {
+    case "PENDING":
+      return "Pending";
+    case "INPROGRESS":
+      return "In Progress";
+    case "DELIVERED":
+      return "Delivered";
+    case "CANCELLED":
+      return "Cancelled";
+    default:
+      return status;
+  }
+};
+
+const statusColor = (status: DeliveryStatus) => {
+  switch (status) {
+    case "DELIVERED":
+      return "bg-emerald-50 text-emerald-700 border-emerald-200";
+    case "INPROGRESS":
+      return "bg-blue-50 text-blue-700 border-blue-200";
+    case "CANCELLED":
+      return "bg-red-50 text-red-700 border-red-200";
+    default:
+      return "bg-amber-50 text-amber-700 border-amber-200";
+  }
+};
+
+const calculateDistance = (
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+) => {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) ** 2;
+
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
-const buildAggregateFromOrders = (selectedIds: string[], allOrders: Order[]) => {
-  const selected = allOrders.filter(o => selectedIds.includes(o.id));
+const buildAggregateFromOrders = (
+  selectedIds: string[],
+  allOrders: Order[]
+) => {
+  const selected = allOrders.filter((o) => selectedIds.includes(o.id));
+
   return {
-    packageDescription: selected.map(o => o.productName).join(', '),
-    weightKgHint: selected.reduce((sum, o) => sum + (o.weight || 0.5), 0),
-    packageValueHint: selected.reduce((sum, o) => sum + (o.totalFinalPrice || 0), 0),
-    pickupAddress: selected[0]?.pickupAddress || '',
-    deliveryAddress: selected.length > 1 ? `${selected.length} Drop-off Points` : selected[0]?.deliveryAddress || '',
+    packageDescription: selected.map((o) => o.productName).join(", "),
+    packageValue: selected.reduce(
+      (sum, item) => sum + item.totalFinalPrice,
+      0
+    ),
+    weightKg: selected.reduce(
+      (sum, item) => sum + (item.weight || 0.5),
+      0
+    ),
+    pickupAddress: selected[0]?.pickupAddress || "",
+    deliveryAddress:
+      selected.length > 1
+        ? `${selected.length} Stops`
+        : selected[0]?.deliveryAddress || "",
+    customerName: selected[0]?.customerName || "",
   };
 };
 
-// --- Sub-Components ---
+/* =========================================================
+   SUMMARY CARD
+========================================================= */
 
-const DeliverySummaryCard = ({ title, value, icon: Icon, colorClass }: any) => (
-  <div className={`${colorClass} p-6 rounded-3xl shadow-2xl text-white transform hover:-translate-y-1 transition duration-300 relative overflow-hidden group`}>
-    <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
-        <Icon className="h-32 w-32" />
+const SummaryCard = ({
+  title,
+  value,
+  icon: Icon,
+  color,
+}: any) => (
+  <div
+    className={`${color} rounded-3xl p-6 text-white shadow-xl relative overflow-hidden`}
+  >
+    <div className="absolute -right-4 -bottom-4 opacity-10">
+      <Icon className="h-28 w-28" />
     </div>
+
     <div className="relative z-10 flex items-center justify-between">
       <div>
-        <p className="text-[10px] font-black uppercase opacity-70 tracking-[0.2em]">{title}</p>
-        <h3 className="text-4xl font-black mt-1 tracking-tight">{value}</h3>
+        <p className="text-[10px] uppercase tracking-[0.25em] font-black opacity-70">
+          {title}
+        </p>
+        <h3 className="text-4xl font-black mt-2">{value}</h3>
       </div>
-      <div className="p-3 bg-white/20 backdrop-blur-md rounded-2xl shadow-inner">
-        <Icon className="h-8 w-8 text-white" />
+
+      <div className="p-3 rounded-2xl bg-white/15">
+        <Icon className="h-7 w-7" />
       </div>
     </div>
   </div>
 );
 
+/* =========================================================
+   MODAL
+========================================================= */
 
-const AddEditDeliveryModal = ({ isOpen, onClose, delivery, riders, orders, onSave, isSubmitting, companyId }: any) => {
-  const [formData, setFormData] = useState<any>({});
-  const [nearbyOrderIds, setNearbyOrderIds] = useState<string[]>([]);
+function DeliveryModal({
+  isOpen,
+  onClose,
+  riders,
+  orders,
+  delivery,
+  onSave,
+  isSubmitting,
+}: any) {
+  const [form, setForm] = useState<any>({
+    status: "PENDING",
+    orderIds: [],
+    deliveryFee: 150,
+  });
 
-  const updateNearbySuggestions = (selectedIds: string[]) => {
-    if (selectedIds.length === 0) { setNearbyOrderIds([]); return; }
-    const primary = orders.find((o: Order) => o.id === selectedIds[0]);
-    if (!primary?.lat || !primary?.lng) return;
-
-    const nearby = orders
-      .filter((o: Order) => !selectedIds.includes(o.id) && o.lat && 
-        calculateDistance(primary.lat!, primary.lng!, o.lat, o.lng!) < 5)
-      .map((o: Order) => o.id);
-    setNearbyOrderIds(nearby);
-  };
+  const [nearbyIds, setNearbyIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (delivery) {
-      setFormData(delivery);
+      setForm(delivery);
     } else {
-      // Initialize with schema defaults
-      setFormData({
-        status: 'PENDING',
+      setForm({
+        status: "PENDING",
         orderIds: [],
         deliveryFee: 150,
-        trackingNumber: `VH-${Math.random().toString(36).toUpperCase().substring(2, 9)}`,
-        companyId: companyId
+        trackingNumber: `VH-${Math.random()
+          .toString(36)
+          .substring(2, 8)
+          .toUpperCase()}`,
       });
     }
-  }, [delivery, isOpen, companyId]);
-
-  const handleOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const ids = Array.from(e.target.selectedOptions).map(opt => opt.value);
-    
-    // Update proximity suggestions
-    updateNearbySuggestions(ids);
-    
-    // Calculate aggregates from your existing helper
-    const agg = buildAggregateFromOrders(ids, orders);
-    
-    setFormData((prev: any) => ({ 
-        ...prev, 
-        orderIds: ids, 
-        packageDescription: agg.packageDescription,
-        weightKg: agg.weightKgHint,
-        packageValue: agg.packageValueHint,
-        pickupAddress: agg.pickupAddress,
-        deliveryAddress: agg.deliveryAddress,
-        // customerName: agg.customerName // New schema field
-    }));
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-indigo-950/60 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-white rounded-[2.5rem] shadow-[0_0_50px_rgba(0,0,0,0.1)] w-full max-w-6xl overflow-hidden border border-white/20">
-        
-        {/* Header */}
-        <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-          <div>
-            <h2 className="text-3xl font-black text-indigo-900 uppercase tracking-tighter italic">
-                {delivery ? 'Refine Manifest' : 'Create Dispatch'}
-            </h2>
-            <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.3em] mt-1">VelocityHub Smart Logistics</p>
-          </div>
-          <button onClick={onClose} className="p-3 hover:bg-gray-200 rounded-full transition-all group">
-            <XMarkIcon className="h-6 w-6 group-hover:rotate-90 transition-transform" />
-          </button>
-        </div>
-
-        <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="p-10 grid grid-cols-1 lg:grid-cols-12 gap-10 max-h-[80vh] overflow-y-auto scrollbar-hide">
-          
-          {/* Column 1: Order Selection (Left) */}
-          <div className="lg:col-span-4 space-y-6">
-            <label className="text-[10px] font-black text-indigo-600 uppercase tracking-widest flex items-center">
-                <QueueListIcon className="h-4 w-4 mr-2" /> 1. Bundle Orders
-            </label>
-            <div className="relative">
-                <select multiple size={15} value={formData.orderIds} onChange={handleOrderChange}
-                className="w-full rounded-[2rem] border-2 border-gray-50 focus:border-indigo-500 focus:ring-0 text-xs shadow-inner p-4 transition-all bg-gray-50/50">
-                {orders.map((o: any) => (
-                    <option key={o.id} value={o.id} className="p-3 rounded-xl mb-1 cursor-pointer checked:bg-indigo-600 checked:text-white border border-transparent">
-                    {nearbyOrderIds.includes(o.id) ? '📍 ' : ''} {o.name || 'Untitled Order'} — {o.totalFinalPrice}
-                    </option>
-                ))}
-                </select>
-            </div>
-          </div>
-
-          {/* Column 2: Logistics Info (Middle) */}
-          <div className="lg:col-span-4 space-y-6">
-            <label className="text-[10px] font-black text-indigo-600 uppercase tracking-widest flex items-center">
-                <MapPinIcon className="h-4 w-4 mr-2" /> 2. Route Details
-            </label>
-            
-            <div className="space-y-4">
-                <div className="group">
-                    <label className="text-[10px] font-black text-gray-400 uppercase ml-2">Pickup Point</label>
-                    <textarea value={formData.pickupAddress || ''} 
-                        onChange={(e) => setFormData({...formData, pickupAddress: e.target.value})}
-                        className="w-full p-4 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm" rows={2} />
-                </div>
-
-                <div className="group">
-                    <label className="text-[10px] font-black text-gray-400 uppercase ml-2">Delivery Destination</label>
-                    <textarea value={formData.deliveryAddress || ''} 
-                        onChange={(e) => setFormData({...formData, deliveryAddress: e.target.value})}
-                        className="w-full p-4 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm" rows={2} />
-                </div>
-
-                <div className="group">
-                    <label className="text-[10px] font-black text-gray-400 uppercase ml-2">Package Description</label>
-                    <input type="text" value={formData.packageDescription || ''} 
-                        onChange={(e) => setFormData({...formData, packageDescription: e.target.value})}
-                        className="w-full p-4 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-indigo-500 font-medium text-sm" />
-                </div>
-            </div>
-          </div>
-
-          {/* Column 3: Summary & Dispatch (Right) */}
-          <div className="lg:col-span-4 space-y-6">
-            <div className="bg-indigo-900 rounded-[2rem] p-8 text-white shadow-2xl space-y-6">
-                <div className="flex justify-between items-end border-b border-white/10 pb-4">
-                    <span className="text-[10px] font-black uppercase opacity-50">Tracking</span>
-                    <span className="text-xs font-mono font-bold">{formData.trackingNumber}</span>
-                </div>
-                <div className="flex justify-between items-end border-b border-white/10 pb-4">
-                    <span className="text-[10px] font-black uppercase opacity-50">Total Value</span>
-                    <span className="text-xl font-black">Ksh {formData.packageValue?.toLocaleString()}</span>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white/5 p-3 rounded-2xl border border-white/10">
-                        <p className="text-[9px] font-black uppercase opacity-50">Weight</p>
-                        <p className="text-lg font-bold">{formData.weightKg || 0}kg</p>
-                    </div>
-                    <div className="bg-white/5 p-3 rounded-2xl border border-white/10">
-                        <p className="text-[9px] font-black uppercase opacity-50">Fee</p>
-                        <p className="text-lg font-bold text-green-400">Ksh {formData.deliveryFee}</p>
-                    </div>
-                </div>
-
-                <div className="pt-4">
-                    <label className="text-[10px] font-black text-indigo-300 uppercase">Assigned Rider</label>
-                    <select value={formData.riderId || ''} 
-                        onChange={(e) => setFormData({...formData, riderId: e.target.value})}
-                        className="w-full mt-2 p-4 rounded-2xl bg-white/10 border-none focus:ring-2 focus:ring-white text-sm font-bold text-white">
-                        <option value="" className="text-gray-900">Awaiting Rider...</option>
-                        {riders.map((r: any) => <option key={r.id} value={r.id} className="text-gray-900">{r.name}</option>)}
-                    </select>
-                </div>
-            </div>
-
-            <button type="submit" disabled={isSubmitting || !formData.orderIds?.length} 
-                className="w-full py-6 bg-indigo-600 text-white rounded-[2rem] font-black shadow-xl hover:shadow-indigo-500/40 hover:-translate-y-1 transition-all flex items-center justify-center uppercase tracking-widest text-sm disabled:opacity-50 disabled:translate-y-0">
-                {isSubmitting ? 'Syncing Fleet...' : 'Confirm Dispatch'}
-                <ChevronRightIcon className="ml-2 h-5 w-5" />
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-const AddEditDeliveryModalv1 = ({ isOpen, onClose, delivery, riders, orders, onSave, isSubmitting }: any) => {
-  const [formData, setFormData] = useState<Partial<Delivery>>({});
-  const [nearbyOrderIds, setNearbyOrderIds] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (delivery) setFormData(delivery);
-    else setFormData({ status: 'Pending', orderIds: [], deliveryFee: 150 });
   }, [delivery, isOpen]);
 
-  const updateNearbySuggestions = (selectedIds: string[]) => {
-    if (selectedIds.length === 0) { setNearbyOrderIds([]); return; }
-    const primary = orders.find((o: Order) => o.id === selectedIds[0]);
-    if (!primary?.lat || !primary?.lng) return;
+  const updateNearby = (ids: string[]) => {
+    if (!ids.length) return setNearbyIds([]);
 
-    const nearby = orders
-      .filter((o: Order) => !selectedIds.includes(o.id) && o.lat && 
-        calculateDistance(primary.lat!, primary.lng!, o.lat, o.lng!) < 5)
+    const first = orders.find((x: Order) => x.id === ids[0]);
+
+    if (!first?.lat || !first?.lng) return;
+
+    const matches = orders
+      .filter(
+        (o: Order) =>
+          !ids.includes(o.id) &&
+          o.lat &&
+          o.lng &&
+          calculateDistance(
+            first.lat!,
+            first.lng!,
+            o.lat!,
+            o.lng!
+          ) <= 5
+      )
       .map((o: Order) => o.id);
-    setNearbyOrderIds(nearby);
+
+    setNearbyIds(matches);
   };
 
-  const handleOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const ids = Array.from(e.target.selectedOptions).map(opt => opt.value);
-    updateNearbySuggestions(ids);
+  const onOrderChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const ids = Array.from(e.target.selectedOptions).map(
+      (x) => x.value
+    );
+
+    updateNearby(ids);
+
     const agg = buildAggregateFromOrders(ids, orders);
-    setFormData(prev => ({ 
-        ...prev, 
-        orderIds: ids, 
-        packageDescription: agg.packageDescription,
-        weightKg: agg.weightKgHint,
-        packageValue: agg.packageValueHint,
-        pickupAddress: agg.pickupAddress,
-        deliveryAddress: agg.deliveryAddress
+
+    setForm((prev: any) => ({
+      ...prev,
+      orderIds: ids,
+      ...agg,
     }));
   };
-
-  
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-indigo-950/60 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-white rounded-[2.5rem] shadow-[0_0_50px_rgba(0,0,0,0.1)] w-full max-w-5xl overflow-hidden border border-white/20">
-        <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+    <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="w-full max-w-6xl bg-white rounded-[2rem] shadow-2xl overflow-hidden">
+        {/* Header */}
+        <div className="p-7 border-b flex justify-between items-center">
           <div>
-            <h2 className="text-3xl font-black text-indigo-900 uppercase tracking-tighter italic">
-                {delivery ? 'Refine Manifest' : 'Create Dispatch'}
+            <h2 className="text-3xl font-black text-indigo-950">
+              {delivery ? "Edit Dispatch" : "Create Dispatch"}
             </h2>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Smart Logistics Bundle</p>
+            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">
+              Enterprise Delivery Engine
+            </p>
           </div>
-          <button onClick={onClose} className="p-3 hover:bg-gray-200 rounded-full transition-all group">
-            <XMarkIcon className="h-6 w-6 group-hover:rotate-90 transition-transform" />
+
+          <button
+            onClick={onClose}
+            className="p-3 rounded-full hover:bg-slate-100"
+          >
+            <XMarkIcon className="h-6 w-6" />
           </button>
         </div>
 
-        <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="p-10 grid grid-cols-1 lg:grid-cols-12 gap-10 max-h-[75vh] overflow-y-auto">
-          {/* Order Selection (7 Columns) */}
-          <div className="lg:col-span-7 space-y-6">
-            <label className="text-xs font-black text-indigo-600 uppercase tracking-widest flex items-center">
-                <QueueListIcon className="h-4 w-4 mr-2" /> 1. Select Orders to Bundle
+        {/* Body */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            onSave(form);
+          }}
+          className="grid lg:grid-cols-12 gap-8 p-8 max-h-[85vh] overflow-y-auto"
+        >
+          {/* Orders */}
+          <div className="lg:col-span-5 space-y-3">
+            <label className="text-xs font-black uppercase tracking-widest text-indigo-600">
+              Orders Bundle
             </label>
-            <div className="relative group">
-                <select multiple size={10} value={formData.orderIds} onChange={handleOrderChange}
-                className="w-full rounded-3xl border-2 border-gray-100 focus:border-indigo-500 focus:ring-0 text-sm shadow-inner p-4 transition-all scrollbar-hide">
-                {orders.map((o: Order) => (
-                    <option key={o.id} value={o.id} className="p-4 rounded-xl mb-2 cursor-pointer checked:bg-indigo-600 checked:text-white border border-transparent hover:border-indigo-200">
-                    {nearbyOrderIds.includes(o.id) ? '📍 [NEARBY] ' : ''} {o.productName} — {o.customerName}
-                    </option>
+
+            <select
+              multiple
+              size={14}
+              value={form.orderIds || []}
+              onChange={onOrderChange}
+              className="w-full rounded-3xl border p-4 text-sm"
+            >
+              {orders.map((o: Order) => (
+                <option
+                  key={o.id}
+                  value={o.id}
+                  className="p-2"
+                >
+                  {nearbyIds.includes(o.id) ? "📍 " : ""}
+                  {o.productName} — KES {o.totalFinalPrice}
+                </option>
+              ))}
+            </select>
+
+            <p className="text-xs text-slate-400">
+              Ctrl/Cmd + Click for multi-select
+            </p>
+          </div>
+
+          {/* Middle */}
+          <div className="lg:col-span-4 space-y-4">
+            <label className="text-xs font-black uppercase tracking-widest text-indigo-600">
+              Route Details
+            </label>
+
+            <textarea
+              rows={3}
+              placeholder="Pickup Address"
+              value={form.pickupAddress || ""}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  pickupAddress: e.target.value,
+                })
+              }
+              className="w-full rounded-2xl bg-slate-50 p-4"
+            />
+
+            <textarea
+              rows={3}
+              placeholder="Delivery Address"
+              value={form.deliveryAddress || ""}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  deliveryAddress: e.target.value,
+                })
+              }
+              className="w-full rounded-2xl bg-slate-50 p-4"
+            />
+
+            <input
+              placeholder="Package Description"
+              value={form.packageDescription || ""}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  packageDescription: e.target.value,
+                })
+              }
+              className="w-full rounded-2xl bg-slate-50 p-4"
+            />
+
+            <input
+              type="datetime-local"
+              value={form.scheduledFor || ""}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  scheduledFor: e.target.value,
+                })
+              }
+              className="w-full rounded-2xl bg-slate-50 p-4"
+            />
+          </div>
+
+          {/* Right */}
+          <div className="lg:col-span-3 space-y-5">
+            <div className="rounded-3xl bg-indigo-950 text-white p-6 space-y-4">
+              <div>
+                <p className="text-xs uppercase opacity-60 font-black">
+                  Tracking
+                </p>
+                <p className="font-mono text-lg font-bold">
+                  {form.trackingNumber}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white/10 rounded-2xl p-3">
+                  <p className="text-[10px] uppercase opacity-60">
+                    Weight
+                  </p>
+                  <p className="font-black">
+                    {form.weightKg || 0}kg
+                  </p>
+                </div>
+
+                <div className="bg-white/10 rounded-2xl p-3">
+                  <p className="text-[10px] uppercase opacity-60">
+                    Value
+                  </p>
+                  <p className="font-black">
+                    {form.packageValue || 0}
+                  </p>
+                </div>
+              </div>
+
+              <input
+                type="number"
+                placeholder="Delivery Fee"
+                value={form.deliveryFee || 0}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    deliveryFee: Number(e.target.value),
+                  })
+                }
+                className="w-full rounded-2xl bg-white/10 p-4"
+              />
+
+              <select
+                value={form.riderId || ""}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    riderId: e.target.value,
+                  })
+                }
+                className="w-full rounded-2xl bg-white/10 p-4"
+              >
+                <option value="">Assign Rider</option>
+
+                {riders.map((r: Rider) => (
+                  <option
+                    key={r.id}
+                    value={r.id}
+                    className="text-black"
+                  >
+                    {r.name}
+                  </option>
                 ))}
-                </select>
-                <div className="absolute right-4 bottom-4 pointer-events-none opacity-40">
-                    <span className="text-[10px] font-black uppercase">Cmd+Click for Multi</span>
-                </div>
-            </div>
-          </div>
-
-          {/* Right Summary Column (5 Columns) */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="bg-gradient-to-br from-indigo-900 via-indigo-800 to-indigo-600 rounded-[2rem] p-8 text-white shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-10">
-                    <SparklesIcon className="h-24 w-24" />
-                </div>
-                <div className="relative z-10 space-y-6">
-                    <h3 className="font-black text-indigo-200 text-[10px] uppercase tracking-[0.3em]">Manifest Summary</h3>
-                    <div className="flex justify-between items-end border-b border-white/10 pb-4">
-                        <span className="text-sm opacity-70">Order Count</span>
-                        <span className="text-4xl font-black">{formData.orderIds?.length || 0}</span>
-                    </div>
-                    <div className="flex justify-between items-end border-b border-white/10 pb-4">
-                        <span className="text-sm opacity-70">Total Value</span>
-                        <span className="text-xl font-bold">Ksh {formData.packageValue?.toLocaleString() || 0}</span>
-                    </div>
-                    {nearbyOrderIds.length > 0 && (
-                        <div className="bg-white/10 backdrop-blur-xl p-4 rounded-2xl border border-white/20 animate-pulse flex items-center">
-                            <SparklesIcon className="h-5 w-5 mr-3 text-yellow-400" />
-                            <p className="text-xs font-black uppercase tracking-tight">
-                                {nearbyOrderIds.length} Proximity matches found!
-                            </p>
-                        </div>
-                    )}
-                </div>
+              </select>
             </div>
 
-            {/* Logistics Detail Inputs */}
-            <div className="space-y-4 pt-4">
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                        <label className="text-[10px] font-black text-gray-400 uppercase">Weight (KG)</label>
-                        <input type="number" step="0.1" value={formData.weightKg || ''} 
-                            onChange={(e) => setFormData({...formData, weightKg: Number(e.target.value)})}
-                            className="w-full p-4 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-indigo-500 font-bold" />
-                    </div>
-                    <div className="space-y-1">
-                        <label className="text-[10px] font-black text-gray-400 uppercase">Fee (Ksh)</label>
-                        <input type="number" value={formData.deliveryFee || ''} 
-                            onChange={(e) => setFormData({...formData, deliveryFee: Number(e.target.value)})}
-                            className="w-full p-4 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-indigo-500 font-bold text-green-600" />
-                    </div>
-                </div>
-                <div className="space-y-1">
-                    <label className="text-[10px] font-black text-gray-400 uppercase">Assigned Rider</label>
-                    <select value={formData.riderId || ''} 
-                        onChange={(e) => setFormData({...formData, riderId: e.target.value})}
-                        className="w-full p-4 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-indigo-500 font-bold">
-                        <option value="">Awaiting Assignment...</option>
-                        {riders.map((r: any) => <option key={r.id} value={r.id}>{r.name}</option>)}
-                    </select>
-                </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-12 flex justify-end gap-6 pt-6 border-t border-gray-100">
-            <button type="button" onClick={onClose} className="px-8 py-4 font-black text-gray-400 hover:text-gray-600 transition-colors uppercase text-sm tracking-widest">Cancel</button>
-            <button type="submit" disabled={isSubmitting} 
-                className="px-12 py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-[0_10px_20px_rgba(79,70,229,0.3)] hover:shadow-indigo-400/40 hover:-translate-y-1 active:translate-y-0 transition-all flex items-center uppercase tracking-widest text-sm">
-                {isSubmitting ? 'Syncing...' : 'Dispatch Hub'}
-                <ChevronRightIcon className="ml-2 h-5 w-5" />
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-3xl py-5 font-black uppercase tracking-widest"
+            >
+              {isSubmitting
+                ? "Saving..."
+                : delivery
+                ? "Update Dispatch"
+                : "Create Dispatch"}
             </button>
           </div>
         </form>
       </div>
     </div>
   );
-};
+}
 
-// --- Main Page Component ---
+/* =========================================================
+   MAIN PAGE
+========================================================= */
+
 export default function DeliveriesPage() {
-  const { slug: companyId } = useParams();
+  const { slug } = useParams();
+
+  const companyId = Array.isArray(slug) ? slug[0] : slug;
+  const navigate = (url: string) => {
+    window.location.href = url;
+  };
+
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
-  const [riders, setRiders] = useState([]);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('All');
+  const [riders, setRiders] = useState<Rider[]>([]);
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showAddEditModal, setShowAddEditModal] = useState(false);
-  const [editingDelivery, setEditingDelivery] = useState<Delivery | null>(null);
+
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] =
+    useState<string>("ALL");
+
+  const [showModal, setShowModal] =
+    useState(false);
+
+  const [editing, setEditing] =
+    useState<Delivery | null>(null);
+
+  /* =======================================================
+     FETCH DATA
+  ======================================================= */
 
   const fetchData = useCallback(async () => {
+    if (!companyId) return;
+
     setIsLoading(true);
+
     try {
-      const safeId = Array.isArray(companyId) ? companyId[0] : (companyId ?? '');
-      const params = new URLSearchParams({ companyId: safeId, status: filterStatus === 'All' ? 'PENDING' : filterStatus }).toString();
+      const query = new URLSearchParams({
+        companyId,
+        ...(filter !== "ALL" && { status: filter }),
+      }).toString();
 
       const [dRes, rRes, oRes] = await Promise.all([
-        fetch(`${apiBaseUrl}/admin/deliveries?${params}`,{credentials:'include'}),
-        fetch(`${apiBaseUrl}/admin/transport/store-drivers?companyId=${safeId}`,{credentials:'include'}),
-        fetch(`${apiBaseUrl}/admin/deliveries1?${params}`,{credentials:'include'})
+        fetch(`${apiBaseUrl}/admin/deliveries?${query}`, {
+          credentials: "include",
+        }),
+        fetch(
+          `${apiBaseUrl}/admin/transport/store-drivers?companyId=${companyId}`,
+          { credentials: "include" }
+        ),
+        fetch(
+          `${apiBaseUrl}/admin/deliveries/orders?companyId=${companyId}`,
+          { credentials: "include" }
+        ),
       ]);
 
-      const dData = await dRes.json();
-      const rData = await rRes.json();
-      const oData = await oRes.json();
+      const dJson = await dRes.json();
+      const rJson = await rRes.json();
+      const oJson = await oRes.json();
 
-      console.log("[DeliveryPage] Fetched deliveries →", dData);
-      console.log("[DeliveryPage] Fetched riders →", rData);
-      console.log("[DeliveryPage] Fetched orders →", oData);
+      setDeliveries(dJson.data || []);
+      setRiders(rJson.data || []);
 
-      setDeliveries(dData.data || []);
-      setRiders(rData.data || []);
-      
-      // Flattened items logic from our API discussion
-      const mappedOrders = (oData.data?.items || []).map((item: any) => ({
-        id: item.id,
-        productName: item.marketplaceListing?.name || 'Item',
-        totalFinalPrice: item.price * (item.quantity || 1),
-        lat: item.deliveryLat,
-        lng: item.deliveryLng,
-        deliveryAddress: item.deliveryAddress,
-        pickupAddress: item.marketplaceListing?.locationName || 'Main Hub',
-        customerName: item.customerName,
-      }));
+      const mappedOrders =
+        (oJson.data.items || []).map((item: any) => ({
+          id: item.id,
+          productName:
+            item.productName ||
+            item.marketplaceListing?.name ||
+            "Order Item",
+          totalFinalPrice:
+            item.totalFinalPrice ||
+            item.price ||
+            0,
+          lat:
+            item.shippingAddress?.lat ||
+            item.deliveryLat,
+          lng:
+            item.shippingAddress?.lng ||
+            item.deliveryLng,
+          deliveryAddress:
+            item.shippingAddress?.display_name ||
+            item.deliveryAddress ||
+            "Destination",
+          pickupAddress:
+            item.pickupAddress ||
+            "Warehouse",
+          customerName:
+            item.name || "Customer",
+          customerPhone:
+            item.phone,
+        })) || [];
+
       setOrders(mappedOrders);
-    } catch (err) {
-      toast.error("Cloud sync failed. Check connection.");
+    } catch (error) {
+      toast.error("Failed to sync deliveries.");
     } finally {
       setIsLoading(false);
     }
-  }, [companyId, filterStatus]);
+  }, [companyId, filter]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-  const stats = useMemo(() => ({
-    total: deliveries.length,
-    active: deliveries.filter(d => d.status === 'InProgress').length,
-    pending: deliveries.filter(d => d.status === 'Pending').length,
-    completed: deliveries.filter(d => d.status === 'Delivered').length
-  }), [deliveries]);
+  /* =======================================================
+     SAVE
+  ======================================================= */
 
-  // Inside DeliveriesPage.tsx
+  const saveDelivery = async (payload: any) => {
+    setIsSubmitting(true);
 
-const handleSaveDelivery = async (formData: Partial<Delivery>) => {
-  setIsSubmitting(true);
-  try {
-    const method = editingDelivery ? 'PATCH' : 'POST';
-    const url = editingDelivery 
-      ? `${apiBaseUrl}/admin/deliveries/${editingDelivery.id}`
-      : `${apiBaseUrl}/admin/deliveries`;
+    try {
+      const method = editing ? "PATCH" : "POST";
 
-    const res = await fetch(url, {
+      const url = editing
+        ? `${apiBaseUrl}/admin/deliveries/${editing.id}`
+        : `${apiBaseUrl}/admin/deliveries`;
+
+      const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, companyId }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          ...payload,
+          companyId,
+        }),
       });
 
-      if (res.ok) {
-        toast.success(editingDelivery ? "Manifest Synced" : "Dispatch Confirmed!");
-        setShowAddEditModal(false);
-        fetchData(); // Refresh the list
+      if (!res.ok) {
+        throw new Error();
       }
-    } catch (err) {
-      toast.error("Network error during dispatch");
+
+      toast.success(
+        editing
+          ? "Delivery updated"
+          : "Dispatch created"
+      );
+
+      setShowModal(false);
+      setEditing(null);
+      fetchData();
+    } catch {
+      toast.error("Could not save dispatch.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Dismantle this manifest? Orders will return to the queue.")) return;
-    
+  /* =======================================================
+     DELETE
+  ======================================================= */
+
+  const deleteDelivery = async (id: string) => {
+    if (!confirm("Delete this delivery?")) return;
+
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/deliveries/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        toast.success("Manifest Deleted");
-        fetchData();
-      }
-    } catch (err) {
-      toast.error("Could not delete manifest");
+      const res = await fetch(
+        `${apiBaseUrl}/admin/deliveries/${id}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
+      if (!res.ok) throw new Error();
+
+      toast.success("Deleted");
+      fetchData();
+    } catch {
+      toast.error("Delete failed");
     }
   };
 
+  /* =======================================================
+     FILTERED
+  ======================================================= */
+
+  const filtered = useMemo(() => {
+    return deliveries.filter((d) => {
+      const term = search.toLowerCase();
+
+      return (
+        d.trackingNumber
+          ?.toLowerCase()
+          .includes(term) ||
+        d.riderName
+          ?.toLowerCase()
+          .includes(term) ||
+        d.deliveryAddress
+          ?.toLowerCase()
+          .includes(term)
+      );
+    });
+  }, [deliveries, search]);
+
+  const stats = useMemo(() => {
+    return {
+      total: deliveries.length,
+      active: deliveries.filter(
+        (x) => x.status === "INPROGRESS"
+      ).length,
+      pending: deliveries.filter(
+        (x) => x.status === "PENDING"
+      ).length,
+      done: deliveries.filter(
+        (x) => x.status === "DELIVERED"
+      ).length,
+    };
+  }, [deliveries]);
+
+  /* =======================================================
+     UI
+  ======================================================= */
+
   return (
-    <div className="p-6 lg:p-12 space-y-12 bg-[#F8FAFC] min-h-screen">
+    <div className="min-h-screen bg-slate-50 p-6 lg:p-10 space-y-10">
       <Toaster position="bottom-center" />
 
-      {/* Hero Section */}
-      <div className="flex flex-col lg:row justify-between items-start lg:items-end gap-6 border-b-2 border-indigo-100 pb-10">
-        <div className="space-y-1">
-          <h1 className="text-5xl lg:text-7xl font-black text-indigo-950 tracking-tighter italic uppercase">
-            Velocity<span className="text-indigo-600">Hub</span>
+      {/* HERO */}
+      <div className="flex flex-col lg:flex-row justify-between gap-5">
+        <div>
+          <h1 className="text-5xl font-black text-indigo-950 tracking-tight">
+            VelocityHub
           </h1>
-          <p className="text-gray-400 font-bold uppercase tracking-[0.4em] text-xs">Real-Time Logistics Operations</p>
+          <p className="uppercase tracking-[0.35em] text-xs text-slate-400 font-bold mt-2">
+            Logistics Operations Center
+          </p>
         </div>
-        <button onClick={() => { setEditingDelivery(null); setShowAddEditModal(true); }}
-            className="group relative px-8 py-5 bg-indigo-600 text-white rounded-[2rem] font-black text-sm uppercase tracking-widest shadow-2xl hover:bg-indigo-700 transition-all flex items-center overflow-hidden">
-          <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-          <PlusCircleIcon className="mr-3 h-6 w-6 relative z-10" />
-          <span className="relative z-10">Deploy New Manifest</span>
+
+        <button
+          onClick={() => {
+            // deliveries-dispatch
+            setEditing(null);
+            //navigate to deliveries-dispatch page
+            navigate(`/admin/${companyId}/deliveries-dispatch`);
+          }}
+          className="px-7 py-4 rounded-3xl bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-widest flex items-center gap-3"
+        >
+          <PlusCircleIcon className="h-6 w-6" />
+          New Dispatch
         </button>
       </div>
 
-      {/* Dashboard Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        <DeliverySummaryCard title="Total Manifests" value={stats.total} icon={ArchiveBoxIcon} colorClass="bg-indigo-900" />
-        <DeliverySummaryCard title="Active In Field" value={stats.active} icon={ClipboardDocumentListIcon} colorClass="bg-blue-600" />
-        <DeliverySummaryCard title="Awaiting Rider" value={stats.pending} icon={ClockIcon} colorClass="bg-violet-600" />
-        <DeliverySummaryCard title="Successful Drops" value={stats.completed} icon={ClipboardDocumentCheckIcon} colorClass="bg-emerald-600" />
+      {/* STATS */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <SummaryCard
+          title="Total"
+          value={stats.total}
+          icon={ArchiveBoxIcon}
+          color="bg-indigo-950"
+        />
+        <SummaryCard
+          title="In Progress"
+          value={stats.active}
+          icon={TruckIcon}
+          color="bg-blue-600"
+        />
+        <SummaryCard
+          title="Pending"
+          value={stats.pending}
+          icon={ClockIcon}
+          color="bg-amber-500"
+        />
+        <SummaryCard
+          title="Delivered"
+          value={stats.done}
+          icon={ClipboardDocumentCheckIcon}
+          color="bg-emerald-600"
+        />
       </div>
 
-      {/* Main Table Content */}
-      <div className="bg-white rounded-[3rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden">
-        <div className="p-8 border-b border-gray-50 bg-gray-50/30 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="relative w-full md:w-96 group">
-                <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300 group-focus-within:text-indigo-500 transition-colors" />
-                <input type="text" placeholder="Trace ID, Rider, or Destination..." 
-                    className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white border-transparent focus:ring-2 focus:ring-indigo-100 placeholder:text-gray-300 font-bold text-sm shadow-sm"
-                    onChange={(e) => setSearchTerm(e.target.value)} />
-            </div>
-            <div className="flex gap-4">
-                {['All', 'Pending', 'InProgress', 'Delivered'].map(status => (
-                    <button key={status} onClick={() => setFilterStatus(status)}
-                        className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all
-                        ${filterStatus === status ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white text-gray-400 hover:text-indigo-600'}`}>
-                        {status}
-                    </button>
-                ))}
-            </div>
+      {/* TABLE */}
+      <div className="bg-white rounded-[2rem] shadow-xl overflow-hidden">
+        {/* Top Bar */}
+        <div className="p-6 border-b flex flex-col lg:flex-row gap-4 justify-between">
+          <div className="relative w-full lg:w-96">
+            <MagnifyingGlassIcon className="h-5 w-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              placeholder="Search tracking / rider / destination"
+              value={search}
+              onChange={(e) =>
+                setSearch(e.target.value)
+              }
+              className="w-full rounded-2xl bg-slate-50 pl-12 pr-4 py-4"
+            />
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {[
+              "ALL",
+              "PENDING",
+              "INPROGRESS",
+              "DELIVERED",
+              "CANCELLED",
+            ].map((x) => (
+              <button
+                key={x}
+                onClick={() => setFilter(x)}
+                className={`px-4 py-3 rounded-xl text-xs font-black tracking-widest ${
+                  filter === x
+                    ? "bg-indigo-600 text-white"
+                    : "bg-slate-100 text-slate-500"
+                }`}
+              >
+                {x}
+              </button>
+            ))}
+          </div>
         </div>
 
+        {/* Body */}
         {isLoading ? (
-            <div className="p-32 flex flex-col items-center">
-                <ArrowPathIcon className="h-12 w-12 text-indigo-600 animate-spin" />
-                <p className="mt-4 font-black text-indigo-900/40 uppercase tracking-widest text-xs">Syncing Satellite Data...</p>
-            </div>
+          <div className="p-20 flex flex-col items-center">
+            <ArrowPathIcon className="h-10 w-10 animate-spin text-indigo-600" />
+            <p className="mt-3 text-sm font-bold text-slate-400">
+              Loading deliveries...
+            </p>
+          </div>
         ) : (
-            <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                    <thead className="bg-gray-50/50">
-                        <tr>
-                            <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Tracing</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Logistics Status</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Destinations</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Bundle</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Rider & Revenue</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                        {deliveries.map((delivery) => (
-                            <tr key={delivery.id} className="group hover:bg-indigo-50/30 transition-all">
-                                <td className="px-8 py-6">
-                                    <span className="font-black text-indigo-950 text-lg tracking-tighter">#{delivery.trackingNumber}</span>
-                                </td>
-                                <td className="px-8 py-6">
-                                    <span className={`px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-tighter border-2
-                                        ${delivery.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
-                                          delivery.status === 'InProgress' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}>
-                                        {delivery.status}
-                                    </span>
-                                </td>
-                                <td className="px-8 py-6">
-                                    <div className="space-y-1">
-                                        <div className="flex items-center text-[11px] font-bold text-gray-400 italic">
-                                            <MapPinIcon className="h-3 w-3 mr-2" /> {delivery.pickupAddress}
-                                        </div>
-                                        <div className="flex items-center text-sm font-black text-indigo-950">
-                                            <TruckIcon className="h-4 w-4 mr-2 text-indigo-600" /> {delivery.deliveryAddress}
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-8 py-6">
-                                    <div className="flex items-center">
-                                        <div className="flex -space-x-3">
-                                            {[1, 2, 3].map((_, i) => (
-                                                <div key={i} className="h-9 w-9 rounded-full bg-indigo-100 border-4 border-white flex items-center justify-center text-[10px] font-black text-indigo-600">
-                                                    {i === 2 ? `+${delivery.orderIds?.length || 0}` : '📦'}
-                                                </div>
-                                            ))}
-                                        </div>
-                                        {delivery.orderIds?.length > 1 && (
-                                            <span className="ml-4 text-[9px] font-black text-indigo-400 uppercase bg-indigo-50 px-2 py-1 rounded">Bundle</span>
-                                        )}
-                                    </div>
-                                </td>
-                                <td className="px-8 py-6">
-                                    <div className="text-sm font-black text-indigo-950">{delivery.riderName || 'RIDER UNSET'}</div>
-                                    <div className="text-[10px] font-bold text-emerald-600 tracking-widest">KSH {delivery.deliveryFee.toLocaleString()}</div>
-                                </td>
-                                <td className="px-8 py-6">
-                                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                                        <button onClick={() => { setEditingDelivery(delivery); setShowAddEditModal(true); }}
-                                            className="p-3 text-indigo-600 hover:bg-white rounded-2xl shadow-sm transition-all"><PencilSquareIcon className="h-5 w-5" /></button>
-                                        <button className="p-3 text-red-500 hover:bg-white rounded-2xl shadow-sm transition-all"><TrashIcon className="h-5 w-5" /></button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-slate-50 text-left">
+                <tr>
+                  <th className="px-6 py-4 text-xs">
+                    Tracking
+                  </th>
+                  <th className="px-6 py-4 text-xs">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-xs">
+                    Route
+                  </th>
+                  <th className="px-6 py-4 text-xs">
+                    Rider
+                  </th>
+                  <th className="px-6 py-4 text-xs">
+                    Fee
+                  </th>
+                  <th className="px-6 py-4 text-xs">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {filtered.map((row) => (
+                  <tr
+                    key={row.id}
+                    className="border-t hover:bg-slate-50"
+                  >
+                    <td className="px-6 py-5 font-black text-indigo-950">
+                      #{row.trackingNumber}
+                    </td>
+
+                    <td className="px-6 py-5">
+                      <span
+                        className={`px-3 py-2 rounded-full border text-xs font-black ${statusColor(
+                          row.status
+                        )}`}
+                      >
+                        {statusLabel(row.status)}
+                      </span>
+                    </td>
+
+                    <td className="px-6 py-5">
+                      <div className="space-y-1">
+                        <div className="text-xs text-slate-400 flex gap-2">
+                          <MapPinIcon className="h-4 w-4" />
+                          {row.pickupAddress}
+                        </div>
+                        <div className="font-bold text-sm flex gap-2">
+                          <TruckIcon className="h-4 w-4 text-indigo-600" />
+                          {row.deliveryAddress}
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-5 font-semibold">
+                      {row.riderName || "Unassigned"}
+                    </td>
+
+                    <td className="px-6 py-5 font-black text-emerald-600">
+                      KES {row.deliveryFee || 0}
+                    </td>
+
+                    <td className="px-6 py-5">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setEditing(row);
+                            setShowModal(true);
+                          }}
+                          className="p-2 rounded-xl bg-slate-100"
+                        >
+                          <PencilSquareIcon className="h-5 w-5 text-indigo-600" />
+                        </button>
+
+                        <button
+                          onClick={() =>
+                            deleteDelivery(row.id)
+                          }
+                          className="p-2 rounded-xl bg-slate-100"
+                        >
+                          <TrashIcon className="h-5 w-5 text-red-500" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+
+                {!filtered.length && (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="text-center py-16 text-slate-400 font-semibold"
+                    >
+                      No deliveries found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
-      <AddEditDeliveryModal 
-        isOpen={showAddEditModal} 
-        onClose={() => setShowAddEditModal(false)} 
-        delivery={editingDelivery} 
-        riders={riders} 
-        orders={orders} 
-        onSave={handleSaveDelivery} 
-        isSubmitting={isSubmitting} 
+      {/* MODAL */}
+      <DeliveryModal
+        isOpen={showModal}
+        onClose={() => {
+          setShowModal(false);
+          setEditing(null);
+        }}
+        riders={riders}
+        orders={orders}
+        delivery={editing}
+        onSave={saveDelivery}
+        isSubmitting={isSubmitting}
       />
     </div>
   );
