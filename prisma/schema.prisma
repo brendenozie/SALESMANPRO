@@ -2346,6 +2346,7 @@ model CustomerOrder {
   emailReceiptSent      Boolean?      @default(false)
   // Billing details
   billingAddress        Json? // Billing address details
+
   // Order details
   notes                 String?
   specialInstructions   String?
@@ -2373,9 +2374,10 @@ model CustomerOrder {
 
   Company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId
+  
 
   deliveryId String?   @db.ObjectId
-  Delivery   Delivery? @relation(fields: [deliveryId], references: [id])
+  Delivery   Delivery? @relation("DeliveryToOrders", fields: [deliveryId], references: [id])
 
   totalPrice      Float? // Made optional
   totalTax        Float?
@@ -5987,6 +5989,11 @@ model Delivery {
   customerContact String?
   customerEmail   String?
 
+// 💡 NEW: Summary fields to help the rider see the "Trip" at a glance
+  totalWeight     Float?
+  estimatedTravelTime Int? // in minutes
+  totalDistanceKm     Float?
+
   pickupAddress   String?
   deliveryAddress String?
   latlngPickup    String? // e.g., "37.7749,-122.4194"
@@ -6014,7 +6021,8 @@ model Delivery {
   scheduledFor       DateTime?
 
   createdAt     DateTime        @default(now())
-  CustomerOrder CustomerOrder[]
+  
+  CustomerOrders CustomerOrder[] @relation("DeliveryToOrders")
 
   @@index([companyId])
   @@index([riderId])

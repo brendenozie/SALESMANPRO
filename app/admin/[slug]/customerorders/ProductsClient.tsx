@@ -20,7 +20,7 @@ export default function ProductsClient({ initialOrders, initialRiders, paginatio
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  
+  const [bulkRiderId, setBulkRiderId] = useState("");
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [orders, setOrders] = useState(initialOrders);
 
@@ -30,11 +30,11 @@ export default function ProductsClient({ initialOrders, initialRiders, paginatio
   // Sync with Server Props
   useEffect(() => { setOrders(initialOrders); }, [initialOrders]);
 
-  const handleUpdateStatus = async (itemId: string, newStatus: string, riderId?: string) => {
+  const handleUpdateStatus = async (orderId: string,itemId: string, newStatus: string, riderId?: string) => {
     setIsUpdating(true);
     try {
       const res = await fetch(
-        `/api/admin/orders/${itemId}?status=${newStatus}&companyId=${companyId}${riderId ? `&riderId=${riderId}` : ""}`,
+        `/api/admin/orders/${orderId}/order-items/${itemId}?status=${newStatus}&companyId=${companyId}${riderId ? `&riderId=${riderId}` : ""}`,
         { method: "PUT" }
       );
       
@@ -65,6 +65,32 @@ export default function ProductsClient({ initialOrders, initialRiders, paginatio
     const params = new URLSearchParams(searchParams);
     params.set("page", page.toString());
     router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const handleBulkUpdate = async (newStatus: string) => {
+    if (!selectedOrder) return;
+    setIsUpdating(true);
+
+    try {
+      // Calling the refactored API with the Order ID
+      const res = await fetch(
+        `/api/admin/orders/${selectedOrder.id}?status=${newStatus}&companyId=${companyId}&riderId=${bulkRiderId}`,
+        { method: "PUT" }
+      );
+
+      if (res.ok) {
+        toast.success(`Whole order set to ${newStatus}`);
+        router.refresh();
+        setSelectedOrder(null);
+        setBulkRiderId(""); // Reset
+      } else {
+        toast.error("Bulk update failed");
+      }
+    } catch (err) {
+      toast.error("An error occurred");
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
@@ -244,7 +270,51 @@ export default function ProductsClient({ initialOrders, initialRiders, paginatio
               </button>
             </div>
 
-            <div className="p-8 space-y-6">
+            <div className="p-8 space-y-8">
+              {/* --- BULK UPDATE SECTION WITH RIDER --- */}
+              <div className="p-6 rounded-2xl bg-indigo-50 border border-indigo-100 space-y-4">
+                <div>
+                  <label className="block text-xs font-black text-indigo-600 uppercase tracking-widest mb-3">
+                    1. Assign Rider to all items (Optional)
+                  </label>
+                  <select 
+                    className="w-full bg-white text-sm border-gray-200 rounded-xl focus:ring-indigo-500 py-3 px-4 shadow-sm"
+                    value={bulkRiderId}
+                    onChange={(e) => setBulkRiderId(e.target.value)}
+                  >
+                    <option value="">No Rider Assigned</option>
+                    {initialRiders.map((r: any) => (
+                      <option key={r.id} value={r.id}>{r.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black text-indigo-600 uppercase tracking-widest mb-3">
+                    2. Set Order & Items Status
+                  </label>
+                  <div className="flex flex-wrap gap-3">
+                    {['PENDING', 'COMPLETED', 'CANCELLED'].map((s) => (
+                      <button
+                        key={s}
+                        disabled={isUpdating}
+                        onClick={() => handleBulkUpdate(s)}
+                        className={`flex-1 px-4 py-3 rounded-xl font-bold text-sm transition-all shadow-sm ${
+                          selectedOrder.status === s
+                            ? "bg-indigo-600 text-white ring-4 ring-indigo-100"
+                            : "bg-white text-gray-600 hover:bg-gray-100 hover:shadow-md"
+                        }`}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+            {/* Individual Item List */}
+            <div className="space-y-4">
+              <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Individual Items</h3>
               {selectedOrder.items.map((item: any) => (
                 <div key={item.id} className="p-4 rounded-2xl border border-gray-100 bg-gray-50 flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
@@ -276,7 +346,7 @@ export default function ProductsClient({ initialOrders, initialRiders, paginatio
                         <button
                           key={s}
                           disabled={isUpdating}
-                          onClick={() => handleUpdateStatus(item.id, s, item.tempRider)}
+                          onClick={() => handleUpdateStatus(selectedOrder.id, item.id, s, item.tempRider)}
                           className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all ${
                             selectedOrder.status === s 
                             ? "bg-indigo-600 text-white shadow-md scale-105" 
@@ -291,6 +361,7 @@ export default function ProductsClient({ initialOrders, initialRiders, paginatio
                 </div>
               ))}
             </div>
+          </div>
 
             <div className="px-8 py-6 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
               <button 

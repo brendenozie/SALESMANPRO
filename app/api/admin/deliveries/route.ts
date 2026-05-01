@@ -28,13 +28,17 @@ export const GET = withApiHandler(async (request, context) => {
 
   if (searchTerm) {
     where.OR = [
-      { trackingNumber: { contains: searchTerm, mode: 'insensitive' } },
-      { pickupAddress: { contains: searchTerm, mode: 'insensitive' } },
-      { deliveryAddress: { contains: searchTerm, mode: 'insensitive' } },
-      { packageDescription: { contains: searchTerm, mode: 'insensitive' } },
-      { rider: { name: { contains: searchTerm, mode: 'insensitive' } } },
+      { trackingNumber: { contains: searchTerm, mode: "insensitive" } },
+      { pickupAddress: { contains: searchTerm, mode: "insensitive" } },
+      { deliveryAddress: { contains: searchTerm, mode: "insensitive" } },
+      { packageDescription: { contains: searchTerm, mode: "insensitive" } },
+      { rider: { name: { contains: searchTerm, mode: "insensitive" } } },
       // Allow searching by linked customer name
-      { CustomerOrder: { some: { name: { contains: searchTerm, mode: 'insensitive' } } } }
+      {
+        CustomerOrders: {
+          some: { name: { contains: searchTerm, mode: "insensitive" } },
+        },
+      },
     ];
   }
 
