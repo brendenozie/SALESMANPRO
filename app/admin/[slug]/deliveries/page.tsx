@@ -189,6 +189,10 @@ const SummaryCard = ({
    MODAL
 ========================================================= */
 
+/* =========================================================
+   MODAL V2 — VelocityHub Dispatch Builder
+========================================================= */
+
 function DeliveryModal({
   isOpen,
   onClose,
@@ -204,11 +208,25 @@ function DeliveryModal({
     deliveryFee: 150,
   });
 
-  const [nearbyIds, setNearbyIds] = useState<string[]>([]);
+  const [search, setSearch] = useState("");
+  const [selectedOrders, setSelectedOrders] = useState<any[]>([]);
+  const [clusteredOrders, setClusteredOrders] = useState<any[]>([]);
+
+  /* =========================================================
+     INIT
+  ========================================================= */
 
   useEffect(() => {
+    if (!isOpen) return;
+
     if (delivery) {
       setForm(delivery);
+
+      const selected = orders.filter((o: any) =>
+        delivery.orderIds?.includes(o.id)
+      );
+
+      setSelectedOrders(selected.length>0 ? selected : delivery.CustomerOrders || []);
     } else {
       setForm({
         status: "PENDING",
@@ -219,202 +237,383 @@ function DeliveryModal({
           .substring(2, 8)
           .toUpperCase()}`,
       });
+
+      setSelectedOrders([]);
     }
-  }, [delivery, isOpen]);
+  }, [delivery, isOpen, orders]);
 
-  const updateNearby = (ids: string[]) => {
-    if (!ids.length) return setNearbyIds([]);
+  /* =========================================================
+     GROUP ORDERS BY LOCATION
+  ========================================================= */
 
-    const first = orders.find((x: Order) => x.id === ids[0]);
+  useEffect(() => {
+    const grouped: Record<string, any[]> = {};
 
-    if (!first?.lat || !first?.lng) return;
-
-    const matches = orders
+    orders
       .filter(
-        (o: Order) =>
-          !ids.includes(o.id) &&
-          o.lat &&
-          o.lng &&
-          calculateDistance(
-            first.lat!,
-            first.lng!,
-            o.lat!,
-            o.lng!
-          ) <= 5
+        (o: any) =>
+          o.customerName
+            ?.toLowerCase()
+            .includes(search.toLowerCase()) ||
+          o.deliveryAddress
+            ?.toLowerCase()
+            .includes(search.toLowerCase())
       )
-      .map((o: Order) => o.id);
+      .forEach((order: any) => {
+        const zone =
+          order.deliveryAddress?.split(",")[0]?.trim() ||
+          "Unknown Area";
 
-    setNearbyIds(matches);
-  };
+        if (!grouped[zone]) grouped[zone] = [];
 
-  const onOrderChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const ids = Array.from(e.target.selectedOptions).map(
-      (x) => x.value
+        grouped[zone].push(order);
+      });
+
+    const clusters = Object.entries(grouped).map(
+      ([area, items]) => ({
+        area,
+        items,
+      })
     );
 
-    updateNearby(ids);
+    setClusteredOrders(clusters);
+  }, [orders, search]);
 
-    const agg = buildAggregateFromOrders(ids, orders);
+  /* =========================================================
+     SELECT ORDER
+  ========================================================= */
+
+  const toggleOrder = (order: any) => {
+    const exists = selectedOrders.find(
+      (x) => x.id === order.id
+    );
+
+    let next = [];
+
+    if (exists) {
+      next = selectedOrders.filter(
+        (x) => x.id !== order.id
+      );
+    } else {
+      next = [...selectedOrders, order];
+    }
+
+    setSelectedOrders(next);
+    syncForm(next);
+  };
+
+  const selectCluster = (cluster: any) => {
+    const ids = new Set(
+      selectedOrders.map((x) => x.id)
+    );
+
+    const merged = [...selectedOrders];
+
+    cluster.items.forEach((o: any) => {
+      if (!ids.has(o.id)) merged.push(o);
+    });
+
+    setSelectedOrders(merged);
+    syncForm(merged);
+  };
+
+  /* =========================================================
+     AGGREGATE DATA
+  ========================================================= */
+
+  const syncForm = (items: any[]) => {
+    const totalValue = items.reduce(
+      (sum, x) =>
+        sum + Number(x.totalFinalPrice || 0),
+      0
+    );
+
+    const weight = items.reduce(
+      (sum, x) => sum + Number(x.weight || 1),
+      0
+    );
 
     setForm((prev: any) => ({
       ...prev,
-      orderIds: ids,
-      ...agg,
+      orderIds: items.map((x) => x.id),
+      pickupAddress:
+        items[0]?.pickupAddress || "",
+      deliveryAddress:
+        items.length > 1
+          ? `${items.length} Stops`
+          : items[0]?.deliveryAddress || "",
+      packageDescription: items
+        .map((x) => x.productName)
+        .slice(0, 8)
+        .join(", "),
+      packageValue: totalValue,
+      weightKg: weight,
     }));
   };
 
   if (!isOpen) return null;
 
+  /* =========================================================
+     UI
+  ========================================================= */
+
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl bg-white rounded-[2rem] shadow-2xl overflow-hidden">
-        {/* Header */}
-        <div className="p-7 border-b flex justify-between items-center">
+    <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="w-full max-w-7xl bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-slate-200">
+
+        {/* HEADER */}
+        <div className="px-8 py-7 border-b border-slate-100 flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-black text-indigo-950">
-              {delivery ? "Edit Dispatch" : "Create Dispatch"}
+            <h2 className="text-3xl font-black text-slate-900">
+              {delivery
+                ? "Update Dispatch Route"
+                : "Create Smart Dispatch"}
             </h2>
-            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">
-              Enterprise Delivery Engine
+
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-indigo-500 mt-2">
+              VelocityHub Enterprise Planner
             </p>
           </div>
 
           <button
             onClick={onClose}
-            className="p-3 rounded-full hover:bg-slate-100"
+            className="h-12 w-12 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center"
           >
             <XMarkIcon className="h-6 w-6" />
           </button>
         </div>
 
-        {/* Body */}
+        {/* BODY */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
             onSave(form);
           }}
-          className="grid lg:grid-cols-12 gap-8 p-8 max-h-[85vh] overflow-y-auto"
+          className="grid grid-cols-1 xl:grid-cols-12 gap-8 p-8 max-h-[85vh] overflow-y-auto"
         >
-          {/* Orders */}
-          <div className="lg:col-span-5 space-y-3">
-            <label className="text-xs font-black uppercase tracking-widest text-indigo-600">
-              Orders Bundle
-            </label>
+          {/* =========================================================
+              LEFT PANEL - ORDER CLUSTERS
+          ========================================================= */}
+          <div className="xl:col-span-6 space-y-5">
 
-            <select
-              multiple
-              size={14}
-              value={form.orderIds || []}
-              onChange={onOrderChange}
-              className="w-full rounded-3xl border p-4 text-sm"
-            >
-              {orders.map((o: Order) => (
-                <option
-                  key={o.id}
-                  value={o.id}
-                  className="p-2"
-                >
-                  {nearbyIds.includes(o.id) ? "📍 " : ""}
-                  {o.productName} — KES {o.totalFinalPrice}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center justify-between">
+              <h3 className="font-black text-xl text-slate-900">
+                Select Orders
+              </h3>
 
-            <p className="text-xs text-slate-400">
-              Ctrl/Cmd + Click for multi-select
-            </p>
+              <span className="text-xs font-bold uppercase text-slate-400">
+                {orders.length} Available
+              </span>
+            </div>
+
+            <div className="relative">
+              <MagnifyingGlassIcon className="h-5 w-5 absolute left-4 top-4 text-slate-400" />
+
+              <input
+                placeholder="Search customer or address..."
+                value={search}
+                onChange={(e) =>
+                  setSearch(e.target.value)
+                }
+                className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-200 font-semibold"
+              />
+            </div>
+
+            <div className="space-y-5 max-h-[65vh] overflow-y-auto pr-2">
+
+              {clusteredOrders.map(
+                (cluster: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="rounded-3xl border border-slate-100 overflow-hidden"
+                  >
+                    <div className="p-4 bg-slate-50 flex justify-between items-center">
+                      <div>
+                        <h4 className="font-black text-slate-900">
+                          📍 {cluster.area}
+                        </h4>
+
+                        <p className="text-xs text-slate-400 font-bold uppercase mt-1">
+                          {cluster.items.length} Nearby Orders
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          selectCluster(cluster)
+                        }
+                        className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-black uppercase"
+                      >
+                        Select Cluster
+                      </button>
+                    </div>
+
+                    <div className="divide-y divide-slate-100">
+
+                      {cluster.items.map((order: any) => {
+                        const active =
+                          selectedOrders.find(
+                            (x) =>
+                              x.id === order.id
+                          );
+
+                        return (
+                          <button
+                            type="button"
+                            key={order.id}
+                            onClick={() =>
+                              toggleOrder(order)
+                            }
+                            className={`w-full text-left p-4 transition ${
+                              active
+                                ? "bg-indigo-50"
+                                : "hover:bg-slate-50"
+                            }`}
+                          >
+                            <div className="flex justify-between gap-4">
+                              <div>
+                                <p className="font-black text-slate-900">
+                                  {order.customerName}
+                                </p>
+
+                                <p className="text-sm text-slate-500 mt-1">
+                                  {order.deliveryAddress}
+                                </p>
+
+                                <p className="text-xs text-slate-400 font-bold uppercase mt-2">
+                                  {order.productName}
+                                </p>
+                              </div>
+
+                              <div className="text-right">
+                                <p className="font-black text-indigo-600">
+                                  KES{" "}
+                                  {Number(
+                                    order.totalFinalPrice || 0
+                                  ).toLocaleString()}
+                                </p>
+
+                                {active && (
+                                  <p className="text-xs text-emerald-600 font-black mt-2">
+                                    SELECTED
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
           </div>
 
-          {/* Middle */}
-          <div className="lg:col-span-4 space-y-4">
-            <label className="text-xs font-black uppercase tracking-widest text-indigo-600">
-              Route Details
-            </label>
+          {/* =========================================================
+              RIGHT PANEL
+          ========================================================= */}
+          <div className="xl:col-span-6 space-y-6">
 
-            <textarea
-              rows={3}
-              placeholder="Pickup Address"
-              value={form.pickupAddress || ""}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  pickupAddress: e.target.value,
-                })
-              }
-              className="w-full rounded-2xl bg-slate-50 p-4"
-            />
+            {/* SUMMARY */}
+            <div className="rounded-[2rem] bg-gradient-to-br from-indigo-700 to-indigo-950 text-white p-7 space-y-6 shadow-xl">
+              <div className="flex justify-between">
+                <div>
+                  <p className="text-xs uppercase opacity-70 font-black">
+                    Tracking Number
+                  </p>
 
-            <textarea
-              rows={3}
-              placeholder="Delivery Address"
-              value={form.deliveryAddress || ""}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  deliveryAddress: e.target.value,
-                })
-              }
-              className="w-full rounded-2xl bg-slate-50 p-4"
-            />
+                  <p className="font-mono text-xl font-bold mt-1">
+                    {form.trackingNumber}
+                  </p>
+                </div>
 
-            <input
-              placeholder="Package Description"
-              value={form.packageDescription || ""}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  packageDescription: e.target.value,
-                })
-              }
-              className="w-full rounded-2xl bg-slate-50 p-4"
-            />
-
-            <input
-              type="datetime-local"
-              value={form.scheduledFor || ""}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  scheduledFor: e.target.value,
-                })
-              }
-              className="w-full rounded-2xl bg-slate-50 p-4"
-            />
-          </div>
-
-          {/* Right */}
-          <div className="lg:col-span-3 space-y-5">
-            <div className="rounded-3xl bg-indigo-950 text-white p-6 space-y-4">
-              <div>
-                <p className="text-xs uppercase opacity-60 font-black">
-                  Tracking
-                </p>
-                <p className="font-mono text-lg font-bold">
-                  {form.trackingNumber}
-                </p>
+                <TruckIcon className="h-10 w-10 opacity-30" />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white/10 rounded-2xl p-3">
+              <div className="grid grid-cols-3 gap-4">
+
+                <div className="bg-white/10 rounded-2xl p-4">
+                  <p className="text-[10px] uppercase opacity-60">
+                    Stops
+                  </p>
+
+                  <p className="text-2xl font-black">
+                    {selectedOrders.length}
+                  </p>
+                </div>
+
+                <div className="bg-white/10 rounded-2xl p-4">
                   <p className="text-[10px] uppercase opacity-60">
                     Weight
                   </p>
-                  <p className="font-black">
+
+                  <p className="text-2xl font-black">
                     {form.weightKg || 0}kg
                   </p>
                 </div>
 
-                <div className="bg-white/10 rounded-2xl p-3">
+                <div className="bg-white/10 rounded-2xl p-4">
                   <p className="text-[10px] uppercase opacity-60">
                     Value
                   </p>
-                  <p className="font-black">
-                    {form.packageValue || 0}
+
+                  <p className="text-lg font-black">
+                    KES{" "}
+                    {Number(
+                      form.packageValue || 0
+                    ).toLocaleString()}
                   </p>
                 </div>
               </div>
+            </div>
+
+            {/* FORM */}
+            <div className="grid md:grid-cols-2 gap-4">
+
+              <textarea
+                rows={3}
+                placeholder="Pickup Address"
+                value={form.pickupAddress || ""}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    pickupAddress:
+                      e.target.value,
+                  })
+                }
+                className="rounded-2xl bg-slate-50 p-4"
+              />
+
+              <textarea
+                rows={3}
+                placeholder="Delivery Address"
+                value={form.deliveryAddress || ""}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    deliveryAddress:
+                      e.target.value,
+                  })
+                }
+                className="rounded-2xl bg-slate-50 p-4"
+              />
+
+              <input
+                placeholder="Package Description"
+                value={
+                  form.packageDescription || ""
+                }
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    packageDescription:
+                      e.target.value,
+                  })
+                }
+                className="rounded-2xl bg-slate-50 p-4 md:col-span-2"
+              />
 
               <input
                 type="number"
@@ -423,10 +622,27 @@ function DeliveryModal({
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    deliveryFee: Number(e.target.value),
+                    deliveryFee: Number(
+                      e.target.value
+                    ),
                   })
                 }
-                className="w-full rounded-2xl bg-white/10 p-4"
+                className="rounded-2xl bg-slate-50 p-4"
+              />
+
+              <input
+                type="datetime-local"
+                value={
+                  form.scheduledFor || ""
+                }
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    scheduledFor:
+                      e.target.value,
+                  })
+                }
+                className="rounded-2xl bg-slate-50 p-4"
               />
 
               <select
@@ -437,15 +653,16 @@ function DeliveryModal({
                     riderId: e.target.value,
                   })
                 }
-                className="w-full rounded-2xl bg-white/10 p-4"
+                className="rounded-2xl bg-slate-50 p-4 md:col-span-2"
               >
-                <option value="">Assign Rider</option>
+                <option value="">
+                  Assign Rider Later
+                </option>
 
-                {riders.map((r: Rider) => (
+                {riders.map((r: any) => (
                   <option
                     key={r.id}
                     value={r.id}
-                    className="text-black"
                   >
                     {r.name}
                   </option>
@@ -453,13 +670,14 @@ function DeliveryModal({
               </select>
             </div>
 
+            {/* ACTION */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-3xl py-5 font-black uppercase tracking-widest"
+              className="w-full py-5 rounded-3xl bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-widest shadow-xl"
             >
               {isSubmitting
-                ? "Saving..."
+                ? "Saving Route..."
                 : delivery
                 ? "Update Dispatch"
                 : "Create Dispatch"}
