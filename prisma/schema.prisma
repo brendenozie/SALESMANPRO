@@ -2013,11 +2013,11 @@ model marketplaceListings {
   amenities String[]
 
   // Marketplace-specific flags/settings
-  delivery      Boolean  @default(false)
-  paymentOption String   @default("AT SHOP")
-  showOnGhuba   Boolean? @default(true)
+  delivery           Boolean  @default(false)
+  paymentOption      String   @default("AT SHOP")
+  showOnGhuba        Boolean? @default(true)
   ghubaAdminApproved Boolean? @default(true)
-  ghubaStatus String? @default("APPROVED") // e.g., APPROVED, PENDING, REJECTED
+  ghubaStatus        String?  @default("APPROVED") // e.g., APPROVED, PENDING, REJECTED
 
   // Admin & Auditing
   status    ListingStatus @default(ACTIVE)
@@ -2338,28 +2338,28 @@ model CustomerOrder {
   paymentOption String?
   items         OrderItem[] // Relationship to multiple order items
 
-  paymentStatus         PaymentStatus @default(PENDING) // Enum: PENDING, COMPLETED, FAILED
-  paymentMethod         String? // e.g., "Credit Card", "PayPal", "Bank Transfer"
-  transactionId         String? // ID from payment gateway
-  transactionDate       DateTime?     @default(now())
-  transactionReference  String? // Reference number from payment gateway
-  emailReceiptSent      Boolean?      @default(false)
+  paymentStatus        PaymentStatus @default(PENDING) // Enum: PENDING, COMPLETED, FAILED
+  paymentMethod        String? // e.g., "Credit Card", "PayPal", "Bank Transfer"
+  transactionId        String? // ID from payment gateway
+  transactionDate      DateTime?     @default(now())
+  transactionReference String? // Reference number from payment gateway
+  emailReceiptSent     Boolean?      @default(false)
   // Billing details
-  billingAddress        Json? // Billing address details
+  billingAddress       Json? // Billing address details
 
   // Order details
   notes                 String?
   specialInstructions   String?
   giftMessage           String?
-  isGift                Boolean?      @default(false)
-  giftWrap              Boolean?      @default(false)
+  isGift                Boolean?    @default(false)
+  giftWrap              Boolean?    @default(false)
   deliveryDate          DateTime? // Requested delivery date
   deliveryTimeSlot      String? // e.g., "Morning", "Afternoon", "Evening"
   deliveryInstructions  String?
   deliveryFee           Float? // Additional delivery fee if applicable
-  orderSource           OrderSource   @default(WEBSITE)
-  status                OrderStatus   @default(PENDING)
-  delivery              Boolean?      @default(false)
+  orderSource           OrderSource @default(WEBSITE)
+  status                OrderStatus @default(PENDING)
+  delivery              Boolean?    @default(false)
   trackingNumber        String? // Optional tracking number
   estimatedArrival      DateTime? // Estimated delivery time
   deliveryStatus        String? // "Order Placed", "Processing", "Shipped", etc.
@@ -2367,14 +2367,13 @@ model CustomerOrder {
   deliveryPersonContact String? // Delivery person's contact info
   shippingAddress       Json? // Shipping address
   shippingMethod        String? // Shipping method (e.g., standard, express)
-  createdAt             DateTime?     @default(now())
-  updatedAt             DateTime?     @updatedAt
+  createdAt             DateTime?   @default(now())
+  updatedAt             DateTime?   @updatedAt
   deletedAt             DateTime?
   Payment               Payment[]
 
   Company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId
-  
 
   deliveryId String?   @db.ObjectId
   Delivery   Delivery? @relation("DeliveryToOrders", fields: [deliveryId], references: [id])
@@ -2557,6 +2556,7 @@ enum OrderStatus {
   CHARGEBACK
   PAID
   SHIPPED
+  READY_FOR_PICKUP
   OUT_FOR_DELIVERY
   CANCELLED
 }
@@ -5966,10 +5966,10 @@ model CompanySettings {
 // Add this new model to your schema.prisma file
 
 enum DeliveryStatus {
-  Pending
-  InProgress
-  Delivered
-  Cancelled
+  PENDING
+  INPROGRESS
+  DELIVERED
+  CANCELLED
 }
 
 model Delivery {
@@ -5978,7 +5978,7 @@ model Delivery {
   company   Company @relation(fields: [companyId], references: [id])
 
   trackingNumber String         @unique
-  status         DeliveryStatus @default(Pending)
+  status         DeliveryStatus @default(PENDING)
 
   // Relation to the User model for the rider
   riderId   String? @db.ObjectId
@@ -5989,8 +5989,8 @@ model Delivery {
   customerContact String?
   customerEmail   String?
 
-// 💡 NEW: Summary fields to help the rider see the "Trip" at a glance
-  totalWeight     Float?
+  // 💡 NEW: Summary fields to help the rider see the "Trip" at a glance
+  totalWeight         Float?
   estimatedTravelTime Int? // in minutes
   totalDistanceKm     Float?
 
@@ -6020,8 +6020,8 @@ model Delivery {
   // scheduledFor is the date and time when the delivery is scheduled to occur
   scheduledFor       DateTime?
 
-  createdAt     DateTime        @default(now())
-  
+  createdAt DateTime @default(now())
+
   CustomerOrders CustomerOrder[] @relation("DeliveryToOrders")
 
   @@index([companyId])

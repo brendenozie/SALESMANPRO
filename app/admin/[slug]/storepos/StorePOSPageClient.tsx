@@ -624,7 +624,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
           //   alert(`Cannot add more than available stock (${item.stock}) for ${item.name}`);
           //   return item;
           // }
-          return { ...item, quantity: newQuantity, subtotal: (item.finalPrice ?? 0) * newQuantity };
+          return { ...item, quantity: newQuantity, subtotal: (item.finalPrice || item.sellingPrice || 0) * newQuantity };
         }
         return item;
       }).filter(Boolean) as CartItem[];
@@ -1024,7 +1024,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
                 <h3 className="font-bold text-sm truncate">{product.name}</h3>
                 <div className="flex justify-between items-center mt-2">
                   <span className="text-indigo-600 dark:text-indigo-400 font-black">
-                    {currencySymbol}{product.finalPrice?.toLocaleString() || product.sellingPrice.toLocaleString()}
+                    {currencySymbol}{(product.finalPrice || product.sellingPrice || 0).toLocaleString()}
                   </span>
                   <div className="p-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-zinc-400 group-hover:text-indigo-500 transition-colors">
                     <PlusIcon className="h-4 w-4" />
@@ -1067,7 +1067,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
                         </button>
                       </div>
                       <span className="text-sm font-bold text-zinc-500">
-                        {currencySymbol}{((item.finalPrice || item.sellingPrice) * item.quantity).toLocaleString()}
+                        {currencySymbol}{((item.finalPrice || item.sellingPrice || 0) * item.quantity).toLocaleString()}
                       </span>
                     </div>
                   </div>
@@ -1116,58 +1116,94 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
 
       {/* MOBILE CART OVERLAY */}
       {showMobileCart && (
-        <div ref={mobileCartRef} className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm p-6 z-40 flex flex-col">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Your Cart</h2>
-            <button onClick={() => setShowMobileCart(false)} className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200">
-              <XMarkIcon className="h-6 w-6" />
-            </button>
-          </div>
-          <div className="flex-grow overflow-y-auto space-y-4 pr-2 custom-scrollbar">
-            {cart.map(item => (
-              <div key={item.id} className="flex gap-4 group">
-                <div className="h-16 w-16 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 flex-shrink-0">
-                  <img src={item.images?.[0]} className="w-full h-full object-cover" alt="" />
-                </div>
-                <div className="flex-grow min-w-0">
-                  <p className="font-bold text-sm truncate">{item.name}</p>
-                  <div className="flex items-center gap-3 mt-1">
-                    <div className="flex items-center border border-zinc-200 dark:border-zinc-800 rounded-lg">
-                      <button onClick={() => handleQuantityChange(item.id, -1)} className="p-1 hover:text-indigo-500">
-                        <MinusIcon className="h-3 w-3" />
-                      </button>
-                      <span className="px-2 text-sm font-medium text-zinc-900 dark:text-white">
-                        {item.quantity}
-                      </span>
-                      <button onClick={() => handleQuantityChange(item.id, 1)} className="p-1 hover:text-indigo-500">
-                        <PlusIcon className="h-3 w-3" />
-                      </button>
+        <div ref={mobileCartRef} className="fixed inset-0 z-50 flex justify-end bg-zinc-900/60 backdrop-blur-md">
+          {/* Cart Sidebar / Modal Content */}
+          <div className="w-full max-w-md bg-white dark:bg-zinc-950 h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-zinc-100 dark:border-zinc-900">
+              <div>
+                <h2 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">Your Cart</h2>
+                <p className="text-xs text-zinc-500 font-medium">{cart.length} Items Selected</p>
+              </div>
+              <button 
+                onClick={() => setShowMobileCart(false)} 
+                className="p-2 rounded-full bg-zinc-100 dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Scrollable Items */}
+            <div className="flex-grow overflow-y-auto p-6 space-y-6 custom-scrollbar">
+              {cart.map(item => (
+                <div key={item.id} className="flex gap-5 group">
+                  {/* Image Wrapper */}
+                  <div className="h-20 w-20 rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 flex-shrink-0 ring-1 ring-zinc-200/50 dark:ring-zinc-800/50">
+                    <img src={item.images?.[0]} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt={item.name} />
+                  </div>
+
+                  <div className="flex-grow flex flex-col justify-between py-0.5">
+                    <div>
+                      <p className="font-bold text-zinc-900 dark:text-zinc-100 leading-tight mb-1">{item.name}</p>
+                      <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
+                        {currencySymbol}{((item.finalPrice || item.sellingPrice)).toLocaleString()}
+                      </p>
                     </div>
-                    <span className="text-sm font-bold text-zinc-500">
-                      {currencySymbol}{((item.finalPrice || item.sellingPrice) * item.quantity).toLocaleString()}
-                    </span>
+                    
+                    <div className="flex items-center justify-between mt-3">
+                      {/* Refined Quantity Stepper */}
+                      <div className="flex items-center bg-zinc-100 dark:bg-zinc-900 rounded-xl p-1 px-2 gap-3">
+                        <button 
+                          onClick={() => handleQuantityChange(item.id, -1)} 
+                          className="p-1 text-zinc-500 hover:text-indigo-600 transition-colors"
+                        >
+                          <MinusIcon className="h-4 w-4 stroke-[3px]" />
+                        </button>
+                        <span className="text-sm font-bold text-zinc-900 dark:text-white min-w-[20px] text-center">
+                          {item.quantity}
+                        </span>
+                        <button 
+                          onClick={() => handleQuantityChange(item.id, 1)} 
+                          className="p-1 text-zinc-500 hover:text-indigo-600 transition-colors"
+                        >
+                          <PlusIcon className="h-4 w-4 stroke-[3px]" />
+                        </button>
+                      </div>
+                      
+                      <span className="text-base font-black text-zinc-900 dark:text-white">
+                        {currencySymbol}{((item.finalPrice || item.sellingPrice) * item.quantity).toLocaleString()}
+                      </span>
+                    </div>
                   </div>
                 </div>
+              ))}
+            </div>
+
+            {/* Footer / Summary */}
+            <div className="p-6 bg-zinc-50 dark:bg-zinc-900/30 border-t border-zinc-100 dark:border-zinc-900">
+              <div className="space-y-2 mb-6">
+                <div className="flex justify-between text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  <span>Subtotal</span>
+                  <span>{currencySymbol}{subtotal.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-end">
+                  <span className="text-zinc-900 dark:text-white font-bold">Total Amount</span>
+                  <span className="text-3xl font-black text-indigo-600 dark:text-indigo-500 tracking-tighter">
+                    {currencySymbol}{finalTotal.toLocaleString()}
+                  </span>
+                </div>
               </div>
-            ))}
-          </div>
-          <div className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-800">
-            <div className="flex justify-between text-sm font-medium text-zinc-500">
-              <span>Subtotal</span>
-              <span>{currencySymbol}{subtotal.toLocaleString()}</span>
+              
+              <button
+                onClick={() => { setShowMobileCart(false); handleProcessPayment(); }}
+                disabled={cart.length === 0}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:grayscale text-white py-4 px-6 rounded-2xl font-bold text-lg shadow-lg shadow-indigo-500/25 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+              >
+                <CreditCardIcon className="h-6 w-6" />
+                Proceed to Checkout
+              </button>
             </div>
-            <div className="flex justify-between text-2xl font-black pt-2">
-              <span>Total</span>
-              <span className="text-indigo-600 dark:text-indigo-400">{currencySymbol}{finalTotal.toLocaleString()}</span>
-            </div>
-            <button
-              onClick={() => { setShowMobileCart(false); handleProcessPayment(); }}
-              disabled={cart.length === 0}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-indigo-500/20 transition-all active:scale-95 mt-4 flex items-center justify-center gap-2"
-            >
-              <CreditCardIcon className="h-6 w-6" />
-              Checkout
-            </button>
           </div>
         </div>
       )}

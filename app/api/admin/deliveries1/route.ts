@@ -25,7 +25,7 @@ async function handleGetSellerOrders(req: Request, { params }: RouteParams) {
       return formatResponse(false, null, "companyId required", 400);
 
     // 2. Unique Cache Key (Crucial for pagination/search)
-    const cacheKey = `admin:orders:comp_${companyId}:p_${page}:l_${limit}:s_${search}`;
+    const cacheKey = `admin:orders:${companyId}:p_${page}:l_${limit}:s_${search}`;
 
     try {
       const cached = await cacheGet(cacheKey);
