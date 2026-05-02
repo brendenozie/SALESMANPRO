@@ -11,37 +11,53 @@ import {
 import Image from 'next/image';
 
 // Fallback data in case the database is empty
+Tuyia $ Highlands
+
+// headline: "PURE GOLD\nFROM THE HIVE.",
+//       badgeText: "Limited Harvest / Batch 724",
+//       subline: "Experience unfiltered, raw honey sourced from remote sun-drenched meadows. Each jar tells a story of the season.",
+      // ctaText: "Explore the Harvest",
+      // ctaLink: "/shop",
+//       imageUrl: fallback,
+//       productImageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200&auto=format&fit=crop',
+//       price: "From $24.00"
 
 const farmChapters = [
   {
     tag: "The Origin",
     badgeText: "The Origin",
-    title: "Tuyia $ Highlands",
-    description: "Nestled in the lush valleys of Laikipia, where the air is crisp and the pastures are endless. This is where the story begins.",
+    headline: "Tuyia $ Highlands",
+    subline: "Nestled in the lush valleys of Laikipia, where the air is crisp and the pastures are endless. This is where the story begins.",
     image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=2000",
     imageUrl: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=2000",
     productImageUrl: "https://images.unsplash.com/photo-1551028150-64b9f398f678?auto=format&fit=crop&q=80&w=2000",
-    stats: { elevation: "2,100m", rainfall: "950mm" }
+    stats: { elevation: "2,100m", rainfall: "950mm" },
+    ctaText: "Explore the Harvest",
+    ctaLink: "/shop",
   },
   {
     tag: "The Ethics",
     badgeText: "The Ethics",
-    title: "Pasture $ Raised",
-    description: "Our livestock roams free, grazing on organic clover and Kikuyu grass. No shortcuts, no hormones—just nature's pace.",
+    headline: "Pasture $ Raised",
+    subline: "Our livestock roams free, grazing on organic clover and Kikuyu grass. No shortcuts, no hormones—just nature's pace.",
     image: "https://images.unsplash.com/photo-1544965838-54ef8406f868?auto=format&fit=crop&q=80&w=2000",
     imageUrl: "https://images.unsplash.com/photo-1544965838-54ef8406f868?auto=format&fit=crop&q=80&w=2000",
     productImageUrl: "https://images.unsplash.com/photo-1551028150-64b9f398f678?auto=format&fit=crop&q=80&w=2000",
-    stats: { roaming: "Free", diet: "100% Grass" }
+    stats: { roaming: "Free", diet: "100% Grass" },
+    ctaText: "Explore the Harvest",
+    ctaLink: "/meatecommerce/products",
   },
   {
     tag: "The Craft",
     badgeText: "The Craft",
-    title: "Master $ Butchery",
-    description: "Every cut is hand-selected and dry-aged in our Himalayan salt cellar for unparalleled depth of flavor.",
+    headline: "Master $ Butchery",
+    subline: "Every cut is hand-selected and dry-aged in our Himalayan salt cellar for unparalleled depth of flavor.",
     image: "https://images.unsplash.com/photo-1551028150-64b9f398f678?auto=format&fit=crop&q=80&w=2000",
     imageUrl: "https://images.unsplash.com/photo-1551028150-64b9f398f678?auto=format&fit=crop&q=80&w=2000",
     productImageUrl: "https://images.unsplash.com/photo-1551028150-64b9f398f678?auto=format&fit=crop&q=80&w=2000",
-    stats: { aging: "28 Days", grade: "Premium" }
+    stats: { aging: "28 Days", grade: "Premium" },
+    ctaText: "Explore the Harvest",
+    ctaLink: "/meatecommerce/products",
   },
 ];
 
@@ -80,7 +96,7 @@ export default function TuyiaFarmImmersiveHero({ heroSlides = [] }:any) {
           animate={{ x: mousePos.x * -0.5, y: mousePos.y * -0.5 }}
           className="text-[40vw] font-black text-white/[0.02] uppercase leading-none tracking-tighter"
         >
-          {currentSlide?.title?.split('$')[0] || "Pristine"}
+          {currentSlide?.headline?.split('$')[0] || "Pristine"}
         </motion.h1>
       </div>
 
@@ -95,8 +111,8 @@ export default function TuyiaFarmImmersiveHero({ heroSlides = [] }:any) {
           className="absolute inset-0 z-0"
         >
           <Image 
-            src={currentSlide?.image || currentSlide?.imageUrl || farmChapters[0].image} 
-            alt={currentSlide?.title || "Hero Image"}
+            src={currentSlide?.image || currentSlide?.productImageUrl || currentSlide?.imageUrl || farmChapters[0].image} 
+            alt={currentSlide?.headline || "Hero Image"}
             loader={({ src }) => src} // Bypass loader for external URLs
             fill 
             className="object-cover"
@@ -125,7 +141,7 @@ export default function TuyiaFarmImmersiveHero({ heroSlides = [] }:any) {
 
             {/* Headline - CRASH FIXED with safe chaining and fallbacks */}
             <h2 className="text-[12vw] lg:text-[8rem] font-black text-white leading-[0.85] tracking-tighter mb-8 uppercase">
-              {(currentSlide?.title || "Care $ Quality").split('$').map((word, i) => (
+              {(currentSlide?.headline || "Care $ Quality").split('$').map((word, i) => (
                 <span key={i} className="block overflow-hidden">
                   <motion.span 
                     initial={{ y: "100%" }} animate={{ y: 0 }}
@@ -140,7 +156,7 @@ export default function TuyiaFarmImmersiveHero({ heroSlides = [] }:any) {
             </h2>
 
             <p className="text-stone-300 text-lg lg:text-2xl max-w-xl mb-12 font-medium leading-relaxed opacity-80">
-              {currentSlide?.description}
+              {currentSlide?.subline}
             </p>
 
             {/* Stats - defensive mapping */}
