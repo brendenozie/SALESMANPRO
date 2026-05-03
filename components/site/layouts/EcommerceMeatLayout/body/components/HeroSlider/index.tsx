@@ -14,7 +14,7 @@ const farmChapters = [
   {
     tag: "The Origin",
     badgeText: "The Origin",
-    headline: "Tuyia $ Highlands",
+    headline: "Tuyia $ Highlandss",
     subline: "Nestled in the lush valleys of Laikipia, where the air is crisp and the pastures are endless. This is where the story begins.",
     image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=2000",
     imageUrl: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=2000",
@@ -129,7 +129,7 @@ export default function TuyiaFarmImmersiveHero({ heroSlides = [] }:any) {
 
             {/* Headline - CRASH FIXED with safe chaining and fallbacks */}
             <h2 className="text-[12vw] lg:text-[8rem] font-black text-white leading-[0.85] tracking-tighter mb-8 uppercase">
-              {(currentSlide?.headline || "Care $ Quality").split('$').map((word, i) => (
+              {(currentSlide?.headline || "Pasture $ Raised").split('$').map((word, i) => (
                 <span key={i} className="block overflow-hidden">
                   <motion.span 
                     initial={{ y: "100%" }} animate={{ y: 0 }}
