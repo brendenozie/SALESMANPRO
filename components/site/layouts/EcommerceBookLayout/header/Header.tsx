@@ -200,7 +200,7 @@ export default function Header() {
 
           <button onClick={handleUserAction} className="relative group">
             {user?.image ? (
-              <Image src={user.image} alt="Profile" width={42} height={42} className="rounded-2xl border-2 border-white shadow-sm ring-1 ring-gray-100" />
+              <Image src={user.image} alt="Profile" width={42} height={42} className="rounded-2xl border-2 border-white shadow-sm ring-1 ring-gray-100" loader={imageLoader}/>
             ) : (
               <div className="bg-gray-100 p-2.5 rounded-2xl text-gray-600 hover:bg-gray-200 hover:text-gray-900 transition-all">
                 <UserIcon className="h-6 w-6" />
