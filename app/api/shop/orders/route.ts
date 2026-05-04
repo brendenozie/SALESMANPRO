@@ -237,6 +237,6 @@ export const POST = withApiHandler(
   },
   {
     requireAuth: false, // ✅ VERY IMPORTANT
-    requireRateLimit: true,
+    requireRateLimit: false,
   },
 );

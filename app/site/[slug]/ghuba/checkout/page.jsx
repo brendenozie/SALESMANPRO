@@ -18,6 +18,7 @@ import { formatCreditCardNumber, formatExpirationDate, formatCVC } from "@/data/
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import ShippingAddress from '@/components/shippingAddress';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Updated to 4 steps: Billing, Shipping Address, Payment & Promo, Review
 const steps = ["Billing", "Shipping", "Payment", "Review"];
@@ -67,6 +68,8 @@ const CheckoutPage = () => {
   const router = useRouter();
   const { data: session } = useSession();
   const { cart, clearCart } = useStateContext();
+  const { storeFormData } = useStoreContext();
+
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
     name: session?.user?.name || '',
@@ -170,7 +173,9 @@ const CheckoutPage = () => {
     setIsSubmitting(true);
     try {
       const orderPayload = {
+        
         consumerId: session?.user?.id,
+        companyId: storeFormData?.id,
         items: cart.map(i => ({ marketplaceListingId: i.id, quantity: i.quantity, price: i.finalPrice })),
         shippingAddress: formData.shippingAddress,
         shippingMethod: formData.shippingMethod,
@@ -178,7 +183,7 @@ const CheckoutPage = () => {
         paymentOption:formData.paymentMethod,
         totalPrice: parseFloat(total.toFixed(2)),
       };
-      const res = await fetch(`/shop/orders`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.NEXT_PUBLIC_API_SECRET_KEY }, body: JSON.stringify(orderPayload) });
+      const res = await fetch(`/api/shop/orders`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.NEXT_PUBLIC_API_SECRET_KEY }, body: JSON.stringify(orderPayload) });
       if (!res.ok) throw new Error();
       
       clearCart();

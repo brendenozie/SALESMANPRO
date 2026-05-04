@@ -23,6 +23,7 @@ import {
 } from '@heroicons/react/24/solid';
 import Section from '@/components/site/Section/Section';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // --- CONFIGURATION MAPPING ---
 const METHOD_CONFIG: Record<string, { label: string; Icon: any; colorClass: string }> = {
@@ -66,6 +67,7 @@ export default function ServiceCheckoutPage({ paymentMethods = [] }: CheckoutCli
   const { data: session } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { storeFormData } = useStoreContext();
 
   // Extract params from URL
   const listingId = (searchParams.get('listingId') || '').trim();
@@ -260,7 +262,9 @@ export default function ServiceCheckoutPage({ paymentMethods = [] }: CheckoutCli
         paymentOption: payment.method,
         totalPrice: parseFloat(total.toFixed(2)),
         // optional: include session user id if available
+        
         consumerId: session?.user?.id,
+        companyId: storeFormData?.id,
       };
 
       const res = await fetch(`${apiBaseUrl}/shop/serviceOrders`, {

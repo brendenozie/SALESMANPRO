@@ -8,10 +8,13 @@ import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSec
 import { CreditCardIcon, MapPinIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { useStore } from '@/contexts/StoreContext';
 import { useStateContext } from '@/contexts/ContextProvider';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 export default function CheckoutPage() {
   const store  = useStore();
   const { cart } = useStateContext();
+  const { storeFormData } = useStoreContext();
+
   const [step, setStep] = useState(1);
 
   // Shipping form state

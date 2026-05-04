@@ -27,6 +27,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import ShippingAddress from '@/components/shippingAddress';
 import { formatCreditCardNumber, formatExpirationDate, formatCVC } from '@/data/cardFormatter';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 const STEPS = ['Billing', 'Shipping', 'Payment', 'Review'] as const;
 type StepIndex = 0 | 1 | 2 | 3;
@@ -38,6 +39,7 @@ export default function CheckoutPage(): JSX.Element {
   const router = useRouter();
   const store = useStore();
   const { cart = [], clearCart, updateCartQuantity, removeFromCart } = useStateContext() as any;
+  const { storeFormData } = useStoreContext();
 
   // --- Split state into focused slices (reduces re-renders & avoids focus jumping) ---
   const [currentStep, setCurrentStep] = useState<StepIndex>(0);
@@ -210,6 +212,7 @@ export default function CheckoutPage(): JSX.Element {
     try {
       const payload = {
         consumerId: session?.user?.id,
+        companyId: storeFormData?.id,
         name: billing.name,
         email: billing.email,
         phone: billing.phone,
@@ -232,7 +235,7 @@ export default function CheckoutPage(): JSX.Element {
         },
       };
 
-      const res = await fetch(`/shop/orders`, {
+      const res = await fetch(`/api/shop/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

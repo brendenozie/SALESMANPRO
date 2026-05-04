@@ -302,7 +302,9 @@ export default async function CheckoutPage({ params }: PageProps) {
 
     try {
       const payload = {
+        
         consumerId: session?.user?.id,
+        companyId: storeFormData?.id,
         name: billing.name,
         email: billing.email,
         phone: billing.phone,
@@ -325,7 +327,7 @@ export default async function CheckoutPage({ params }: PageProps) {
         },
       };
 
-      const res = await fetch(`/shop/orders`, {
+      const res = await fetch(`/api/shop/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -8,6 +8,7 @@ import Confetti from "react-confetti";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useStoreContext } from '@/contexts/StoreContext';
 
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -17,6 +18,7 @@ export default function CheckoutPage() {
   const { data: session } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { storeFormData } = useStoreContext();
 
   // ✅ Extract parameters
   const listingId = searchParams.get("listingId") || "";
@@ -104,7 +106,9 @@ export default function CheckoutPage() {
     const paymentOption = paymentMethod; // rename for API compatibility
 
     const payload = {
-      consumerId: session?.user?.id,
+      
+        consumerId: session?.user?.id,
+        companyId: storeFormData?.id,
       name: billing.name,
       email: billing.email,
       phone: billing.phone,
@@ -129,7 +133,7 @@ export default function CheckoutPage() {
       shippingMethod: "AT SHOP",
     };
 
-    const res = await fetch(`/shop/orders`, {
+    const res = await fetch(`/api/shop/orders`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -181,7 +185,9 @@ export default function CheckoutPage() {
   //         date: enrollmentDate || new Date().toISOString(),
   //         timeSlot,
   //         quantity: 1,
-  //         consumerId: session?.user?.id,
+  //         
+        // consumerId: session?.user?.id,
+        // companyId: storeFormData?.id,
   //         name: billing.name,
   //         email: billing.email,
   //         phone: billing.phone,
@@ -641,7 +647,9 @@ export default function CheckoutPage() {
 //     try {
 //       // 1. Prepare the base payload
 //       const payload = {
+// //         
 //         consumerId: session?.user?.id,
+//         companyId: storeFormData?.id,
 //         name: formData.name,
 //         email: formData.email,
 //         phone: formData.phone,
@@ -667,7 +675,7 @@ export default function CheckoutPage() {
 
 //       console.log("Submitting order with payload:", payload);
       
-//       const res = await fetch(`/shop/orders`, {
+//       const res = await fetch(`/api/shop/orders`, {
 //         method: 'POST',
 //         headers: {
 //           'Content-Type': 'application/json',

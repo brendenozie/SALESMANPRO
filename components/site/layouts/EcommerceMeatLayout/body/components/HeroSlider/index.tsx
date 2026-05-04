@@ -49,7 +49,7 @@ const farmChapters = [
   },
 ];
 
-export default function TuyiaFarmImmersiveHero({ heroSlides = [] }:any) {
+export default function TuyiaFarmImmersiveHero({ heroSlides = [] , themeSettings }:any) {
   const [active, setActive] = useState(0);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
@@ -144,7 +144,7 @@ export default function TuyiaFarmImmersiveHero({ heroSlides = [] }:any) {
             </h2>
 
             <p className="text-stone-300 text-lg lg:text-2xl max-w-xl mb-12 font-medium leading-relaxed opacity-80">
-              {currentSlide?.subline}
+              {currentSlide?.subline || `Every cut is hand-selected and dry-aged in our Himalayan salt cellar for unparalleled depth of flavor.`}
             </p>
 
             {/* Stats - defensive mapping */}
@@ -156,7 +156,7 @@ export default function TuyiaFarmImmersiveHero({ heroSlides = [] }:any) {
               </button>
 
               <div className="flex gap-12 border-t lg:border-t-0 lg:border-l border-white/10 pt-8 lg:pt-0 lg:pl-16 w-full lg:w-auto">
-                {Object.entries(currentSlide?.stats || {}).map(([key, value]) => (
+                {Object.entries(currentSlide?.stats || {elevation: "2,100m", rainfall: "950mm" }).map(([key, value]) => (
                   <div key={key} className="flex flex-col">
                     <span className="text-[10px] font-black text-red-600 uppercase tracking-widest mb-1">{key}</span>
                     <span className="text-2xl lg:text-3xl font-black text-white italic tracking-tighter">{String(value)}</span>

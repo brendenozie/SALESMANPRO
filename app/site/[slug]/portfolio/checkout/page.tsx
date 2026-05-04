@@ -19,6 +19,7 @@ import {
 } from '@heroicons/react/24/solid';
 import Section from '@/components/site/Section/Section';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 const STEPS = ['Billing', 'Schedule', 'Payment', 'Review'] as const;
 type StepIndex = 0 | 1 | 2 | 3;
@@ -38,6 +39,7 @@ export default function ServiceCheckoutPage(): JSX.Element {
   const { data: session } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { storeFormData } = useStoreContext();
 
   // Extract params from URL
   const listingId = (searchParams.get('listingId') || '').trim();
@@ -217,7 +219,9 @@ export default function ServiceCheckoutPage(): JSX.Element {
         paymentOption: payment.method,
         totalPrice: parseFloat(total.toFixed(2)),
         // optional: include session user id if available
+        
         consumerId: session?.user?.id,
+        companyId: storeFormData?.id,
       };
 
       const res = await fetch(`${apiBaseUrl}/shop/serviceOrders`, {

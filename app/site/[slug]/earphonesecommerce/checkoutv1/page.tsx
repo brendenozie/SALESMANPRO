@@ -22,7 +22,7 @@ import {
   BanknotesIcon,
 } from '@heroicons/react/24/outline';
 import { useStateContext } from '@/contexts/ContextProvider';
-import { useStore } from '@/contexts/StoreContext';
+import { useStore, useStoreContext } from '@/contexts/StoreContext';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import ShippingAddress from '@/components/shippingAddress';
@@ -38,6 +38,7 @@ export default function CheckoutPage(): JSX.Element {
   const router = useRouter();
   const store = useStore();
   const { cart = [], clearCart, updateCartQuantity, removeFromCart } = useStateContext() as any;
+  const { storeFormData } = useStoreContext();
 
   // --- Split state into focused slices (reduces re-renders & avoids focus jumping) ---
   const [currentStep, setCurrentStep] = useState<StepIndex>(0);
@@ -210,6 +211,7 @@ export default function CheckoutPage(): JSX.Element {
     try {
       const payload = {
         consumerId: session?.user?.id,
+        companyId: store?.id,
         name: billing.name,
         email: billing.email,
         phone: billing.phone,
@@ -232,7 +234,7 @@ export default function CheckoutPage(): JSX.Element {
         },
       };
 
-      const res = await fetch(`/shop/orders`, {
+      const res = await fetch(`/api/shop/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

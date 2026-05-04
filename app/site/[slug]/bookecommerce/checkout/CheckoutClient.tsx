@@ -26,6 +26,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import ShippingAddress from '@/components/shippingAddress';
 import { formatCreditCardNumber, formatExpirationDate, formatCVC } from '@/data/cardFormatter';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // --- CONFIGURATION MAPPING ---
 const METHOD_CONFIG: Record<string, { label: string; Icon: any; colorClass: string }> = {
@@ -58,6 +59,7 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
   const { data: session } = useSession();
   const router = useRouter();
   const { cart = [], clearCart, updateCartQuantity, removeFromCart } = useStateContext() as any;
+  const { storeFormData } = useStoreContext();
 
   // --- State ---
   const [currentStep, setCurrentStep] = useState<StepIndex>(0);
@@ -220,7 +222,9 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
 
     try {
       const payload = {
+        
         consumerId: session?.user?.id,
+        companyId: storeFormData?.id,
         name: billing.name,
         email: billing.email,
         phone: billing.phone,
@@ -243,7 +247,7 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
         },
       };
 
-      const res = await fetch(`/shop/orders`, {
+      const res = await fetch(`/api/shop/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

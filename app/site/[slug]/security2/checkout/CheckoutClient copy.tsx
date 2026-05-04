@@ -25,13 +25,14 @@ import {
   CurrencyDollarIcon,
 } from '@heroicons/react/24/outline';
 import { useStateContext } from '@/contexts/ContextProvider';
-import { useStore } from '@/contexts/StoreContext';
+import { useStore, useStoreContext } from '@/contexts/StoreContext';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import ShippingAddress from '@/components/shippingAddress';
 import { formatCreditCardNumber, formatExpirationDate, formatCVC } from '@/data/cardFormatter';
 import { loadStore } from '@/lib/loadStore';
 import { getEnabledPaymentMethods } from '@/utils/payment-utils';
+
 
 const STEPS = ['Billing', 'Shipping', 'Payment', 'Review'] as const;
 type StepIndex = 0 | 1 | 2 | 3;
@@ -80,6 +81,7 @@ export default async function CheckoutPage({ params }: PageProps) {
   const router = useRouter();
   const store = useStore();
   const { cart = [], clearCart, updateCartQuantity, removeFromCart } = useStateContext() as any;
+  const { storeFormData } = useStoreContext();
 
   // --- Split state into focused slices (reduces re-renders & avoids focus jumping) ---
   const [currentStep, setCurrentStep] = useState<StepIndex>(0);
@@ -302,7 +304,9 @@ export default async function CheckoutPage({ params }: PageProps) {
 
     try {
       const payload = {
+        
         consumerId: session?.user?.id,
+        companyId: storeFormData?.id,
         name: billing.name,
         email: billing.email,
         phone: billing.phone,
@@ -325,7 +329,7 @@ export default async function CheckoutPage({ params }: PageProps) {
         },
       };
 
-      const res = await fetch(`/shop/orders`, {
+      const res = await fetch(`/api/shop/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

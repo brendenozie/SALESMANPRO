@@ -22,11 +22,12 @@ import {
   BanknotesIcon,
 } from '@heroicons/react/24/outline';
 import { useStateContext } from '@/contexts/ContextProvider';
-import { useStore } from '@/contexts/StoreContext';
+import { useStore, useStoreContext } from '@/contexts/StoreContext';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import ShippingAddress from '@/components/shippingAddress';
 import { formatCreditCardNumber, formatExpirationDate, formatCVC } from '@/data/cardFormatter';
+
 
 const STEPS = ['Billing', 'Shipping', 'Payment', 'Review'] as const;
 type StepIndex = 0 | 1 | 2 | 3;
@@ -232,7 +233,7 @@ export default function CheckoutPage(): JSX.Element {
         },
       };
 
-      const res = await fetch(`/shop/orders`, {
+      const res = await fetch(`/api/shop/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
