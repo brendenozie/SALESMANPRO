@@ -39,7 +39,7 @@ export default function CheckoutPage(): JSX.Element {
   const router = useRouter();
   const store = useStore();
   const { cart = [], clearCart, updateCartQuantity, removeFromCart } = useStateContext() as any;
-  cosnt { storeFormData } = useStoreContext();
+  const { storeFormData } = useStoreContext();
 
   // --- Split state into focused slices (reduces re-renders & avoids focus jumping) ---
   const [currentStep, setCurrentStep] = useState<StepIndex>(0);
