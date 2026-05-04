@@ -23,10 +23,12 @@ export async function createOrder(data: any) {
     status = "PENDING",
     delivery,
     shippingMethod,
+    companyId,
   } = data;
 
   return await prisma.customerOrder.create({
     data: {
+      companyId,
       consumerId,
       name,
       email,

@@ -22,7 +22,7 @@ const getMarketplaceListings = async (req: Request) => {
 
   // 1. Total count for pagination
   
-    const cacheKey = `admin:pos-marketplace-listings:${companyId || 'global'}:all`;
+  const cacheKey = `admin:pos-marketplace-listings:${companyId || 'global'}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);

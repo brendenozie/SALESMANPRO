@@ -98,7 +98,7 @@ const orderSchema = z.object({
   totalFinalPrice: z.number().optional(),
   shippingAddress: z.any().optional(),
   shippingMethod: z.string().optional(),
-  companyId: z.string().optional(),
+  companyId: z.string(),
   paymentData: z.any().optional(),
 });
 
@@ -143,6 +143,7 @@ export const POST = withApiHandler(
         deliveryStatus: "Order Placed",
         delivery: false,
         notes: data.paymentData?.notes ?? undefined,
+        companyId: data.companyId,
       });
 
       let paymentResponse = null;

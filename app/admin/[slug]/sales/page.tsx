@@ -1,6 +1,7 @@
 // app/admin/sales-summary/page.tsx
 
 import React from "react";
+import { cookies } from "next/headers";
 import SalesSummaryClient from "./SalesSummaryClient";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -17,29 +18,39 @@ export type Sale = {
 };
 
 interface PageProps {
-  // No dynamic params for this page
+  params: Promise<{ slug: string }>; // companyId
+  searchParams: Promise<{
+    page?: string;
+    limit?: string;
+    search?: string;
+    status?: string;
+    plan?: string;
+  }>;
 }
 
 /**
  * Server Component: fetches all sales records once per request (SSR),
  * then passes the array of Sale objects down to the client component.
  */
-export default async function SalesSummaryPage(_: PageProps) {
+export default async function SalesSummaryPage({ params, searchParams }: PageProps) {
+  const { slug : companyId } = await params;
   let salesData: Sale[] = [];
+  const cookieHeader = (await cookies()).toString();
 
   try {
-    const res = await fetch(`${apiBaseUrl}/admin/sales`, { next: { revalidate: 60 } });
-    if (res.ok) {
-      salesData = (await res.json()) as Sale[];
-    } else {
-      console.error(
-        "[SalesSummaryPage] Failed to fetch sales data →",
-        res.status,
-        res.statusText
-      );
+    // Note: In production, ensure this internal fetch passes necessary cookies for verifyAuth
+    const res = await fetch(`${apiBaseUrl}/admin/sales?companyId=${companyId}`, 
+      { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } }
+    );
+    
+    const json = await res.json();
+    if (json.success) {
+      console.log("Fetched Sales Data:", json.data);
+      salesData = json.data;
+      
     }
-  } catch (err: any) {
-    console.error("[SalesSummaryPage] Error fetching sales data →", err.message);
+  } catch (err) {
+    console.error("Fetch Error:", err);
   }
 
   return <SalesSummaryClient initialSales={salesData} />;

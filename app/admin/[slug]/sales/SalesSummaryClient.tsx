@@ -62,28 +62,34 @@ const SalesSummaryClient: React.FC<ClientProps> = ({ initialSales }) => {
     )[0] || "N/A"
   }), [filteredSales]);
 
-  const lineChartData = {
-    labels: [...new Set(filteredSales.map(s => format(parseISO(s.date), "MMM dd")))].sort(),
-    datasets: [
-      {
-        label: "Revenue",
-        data: filteredSales.map(s => s.totalAmount),
-        fill: true,
-        borderColor: "#10b981",
-        backgroundColor: (context: ScriptableContext<"line">) => {
-          const ctx = context.chart.ctx;
-          const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-          gradient.addColorStop(0, "rgba(16, 185, 129, 0.2)");
-          gradient.addColorStop(1, "rgba(16, 185, 129, 0)");
-          return gradient;
+  const lineChartData = useMemo(() => {
+    // Group sales by date and sum revenue
+    const dailyRevenue: Record<string, number> = {};
+    
+    filteredSales.forEach(sale => {
+      const day = format(parseISO(sale.date), "MMM dd");
+      dailyRevenue[day] = (dailyRevenue[day] || 0) + sale.totalAmount;
+    });
+
+    const sortedLabels = Object.keys(dailyRevenue).sort((a, b) => 
+      new Date(a).getTime() - new Date(b).getTime()
+    );
+
+    return {
+      labels: sortedLabels,
+      datasets: [
+        {
+          label: "Daily Revenue",
+          data: sortedLabels.map(label => dailyRevenue[label]),
+          fill: true,
+          borderColor: "#10b981",
+          backgroundColor: "rgba(16, 185, 129, 0.1)",
+          tension: 0.4,
+          pointRadius: 4,
         },
-        tension: 0.4,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        pointBackgroundColor: "#10b981",
-      },
-    ],
-  };
+      ],
+    };
+  }, [filteredSales]);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 lg:p-8 transition-colors duration-300">
