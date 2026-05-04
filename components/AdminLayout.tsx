@@ -28,7 +28,7 @@ const fallback = "Other";
 
 function getMenuItemsFor(userRole: Role, categoryType: CategoryType, allCategoryMenus: MenuMap): MenuItem[] {
   const defaultFallbackMenu = allCategoryMenus.Other || [];
-  console.log("Determining menu for role:", userRole, "and category:", categoryType);
+  // console.log("Determining menu for role:", userRole, "and category:", categoryType);
   switch (userRole) {
     case 'JUNIOR':
     case 'SENIOR':

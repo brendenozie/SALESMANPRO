@@ -313,7 +313,7 @@ export default function EcomDashboardClient(props: DashboardData) {
             ...COLOR_PALETTE.avg,
         },
         {
-            href: `/admin/${props.slug}/customers`,
+            href: `/admin/${props.slug}/consumers`,
             title: 'New Clients Today',
             icon: UsersIcon,
             value: props.newClients,

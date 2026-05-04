@@ -39,15 +39,22 @@ type Target = {
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-const TargetsClient: React.FC = () => {
+
+interface TargetsProps {
+  companyId: string;
+}
+
+
+const TargetsClient: React.FC<TargetsProps> = ({ companyId }) => {
   const [targets, setTargets] = useState<Target[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${apiBaseUrl}/admin/targets`);
+        const response = await fetch(`${apiBaseUrl}/admin/targets?companyId=${companyId}`);
         const result = await response.json();
+        
         setTargets(result.data || []);
       } catch (err) {
         console.error("Error fetching data", err);
@@ -56,7 +63,7 @@ const TargetsClient: React.FC = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [companyId]);
 
   // Compute High-Level Stats
   const stats = useMemo(() => {
@@ -165,27 +172,38 @@ const StatCard = ({ title, value, icon, color }: any) => (
   </div>
 );
 
-const TargetCard = ({ target }: { target: Target }) => {
+const TargetCard = ({ target }: { target: any }) => {
   const progress = (target.achievedValue / target.targetValue) * 100;
-  const isAchieved = target.status === "Achieved";
+  
+  // Format based on TargetType from schema
+  const formatValue = (val: number) => {
+    return target.targetType === "COST" || target.targetType === "REVENUE"
+      ? `$${val.toLocaleString()}`
+      : `${val.toLocaleString()} Units`;
+  };
 
   return (
     <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm hover:border-indigo-200 transition-all group">
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{target.salesAgent.name}</h3>
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{target.product.name}</p>
+          <h3 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+            {target.salesAgent.name}
+          </h3>
+          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+            {target.product.name}
+          </p>
         </div>
         <StatusBadge status={target.status} />
       </div>
 
       <div className="space-y-4">
         <div className="flex justify-between text-sm">
-          <span className="text-slate-500">Progress</span>
+          <span className="text-slate-500 font-medium">
+            {target.targetType} Progress
+          </span>
           <span className="font-bold text-slate-900">{progress.toFixed(0)}%</span>
         </div>
         
-        {/* Modern Progress Bar */}
         <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
           <div 
             className={`h-full rounded-full transition-all duration-1000 ${
@@ -197,18 +215,18 @@ const TargetCard = ({ target }: { target: Target }) => {
 
         <div className="grid grid-cols-2 gap-4 pt-2">
           <div>
-            <p className="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">Goal</p>
-            <p className="text-sm font-bold text-slate-700">${target.targetValue.toLocaleString()}</p>
+            <p className="text-[10px] text-slate-400 uppercase font-black tracking-tighter">Target Goal</p>
+            <p className="text-sm font-bold text-slate-700">{formatValue(target.targetValue)}</p>
           </div>
           <div className="text-right">
-            <p className="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">Achieved</p>
-            <p className="text-sm font-bold text-slate-700">${target.achievedValue.toLocaleString()}</p>
+            <p className="text-[10px] text-slate-400 uppercase font-black tracking-tighter">Achieved</p>
+            <p className="text-sm font-bold text-emerald-600">{formatValue(target.achievedValue)}</p>
           </div>
         </div>
 
         <div className="pt-4 border-t border-slate-50 flex items-center gap-2 text-slate-400">
           <ClockIcon className="w-4 h-4" />
-          <p className="text-[11px]">Ends {format(parseISO(target.endDate), "MMM dd, yyyy")}</p>
+          <p className="text-[11px] font-bold">Expires {format(parseISO(target.endDate), "MMM dd, yyyy")}</p>
         </div>
       </div>
     </div>

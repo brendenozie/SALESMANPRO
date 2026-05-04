@@ -101,7 +101,7 @@ const commonEcommerce = (adminSlug: string) => {
       icon: UsersIcon,
       subItems: [
         { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
-        { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
+        // { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
         { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
         { label: "Delivery", href: `/admin/${adminSlug}/deliveries` },
       ],
