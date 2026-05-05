@@ -378,7 +378,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     },
   ],
 
-  "Barbershop": [
+  Barbershop: [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     {
       label: "POS",
@@ -461,7 +461,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     },
   ],
 
-  "Drycleaning": [
+  Drycleaning: [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     {
       label: "POS",
@@ -1418,6 +1418,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: ClipboardDocumentListIcon,
     },
     {
+      label: "All Companies",
+      href: `/admin/${adminSlug}/companies-full-site`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
       label: "Subscription Payments",
       href: `/admin/${adminSlug}/subscriptionpayments`,
       icon: ClipboardDocumentListIcon,
@@ -1533,6 +1538,16 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     {
       label: "Plans & Subscriptions",
       href: `/admin/${adminSlug}/saas-plans`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "All Companies",
+      href: `/admin/${adminSlug}/companies-full-site`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Marketplace Listings",
+      href: `/admin/${adminSlug}/marketplace-gh`,
       icon: ClipboardDocumentListIcon,
     },
     {
