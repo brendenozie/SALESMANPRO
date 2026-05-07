@@ -63,23 +63,38 @@ interface LocationPickerProps {
 // --- Helper Functions ---
 
 // Builds a hierarchical tree from a flat list of locations
-const buildLocationTree = (locations: ILocation[]): ILocation[] => {
-  const locationMap: { [key: string]: ILocation } = {};
+const buildLocationTree = (locations: ILocation[] = []): ILocation[] => {
+  if (!Array.isArray(locations)) {
+    console.error("Expected locations to be an array:", locations);
+    return [];
+  }
+
+  const locationMap: Record<string, ILocation> = {};
   const tree: ILocation[] = [];
 
-  locations.forEach(location => {
-    locationMap[location.id] = { ...location, children: [] };
+  locations.forEach((location) => {
+    locationMap[location.id] = {
+      ...location,
+      children: [],
+    };
   });
 
-  locations.forEach(location => {
+  locations.forEach((location) => {
     if (location.parentId && locationMap[location.parentId]) {
-      locationMap[location.parentId].children?.push(locationMap[location.id]);
-      locationMap[location.parentId].children?.sort((a, b) => a.name.localeCompare(b.name));
+      locationMap[location.parentId].children?.push(
+        locationMap[location.id]
+      );
+
+      locationMap[location.parentId].children?.sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
     } else {
       tree.push(locationMap[location.id]);
     }
   });
+
   tree.sort((a, b) => a.name.localeCompare(b.name));
+
   return tree;
 };
 

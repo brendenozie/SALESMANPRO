@@ -198,13 +198,13 @@ export default async function PropertyManagementPage({ params }: PropertyPagePro
 
     // --- 3. Fetch Locations ---
     // NOTE: The original fetch was to `${apiBaseUrl}/admin/locations' without companyId. Assuming this is a global list.
-    const locationsResult = await fetchData<any>('admin/locations', '', cookiesHeaders, () => ({ results: [] }), 'none');
+    const locationsResult = await fetchData<any>('admin/locationsv2', companyId, cookiesHeaders, () => ({ results: [] }), 'companyId');
 
 
     // Consolidate data and error handling
-    const initialProperties: MarketListingForm[] = propertiesResult.data?.results || generateMockProperties();
+    const initialProperties: MarketListingForm[] = propertiesResult.data?.results || [];//generateMockProperties();
     const initialCategories: IStoreCategory[] = categoriesResult.data?.results || [];
-    const initialLocations: ILocation[] = locationsResult.data || [];
+    const initialLocations: ILocation[] = locationsResult.data.data || [];
     
     // Check if at least the main data (properties) failed initially
     const serverLoadError: string | null = propertiesResult.error;

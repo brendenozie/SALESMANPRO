@@ -4,6 +4,8 @@ import React from "react";
 import ListingsClient from "./ListingsClient";
 import { MarketListingForm, IStoreCategory } from "@/types/typings";
 
+import { cookies } from "next/headers";
+
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 type MarketplaceProduct = {
@@ -69,6 +71,7 @@ interface PageProps {
  */
 export default async function ClientInventoryPage({ params }: PageProps) {
   const { slug : companyId } = await params;
+    const cookieHeader = (await cookies()).toString();
 
   let productsData: MarketListingForm[] = [];
   let categoriesData: IStoreCategory[] = [];
@@ -76,7 +79,12 @@ export default async function ClientInventoryPage({ params }: PageProps) {
   try {
     const res = await fetch(
       `${apiBaseUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 } }
+      {
+        next: { revalidate: 60 },
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookieHeader,
+      },}
     );
 
     if (res.ok) {
@@ -98,7 +106,12 @@ export default async function ClientInventoryPage({ params }: PageProps) {
       `${apiBaseUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
         companyId
       )}`,
-      { next: { revalidate: 60 } }
+      {
+        next: { revalidate: 60 },
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookieHeader,
+      },}
     );
     if (categoriesRes.ok) {
       const categoriesJson = (await categoriesRes.json()) as {

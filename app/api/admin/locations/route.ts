@@ -54,6 +54,16 @@ async function handleGetLocations(request: Request) {
       localization: true,
       attributes: true,
     },
+    where: {
+      OR: [
+       {
+        //company location is empty 
+        CompanyLocation : {
+          none: {}
+        }
+       }
+      ],
+    },
   });
 
 

@@ -1,9 +1,8 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
-
-import prisma from '@/server/db/prismadb';
-import { withApiHandler } from '@/lib/hooks/withApiHandler';
-import { formatResponse } from '@/lib/formatResponse';
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
 // Define the expected structure for route parameters (although not used in URL, the structure is necessary for type safety)
 type RouteParams = { params: { adminSlug: string } };
@@ -12,13 +11,13 @@ type RouteParams = { params: { adminSlug: string } };
 const slugify = (text: string): string => {
   return text
     .toString()
-    .normalize('NFD') // Normalize characters
-    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+    .normalize("NFD") // Normalize characters
+    .replace(/[\u0300-\u036f]/g, "") // Remove diacritics
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, '-')       // Replace spaces with -
-    .replace(/[^\w-]+/g, '')    // Remove all non-word chars
-    .replace(/--+/g, '-');      // Replace multiple - with single -
+    .replace(/\s+/g, "-") // Replace spaces with -
+    .replace(/[^\w-]+/g, "") // Remove all non-word chars
+    .replace(/--+/g, "-"); // Replace multiple - with single -
 };
 
 // --- GET Handler Core Logic ---
@@ -33,13 +32,14 @@ async function handleGetLocations(req: Request, { params }: RouteParams) {
   }
 
   // Fetch company-specific associations
-  
-    const cacheKey = `admin:locationsv2:${companyId || 'global'}:all`;
+
+  const cacheKey = `admin:locationsv2:${companyId || "global"}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
+
   const companyLocations = await prisma.companyLocation.findMany({
     where: { companyId },
     include: { location: true },
@@ -50,7 +50,10 @@ async function handleGetLocations(req: Request, { params }: RouteParams) {
   // listed as CompanyLocations themselves (for tree structure display)
   const missingParentIds = companyLocations
     .map((cl) => cl.location?.parentId)
-    .filter((pid): pid is string => !!pid && !companyLocations.find((cl) => cl.locationId === pid));
+    .filter(
+      (pid): pid is string =>
+        !!pid && !companyLocations.find((cl) => cl.locationId === pid),
+    );
 
   let parentLocations: any[] = [];
   if (missingParentIds.length > 0) {
@@ -60,39 +63,41 @@ async function handleGetLocations(req: Request, { params }: RouteParams) {
   }
 
   // Format company locations (prioritizing overrides from CompanyLocation)
-  const formattedCompanyLocs = companyLocations.map((cl) => {
-    const loc = cl.location;
-    // Check if loc exists before accessing properties (safe access)
-    if (!loc) return null;
+  const formattedCompanyLocs = companyLocations
+    .map((cl) => {
+      const loc = cl.location;
+      // Check if loc exists before accessing properties (safe access)
+      if (!loc) return null;
 
-    return {
-      id: cl.id,
-      locationId: loc.id,
-      parentId: loc.parentId,
-      name: cl.displayName || loc.name,
-      slug: loc.slug,
-      description: loc.description,
-      addressLine1: cl.addressLine1Override || loc.addressLine1,
-      addressLine2: cl.addressLine2Override || loc.addressLine2,
-      city: cl.cityOverride || loc.city,
-      state: cl.stateOverride || loc.state,
-      postalCode: cl.postalCodeOverride || loc.postalCode,
-      country: cl.countryOverride || loc.country,
-      latitude: cl.latitudeOverride ?? loc.latitude,
-      longitude: cl.longitudeOverride ?? loc.longitude,
-      imageUrl: loc.imageUrl,
-      phone: loc.phone,
-      email: loc.email,
-      capacity: loc.capacity,
-      openHours: loc.openHours,
-      status: loc.status,
-      sortOrder: cl.sortOrder ?? loc.sortOrder,
-      visible: cl.visible ?? loc.visible,
-      createdAt: cl.createdAt,
-      updatedAt: cl.updatedAt,
-      isParent: false, // Mark as company association
-    };
-  }).filter(Boolean); // Filter out any null returns
+      return {
+        id: cl.id,
+        locationId: loc.id,
+        parentId: loc.parentId,
+        name: cl.displayName || loc.name,
+        slug: loc.slug,
+        description: loc.description,
+        addressLine1: cl.addressLine1Override || loc.addressLine1,
+        addressLine2: cl.addressLine2Override || loc.addressLine2,
+        city: cl.cityOverride || loc.city,
+        state: cl.stateOverride || loc.state,
+        postalCode: cl.postalCodeOverride || loc.postalCode,
+        country: cl.countryOverride || loc.country,
+        latitude: cl.latitudeOverride ?? loc.latitude,
+        longitude: cl.longitudeOverride ?? loc.longitude,
+        imageUrl: loc.imageUrl,
+        phone: loc.phone,
+        email: loc.email,
+        capacity: loc.capacity,
+        openHours: loc.openHours,
+        status: loc.status,
+        sortOrder: cl.sortOrder ?? loc.sortOrder,
+        visible: cl.visible ?? loc.visible,
+        createdAt: cl.createdAt,
+        updatedAt: cl.updatedAt,
+        isParent: false, // Mark as company association
+      };
+    })
+    .filter(Boolean); // Filter out any null returns
 
   // Format fallback parent locations (no overrides)
   const formattedParents = parentLocations.map((loc) => ({
@@ -107,11 +112,20 @@ async function handleGetLocations(req: Request, { params }: RouteParams) {
   }));
 
   try {
-      await cacheSet(cacheKey, { data: [...formattedCompanyLocs, ...formattedParents] }, 60);
+    await cacheSet(
+      cacheKey,
+      { data: [...formattedCompanyLocs, ...formattedParents] },
+      60,
+    );
   } catch (e) {}
 
   // withApiHandler will wrap this result in formatResponse(true, { data: combined_list }) with status 200
-  return formatResponse(true, { data: [...formattedCompanyLocs, ...formattedParents] }, "Locations fetched successfully", 200);
+  return formatResponse(
+    true,
+    { data: [...formattedCompanyLocs, ...formattedParents] },
+    "Locations fetched successfully",
+    200,
+  );
 }
 
 // --- POST Handler Core Logic ---
@@ -148,11 +162,21 @@ async function handlePostLocation(request: Request, { params }: RouteParams) {
   });
 
   if (!company) {
-    return formatResponse(false, null, "Company not found for the given id.", 404);
+    return formatResponse(
+      false,
+      null,
+      "Company not found for the given id.",
+      404,
+    );
   }
 
   if (!name || !city || !country) {
-    return formatResponse(false, null, "Name, city, and country are required.", 400);
+    return formatResponse(
+      false,
+      null,
+      "Name, city, and country are required.",
+      400,
+    );
   }
 
   // Generate slug and ensure uniqueness in Location model
@@ -203,11 +227,14 @@ async function handlePostLocation(request: Request, { params }: RouteParams) {
     id: companyLocation.id,
     displayName: companyLocation.displayName || newLocation.name,
     slug: newLocation.slug,
-    addressLine1: companyLocation.addressLine1Override || newLocation.addressLine1,
-    addressLine2: companyLocation.addressLine2Override || newLocation.addressLine2,
+    addressLine1:
+      companyLocation.addressLine1Override || newLocation.addressLine1,
+    addressLine2:
+      companyLocation.addressLine2Override || newLocation.addressLine2,
     city: companyLocation.cityOverride || newLocation.city,
     state: companyLocation.stateOverride || newLocation.state || "",
-    postalCode: companyLocation.postalCodeOverride || newLocation.postalCode || "",
+    postalCode:
+      companyLocation.postalCodeOverride || newLocation.postalCode || "",
     country: companyLocation.countryOverride || newLocation.country,
     description: newLocation.description || "",
     imageUrl:
@@ -221,9 +248,11 @@ async function handlePostLocation(request: Request, { params }: RouteParams) {
   };
 
   // Explicitly return success with status 201
-  
-    try { await cacheDel(`admin:locationsv2:${companyId || 'global'}:*`); } catch (e) {}
-    return formatResponse(true, formatted, null, 201);
+
+  try {
+    await cacheDel(`admin:locationsv2:${companyId || "global"}:*`);
+  } catch (e) {}
+  return formatResponse(true, formatted, null, 201);
 }
 
 // Wrap the core logic with the API handler middleware
