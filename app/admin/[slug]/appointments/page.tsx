@@ -103,10 +103,11 @@ export default async function AppointmentsPage({ params }: Props) {
 
     if (orderRes.ok) {
       const json = await orderRes.json();
-      
+
+      console.log("✅ Raw fetched order items:", json.data.orders);
       // Map and add the explicit 'type' field to each order item
-      fetchedOrderItems = json?.data?.orderItems
-        ?.filter((item: any) => item.date && item.timeSlot)
+      fetchedOrderItems = json?.data?.orders
+        // ?.filter((item: any) => item.date && item.timeSlot)
         .map((item: any) => ({
           ...item,
           type: "Order",
@@ -116,7 +117,7 @@ export default async function AppointmentsPage({ params }: Props) {
           status: item.status || item.order?.status || 'UNKNOWN'
         })) || [];
         
-      // console.log("✅ Fetched and typed order items:", fetchedOrderItems.length);
+      console.log("✅ Fetched and typed order items:", fetchedOrderItems);
     } else {
       console.error(
         "[AppointmentsPage] Failed to fetch order items →",
@@ -136,14 +137,14 @@ export default async function AppointmentsPage({ params }: Props) {
   }
 
   // 2. Combine all fetched data, or use fallback samples
-  const combinedSamples = [...sampleAppointments, ...sampleOrderItems];
+  // const combinedSamples = [...sampleAppointments, ...sampleOrderItems];
 
   const initialData: UnifiedItem[] = 
     (fetchedAppointments.length > 0 || fetchedOrderItems.length > 0)
       ? [...fetchedAppointments, ...fetchedOrderItems] // Use fetched data
-      : combinedSamples; // Use fallback data
+      : []; // Use fallback data
 
-  // console.log("✅ Initial data prepared with unified types:", initialData);
+  console.log("✅ Initial data prepared with unified types:", initialData);
 
   // 3. Pass the single, unified data array to the client component
   return (

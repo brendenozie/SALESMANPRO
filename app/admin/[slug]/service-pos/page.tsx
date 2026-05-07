@@ -1,7 +1,6 @@
 // app/admin/[slug]/pos/page.tsx
-import React from "react";
-
-import AdminPOSClient from "./AdminPOSClient";// Import Product type
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import AdminPOSClient from "./AdminPOSClient"; // Import Product type
 import { MarketListingForm, IStoreCategory } from "@/types/typings";
 import { cookies } from "next/headers";
 import { getAuthSession } from "@/lib/auth";
@@ -9,16 +8,20 @@ import { getAuthSession } from "@/lib/auth";
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
-  params:Promise<{ slug: string }>
+  params:Promise<{ slug: string }>;
+  searchParams: Promise<{ page?: string; limit?: string }>; // Add searchParams
 }
 
 /**
  * Server Component: Fetches initial data for the POS.
  */
-export default async function PosPage({ params }: PageProps) {
+export default async function PosPage({ params, searchParams }: PageProps) {
   const session = await getAuthSession();
   
   const { slug : companyId } = await params;
+  const { page = "1", limit = "20" } = await searchParams; // Default values
+  let totalPages = 1;
+  
   const cookieHeaders = (await cookies()).toString();
   const userName = session?.user?.name || "Guest";
   // console.log("Current userName from cookies:", userName);
@@ -50,7 +53,7 @@ export default async function PosPage({ params }: PageProps) {
   try {
     // Fetch Marketplace Listings (Products)
     // Correcting the API path to match your provided route: /api/marketplace-list
-    const productsRes = await fetch(`${apiBaseUrl}/admin/pos-marketplace-listings?companyId=${companyId}`, {
+    const productsRes = await fetch(`${apiBaseUrl}/admin/pos-marketplace-listings?companyId=${companyId}&page=${page}&limit=${limit}`, {
       next: { revalidate: 60 },
       headers: { cookie: cookieHeaders }, // Forward cookies for authentication
     });
@@ -59,6 +62,14 @@ export default async function PosPage({ params }: PageProps) {
       // console.log("Fetched products data:", productsData);
       // Map marketplace listings to the Product type expected by StorePOSPageClient
       initialProducts = productsData.results ;
+      totalPages = productsData.meta?.totalPages || 1;
+    //   meta: {
+    //   companyId,
+    //   totalItems: total,
+    //   totalPages,
+    //   currentPage: page,
+    //   perPage: limit,
+    // },
         
       //   || []).map((listing: any) => ({
       //   id: listing.id, // Use the listing's ID as the product ID for cart tracking
@@ -82,6 +93,8 @@ export default async function PosPage({ params }: PageProps) {
       initialProducts={initialProducts}
       userId={session?.user?.id || null}
       userName={userName}
+      totalPages={totalPages} // Pass this down
+      currentPage={parseInt(page)} // Pass this down
     />
   );
 }

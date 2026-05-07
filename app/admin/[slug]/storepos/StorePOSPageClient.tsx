@@ -249,9 +249,8 @@ const printReceipt = (htmlContent: string, receiptDetails: any) => {
         }))
     };
 
-  if ((window as any).AndroidBridge) {
+    if ((window as any).AndroidBridge) {
         // This calls the Kotlin @JavascriptInterface
-        //
         // Stringify the whole object so Kotlin can parse it easily
         const message = JSON.stringify({
             type: 'PRINT_ESC_POS',
@@ -259,64 +258,9 @@ const printReceipt = (htmlContent: string, receiptDetails: any) => {
         });
         
         (window as any).AndroidBridge.postMessage(message);
-        
-        // (window as any).AndroidBridge.postMessage({
-        //   type: 'PRINT_ESC_POS',
-        //   payload: desktopPayload
-        // });
+      
     } else  if ((window as any).chrome?.webview) {
-    // (window as any).chrome.webview.postMessage({
-    //   type: 'PRINT_HTML_RECEIPT',
-    //   payload: htmlContent
-    // });
-
-    // 1. Map the frontend data to the Desktop's OrderData class
-    // const desktopPayload = {
-    //   BusinessName: receiptDetails.storeName,
-    //   Total: receiptDetails.finalTotal,
-    //   PaymentMethod: "Cash", // Or map from your payment logic
-    //   Date: receiptDetails.date + " " + receiptDetails.time,
-    //   Items: receiptDetails.cart.map((item:any) => ({
-    //     Name: item.name,
-    //     Quantity: item.quantity,
-    //     Price: item.finalPrice ?? 0,
-    //     Total: item.subtotal,
-    //     Category: (item as any).category || "General", // Match C# OrderItem
-    //     Route: (item as any).route || "dispatch"      // Match C# OrderItem
-    //   }))
-    // };
-
-    // const desktopPayload = {
-    //     // Business Identity (Matches C# Properties)
-    //     BusinessName: receiptDetails.storeName || "Gourmet Bites Bistro",
-    //     BusinessAddress: receiptDetails.storeAddress || "123 Tech Lane, Silicon Valley",
-    //     TaxId: receiptDetails.taxId || "VAT-987654321",
-    //     PhoneNumber: receiptDetails.storePhone || "+1 (555) 012-3456",
-
-    //     // Transaction Details
-    //     InvoiceId: receiptDetails.invoiceId || `INV-${Date.now()}`,
-    //     ReceiptNumber: receiptDetails.receiptNumber || `RCP-${Date.now()}`,
-    //     CustomerName: receiptDetails.customerName || "Walking Customer",
-    //     StaffName: receiptDetails.cashierName || "Alex P.",
-    //     Date: `${receiptDetails.date} ${receiptDetails.time}`,
-
-    //     // Financials
-    //     Currency: receiptDetails.currency || "USD",
-    //     TaxRate: receiptDetails.taxRatePercentage / 100 || 0.10, // Pass as decimal (e.g., 0.10 for 10%)
-    //     ChangeGiven: receiptDetails.changeAmount || 0.00,
-    //     PaymentMethod: receiptDetails.paymentType || "Cash",
-
-    //     // Items List
-    //     Items: receiptDetails.cart.map((item) => ({
-    //         Name: item.name,
-    //         Quantity: parseInt(item.quantity),
-    //         Price: parseFloat(item.finalPrice || item.price || 0),
-    //         Discount: parseFloat(item.discountAmount || 0),
-    //         Category: item.category || "General",
-    //         Route: item.route || "dispatch"
-    //     }))
-    // };
-
+    
     (window as any).chrome.webview.postMessage({
       type: 'PRINT_ESC_POS',
       payload: desktopPayload
@@ -432,7 +376,10 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   // persistent category (session)
   const [selectedCategory, setSelectedCategory] = usePersistentState<string>('pos:selectedCategory', 'all');
 
+  const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
   const ripple = useRipple();
+
+  const taxRate = companyInfo?.taxRate ?? 0.00;
 
   // State for Agent and Company Info
   const [currentAgent, setCurrentAgent] = useState<Agent | null>({
@@ -441,7 +388,6 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     dailySalesCount: 15,
     dailySalesValue: 1250.75,
   });
-  const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
 
   const currencySymbol = useMemo(() => companyInfo?.currency === 'KES' ? 'KSh' : '$', [companyInfo]);
 
@@ -449,7 +395,6 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   const mobileCartRef = useRef<HTMLDivElement | null>(null);
   const touchStartY = useRef<number | null>(null);
   const currentTranslate = useRef<number>(0);
-
 
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -592,7 +537,6 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     });
   }, []);
 
-
   const handleQuantityChange = useCallback((itemId: string, delta: number) => {
     setCart(prevCart => {
       const updatedCart = prevCart.map(item => {
@@ -632,7 +576,6 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   }, [subtotal, discountPercentage]);
 
   const totalTax = useMemo(() => {
-    const taxRate = companyInfo?.taxRate ?? 0.08;
     const taxable = subtotal - totalDiscountAmount;
     return taxable * taxRate;
   }, [subtotal, totalDiscountAmount, companyInfo]);
@@ -720,7 +663,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       
       subtotal: subtotal,
       totalDiscountAmount: totalDiscountAmount,
-      taxRatePercentage: 10, // Added: Store the numeric rate (e.g., 10 for 10%)
+      taxRatePercentage: taxRate, // Added: Store the numeric rate (e.g., 10 for 10%)
       totalTax: totalTax,
       finalTotal: finalTotal,
       currency: "USD", // Added: Explicit currency code for C# string Currency
@@ -740,7 +683,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       storeName: companyInfo?.name || 'Gourmet Bites Bistro',
       storeAddress: companyInfo?.address || '123 Tech Lane, Silicon Valley',
       storePhone: companyInfo?.contactPhone || '+1 (555) 012-3456',
-      taxId: companyInfo?.taxId || 'VAT-987654321', // Added: Needed for professional receipt
+      taxId: companyInfo?.taxId || '', // Added: Needed for professional receipt
       currencySymbol: currencySymbol,
     };
 
