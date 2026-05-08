@@ -375,7 +375,7 @@ export const ProductDetails: React.FC<Props> = ({ formData, setFormData, handleI
 
       {isPhysical && <PhysicalSpecs formData={formData} handleInputChange={handleInputChange} />}
 
-      {isProperty && <PropertyDetails formData={formData} handleInputChange={handleInputChange} />}
+      {/* {isProperty && <PropertyDetails formData={formData} handleInputChange={handleInputChange} />} */}
 
       <motion.section initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="space-y-2 p-5 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
         <TagInput label="Product Tags" placeholder="Add keywords like 'new', 'sale', 'electronics'" tags={formData.tags || []} onTagsChange={handleTagsChange} />
