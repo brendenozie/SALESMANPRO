@@ -145,7 +145,7 @@ const PropertyCard = ({ item }: any) => {
           <div className="mt-auto pt-4 flex items-center justify-between border-t border-zinc-50 dark:border-zinc-800/50">
             <span className="text-[10px] font-mono text-zinc-400 uppercase">REF: {item.id.slice(-8).toUpperCase()}</span>
             <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 group-hover:underline underline-offset-4 decoration-2">
-              View Dossier &rarr;
+              View Property &rarr;
             </span>
           </div>
         </div>
