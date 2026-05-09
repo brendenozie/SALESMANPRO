@@ -15,6 +15,7 @@ import {
   ChevronRightIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolid, PlayIcon as PlaySolid } from '@heroicons/react/24/solid';
+import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -208,6 +209,13 @@ export default function MediaEntertainmentView({ media, storeFormData }: any) {
            ))}
         </div>
       </section>
+      
+      <WhatsAppInquiry 
+        productName={media.name}
+        productPrice={media.finalPrice || media.sellingPrice || 0}
+        productUrl={window.location.href}
+        phoneNumber = "254712345678"
+      />
     </div>
   );
 }

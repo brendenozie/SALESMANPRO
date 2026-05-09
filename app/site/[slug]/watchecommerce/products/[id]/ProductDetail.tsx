@@ -16,6 +16,7 @@ import {
 import { useStateContext } from '@/contexts/ContextProvider';
 import ProductCard from '@/components/site/layouts/EcommerceLayout/body/components/ProductCard';
 import { MarketListingForm } from '@/types/typings';
+import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
 type ImageObj = { url: string };
 
@@ -231,11 +232,20 @@ export function ProductDetail({
               animate={{ scale: 1 }}
               className="relative w-full h-full max-w-5xl"
             >
-              <Image src={currentImage} alt="Precision view" fill className="object-contain" loader={loader} />
+              <Image src={currentImage || 'https://images.unsplash.com/photo-1523275335684-37898b6760e7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA==&auto=format&fit=crop&w=1000&q=80'} alt="Precision view" fill className="object-contain" loader={loader} />
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      
+      <WhatsAppInquiry 
+        productName={product.name}
+        productPrice={product.finalPrice || product.sellingPrice || 0}
+        productUrl={window.location.href}
+        phoneNumber = "254712345678"
+      />
+
     </div>
   );
 }

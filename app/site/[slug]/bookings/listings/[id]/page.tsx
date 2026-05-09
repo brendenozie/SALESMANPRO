@@ -13,6 +13,7 @@ import { StarIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/solid';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useState } from 'react';
 import { StoreForm } from '@/types/typings';
+import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
 interface PageProps {
   params: Promise<{ slug: string; productId: string }>;
@@ -123,6 +124,13 @@ function ProductDetail({ product, related }: {
       )}
 
       <NewsletterSection />
+
+        <WhatsAppInquiry 
+          productName={product.name}
+          productPrice={product.finalPrice || product.sellingPrice || 0}
+          productUrl={window.location.href}
+          phoneNumber = "254712345678"
+        />
     </div>
   );
 }

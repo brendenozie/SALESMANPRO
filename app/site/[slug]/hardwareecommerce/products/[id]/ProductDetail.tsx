@@ -16,6 +16,7 @@ import {
 import { StarIcon, PlusIcon, MinusIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { MarketListingForm } from '@/types/typings';
+import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -200,6 +201,14 @@ export function ProductDetail({
           </div>
         </div>
       </section>
+
+
+      <WhatsAppInquiry 
+        productName={product.name}
+        productPrice={product.finalPrice || product.sellingPrice || 0}
+        productUrl={window.location.href}
+        phoneNumber = "254712345678"
+      />
     </div>
   );
 }

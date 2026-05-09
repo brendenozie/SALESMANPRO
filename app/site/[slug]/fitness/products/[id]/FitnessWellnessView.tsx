@@ -17,6 +17,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { NutritionTable } from './NutritionTable';
 import { WorkoutVideoPreview } from './WorkoutVideoPreview';
+import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -197,6 +198,13 @@ export default function FitnessWellnessView({ product, storeFormData }: any) {
       <WorkoutVideoPreview />
 
       <NutritionTable />
+
+      <WhatsAppInquiry 
+        productName={product.name}
+        productPrice={product.finalPrice || product.sellingPrice || 0}
+        productUrl={window.location.href}
+        phoneNumber = "254712345678"
+      />
       
     </div>
   );

@@ -17,6 +17,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { CheckBadgeIcon } from '@heroicons/react/24/solid';
 import { IEvent } from "@/types/typings";
+import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
 export default function EventDetailView({ event }: { event: IEvent }) {
   const isExpired = event.endDateTime ? new Date(event.endDateTime) < new Date() : false;
@@ -115,7 +116,7 @@ export default function EventDetailView({ event }: { event: IEvent }) {
 
             {event.videoUrl && (
               <div className="my-16 aspect-video rounded-[3rem] overflow-hidden shadow-2xl bg-zinc-900 flex items-center justify-center group cursor-pointer relative">
-                <img src={event.imageUrl} alt="preview" className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-700" />
+                <img src={event.imageUrl || 'https://images.unsplash.com/photo-1519681393784-d12026793bf1'} alt="preview" className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-700" />
                 <div className="relative z-10 w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
                   <VideoCameraIcon className="w-8 h-8 text-black" />
                 </div>
@@ -248,6 +249,14 @@ export default function EventDetailView({ event }: { event: IEvent }) {
           </div>
         </section>
       )}
+
+      
+                <WhatsAppInquiry 
+                  productName={event.name}
+                  productPrice={event.finalPrice || event.sellingPrice || 0}
+                  productUrl={window.location.href}
+                  phoneNumber = "254712345678"
+                />
     </div>
   );
 }

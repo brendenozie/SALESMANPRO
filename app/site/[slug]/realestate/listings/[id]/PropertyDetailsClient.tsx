@@ -10,6 +10,8 @@ import {
   ShareIcon, HeartIcon, HomeIcon, UserIcon, InformationCircleIcon,
   FireIcon, BoltIcon, KeyIcon, VideoCameraIcon, CalendarIcon, ClockIcon , EnvelopeIcon, UsersIcon } from "@heroicons/react/24/outline";
 
+import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
+
 // AUTH
 import { useSession } from "next-auth/react";
 
@@ -560,9 +562,7 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
                         </FormField>
 
                         <div className="grid grid-cols-2 gap-4">
-                          <FormField label="Time Slot" icon={ClockIcon} 
-
-                          >
+                          <FormField label="Time Slot" icon={ClockIcon}>
                             <select 
                               name="preferredTime"
                               value={formData.preferredTime}
@@ -619,6 +619,13 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
         </div>
       )}
     </AnimatePresence>
+
+    <WhatsAppInquiry 
+      productName={data.name}
+      productPrice={data.finalPrice || data.sellingPrice || 0}
+      productUrl={window.location.href}
+      phoneNumber = "254712345678"
+    />
 
     </div>
   );

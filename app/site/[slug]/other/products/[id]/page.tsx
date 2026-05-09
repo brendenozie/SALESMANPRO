@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion'; // Import motion and An
 import { useStateContext } from '@/contexts/ContextProvider';
 import { StoreForm, MarketListingForm } from '@/types/typings'; // Import relevant types
 import ProductCard from '@/components/site/layouts/EcommerceLayout/body/components/ProductCard';
+import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
 interface PageProps {
   params: Promise<{ slug: string; productId: string }>;
@@ -248,6 +249,13 @@ function ProductDetail({ product, related, storeData }: {
       )}
 
       <NewsletterSection />
+      
+      <WhatsAppInquiry 
+        productName={product.name}
+        productPrice={product.finalPrice || product.sellingPrice || 0}
+        productUrl={window.location.href}
+        phoneNumber = "254712345678"
+      />
     </div>
   );
 }

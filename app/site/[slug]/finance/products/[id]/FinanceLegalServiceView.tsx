@@ -14,6 +14,7 @@ import {
   CheckBadgeIcon,
   PresentationChartBarIcon
 } from '@heroicons/react/24/outline';
+import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
 export default function FinanceLegalServiceView({ service, storeFormData }: any) {
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#0f172a'; // Deep Navy/Professional
@@ -193,6 +194,13 @@ export default function FinanceLegalServiceView({ service, storeFormData }: any)
           </div>
         </aside>
       </main>
+      
+      <WhatsAppInquiry 
+        productName={service.name}
+        productPrice={service.finalPrice || service.sellingPrice || 0}
+        productUrl={window.location.href}
+        phoneNumber = "254712345678"
+      />
     </div>
   );
 }

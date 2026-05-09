@@ -15,6 +15,7 @@ import {
   HeartIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
+import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -207,6 +208,13 @@ export default function RestaurantDishDetail({ product, storeFormData }: any) {
           </div>
         </div>
       </section>
+      
+                <WhatsAppInquiry 
+                  productName={product.name}
+                  productPrice={product.finalPrice || product.sellingPrice || 0}
+                  productUrl={window.location.href}
+                  phoneNumber = "254712345678"
+                />
     </div>
   );
 }

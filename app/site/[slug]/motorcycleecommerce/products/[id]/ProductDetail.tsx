@@ -23,6 +23,7 @@ import {
 import { useStateContext } from '@/contexts/ContextProvider';
 import ProductCard from '@/components/site/layouts/EcommerceLayout/body/components/ProductCard';
 import { MarketListingForm } from '@/types/typings';
+import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -362,6 +363,13 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
           </div>
         </section>
       )}
+
+      <WhatsAppInquiry 
+        productName={product.name}
+        productPrice={product.finalPrice || product.sellingPrice || 0}
+        productUrl={window.location.href}
+        phoneNumber = "254712345678"
+      />
     </div>
   );
 }

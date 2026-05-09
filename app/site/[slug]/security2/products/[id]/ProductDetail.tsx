@@ -13,6 +13,7 @@ import { StarIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/solid';
 import { useStateContext } from '@/contexts/ContextProvider';
 import ProductCard from '@/components/site/layouts/EcommerceLayout/body/components/ProductCard';
 import { MarketListingForm, StoreForm } from '@/types/typings';
+import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
 type ImageObj = { url: string };
 
@@ -454,6 +455,13 @@ export function ProductDetail({
             </motion.div>
           )}
         </AnimatePresence>
+        
+        <WhatsAppInquiry 
+          productName={product.name}
+          productPrice={product.finalPrice || product.sellingPrice || 0}
+          productUrl={window.location.href}
+          phoneNumber = "254712345678"
+        />
       </div>
     </>
   );

@@ -16,6 +16,7 @@ import {
   HandThumbUpIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
+import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -210,6 +211,15 @@ export default function HealthcareServiceView({ service, storeFormData }: any) {
           </div>
         </aside>
       </main>
+
+      
+      <WhatsAppInquiry 
+        productName={service.name}
+        productPrice={service.finalPrice || service.sellingPrice || 0}
+        productUrl={window.location.href}
+        phoneNumber = "254712345678"
+      />
+
     </div>
   );
 }

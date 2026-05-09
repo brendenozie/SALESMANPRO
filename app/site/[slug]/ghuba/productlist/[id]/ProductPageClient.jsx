@@ -20,6 +20,7 @@ import PropTypes from "prop-types";
 
 import GhubaProductCard from "@/components/site/layouts/GhubaLayout/body/components/GhubaProductCard";
 import Modal from "@/components/Modal";
+import WhatsAppInquiry from "@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry";
 
 // next/image loader
 const loaderProp = ({ src, width, quality }) => {
@@ -37,8 +38,8 @@ const ProductPageClient = ({ listing, similarListings }) => {
   const nextImage = () => setCurrentImage((prev) => prev === images.length - 1 ? 0 : prev + 1  );
 
   const images = listing.images ? listing.images: [
-    "/images/placeholder-1.png",
-    "/images/placeholder-2.png",
+    "https://images.unsplash.com/photo-1559526324-551c9e75d510",
+    "https://images.unsplash.com/photo-1503602642458-232111445657",
   ];
 
   return (
@@ -157,6 +158,12 @@ const ProductPageClient = ({ listing, similarListings }) => {
         </Modal>
       )}
 
+      <WhatsAppInquiry 
+        productName={product.name}
+        productPrice={product.finalPrice || product.sellingPrice || 0}
+        productUrl={window.location.href}
+        phoneNumber = "254712345678"
+      />
     </div>
   );
 };

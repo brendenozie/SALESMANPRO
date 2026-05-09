@@ -9,6 +9,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns"; // Optional: for date formatting
 
+import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
+
 // --- Helper: Icon Mapper ---
 const getAmenityIcon = (label: string) => {
   const lower = label.toLowerCase();
@@ -252,6 +254,14 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
 
         </div>
       </main>
+
+      <WhatsAppInquiry 
+        productName={data.name}
+        productPrice={data.finalPrice || data.sellingPrice || 0}
+        productUrl={window.location.href}
+        phoneNumber = "254712345678"
+      />
+      
     </div>
   );
 }

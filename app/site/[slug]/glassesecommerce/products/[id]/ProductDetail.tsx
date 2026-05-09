@@ -19,6 +19,7 @@ import {
 import { useStateContext } from '@/contexts/ContextProvider';
 import ProductCard from '@/components/site/layouts/EcommerceLayout/body/components/ProductCard';
 import { MarketListingForm } from '@/types/typings';
+import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
 const LENS_OPTIONS = [
   { id: 'clear', name: 'Standard Clear', price: 0, description: 'Anti-reflective coating included.', icon: <BeakerIcon className="w-5 h-5" /> },
@@ -246,6 +247,14 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
           </div>
         </div>
       </section>
+
+      
+                <WhatsAppInquiry 
+                  productName={product.name}
+                  productPrice={product.finalPrice || product.sellingPrice || 0}
+                  productUrl={window.location.href}
+                  phoneNumber = "254712345678"
+                />
     </div>
   );
 }
