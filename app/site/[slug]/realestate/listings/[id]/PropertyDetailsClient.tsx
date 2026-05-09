@@ -111,7 +111,7 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
         clientName: formData.clientName,
         clientEmail: formData.clientEmail,
         clientPhone: formData.clientPhone,
-        consumer: formData.consumerId,
+        consumerId: formData.consumerId,
         message: formData.message,
 
         assignedToAgentId: data.agentId,
@@ -138,7 +138,8 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
           propertyId: data.id,
           propertyName: data.name,
 
-          clientId: data.consumerId || data.userId || "guest-user",
+          consumerId: formData.consumerId || "",
+          clientId: formData.consumerId || data.userId || "",
 
           clientName: formData.clientName,
 
