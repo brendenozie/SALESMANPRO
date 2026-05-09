@@ -24,7 +24,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     openGraph: {
       title: listing.name,
       description: listing.description || "",
-      images: Array.isArray(listing.images) ? listing.images : [],
+      images: Array.isArray(listing.images)
+        ? listing.images
+            .filter(
+              (img): img is string | { url: string } =>
+                typeof img === "string" ||
+                (typeof img === "object" &&
+                  img !== null &&
+                  "url" in img &&
+                  typeof (img as { url?: unknown }).url === "string")
+            )
+            .map((img) => (typeof img === "string" ? { url: img } : { url: img.url }))
+        : [],
     },
   };
 }
@@ -59,11 +70,16 @@ export default async function ListingPage({ params }: PageProps) {
     images: listing.images || [],
     
     // Ensure nested objects are handled
-    location: listing.location ? {
-      ...listing.location,
-      // If location has its own dates, serialize them too
-      createdAt: typeof listing.location.createdAt === 'object' ? listing.location.createdAt.toISOString() : listing.location.createdAt,
-    } : null,
+    location: listing.location && typeof listing.location === 'object'
+      ? {
+          ...(listing.location as Record<string, unknown>),
+          // If location has its own dates, serialize them too
+          createdAt:
+            typeof (listing.location as { createdAt?: unknown }).createdAt === 'object'
+              ? ((listing.location as { createdAt?: Date }).createdAt?.toISOString() ?? null)
+              : (listing.location as { createdAt?: unknown }).createdAt,
+        }
+      : null,
   };
 
   return <PropertyDetailsClient data={serializedListing} />;

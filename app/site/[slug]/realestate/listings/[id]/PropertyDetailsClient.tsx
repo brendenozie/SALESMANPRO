@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -58,18 +58,33 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
   const [error, setError] = useState("");
 
   // AUTH SESSION
-  const { data: session } = useSession();
-  const user = session?.user as any | undefined;
+  const { data: session, status } = useSession();
+  const user = session?.user;
 
   const [formData, setFormData] = useState({
-    clientName: user.name || '' ,
-    clientEmail: user.email || '',
-    clientPhone: user.phone || '',
+    clientName: '',
+    clientEmail: '',
+    clientPhone: '',
+    consumerId: '',
     message: "",
     preferredDate: "",
     preferredTime: "09:00",
     guests: 1,
   });
+
+  // Update form once session data is available
+  useEffect(() => {
+    if (session?.user) {
+      setFormData((prev) => ({
+        ...prev,
+        clientName: session.user?.name || '',
+        clientEmail: session.user?.email || '',
+        consumerId: session.user?.id || '',
+        // Add other fields if they exist in your session object
+      }));
+    }
+  }, [session]); // This runs whenever the 'session' object changes
+
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -81,7 +96,7 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
   };
 
   const submitInquiry = async () => {
-    const response = await fetch("/api/inquiries", {
+    const response = await fetch("/api/admin/inquiries", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -94,6 +109,7 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
         clientName: formData.clientName,
         clientEmail: formData.clientEmail,
         clientPhone: formData.clientPhone,
+        consumer: formData.consumerId,
         message: formData.message,
 
         assignedToAgentId: data.agentId,
@@ -109,7 +125,7 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
       `${formData.preferredDate}T${formData.preferredTime}`
     );
 
-    const response = await fetch("/api/showings", {
+    const response = await fetch("/api/admin/showings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -164,9 +180,7 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
             setIsScheduleOpen(false);
 
             setFormData({
-              clientName: "",
-              clientEmail: "",
-              clientPhone: "",
+              ...formData,
               message: "",
               preferredDate: "",
               preferredTime: "09:00",
@@ -494,6 +508,9 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
                       <FormField label="Full Name" icon={UserIcon}>
                         <input
                           required
+                          value={formData.clientName}
+                          onChange={handleChange}
+                          name="clientName"
                           placeholder="Full Name"
                           className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-600 focus:bg-white rounded-2xl outline-none transition-all font-bold"
                         />
@@ -502,6 +519,9 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
                       <FormField label="Phone Number" icon={PhoneIcon}>
                         <input
                           required
+                          value={formData.clientPhone}
+                          onChange={handleChange}
+                          name="clientPhone"
                           type="tel"
                           placeholder="Phone Number"
                           className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-600 focus:bg-white rounded-2xl outline-none transition-all font-bold"
@@ -512,6 +532,9 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
                     <FormField label="Email Address" icon={EnvelopeIcon}>
                       <input
                         required
+                        value={formData.clientEmail}
+                        onChange={handleChange}
+                        name="clientEmail"
                         type="email"
                         placeholder="Email Address"
                         className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-600 focus:bg-white rounded-2xl outline-none transition-all font-bold"
@@ -527,6 +550,9 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
                       >
                         <FormField label="Preferred Date" icon={CalendarIcon}>
                           <input 
+                            name="preferredDate"
+                            value={formData.preferredDate}
+                            onChange={handleChange}
                             required
                             type="date" 
                             className="w-full pl-12 pr-4 py-4 bg-white border-2 border-transparent focus:border-indigo-600 rounded-xl outline-none transition-all font-bold"
@@ -534,8 +560,14 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
                         </FormField>
 
                         <div className="grid grid-cols-2 gap-4">
-                          <FormField label="Time Slot" icon={ClockIcon}>
-                            <select className="w-full pl-12 pr-4 py-4 bg-white border-2 border-transparent focus:border-indigo-600 rounded-xl outline-none transition-all font-bold appearance-none">
+                          <FormField label="Time Slot" icon={ClockIcon} 
+
+                          >
+                            <select 
+                              name="preferredTime"
+                              value={formData.preferredTime}
+                              onChange={handleChange}
+                            className="w-full pl-12 pr-4 py-4 bg-white border-2 border-transparent focus:border-indigo-600 rounded-xl outline-none transition-all font-bold appearance-none">
                               <option>Morning</option>
                               <option>Afternoon</option>
                               <option>Evening</option>
@@ -544,6 +576,10 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
 
                           <FormField label="Guests" icon={UsersIcon}>
                             <input 
+                              name="guests"
+                              value={formData.guests}
+                              onChange={handleChange}
+                              required
                               type="number" 
                               min="1"
                               defaultValue={1} 
@@ -556,6 +592,9 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
 
                     <FormField label={''}  icon={ChatBubbleLeftRightIcon}>
                       <textarea
+                        value={formData.message}
+                        onChange={handleChange}
+                        name="message"
                         placeholder="Any specific questions for the agent?"
                         rows={3}
                         className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-600 focus:bg-white rounded-2xl outline-none transition-all font-bold resize-none"
