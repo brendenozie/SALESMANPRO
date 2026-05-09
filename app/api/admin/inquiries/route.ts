@@ -46,6 +46,7 @@ async function handleGetInquiries(request: Request) {
 async function handlePostInquiry(request: Request) {
   const body = await request.json();
   const {
+    consumerId,
     companyId,
     clientName,
     clientEmail,
@@ -72,6 +73,7 @@ async function handlePostInquiry(request: Request) {
   const newInquiry = await prisma.inquiry.create({
     data: {
       companyId,
+      ...(consumerId && { consumerId }), 
       clientName,
       clientEmail,
       clientPhone,

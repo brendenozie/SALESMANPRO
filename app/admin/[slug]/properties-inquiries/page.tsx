@@ -66,25 +66,29 @@ export default async function InquiriesPage({ params }: InquiriesPageProps) {
   try {
     // Simulate API call using sample data
     // In a real app: 
-    const res = await fetch(`${apiBaseUrl}/admin/inquiries?companyId=${slug}`, { cache: 'no-store', headers: { cookie: cookiesHeader } });
+    const res = await fetch(`${apiBaseUrl}/admin/inquiries?companyId=${slug}`, 
+      { headers: { cookie: cookiesHeader } });
+
     let data = await res.json();
+
     // console.log("Fetched inquiries data from API:", data);
+
     if (res.ok) {
       initialInquiries = data.inquiries.sort((a: Inquiry, b: Inquiry) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
     }
     
     // Fallback to sample data if API fails
     if (!res.ok || !data.inquiries) {
-      console.warn("API fetch failed or returned no data, using sample inquiries.");
+      // console.warn("API fetch failed or returned no data, using sample inquiries.");
       isInitialLoadSuccessful = false;
       serverLoadError = data.error || "Failed to fetch inquiries from API.";
     }
     
     // For demonstration, we use sample data if API fails
-    if (!initialInquiries.length) {
-      const data = generateSampleInquiries();
-      initialInquiries = data.sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
-    }
+    // if (!initialInquiries.length) {
+    //   const data = generateSampleInquiries();
+    //   initialInquiries = data.sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
+    // }
 
   } catch (e: any) {
     console.error("Server-side initial inquiry data fetch failed:", e);

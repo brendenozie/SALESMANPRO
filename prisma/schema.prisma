@@ -4634,6 +4634,7 @@ model Donor {
 
 model Inquiry {
   id                  String        @id @default(auto()) @map("_id") @db.ObjectId
+  consumerId String?
   companyId           String        @db.ObjectId // To link inquiries to a specific company
   clientName          String
   clientEmail         String

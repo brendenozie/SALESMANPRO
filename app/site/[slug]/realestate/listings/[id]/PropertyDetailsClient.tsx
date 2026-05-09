@@ -8,8 +8,27 @@ import {
   CheckCircleIcon, BeakerIcon, Square2StackIcon, ChatBubbleLeftRightIcon, 
   PhoneIcon, CalendarDaysIcon, XMarkIcon, ChevronLeftIcon, ChevronRightIcon,
   ShareIcon, HeartIcon, HomeIcon, UserIcon, InformationCircleIcon,
-  FireIcon, BoltIcon, KeyIcon, VideoCameraIcon, CalendarIcon, ClockIcon 
-} from "@heroicons/react/24/outline";
+  FireIcon, BoltIcon, KeyIcon, VideoCameraIcon, CalendarIcon, ClockIcon , EnvelopeIcon, UsersIcon } from "@heroicons/react/24/outline";
+
+// AUTH
+import { useSession } from "next-auth/react";
+
+// Internal Helper for consistent input styling
+const FormField = ({ label, icon: Icon, children }:any) => (
+  <div className="space-y-1.5">
+    {label && (
+      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400 ml-1">
+        {label}
+      </label>
+    )}
+    <div className="relative group">
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors group-focus-within:text-indigo-600">
+        <Icon className="w-5 h-5 text-slate-400" />
+      </div>
+      {children}
+    </div>
+  </div>
+);
 
 // --- Improved Icon Mapper based on your AMENITIES_CATEGORIES values ---
 const getAmenityIcon = (value: string) => {
@@ -32,25 +51,134 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
+  const [modalType, setModalType] = useState<"showing" | "inquiry">("showing");
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState("");
+
+  // AUTH SESSION
+  const { data: session } = useSession();
+  const user = session?.user as any | undefined;
+
+  const [formData, setFormData] = useState({
+    clientName: user.name || '' ,
+    clientEmail: user.email || '',
+    clientPhone: user.phone || '',
+    message: "",
+    preferredDate: "",
+    preferredTime: "09:00",
+    guests: 1,
+  });
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const submitInquiry = async () => {
+    const response = await fetch("/api/inquiries", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        companyId: data.companyId,
+        propertyId: data.id,
+        propertyName: data.name,
+
+        clientName: formData.clientName,
+        clientEmail: formData.clientEmail,
+        clientPhone: formData.clientPhone,
+        message: formData.message,
+
+        assignedToAgentId: data.agentId,
+        assignedToAgentName: data.contactName,
+      }),
+    });
+
+    return response.json();
+  };
+
+  const submitShowing = async () => {
+    const combinedDate = new Date(
+      `${formData.preferredDate}T${formData.preferredTime}`
+    );
+
+    const response = await fetch("/api/showings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          companyId: data.companyId,
+
+          propertyId: data.id,
+          propertyName: data.name,
+
+          clientId: data.consumerId || data.userId || "guest-user",
+
+          clientName: formData.clientName,
+
+          agentId: data.agentId,
+          agentName: data.contactName,
+
+          dateTime: combinedDate.toISOString(),
+
+          notes: `Guest Count: ${formData.guests}
+          Phone: ${formData.clientPhone}
+          Message: ${formData.message}`,
+              }),
+      });
+
+    return response.json();
+  };
 
   const handleSchedule = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    // Simulate API call to your backend (Prisma/MongoDB)
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setIsSubmitting(false);
-    setIsSuccess(true);
-    
-    // Reset after success
-    setTimeout(() => {
-      setIsScheduleOpen(false);
-      setIsSuccess(false);
-    }, 2000);
-  };
+        e.preventDefault();
+
+        setError("");
+        setIsSubmitting(true);
+
+        try {
+          let result;
+
+          if (modalType === "showing") {
+            result = await submitShowing();
+          } else {
+            result = await submitInquiry();
+          }
+
+          if (!result.success) {
+            throw new Error(result.message || "Something went wrong");
+          }
+
+          setIsSuccess(true);
+
+          setTimeout(() => {
+            setIsSuccess(false);
+            setIsScheduleOpen(false);
+
+            setFormData({
+              clientName: "",
+              clientEmail: "",
+              clientPhone: "",
+              message: "",
+              preferredDate: "",
+              preferredTime: "09:00",
+              guests: 1,
+            });
+          }, 2000);
+        } catch (err: any) {
+          setError(err.message);
+        } finally {
+          setIsSubmitting(false);
+        }
+      };
 
   // Data Normalization
   const images = data.images?.length > 0 ? data.images : ["https://placehold.co/1200x800?text=No+Image"];
@@ -283,10 +411,19 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
                 </div>
               </div>
 
-              <button onClick={() => setIsScheduleOpen(true)} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-lg shadow-indigo-100 mb-4">
+              <button
+                onClick={() => {
+                  setModalType("showing");
+                  setIsScheduleOpen(true);
+                }}
+                className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-lg shadow-indigo-100 mb-4">
                 Schedule a Tour
               </button>
-              <button onClick={() => setIsScheduleOpen(true)} className="w-full py-5 border-2 border-slate-100 text-slate-900 rounded-2xl font-black text-lg">
+              <button  onClick={() => {
+                          setModalType("inquiry");
+                          setIsScheduleOpen(true);
+                        }}
+                        className="w-full py-5 border-2 border-slate-100 text-slate-900 rounded-2xl font-black text-lg">
                 Place an Offer
               </button>
             </div>
@@ -297,94 +434,152 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
 
        
       {/* --- SCHEDULING MODAL --- */}
-      <AnimatePresence>
-        {isScheduleOpen && (
-          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+      
+    <AnimatePresence>
+      {isScheduleOpen && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6">
+          {/* Backdrop */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsScheduleOpen(false)}
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+          />
+          
+          {/* Modal Card */}
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0, y: 30 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 30 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="relative w-full max-w-xl bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-auto max-h-[90vh]"
+          >
+            <button 
               onClick={() => setIsScheduleOpen(false)}
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-md"
-            />
-            
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl overflow-hidden"
+              className="absolute top-6 right-6 z-10 p-2 bg-slate-50 hover:bg-slate-100 rounded-full transition-all active:scale-90"
             >
-              <div className="p-8 md:p-12">
-                <button 
-                  onClick={() => setIsScheduleOpen(false)}
-                  className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-colors"
-                >
-                  <XMarkIcon className="w-6 h-6 text-slate-400" />
-                </button>
+              <XMarkIcon className="w-6 h-6 text-slate-500" />
+            </button>
 
-                {isSuccess ? (
-                  <div className="text-center py-12">
-                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <CheckCircleIcon className="w-10 h-10 text-green-600" />
-                    </div>
-                    <h3 className="text-2xl font-black mb-2">Tour Requested!</h3>
-                    <p className="text-slate-500">The agent will confirm your slot shortly.</p>
+            <div className="p-8 md:p-12">
+              {isSuccess ? (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center py-12"
+                >
+                  <div className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-8">
+                    <CheckCircleIcon className="w-12 h-12 text-green-500" />
                   </div>
-                ) : (
-                  <>
-                    <h3 className="text-3xl font-black mb-2 text-slate-900">Schedule a Tour</h3>
-                    <p className="text-slate-500 mb-8 font-medium">Experience {data.name} in person.</p>
-                    
-                    <form onSubmit={handleSchedule} className="space-y-5">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Preferred Date</label>
-                        <div className="relative">
-                          <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <h3 className="text-3xl font-black text-slate-900 mb-3">Request Sent!</h3>
+                  <p className="text-slate-500 max-w-[240px] mx-auto leading-relaxed">
+                    We've notified the agent. They'll reach out to confirm your tour.
+                  </p>
+                </motion.div>
+              ) : (
+                <>
+                  <header className="mb-8">
+                    <h3 className="text-3xl md:text-4xl font-black text-slate-900 leading-tight">
+                      {modalType === "showing" ? "Book a Tour" : "Inquire Now"}
+                    </h3>
+                    <p className="text-slate-500 mt-2 font-medium">
+                      {data.name} • <span className="text-indigo-600">Available Daily</span>
+                    </p>
+                  </header>
+                  
+                  <form onSubmit={handleSchedule} className="space-y-6">
+                    {/* Contact Section */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField label="Full Name" icon={UserIcon}>
+                        <input
+                          required
+                          placeholder="Full Name"
+                          className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-600 focus:bg-white rounded-2xl outline-none transition-all font-bold"
+                        />
+                      </FormField>
+
+                      <FormField label="Phone Number" icon={PhoneIcon}>
+                        <input
+                          required
+                          type="tel"
+                          placeholder="Phone Number"
+                          className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-600 focus:bg-white rounded-2xl outline-none transition-all font-bold"
+                        />
+                      </FormField>
+                    </div>
+
+                    <FormField label="Email Address" icon={EnvelopeIcon}>
+                      <input
+                        required
+                        type="email"
+                        placeholder="Email Address"
+                        className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-600 focus:bg-white rounded-2xl outline-none transition-all font-bold"
+                      />
+                    </FormField>
+
+                    {/* Conditional Scheduling Section */}
+                    {modalType === "showing" && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-5 bg-slate-50 rounded-[2rem] space-y-4"
+                      >
+                        <FormField label="Preferred Date" icon={CalendarIcon}>
                           <input 
                             required
                             type="date" 
-                            className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-600 focus:bg-white rounded-2xl outline-none transition-all font-bold"
+                            className="w-full pl-12 pr-4 py-4 bg-white border-2 border-transparent focus:border-indigo-600 rounded-xl outline-none transition-all font-bold"
                           />
-                        </div>
-                      </div>
+                        </FormField>
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Time Slot</label>
-                          <div className="relative">
-                            <ClockIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                            <select className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-600 focus:bg-white rounded-2xl outline-none transition-all font-bold appearance-none">
-                              <option>09:00 AM</option>
-                              <option>11:00 AM</option>
-                              <option>02:00 PM</option>
-                              <option>04:00 PM</option>
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField label="Time Slot" icon={ClockIcon}>
+                            <select className="w-full pl-12 pr-4 py-4 bg-white border-2 border-transparent focus:border-indigo-600 rounded-xl outline-none transition-all font-bold appearance-none">
+                              <option>Morning</option>
+                              <option>Afternoon</option>
+                              <option>Evening</option>
                             </select>
-                          </div>
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Guest Count</label>
-                          <div className="relative">
-                            <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                            <input type="number" defaultValue={1} className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-600 focus:bg-white rounded-2xl outline-none transition-all font-bold" />
-                          </div>
-                        </div>
-                      </div>
+                          </FormField>
 
-                      <button 
-                        disabled={isSubmitting}
-                        type="submit"
-                        className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
-                      >
-                        {isSubmitting ? "Booking..." : "Confirm Request"}
-                      </button>
-                    </form>
-                  </>
-                )}
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+                          <FormField label="Guests" icon={UsersIcon}>
+                            <input 
+                              type="number" 
+                              min="1"
+                              defaultValue={1} 
+                              className="w-full pl-12 pr-4 py-4 bg-white border-2 border-transparent focus:border-indigo-600 rounded-xl outline-none transition-all font-bold" 
+                            />
+                          </FormField>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    <FormField label={''}  icon={ChatBubbleLeftRightIcon}>
+                      <textarea
+                        placeholder="Any specific questions for the agent?"
+                        rows={3}
+                        className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-transparent focus:border-indigo-600 focus:bg-white rounded-2xl outline-none transition-all font-bold resize-none"
+                      />
+                    </FormField>
+
+                    <button 
+                      disabled={isSubmitting}
+                      type="submit"
+                      className="group relative w-full py-5 bg-slate-900 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-indigo-600 transition-all active:scale-[0.98] disabled:opacity-70 overflow-hidden"
+                    >
+                      <span className="relative z-10">
+                        {isSubmitting ? "Processing..." : modalType === "showing" ? "Confirm Booking" : "Send Message"}
+                      </span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </button>
+                  </form>
+                </>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
 
     </div>
   );
