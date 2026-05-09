@@ -132,9 +132,9 @@ export default function WhatsAppInquiry({
                 className="relative z-10 bg-white dark:bg-stone-900 p-4 rounded-2xl rounded-tl-none shadow-sm max-w-[85%]"
               >
                 <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
-                  Hi there! 👋 I'm here to help you with your order for <strong>{productName}</strong>. 
+                  Hi there! 👋 I'm here to help you with your inquiry for <strong>{productName}</strong>. 
                   <br /><br />
-                  Would you like to confirm availability or arrange a delivery to your location?
+                  Would you like to confirm availability or schedule a delivery to your location?
                 </p>
                 <span className="text-[9px] text-gray-400 mt-2 block text-right">09:41 AM</span>
               </motion.div>
