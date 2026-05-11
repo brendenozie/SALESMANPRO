@@ -16,6 +16,8 @@ import {
   BeakerIcon,    // Implied for Fuel
   ScaleIcon,     // Implied for Mileage
 } from "@heroicons/react/24/solid";
+import AutomotiveCard from "../AutomotiveCard";
+
 
 // --- Helpers ---
 
@@ -231,14 +233,16 @@ export default function PopularVehiclesSection({
           viewport={{ once: true, margin: "-100px" }}
         >
           {listings.map((item, index) => (
-            <motion.div key={item.id} variants={itemVariants}>
-              <VehicleCard
-                item={item}
-                slug={slug}
-                // Cyclical badging for demo purposes
-                badge={index === 0 ? "New Arrival" : index === 1 ? "Hot Deal" : "Featured"}
-              />
-            </motion.div>
+            <motion.div
+                key={item.id}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+              >
+                <AutomotiveCard item={item} />
+              </motion.div>
           ))}
         </motion.div>
 

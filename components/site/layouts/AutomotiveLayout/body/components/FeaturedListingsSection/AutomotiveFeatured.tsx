@@ -244,7 +244,7 @@ export default function AutomotiveFeatured({
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
               >
-                <AutomotiveCard item={item} slug={slug} badge={index === 0 ? "Hot" : index === 1 ? "New" : undefined} />
+                <AutomotiveCard item={item} />
               </motion.div>
             ))}
           </AnimatePresence>
