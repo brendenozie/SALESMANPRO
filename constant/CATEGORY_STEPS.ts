@@ -5,63 +5,63 @@
 // -------------------
 export const CATEGORY_STEPS: Record<string, number[]> = {
   // — Standard “store” items —
-  "Electronics":         [1,2,7,8,9,10,12,11],
-  "Clothing":            [1,2,7,8,9,10,12,11],
-  "Fashion":             [1,2,7,8,9,10,12,11],
-  "Smartphones":         [1,2,7,8,9,10,12,11],
-  "Laptops":             [1,2,7,8,9,10,12,11],
-  "Tablets":             [1,2,7,8,9,10,12,11],
-  "Wearables":           [1,2,7,8,9,10,12,11],
-  "Home Appliances":     [1,2,7,8,9,10,12,11],
-  "Cameras":             [1,2,7,8,9,10,12,11],
-  "Gaming Consoles":     [1,2,7,8,9,10,12,11],
-  "Televisions":         [1,2,7,8,9,10,12,11],
-  "Audio Systems":       [1,2,7,8,9,10,12,11],
+  "Electronics":         [1,2,3,7,8,9,10,12,11],
+  "Clothing":            [1,2,3,7,8,9,10,12,11],
+  "Fashion":             [1,2,3,7,8,9,10,12,11],
+  "Smartphones":         [1,2,3,7,8,9,10,12,11],
+  "Laptops":             [1,2,3,7,8,9,10,12,11],
+  "Tablets":             [1,2,3,7,8,9,10,12,11],
+  "Wearables":           [1,2,3,7,8,9,10,12,11],
+  "Home Appliances":     [1,2,3,7,8,9,10,12,11],
+  "Cameras":             [1,2,3,7,8,9,10,12,11],
+  "Gaming Consoles":     [1,2,3,7,8,9,10,12,11],
+  "Televisions":         [1,2,3,7,8,9,10,12,11],
+  "Audio Systems":       [1,2,3,7,8,9,10,12,11],
   "Music":               [1,2,7,8,10,12,11],
-  "Books":               [1,2,7,8,9,10,12,11],
-  "Stationery":          [1,2,7,8,9,10,12,11],
-  "Shoes":               [1,2,7,8,9,10,12,11],
-  "Watches":             [1,2,7,8,9,10,12,11],
-  "Jewelry":             [1,2,7,8,9,10,12,11],
-  "Beauty Products":     [1,2,7,8,9,10,12,11],
-  "Skincare":            [1,2,7,8,9,10,12,11],
-  "Haircare":            [1,2,7,8,9,10,12,11],
-  "Toys":                [1,2,7,8,9,10,12,11],
-  "Baby Toys":           [1,2,7,8,9,10,12,11],
-  "Sports Equipment":    [1,2,7,8,9,10,12,11],
-  "Fitness Gear":        [1,2,7,8,9,10,12,11],
-  "Outdoor Gear":        [1,2,7,8,9,10,12,11],
-  "Bicycles":            [1,2,7,8,9,10,12,11],
-  "Musical Instruments": [1,2,7,8,9,10,12,11],
-  "Furniture":           [1,2,7,8,9,10,12,11],
-  "Decor":               [1,2,7,8,9,10,12,11],
-  "Kitchenware":         [1,2,7,8,9,10,12,11],
-  "Dining":              [1,2,7,8,9,10,12,11],
-  "Bedding":             [1,2,7,8,9,10,12,11],
-  "Pet Supplies":        [1,2,7,8,9,10,12,11],
-  "Pets":                [1,2,7,8,9,10,12,11],
-  "Lighting":            [1,2,7,8,9,10,12,11],
-  "Gardening":           [1,2,7,8,9,10,12,11],
-  "Home & Garden":       [1,2,7,8,9,10,12,11],
-  "Home And Garden":     [1,2,7,8,9,10,12,11],
-  "Office Supplies":     [1,2,7,8,9,10,12,11],
+  "Books":               [1,2,3,7,8,9,10,12,11],
+  "Stationery":          [1,2,3,7,8,9,10,12,11],
+  "Shoes":               [1,2,3,7,8,9,10,12,11],
+  "Watches":             [1,2,3,7,8,9,10,12,11],
+  "Jewelry":             [1,2,3,7,8,9,10,12,11],
+  "Beauty Products":     [1,2,3,7,8,9,10,12,11],
+  "Skincare":            [1,2,3,7,8,9,10,12,11],
+  "Haircare":            [1,2,3,7,8,9,10,12,11],
+  "Toys":                [1,2,3,7,8,9,10,12,11],
+  "Baby Toys":           [1,2,3,7,8,9,10,12,11],
+  "Sports Equipment":    [1,2,3,7,8,9,10,12,11],
+  "Fitness Gear":        [1,2,3,7,8,9,10,12,11],
+  "Outdoor Gear":        [1,2,3,7,8,9,10,12,11],
+  "Bicycles":            [1,2,3,7,8,9,10,12,11],
+  "Musical Instruments": [1,2,3,7,8,9,10,12,11],
+  "Furniture":           [1,2,3,7,8,9,10,12,11],
+  "Decor":               [1,2,3,7,8,9,10,12,11],
+  "Kitchenware":         [1,2,3,7,8,9,10,12,11],
+  "Dining":              [1,2,3,7,8,9,10,12,11],
+  "Bedding":             [1,2,3,7,8,9,10,12,11],
+  "Pet Supplies":        [1,2,3,7,8,9,10,12,11],
+  "Pets":                [1,2,3,7,8,9,10,12,11],
+  "Lighting":            [1,2,3,7,8,9,10,12,11],
+  "Gardening":           [1,2,3,7,8,9,10,12,11],
+  "Home & Garden":       [1,2,3,7,8,9,10,12,11],
+  "Home And Garden":     [1,2,3,7,8,9,10,12,11],
+  "Office Supplies":     [1,2,3,7,8,9,10,12,11],
   "Art Supplies":        [1,2,7,8,9,10,12,11],
   "Health Products":     [1,2,7,8,9,10,12,11],
   "Health & Beauty":     [1,2,7,8,9,10,12,11],
   "Health And Beauty":   [1,2,7,8,9,10,12,11],
   "Supplements":         [1,2,7,8,9,10,12,11],
-  "Baby Products":       [1,2,7,8,9,10,12,11],
-  "Maternity":           [1,2,7,8,9,10,12,11],
+  "Baby Products":       [1,2,3,7,8,9,10,12,11],
+  "Maternity":           [1,2,3,7,8,9,10,12,11],
   "Groceries":           [1,2,7,8,10,12,11],
   "Snacks":              [1,2,7,8,10,12,11],
   "Beverages":           [1,2,7,8,10,12,11],
   "Alcohol":             [1,2,7,8,10,12,11],
   "Gourmet Foods":       [1,2,7,8,10,12,11],
-  "Cleaning Supplies":   [1,2,7,8,9,10,12,11],
-  "Safety Equipment":    [1,2,7,8,9,10,12,11],
-  "Party Supplies":      [1,2,7,8,9,10,12,11],
-  "Gifts":               [1,2,7,8,9,10,12,11],
-  "Travel Gear":         [1,2,7,8,9,10,12,11],
+  "Cleaning Supplies":   [1,2,3,7,8,9,10,12,11],
+  "Safety Equipment":    [1,2,3,7,8,9,10,12,11],
+  "Party Supplies":      [1,2,3,7,8,9,10,12,11],
+  "Gifts":               [1,2,3,7,8,9,10,12,11],
+  "Travel Gear":         [1,2,3,7,8,9,10,12,11],
 
   // — Property listings flow —
   "Real Estate":         [1,2,19,7,8,10,18,12,13,11],
@@ -98,12 +98,12 @@ export const CATEGORY_STEPS: Record<string, number[]> = {
   "Electrical":          [1,2,7,15,16,17,8,9,10,12,11],
   "Landscaping":         [1,2,7,15,16,17,8,9,10,12,11],
   "Catering":            [1,2,7,15,16,17,8,9,10,12,11],
-  "Transportation":      [1,2,7,15,16,17,8,9,10,12,11],
+  "Transportation":      [1,2,3,7,15,16,17,8,9,10,12,11],
   "IT Services":         [1,2,7,15,16,17,8,9,10,12,11],
   "Beauty Services":     [1,2,7,15,16,17,8,9,10,12,11],
   "Barbershop":          [1,2,7,15,16,17,8,9,10,12,11],
   "Tutoring":            [1,2,7,15,16,17,8,9,10,12,11],
-  "Event Planning":      [1,2,7,15,16,17,8,9,10,12,11],
+  "Event Planning":      [1,2,3,7,15,16,17,8,9,10,12,11],
   "Tutors":              [1,2,7,15,16,17,8,9,10,12,11],
   "Math Tutors":         [1,2,7,15,16,17,8,9,10,12,11],
   "Science Tutors":      [1,2,7,15,16,17,8,9,10,12,11],
@@ -130,12 +130,12 @@ export const CATEGORY_STEPS: Record<string, number[]> = {
   "Computer Science":    [1,2,7,8,9,10,12,11],
 
   // — Arts & Crafts flow —
-  "Arts & Crafts":       [1,2,7,8,9,10,12,11],
-  "Painting Supplies":   [1,2,7,8,9,10,12,11],
-  "Knitting & Sewing":   [1,2,7,8,9,10,12,11],
-  "DIY Kits":            [1,2,7,8,9,10,12,11],
-  "Scrapbooking":        [1,2,7,8,9,10,12,11],
-  "Art Prints":          [1,2,7,8,9,10,12,11],
+  "Arts & Crafts":       [1,2,3,7,8,9,10,12,11],
+  "Painting Supplies":   [1,2,3,7,8,9,10,12,11],
+  "Knitting & Sewing":   [1,2,3,7,8,9,10,12,11],
+  "DIY Kits":            [1,2,3,7,8,9,10,12,11],
+  "Scrapbooking":        [1,2,3,7,8,9,10,12,11],
+  "Art Prints":          [1,2,3,7,8,9,10,12,11],
 
   // — Travel & Experiences flow —
   "Travel & Experiences":[1,2,7,8,9,10,12,11],
@@ -174,9 +174,9 @@ export const CATEGORY_STEPS: Record<string, number[]> = {
 
   "Agrovet":          [1,2,7,8,9,10,12,11],
 
-  "Baby Store":       [1,2,7,8,9,10,12,11],
+  "Baby Store":       [1,2,3,7,8,9,10,12,11],
 
-  "Bike Store":       [1,2,7,8,9,10,12,11],
+  "Bike Store":       [1,2,3,7,8,9,10,12,11],
 
   "Blog & Content":   [1,2,7,8,9,10,12,11],
 
@@ -188,11 +188,11 @@ export const CATEGORY_STEPS: Record<string, number[]> = {
 
   "Cybersecurity":    [1,2,7,8,9,10,12,11],
 
-  "Dry Cleaning": [1,2,7,8,9,10,12,11],
+  "Dry Cleaning": [1,2,3,7,8,9,10,12,11],
 
-  "Earphones Store": [1,2,7,8,9,10,12,11],
+  "Earphones Store": [1,2,3,7,8,9,10,12,11],
 
-  "Electronic Security Systems": [1,2,7,8,9,10,12,11],
+  "Electronic Security Systems": [1,2,3,7,8,9,10,12,11],
 
   "Emergency Response Services": [1,2,7,8,9,10,12,11],
 
@@ -200,37 +200,37 @@ export const CATEGORY_STEPS: Record<string, number[]> = {
 
   "Finance & Legal": [1,2,7,8,9,10,12,11],
 
-  "Fitness & Wellness": [1,2,7,8,9,10,12,11],
+  "Fitness & Wellness": [1,2,3,7,8,9,10,12,11],
 
   "Flowers Store": [1,2,7,8,9,10,12,11],
 
-  "Gaming Store": [1,2,7,8,9,10,12,11],
+  "Gaming Store": [1,2,3,7,8,9,10,12,11],
 
-  "Glasses & Spectacles Store": [1,2,7,8,9,10,12,11],
+  "Glasses & Spectacles Store": [1,2,3,7,8,9,10,12,11],
 
   "Groceries Store": [1,2,7,8,9,10,12,11],
 
-  "Hardware Store": [1,2,7,8,9,10,12,11],
+  "Hardware Store": [1,2,3,7,8,9,10,12,11],
 
   "Healthcare & Clinics": [1,2,7,8,9,10,12,11],
 
-  "Honey Store": [1,2,7,8,9,10,12,11],
+  "Honey Store": [1,2,3,7,8,9,10,12,11],
 
   "Lecturer": [1,2,7,8,9,10,12,11],
 
   "Meat & Butchery": [1,2,7,8,9,10,12,11],
 
-  "Media & Entertainment": [1,2,7,8,9,10,12,11],
+  "Media & Entertainment": [1,2,3,7,8,9,10,12,11],
 
-  "Motorcycle Store": [1,2,7,8,9,10,12,11],
+  "Motorcycle Store": [1,2,3,7,8,9,10,12,11],
 
   "Nonprofit & Community": [1,2,7,8,9,10,12,11],
 
   "Peanuts Store": [1,2,7,8,9,10,12,11],
 
-  "Pets Store": [1,2,7,8,9,10,12,11],
+  "Pets Store": [1,2,3,7,8,9,10,12,11],
 
-  "Physical Security": [1,2,7,8,9,10,12,11],
+  "Physical Security": [1,2,3,7,8,9,10,12,11],
 
   "Portfolio & Personal Branding": [1,2,7,8,9,10,12,11],
 
@@ -251,7 +251,7 @@ export const CATEGORY_STEPS: Record<string, number[]> = {
   "VIP & Personal Protection": [1,2,7,8,9,10,12,11],
   "vip-protection": [1,2,7,8,9,10,12,11],
 
-  "Watch Store": [1,2,7,8,9,10,12,11]
+  "Watch Store": [1,2,3,7,8,9,10,12,11]
 
 };
 

@@ -143,7 +143,7 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
 
       <BrowseByCategory store={ storeFormData }/>
 
-      <FilterBarSection  
+      {/* <FilterBarSection  
         store={storeFormData}
         trendingLocations={storeFormData?.CompanyLocation
           ? storeFormData?.CompanyLocation.map((loc: any) => ({
@@ -160,7 +160,7 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
           filters={filters || {}} 
           setFilters={setFilters}
           onSearch={handleSearch}    
-        />
+        /> */}
 
       {/* Trending Locations Section */}
       <TrendingLocations

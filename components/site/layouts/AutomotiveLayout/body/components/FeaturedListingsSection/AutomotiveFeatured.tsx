@@ -187,7 +187,7 @@ export default function AutomotiveFeatured({
       {/* Background Decor */}
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         
         {/* Header & Toggle Container */}
         <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-8">

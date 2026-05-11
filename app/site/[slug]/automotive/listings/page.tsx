@@ -46,17 +46,30 @@ export default async function AutoMarketPage({ params, searchParams = {} }: Page
   //    If there's a category with slug 'automarket', use it, else try to find by name fallback
   let parentCategory = await prisma.productCategory.findUnique({
     where: { slug: 'automarket' },
-    // include: { subcategories: true },
+    // include: {
+    //   subcategories: true,
+    // },
   });
 
   if (!parentCategory) {
     parentCategory = await prisma.productCategory.findFirst({
-      where: { name: { contains: 'auto', mode: 'insensitive' } },
-      // include: { subcategories: true },
+      where: {
+        name: { contains: 'auto', mode: 'insensitive' },
+      },
+      // include: {
+      //   subcategories: true,
+      // },
     });
   }
 
-  // If still not found, fallback to top-level categories (empty subcategories)
+  
+  // Build listings query
+  const where: any = {
+    companyId: baseCompany.id,
+    // Ensure the listing is an auto-related listing - we will filter by productCategoryId
+  };
+
+    // If still not found, fallback to top-level categories (empty subcategories)
   const rawSubcategories = parentCategory?.subcategories;
   const subcategories = Array.isArray(rawSubcategories) ? rawSubcategories.map((s: any) => ({
     id: s.id,
@@ -65,21 +78,24 @@ export default async function AutoMarketPage({ params, searchParams = {} }: Page
     icon: s.icon ?? null,
   })) : [];
 
-  // Build listings query
-  const where: any = {
-    companyId: baseCompany.id,
-    // Ensure the listing is an auto-related listing - we will filter by productCategoryId
-  };
-
   if (selectedCategory) {
     where.productCategoryId = selectedCategory;
-  } else if (parentCategory) {
-    // include listings in the parent category OR any of its subcategories
-    const childIds = Array.isArray(parentCategory.subcategories) ? parentCategory.subcategories.map((s: any) => s.id) : [];
-    const candidateCategoryIds = [parentCategory.id, ...childIds];
-    where.productCategoryId = { in: candidateCategoryIds };
-  }
-  
+  } 
+  // else if (parentCategory) {
+  //   const childIds =
+  //     subcategories
+  //       ?.map((s: any) => s?.id)
+  //       ?.filter(Boolean) ?? [];
+
+  //   const candidateCategoryIds = [
+  //     parentCategory.id,
+  //     ...childIds,
+  //   ];
+
+  //   where.productCategoryId = {
+  //     in: candidateCategoryIds,
+  //   };
+  // }  
 
   // Simple text search on make, model, name fields (best-effort; adjust to your schema)
   if (search) {
@@ -187,7 +203,7 @@ export default async function AutoMarketPage({ params, searchParams = {} }: Page
         {/* Pagination */}
         <div className="flex justify-center items-center space-x-2 mt-10">
           <a
-            href={`/${slug}/automarket?page=${pageNum - 1}&search=${encodeURIComponent(search)}&category=${selectedCategory}&sort=${sort}${minPrice ? `&minPrice=${minPrice}` : ''}${maxPrice ? `&maxPrice=${maxPrice}` : ''}`}
+            href={`/automotive/listings?page=${pageNum - 1}&search=${encodeURIComponent(search)}&category=${selectedCategory}&sort=${sort}${minPrice ? `&minPrice=${minPrice}` : ''}${maxPrice ? `&maxPrice=${maxPrice}` : ''}`}
             className={`px-3 py-1 border rounded ${pageNum <= 1 ? 'opacity-50 pointer-events-none' : ''}`}
           >
             Previous
@@ -196,7 +212,7 @@ export default async function AutoMarketPage({ params, searchParams = {} }: Page
           {Array.from({ length: totalPages }, (_, i) => (
             <a
               key={i}
-              href={`/${slug}/automarket?page=${i + 1}&search=${encodeURIComponent(search)}&category=${selectedCategory}&sort=${sort}${minPrice ? `&minPrice=${minPrice}` : ''}${maxPrice ? `&maxPrice=${maxPrice}` : ''}`}
+              href={`/automotive/listings?page=${i + 1}&search=${encodeURIComponent(search)}&category=${selectedCategory}&sort=${sort}${minPrice ? `&minPrice=${minPrice}` : ''}${maxPrice ? `&maxPrice=${maxPrice}` : ''}`}
               className={`px-3 py-1 border rounded ${i + 1 === pageNum ? 'bg-gray-200' : ''}`}
             >
               {i + 1}
@@ -204,7 +220,7 @@ export default async function AutoMarketPage({ params, searchParams = {} }: Page
           ))}
 
           <a
-            href={`/${slug}/automarket?page=${pageNum + 1}&search=${encodeURIComponent(search)}&category=${selectedCategory}&sort=${sort}${minPrice ? `&minPrice=${minPrice}` : ''}${maxPrice ? `&maxPrice=${maxPrice}` : ''}`}
+            href={`/automotive/listings?page=${pageNum + 1}&search=${encodeURIComponent(search)}&category=${selectedCategory}&sort=${sort}${minPrice ? `&minPrice=${minPrice}` : ''}${maxPrice ? `&maxPrice=${maxPrice}` : ''}`}
             className={`px-3 py-1 border rounded ${pageNum >= totalPages ? 'opacity-50 pointer-events-none' : ''}`}
           >
             Next
