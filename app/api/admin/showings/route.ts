@@ -100,7 +100,8 @@ async function createShowing(req: Request) {
 
     const newShowing = await prisma.showing.create({
       data: {
-        companyId,
+        // companyId: companyId,
+        company: { connect: { id: companyId } },
         propertyId,
         propertyName,
         ...(consumerId && { clientId: consumerId }),

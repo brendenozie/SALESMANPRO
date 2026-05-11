@@ -4634,8 +4634,9 @@ model Donor {
 
 model Inquiry {
   id                  String        @id @default(auto()) @map("_id") @db.ObjectId
-  consumerId String?
+  consumerId          String?
   companyId           String        @db.ObjectId // To link inquiries to a specific company
+  clientId            String?       @db.ObjectId // Foreign key to a Client or User model (if you have one)
   clientName          String
   clientEmail         String
   clientPhone         String?
@@ -4677,8 +4678,8 @@ model Showing {
   propertyName String // Denormalized property name for quick display
   clientId     String        @db.ObjectId // Foreign key to a Client or User model (if you have one)
   clientName   String // Denormalized client name
-  agentId      String        @db.ObjectId // Foreign key to a User (Agent) model
-  agentName    String // Denormalized agent name
+  agentId      String?       @db.ObjectId // Foreign key to a User (Agent) model
+  agentName    String? // Denormalized agent name
   dateTime     DateTime // The actual scheduled date and time of the showing
   status       ShowingStatus @default(Scheduled)
   notes        String?       @db.String // Use @db.String for potentially long notes

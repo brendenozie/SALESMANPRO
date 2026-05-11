@@ -161,6 +161,7 @@ function PropertyCardV1({ item }: { item: MarketListingForm }) {
   );
 }
 
+
 interface ListingsClientProps {
   initialListings: any[];
   totalCount: number;

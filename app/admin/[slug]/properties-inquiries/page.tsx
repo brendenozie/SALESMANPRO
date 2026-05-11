@@ -63,39 +63,35 @@ export default async function InquiriesPage({ params }: InquiriesPageProps) {
   let isInitialLoadSuccessful = true;
   let serverLoadError: string | null = null;
   
+  // --- app/admin/[slug]/inquiries/page.tsx ---
+
   try {
-    // Simulate API call using sample data
-    // In a real app: 
-    const res = await fetch(`${apiBaseUrl}/admin/inquiries?companyId=${slug}`, 
-      { headers: { cookie: cookiesHeader } });
+    const res = await fetch(`${apiBaseUrl}/admin/inquiries?companyId=${slug}`, { 
+      headers: { cookie: cookiesHeader },
+      cache: 'no-store' // Ensure fresh data
+    });
 
-    let data = await res.json();
-
-    // console.log("Fetched inquiries data from API:", data);
-
-    if (res.ok) {
-      initialInquiries = data.inquiries.sort((a: Inquiry, b: Inquiry) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
-    }
+    const rawData = await res.json();
     
-    // Fallback to sample data if API fails
-    if (!res.ok || !data.inquiries) {
-      // console.warn("API fetch failed or returned no data, using sample inquiries.");
+    // Debug check: See if 'results' is in rawData or rawData.data
+    const actualData = rawData.data ? rawData.data : rawData;
+
+    if (res.ok && actualData.results) {
+      initialInquiries = actualData.results.sort((a: Inquiry, b: Inquiry) => {
+        const dateA = a.receivedAt ? new Date(a.receivedAt).getTime() : 0;
+        const dateB = b.receivedAt ? new Date(b.receivedAt).getTime() : 0;
+        return dateB - dateA;
+      });
+    } else {
       isInitialLoadSuccessful = false;
-      serverLoadError = data.error || "Failed to fetch inquiries from API.";
+      serverLoadError = rawData.message || "Failed to fetch inquiries from API.";
     }
-    
-    // For demonstration, we use sample data if API fails
-    // if (!initialInquiries.length) {
-    //   const data = generateSampleInquiries();
-    //   initialInquiries = data.sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
-    // }
-
   } catch (e: any) {
     console.error("Server-side initial inquiry data fetch failed:", e);
     isInitialLoadSuccessful = false;
-    serverLoadError = e.message || "Failed to load initial inquiries data.";
+    serverLoadError = e.message;
   }
-
+  
   return (
     // Outer container and static elements are rendered once on the server
     <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gradient-to-br from-purple-50 to-blue-100 min-h-screen font-sans text-gray-800">

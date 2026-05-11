@@ -47,6 +47,19 @@ const customLoader = ({ src, width, quality }: any) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
+// Helper to extract a value if the field is an object or a primitive
+const safeRender = (val: any) => {
+  if (val === null || val === undefined) return "-";
+  if (typeof val === "number" || typeof val === "string") return val;
+  
+  // If it's the object from your error {type, size, price}
+  if (typeof val === "object") {
+    return val.size || val.value || val.price || "-"; 
+  }
+  return "-";
+};
+
+
 
 const PropertyCard = ({ item }: any) => {
 
@@ -55,6 +68,19 @@ const PropertyCard = ({ item }: any) => {
   const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
   const message = encodeURIComponent(`Hi, I'm interested in viewing the property: "${item.name}" (ID: ${item.id.slice(0, 6)}). Is it currently available for a site visit?`);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
+
+  const beds = typeof item.bedrooms === "number" 
+    ? item.bedrooms 
+    : (Array.isArray(item.bedrooms) ? item.bedrooms.length : safeRender(item.bedrooms));
+  
+  const baths = safeRender(item.bathrooms);
+  const sqft = safeRender(item.area);
+  
+  // Ensure price isn't an object either
+  const rawPrice = item.finalPrice ?? item.sellingPrice ?? item.buyingPrice;
+  const priceLabel = (rawPrice && typeof rawPrice === "object") 
+    ? `KES ${rawPrice.price?.toLocaleString() || "0"}`
+    : (typeof rawPrice === "number" ? `KES ${rawPrice.toLocaleString()}` : "Price on request");
 
   return (
     <Link key={item.id} href={`/realestate/listings/${item.id}`} passHref legacyBehavior>
@@ -105,7 +131,7 @@ const PropertyCard = ({ item }: any) => {
             <div className="flex flex-col">
               <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1">Asking Price</span>
               <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tighter tabular-nums">
-                KES {(item.finalPrice || item.sellingPrice || 0).toLocaleString()}
+                {priceLabel}
               </p>
             </div>
             <InformationCircleIcon className="w-5 h-5 text-zinc-300 hover:text-emerald-500 cursor-help transition-colors" />
@@ -124,11 +150,11 @@ const PropertyCard = ({ item }: any) => {
           <div className="grid grid-cols-3 gap-1 text-[11px] font-bold text-zinc-600 dark:text-zinc-300 border-y border-zinc-100 dark:border-zinc-800 py-4 mb-5">
             <div className="flex flex-col items-center justify-center border-r border-zinc-100 dark:border-zinc-800">
               <ViewColumnsIcon className="w-4 h-4 mb-1 text-emerald-500" />
-              <span>{item.bedrooms?.length || '-'} BR</span>
+              <span>{beds} BR</span>
             </div>
             <div className="flex flex-col items-center justify-center border-r border-zinc-100 dark:border-zinc-800">
               <Square2StackIcon className="w-4 h-4 mb-1 text-emerald-500" />
-              <span>{item.bathrooms || '-'} Bath</span>
+              <span>{baths} Bath</span>
             </div>
             <div className="flex flex-col items-center justify-center">
               <ChatBubbleLeftRightIcon className="w-4 h-4 mb-1 text-emerald-500" />

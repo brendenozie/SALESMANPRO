@@ -20,6 +20,21 @@ const formatPrice = (price: number | null) => {
   }).format(price);
 };
 
+
+// Helper to extract a value if the field is an object or a primitive
+const safeRender = (val: any) => {
+  if (val === null || val === undefined) return "-";
+  if (typeof val === "number" || typeof val === "string") return val;
+  
+  // If it's the object from your error {type, size, price}
+  if (typeof val === "object") {
+    return val.size || val.value || val.price || "-"; 
+  }
+  return "-";
+};
+
+
+
 export default function PropertyCard({ item }: { item: any }) {
   const [isLiked, setIsLiked] = useState(false);
 
@@ -27,6 +42,20 @@ export default function PropertyCard({ item }: { item: any }) {
   const image = item.images?.[0] || "https://placehold.co/600x400/e2e8f0/1e293b?text=No+Image";
   const title = item.name;
   const location = item.locationName || "Location unavailable";
+
+  // ... inside PropertyCard ...
+  const beds = typeof item.bedrooms === "number" 
+    ? item.bedrooms 
+    : (Array.isArray(item.bedrooms) ? item.bedrooms.length : safeRender(item.bedrooms));
+  
+  const baths = safeRender(item.bathrooms);
+  const sqft = safeRender(item.area);
+  
+  // Ensure price isn't an object either
+  const rawPrice = item.finalPrice ?? item.sellingPrice ?? item.buyingPrice;
+  const priceLabel = (rawPrice && typeof rawPrice === "object") 
+    ? `KES ${rawPrice.price?.toLocaleString() || "0"}`
+    : (typeof rawPrice === "number" ? `KES ${rawPrice.toLocaleString()}` : "Price on request");
   
   return (
     <div className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
@@ -73,25 +102,25 @@ export default function PropertyCard({ item }: { item: any }) {
         {/* Features Row */}
         <div className="flex items-center gap-4 text-xs font-medium text-gray-500 mb-6 border-t border-gray-50 pt-4 mt-auto">
           <div className="flex items-center gap-1">
-            <span className="text-gray-900 font-bold">{item.bedrooms || '-'}</span> Beds
+            <span className="text-gray-900 font-bold">{beds}</span> Beds
           </div>
           <div className="w-px h-3 bg-gray-300"></div>
           <div className="flex items-center gap-1">
-            <span className="text-gray-900 font-bold">{item.bathrooms || '-'}</span> Baths
+            <span className="text-gray-900 font-bold">{baths}</span> Baths
           </div>
           <div className="w-px h-3 bg-gray-300"></div>
           <div className="flex items-center gap-1">
-            <span className="text-gray-900 font-bold">{item.area ? item.area.toLocaleString() : '-'}</span> sqft
+            <span className="text-gray-900 font-bold">{sqft}</span> sqft
           </div>
         </div>
 
         {/* Price & Action */}
         <div className="flex items-center justify-between mt-auto">
           <p className="text-xl font-bold text-indigo-600">
-            {formatPrice(item.finalPrice || item.sellingPrice)}
+            {priceLabel}
           </p>
           <Link 
-            href={`/listings/${item.id}`}
+            href={`/realestate/listings/${item.id}`}
             className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition"
           >
             View

@@ -49,7 +49,7 @@ function fetchInquiries(slug: string): Promise<Inquiry[]> {
       if (!res.ok) throw new Error("Failed to fetch inquiries");
       return res.json();
     })
-    .then(data => data.inquiries);
+    .then(data => data.data.results);
 }
 
 // Only use this function for client-initiated refresh/re-sync
@@ -110,14 +110,32 @@ export default function InquiriesClientPage({ slug, initialInquiries, isInitialL
   }, []);
 
   // --- Filtering Logic (Client-side) ---
+  // const filteredInquiries = useMemo(() => {
+  //   return inquiries && inquiries.length > 0 && inquiries.filter(inq => {
+  //     const matchesSearch = inq.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //       inq.clientEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //       (inq.clientPhone?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+  //       inq.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //       (inq.propertyName?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+  //       (inq.assignedToAgentName?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
+  //     const matchesStatus = filterStatus === 'All' || inq.status === filterStatus;
+  //     return matchesSearch && matchesStatus;
+  //   });
+  // }, [inquiries, searchTerm, filterStatus]);
   const filteredInquiries = useMemo(() => {
+    // Ensure inquiries exists and is an array
+    if (!Array.isArray(inquiries)) return []; 
+
     return inquiries.filter(inq => {
-      const matchesSearch = inq.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        inq.clientEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (inq.clientPhone?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-        inq.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (inq.propertyName?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-        (inq.assignedToAgentName?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
+      // Add optional chaining to EVERYTHING to prevent crashes
+      const name = inq.clientName?.toLowerCase() || '';
+      const email = inq.clientEmail?.toLowerCase() || '';
+      const msg = inq.message?.toLowerCase() || '';
+      
+      const matchesSearch = name.includes(searchTerm.toLowerCase()) ||
+                            email.includes(searchTerm.toLowerCase()) ||
+                            msg.includes(searchTerm.toLowerCase());
+                            
       const matchesStatus = filterStatus === 'All' || inq.status === filterStatus;
       return matchesSearch && matchesStatus;
     });
@@ -137,7 +155,7 @@ export default function InquiriesClientPage({ slug, initialInquiries, isInitialL
     }
   };
 
-  if (!isInitialLoadSuccessful && !isLoading && error && !inquiries.length) {
+  if (!isInitialLoadSuccessful && !isLoading && error && !inquiries) {
     return (
         <div className="bg-red-50 border border-red-400 text-red-800 px-8 py-10 rounded-2xl relative shadow-lg flex items-center justify-center animate-fade-in-down">
           <div className="flex flex-col items-center">
@@ -220,7 +238,7 @@ export default function InquiriesClientPage({ slug, initialInquiries, isInitialL
 
         {/* Inquiries List/Table */}
         <div className="overflow-x-auto rounded-xl shadow-inner border border-gray-100 bg-gray-50 p-1">
-          {filteredInquiries.length === 0 ? (
+          {filteredInquiries && filteredInquiries.length === 0 ? (
             <div className="text-center text-gray-500 py-20 bg-white rounded-xl shadow-md border border-gray-200">
               <ChatBubbleLeftRightIcon className="mx-auto h-16 w-16 text-gray-300 mb-4 animate-bounce-slight" />
               <h3 className="mt-3 text-2xl font-semibold text-gray-900">No inquiries found</h3>
@@ -254,7 +272,7 @@ export default function InquiriesClientPage({ slug, initialInquiries, isInitialL
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredInquiries.map((inquiry) => (
+                {filteredInquiries && filteredInquiries.map((inquiry) => (
                   <tr key={inquiry.id} className="hover:bg-purple-50 transition-colors duration-200 ease-in-out">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">

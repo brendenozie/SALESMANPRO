@@ -406,10 +406,18 @@ export default function RealEstateSite({ pageData, companyId }: { pageData: Stor
   }, [slug]);
 
   
+  // This goes in a Client Component wrapper or inside a page that uses 'use client'
   const handleSearch = (filters: SearchFilters) => {
-    // Implement actual search logic, e.g., navigate to a search results page
-    alert(`Searching in ${filters.location || 'all locations'} between KES ${filters.minPrice || 'any'} and KES ${filters.maxPrice || 'any'}`);
-    router.push(`/realestate/listings?location=${filters.location}&minPrice=${filters.minPrice}&maxPrice=${filters.maxPrice}`);
+    const params = new URLSearchParams();
+
+    if (filters.location) params.set("location", filters.location);
+    if (filters.minPrice) params.set("minPrice", filters.minPrice);
+    if (filters.maxPrice) params.set("maxPrice", filters.maxPrice);
+    if (filters.category) params.set("category", filters.category);
+    if (filters.subcategory) params.set("subcategory", filters.subcategory);
+
+    // Navigate to the current slug's listing page with new params
+    router.push(`/realestate/${slug}?${params.toString()}`);
   };
 
   const handleNewsletter = (e: React.FormEvent) => {
