@@ -298,7 +298,7 @@ export default function InquiriesPage() {
                       Message Summary
                     </th>
                     <th scope="col" className="px-6 py-4 text-left text-sm font-bold text-gray-800 uppercase tracking-wider">
-                      Property
+                      Interested Item
                     </th>
                     <th scope="col" className="px-6 py-4 text-left text-sm font-bold text-gray-800 uppercase tracking-wider">
                       Status

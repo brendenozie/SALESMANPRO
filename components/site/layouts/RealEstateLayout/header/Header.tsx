@@ -132,7 +132,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
         {/* LOGO */}
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-          <Link href={``}>
+          <Link href={`/`}>
             {logoUrl ? (
               <Image
                 src={logoUrl}
@@ -152,7 +152,7 @@ export default function Header() {
         {/* DESKTOP NAV */}
         <nav className="hidden lg:flex items-center space-x-8">
           {[
-            { label: "Home", path: "" },
+            { label: "Home", path: "/" },
             { label: "Listings", path: `/realestate/listings` },
             { label: "Agents", path: `/#agents` },
             { label: "About", path: `/realestate/about` },

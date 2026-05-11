@@ -20,7 +20,7 @@ interface AmenityCategory {
 }
 
 interface VehicleAmenitiesStepProps {
-  formData: { vehicleAmenities?: string[] }; // 'vehicleAmenities' can be undefined initially
+  formData: { amenities?: string[] }; // 'amenities' can be undefined initially
   // Corrected type to match the updateField function from the parent
   setFormData: (name: string, value: any) => void;
 }
@@ -87,8 +87,8 @@ const VehicleAmenitiesStep: React.FC<VehicleAmenitiesStepProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [customAmenity, setCustomAmenity] = useState("");
 
-  // Ensure vehicleAmenities is always an array, even if formData.vehicleAmenities is undefined
-  const vehicleAmenities = formData.vehicleAmenities || [];
+  // Ensure vehicleAmenities is always an array, even if formData.amenities is undefined
+  const vehicleAmenities = formData.amenities || [];
 
   const filteredCategories = useMemo(() => {
     if (!searchTerm.trim()) return VEHICLE_AMENITIES;
@@ -105,7 +105,7 @@ const VehicleAmenitiesStep: React.FC<VehicleAmenitiesStepProps> = ({
       const updated = vehicleAmenities.includes(value)
         ? vehicleAmenities.filter((v) => v !== value)
         : [...vehicleAmenities, value];
-      setFormData("vehicleAmenities", updated); // Call updateField directly
+      setFormData("amenities", updated); // Call updateField directly
     },
     [vehicleAmenities, setFormData] // Dependencies: vehicleAmenities and updateField
   );
@@ -118,7 +118,7 @@ const VehicleAmenitiesStep: React.FC<VehicleAmenitiesStepProps> = ({
       return;
     }
     const newVehicleAmenities = [...vehicleAmenities, trimmed];
-    setFormData("vehicleAmenities", newVehicleAmenities); // Call updateField
+    setFormData("amenities", newVehicleAmenities); // Call updateField
     setCustomAmenity("");
   }, [customAmenity, vehicleAmenities, setFormData]);
 

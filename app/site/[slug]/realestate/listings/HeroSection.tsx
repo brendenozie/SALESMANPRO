@@ -75,7 +75,7 @@ export default function HeroSection({ store, categories, slug, initialLocations 
 
     params.set("page", "1"); 
     // Navigate and ensure we hit the listings-section anchor
-    router.push(`/${slug}/listings?${params.toString()}#listings-section`);
+    router.push(`/realestate/listings?${params.toString()}#listings-section`);
   };
 
   return (

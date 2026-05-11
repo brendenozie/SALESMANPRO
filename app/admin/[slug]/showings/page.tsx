@@ -377,7 +377,7 @@ export default function ShowingsPage() {
                 <thead className="bg-gradient-to-r from-gray-100 to-gray-200">
                   <tr>
                     <th scope="col" className="px-6 py-4 text-left text-sm font-bold text-gray-800 uppercase tracking-wider">
-                      Property
+                      Identity
                     </th>
                     <th scope="col" className="px-6 py-4 text-left text-sm font-bold text-gray-800 uppercase tracking-wider">
                       Client

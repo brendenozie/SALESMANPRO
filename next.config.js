@@ -41,6 +41,7 @@ module.exports = {
       "links.papareact.com",
       "images.trvl-media.com",
       "salesmanpro.site",
+      "dozi4r4ug9739.cloudfront.net",
       "/"
     ],
   },
