@@ -11,7 +11,7 @@ const loader = ({ src }: { src: string }) => src;
 export default function CarCard({ car }: { car: any }) {
   const [hover, setHover] = useState(false);
 
-  const img = (Array.isArray(car.images) && car.images[0]) ? car.images[0] : '/placeholder-car.png';
+  const img = (Array.isArray(car.images) && car.images[0]) ? car.images[0] : 'https://via.placeholder.com/400x250?text=No+Image';
 
   return (
     <div
@@ -31,7 +31,7 @@ export default function CarCard({ car }: { car: any }) {
             ))}
           </div>
 
-          <Link href={`/cars/${car.slug || car.id}`} onClick={(e) => e} className="relative z-10">
+          <Link href={`/automotive/listings/${car.slug || car.id}`} onClick={(e) => e} className="relative z-10">
             <button className="bg-white p-2 rounded-full shadow-lg hover:bg-rose-50 hover:text-rose-500 transition-colors">
               <HeartIcon className={hover ? "text-rose-500 w-5 h-5 fill-rose-500" : "text-gray-400"} />
             </button>

@@ -87,9 +87,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                   loader={({ src }) => src}
                   unoptimized
                   fill
-                  className={`object-contain transition-all duration-500 ${
-                    isDarkMode ? "brightness-0 invert" : "brightness-0"
-                  }`}
+                  className={`object-contain transition-all duration-500 ${isDarkMode ? "filter brightness-125" : ""}`}
                 />
               </div>
             ) : (
