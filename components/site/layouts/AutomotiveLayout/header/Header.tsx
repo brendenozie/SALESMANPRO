@@ -133,7 +133,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                 onClick={() => router.push("https://auth.salesmanpro.site/signin")}
                 className="text-[10px] font-black uppercase tracking-widest text-zinc-900 dark:text-white px-8 py-3 rounded-full border border-zinc-200 dark:border-white/20 hover:bg-zinc-900 dark:hover:bg-white hover:text-white dark:hover:text-black transition-all active:scale-95"
               >
-                Membership
+                Login
               </button>
             ) : (
               <button
@@ -202,7 +202,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
 
             <div className="mt-auto">
                <button className="w-full py-6 bg-blue-600 rounded-3xl text-white font-black uppercase tracking-widest shadow-2xl shadow-blue-500/20 active:scale-95 transition-transform">
-                 Member Portal
+                 Login
                </button>
             </div>
           </motion.div>
