@@ -12,7 +12,7 @@ export default function CategoryBar({ categories, parent, currentCategory, slug 
     const q = new URLSearchParams();
     q.set('page', '1');
     if (catId) q.set('category', catId);
-    const url = `/${slug}/automarket?${q.toString()}`;
+    const url = `/automotive/listings?${q.toString()}`;
     router.push(url);
   };
 

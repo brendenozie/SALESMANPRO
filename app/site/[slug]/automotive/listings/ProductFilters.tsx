@@ -30,7 +30,7 @@ export default function Filters({ slug, current, parentCategory, subcategories }
     if (opts?.minPrice !== undefined ? opts.minPrice : minPrice) q.set('minPrice', opts?.minPrice ?? minPrice);
     if (opts?.maxPrice !== undefined ? opts.maxPrice : maxPrice) q.set('maxPrice', opts?.maxPrice ?? maxPrice);
 
-    router.push(`/${slug}/automarket?${q.toString()}`);
+    router.push(`/automotive/listings?${q.toString()}`);
   };
 
   return (
