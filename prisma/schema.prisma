@@ -3594,6 +3594,7 @@ enum EventType {
 
 // Enum for Event Status
 enum EventStatus {
+  DRAFT // Event is being created and not yet finalized
   SCHEDULED // Event is planned and active
   POSTPONED // Event has been delayed to a later date/time
   CANCELLED // Event has been cancelled

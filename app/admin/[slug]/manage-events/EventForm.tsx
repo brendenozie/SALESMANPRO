@@ -388,7 +388,7 @@ export default function EventForm({ event, onSave, onClose, isSaving, apiError, 
       <div>
         <label htmlFor="organizerId" className="block text-sm font-medium text-gray-700 mb-1">Organizer <span className="text-red-500">*</span></label>
         <select name="organizerId" id="organizerId" value={formData.organizerId} onChange={handleChange} required
-          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white"
+          className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white focus:outline-none focus:ring-1 sm:text-sm text-gray-900"
         >
           <option value="">-- Select Organizer --</option>
           {allOrganizers && allOrganizers.map(organizer => (

@@ -71,7 +71,7 @@ export default function AdminEventsClient({ slug, allOrganizers, allEvents }: Ad
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentEvent, setCurrentEvent] = useState<IEvent | null>(null); // For edit/add
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false); // For modal save button
@@ -111,11 +111,11 @@ export default function AdminEventsClient({ slug, allOrganizers, allEvents }: Ad
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
+      const data = (await response.json()).data;
 
       // console.log(data);
 
-      // setEvents(data.events);
+      // setEvents(data);
 
     } catch (err: any) {
       setError(err.message || "Failed to fetch events.");
@@ -344,7 +344,7 @@ export default function AdminEventsClient({ slug, allOrganizers, allEvents }: Ad
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
                             event.eventStatus === 'SCHEDULED' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                            // event.eventStatus === 'DRAFT' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                            event.eventStatus === 'DRAFT' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
                             event.eventStatus === 'COMPLETED' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
                             event.eventStatus === 'CANCELLED' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
                             'bg-gray-100 text-gray-800 dark:bg-gray-700/30 dark:text-gray-400'

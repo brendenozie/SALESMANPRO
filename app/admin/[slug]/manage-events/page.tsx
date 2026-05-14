@@ -61,7 +61,6 @@ export default async function AdminInventoryPage({ params }: Props) {
     );
     if (allOrganizersRes.ok) {
       let organizersJson = await allOrganizersRes.json();
-      // console.log("Fetched organizers:", organizersJson);
       allOrganizers = organizersJson.data as Agent[];
     }
 
@@ -73,7 +72,7 @@ export default async function AdminInventoryPage({ params }: Props) {
 
     if (eventsRes.ok) {
       let eventsJson = await eventsRes.json();
-      // console.log("Fetched events:", eventsJson);
+      console.log("Fetched events:", eventsJson);
       allEvents = eventsJson.data as IEvent[];
     
     }else {
