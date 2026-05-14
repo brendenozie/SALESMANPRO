@@ -214,12 +214,12 @@ export default function TravelDestinationView({ destination, storeFormData }: an
         </aside>
       </main>
       
-                <WhatsAppInquiry 
+                {/* <WhatsAppInquiry 
                   productName={destination.name}
                   productPrice={destination.finalPrice || destination.sellingPrice || 0}
                   productUrl={window.location.href}
                   phoneNumber = "254712345678"
-                />
+                /> */}
     </div>
   );
 }
