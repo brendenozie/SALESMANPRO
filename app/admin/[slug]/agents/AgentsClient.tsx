@@ -85,90 +85,90 @@ export type AgentProfile = {
 
 // --- Sample Data Generation (Enhanced) ---
 const generateSampleAgents = (): AgentProfile[] => [
-  {
-    id: 'AGT001',
-    name: 'Aisha Hassan',
-    email: 'aisha.hassan@example.com',
-    phone: '+254712345678',
-    bio: 'A passionate residential property specialist dedicated to finding clients their perfect home in Nairobi. With over 5 years experience, Aisha excels in client satisfaction and negotiations.',
-    profileImageUrl: 'https://images.unsplash.com/photo-1507003211169-0a3dd78721d6?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    isActive: true,
-    specialties: ['Residential', 'Luxury Homes', 'Family Homes'],
-    regions: ['Kilimani', 'Karen', 'Langata', 'Lavington'],
-    totalListings: 22,
-    closedDeals: 14,
-    joinedAt: new Date('2022-01-01T09:00:00Z').toISOString(),
-  },
-  {
-    id: 'AGT002',
-    name: 'David Kimani',
-    email: 'david.kimani@example.com',
-    phone: '+254723456789',
-    bio: 'Commercial real estate guru with an in-depth understanding of investment opportunities in Nairobi CBD and emerging business hubs. David helps businesses find strategic locations.',
-    profileImageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    isActive: true,
-    specialties: ['Commercial', 'Investments', 'Office Spaces'],
-    regions: ['CBD', 'Westlands', 'Upper Hill', 'Gigiri'],
-    totalListings: 18,
-    closedDeals: 12,
-    joinedAt: new Date('2021-06-15T10:30:00Z').toISOString(),
-  },
-  {
-    id: 'AGT003',
-    name: 'Grace Wanjiku',
-    email: 'grace.wanjiku@example.com',
-    phone: '+254734567890',
-    bio: 'Specializing in land acquisition and development, Grace provides expert advice for both small and large-scale projects, ensuring clients make informed decisions for future growth.',
-    profileImageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29329?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    isActive: true,
-    specialties: ['Land', 'Development', 'Agricultural Land'],
-    regions: ['Ruiru', 'Syokimau', 'Kiambu', 'Kajiado'],
-    totalListings: 10,
-    closedDeals: 7,
-    joinedAt: new Date('2023-03-20T11:00:00Z').toISOString(),
-  },
-  {
-    id: 'AGT004',
-    name: 'Peter Mugo',
-    email: 'peter.mugo@example.com',
-    phone: '+254701234567',
-    bio: 'Inactive agent who previously focused on rental properties in student-friendly areas.',
-    profileImageUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    isActive: false, // Example of an inactive agent
-    specialties: ['Rentals', 'Student Accommodation'],
-    regions: ['Ruaraka', 'Madaraka'],
-    totalListings: 5,
-    closedDeals: 2,
-    joinedAt: new Date('2023-09-01T14:00:00Z').toISOString(),
-  },
-  {
-    id: 'AGT005',
-    name: 'Njeri Muriuki',
-    email: 'njeri.muriuki@example.com',
-    phone: '+254722987654',
-    bio: 'Expert in coastal properties, helping clients find beachfront homes and vacation rentals.',
-    profileImageUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    isActive: true,
-    specialties: ['Vacation Homes', 'Coastal Properties'],
-    regions: ['Mombasa', 'Diani', 'Watamu'],
-    totalListings: 14,
-    closedDeals: 9,
-    joinedAt: new Date('2021-03-10T11:00:00Z').toISOString(),
-  },
-  {
-    id: 'AGT006',
-    name: 'Tom Kiprop',
-    email: 'tom.kiprop@example.com',
-    phone: '+254733112233',
-    bio: 'Farm and agricultural land specialist with a deep understanding of rural property markets.',
-    profileImageUrl: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&q=80&w=2680&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    isActive: true,
-    specialties: ['Agricultural Land', 'Rural Properties'],
-    regions: ['Nakuru', 'Eldoret', 'Kericho'],
-    totalListings: 9,
-    closedDeals: 5,
-    joinedAt: new Date('2022-07-25T08:00:00Z').toISOString(),
-  },
+  // {
+  //   id: 'AGT001',
+  //   name: 'Aisha Hassan',
+  //   email: 'aisha.hassan@example.com',
+  //   phone: '+254712345678',
+  //   bio: 'A passionate residential property specialist dedicated to finding clients their perfect home in Nairobi. With over 5 years experience, Aisha excels in client satisfaction and negotiations.',
+  //   profileImageUrl: 'https://images.unsplash.com/photo-1507003211169-0a3dd78721d6?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  //   isActive: true,
+  //   specialties: ['Residential', 'Luxury Homes', 'Family Homes'],
+  //   regions: ['Kilimani', 'Karen', 'Langata', 'Lavington'],
+  //   totalListings: 22,
+  //   closedDeals: 14,
+  //   joinedAt: new Date('2022-01-01T09:00:00Z').toISOString(),
+  // },
+  // {
+  //   id: 'AGT002',
+  //   name: 'David Kimani',
+  //   email: 'david.kimani@example.com',
+  //   phone: '+254723456789',
+  //   bio: 'Commercial real estate guru with an in-depth understanding of investment opportunities in Nairobi CBD and emerging business hubs. David helps businesses find strategic locations.',
+  //   profileImageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  //   isActive: true,
+  //   specialties: ['Commercial', 'Investments', 'Office Spaces'],
+  //   regions: ['CBD', 'Westlands', 'Upper Hill', 'Gigiri'],
+  //   totalListings: 18,
+  //   closedDeals: 12,
+  //   joinedAt: new Date('2021-06-15T10:30:00Z').toISOString(),
+  // },
+  // {
+  //   id: 'AGT003',
+  //   name: 'Grace Wanjiku',
+  //   email: 'grace.wanjiku@example.com',
+  //   phone: '+254734567890',
+  //   bio: 'Specializing in land acquisition and development, Grace provides expert advice for both small and large-scale projects, ensuring clients make informed decisions for future growth.',
+  //   profileImageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29329?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  //   isActive: true,
+  //   specialties: ['Land', 'Development', 'Agricultural Land'],
+  //   regions: ['Ruiru', 'Syokimau', 'Kiambu', 'Kajiado'],
+  //   totalListings: 10,
+  //   closedDeals: 7,
+  //   joinedAt: new Date('2023-03-20T11:00:00Z').toISOString(),
+  // },
+  // {
+  //   id: 'AGT004',
+  //   name: 'Peter Mugo',
+  //   email: 'peter.mugo@example.com',
+  //   phone: '+254701234567',
+  //   bio: 'Inactive agent who previously focused on rental properties in student-friendly areas.',
+  //   profileImageUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  //   isActive: false, // Example of an inactive agent
+  //   specialties: ['Rentals', 'Student Accommodation'],
+  //   regions: ['Ruaraka', 'Madaraka'],
+  //   totalListings: 5,
+  //   closedDeals: 2,
+  //   joinedAt: new Date('2023-09-01T14:00:00Z').toISOString(),
+  // },
+  // {
+  //   id: 'AGT005',
+  //   name: 'Njeri Muriuki',
+  //   email: 'njeri.muriuki@example.com',
+  //   phone: '+254722987654',
+  //   bio: 'Expert in coastal properties, helping clients find beachfront homes and vacation rentals.',
+  //   profileImageUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  //   isActive: true,
+  //   specialties: ['Vacation Homes', 'Coastal Properties'],
+  //   regions: ['Mombasa', 'Diani', 'Watamu'],
+  //   totalListings: 14,
+  //   closedDeals: 9,
+  //   joinedAt: new Date('2021-03-10T11:00:00Z').toISOString(),
+  // },
+  // {
+  //   id: 'AGT006',
+  //   name: 'Tom Kiprop',
+  //   email: 'tom.kiprop@example.com',
+  //   phone: '+254733112233',
+  //   bio: 'Farm and agricultural land specialist with a deep understanding of rural property markets.',
+  //   profileImageUrl: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&q=80&w=2680&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  //   isActive: true,
+  //   specialties: ['Agricultural Land', 'Rural Properties'],
+  //   regions: ['Nakuru', 'Eldoret', 'Kericho'],
+  //   totalListings: 9,
+  //   closedDeals: 5,
+  //   joinedAt: new Date('2022-07-25T08:00:00Z').toISOString(),
+  // },
 ];
 
 // --- Helper Components (Reusable Modals & Cards) ---
@@ -259,7 +259,7 @@ const AgentProfileCard: React.FC<AgentProfileCardProps> = ({ agent, adminSlug, o
             <EnvelopeIcon className="h-4 w-4 mr-1" /> {agent.email}
           </p>
           <p className="text-sm text-gray-500 flex items-center mt-0.5">
-            <PhoneIcon className="h-4 w-4 mr-1" /> {agent.phone}
+            <PhoneIcon className="h-4 w-4 mr-1" /> {agent.phone || agent.phoneNumber}
           </p>
           <span className={`inline-flex items-center px-3 py-1 mt-2 rounded-full text-xs font-semibold ${
             agent.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -322,7 +322,7 @@ const AgentProfileCard: React.FC<AgentProfileCardProps> = ({ agent, adminSlug, o
 interface AddEditAgentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  agent?: AgentProfile | null; // Agent data for editing, null for adding
+  agent?: any | null; // Agent data for editing, null for adding
   onSave: (agentData: Partial<AgentProfile>) => Promise<void>; // Async save function
   isSubmitting: boolean;
 }
@@ -337,9 +337,9 @@ const AddEditAgentModal: React.FC<AddEditAgentModalProps> = ({ isOpen, onClose, 
         id: agent.id,
         name: agent.name,
         email: agent.email,
-        phone: agent.phone,
+        phone: agent.phone || agent.phoneNumber,
         bio: agent.bio,
-        profileImageUrl: agent.profileImageUrl,
+        profileImageUrl: agent.profileImageUrl || agent.image || '',
         isActive: agent.isActive,
         specialties: agent.specialties,
         regions: agent.regions,
@@ -653,7 +653,7 @@ export default function AgentsPage({ params }: AgentsPageProps) {
     try {
       // Simulate API call for saving/updating
       // await new Promise(resolve => setTimeout(resolve, 1200)); // Simulate network latency
-      const res = await fetch(`${apiBaseUrl}/admin/agents`, {
+      const res = await fetch(`${apiBaseUrl}/admin/agents${editingAgent ? `/${formData.id}` : ''}`, {
         method: editingAgent ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -694,8 +694,14 @@ export default function AgentsPage({ params }: AgentsPageProps) {
     const deleteToastId = toast.loading(`Deleting ${agentToDelete.name}...`);
 
     try {
-      // Simulate API call for deletion
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network latency for delete
+      // // Simulate API call for deletion
+      // await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network latency for delete
+      const res = await fetch(`${apiBaseUrl}/admin/agents/${agentToDelete.id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error(`Error deleting agent: ${res.statusText}`);
+
       setAgents(prev => prev.filter(a => a.id !== agentToDelete.id));
       toast.success(`${agentToDelete.name} deleted successfully!`, { id: deleteToastId });
       setAgentToDelete(null); // Clear the agent to delete state

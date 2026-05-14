@@ -65,19 +65,6 @@ export default async function AdminInventoryPage({ params }: Props) {
       allOrganizers = organizersJson.data as Agent[];
     }
 
-     // Fetch all users who can be organizers (e.g., Admins, Educators, Staff)
-    // const organizersRes = await fetch(`${apiBaseUrl}/admin/agents?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
-    //   next: { revalidate: 60 },
-    //   headers: { cookie: cookiesHeader }
-    // });
-    // if (organizersRes.ok) {
-    //   let organizersJson = await organizersRes.json();
-    //   console.log("Fetched organizers:", organizersJson);
-    //   allOrganizers = organizersJson.data as Agent[];
-    // } else {
-    //   console.error(`[EventsManagerPage] Failed to fetch organizers: ${organizersRes.status} ${organizersRes.statusText}`);
-    //   // fetchError = true;
-    // }
 
     const eventsRes = await fetch(`${apiBaseUrl}/admin/events?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
       next: { revalidate: 60 },

@@ -10,96 +10,238 @@ import bcrypt from "bcryptjs";
 // =====================
 // GET /api/sales-agents
 // =====================
+// =====================
+// GET /api/sales-agents
+// =====================
 export const GET = withApiHandler(async (request, context) => {
   const { searchParams } = new URL(request.url);
+
   const companyId = searchParams.get("companyId") || context.user?.companyId;
 
   if (!companyId) {
     return formatResponse(false, null, "Company ID is required", 400);
   }
-  
-  const cacheKey = `admin:agents:${companyId || 'global'}:all`;
+
+  const cacheKey = `admin:agents:${companyId}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
 
-  const agents = await prisma.salesAgent.findMany({
-    where: { companyId },
+    if (cached) {
+      return formatResponse(
+        true,
+        cached,
+        "Fetched agents successfully (cached)",
+        200,
+      );
+    }
+  } catch (e) {
+    console.error("Cache read error:", e);
+  }
+
+  // =========================
+  // Fetch Users + Agent Profile
+  // =========================
+  const users = await prisma.user.findMany({
+    where: {
+      role: "AGENT",
+
+      salesAgentProfile: {
+        some: {
+          companyId,
+        },
+      },
+    },
+
     select: {
       id: true,
-      phoneNumber: true,
-      user: {
-        select: { name: true, email: true },
-      },
-      transactions: {
-        select: { amount: true, date: true },
-        orderBy: { date: "desc" },
-        take: 1,
-      },
-      commissions: {
-        select: { commissionEarned: true, createdAt: true, status: true },
-        orderBy: { createdAt: "desc" },
-        take: 1,
-      },
-      _count: {
+      name: true,
+      email: true,
+      image: true,
+      phone: true,
+      createdAt: true,
+
+      salesAgentProfile: {
+        where: {
+          companyId,
+        },
+
         select: {
-          transactions: true,
-          commissions: true,
+          id: true,
+          loginCode: true,
+          phoneNumber: true,
+          specialties: true,
+          regions: true,
+          isActive: true,
+          createdAt: true,
+
+          transactions: {
+            select: {
+              amount: true,
+              date: true,
+            },
+            orderBy: {
+              date: "desc",
+            },
+            take: 1,
+          },
+
+          commissions: {
+            select: {
+              commissionEarned: true,
+              createdAt: true,
+              status: true,
+            },
+            orderBy: {
+              createdAt: "desc",
+            },
+            take: 1,
+          },
+
+          _count: {
+            select: {
+              transactions: true,
+              commissions: true,
+              clients: true,
+            },
+          },
+        },
+      },
+
+      staffProfile: {
+        select: {
+          id: true,
+          jobTitle: true,
+          department: true,
+          employmentStatus: true,
         },
       },
     },
   });
 
-  const totals = await prisma.salesAgent.findMany({
-    where: { companyId },
-    select: {
-      id: true,
-      transactions: { select: { amount: true } },
-      commissions: { select: { commissionEarned: true } },
-    },
-  });
+  // =========================
+  // Extract Agent IDs
+  // =========================
+  const salesAgentIds = users.flatMap((u) => u.salesAgentProfile.map((p) => p.id)).filter(Boolean);
 
-  const totalsMap = new Map(
-    totals.map((a) => [
-      a.id,
-      {
-        totalSales: a.transactions.reduce((s, t) => s + t.amount, 0),
-        totalCommissions: a.commissions.reduce((s, c) => s + c.commissionEarned, 0),
-      },
-    ])
-  );
+  // =========================
+  // Aggregate Totals
+  // =========================
+  const transactionTotals =
+    salesAgentIds.length > 0
+      ? await prisma.transaction.groupBy({
+          by: ["agentId"],
 
-  const formatted = agents.map((agent) => {
-    const total = totalsMap.get(agent.id) || { totalSales: 0, totalCommissions: 0 };
+          where: {
+            agentId: {
+              in: salesAgentIds,
+            },
+          },
+
+          _sum: {
+            amount: true,
+          },
+        })
+      : [];
+
+  const commissionTotals =
+    salesAgentIds.length > 0
+      ? await prisma.commission.groupBy({
+          by: ["salesAgentId"],
+
+          where: {
+            salesAgentId: {
+              in: salesAgentIds,
+            },
+          },
+
+          _sum: {
+            commissionEarned: true,
+          },
+        })
+      : [];
+
+  // =========================
+  // Format
+  // =========================
+  const formatted = users.map((user) => {
+    const profile = user.salesAgentProfile[0];
+
+    const totalSales = transactionTotals.find((t) => t.agentId === profile?.id)?._sum.amount || 0;
+
+    const totalCommissions =
+      commissionTotals.find((c) => c.salesAgentId === profile?.id)?._sum
+        ?.commissionEarned || 0;
 
     return {
-      id: agent.id,
-      name: agent.user?.name ?? "N/A",
-      email: agent.user?.email ?? "N/A",
-      phoneNumber: agent.phoneNumber ?? "",
-      totalSales: total.totalSales,
-      totalCommissions: total.totalCommissions,
-      recentTransaction: agent.transactions[0]
+      id: profile?.id,
+      userId: user.id,
+
+      name: user.name || "N/A",
+      email: user.email || "N/A",
+
+      image: user.image || null,
+
+      phoneNumber: profile?.phoneNumber || user.phone || "",
+
+      loginCode: profile?.loginCode || null,
+
+      specialties: profile?.specialties || [],
+
+      regions: profile?.regions || [],
+
+      isActive: profile?.isActive ?? true,
+
+      role: "AGENT",
+
+      staffProfile: user.staffProfile
         ? {
-            amount: agent.transactions[0].amount,
-            date: agent.transactions[0]?.date?.toISOString(),
+            id: user.staffProfile.id,
+            jobTitle: user.staffProfile.jobTitle,
+            department: user.staffProfile.department,
+            employmentStatus: user.staffProfile.employmentStatus,
           }
         : null,
-      recentCommission: agent.commissions[0]
+
+      stats: {
+        totalSales,
+        totalCommissions,
+
+        transactions: profile?._count?.transactions || 0,
+
+        commissions: profile?._count?.commissions || 0,
+
+        clients: profile?._count?.clients || 0,
+      },
+
+      recentTransaction: profile?.transactions?.[0]
         ? {
-            amount: agent.commissions[0].commissionEarned,
-            date: agent.commissions[0]?.createdAt?.toISOString(),
-            status: agent.commissions[0].status,
+            amount: profile.transactions[0].amount,
+
+            date: profile.transactions[0].date?.toISOString(),
           }
         : null,
+
+      recentCommission: profile?.commissions?.[0]
+        ? {
+            amount: profile.commissions[0].commissionEarned,
+
+            date: profile.commissions[0].createdAt?.toISOString(),
+
+            status: profile.commissions[0].status,
+          }
+        : null,
+
+      createdAt:
+        profile?.createdAt?.toISOString() || user.createdAt?.toISOString(),
     };
   });
 
-    try {
-      await cacheSet(cacheKey, formatted, 60); // Cache for 60 seconds
-    } catch (e) {}
+  try {
+    await cacheSet(cacheKey, formatted, 60);
+  } catch (e) {
+    console.error("Cache write error:", e);
+  }
 
   return formatResponse(true, formatted, "Fetched agents successfully", 200);
 });
@@ -109,7 +251,16 @@ export const GET = withApiHandler(async (request, context) => {
 // =====================
 export const POST = withAuthAndRateLimit(async (request) => {
   const body = await request.json();
-  let { name, email, phoneNumber, password, companyId, specialties, regions, profileImageUrl } = body;
+  let {
+    name,
+    email,
+    phoneNumber,
+    password,
+    companyId,
+    specialties,
+    regions,
+    profileImageUrl,
+  } = body;
 
   if (!name || !email || !phoneNumber || !companyId) {
     return formatResponse(false, null, "Missing required fields", 400);
@@ -119,17 +270,26 @@ export const POST = withAuthAndRateLimit(async (request) => {
 
   const exists = await prisma.user.findUnique({ where: { email } });
   if (exists) {
-    return formatResponse(false, null, "User with this email already exists", 409);
+    return formatResponse(
+      false,
+      null,
+      "User with this email already exists",
+      409,
+    );
   }
 
   const loginCode = Math.floor(100000 + Math.random() * 900000).toString();
-  const hashedPassword = await bcrypt.hash(password || "defaultPassword123", 10);
+  const hashedPassword = await bcrypt.hash(
+    password || "defaultPassword123",
+    10,
+  );
 
   const agent = await prisma.$transaction(async (tx) => {
     return tx.user.create({
       data: {
         name,
         email,
+        phone: phoneNumber,
         password: hashedPassword,
         image: profileImageUrl || null,
         role: "AGENT",
@@ -157,12 +317,13 @@ export const POST = withAuthAndRateLimit(async (request) => {
     });
   });
 
-  try { await cacheDel(`admin:agents:${companyId || 'global'}:*`); } catch (e) {}
+  try {
+    await cacheDel(`admin:agents:${companyId || "global"}:*`);
+  } catch (e) {}
   return formatResponse(true, agent, "Agent created successfully", 201);
 });
 
-
-//   // OPTIMIZATION: Get totals in a single batch aggregate query 
+//   // OPTIMIZATION: Get totals in a single batch aggregate query
 //   // instead of fetching all records.
 //   const totals = await prisma.transaction.groupBy({
 //     by: ['salesAgentId'],
@@ -232,7 +393,6 @@ export const POST = withAuthAndRateLimit(async (request) => {
 //   }
 // });
 
-
 //   const formattedAgents = salesAgents.map((agent) => {
 //     const totalSales = agent.transactions.reduce(
 //       (sum, txn) => sum + txn.amount,
@@ -293,7 +453,7 @@ export const POST = withAuthAndRateLimit(async (request) => {
 //   const newpassword = password || "defaultPassword123";
 
 //   // Hash the password (use bcrypt in production)
-  
+
 //   const saltRounds = 10;
 //   const hashedPassword = await bcrypt.hash(newpassword, saltRounds);
 

@@ -14,11 +14,11 @@ export const PUT = withAuthAndRateLimit(async (request, { params }) => {
     // OPTIMIZATION: Update directly. Prisma handles the join internally.
     // This reduces 2 DB calls down to 1.
     const updatedAgent = await prisma.salesAgent.update({
-      where: { id: agentId, companyId: companyId || undefined },
+      where: { id: agentId, companyId: companyId },
       data: {
         phoneNumber,
         user: {
-          update: { name, email },
+          update: { name, email, phone:phoneNumber },
         },
       },
       select: { 
