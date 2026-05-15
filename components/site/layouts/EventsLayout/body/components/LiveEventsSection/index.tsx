@@ -6,6 +6,7 @@ import { CalendarIcon, MapPinIcon } from "@heroicons/react/24/outline";
 import { ArrowRightIcon } from "@heroicons/react/24/solid";
 import { IEvent, StoreForm } from "@/types/typings";
 import { useStoreContext } from "@/contexts/StoreContext";
+import EventCard from "../EventCard";
 
 const cardVariants = {
   hidden: { opacity: 0, y: 50 },
@@ -50,7 +51,11 @@ const fallbackEvents: IEvent[] = [
     contactEmail: null,
     contactPhone: null,
     createdAt: null,
-    updatedAt: null
+    updatedAt: null,
+    productCategoryId: null,
+    category: null,
+    subCategory: null,
+    subCategoryName: null
   },
   {
     id: "sample2",
@@ -84,7 +89,11 @@ const fallbackEvents: IEvent[] = [
     contactEmail: null,
     contactPhone: null,
     createdAt: null,
-    updatedAt: null
+    updatedAt: null,
+    productCategoryId: null,
+    category: null,
+    subCategory: null,
+    subCategoryName: null
   },
 ];
 
@@ -138,49 +147,7 @@ export default function LiveEventsSection({ events }: LiveEventsSectionProps) {
               : "";
 
             return (
-              <motion.div
-                key={event.id}
-                variants={cardVariants}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-700 hover:border-indigo-500 transition-all duration-300 relative group"
-              >
-                <img
-                  src={event.imageUrl || 'https://images.unsplash.com/photo-1508971344143-1c0b9a1d8c9e?auto=format&fit=crop&w=800&q=80'}
-                  alt={event.title}
-                  className="h-52 w-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="p-6">
-                  <h3 className="text-2xl font-bold text-white mb-3 leading-tight">
-                    {event.title}
-                  </h3>
-                  {dateStr && (
-                    <p className="text-sm text-gray-400 mb-1 flex items-center">
-                      <CalendarIcon className="inline w-5 h-5 mr-2 text-indigo-400" />
-                      {dateStr}
-                    </p>
-                  )}
-                  {event.location && (
-                    <p className="text-sm text-gray-400 mb-4 flex items-center">
-                      <MapPinIcon className="inline w-5 h-5 mr-2 text-purple-400" />
-                      {event.location}
-                    </p>
-                  )}
-                  <p className="text-gray-300 mb-6 line-clamp-3">
-                    {/* {event.subtitle} */}
-                    {'Art, culture, and inspiration.'}
-                  </p>
-                  <a
-                    href={`/events/products/${event.id}`}
-                    className="inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900"
-                  >
-                    View Event
-                    <ArrowRightIcon className="ml-2 w-4 h-4" />
-                  </a>
-                </div>
-              </motion.div>
+              <EventCard key={event.id} event={{ ...event, dateStr }} index={index} />
             );
           })}
         </div>

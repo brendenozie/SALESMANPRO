@@ -286,7 +286,7 @@ export default function AdminOrdersClient({ adminSlug, initialOrders }: AdminOrd
                 transition={{ delay: 0.3 }}
                 onClick={handleExport}
                 className="inline-flex items-center px-6 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900 w-full sm:w-auto justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={orders.length === 0 || isLoading}
+                disabled={!orders || orders.length === 0 || isLoading}
               >
                 <ArrowDownTrayIcon className="w-5 h-5 mr-2" /> Export CSV
               </motion.button>
@@ -333,7 +333,7 @@ export default function AdminOrdersClient({ adminSlug, initialOrders }: AdminOrd
                   </tr>
                 </thead>
                 <tbody className="bg-gray-800 divide-y divide-gray-700">
-                  {orders.length === 0 ? (
+                  {orders?.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="px-6 py-4 whitespace-nowrap text-center text-gray-400 italic">
                         <div className="flex flex-col items-center justify-center py-8">
@@ -344,7 +344,7 @@ export default function AdminOrdersClient({ adminSlug, initialOrders }: AdminOrd
                       </td>
                     </tr>
                   ) : (
-                    orders.map((order, index) => (
+                    orders?.map((order, index) => (
                       <motion.tr
                         key={order.id}
                         variants={tableRowVariants}

@@ -1,140 +1,112 @@
-// app/[slug]/products/page.tsx
+// app/[slug]/events/page.tsx
 import React from "react";
 import { notFound } from "next/navigation";
 import prisma from "@/server/db/prismadb";
-import { MarketListingForm } from "@/types/typings";
-import ProductListWrapper from "./components/ProductListWrapper/ProductListWrapper";
+import EventListWrapper from "./components/EventListWrapper/EventListWrapper";
 
-// --- Mock sample products (used when DB has no listings) ---
-const mockProducts: MarketListingForm[] = [
+// --- Mock sample events (used when DB has no items yet) ---
+const mockEvents = [
   {
-    id: "1",
-    name: "Nike Air Force 1 LV5",
-    images: [{ _key: "img1", url: "https://via.placeholder.com/600/FF5733" }],
-    finalPrice: 99.95,
-    sellingPrice: 119.95,
-    category: "Men's Shoes",
-    color: ["white", "red"],
-    isNewArrival: true,
-    isOnOffer: true,
-    isFeatured: false,
-    isDiscounted: true,
-    status: "ACTIVE",
-    productCategoryId: "cat_1",
-    subCategory: undefined,
-    tags: [],
-    option: [],
-    size: [],
-    weight: [],
-    material: [],
-    quantity: 0,
-    buyingPrice: 0,
-    pricingTiers: [],
-    isAvailable: true,
-    isFlashDeal: false,
-    bedrooms: [],
-    studios: [],
-    features: [],
-    bookingSlots: [],
-    requiredClientInfo: [],
-    amenities: [],
-    delivery: false,
-    paymentOption: "",
-    duration: undefined,
-    location: null,
+    id: "mock-1",
+    name: "Agrotech Innovations Summit 2026",
+    images: ["https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&q=80"],
+    date: new Date(Date.now() + 86400000 * 3).toISOString(), // 3 days from now
+    timeString: "09:00 AM - 05:00 PM",
+    location: "Main Auditorium & Virtual",
+    category: "Workshop",
+    finalPrice: 1500,
+    ticketsAvailable: 50,
+    isSoldOut: false,
   },
   {
-    id: "2",
-    name: "Red Runner Sneakers",
-    images: [{ _key: "img2", url: "https://via.placeholder.com/600/33FF57" }],
-    finalPrice: 159.95,
-    sellingPrice: 180.0,
-    category: "Men's Shoes",
-    color: ["red", "black"],
-    isNewArrival: false,
-    isOnOffer: false,
-    isFeatured: true,
-    isDiscounted: false,
-    status: "ACTIVE",
-    productCategoryId: "cat_1",
-    subCategory: undefined,
-    tags: [],
-    option: [],
-    size: [],
-    weight: [],
-    material: [],
-    quantity: 0,
-    buyingPrice: 0,
-    pricingTiers: [],
-    isAvailable: true,
-    isFlashDeal: false,
-    bedrooms: [],
-    studios: [],
-    features: [],
-    bookingSlots: [],
-    requiredClientInfo: [],
-    amenities: [],
-    delivery: false,
-    paymentOption: "",
-    duration: undefined,
-    location: null,
+    id: "mock-2",
+    name: "Sustainable Organic Farming Masterclass",
+    images: ["https://images.unsplash.com/photo-1593113598332-cd288d649433?w=800&q=80"],
+    date: new Date(Date.now() + 86400000 * 7).toISOString(), // 1 week from now
+    timeString: "11:00 AM - 02:00 PM",
+    location: "Online (Zoom Meeting)",
+    category: "Academic",
+    finalPrice: 0, // Free event
+    ticketsAvailable: 200,
+    isSoldOut: false,
   },
 ];
 
-// --- Page Props ---
 interface PageProps {
-  params:Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
   searchParams: Promise<{
     search?: string;
     category?: string;
     sort?: string;
     minPrice?: string;
     maxPrice?: string;
+    status?: string; // upcoming | past | live | all
   }>;
 }
 
 export const dynamic = "force-dynamic";
 
-export default async function ProductListPage({ params, searchParams }: PageProps) {
-  const { slug } = await params; 
+export default async function EventListPage({ params, searchParams }: PageProps) {
+  const { slug } = await params;
   const searchParamsResolved = await searchParams;
 
-  // Ensure store exists
+  // Ensure targeted company tenant profile exists
   const company = await prisma.company.findUnique({ where: { slug } });
   if (!company) notFound();
 
-  // Extract filters
+  // Extract parameters sent from current navigation status state
   const search = searchParamsResolved.search || "";
   const categoryId = searchParamsResolved.category || null;
-  const sort = searchParamsResolved.sort || "newest";
+  const sort = searchParamsResolved.sort || "date-asc";
   const minPrice = parseFloat(searchParamsResolved.minPrice || "0");
   const maxPrice = parseFloat(searchParamsResolved.maxPrice || "100000");
+  const status = searchParamsResolved.status || "upcoming";
 
-  // Build DB filters
+  // Build Prisma query condition block tailored for Event models
   const where: any = { companyId: company.id };
-  if (search) where.name = { contains: search, mode: "insensitive" };
-  if (categoryId) where.productCategoryId = categoryId;
-  if (minPrice || maxPrice) where.finalPrice = { gte: minPrice, lte: maxPrice };
 
-  // Sorting
-  let orderBy: any = { createdAt: "desc" };
-  if (sort === "priceAsc") orderBy = { finalPrice: "asc" };
-  if (sort === "priceDesc") orderBy = { finalPrice: "desc" };
-  if (sort === "rating") orderBy = { rating: "desc" };
+  if (search) {
+    where.OR = [
+      { title: { contains: search, mode: "insensitive" } },
+      { summary: { contains: search, mode: "insensitive" } },
+    ];
+  }
 
-  // Fetch from DB
-  const [listings, categories] = await Promise.all([
-    prisma.marketplaceListings.findMany({
+  if (categoryId) {
+    where.productCategoryId = categoryId;
+  }
+
+  // Handle Event chronological windows safely
+  const now = new Date();
+  if (status === "upcoming") {
+    where.startDateTime = { gte: now };
+    // where.eventStatus = "SCHEDULED";
+  } else if (status === "past") {
+    where.startDateTime = { lt: now };
+  } else if (status === "live") {
+    where.startDateTime = { lte: now };
+    where.endDateTime = { gte: now };
+  }
+
+  // Cost/Payment filter evaluation 
+  if (minPrice || maxPrice) {
+    where.price = { gte: minPrice, lte: maxPrice };
+  }
+
+  // Build relational sort sequence criteria configuration mapping
+  let orderBy: any = { startDateTime: "asc" }; // Default: Show soonest chronological events first
+  if (sort === "date-desc") orderBy = { startDateTime: "desc" };
+  if (sort === "price-asc") orderBy = { price: "asc" };
+  if (sort === "price-desc") orderBy = { price: "desc" };
+
+  // Fetch parallel instances from relational database collections
+  const [eventRecords, categories] = await Promise.all([
+    prisma.event.findMany({
       where,
       orderBy,
-      take: 20,
-      select: {
-        id: true,
-        name: true,
-        finalPrice: true,
-        sellingPrice: true,
-        images: true,
-        productCategoryId: true,
+      take: 30,
+      include: {
+        productCategory: true,
       },
     }),
     prisma.storeCategory.findMany({
@@ -144,62 +116,52 @@ export default async function ProductListPage({ params, searchParams }: PageProp
     }),
   ]);
 
-  // --- Normalize DB results into MarketListingForm ---
-  const normalizedListings: MarketListingForm[] = listings.map((p) => ({
-    id: p.id,
-    name: p.name,
-    finalPrice: p.finalPrice || 0,
-    sellingPrice: p.sellingPrice || 0,
-    images: Array.isArray(p.images) ? p.images : [],
-    productCategoryId: p.productCategoryId || '',
+  // Transform Prisma output safely to fit the unified frontend UI state contracts
+  const normalizedEvents = eventRecords.map((evt) => {
+    // Determine dynamic timeline access strings stringify windows cleanly
+    const timeOptions: Intl.DateTimeFormatOptions = { hour: "2-digit", minute: "2-digit" };
+    const startTimeStr = new Date(evt.startDateTime).toLocaleTimeString("en-US", timeOptions);
+    const endTimeStr = evt.endDateTime 
+      ? ` - ${new Date(evt.endDateTime).toLocaleTimeString("en-US", timeOptions)}`
+      : "";
 
-    // Fill in defaults for required fields
-    category: "",
-    color: [],
-    isNewArrival: false,
-    isOnOffer: false,
-    isFeatured: false,
-    isDiscounted: false,
-    status: "ACTIVE",
-    subCategory: undefined,
-    tags: [],
-    option: [],
-    size: [],
-    weight: [],
-    material: [],
-    quantity: 0,
-    buyingPrice: 0,
-    pricingTiers: [],
-    isAvailable: true,
-    isFlashDeal: false,
-    bedrooms: [],
-    studios: [],
-    features: [],
-    bookingSlots: [],
-    requiredClientInfo: [],
-    amenities: [],
-    delivery: false,
-    paymentOption: "",
-    duration: undefined,
-    location: null,
-  }));
+    return {
+      id: evt.id,
+      name: evt.title,
+      summary: evt.summary || "",
+      description: evt.description || "",
+      images: evt.imageUrl ? [evt.imageUrl] : [],
+      date: evt.startDateTime.toISOString(),
+      timeString: `${startTimeStr}${endTimeStr}`,
+      location: evt.location || "Online / Virtual Venue",
+      category: evt.category || evt.productCategory?.name || "General",
+      finalPrice: evt.price || 0,
+      isPaid: evt.isPaid,
+      ticketsAvailable: evt.maxCapacity !== null ? evt.maxCapacity : 100, // Safe default boundary limit
+      isSoldOut: evt.eventStatus === "CANCELLED",
+    };
+  });
 
-  // Fallback if DB empty
-  const products: MarketListingForm[] =
-    normalizedListings.length > 0 ? normalizedListings : mockProducts;
+  // Assign mapped data variables cleanly or drop back onto fallbacks
+  const events = normalizedEvents.length > 0 ? normalizedEvents : mockEvents;
 
-  // Normalize categories
+  // Process operational dynamic dropdown labels matching requirements
   const cats = categories.length
-    ? categories.map((c) => ({ id: c.id, displayName: c.displayName, categoryId: c.categoryId, category: c.category }))
+    ? categories.map((c) => ({
+        id: c.id,
+        displayName: c.displayName,
+        categoryId: c.categoryId,
+        category: c.category,
+      }))
     : [
-        { id: "cat_1", displayName: "Men's Shoes", categoryId: "cat_1", category: "Shoes" },
-        { id: "cat_2", displayName: "Accessories", categoryId: "cat_2", category: "Accessories" },
-        { id: "cat_3", displayName: "Home Goods", categoryId: "cat_3", category: "Home" },
+        { id: "cat_1", displayName: "Workshops", categoryId: "cat_1", category: "Education" },
+        { id: "cat_2", displayName: "Conferences", categoryId: "cat_2", category: "Networking" },
+        { id: "cat_3", displayName: "Academic Meetings", categoryId: "cat_3", category: "Institutional" },
       ];
 
   return (
-    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 p-8 pt-24">
-      <ProductListWrapper products={products} categories={cats} />
+    <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 p-4 sm:p-8 pt-24">
+      <EventListWrapper events={events} categories={cats} />
     </div>
   );
 }
