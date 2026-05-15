@@ -383,7 +383,7 @@ export default function SetupWizardLayout({
       {/* ====================================================================
          5. MAIN WORKSPACE CONTAINER WINDOW
          ==================================================================== */}
-      <main className="flex-1 flex flex-col py-4 sm:py-6 relative max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8">
+      <main className="flex-1 flex flex-col py-4 sm:py-6 relative max-w-6xl mx-auto w-full px-0 sm:px-4 lg:px-4">
         
         {/* Progress Bar & Desktop Step Header Wrapper */}
         <motion.div
@@ -437,7 +437,7 @@ export default function SetupWizardLayout({
         {/* ====================================================================
            6. VIEWPORT CONTENT WINDOW (Step Content Injection)
            ==================================================================== */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/80 rounded-3xl flex-1 overflow-y-auto min-h-[55vh] shadow-sm p-5 sm:p-8 transition-colors duration-300">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/80 rounded-3xl flex-1 overflow-y-auto min-h-[55vh] shadow-sm transition-colors duration-300">
           <AnimatePresence mode="wait">
             <motion.div
               key={stepIndex}

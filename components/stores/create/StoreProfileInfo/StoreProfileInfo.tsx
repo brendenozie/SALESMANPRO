@@ -1,11 +1,17 @@
 'use client';
 
-import React, { ChangeEvent, useCallback } from 'react';
+import React, { ChangeEvent, useCallback, useState } from 'react';
 import {
-  PlusCircleIcon,
+  PlusIcon,
   TrashIcon,
+  UserIcon,
+  DocumentTextIcon,
+  PhotoIcon,
+  SparklesIcon,
+  CheckCircleIcon,
+  HashtagIcon
 } from '@heroicons/react/24/outline';
-import { Stat, Highlight } from '@/types/typings';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export interface StoreProfileInfoProps {
   partnerLogos?: { src: string; alt: string }[] | null | undefined;
@@ -29,7 +35,7 @@ export interface StoreProfileInfoProps {
 }
 
 /* ============================
-   Memoized Input Field
+   PREMIUM MEMOIZED INPUT FIELD
 ============================ */
 const InputField = React.memo(
   ({
@@ -39,75 +45,82 @@ const InputField = React.memo(
     onChange,
     placeholder,
     type = 'text',
-    rows = 1,
+    rows = 3,
   }: {
     label: string;
     name: string;
     value: string;
-    onChange: (
-      e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) => void;
+    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
     placeholder: string;
     type?: string;
     rows?: number;
-  }) => (
-    <div>
-      <label
-        htmlFor={name}
-        className="block text-sm font-medium text-gray-700 mb-1"
-      >
-        {label}
-      </label>
-      {type === 'textarea' ? (
-        <textarea
-          id={name}
-          name={name}
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          rows={rows}
-          className="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
-        />
-      ) : (
-        <input
-          id={name}
-          type={type}
-          name={name}
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          className="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
-        />
-      )}
-    </div>
-  )
+  }) => {
+    const isFilled = value.trim().length > 0;
+
+    return (
+      <div className="space-y-1.5 relative group w-full">
+        <div className="flex justify-between items-center px-1">
+          <label
+            htmlFor={name}
+            className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 group-focus-within:text-indigo-500 dark:group-focus-within:text-indigo-400 transition-colors"
+          >
+            {label}
+          </label>
+          {isFilled && (
+            <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-emerald-500">
+              <CheckCircleIcon className="w-4 h-4 stroke-[2.5]" />
+            </motion.span>
+          )}
+        </div>
+        
+        <div className="relative">
+          {type === 'textarea' ? (
+            <textarea
+              id={name}
+              name={name}
+              value={value}
+              onChange={onChange}
+              placeholder={placeholder}
+              rows={rows}
+              className="w-full p-3.5 bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm placeholder-zinc-400 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all shadow-sm resize-none"
+            />
+          ) : (
+            <input
+              id={name}
+              type={type}
+              name={name}
+              value={value}
+              onChange={onChange}
+              placeholder={placeholder}
+              className="w-full p-3.5 bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm placeholder-zinc-400 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all shadow-sm"
+            />
+          )}
+          <div className="absolute inset-0 rounded-xl bg-indigo-500/[0.02] opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity" />
+        </div>
+      </div>
+    );
+  }
 );
 InputField.displayName = 'InputField';
 
 /* ============================
-   Memoized Array Section
+   PREMIUM ARRAY STAGE PANEL
 ============================ */
 const ArraySection = React.memo(
   ({
-    title,
-    description,
     items,
     field,
     itemFields,
     handleArrayChange,
     addItem,
     removeItem,
-    Icon,
   }: {
-    title: string;
-    description: string;
-    items: any[] | null | undefined;
+    items: { src: string; alt: string }[] | null | undefined;
     field: 'partnerLogos';
-    itemFields: { key: string; placeholder: string; type: string }[];
+    itemFields: { key: string; placeholder: string; type: string; icon: React.ElementType }[];
     handleArrayChange: StoreProfileInfoProps['handleArrayChange'];
     addItem: StoreProfileInfoProps['addItem'];
     removeItem: StoreProfileInfoProps['removeItem'];
-    Icon: React.ElementType;
   }) => {
     const handleInputChange = useCallback(
       (idx: number, key: string, value: string) => {
@@ -117,62 +130,66 @@ const ArraySection = React.memo(
     );
 
     return (
-      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <Icon className="w-6 h-6 text-indigo-500" />
-            <h3 className="text-xl font-semibold text-gray-800">{title}</h3>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-zinc-200/60 dark:border-zinc-800">
+          <div>
+            <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">Asset Registry</h4>
+            <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">Manage partner branding logos and access metrics.</p>
           </div>
           <button
             onClick={() => addItem(field)}
-            className="flex items-center px-3 py-1.5 border border-indigo-500 text-indigo-600 rounded-full hover:bg-indigo-50 transition duration-150 text-sm font-medium"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-950/70 transition-colors text-xs font-bold uppercase tracking-wider active:scale-95"
           >
-            <PlusCircleIcon className="w-5 h-5 mr-1" />
-            Add {field.slice(0, -1).charAt(0).toUpperCase() +
-              field.slice(0, -1).slice(1)}
+            <PlusIcon className="w-3.5 h-3.5 stroke-[3]" /> Add Logo
           </button>
         </div>
-        <p className="text-sm text-gray-500 mb-4">{description}</p>
 
-        <div className="space-y-4">
-          {items?.map((item, idx) => (
-            <div
-              key={idx}
-              className="p-4 bg-gray-50 rounded-lg flex flex-col sm:flex-row gap-3 items-center border border-gray-200"
-            >
-              <span className="text-gray-500 font-medium w-6 shrink-0">
-                {idx + 1}.
-              </span>
-
-              <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {itemFields.map(({ key, placeholder, type }) => (
-                  <input
-                    key={key}
-                    type={type}
-                    placeholder={placeholder}
-                    value={item[key] || ''}
-                    onChange={(e) =>
-                      handleInputChange(idx, key, e.target.value)
-                    }
-                    className="w-full p-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                ))}
-              </div>
-
-              <button
-                onClick={() => removeItem(field, idx)}
-                className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100 transition duration-150 shrink-0"
-                aria-label={`Remove ${field.slice(0, -1)}`}
+        <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1 scrollbar-thin dark:scrollbar-thumb-zinc-800 scrollbar-thumb-zinc-200">
+          <AnimatePresence mode="popLayout">
+            {items?.map((item, idx) => (
+              <motion.div
+                key={idx}
+                layout
+                initial={{ opacity: 0, scale: 0.98, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                className="p-4 bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200/60 dark:border-zinc-800 rounded-2xl flex items-center gap-4 group/row"
               >
-                <TrashIcon className="w-5 h-5" />
-              </button>
-            </div>
-          ))}
+                <div className="h-8 w-8 rounded-xl bg-zinc-200/60 dark:bg-zinc-800 text-zinc-500 font-mono text-xs flex items-center justify-center font-bold shrink-0 shadow-inner">
+                  #{idx + 1}
+                </div>
+
+                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {itemFields.map(({ key, placeholder, type, icon: Icon }) => (
+                    <div key={key} className="relative group">
+                      <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" />
+                      <input
+                        type={type}
+                        placeholder={placeholder}
+                        value={(item as any)[key] || ''}
+                        onChange={(e) => handleInputChange(idx, key, e.target.value)}
+                        className="w-full pl-10 pr-3.5 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs placeholder-zinc-400 dark:placeholder-zinc-600 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => removeItem(field, idx)}
+                  className="text-zinc-400 hover:text-red-500 dark:hover:text-red-400 p-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/30 transition-all shrink-0 active:scale-90"
+                  aria-label="Remove asset allocation row"
+                >
+                  <TrashIcon className="w-4 h-4 stroke-[2]" />
+                </button>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+
           {!items?.length && (
-            <div className="text-center py-4 text-gray-500 border border-dashed border-gray-300 rounded-lg">
-              No {field} added yet. Click ‘Add{' '}
-              {field.slice(0, -1).charAt(0).toUpperCase() +
-                field.slice(0, -1).slice(1)}’ to begin.
+            <div className="text-center py-10 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl flex flex-col items-center justify-center p-6 bg-zinc-50/50 dark:bg-zinc-900/10">
+              <PhotoIcon className="w-7 h-7 text-zinc-300 dark:text-zinc-700 mb-2 stroke-[1.5]" />
+              <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500">No partner allocations mapped.</p>
+              <p className="text-[10px] text-zinc-400/80 dark:text-zinc-600 mt-0.5">Click "Add Logo" above to inject partner branding indices.</p>
             </div>
           )}
         </div>
@@ -182,8 +199,9 @@ const ArraySection = React.memo(
 );
 ArraySection.displayName = 'ArraySection';
 
+
 /* ============================
-   MAIN COMPONENT
+   MAIN ARCHITECTURE STUDIOS
 ============================ */
 export default function StoreProfileInfo({
   partnerLogos,
@@ -197,113 +215,221 @@ export default function StoreProfileInfo({
   addItem,
   removeItem,
 }: StoreProfileInfoProps) {
+  const [activeTab, setActiveTab] = useState<'founder' | 'marketing' | 'logos'>('founder');
+
+  // Calculates structural form completion parameters for interactive UI states
+  const completionStats = {
+    founder: (founderName ? 1 : 0) + (founderQuote ? 1 : 0),
+    marketing: (sectionSubtitle ? 1 : 0) + (sectionTitle ? 1 : 0) + (sectionDescription ? 1 : 0),
+    logos: partnerLogos?.length || 0
+  };
+
   return (
-    <section className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-10">
-      <header className="mb-8">
-        <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight">
-          Store Profile Settings ⚙️
-        </h2>
-        <p className="mt-2 text-lg text-gray-600">
-          Customize your store's public appearance, statistics, and founder
-          information.
-        </p>
+    <div className="max-w-7xl mx-auto p-4 lg:p-12 relative min-h-[600px]">
+      
+      {/* Background Decorative Matrix Blur nodes */}
+      <div className="absolute top-1/4 right-10 -z-10 w-80 h-80 bg-indigo-500/[0.03] dark:bg-indigo-500/[0.01] rounded-full blur-[100px]" />
+      <div className="absolute bottom-10 left-10 -z-10 w-96 h-96 bg-purple-500/[0.03] dark:bg-purple-500/[0.01] rounded-full blur-[120px]" />
+
+      {/* DASHBOARD PROFILE HEADER BLOCK */}
+      <header className="pb-8 border-b border-zinc-200/80 dark:border-zinc-800/80 mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold uppercase tracking-widest bg-zinc-100 dark:bg-zinc-800 text-zinc-500 px-2.5 py-0.5 rounded-md border border-zinc-200/40 dark:border-zinc-700/50">Studio Portal</span>
+            <span className="flex items-center gap-1 text-[11px] font-bold text-amber-500">
+              <SparklesIcon className="w-3.5 h-3.5 animate-pulse" /> Live Profile sync
+            </span>
+          </div>
+          <h2 className="text-3xl lg:text-4xl font-black text-zinc-900 dark:text-white tracking-tight leading-none">
+            Store Profile Settings
+          </h2>
+          <p className="text-sm text-zinc-400 dark:text-zinc-500 max-w-xl">
+            Configure metadata parameters, corporate brand identities, and deployment configurations.
+          </p>
+        </div>
       </header>
 
-      {/* 👤 Founder Info */}
-      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-        <div className="flex items-center space-x-3 mb-4">
-          <span className="text-2xl" role="img" aria-label="person">
-            👩🏽‍💼
-          </span>
-          <h3 className="text-xl font-semibold text-gray-800">
-            Founder Information
-          </h3>
-        </div>
-        <p className="text-sm text-gray-500 mb-6">
-          Add a personal touch to your store's profile with founder details.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <InputField
-            label="Founder Name"
-            name="founderName"
-            value={founderName ?? ''}
-            onChange={handleChange}
-            placeholder="e.g., Coach Timon Bright"
-          />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        {/* SIDEBAR NAVIGATION GRID LAYER */}
+        <nav className="lg:col-span-4 w-full flex flex-col gap-1.5 bg-zinc-50 dark:bg-zinc-900/50 p-3 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/80 shadow-sm backdrop-blur-sm">
+          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 px-3 pt-2 pb-1">Settings Categories</p>
+          
+          <button
+            onClick={() => setActiveTab('founder')}
+            className={`w-full flex items-center justify-between p-3.5 rounded-xl text-left transition-all relative overflow-hidden group ${
+              activeTab === 'founder' 
+                ? 'bg-white dark:bg-zinc-800 shadow-sm border border-zinc-200 dark:border-zinc-700/80' 
+                : 'hover:bg-white/60 dark:hover:bg-zinc-900/40'
+            }`}
+          >
+            <div className="flex items-center gap-3 z-10">
+              <span className={`p-2 rounded-lg transition-colors ${activeTab === 'founder' ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400' : 'bg-zinc-100 dark:bg-zinc-800/60 text-zinc-400'}`}>
+                <UserIcon className="w-4 h-4" />
+              </span>
+              <div>
+                <p className={`text-xs font-bold tracking-tight ${activeTab === 'founder' ? 'text-zinc-900 dark:text-zinc-50' : 'text-zinc-600 dark:text-zinc-400'}`}>Founder Profiles</p>
+                <p className="text-[10px] text-zinc-400 dark:text-zinc-500">Executive bio indices</p>
+              </div>
+            </div>
+            <span className="text-[10px] font-mono font-bold bg-zinc-200/60 dark:bg-zinc-800 text-zinc-500 px-1.5 py-0.5 rounded">
+              {completionStats.founder}/2
+            </span>
+          </button>
 
-          <InputField
-            label="Founder Quote"
-            name="founderQuote"
-            value={founderQuote ?? ''}
-            onChange={handleChange}
-            placeholder="e.g., A nurturing space for beautiful souls committed to flourishing."
-            type="textarea"
-            rows={2}
-          />
-        </div>
+          <button
+            onClick={() => setActiveTab('marketing')}
+            className={`w-full flex items-center justify-between p-3.5 rounded-xl text-left transition-all relative overflow-hidden group ${
+              activeTab === 'marketing' 
+                ? 'bg-white dark:bg-zinc-800 shadow-sm border border-zinc-200 dark:border-zinc-700/80' 
+                : 'hover:bg-white/60 dark:hover:bg-zinc-900/40'
+            }`}
+          >
+            <div className="flex items-center gap-3 z-10">
+              <span className={`p-2 rounded-lg transition-colors ${activeTab === 'marketing' ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400' : 'bg-zinc-100 dark:bg-zinc-800/60 text-zinc-400'}`}>
+                <DocumentTextIcon className="w-4 h-4" />
+              </span>
+              <div>
+                <p className={`text-xs font-bold tracking-tight ${activeTab === 'marketing' ? 'text-zinc-900 dark:text-zinc-50' : 'text-zinc-600 dark:text-zinc-400'}`}>Key Marketing Copy</p>
+                <p className="text-[10px] text-zinc-400 dark:text-zinc-500">Global context tags</p>
+              </div>
+            </div>
+            <span className="text-[10px] font-mono font-bold bg-zinc-200/60 dark:bg-zinc-800 text-zinc-500 px-1.5 py-0.5 rounded">
+              {completionStats.marketing}/3
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('logos')}
+            className={`w-full flex items-center justify-between p-3.5 rounded-xl text-left transition-all relative overflow-hidden group ${
+              activeTab === 'logos' 
+                ? 'bg-white dark:bg-zinc-800 shadow-sm border border-zinc-200 dark:border-zinc-700/80' 
+                : 'hover:bg-white/60 dark:hover:bg-zinc-900/40'
+            }`}
+          >
+            <div className="flex items-center gap-3 z-10">
+              <span className={`p-2 rounded-lg transition-colors ${activeTab === 'logos' ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400' : 'bg-zinc-100 dark:bg-zinc-800/60 text-zinc-400'}`}>
+                <PhotoIcon className="w-4 h-4" />
+              </span>
+              <div>
+                <p className={`text-xs font-bold tracking-tight ${activeTab === 'logos' ? 'text-zinc-900 dark:text-zinc-50' : 'text-zinc-600 dark:text-zinc-400'}`}>Partner Branding</p>
+                <p className="text-[10px] text-zinc-400 dark:text-zinc-500">Corporate client vectors</p>
+              </div>
+            </div>
+            <span className="text-[10px] font-mono font-bold bg-zinc-200/60 dark:bg-zinc-800 text-zinc-500 px-1.5 py-0.5 rounded">
+              {completionStats.logos} Alloc
+            </span>
+          </button>
+        </nav>
+
+        {/* WORKSPACE STAGE CONTENT MATRIX */}
+        <main className="lg:col-span-8 w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm p-6 lg:p-8 rounded-[2rem] relative min-h-[440px]">
+          <AnimatePresence mode="wait">
+            
+            {/* TABS 1: EXECUTIVE FOUNDER INTERFACE */}
+            {activeTab === 'founder' && (
+              <motion.div
+                key="founder-tab"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="space-y-6"
+              >
+                <div>
+                  <h3 className="text-lg font-black text-zinc-900 dark:text-white tracking-tight">Founder Profile Data</h3>
+                  <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">Add a high-trust verification metric to public storefront assets.</p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+                  <InputField
+                    label="Founder Signature Name"
+                    name="founderName"
+                    value={founderName ?? ''}
+                    onChange={handleChange}
+                    placeholder="e.g., Coach Timon Bright"
+                  />
+
+                  <InputField
+                    label="Founder Creed Quote"
+                    name="founderQuote"
+                    value={founderQuote ?? ''}
+                    onChange={handleChange}
+                    placeholder="e.g., A nurturing space for beautiful souls committed to flourishing."
+                    type="textarea"
+                    rows={4}
+                  />
+                </div>
+              </motion.div>
+            )}
+
+            {/* TAB 2: MARKETING COPY META INTERFACE */}
+            {activeTab === 'marketing' && (
+              <motion.div
+                key="marketing-tab"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="space-y-6"
+              >
+                <div>
+                  <h3 className="text-lg font-black text-zinc-900 dark:text-white tracking-tight">Key Marketing Parameters</h3>
+                  <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">Incorporate search-indexed typography arrays for storefront sections.</p>
+                </div>
+
+                <div className="space-y-5 pt-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <InputField
+                      label="Hero Section Subtitle Prefix"
+                      name="sectionSubtitle"
+                      value={sectionSubtitle ?? ''}
+                      onChange={handleChange}
+                      placeholder="e.g., Our Global Impact Portfolio"
+                    />
+                    <InputField
+                      label="Main Interactive Title Array"
+                      name="sectionTitle"
+                      value={sectionTitle ?? ''}
+                      onChange={handleChange}
+                      placeholder="e.g., Proven Expertise, Verified Results"
+                    />
+                  </div>
+                  <InputField
+                    label="Descriptive Engine Summary Block"
+                    name="sectionDescription"
+                    value={sectionDescription ?? ''}
+                    onChange={handleChange}
+                    placeholder="Write a highly engaging structural overview context paragraph..."
+                    type="textarea"
+                    rows={4}
+                  />
+                </div>
+              </motion.div>
+            )}
+
+            {/* TAB 3: LOGO REGISTER ARRAY MATRIX */}
+            {activeTab === 'logos' && (
+              <motion.div
+                key="logos-tab"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+              >
+                <ArraySection
+                  items={partnerLogos}
+                  field="partnerLogos"
+                  itemFields={[
+                    { key: 'src', placeholder: 'Image asset vector CDN URL (https://...)', type: 'url', icon: SparklesIcon },
+                    { key: 'alt', placeholder: 'Accessibility alt text matrix query', type: 'text', icon: HashtagIcon },
+                  ]}
+                  handleArrayChange={handleArrayChange}
+                  addItem={addItem}
+                  removeItem={removeItem}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </main>
       </div>
-
-      {/* ✍️ Section Marketing Text */}
-      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-        <div className="flex items-center space-x-3 mb-4">
-          <span className="text-2xl" role="img" aria-label="pen">
-            ✍️
-          </span>
-          <h3 className="text-xl font-semibold text-gray-800">
-            Key Section Text
-          </h3>
-        </div>
-        <p className="text-sm text-gray-500 mb-6">
-          Customize the subtitle, main title, and descriptive paragraph for your
-          key marketing section.
-        </p>
-
-        <div className="space-y-6">
-          <InputField
-            label="Subtitle (e.g., Our Global Impact)"
-            name="sectionSubtitle"
-            value={sectionSubtitle ?? ''}
-            onChange={handleChange}
-            placeholder="Enter a brief, punchy subtitle here"
-          />
-          <InputField
-            label="Main Title"
-            name="sectionTitle"
-            value={sectionTitle ?? ''}
-            onChange={handleChange}
-            placeholder="e.g., Proven Expertise, Verified Results"
-          />
-          <InputField
-            label="Descriptive Paragraph"
-            name="sectionDescription"
-            value={sectionDescription ?? ''}
-            onChange={handleChange}
-            placeholder="Write a short paragraph summarizing your impact."
-            type="textarea"
-            rows={3}
-          />
-        </div>
-      </div>
-
-      {/* 🌐 Partner Logos */}
-      <ArraySection
-        title="Partner & Client Logos"
-        description="Display logos of companies or clients you’ve worked with. Use full URLs for the image source."
-        items={partnerLogos}
-        field="partnerLogos"
-        itemFields={[
-          { key: 'src', placeholder: 'Image URL (e.g., https://...)', type: 'url' },
-          { key: 'alt', placeholder: 'Alt text for accessibility', type: 'text' },
-        ]}
-        handleArrayChange={handleArrayChange}
-        addItem={addItem}
-        removeItem={removeItem}
-        Icon={() => (
-          <span className="text-2xl" role="img" aria-label="globe">
-            🌐
-          </span>
-        )}
-      />
-    </section>
+    </div>
   );
 }
