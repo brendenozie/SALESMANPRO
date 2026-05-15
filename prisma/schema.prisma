@@ -459,8 +459,10 @@ model Company {
   modules                   Module[]
 
   // sslStatus     SslStatus @default(PENDING)
-  sslError String?
-  Hub      Hub[]
+  sslError             String?
+  Hub                  Hub[]
+  eventTickets         EventTicket[]
+  eventTicketPurchases EventTicketPurchase[]
 
   @@index([userId])
 }
@@ -1538,6 +1540,7 @@ model User {
   // @@index([hardwareId])
   candidates              candidate[]
   DeliveryTracking        DeliveryTracking[]
+  eventTicketPurchases    EventTicketPurchase[]
 
   @@index([companyId])
   // @@index([settingsId])
@@ -3568,6 +3571,10 @@ model Event {
   updatedAt         DateTime?           @updatedAt
   EventRegistration EventRegistration[]
 
+  tickets         EventTicket[]
+  ticketPurchases EventTicketPurchase[]
+  ticketAttendees EventTicketAttendee[]
+
   // Indexes for efficient querying
   @@index([companyId])
   @@index([organizerId])
@@ -3649,6 +3656,198 @@ enum RegistrationStatus {
   ATTENDED
   CANCELLED
   WAITLISTED
+}
+
+// =========================================================
+// EVENT TICKETS
+// =========================================================
+
+model EventTicket {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // Relations
+  eventId String @db.ObjectId
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  // Ticket Info
+  name        String // VIP, Regular, Early Bird
+  description String?
+
+  ticketType EventTicketType @default(REGULAR)
+
+  // Pricing
+  price          Float
+  currency       String @default("KES")
+  originalPrice  Float?
+  discountAmount Float?
+
+  // Inventory
+  quantityTotal Int
+  quantitySold  Int @default(0)
+
+  // Limits
+  minPerOrder Int  @default(1)
+  maxPerOrder Int?
+
+  // Sales window
+  salesStartDate DateTime?
+  salesEndDate   DateTime?
+
+  // Visibility
+  isActive  Boolean @default(true)
+  isVisible Boolean @default(true)
+
+  // Optional Benefits
+  perks String[]
+
+  // Checkin
+  requiresApproval Boolean @default(false)
+
+  // Metadata
+  colorHex String?
+  imageUrl String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  purchases EventTicketPurchase[]
+  attendees EventTicketAttendee[]
+
+  @@index([eventId])
+  @@index([companyId])
+  @@index([ticketType])
+  @@index([isActive])
+  @@index([salesStartDate])
+  @@index([salesEndDate])
+}
+
+// =========================================================
+// TICKET PURCHASES
+// =========================================================
+
+model EventTicketPurchase {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  ticketId String      @db.ObjectId
+  ticket   EventTicket @relation(fields: [ticketId], references: [id])
+
+  eventId String @db.ObjectId
+  event   Event  @relation(fields: [eventId], references: [id])
+
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  // Buyer
+  buyerId String? @db.ObjectId
+  buyer   User?   @relation(fields: [buyerId], references: [id])
+
+  buyerName  String
+  buyerEmail String
+  buyerPhone String?
+
+  // Order
+  quantity    Int
+  unitPrice   Float
+  totalAmount Float
+
+  currency String @default("KES")
+
+  // Payment
+  paymentStatus TicketPaymentStatus @default(PENDING)
+  paymentMethod String?
+
+  transactionId     String?
+  checkoutReference String?
+
+  // Ticket delivery
+  isCheckedIn Boolean @default(false)
+
+  purchaseDate DateTime @default(now())
+
+  attendees EventTicketAttendee[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ticketId])
+  @@index([eventId])
+  @@index([buyerId])
+  @@index([paymentStatus])
+  @@index([companyId])
+}
+
+// =========================================================
+// INDIVIDUAL ISSUED TICKETS
+// =========================================================
+
+model EventTicketAttendee {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  purchaseId String              @db.ObjectId
+  purchase   EventTicketPurchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+
+  ticketId String      @db.ObjectId
+  ticket   EventTicket @relation(fields: [ticketId], references: [id])
+
+  eventId String @db.ObjectId
+  event   Event  @relation(fields: [eventId], references: [id])
+
+  // Ticket holder
+  fullName String
+  email    String
+  phone    String?
+
+  // Unique Ticket Code
+  ticketCode String @unique
+
+  qrCodeUrl String?
+
+  // Validation
+  checkInStatus TicketCheckInStatus @default(PENDING)
+  checkedInAt   DateTime?
+
+  seatNumber String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([purchaseId])
+  @@index([ticketId])
+  @@index([eventId])
+  @@index([ticketCode])
+}
+
+// =========================================================
+// ENUMS
+// =========================================================
+
+enum EventTicketType {
+  REGULAR
+  VIP
+  VVIP
+  EARLY_BIRD
+  STUDENT
+  GROUP
+  BACKSTAGE
+  ONLINE
+  FREE
+}
+
+enum TicketPaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+enum TicketCheckInStatus {
+  PENDING
+  CHECKED_IN
+  CANCELLED
 }
 
 // Class Schedule Model (for educator's classes/lectures and school timetabling)

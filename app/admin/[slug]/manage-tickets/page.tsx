@@ -1,34 +1,53 @@
+// =========================================================
 // app/admin/[slug]/tickets/page.tsx
+// =========================================================
+
 import { cookies } from "next/headers";
 import AdminTicketsClient from "./AdminTicketsClient";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:3000/api";
 
 interface Props {
-  params:Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
 }
 
-export default async function AdminTicketsPage({ params }: Props) {
-  const { slug : companyId } = await params;
-  const cookiesHeader = (await cookies()).toString();
+export default async function AdminTicketsPage({
+  params,
+}: Props) {
+  const { slug: companyId } = await params;
 
-  let tickets = [];
+  const cookiesHeader = (
+    await cookies()
+  ).toString();
+
+  let events = [];
 
   try {
-    const res = await fetch(
-      `${apiBaseUrl}/admin/${companyId}/tickets`,
-      { next: { revalidate: 60 }, headers: { cookie: cookiesHeader } }
+    const eventsRes = await fetch(
+      `${apiBaseUrl}/admin/events?companyId=${companyId}`,
+      {
+        next: { revalidate: 60 },
+        headers: {
+          cookie: cookiesHeader,
+        },
+      },
     );
 
-    if (res.ok) {
-      const json = await res.json();
-      tickets = json.data?.tickets || [];
-    } else {
-      // console.error(`Failed to fetch tickets: ${res.status}`);
-    }
-  } catch (err: any) {
-    // console.error("Error fetching tickets:", err.message);
-  }
+    if (eventsRes.ok) {
+      const eventsJson =
+        await eventsRes.json();
 
-  return <AdminTicketsClient slug={companyId} initialTickets={tickets} />;
+      events =
+        eventsJson.data || [];
+    }
+  } catch (e) {}
+
+  return (
+    <AdminTicketsClient
+      slug={companyId}
+      events={events}
+    />
+  );
 }
