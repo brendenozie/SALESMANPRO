@@ -230,11 +230,11 @@ async function getEvents(request: Request) {
 
   const response = events.map(transformEventResponse);
 
-  // try {
-  //   if (events) {
-  //     await cacheSet(cacheKey, response, 60);
-  //   }
-  // } catch (e) {}
+  try {
+    if (events) {
+      await cacheSet(cacheKey, response, 60);
+    }
+  } catch (e) {}
 
   return formatResponse(true, response, null, 200);
 }
