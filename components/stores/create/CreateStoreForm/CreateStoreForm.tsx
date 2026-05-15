@@ -38,6 +38,7 @@ import { CompanyLocation } from "@prisma/client";
 import { categoryReducer } from "@/hooks/categoryReducer";
 import toast from "react-hot-toast";
 import { PaymentSettings } from "../PaymentAccordion/PaymentAccordion";
+import SetupWizardLayout from "./SetupWizardLayout";
 
 const SITE_CATEGORIES_WITH_PRICING = [
   "service provider",
@@ -1700,455 +1701,667 @@ const handleSubmit = async (e: FormEvent) => {
   }
 };
 
-const StepContent = useMemo(() => {
-  // 1. Render Specific Steps with AI Injection
-  if (stepIndex < allSteps.length) {
-    const step = allSteps[stepIndex];
-    const stepKey = step.key;
+// const StepContentv2 = useMemo(() => {
+//   // 1. Render Specific Steps with AI Injection
+//   if (stepIndex < allSteps.length) {
+//     const step = allSteps[stepIndex];
+//     const stepKey = step.key;
 
-    // Execute the standard render function for the step
-    const content = step.render(
-      form,
-      handlers,
-      siteCategories,
-      availableCategories,
-      availableLocations,
-      selectedLocationsForDisplay,
-      selectedCategoriesArray,
-      dispatch
-    );
+//     // Execute the standard render function for the step
+//     const content = step.render(
+//       form,
+//       handlers,
+//       siteCategories,
+//       availableCategories,
+//       availableLocations,
+//       selectedLocationsForDisplay,
+//       selectedCategoriesArray,
+//       dispatch
+//     );
 
-    // AI Configuration for Banners
-    const aiConfig: Record<string, { label: string; section: string; color: string; desc: string }> = {
-      basic: { 
-        label: "Magic Wand Autopilot", 
-        section: "basic", 
-        color: "from-purple-600 to-blue-600",
-        desc: "Generate your business name, tagline, and description automatically."
-      },
-      seo: { 
-        label: "Optimize SEO", 
-        section: "seo", 
-        color: "from-gray-500 to-gray-700",
-        desc: "Let AI write high-ranking titles and meta descriptions."
-      },
-      pricing: { 
-        label: "Generate Pricing", 
-        section: "pricing", 
-        color: "from-orange-500 to-red-500",
-        desc: "Need a strategy? AI can suggest industry-standard tiers."
-      },
-      marketing: { 
-        label: "Generate Ad Copy", 
-        section: "marketing", 
-        color: "from-pink-500 to-rose-500",
-        desc: "Write headlines and promo codes that convert visitors."
-      },
-    };
+//     // AI Configuration for Banners
+//     const aiConfig: Record<string, { label: string; section: string; color: string; desc: string }> = {
+//       basic: { 
+//         label: "Magic Wand Autopilot", 
+//         section: "basic", 
+//         color: "from-purple-600 to-blue-600",
+//         desc: "Generate your business name, tagline, and description automatically."
+//       },
+//       seo: { 
+//         label: "Optimize SEO", 
+//         section: "seo", 
+//         color: "from-gray-500 to-gray-700",
+//         desc: "Let AI write high-ranking titles and meta descriptions."
+//       },
+//       pricing: { 
+//         label: "Generate Pricing", 
+//         section: "pricing", 
+//         color: "from-orange-500 to-red-500",
+//         desc: "Need a strategy? AI can suggest industry-standard tiers."
+//       },
+//       marketing: { 
+//         label: "Generate Ad Copy", 
+//         section: "marketing", 
+//         color: "from-pink-500 to-rose-500",
+//         desc: "Write headlines and promo codes that convert visitors."
+//       },
+//     };
 
-    const currentAi = aiConfig[stepKey];
+//     const currentAi = aiConfig[stepKey];
 
-    if (currentAi) {
-      return (
-        <div className="space-y-6">
-          {/* AI Banner / Action Box */}
-          <div className={`p-4 rounded-xl border flex flex-col md:flex-row justify-between items-center gap-4 bg-opacity-5 transition-all ${
-            stepKey === 'basic' ? 'bg-purple-50 border-purple-100' : 'bg-gray-50 border-gray-100'
-          }`}>
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg bg-gradient-to-br ${currentAi.color} text-white shadow-md`}>
-                <SparklesIcon className="w-5 h-5" />
+//     if (currentAi) {
+//       return (
+//         <div className="space-y-6">
+//           {/* AI Banner / Action Box */}
+//           <div className={`p-4 rounded-xl border flex flex-col md:flex-row justify-between items-center gap-4 bg-opacity-5 transition-all ${
+//             stepKey === 'basic' ? 'bg-purple-50 border-purple-100' : 'bg-gray-50 border-gray-100'
+//           }`}>
+//             <div className="flex items-center gap-3">
+//               <div className={`p-2 rounded-lg bg-gradient-to-br ${currentAi.color} text-white shadow-md`}>
+//                 <SparklesIcon className="w-5 h-5" />
+//               </div>
+//               <div>
+//                 <h4 className="font-bold text-gray-900">AI Assistant</h4>
+//                 <p className="text-sm text-gray-600">{currentAi.desc}</p>
+//               </div>
+//             </div>
+            
+//             <button
+//               type="button"
+//               onClick={() => stepKey === 'basic' ? handleFullStoreAutopilot() : handleAiGenerate(currentAi.section)}
+//               disabled={isAiProcessing || !form.category}
+//               className={`whitespace-nowrap flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r ${currentAi.color} text-white rounded-lg font-semibold shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed transition-all`}
+//             >
+//               {isAiProcessing ? (
+//                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+//               ) : (
+//                 <SparklesIcon className="w-4 h-4" />
+//               )}
+//               {currentAi.label}
+//             </button>
+//           </div>
+
+//           {/* Actual Form Content */}
+//           <div className="relative">
+//             {content}
+//           </div>
+//         </div>
+//       );
+//     }
+
+//     // Default render if no AI banner is needed for the step
+//     return content;
+//   }
+
+//   // 2. Review Screen (Rendered when stepIndex >= allSteps.length)
+//   return (
+//     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
+//       <div className="border-b pb-4">
+//         <h2 className="text-3xl font-bold text-gray-900">Review Your Store</h2>
+//         <p className="text-gray-500">Double check everything before we launch your shop.</p>
+//       </div>
+
+//       <div className="grid gap-4">
+//         {allSteps.map((s: any, i: number) => (
+//           <div
+//             key={s.key}
+//             className="group p-5 border rounded-xl bg-white hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer"
+//             onClick={() => setStepIndex(i)}
+//           >
+//             <div className="flex justify-between items-center mb-3">
+//               <h3 className="font-bold text-gray-800 flex items-center gap-2">
+//                 <span className="w-6 h-6 rounded-full bg-gray-50 text-gray-600 flex items-center justify-center text-xs">
+//                   {i + 1}
+//                 </span>
+//                 {s.title}
+//               </h3>
+//               <span className="text-sm font-medium text-gray-500 group-hover:underline">Edit Step ➔</span>
+//             </div>
+//             <div className="text-gray-600 text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
+//               {renderReviewContent(s.key, form)}
+//             </div>
+//           </div>
+//         ))}
+//       </div>
+//     </div>
+//   );
+// }, [
+//   stepIndex,
+//   allSteps,
+//   form,
+//   handlers,
+//   siteCategories,
+//   availableCategories,
+//   availableLocations,
+//   selectedLocationsForDisplay,
+//   selectedCategoriesArray,
+//   dispatch,
+//   isAiProcessing,
+//   handleAiGenerate,
+//   handleFullStoreAutopilot,
+// ]);
+
+  const StepContent = useMemo(() => {
+    // 1. Render Specific Steps with AI Injection
+    if (stepIndex < allSteps.length) {
+      const step = allSteps[stepIndex];
+      const stepKey = step.key;
+
+      // Execute the standard render function for the step
+      const content = step.render(
+        form,
+        handlers,
+        siteCategories,
+        availableCategories,
+        availableLocations,
+        selectedLocationsForDisplay,
+        selectedCategoriesArray,
+        dispatch
+      );
+
+      // AI Configuration for Banners - Enhanced Color-grading & Theme Variables
+      const aiConfig: Record<
+        string, 
+        { label: string; section: string; themeClass: string; btnGrad: string; desc: string }
+      > = {
+        basic: { 
+          label: "Magic Wand Autopilot", 
+          section: "basic", 
+          themeClass: "bg-violet-500/[0.03] border-violet-500/20 dark:border-violet-500/30 text-violet-600 dark:text-violet-400 shadow-[0_0_20px_rgba(139,92,246,0.02)]",
+          btnGrad: "from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 focus:ring-violet-500/20 shadow-indigo-500/20",
+          desc: "Generate your business name, tagline, and description automatically."
+        },
+        seo: { 
+          label: "Optimize SEO Architecture", 
+          section: "seo", 
+          themeClass: "bg-emerald-500/[0.03] border-emerald-500/20 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.02)]",
+          btnGrad: "from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 focus:ring-emerald-500/20 shadow-emerald-500/20",
+          desc: "Let AI evaluate search metrics and construct high-ranking semantic meta tags."
+        },
+        pricing: { 
+          label: "Synthesize Tier Strategy", 
+          section: "pricing", 
+          themeClass: "bg-amber-500/[0.03] border-amber-500/20 dark:border-amber-500/30 text-amber-600 dark:text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.02)]",
+          btnGrad: "from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 focus:ring-amber-500/20 shadow-orange-500/20",
+          desc: "Analyze industry standard models and construct maximized retail pricing matrixes."
+        },
+        marketing: { 
+          label: "Generate High-Conversion Copy", 
+          section: "marketing", 
+          themeClass: "bg-rose-500/[0.03] border-rose-500/20 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 shadow-[0_0_20px_rgba(244,63,94,0.02)]",
+          btnGrad: "from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 focus:ring-rose-500/20 shadow-rose-500/20",
+          desc: "Write engaging headlines, copy frameworks, and promotional incentives."
+        },
+      };
+
+      const currentAi = aiConfig[stepKey];
+
+      if (currentAi) {
+        const isButtonDisabled = isAiProcessing || !form.category;
+
+        return (
+          <div className="space-y-8 animate-fade-in">
+            {/* AI Premium Copilot Box */}
+            <div className={`p-5 rounded-2xl border flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 transition-all duration-300 relative overflow-hidden group backdrop-blur-sm ${currentAi.themeClass}`}>
+              
+              {/* Ambient Background Aura */}
+              <div className="absolute -right-16 -top-16 w-36 h-36 bg-current opacity-[0.03] rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-700" />
+              
+              <div className="flex items-start gap-4">
+                <div className={`p-3 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-700/60 shadow-sm text-zinc-700 dark:text-zinc-200 flex-shrink-0 relative group-hover:scale-105 transition-transform duration-300`}>
+                  <SparklesIcon className="w-5 h-5 text-indigo-500 dark:text-indigo-400 animate-pulse" />
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="font-bold text-zinc-900 dark:text-zinc-50 tracking-tight text-base">
+                      AI Content Copilot
+                    </h4>
+                    <span className="text-[10px] uppercase font-black tracking-widest px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-md text-zinc-500">
+                      Active Module
+                    </span>
+                  </div>
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-2xl leading-relaxed">
+                    {currentAi.desc}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h4 className="font-bold text-gray-900">AI Assistant</h4>
-                <p className="text-sm text-gray-600">{currentAi.desc}</p>
+              
+              <div className="flex flex-col sm:flex-row lg:flex-col items-stretch sm:items-center lg:items-end w-full lg:w-auto gap-3 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={() => stepKey === 'basic' ? handleFullStoreAutopilot() : handleAiGenerate(currentAi.section)}
+                  disabled={isButtonDisabled}
+                  className={`whitespace-nowrap flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r ${currentAi.btnGrad} text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md focus:outline-none focus:ring-4 disabled:opacity-40 disabled:pointer-events-none transition-all duration-200 active:scale-[0.98]`}
+                >
+                  {isAiProcessing ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <SparklesIcon className="w-4 h-4 stroke-[2]" />
+                  )}
+                  <span>{currentAi.label}</span>
+                </button>
+
+                {/* Dynamic Disabled State Verification Badge */}
+                {!form.category && (
+                  <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 flex items-center gap-1 sm:text-right">
+                    ⚠️ Select a store category to unlock
+                  </span>
+                )}
               </div>
             </div>
-            
-            <button
-              type="button"
-              onClick={() => stepKey === 'basic' ? handleFullStoreAutopilot() : handleAiGenerate(currentAi.section)}
-              disabled={isAiProcessing || !form.category}
-              className={`whitespace-nowrap flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r ${currentAi.color} text-white rounded-lg font-semibold shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed transition-all`}
-            >
-              {isAiProcessing ? (
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <SparklesIcon className="w-4 h-4" />
-              )}
-              {currentAi.label}
-            </button>
-          </div>
 
-          {/* Actual Form Content */}
-          <div className="relative">
-            {content}
+            {/* Form Content Container Viewport */}
+            <div className="relative pt-2">
+              {content}
+            </div>
           </div>
-        </div>
-      );
+        );
+      }
+
+      return <div className="animate-fade-in">{content}</div>;
     }
 
-    // Default render if no AI banner is needed for the step
-    return content;
-  }
-
-  // 2. Review Screen (Rendered when stepIndex >= allSteps.length)
-  return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
-      <div className="border-b pb-4">
-        <h2 className="text-3xl font-bold text-gray-900">Review Your Store</h2>
-        <p className="text-gray-500">Double check everything before we launch your shop.</p>
-      </div>
-
-      <div className="grid gap-4">
-        {allSteps.map((s: any, i: number) => (
-          <div
-            key={s.key}
-            className="group p-5 border rounded-xl bg-white hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer"
-            onClick={() => setStepIndex(i)}
-          >
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-gray-50 text-gray-600 flex items-center justify-center text-xs">
-                  {i + 1}
-                </span>
-                {s.title}
-              </h3>
-              <span className="text-sm font-medium text-gray-500 group-hover:underline">Edit Step ➔</span>
-            </div>
-            <div className="text-gray-600 text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
-              {renderReviewContent(s.key, form)}
-            </div>
+    /* ====================================================================
+      2. REVIEW MODULE (Rendered when stepIndex >= allSteps.length)
+      ==================================================================== */
+    return (
+      <div className="space-y-8 max-w-4xl mx-auto py-2">
+        {/* Structural Header */}
+        <div className="border-b border-zinc-100 dark:border-zinc-800 pb-6">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-indigo-600 animate-pulse" />
+            <span className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+              Final Verification Node
+            </span>
           </div>
-        ))}
+          <h2 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
+            Review Configuration
+          </h2>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+            Verify data payloads and functional environments before initiating production deployment.
+          </p>
+        </div>
+
+        {/* Segmented Cards Loop */}
+        <div className="grid gap-5">
+          {allSteps.map((s: any, i: number) => (
+            <div
+              key={s.key}
+              onClick={() => setStepIndex(i)}
+              className="group p-5 border border-zinc-200/70 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 hover:border-indigo-500/40 hover:dark:border-indigo-500/40 hover:shadow-[0_8px_30px_rgb(0,0,0,0.02)] transition-all duration-300 rounded-2xl cursor-pointer relative overflow-hidden"
+            >
+              {/* Hover Accent Glow */}
+              <div className="absolute top-0 bottom-0 left-0 w-1 bg-zinc-200 dark:bg-zinc-800 group-hover:bg-indigo-600 transition-colors duration-300" />
+              
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                <div className="flex items-center gap-3">
+                  <span className="w-7 h-7 rounded-xl bg-zinc-50 dark:bg-zinc-800 group-hover:bg-indigo-50 group-hover:dark:bg-indigo-950/40 text-zinc-500 dark:text-zinc-400 group-hover:text-indigo-600 group-hover:dark:text-indigo-400 border border-zinc-100 dark:border-zinc-700/60 flex items-center justify-center text-xs font-black transition-colors duration-300">
+                    {i + 1}
+                  </span>
+                  <h3 className="font-bold text-base text-zinc-800 dark:text-zinc-200 tracking-tight group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
+                    {s.title}
+                  </h3>
+                </div>
+                
+                <span className="text-xs font-bold text-zinc-400 dark:text-zinc-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 flex items-center gap-1.5 transition-colors">
+                  <span>Modify Parameters</span>
+                  <span className="transform group-hover:translate-x-1 transition-transform duration-200">➔</span>
+                </span>
+              </div>
+              
+              {/* Injected Content Inner Container */}
+              <div className="text-sm text-zinc-600 dark:text-zinc-300 bg-zinc-50/50 dark:bg-zinc-950/40 px-4 py-3.5 rounded-xl border border-zinc-200/30 dark:border-zinc-800/40 font-medium leading-relaxed shadow-inner">
+                {renderReviewContent(s.key, form)}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-  );
-}, [
-  stepIndex,
-  allSteps,
-  form,
-  handlers,
-  siteCategories,
-  availableCategories,
-  availableLocations,
-  selectedLocationsForDisplay,
-  selectedCategoriesArray,
-  dispatch,
-  isAiProcessing,
-  handleAiGenerate,
-  handleFullStoreAutopilot,
-]);
+    );
+  }, [
+    stepIndex,
+    allSteps,
+    form,
+    handlers,
+    siteCategories,
+    availableCategories,
+    availableLocations,
+    selectedLocationsForDisplay,
+    selectedCategoriesArray,
+    dispatch,
+    isAiProcessing,
+    handleAiGenerate,
+    handleFullStoreAutopilot,
+  ]);
+
   const currentTitle =
     stepIndex < allSteps.length ? allSteps[stepIndex].title : "Review & Submit";
   const percent = Math.min(((stepIndex + 1) / totalSteps) * 100, 100);
   
+  return <SetupWizardLayout 
+      isSubmitting = {isSubmitting}
+      submissionError = {submissionError}
+      setSubmissionError= {setSubmissionError}
+      setIsSubmitting= {setIsSubmitting}
+      isAiProcessing= {isAiProcessing}
+      aiStatus= {aiStatus}
+      stepIndex= {stepIndex}
+      totalSteps= {totalSteps}
+      currentTitle= {currentTitle}
+      allSteps= {allSteps}
+      percent= {percent}
+      StepContent= {StepContent}
+      prev= {prev}
+      next= {next}
+      handleSubmit= {handleSubmit}
+      setStepIndex= {setStepIndex}
+  />
 
-  return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row relative">
+  // return (
+  //   <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row relative">
     
-    {(isSubmitting || submissionError) && (    
-      <AnimatePresence>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/90 backdrop-blur-md p-4"
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            className="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center max-w-sm w-full text-center relative overflow-hidden"
-          >
-            {!submissionError ? (
-              /* --- LOADING STATE --- */
-              <>
-                <div className="relative w-20 h-20 mb-6">
-                  <div className="absolute inset-0 border-4 border-t-purple-500 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
-                  <div className="absolute inset-2 border-4 border-t-transparent border-r-blue-500 border-b-transparent border-l-transparent rounded-full animate-spin-slow"></div>
-                  <div className="absolute inset-4 border-4 border-t-transparent border-r-transparent border-b-pink-500 border-l-transparent rounded-full animate-spin-fast"></div>
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Syncing your Store</h3>
-                <p className="text-gray-500">We're uploading your media and securing your data. Please don't refresh.</p>
-              </>
-            ) : (
-              /* --- ERROR STATE --- */
-             <motion.div 
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="w-full max-h-[80vh] flex flex-col" // Added max-height and flex column
-              >
-                {/* Header Section - Fixed */}
-                <div className="flex-shrink-0">
-                  <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-10 h-10">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-2xl font-bold text-center text-gray-900 mb-2">Upload Failed</h3>
-                </div>
+  //   {(isSubmitting || submissionError) && (    
+  //     <AnimatePresence>
+  //       <motion.div
+  //         initial={{ opacity: 0 }}
+  //         animate={{ opacity: 1 }}
+  //         exit={{ opacity: 0 }}
+  //         className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/90 backdrop-blur-md p-4"
+  //       >
+  //         <motion.div
+  //           initial={{ scale: 0.9, opacity: 0, y: 20 }}
+  //           animate={{ scale: 1, opacity: 1, y: 0 }}
+  //           className="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center max-w-sm w-full text-center relative overflow-hidden"
+  //         >
+  //           {!submissionError ? (
+  //             /* --- LOADING STATE --- */
+  //             <>
+  //               <div className="relative w-20 h-20 mb-6">
+  //                 <div className="absolute inset-0 border-4 border-t-purple-500 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+  //                 <div className="absolute inset-2 border-4 border-t-transparent border-r-blue-500 border-b-transparent border-l-transparent rounded-full animate-spin-slow"></div>
+  //                 <div className="absolute inset-4 border-4 border-t-transparent border-r-transparent border-b-pink-500 border-l-transparent rounded-full animate-spin-fast"></div>
+  //               </div>
+  //               <h3 className="text-2xl font-bold text-gray-900 mb-2">Syncing your Store</h3>
+  //               <p className="text-gray-500">We're uploading your media and securing your data. Please don't refresh.</p>
+  //             </>
+  //           ) : (
+  //             /* --- ERROR STATE --- */
+  //            <motion.div 
+  //               initial={{ opacity: 0, scale: 0.5 }}
+  //               animate={{ opacity: 1, scale: 1 }}
+  //               className="w-full max-h-[80vh] flex flex-col" // Added max-height and flex column
+  //             >
+  //               {/* Header Section - Fixed */}
+  //               <div className="flex-shrink-0">
+  //                 <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+  //                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-10 h-10">
+  //                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+  //                   </svg>
+  //                 </div>
+  //                 <h3 className="text-2xl font-bold text-center text-gray-900 mb-2">Upload Failed</h3>
+  //               </div>
 
-                {/* Error Message Section - Scrollable */}
-                <div className="bg-red-50 border border-red-100 rounded-lg p-4 mb-6 overflow-y-auto custom-scrollbar">
-                  <p className="text-sm text-red-700 font-mono break-words whitespace-pre-wrap">
-                    {submissionError}
-                  </p>
-                </div>
+  //               {/* Error Message Section - Scrollable */}
+  //               <div className="bg-red-50 border border-red-100 rounded-lg p-4 mb-6 overflow-y-auto custom-scrollbar">
+  //                 <p className="text-sm text-red-700 font-mono break-words whitespace-pre-wrap">
+  //                   {submissionError}
+  //                 </p>
+  //               </div>
 
-                {/* Footer Section - Fixed */}
-                <div className="flex flex-col gap-3 flex-shrink-0">
-                  <button
-                    onClick={() => setSubmissionError(null)}
-                    className="w-full py-3 px-4 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-semibold transition-all active:scale-95"
-                  >
-                    Edit Form & Try Again
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSubmissionError(null);
-                      setIsSubmitting(false);
-                    }}
-                    className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    Dismiss
-                  </button>
-                </div>
-              </motion.div>
-            )}
+  //               {/* Footer Section - Fixed */}
+  //               <div className="flex flex-col gap-3 flex-shrink-0">
+  //                 <button
+  //                   onClick={() => setSubmissionError(null)}
+  //                   className="w-full py-3 px-4 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-semibold transition-all active:scale-95"
+  //                 >
+  //                   Edit Form & Try Again
+  //                 </button>
+  //                 <button
+  //                   onClick={() => {
+  //                     setSubmissionError(null);
+  //                     setIsSubmitting(false);
+  //                   }}
+  //                   className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+  //                 >
+  //                   Dismiss
+  //                 </button>
+  //               </div>
+  //             </motion.div>
+  //           )}
 
-            {/* Subtle Background Accent */}
-            <div className={`absolute top-0 left-0 w-full h-1 ${submissionError ? 'bg-red-500' : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500'}`} />
-          </motion.div>
-        </motion.div>
-      </AnimatePresence>
-    )}
+  //           {/* Subtle Background Accent */}
+  //           <div className={`absolute top-0 left-0 w-full h-1 ${submissionError ? 'bg-red-500' : 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500'}`} />
+  //         </motion.div>
+  //       </motion.div>
+  //     </AnimatePresence>
+  //   )}
 
-    {/* AI Processing Overlay */}
-    {isAiProcessing && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.3 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-600 to-gray-600 bg-opacity-95 backdrop-blur-md"
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{
-            delay: 0.1,
-            duration: 0.4,
-            type: "spring",
-            stiffness: 120,
-          }}
-          className="bg-white p-10 rounded-2xl shadow-2xl flex flex-col items-center max-w-md text-center"
-        >
-          {/* AI Sparkles Icon */}
-          <motion.div
-            animate={{
-              rotate: [0, 360],
-              scale: [1, 1.1, 1],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-            className="w-20 h-20 mb-6 flex items-center justify-center bg-gradient-to-r from-gray-500 to-gray-500 rounded-full"
-          >
-            <SparklesIcon className="w-12 h-12 text-white" />
-          </motion.div>
+  //   {/* AI Processing Overlay */}
+  //   {isAiProcessing && (
+  //     <motion.div
+  //       initial={{ opacity: 0 }}
+  //       animate={{ opacity: 1 }}
+  //       exit={{ opacity: 0 }}
+  //       transition={{ duration: 0.3 }}
+  //       className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-600 to-gray-600 bg-opacity-95 backdrop-blur-md"
+  //     >
+  //       <motion.div
+  //         initial={{ scale: 0.9, opacity: 0 }}
+  //         animate={{ scale: 1, opacity: 1 }}
+  //         transition={{
+  //           delay: 0.1,
+  //           duration: 0.4,
+  //           type: "spring",
+  //           stiffness: 120,
+  //         }}
+  //         className="bg-white p-10 rounded-2xl shadow-2xl flex flex-col items-center max-w-md text-center"
+  //       >
+  //         {/* AI Sparkles Icon */}
+  //         <motion.div
+  //           animate={{
+  //             rotate: [0, 360],
+  //             scale: [1, 1.1, 1],
+  //           }}
+  //           transition={{
+  //             duration: 2,
+  //             repeat: Infinity,
+  //             ease: "easeInOut",
+  //           }}
+  //           className="w-20 h-20 mb-6 flex items-center justify-center bg-gradient-to-r from-gray-500 to-gray-500 rounded-full"
+  //         >
+  //           <SparklesIcon className="w-12 h-12 text-white" />
+  //         </motion.div>
 
-          <p className="text-2xl font-bold text-gray-900 mb-3 leading-snug">
-            AI Magic in Progress...
-          </p>
-          <motion.p
-            key={aiStatus}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-lg text-gray-700 font-medium mb-2"
-          >
-            {aiStatus}
-          </motion.p>
-          <p className="text-sm text-gray-500 mt-2">
-            Sit back and relax while AI creates amazing content for you
-          </p>
+  //         <p className="text-2xl font-bold text-gray-900 mb-3 leading-snug">
+  //           AI Magic in Progress...
+  //         </p>
+  //         <motion.p
+  //           key={aiStatus}
+  //           initial={{ opacity: 0, y: 10 }}
+  //           animate={{ opacity: 1, y: 0 }}
+  //           className="text-lg text-gray-700 font-medium mb-2"
+  //         >
+  //           {aiStatus}
+  //         </motion.p>
+  //         <p className="text-sm text-gray-500 mt-2">
+  //           Sit back and relax while AI creates amazing content for you
+  //         </p>
 
-          {/* Progress dots */}
-          <div className="flex gap-2 mt-6">
-            {[0, 1, 2].map((i) => (
-              <motion.div
-                key={i}
-                animate={{
-                  scale: [1, 1.5, 1],
-                  opacity: [0.3, 1, 0.3],
-                }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  delay: i * 0.2,
-                }}
-                className="w-3 h-3 bg-purple-500 rounded-full"
-              />
-            ))}
-          </div>
-        </motion.div>
-      </motion.div>
-    )}
+  //         {/* Progress dots */}
+  //         <div className="flex gap-2 mt-6">
+  //           {[0, 1, 2].map((i) => (
+  //             <motion.div
+  //               key={i}
+  //               animate={{
+  //                 scale: [1, 1.5, 1],
+  //                 opacity: [0.3, 1, 0.3],
+  //               }}
+  //               transition={{
+  //                 duration: 1.5,
+  //                 repeat: Infinity,
+  //                 delay: i * 0.2,
+  //               }}
+  //               className="w-3 h-3 bg-purple-500 rounded-full"
+  //             />
+  //           ))}
+  //         </div>
+  //       </motion.div>
+  //     </motion.div>
+  //   )}
 
-    {/* Mobile Top Bar with Step Info - REMAINS FOR MOBILE CONTEXT */}
-    <div className="md:hidden bg-gray-600 text-white py-2 px-4 flex justify-between items-center shadow-sm sticky top-0 z-30">
-      <span className="font-medium text-sm">
-        Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}
-      </span>
-      <span className="text-xs truncate max-w-[60%]">{currentTitle}</span>
-    </div>
+  //   {/* Mobile Top Bar with Step Info - REMAINS FOR MOBILE CONTEXT */}
+  //   <div className="md:hidden bg-gray-600 text-white py-2 px-4 flex justify-between items-center shadow-sm sticky top-0 z-30">
+  //     <span className="font-medium text-sm">
+  //       Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}
+  //     </span>
+  //     <span className="text-xs truncate max-w-[60%]">{currentTitle}</span>
+  //   </div>
 
-    {/* Sidebar - ANIMATED */}
-    <motion.aside
-      className="hidden md:flex w-64 flex-col bg-white shadow-lg p-4 sticky top-0 h-screen z-10 overflow-hidden" // Added overflow-hidden
-      initial={false} // Prevents animation on initial load
-      animate={{
-        width: stepIndex > 0 ? "16rem" : "0rem", // 16rem = w-64
-        padding: stepIndex > 0 ? "1rem" : "0rem", // 1rem = p-4
-      }}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
-    >
-      <h2 className="text-xl font-semibold mb-6 text-gray-700">
-        Setup Wizard
-      </h2>
-      <nav className="flex flex-col gap-4 overflow-y-auto">
-        {allSteps.map((s, i) => {
-          const completed = i < stepIndex;
-          const active = i === stepIndex;
-          return (
-            <button
-              key={s.key}
-              onClick={() => setStepIndex(i)}
-              className={`flex items-center gap-3 p-3 rounded-lg transition
-                ${completed ? "bg-green-100 text-green-800" : ""}
-                ${
-                  active
-                    ? "bg-gray-100 text-gray-800 font-medium shadow-inner"
-                    : "hover:bg-gray-100 text-gray-700"
-                }`}
-            >
-              <span
-                className={`w-8 h-8 flex items-center justify-center rounded-full text-sm
-                    ${
-                      completed
-                        ? "bg-green-600 text-white"
-                        : active
-                        ? "bg-gray-600 text-white"
-                        : "bg-gray-200 text-gray-700"
-                    }`}
-              >
-                {completed ? <CheckCircleIcon className="w-4 h-4" /> : i + 1}
-              </span>
-              <span className="text-sm">{s.title}</span>
-            </button>
-          );
-        })}
-        <button
-          type="button"
-          onClick={() => setStepIndex(allSteps.length)}
-          className={`flex items-center gap-3 p-3 rounded-lg transition
-              ${
-                stepIndex === allSteps.length
-                  ? "bg-green-100 text-green-800"
-                  : "hover:bg-gray-100 text-gray-700"
-              }`}
-        >
-          <span className="w-8 h-8 flex items-center justify-center rounded-full text-sm bg-green-200 text-green-700">
-            ✔
-          </span>
-          <span className="text-sm">Review</span>
-        </button>
-      </nav>
-    </motion.aside>
+  //   {/* Sidebar - ANIMATED */}
+  //   <motion.aside
+  //     className="hidden md:flex w-64 flex-col bg-white shadow-lg p-4 sticky top-0 h-screen z-10 overflow-hidden" // Added overflow-hidden
+  //     initial={false} // Prevents animation on initial load
+  //     animate={{
+  //       width: stepIndex > 0 ? "16rem" : "0rem", // 16rem = w-64
+  //       padding: stepIndex > 0 ? "1rem" : "0rem", // 1rem = p-4
+  //     }}
+  //     transition={{ duration: 0.3, ease: "easeInOut" }}
+  //   >
+  //     <h2 className="text-xl font-semibold mb-6 text-gray-700">
+  //       Setup Wizard
+  //     </h2>
+  //     <nav className="flex flex-col gap-4 overflow-y-auto">
+  //       {allSteps.map((s, i) => {
+  //         const completed = i < stepIndex;
+  //         const active = i === stepIndex;
+  //         return (
+  //           <button
+  //             key={s.key}
+  //             onClick={() => setStepIndex(i)}
+  //             className={`flex items-center gap-3 p-3 rounded-lg transition
+  //               ${completed ? "bg-green-100 text-green-800" : ""}
+  //               ${
+  //                 active
+  //                   ? "bg-gray-100 text-gray-800 font-medium shadow-inner"
+  //                   : "hover:bg-gray-100 text-gray-700"
+  //               }`}
+  //           >
+  //             <span
+  //               className={`w-8 h-8 flex items-center justify-center rounded-full text-sm
+  //                   ${
+  //                     completed
+  //                       ? "bg-green-600 text-white"
+  //                       : active
+  //                       ? "bg-gray-600 text-white"
+  //                       : "bg-gray-200 text-gray-700"
+  //                   }`}
+  //             >
+  //               {completed ? <CheckCircleIcon className="w-4 h-4" /> : i + 1}
+  //             </span>
+  //             <span className="text-sm">{s.title}</span>
+  //           </button>
+  //         );
+  //       })}
+  //       <button
+  //         type="button"
+  //         onClick={() => setStepIndex(allSteps.length)}
+  //         className={`flex items-center gap-3 p-3 rounded-lg transition
+  //             ${
+  //               stepIndex === allSteps.length
+  //                 ? "bg-green-100 text-green-800"
+  //                 : "hover:bg-gray-100 text-gray-700"
+  //             }`}
+  //       >
+  //         <span className="w-8 h-8 flex items-center justify-center rounded-full text-sm bg-green-200 text-green-700">
+  //           ✔
+  //         </span>
+  //         <span className="text-sm">Review</span>
+  //       </button>
+  //     </nav>
+  //   </motion.aside>
 
-    {/* Main Content - CLASS ADJUSTMENT MADE */}
-    <main className="flex-1 flex flex-col py-6 relative">
+  //   {/* Main Content - CLASS ADJUSTMENT MADE */}
+  //   <main className="flex-1 flex flex-col py-6 relative">
       
-      {/* Progress Bar & Step Info - ANIMATED WRAPPER */}
-      <motion.div
-        className="overflow-hidden" // Clips content while height is 0
-        initial={{ height: 0, opacity: 0 }}
-        animate={{
-          height: stepIndex > 0 ? "auto" : 0,
-          opacity: stepIndex > 0 ? 1 : 0,
-        }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-      >
-        {/* Progress Bar */}
-        <div className="relative mb-4">
-          <div className="h-2 bg-gray-200 rounded-full">
-            <div
-              className="h-full bg-gray-600 rounded-full transition-all duration-300"
-              style={{ width: `${percent}%` }}
-            />
-          </div>
-          <div className="absolute inset-0 flex justify-between items-center px-1">
-            {Array.from({ length: totalSteps }).map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setStepIndex(i)}
-                className={`w-3 h-3 rounded-full focus:outline-none
-                      ${
-                        i <= stepIndex
-                          ? "bg-gray-600"
-                          : "bg-white border border-gray-300"
-                      }`}
-              />
-            ))}
-          </div>
-        </div>
+  //     {/* Progress Bar & Step Info - ANIMATED WRAPPER */}
+  //     <motion.div
+  //       className="overflow-hidden" // Clips content while height is 0
+  //       initial={{ height: 0, opacity: 0 }}
+  //       animate={{
+  //         height: stepIndex > 0 ? "auto" : 0,
+  //         opacity: stepIndex > 0 ? 1 : 0,
+  //       }}
+  //       transition={{ duration: 0.3, ease: "easeInOut" }}
+  //     >
+  //       {/* Progress Bar */}
+  //       <div className="relative mb-4">
+  //         <div className="h-2 bg-gray-200 rounded-full">
+  //           <div
+  //             className="h-full bg-gray-600 rounded-full transition-all duration-300"
+  //             style={{ width: `${percent}%` }}
+  //           />
+  //         </div>
+  //         <div className="absolute inset-0 flex justify-between items-center px-1">
+  //           {Array.from({ length: totalSteps }).map((_, i) => (
+  //             <button
+  //               key={i}
+  //               onClick={() => setStepIndex(i)}
+  //               className={`w-3 h-3 rounded-full focus:outline-none
+  //                     ${
+  //                       i <= stepIndex
+  //                         ? "bg-gray-600"
+  //                         : "bg-white border border-gray-300"
+  //                     }`}
+  //             />
+  //           ))}
+  //         </div>
+  //       </div>
 
-        {/* Step Info (Desktop only) */}
-        <div className="hidden md:flex justify-between mb-2 text-sm text-gray-500">
-          <span>
-            Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}
-          </span>
-          <span>{currentTitle}</span>
-        </div>
-      </motion.div>
+  //       {/* Step Info (Desktop only) */}
+  //       <div className="hidden md:flex justify-between mb-2 text-sm text-gray-500">
+  //         <span>
+  //           Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}
+  //         </span>
+  //         <span>{currentTitle}</span>
+  //       </div>
+  //     </motion.div>
 
-      {/* Step Content */}
-      <div className="bg-white flex-1 overflow-auto min-h-[60vh]">
-        {StepContent}
-      </div>
+  //     {/* Step Content */}
+  //     <div className="bg-white flex-1 overflow-auto min-h-[60vh]">
+  //       {StepContent}
+  //     </div>
 
-      {/* Navigation Buttons (Sticky on Mobile) */}
-      <div className="sticky bottom-0 bg-white border-t pt-3 mt-6 flex justify-between px-4 sm:px-6 py-3 md:static md:bg-transparent md:border-0 md:pt-6">
-        <button
-          type="button"
-          disabled={stepIndex === 0}
-          onClick={prev}
-          className={`px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 text-sm ${stepIndex === 0 ? "hidden" : ""}`}
-        >
-          ← Back
-        </button>
+  //     {/* Navigation Buttons (Sticky on Mobile) */}
+  //     <div className="sticky bottom-0 bg-white border-t pt-3 mt-6 flex justify-between px-4 sm:px-6 py-3 md:static md:bg-transparent md:border-0 md:pt-6">
+  //       <button
+  //         type="button"
+  //         disabled={stepIndex === 0}
+  //         onClick={prev}
+  //         className={`px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 text-sm ${stepIndex === 0 ? "hidden" : ""}`}
+  //       >
+  //         ← Back
+  //       </button>
 
-        {stepIndex < allSteps.length ? (
-          <button
-            type="button"
-            onClick={next}
-            className="px-4 py-2 rounded-md bg-gray-600 text-white hover:bg-gray-700 text-sm"
-          >
-            Continue →
-          </button>
-        ) : (
-          <button
-            onClick={handleSubmit}
-            className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 text-sm"
-          >
-            {isSubmitting ? "Uploading..." : "Submit Store"}
-          </button>
-        )}
-      </div>
-    </main>
-  </div>
-  );
+  //       {stepIndex < allSteps.length ? (
+  //         <button
+  //           type="button"
+  //           onClick={next}
+  //           className="px-4 py-2 rounded-md bg-gray-600 text-white hover:bg-gray-700 text-sm"
+  //         >
+  //           Continue →
+  //         </button>
+  //       ) : (
+  //         <button
+  //           onClick={handleSubmit}
+  //           className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 text-sm"
+  //         >
+  //           {isSubmitting ? "Uploading..." : "Submit Store"}
+  //         </button>
+  //       )}
+  //     </div>
+  //   </main>
+  // </div>
+  // );
 }
 
 // Helper to render review info for each step
