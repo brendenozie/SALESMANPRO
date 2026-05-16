@@ -98,7 +98,7 @@ export default async function RootLayout({
       />
       <link rel="alternate" type="application/rss+xml" href={`${basePath}/feed.xml`} />
 
-      <body className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100 font-sans">
+      <body className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100 font-sans dark:bg-gray-900">
         {/* ✅ Pass session down to Providers */}
         <Providers session={session}>
           {/* This component will handle the token on page load */}
