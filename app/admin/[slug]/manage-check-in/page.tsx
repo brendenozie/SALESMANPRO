@@ -1,8 +1,7 @@
-import React from 'react';
-import { cookies } from 'next/headers';
-import AdminCheckinClient from './AdminCheckinClient';
+import React from "react";
+import { cookies } from "next/headers";
+import AdminCheckinClient from "./AdminCheckinClient";
 
-// Define Data Types (must match Client Component)
 type Event = {
   id: string;
   title: string;
@@ -10,21 +9,14 @@ type Event = {
 };
 
 interface Props {
-  params:Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
 }
 
-// Define the API URL based on the environment
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-/**
- * Server Component for the Admin Check-in page.
- * Fetches the initial list of events on the server for performance
- * and passes them to the client component for interactive check-in logic.
- */
 export default async function AdminCheckinPage({ params }: Props) {
-  const { slug : adminSlug} = await params;
+  const { slug: adminSlug } = await params;
 
-  // 1. Get cookies for authentication in the server environment
   const cookiesHeader = (await cookies())
     .getAll()
     .map((c) => `${c.name}=${c.value}`)
@@ -34,46 +26,39 @@ export default async function AdminCheckinPage({ params }: Props) {
   let error: string | null = null;
 
   try {
-    // 2. Server-side fetch for the initial list of events
-    const fetchUrl = `${apiBaseUrl}/admin/${adminSlug}/events?status=SCHEDULED&fields=id,title,startDateTime`;
-
+    const fetchUrl = `${apiBaseUrl}/admin/events?companyId=${encodeURIComponent(adminSlug)}`;//status=SCHEDULED&
     const response = await fetch(fetchUrl, {
-      next: { revalidate: 60 }, // Ensure we get fresh data
-      headers: { cookie: cookiesHeader }, // Pass auth cookies
+      next: { revalidate: 15 },
+      headers: { cookie: cookiesHeader },
     });
 
     if (!response.ok) {
-      // Attempt to parse error message if available
       const errorData = await response.json();
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
-    // Assuming the API returns the event list nested under 'data.events'
-    initialEvents = (data.data?.events || []) as Event[];
 
+    console.log("Fetched events for check-in management:", data);
+
+    initialEvents = (data.data?.events || []) as Event[];
   } catch (err: any) {
-    // console.error("AdminCheckinPage initial event fetch error:", err.message);
-    error = "Failed to load events. Check API connectivity or user authorization.";
+    error = "Failed to synchronize upcoming scheduled records with the entrance workspace.";
   }
   
-  // 3. Render a server-side error message if the fetch failed
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-950 text-red-400 p-8 sm:p-12 font-sans">
-        <h1 className="text-4xl font-bold mb-4">Check-in Error 😟</h1>
-        <p>An error occurred while trying to load the initial event list.</p>
-        <p className="mt-2 text-red-300">**Details:** {error}</p>
-        <p className="mt-4 text-gray-500 text-sm">Organization Slug: {adminSlug}</p>
+      <div className="min-h-screen bg-slate-950 text-rose-400 flex flex-col items-center justify-center p-6 text-center font-sans">
+        <div className="max-w-md p-6 bg-white/[0.02] backdrop-blur-xl border border-rose-500/20 rounded-2xl shadow-2xl">
+          <h1 className="text-2xl font-black mb-2 text-white">Synchronization Error 🚨</h1>
+          <p className="text-slate-400 text-sm mb-4">{error}</p>
+          <div className="text-xs text-slate-500 bg-black/40 py-2 px-3 rounded-lg font-mono">
+            {/* Org Identifier: {adminSlug} */}
+          </div>
+        </div>
       </div>
     );
   }
 
-  // 4. Pass the fetched events to the Client Component
-  return (
-    <AdminCheckinClient
-      adminSlug={adminSlug}
-      initialEvents={initialEvents}
-    />
-  );
+  return <AdminCheckinClient adminSlug={adminSlug} initialEvents={initialEvents} />;
 }

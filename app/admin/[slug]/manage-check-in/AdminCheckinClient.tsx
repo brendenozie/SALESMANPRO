@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   QrCodeIcon,
   CalendarIcon,
@@ -10,14 +10,9 @@ import {
   XCircleIcon,
   UsersIcon,
   ExclamationCircleIcon,
-  ArrowPathIcon,
-} from '@heroicons/react/24/outline';
+  ArrowPathIcon
+} from "@heroicons/react/24/outline";
 
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
-
-
-// Define Data Types
 type Event = {
   id: string;
   title: string;
@@ -25,7 +20,7 @@ type Event = {
 };
 
 type Attendee = {
-  id: string; // registrationId
+  id: string;
   name: string;
   email: string;
   ticketType: string;
@@ -33,48 +28,40 @@ type Attendee = {
 };
 
 type Message = {
-  type: 'success' | 'error';
+  type: "success" | "error";
   text: string;
-};
-
-// Framer Motion variants
-const sectionVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.7, ease: "easeOut" },
-  },
-};
-
-const attendeeCardVariants = {
-  hidden: { opacity: 0, scale: 0.9 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.5, ease: "easeOut" },
-  },
 };
 
 interface Props {
   adminSlug: string;
-  // This data is pre-fetched on the server
   initialEvents: Event[];
 }
 
 export default function AdminCheckinClient({ adminSlug, initialEvents }: Props) {
-  // Use initial data passed from Server Component
-  const [events] = useState<Event[]>(initialEvents); 
-  const [selectedEventId, setSelectedEventId] = useState('');
+  const [events] = useState<Event[]>(initialEvents);
+  const [selectedEventId, setSelectedEventId] = useState("");
   const [attendees, setAttendees] = useState<Attendee[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [message, setMessage] = useState<Message | null>(null);
   const [isLoadingAttendees, setIsLoadingAttendees] = useState(false);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const messageTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // Function to fetch attendees for the currently selected event and search term
+
+  // Runtime context statistics generation
+  const activeStats = useMemo(() => {
+    if (!selectedEventId) return { total: 0, checkedIn: 0, missing: 0 };
+    const total = attendees.length;
+    const checkedIn = attendees.filter((a) => a.checkedIn).length;
+    return {
+      total,
+      checkedIn,
+      missing: total - checkedIn,
+    };
+  }, [attendees, selectedEventId]);
+
+  // Fetch attendees based on chosen context
   const fetchAttendeesForEvent = async () => {
     if (!selectedEventId) {
       setAttendees([]);
@@ -83,270 +70,295 @@ export default function AdminCheckinClient({ adminSlug, initialEvents }: Props) 
     setIsLoadingAttendees(true);
     setError(null);
     try {
-      // Use relative path for client-side API calls
-      const query = new URLSearchParams({
-        search: searchTerm,
-      }).toString();
-      
-      const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/events/${selectedEventId}/check-in-attendees?${query}`);
-      
+      const query = new URLSearchParams({ search: searchTerm }).toString();
+      const response = await fetch(
+        `/api/admin/events/${selectedEventId}/check-in-attendees?${query}`
+      );
+
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.message || `HTTP Code: ${response.status}`);
       }
-      
+
       const data: Attendee[] = await response.json();
       setAttendees(data);
     } catch (err: any) {
-      setError(err.message || "Failed to fetch attendees for event.");
-      // console.error("Attendees check-in fetch error:", err);
+      setError(err.message || "Failed to download registration roster context files.");
     } finally {
       setIsLoadingAttendees(false);
     }
   };
 
-  // Debounced effect to refetch attendees when the event or search term changes
+  // Debounced input watcher logic
   useEffect(() => {
     const handler = setTimeout(() => {
       if (selectedEventId && adminSlug) {
         fetchAttendeesForEvent();
       } else {
-        setAttendees([]); 
+        setAttendees([]);
       }
-    }, 300); // 300ms debounce time
+    }, 250);
 
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [selectedEventId, adminSlug, searchTerm]); 
+    return () => clearTimeout(handler);
+  }, [selectedEventId, adminSlug, searchTerm]);
 
-  // Message timeout effect
+  // Alert dismiss handler
   useEffect(() => {
     if (message) {
-      if (messageTimeoutRef.current) {
-        clearTimeout(messageTimeoutRef.current);
-      }
-      messageTimeoutRef.current = setTimeout(() => {
-        setMessage(null);
-      }, 5000);
+      if (messageTimeoutRef.current) clearTimeout(messageTimeoutRef.current);
+      messageTimeoutRef.current = setTimeout(() => setMessage(null), 4000);
     }
     return () => {
-      if (messageTimeoutRef.current) {
-        clearTimeout(messageTimeoutRef.current);
-      }
+      if (messageTimeoutRef.current) clearTimeout(messageTimeoutRef.current);
     };
   }, [message]);
 
+  // Action status mapping transaction handler
   const handleToggleCheckIn = async (registrationId: string, currentCheckedInStatus: boolean) => {
-    setIsLoadingAttendees(true);
+    setUpdatingId(registrationId);
     setError(null);
     try {
       const newStatus = currentCheckedInStatus ? "REGISTERED" : "ATTENDED";
-      const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/check-in/${registrationId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch(`/api/admin/check-in/${registrationId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.message || "Mutation execution exception.");
       }
 
       const result = await response.json();
-      setMessage({
-        type: result.attendee.checkedIn ? 'success' : 'error',
-        text: result.message
-      });
       
-      // Update the local state directly for immediate visual feedback
-      setAttendees(prevAttendees => 
-        prevAttendees.map(att => 
-          att.id === registrationId 
-            ? { ...att, checkedIn: result.attendee.checkedIn } 
-            : att
+      setMessage({
+        type: result.attendee.checkedIn ? "success" : "error",
+        text: result.message,
+      });
+
+      // Synchronize client-state array changes immediately
+      setAttendees((prev) =>
+        prev.map((att) =>
+          att.id === registrationId ? { ...att, checkedIn: result.attendee.checkedIn } : att
         )
       );
-
     } catch (err: any) {
-      setError(err.message || "Failed to update check-in status.");
-      setMessage({ type: 'error', text: err.message || "Failed to update check-in status." });
-      // console.error("Toggle check-in error:", err);
+      setMessage({ type: "error", text: err.message || "Failed to mutate access verification index status." });
     } finally {
-      setIsLoadingAttendees(false);
+      setUpdatingId(null);
     }
   };
 
-  const hasEventsToSelect = events.length > 0;
-
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-200 p-8 sm:p-12 font-sans relative overflow-hidden">
-      {/* Decorative Background Elements and Styles */}
-      <style jsx global>{`
-        @keyframes blob {
-          0%, 100% {
-            transform: translate(0, 0) scale(1);
-          }
-          33% {
-            transform: translate(30px, -50px) scale(1.1);
-          }
-          66% {
-            transform: translate(-20px, 20px) scale(0.9);
-          }
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-      `}</style>
+    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 sm:p-12 font-sans relative overflow-hidden">
+      {/* Dynamic Aesthetic Blur Backdrops */}
+      <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[140px] pointer-events-none animate-pulse"></div>
+      <div className="absolute bottom-[-15%] right-[-5%] w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
 
-      <div className="absolute top-1/4 left-0 w-96 h-96 bg-indigo-600/10 rounded-full filter blur-3xl opacity-50 animate-blob"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-600/10 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
+      <div className="max-w-7xl mx-auto relative z-10 space-y-8">
+        
+        {/* Dynamic Title Structure */}
+        <div>
+          <motion.h1
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl"
+          >
+            Entrance <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-indigo-400 to-pink-500">Gate Check-in</span>
+          </motion.h1>
+          <p className="mt-2 text-slate-400 text-sm sm:text-base">
+            Live pass matching, digital badge scanning reconciliation, and entry log operations workspace.
+          </p>
+        </div>
 
-      <div className="max-w-7xl mx-auto relative z-10">
-        <motion.h1
-          initial="hidden"
-          animate="visible"
-          variants={sectionVariants}
-          className="text-4xl sm:text-5xl font-black tracking-tighter text-white mb-4"
-        >
-          Event <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-500">Check-in</span>
-        </motion.h1>
-        <motion.p
-          initial="hidden"
-          animate="visible"
-          variants={sectionVariants}
-          transition={{ delay: 0.2 }}
-          className="text-lg text-gray-300 mb-12"
-        >
-          Efficiently check in attendees at your event entrance.
-        </motion.p>
-
-        <div className="bg-gray-800 p-8 rounded-2xl shadow-lg border border-gray-700">
-          <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-            <div className="relative w-full sm:w-1/2">
-              <label htmlFor="event-select" className="sr-only">Select Event</label>
-              <select
-                id="event-select"
-                value={selectedEventId}
-                onChange={(e) => {
-                    setSelectedEventId(e.target.value);
-                    setSearchTerm(''); // Clear search when event changes
-                }}
-                className="block w-full bg-gray-900 border border-gray-700 text-white py-3 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-gray-700 focus:border-indigo-500 appearance-none"
+        {/* Global Dynamic Message/Alert Bar */}
+        <div className="h-14 relative w-full overflow-hidden">
+          <AnimatePresence mode="wait">
+            {message && (
+              <motion.div
+                initial={{ opacity: 0, y: -15, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 15, scale: 0.98 }}
+                className={`w-full p-4 rounded-xl flex items-center gap-3 border text-sm font-medium backdrop-blur-xl ${
+                  message.type === "success"
+                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-lg shadow-emerald-500/5"
+                    : "bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-lg shadow-rose-500/5"
+                }`}
               >
-                <option value="">
-                  {hasEventsToSelect ? '-- Select an Event --' : '-- No Events Available --'}
+                {message.type === "success" ? (
+                  <CheckCircleIcon className="w-5 h-5 flex-shrink-0 animate-bounce" />
+                ) : (
+                  <XCircleIcon className="w-5 h-5 flex-shrink-0" />
+                )}
+                <p>{message.text}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Interactive Filtering Strategy Deck */}
+        <div className="bg-white/[0.02] backdrop-blur-xl border border-white/[0.06] p-5 rounded-2xl shadow-2xl grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+          <div className="relative">
+            <select
+              value={selectedEventId}
+              onChange={(e) => {
+                setSelectedEventId(e.target.value);
+                setSearchTerm("");
+              }}
+              className="w-full bg-slate-900 border border-white/[0.08] text-slate-200 py-3.5 px-4 pr-10 rounded-xl focus:outline-none focus:border-indigo-500 text-sm appearance-none cursor-pointer hover:bg-slate-900/80 transition"
+            >
+              <option value="">
+                {events.length > 0 ? "—— Select Targeted Production Event ——" : "No Scheduled Contexts Discovered"}
+              </option>
+              {events.map((event) => (
+                <option key={event.id} value={event.id}>
+                  {event.title} ({new Date(event.startDateTime).toLocaleDateString()})
                 </option>
-                {events.map(event => (
-                  <option key={event.id} value={event.id}>{event.title} ({new Date(event.startDateTime).toLocaleDateString()})</option>
-                ))}
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
-                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-              </div>
-            </div>
-            <div className="relative w-full sm:w-1/2">
-              <input
-                type="text"
-                placeholder="Search attendee by name or email..."
-                className="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-indigo-500"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                disabled={!selectedEventId || isLoadingAttendees}
-              />
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            </div>
+              ))}
+            </select>
+            <CalendarIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
           </div>
 
-          {error && (
-            <div className="bg-red-900/50 text-red-300 border border-red-700 p-4 rounded-lg mb-6 flex items-center gap-3">
-              <ExclamationCircleIcon className="w-6 h-6" />
-              <p>{error}</p>
-            </div>
-          )}
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Query ticket holder name or verified profile email email..."
+              className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-slate-900 border border-white/[0.08] text-white focus:outline-none focus:border-indigo-500 text-sm transition disabled:opacity-40 disabled:cursor-not-allowed"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              disabled={!selectedEventId || isLoadingAttendees}
+            />
+            <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          </div>
+        </div>
 
-          {message && (
+        {/* Live Counter Display Sub-Bar */}
+        <AnimatePresence>
+          {selectedEventId && !isLoadingAttendees && (
             <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${
-                message.type === 'success' ? 'bg-green-900/50 text-green-300 border border-green-700' : 'bg-red-900/50 text-red-300 border border-red-700'
-              }`}
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="grid grid-cols-3 gap-4"
             >
-              {message.type === 'success' ? <CheckCircleIcon className="w-6 h-6" /> : <XCircleIcon className="w-6 h-6" />}
-              <p>{message.text}</p>
+              {[
+                { label: "Roster Sync", val: activeStats.total, color: "text-indigo-400", bg: "bg-indigo-500/5" },
+                { label: "Inside Gate", val: activeStats.checkedIn, color: "text-emerald-400", bg: "bg-emerald-500/5" },
+                { label: "Awaiting", val: activeStats.missing, color: "text-amber-400", bg: "bg-amber-500/5" },
+              ].map((c) => (
+                <div key={c.label} className={`p-4 rounded-xl border border-white/[0.04] ${c.bg} flex flex-col justify-center items-center text-center`}>
+                  <span className="text-[10px] font-bold tracking-widest uppercase text-slate-400">{c.label}</span>
+                  <span className={`text-2xl font-black mt-1 ${c.color}`}>{c.val}</span>
+                </div>
+              ))}
             </motion.div>
           )}
+        </AnimatePresence>
 
-          {/* Conditional Rendering based on state */}
-          {!hasEventsToSelect ? (
-            <div className="text-center py-10 text-gray-400 italic flex flex-col items-center">
-              <ExclamationCircleIcon className="w-12 h-12 mb-4 text-gray-600" />
-              <p>No events available for check-in.</p>
-              <p className="text-sm">Please create events in the "Events" section.</p>
-            </div>
-          ) : !selectedEventId ? (
-            <div className="text-center py-10 text-gray-400 italic flex flex-col items-center">
-              <CalendarIcon className="w-12 h-12 mb-4 text-gray-600" />
-              <p>Please select an event from the dropdown to view attendees.</p>
-            </div>
-          ) : isLoadingAttendees ? (
-            <div className="text-center py-10">
-              <ArrowPathIcon className="w-16 h-16 animate-spin text-indigo-500 mx-auto" />
-              <p className="mt-4 text-xl text-gray-400">Loading attendees for this event...</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {attendees.length === 0 ? (
-                <div className="md:col-span-2 lg:col-span-3 text-center py-10 text-gray-400 italic flex flex-col items-center bg-gray-900 p-6 rounded-lg border border-gray-700">
-                  <ExclamationCircleIcon className="w-12 h-12 mb-4 text-gray-600" />
-                  <p>No attendees found for this event or matching your search.</p>
-                  <p className="text-sm">Ensure attendees have registered for this event.</p>
-                </div>
-              ) : (
-                attendees.map((attendee, index) => (
-                  <motion.div
-                    key={attendee.id}
-                    variants={attendeeCardVariants}
-                    initial="hidden"
-                    animate="visible"
-                    transition={{ delay: index * 0.05 }}
-                    className="bg-gray-900 p-6 rounded-2xl shadow-md border border-gray-700 flex flex-col justify-between"
-                  >
-                    <div>
-                      <h3 className="text-xl font-semibold text-white mb-2 flex items-center">
-                        <UsersIcon className="w-6 h-6 mr-2 text-purple-400" /> {attendee.name}
-                      </h3>
-                      <p className="text-gray-400 text-sm mb-1">{attendee.email}</p>
-                      <p className="text-gray-500 text-xs mb-4">{attendee.ticketType}</p>
-                    </div>
-                    <div className="flex items-center justify-between mt-4">
-                      <span className={`px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full ${
-                        attendee.checkedIn ? 'bg-green-900/30 text-green-400' : 'bg-yellow-900/30 text-yellow-400'
-                      }`}>
-                        {attendee.checkedIn ? 'Checked In' : 'Not Checked In'}
-                      </span>
-                      <button
-                        onClick={() => handleToggleCheckIn(attendee.id, attendee.checkedIn)}
-                        className={`px-4 py-2 rounded-lg font-medium text-white transition-colors duration-200 flex items-center gap-2
-                          ${attendee.checkedIn ? 'bg-red-600 hover:bg-red-700' : 'bg-indigo-600 hover:bg-indigo-700'}`}
-                        disabled={isLoadingAttendees}
-                      >
-                        {isLoadingAttendees ? (
-                          <ArrowPathIcon className="w-5 h-5 animate-spin" />
-                        ) : attendee.checkedIn ? 'Check Out' : 'Check In'}
-                        {!isLoadingAttendees && (attendee.checkedIn ? <XCircleIcon className="w-5 h-5" /> : <CheckCircleIcon className="w-5 h-5" />)}
-                      </button>
-                    </div>
-                  </motion.div>
-                ))
-              )}
+        {/* Workspace Display Grid Core Logic */}
+        <div className="min-h-[300px] relative">
+          {error && (
+            <div className="bg-rose-500/10 text-rose-400 border border-rose-500/20 p-4 rounded-xl flex items-center gap-3">
+              <ExclamationCircleIcon className="w-5 h-5 flex-shrink-0" />
+              <p className="text-sm font-medium">{error}</p>
             </div>
           )}
+
+          {!selectedEventId ? (
+            <div className="text-center py-20 text-slate-500 bg-white/[0.01] border border-dashed border-white/[0.06] rounded-2xl flex flex-col items-center justify-center">
+              <QrCodeIcon className="w-12 h-12 mb-3 text-slate-600 animate-pulse" />
+              <p className="text-sm font-medium">Workspace Standby Mode</p>
+              <p className="text-xs text-slate-600 mt-1">Select an active production session sequence layout to open terminal channels.</p>
+            </div>
+          ) : isLoadingAttendees ? (
+            <div className="text-center py-20 bg-white/[0.01] border border-white/[0.04] rounded-2xl flex flex-col items-center justify-center">
+              <ArrowPathIcon className="w-10 h-10 animate-spin text-indigo-500" />
+              <p className="mt-3 text-sm font-semibold text-slate-400">Reconciling internal manifest streams...</p>
+            </div>
+          ) : (
+            <motion.div
+              layout
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+            >
+              <AnimatePresence mode="popLayout">
+                {attendees.length === 0 ? (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="col-span-full text-center py-16 text-slate-500 bg-slate-900/40 rounded-2xl border border-white/[0.04] flex flex-col items-center justify-center"
+                  >
+                    <UsersIcon className="w-10 h-10 text-slate-600 mb-2" />
+                    <p className="text-sm font-medium">No Registrations Discovered</p>
+                    <p className="text-xs text-slate-600 mt-0.5">No names match active criteria filters.</p>
+                  </motion.div>
+                ) : (
+                  attendees.map((attendee, idx) => (
+                    <motion.div
+                      key={attendee.id}
+                      layoutId={attendee.id}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.2, delay: Math.min(idx * 0.02, 0.2) }}
+                      className={`p-5 rounded-2xl border flex flex-col justify-between transition-all duration-300 shadow-xl ${
+                        attendee.checkedIn
+                          ? "bg-emerald-500/[0.02] border-emerald-500/20 shadow-emerald-950/20"
+                          : "bg-white/[0.02] border-white/[0.06] shadow-black/40 hover:border-white/[0.12]"
+                      }`}
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className="text-base font-bold text-white tracking-tight truncate max-w-[80%]">
+                            {attendee.name}
+                          </h3>
+                          <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-extrabold tracking-wider uppercase flex-shrink-0 ${
+                            attendee.ticketType.includes("VIP")
+                              ? "bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/20"
+                              : "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
+                          }`}>
+                            {attendee.ticketType}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-400 truncate font-medium">{attendee.email}</p>
+                      </div>
+
+                      <div className="flex items-center justify-between mt-6 pt-4 border-t border-white/[0.04]">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                          attendee.checkedIn
+                            ? "bg-emerald-500/10 text-emerald-400"
+                            : "bg-amber-500/10 text-amber-400"
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${attendee.checkedIn ? "bg-emerald-400" : "bg-amber-400"}`} />
+                          {attendee.checkedIn ? "Passed Gate" : "Awaiting Clearence"}
+                        </span>
+
+                        <button
+                          onClick={() => handleToggleCheckIn(attendee.id, attendee.checkedIn)}
+                          disabled={updatingId === attendee.id}
+                          className={`px-4 py-2 rounded-xl text-xs font-bold tracking-tight border inline-flex items-center gap-1.5 transition disabled:opacity-40 select-none ${
+                            attendee.checkedIn
+                              ? "bg-slate-900/80 border-white/[0.08] text-slate-300 hover:bg-rose-950/30 hover:text-rose-400 hover:border-rose-500/30"
+                              : "bg-indigo-600 border-indigo-500 text-white hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-indigo-600/10"
+                          }`}
+                        >
+                          {updatingId === attendee.id ? (
+                            <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" />
+                          ) : attendee.checkedIn ? (
+                            <span>Check Out</span>
+                          ) : (
+                            <span>Check In</span>
+                          )}
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))
+                )}
+              </AnimatePresence>
+            </motion.div>
+          )}
         </div>
+        
       </div>
     </div>
   );
