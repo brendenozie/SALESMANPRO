@@ -1,6 +1,5 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
-
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -16,8 +15,8 @@ async function handleGetLocations(request: Request) {
   const { searchParams } = new URL(request.url);
   const slug = searchParams.get("slug");
   const adminSlug = searchParams.get("adminSlug");
-  
-  const cacheKey = `admin:locations:${slug || adminSlug || 'global' || 'global'}:all`;
+
+  const cacheKey = `admin:locations:${slug || adminSlug || "global" || "global"}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -25,7 +24,7 @@ async function handleGetLocations(request: Request) {
   } catch (e) {}
   const rawLocations = await prisma.location.findMany({
     orderBy: {
-      sortOrder: 'asc', // Order by sortOrder for consistent list/tree building
+      sortOrder: "asc", // Order by sortOrder for consistent list/tree building
     },
     select: {
       id: true,
@@ -54,34 +53,39 @@ async function handleGetLocations(request: Request) {
       localization: true,
       attributes: true,
     },
-    where: {
-      OR: [
-       {
-        //company location is empty 
-        CompanyLocation : {
-          none: {}
-        }
-       }
-      ],
-    },
+    // where: {
+    //   OR: [
+    //     {
+    // companyId: null, // Global locations
+    //company location is empty
+    // CompanyLocation: {
+    //   none: {},
+    // },
+    //     },
+    //   ],
+    // },
   });
 
+  const locations = rawLocations.map((loc) => ({
+    ...loc,
+    name: loc.name ?? "Unnamed Location",
+    slug: loc.slug ?? `location-${loc.id}`,
+    description: loc.description ?? "",
+    country: loc.country ?? "Unknown",
+  }));
 
-   const locations = rawLocations.map((loc) => ({
-      ...loc,
-      name: loc.name ?? "Unnamed Location",
-      slug: loc.slug ?? `location-${loc.id}`,
-      description: loc.description ?? "",
-      country: loc.country ?? "Unknown",
-    }));
-
-    // return formatResponse(true, locations, "Locations fetched successfully", 20);
+  // return formatResponse(true, locations, "Locations fetched successfully", 20);
   try {
-      await cacheSet(cacheKey, { data: locations }, 60);
+    await cacheSet(cacheKey, { data: locations }, 60);
   } catch (e) {}
 
   // withApiHandler will wrap this result in formatResponse(true, { data: locations }) with status 200
-  return formatResponse(true, { data: locations }, "Locations fetched successfully", 200);
+  return formatResponse(
+    true,
+    { data: locations },
+    "Locations fetched successfully",
+    200,
+  );
 }
 
 // --- POST Handler ---
@@ -125,7 +129,12 @@ async function handlePostLocation(request: Request) {
     where: { slug },
   });
   if (existingLocation) {
-    return formatResponse(false, null, `Location with slug '${slug}' already exists`, 409);
+    return formatResponse(
+      false,
+      null,
+      `Location with slug '${slug}' already exists`,
+      409,
+    );
   }
 
   const newLocation = await prisma.location.create({
@@ -147,7 +156,7 @@ async function handlePostLocation(request: Request) {
       sortOrder: sortOrder ?? 0,
       visible: visible ?? true,
       createdBy: userId, // Use authenticated user ID
-      status: status ?? 'ACTIVE',
+      status: status ?? "ACTIVE",
       parentId: parentId || null,
       localization: localization || null,
       attributes: attributes || null,
@@ -155,9 +164,11 @@ async function handlePostLocation(request: Request) {
   });
 
   // Return success response with status 201 via formatResponse wrapped by withApiHandler
-  
-    try { await cacheDel(`admin:locations:${slug || 'global'}:*`); } catch (e) {}
-    return formatResponse(true, newLocation, null, 201);
+
+  try {
+    await cacheDel(`admin:locations:${slug || "global"}:*`);
+  } catch (e) {}
+  return formatResponse(true, newLocation, null, 201);
 }
 
 // Wrap the core logic with the API handler middleware

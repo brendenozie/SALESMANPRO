@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import prisma from "@/server/db/prismadb";
-import PropertyDetailsClient from "./PropertyDetailsClient";
+import TravelDestinationView from "./PropertyDetailsClient";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +9,6 @@ interface PageProps {
   params: { id: string };
 }
 
-// 1. Dynamic SEO Metadata
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const listing = await prisma.marketplaceListings.findUnique({
     where: { id: params.id },
@@ -18,48 +17,40 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!listing) return { title: "Property Not Found" };
 
-  // Ensure images are strings suitable for openGraph.images (OGImage | OGImage[])
   const images: string[] = Array.isArray(listing.images)
-    ? listing.images.filter((img): img is string => typeof img === "string")
+    ? listing.images
+        .map((img: any) => typeof img === "string" ? img : img?.url)
+        .filter((src): src is string => typeof src === "string")
     : [];
 
   return {
-    title: listing.name,
-    description: listing.description?.slice(0, 160),
+    title: `${listing.name} | Premium Experience`,
+    description: listing.description?.slice(0, 160) || "Explore this exclusive listing.",
     openGraph: {
-      images: images.length ? images : undefined,
+      title: listing.name,
+      description: listing.description?.slice(0, 160),
+      images: images.length ? [{ url: images[0] }] : undefined,
     },
   };
 }
 
-// 2. Main Page Component
 export default async function ListingPage({ params }: PageProps) {
-  // Fetch Listing + Seller Info
   const listing = await prisma.marketplaceListings.findUnique({
     where: { id: params.id },
-    // include: {
-      // seller: {
-      //   select: {
-      //     name: true,
-      //     image: true,
-      //     email: true,
-      //     phoneNumber: true,
-      //   },
-      // },
-    // },
   });
 
   if (!listing) return notFound();
 
-  // 3. Serialize Data (Convert Decimals to Numbers/Strings for Client)
+  // Bulletproof BigInt / Decimal serialization for Next.js Client Components
   const serializedListing = {
     ...listing,
     finalPrice: Number(listing.finalPrice || 0),
     sellingPrice: Number(listing.sellingPrice || 0),
     buyingPrice: Number(listing.buyingPrice || 0),
-    createdAt: listing.createdAt?.toISOString(),
-    updatedAt: listing.updatedAt?.toISOString(),
+    quantity: listing.quantity ? String(listing.quantity) : "0",
+    createdAt: listing.createdAt instanceof Date ? listing.createdAt.toISOString() : null,
+    updatedAt: listing.updatedAt instanceof Date ? listing.updatedAt.toISOString() : null,
   };
 
-  return <PropertyDetailsClient data={serializedListing} />;
+  return <TravelDestinationView product={serializedListing} company={null} />;
 }

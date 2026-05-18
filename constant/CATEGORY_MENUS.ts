@@ -1847,6 +1847,21 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: BuildingOfficeIcon,
     }, // vehicle-manage Manage all property listings (add, edit, delete, status)
     {
+      label: "Inquiries",
+      href: `/admin/${adminSlug}/inquiries`,
+      icon: ChatBubbleLeftRightIcon,
+    }, // Track and manage all property inquiries and messages
+    {
+      label: "Showings",
+      href: `/admin/${adminSlug}/showings`,
+      icon: CalendarDaysIcon,
+    }, // Schedule and manage property viewings
+    {
+      label: "Offers & Contracts",
+      href: `/admin/${adminSlug}/offers`,
+      icon: DocumentTextIcon,
+    }, // Manage offers, sales agreements, and contracts
+    {
       label: "Travel Experts",
       href: `/admin/${adminSlug}/travel-experts`,
       icon: UserGroupIcon,

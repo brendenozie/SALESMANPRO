@@ -137,10 +137,10 @@ export const CATEGORY_STEPS: Record<string, number[]> = {
   "Art Prints": [1, 2, 3, 7, 8, 9, 10, 12, 11],
 
   // — Travel & Experiences flow —
-  "Travel & Experiences": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+  "Travel & Experiences": [1, 2, 7, 15, 16, 17, 8, 10, 18, 12, 11],
   "Flight Tickets": [1, 2, 7, 8, 9, 10, 12, 11],
   "Hotel Bookings": [1, 2, 7, 8, 9, 10, 12, 11],
-  "Tour Packages": [1, 2, 7, 8, 9, 10, 12, 11],
+  "Tour Packages": [1, 2, 7, 8, 15, 16, 17, 8, 10, 18, 12, 11],
   "Event Tickets": [1, 2, 7, 8, 9, 10, 12, 11],
   "Travel Insurance": [1, 2, 7, 8, 9, 10, 12, 11],
 

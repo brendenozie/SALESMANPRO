@@ -59,20 +59,6 @@ export const ServiceSpecifics = ({ formData, setFormData }: ServiceSpecificsProp
     [formData.bookingSlots, setFormData]
   );
 
-  const handleAddSlot = useCallback(() => {
-    const currentSlots = formData.bookingSlots || [];
-    const newSlot: BookingSlotType = { date: '', time: '', capacity: 1 };
-    setFormData('bookingSlots', [...currentSlots, newSlot]); // Add new slot and update parent state
-  }, [formData.bookingSlots, setFormData]);
-
-  const handleRemoveSlot = useCallback(
-    (index: number) => {
-      const currentSlots = formData.bookingSlots || [];
-      const filteredSlots = currentSlots.filter((_, i) => i !== index); // Remove slot by index
-      setFormData('bookingSlots', filteredSlots); // Update parent state
-    },
-    [formData.bookingSlots, setFormData]
-  );
 
   return (
     <section className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
@@ -177,72 +163,6 @@ export const ServiceSpecifics = ({ formData, setFormData }: ServiceSpecificsProp
             </div>
           </section>
 
-          {/* Booking Slots */}
-          <section className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 sm:gap-0">
-              <h4 className="text-2xl font-bold text-gray-800">Specific Booking Slots</h4>
-              <button
-                type="button"
-                onClick={handleAddSlot}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-full shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-              >
-                <PlusCircleIcon className="-ml-1 mr-2 h-5 w-5" />
-                Add Booking Slot
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {(formData.bookingSlots || []).length === 0 && (
-                <p className="text-center text-gray-500 py-4">
-                  Define specific dates and times for your service.
-                </p>
-              )}
-              {(formData.bookingSlots || []).map((slot, index) => (
-                <div key={index} className="bg-gray-50 rounded-lg border border-gray-200 p-4 relative grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <h5 className="text-lg font-semibold text-gray-700 md:col-span-3 mb-2">Slot #{index + 1}</h5>
-                  <button
-                    onClick={() => handleRemoveSlot(index)}
-                    className="absolute top-3 right-3 text-red-500 hover:text-red-700 p-1 rounded-full bg-red-50 hover:bg-red-100 transition-colors"
-                    aria-label="Remove booking slot"
-                    title="Remove this booking slot"
-                  >
-                    <XMarkIcon className="w-5 h-5" />
-                  </button>
-
-                  <label className="block">
-                    <span className="text-gray-700 text-sm font-medium">Date</span>
-                    <input
-                      type="date"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
-                      value={slot.date}
-                      onChange={(e) => handleSlotChange(index, 'date', e.target.value)}
-                    />
-                  </label>
-
-                  <label className="block">
-                    <span className="text-gray-700 text-sm font-medium">Time</span>
-                    <input
-                      type="time"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
-                      value={slot.time}
-                      onChange={(e) => handleSlotChange(index, 'time', e.target.value)}
-                    />
-                  </label>
-
-                  <label className="block">
-                    <span className="text-gray-700 text-sm font-medium">Capacity for this slot</span>
-                    <input
-                      type="number"
-                      min={1}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
-                      value={slot.capacity}
-                      onChange={(e) => handleSlotChange(index, 'capacity', e.target.value)}
-                    />
-                  </label>
-                </div>
-              ))}
-            </div>
-          </section>
         </div>
       )}
     </section>

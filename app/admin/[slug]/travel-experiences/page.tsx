@@ -118,12 +118,15 @@ export default function TravelExperiencesManagementPage() {
   // --- Data Fetching for Locations ---
   const fetchLocations = useCallback(async () => {
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/locations`);
+      const response = await fetch(`${apiBaseUrl}/admin/locationsv2?companyId=${companyId}`,{
+        credentials: 'include',
+      });
       if (!response.ok) {
         const errorData = (await response.json()).data;
         throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
       }
-      const data = (await response.json()).data;
+      const data = (await response.json()).data.data;
+      console.log("[TravelExperiencesManagementPage] Fetched locations data:", data);
       setLocations(data || []);
     } catch (err: any) {
       // setError(`Failed to fetch locations: ${err.message}`); // Only set error if needed for UI
