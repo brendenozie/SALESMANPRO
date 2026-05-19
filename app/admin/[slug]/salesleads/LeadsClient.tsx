@@ -32,10 +32,19 @@ export default function LeadsClient({ initialLeads, companyId }: { initialLeads:
   const BATCH_SIZE = 10;
   const SMART_PAUSE_DURATION = 900; 
 
+  // const scripts = {
+  //   A: "Hi,{{businessName}}👋 hope you’re well. I work with small businesses to help them get more customers using simple websites. Quick question — do you currently use a website?",
+  //   B: "Hi,{{businessName}} 👋 Quick one — do you use a website for your business or side hustle?",
+  //   C: "Hi,{{businessName}} 👋 hope uko poa. Quick one — do you already have a website for your biashara?"
+  // };
+
+  
   const scripts = {
-    A: "Hi,{{businessName}}👋 hope you’re well. I work with small businesses to help them get more customers using simple websites. Quick question — do you currently use a website?",
-    B: "Hi,{{businessName}} 👋 Quick one — do you use a website for your business or side hustle?",
-    C: "Hi,{{businessName}} 👋 hope uko poa. Quick one — do you already have a website for your biashara?"
+    A: "Hi [Name], Brenden here. 👋 I help local businesses turn their hustle into a fully functional enterprise by building automated systems that bring in clients on autopilot.\n I noticed your page and love what you're doing. Quick question—are you guys still taking all your orders manually over WhatsApp, or do you have an automated system handling that for you?",
+    B: "Hi, Brenden here. 👋 I work with businesses to help them scale up into functional enterprises by setting up systems that consistently attract and convert premium clients.Quick one—is your business currently relying mostly on word-of-mouth referrals right now, or do you have a predictable digital system bringing in new clients every week?",
+    // C: "Hi,{{businessName}} 👋 Quick one — do you use a website for your business or side hustle?",
+    // D: "Hi,{{businessName}} 👋 hope uko poa. Quick one — do you already have a website for your biashara?"
+    // "Awesome, thanks for confirming! The reason I asked is because I see a lot of businesses losing up to 40% of their clients because of manual delays. I actually mapped out a quick blueprint on how you can turn your setup into a smooth, automated checkout enterprise. Can I drop a 2-minute breakdown here?"
   };
 
   const stages = [
