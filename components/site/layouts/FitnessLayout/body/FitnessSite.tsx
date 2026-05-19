@@ -448,7 +448,7 @@ export default function FitnessSite({ pageData, companyId }: { pageData: StoreFo
       const handleSearch = (filters: SearchFilters) => {
         // Implement actual search logic, e.g., navigate to a search results page
         // alert(`Searching in ${filters.location || 'all locations'} between KES ${filters.minPrice || 'any'} and KES ${filters.maxPrice || 'any'}`);
-        router.push(`/fitness/programs?location=${filters.location}&minPrice=${filters.minPrice}&maxPrice=${filters.maxPrice}`);
+        router.push(`/fitness/listings?location=${filters.location}&minPrice=${filters.minPrice}&maxPrice=${filters.maxPrice}`);
       };
     
       const handleNewsletter = (e: React.FormEvent) => {
