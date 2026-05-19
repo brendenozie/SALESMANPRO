@@ -481,7 +481,7 @@ export default function FitnessSite({ pageData, companyId }: { pageData: StoreFo
             } />
 
             {/* Filter Bar */}
-            <FilterBar  storeFormData={siteData || {}}  onSearch={()=>{}}  />
+            {/* <FilterBar  storeFormData={siteData || {}}  onSearch={()=>{}}  /> */}
 
             {/* Listings Grid */}
             <ListingsGrid courses={siteData?.courses}/>
