@@ -66,7 +66,9 @@ export default async function ProductListPage({ params, searchParams }: PageProp
       orderBy,
     }),
     prisma.marketplaceListings.count({ where }),
-    prisma.productCategory.findMany({ orderBy: { name: 'asc' } }),
+    prisma.productCategory.findMany({ 
+      where: { companyId: baseCompany.id },
+      orderBy: { name: 'asc' } }),
   ]);
 
   // Map Data
@@ -142,7 +144,7 @@ export default async function ProductListPage({ params, searchParams }: PageProp
         {/* --- PAGINATION --- */}
         <div className="flex justify-center items-center space-x-2 mt-16 mb-12">
             <a
-              href={`/${slug}/products?page=${pageNum - 1}&search=${encodeURIComponent(search || '')}&category=${categoryId || ''}&sort=${sortOption}`}
+              href={`/travel/lisitings?page=${pageNum - 1}&search=${encodeURIComponent(search || '')}&category=${categoryId || ''}&sort=${sortOption}`}
               className={`px-5 py-2.5 rounded-full border border-gray-200 bg-white text-sm font-semibold shadow-sm transition-all hover:bg-gray-50 ${pageNum <= 1 ? 'opacity-50 pointer-events-none' : ''}`}
             >
               Previous
@@ -151,7 +153,7 @@ export default async function ProductListPage({ params, searchParams }: PageProp
             {Array.from({ length: totalPages }, (_, i) => (
               <a
                 key={i}
-                href={`/${slug}/products?page=${i + 1}&search=${encodeURIComponent(search || '')}&category=${categoryId || ''}&sort=${sortOption}`}
+                href={`/travel/listings?page=${i + 1}&search=${encodeURIComponent(search || '')}&category=${categoryId || ''}&sort=${sortOption}`}
                 className={`w-10 h-10 flex items-center justify-center rounded-full text-sm font-semibold transition-all ${
                     i + 1 === pageNum 
                     ? 'bg-slate-900 text-white shadow-md scale-110' 
@@ -163,7 +165,7 @@ export default async function ProductListPage({ params, searchParams }: PageProp
             ))}
             </div>
             <a
-              href={`/${slug}/products?page=${pageNum + 1}&search=${encodeURIComponent(search || '')}&category=${categoryId || ''}&sort=${sortOption}`}
+              href={`/travel/listings?page=${pageNum + 1}&search=${encodeURIComponent(search || '')}&category=${categoryId || ''}&sort=${sortOption}`}
               className={`px-5 py-2.5 rounded-full border border-gray-200 bg-white text-sm font-semibold shadow-sm transition-all hover:bg-gray-50 ${pageNum >= totalPages ? 'opacity-50 pointer-events-none' : ''}`}
             >
               Next

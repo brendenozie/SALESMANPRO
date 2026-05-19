@@ -20,7 +20,7 @@ const sampleData = {
   name: "TravelCo",
   slug: "travelco",
   logoUrl: "https://placehold.co/120x40/000000/FFFFFF?text=Logo",
-  themeSettings: { primaryColor: "#10B981", secondaryColor: "#047857" },
+  themeSettings: { primaryColor: "#4f46e5", secondaryColor: "#4338ca" }, // Updated fallbacks to Indigo matching your new hero theme
 };
 
 const loader = ({ src, width, quality }: any) =>
@@ -59,8 +59,8 @@ export default function Header() {
   // Extract final data (fallback-safe)
   const { name, slug, logoUrl, themeSettings } = storeFormData || sampleData;
 
-  const primary = themeSettings?.primaryColor || "#10B981";
-  const secondary = themeSettings?.secondaryColor || "#047857";
+  const primary = themeSettings?.primaryColor || "#4f46e5"; 
+  const secondary = themeSettings?.secondaryColor || "#4338ca";
 
   const navItems = [
     { label: "Home", href: `/` },
@@ -71,98 +71,101 @@ export default function Header() {
   ];
 
   return (
-    <header className="inset-x-0 top-0 z-50">
-      {/* Main top transparent bar */}
-      <div className="bg-black bg-opacity-100 backdrop-blur-sm text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
+    <header className="absolute top-0 left-0 right-0 z-50 w-full transition-all duration-300">
+      {/* Floating Glassmorphism Main Bar */}
+      <div className="bg-gradient-to-b from-black/40 via-black/10 to-transparent dark:from-zinc-950/60 dark:via-zinc-950/20 text-white backdrop-blur-[2px]">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+          <div className="flex items-center justify-between h-20">
+            
+            {/* Logo Section */}
             <div className="flex items-center">
               <Link href={`/`}>
                 {logoUrl ? (
                   <Image
                     src={logoUrl}
                     alt={name}
-                    width={120}
-                    height={40}
+                    width={130}
+                    height={44}
                     loader={loader}
-                    className="object-contain cursor-pointer"
+                    className="object-contain cursor-pointer transition-transform duration-300 hover:scale-102 filter brightness-100 dark:invert-0"
                   />
                 ) : (
-                  <span className="text-2xl font-extrabold">{name}</span>
+                  <span className="text-2xl font-serif font-bold tracking-widest bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent">
+                    {name}
+                  </span>
                 )}
               </Link>
             </div>
 
-            {/* Desktop Nav */}
-            <nav className="hidden lg:flex space-x-8">
+            {/* Premium Center Navigation */}
+            <nav className="hidden lg:flex items-center space-x-10">
               {navItems.map((item) => (
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="relative px-1 text-base font-medium hover:text-green-200 transition"
+                  className="relative group py-2 text-sm font-medium tracking-wider text-white/80 hover:text-white transition-colors duration-300"
                 >
                   {item.label}
                   <motion.span
-                    layoutId="underline"
-                    className="absolute left-0 -bottom-1 h-0.5 bg-green-200 w-0"
+                    className="absolute left-0 bottom-0 h-[2px] w-0 bg-gradient-to-r from-indigo-400 to-purple-400"
                     whileHover={{ width: "100%" }}
-                    transition={{ duration: 0.3 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    style={{ backgroundColor: primary }}
                   />
                 </Link>
               ))}
             </nav>
 
-            {/* Desktop Icons + Auth */}
-            <div className="hidden lg:flex items-center space-x-4">
-              {/* Search */}
+            {/* Desktop Action Utilities */}
+            <div className="hidden lg:flex items-center space-x-3">
+              {/* Search Utility Button */}
               <button
                 onClick={() => router.push(`/search`)}
-                className="p-1 rounded-full hover:bg-white/20 transition"
+                className="p-2.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 text-white/90"
               >
-                <MagnifyingGlassIcon className="h-6 w-6" />
+                <MagnifyingGlassIcon className="h-5 w-5" />
               </button>
 
-              {/* Chat */}
+              {/* Chat Utility Button */}
               <button
                 onClick={() => router.push(`/chat`)}
-                className="p-1 rounded-full hover:bg-white/20 transition"
+                className="p-2.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 text-white/90"
               >
-                <ChatBubbleLeftEllipsisIcon className="h-6 w-6" />
+                <ChatBubbleLeftEllipsisIcon className="h-5 w-5" />
               </button>
 
-              {/* Logged in */}
+              <span className="h-5 w-px bg-white/20 mx-2" />
+
+              {/* Authenticated / Guest State Call-To-Action */}
               {user ? (
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-4">
                   <button
                     onClick={handleUserAction}
-                    className="px-3 py-1 text-sm rounded-md font-medium"
+                    className="px-5 py-2 text-xs font-semibold uppercase tracking-wider rounded-full text-white shadow-xl backdrop-blur-md transition-all duration-300 hover:brightness-110 active:scale-95"
                     style={{ backgroundColor: primary }}
                   >
                     {user.name || "Profile"}
                   </button>
 
                   <button
-                    onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` })}
-                    className="text-red-400 hover:text-red-300 text-sm"
+                    onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin || "/"}` })}
+                    className="text-white/60 hover:text-red-400 text-xs font-medium tracking-wide transition-colors duration-200"
                   >
                     Logout
                   </button>
                 </div>
               ) : (
-                // Not logged in
                 <div className="flex items-center space-x-3">
                   <button
                     onClick={handleGoogleSignIn}
-                    className="px-4 py-1 text-sm font-medium rounded-md text-white"
+                    className="px-5 py-2 text-xs font-semibold uppercase tracking-wider rounded-full text-white shadow-xl transition-all duration-300 hover:brightness-110"
                     style={{ backgroundColor: primary }}
                   >
                     Login
                   </button>
                   <button
                     onClick={handleGoogleSignUp}
-                    className="px-4 py-1 text-sm font-medium rounded-md border"
-                    style={{ borderColor: primary, color: primary }}
+                    className="px-5 py-2 text-xs font-semibold uppercase tracking-wider rounded-full border border-white/30 bg-white/5 backdrop-blur-md text-white transition-all duration-300 hover:bg-white hover:text-zinc-950 hover:border-white"
                   >
                     Register
                   </button>
@@ -170,17 +173,17 @@ export default function Header() {
               )}
             </div>
 
-            {/* Mobile Toggle */}
+            {/* Mobile Interaction Hamburger */}
             <div className="flex lg:hidden">
               <button
                 onClick={() => setMobileOpen((o) => !o)}
-                aria-label="Toggle menu"
-                className="p-1 rounded-md hover:bg-white/20 transition"
+                aria-label="Toggle navigation menu"
+                className="p-2.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
               >
                 {mobileOpen ? (
-                  <XMarkIcon className="h-6 w-6" />
+                  <XMarkIcon className="h-5 w-5 text-white" />
                 ) : (
-                  <Bars3BottomLeftIcon className="h-6 w-6" />
+                  <Bars3BottomLeftIcon className="h-5 w-5 text-white" />
                 )}
               </button>
             </div>
@@ -188,109 +191,133 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Immersive Mobile Sidebar Overlay */}
       <AnimatePresence>
         {mobileOpen && (
-          <motion.div
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed inset-y-0 left-0 w-64 bg-black bg-opacity-90 backdrop-blur-md text-white shadow-lg z-50"
-          >
-            <div className="px-4 py-6">
-              {/* Drawer Header */}
-              <div className="flex items-center justify-between mb-8">
-                {logoUrl ? (
-                  <Image
-                    src={logoUrl}
-                    alt={name}
-                    width={100}
-                    height={32}
-                    loader={loader}
-                  />
-                ) : (
-                  <span className="text-xl font-bold">{name}</span>
-                )}
-                <button
-                  onClick={() => setMobileOpen(false)}
-                  aria-label="Close menu"
-                  className="p-1 hover:bg-white/20 rounded-md transition"
-                >
-                  <XMarkIcon className="h-6 w-6" />
-                </button>
-              </div>
+          <>
+            {/* Backdrop Blur layer */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+              className="fixed inset-0 bg-zinc-950/60 backdrop-blur-md z-40 lg:hidden"
+            />
 
-              {/* Nav */}
-              <nav className="flex flex-col space-y-4">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.label}
-                    href={item.href}
+            {/* Drawer Interface */}
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", stiffness: 380, damping: 35 }}
+              className="fixed inset-y-0 left-0 w-80 bg-zinc-950/95 backdrop-blur-2xl text-white shadow-2xl z-50 lg:hidden border-r border-white/10 flex flex-col"
+            >
+              <div className="px-6 py-6 flex flex-col h-full overflow-y-auto">
+                {/* Mobile Menu Top Frame */}
+                <div className="flex items-center justify-between mb-10">
+                  {logoUrl ? (
+                    <Image
+                      src={logoUrl}
+                      alt={name}
+                      width={110}
+                      height={36}
+                      loader={loader}
+                      className="object-contain"
+                    />
+                  ) : (
+                    <span className="text-xl font-serif font-bold tracking-widest">{name}</span>
+                  )}
+                  <button
                     onClick={() => setMobileOpen(false)}
-                    className="text-lg font-medium hover:text-green-200 transition"
+                    aria-label="Close navigation menu"
+                    className="p-2 hover:bg-white/10 rounded-full border border-transparent hover:border-white/10 transition-all"
                   >
-                    {item.label}
-                  </Link>
-                ))}
-              </nav>
+                    <XMarkIcon className="h-5 w-5" />
+                  </button>
+                </div>
 
-              {/* Auth + Icons */}
-              <div className="mt-8 border-t border-white/20 pt-6 space-y-4">
-                {/* Search */}
-                <button
-                  onClick={() => {
-                    router.push(`/search`);
-                    setMobileOpen(false);
-                  }}
-                  className="flex items-center space-x-2 hover:text-green-200 transition"
-                >
-                  <MagnifyingGlassIcon className="h-5 w-5" />
-                  <span>Search</span>
-                </button>
-
-                {/* Chat */}
-                <button
-                  onClick={() => {
-                    router.push(`/chat`);
-                    setMobileOpen(false);
-                  }}
-                  className="flex items-center space-x-2 hover:text-green-200 transition"
-                >
-                  <ChatBubbleLeftEllipsisIcon className="h-5 w-5" />
-                  <span>Chat</span>
-                </button>
-
-                {/* Auth */}
-                {user ? (
-                  <>
-                    <button
-                      onClick={() => {
-                        handleUserAction();
-                        setMobileOpen(false);
-                      }}
-                      className="flex items-center space-x-2 hover:text-green-200"
+                {/* Main Navigation links */}
+                <nav className="flex flex-col space-y-2">
+                  {navItems.map((item) => (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      onClick={() => setMobileOpen(false)}
+                      className="px-4 py-3 text-lg font-light tracking-wide rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10 transition-all text-zinc-300 hover:text-white"
                     >
-                      <UserCircleIcon className="h-5 w-5" />
-                      <span>Profile</span>
-                    </button>
+                      {item.label}
+                    </Link>
+                  ))}
+                </nav>
 
-                    <button
-                      onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` })}
-                      className="text-red-400"
-                    >
-                      Logout
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button onClick={handleGoogleSignIn}>Login</button>
-                    <button onClick={handleGoogleSignUp}>Register</button>
-                  </>
-                )}
+                {/* Utilities Stack */}
+                <div className="mt-auto border-t border-white/10 pt-6 space-y-3">
+                  <button
+                    onClick={() => {
+                      router.push(`/search`);
+                      setMobileOpen(false);
+                    }}
+                    className="flex w-full items-center space-x-4 px-4 py-3 rounded-xl bg-white/5 border border-white/5 text-zinc-300 hover:text-white hover:bg-white/10 transition-all text-sm"
+                  >
+                    <MagnifyingGlassIcon className="h-5 w-5 text-indigo-400" />
+                    <span className="tracking-wide">Search Destination</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      router.push(`/chat`);
+                      setMobileOpen(false);
+                    }}
+                    className="flex w-full items-center space-x-4 px-4 py-3 rounded-xl bg-white/5 border border-white/5 text-zinc-300 hover:text-white hover:bg-white/10 transition-all text-sm"
+                  >
+                    <ChatBubbleLeftEllipsisIcon className="h-5 w-5 text-indigo-400" />
+                    <span className="tracking-wide">AI Concierge Chat</span>
+                  </button>
+
+                  {/* Auth Configuration */}
+                  <div className="pt-4 border-t border-white/5 flex flex-col space-y-2">
+                    {user ? (
+                      <>
+                        <button
+                          onClick={() => {
+                            handleUserAction();
+                            setMobileOpen(false);
+                          }}
+                          className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-white/5 text-zinc-200 transition text-sm"
+                        >
+                          <UserCircleIcon className="h-5 w-5 text-zinc-400" />
+                          <span className="truncate">Profile ({user.name || "Explorer"})</span>
+                        </button>
+
+                        <button
+                          onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin || "/"}` })}
+                          className="text-left px-4 py-2.5 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
+                        >
+                          Logout Action
+                        </button>
+                      </>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-3 pt-2">
+                        <button
+                          onClick={handleGoogleSignIn}
+                          className="py-3 text-xs font-semibold uppercase tracking-wider text-center rounded-xl text-white transition shadow-lg"
+                          style={{ backgroundColor: primary }}
+                        >
+                          Login
+                        </button>
+                        <button
+                          onClick={handleGoogleSignUp}
+                          className="py-3 text-xs font-semibold uppercase tracking-wider text-center rounded-xl border border-white/20 bg-white/5 text-white transition hover:bg-white hover:text-zinc-950"
+                        >
+                          Register
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </header>

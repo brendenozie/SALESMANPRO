@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { StoreForm } from "@/types/typings";
@@ -15,6 +14,8 @@ import MobileAppPromo from "./components/MobileAppPromoSection";
 import NewsletterSignup from "./components/NewsletterSignupSection";
 import TrendingLocations from "./components/TrendingLocationsSection";
 import VirtualTours from "./components/VirtualToursSection";
+import { useCallback } from "react";
+
 
 // Sample store & travel data
 const store = {
@@ -306,12 +307,26 @@ interface TravelSiteProps {
   params: { storeFormData: any };
 }
 
-// const travelTypes = ["Adventure", "Relaxation", "Cultural", "Family"];
-// const regions = ["Europe", "Asia", "South America", "Africa", "Oceania"];
+interface SearchFilters {
+  location?: string;
+  destination?: string;
+  category?: string;
+  subcategory?: string;
+  date?: string;
+  guests?: number;
+}
 
 export default function TravelSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   const router = useRouter();
   const { storeFormData } = useStoreContext(); // Use for global theme settings only
+  const [filters, setFilters] = useState<SearchFilters>({
+    location: "",
+    destination: "",
+    category: undefined,
+    subcategory: undefined,
+    date: "",
+    guests: undefined,
+  });
 
   // Use pageData for all content
   const siteData = pageData || storeFormData;
@@ -327,26 +342,48 @@ export default function TravelSite({ pageData, companyId }: { pageData: StoreFor
     setTestimonials(siteData?.testimonials || []);
     setFaqs(siteData?.faqs || []);
   }, [siteData]);
+  
 
-  // State for the search form is now managed here
-  const [filters, setFilters] = useState<any>({
-    destination: "",
-    tripType: "Adventure Travel", // Set a default type
-    date: "",
-    guests: 2,
-  });
-  
-  const handleSearch = (e: any) => {
-    e.preventDefault();
-    console.log("Searching with filters:", filters);
-    // Add your search/navigation logic here
-  };
-  
+  const handleSearch = useCallback((searchFilters: SearchFilters) => {
+    // 1. Initialize safe dynamic URL configuration
+    const searchParams = new URLSearchParams();
+
+    // 2. Map structural explicit filter keys
+    if (searchFilters.location && searchFilters.location.trim() !== "") {
+      searchParams.set("location", searchFilters.location.trim());
+    }
+
+    if (searchFilters.destination && searchFilters.destination.trim() !== "") {
+      searchParams.set("destination", searchFilters.destination.trim());
+    }
+
+    if (searchFilters.category && searchFilters.category.trim() !== "") {
+      searchParams.set("category", searchFilters.category.trim());
+    }
+
+    if (searchFilters.subcategory && searchFilters.subcategory.trim() !== "") {
+      searchParams.set("subcategory", searchFilters.subcategory.trim());
+    }
+
+    if (searchFilters.date) {
+      searchParams.set("date", searchFilters.date);
+    }
+
+    if (searchFilters.guests && searchFilters.guests > 0) {
+      searchParams.set("guests", String(searchFilters.guests));
+    }
+
+    // 3. Build destination query string safely 
+    const queryString = searchParams.toString();
+    const searchEndpoint = queryString ? `/travel/listings?${queryString}` : `/travel/listings`;
+
+    // 4. Perform optimized router transit navigation
+    router.push(searchEndpoint);
+  }, [router]);
 
   return (
     <div className="font-sans">
       {/* Hero Section  */}
-      {/* <Hero storeFormData={storeFormData} /> */}
       <Hero 
         storeFormData={storeFormData}
         filters={filters}
