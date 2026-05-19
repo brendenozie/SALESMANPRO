@@ -405,7 +405,7 @@ export default function TravelSite({ pageData, companyId }: { pageData: StoreFor
           }
       />
         {/* Filter Bar */}
-        <FilterBar />
+        {/* <FilterBar /> */}
 
         {/* Listings Section */}
         <Listings listings={pageData?.marketplaceListings} slug={pageData?.slug}/>
