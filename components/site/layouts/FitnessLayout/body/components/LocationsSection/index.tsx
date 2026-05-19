@@ -1,90 +1,110 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowUpRightIcon } from "@heroicons/react/24/solid";
-import { MapPinIcon, StarIcon } from "@heroicons/react/24/outline";
+import { MapPinIcon, StarIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { ICompanyLocation } from "@/types/typings";
 import Image from "next/image";
 
-// Horizontal Scroll Variants
+// Framer Motion Animation Presets
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.2 },
+    transition: { staggerChildren: 0.15 },
   },
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, x: 50 },
+  hidden: { opacity: 0, y: 40 },
   visible: {
     opacity: 1,
-    x: 0,
-    transition: { duration: 1, ease: [0.16, 1, 0.3, 1] },
+    y: 0,
+    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
   },
 };
 
-const LocationItem = ({ id, name, image, programs, rating, description, index }: any) => (
+interface LocationItemProps {
+  id: string;
+  name: string;
+  image: string;
+  programs: number;
+  rating: number;
+  description: string;
+  index: number;
+  primaryColor: string;
+}
+
+const LocationItem = ({ id, name, image, programs, rating, description, index, primaryColor }: LocationItemProps) => (
   <motion.a
     href={`/locations/${id}`}
     variants={cardVariants}
-    className="group relative flex-shrink-0 w-[85vw] md:w-[450px] h-[600px] rounded-[3rem] overflow-hidden bg-[#111] snap-center"
+    whileHover={{ y: -6 }}
+    className="group relative flex-shrink-0 w-[82vw] sm:w-[400px] md:w-[440px] h-[560px] sm:h-[600px] rounded-[2.5rem] overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800/50 shadow-sm hover:shadow-2xl snap-center transition-all duration-500"
   >
-    {/* Background Image */}
-    <Image
-      src={image}
-      alt={name}
-      loader={({ src }) => src}
-      fill
-      className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000 ease-out"
-    />
+    {/* Immersive Cover Image */}
+    <div className="absolute inset-0 z-0">
+      <Image
+        src={image}
+        alt={name}
+        loader={({ src }) => src}
+        fill
+        className="object-cover scale-100 group-hover:scale-105 transition-transform duration-1000 ease-out"
+      />
+      {/* Smart Light/Dark Dual-Tone Overlay Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/40 dark:via-neutral-950/20 to-neutral-900/20 opacity-90 dark:opacity-85 group-hover:opacity-80 transition-opacity duration-500" />
+    </div>
     
-    {/* Dark Glass Overlay */}
-    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90 group-hover:opacity-70 transition-opacity duration-500" />
-
-    {/* Top Info */}
-    <div className="absolute top-8 left-8 right-8 flex justify-between items-start">
+    {/* Top Header Card Analytics */}
+    <div className="absolute top-6 left-6 right-6 sm:top-8 sm:left-8 sm:right-8 z-10 flex justify-between items-start">
       <div className="flex flex-col">
-        <span className="text-orange-500 font-black text-4xl italic tracking-tighter leading-none">
+        <span className="font-black text-3xl sm:text-4xl italic tracking-tighter leading-none" style={{ color: primaryColor }}>
           0{index + 1}
         </span>
-        <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] mt-1">
-          Location ID: {id.slice(-4)}
+        <span className="text-[9px] font-bold text-white/50 uppercase tracking-[0.25em] mt-1.5">
+          ID: {id.slice(-4)}
         </span>
       </div>
-      <div className="p-3 bg-white/10 backdrop-blur-md rounded-full border border-white/10 group-hover:bg-orange-500 group-hover:text-black transition-all duration-300">
-        <ArrowUpRightIcon className="w-5 h-5 text-white group-hover:text-black" />
+      
+      <div 
+        className="p-3 bg-white/10 backdrop-blur-md rounded-full border border-white/20 transition-all duration-300"
+        style={{ '--hover-bg': primaryColor } as React.CSSProperties}
+      >
+        <ArrowUpRightIcon className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
       </div>
     </div>
 
-    {/* Bottom Content */}
-    <div className="absolute bottom-10 left-8 right-8">
+    {/* Bottom Content Metadata Block */}
+    <div className="absolute bottom-6 left-6 right-6 sm:bottom-8 sm:left-8 sm:right-8 z-10">
       <div className="space-y-4">
-        <div className="flex items-center space-x-2">
-           <div className="flex items-center px-3 py-1 bg-white/5 backdrop-blur-md border border-white/10 rounded-full">
-              <StarIcon className="w-3 h-3 text-orange-500 mr-1 fill-orange-500" />
-              <span className="text-[10px] font-black text-white">{rating.toFixed(1)}</span>
-           </div>
-           <div className="px-3 py-1 bg-white/5 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-black text-white uppercase tracking-widest">
-             {programs} Programs
-           </div>
+        {/* Chips Row */}
+        <div className="flex flex-wrap gap-2 items-center">
+          <div className="flex items-center px-3 py-1 bg-black/40 backdrop-blur-md border border-white/10 rounded-full">
+            <StarIcon className="w-3 h-3 text-amber-400 mr-1 fill-amber-400" />
+            <span className="text-[10px] font-bold text-white">{rating.toFixed(1)}</span>
+          </div>
+          <div className="px-3 py-1 bg-black/40 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-bold text-white uppercase tracking-wider">
+            {programs} Programs
+          </div>
         </div>
 
-        <h3 className="text-4xl font-black text-white uppercase italic tracking-tighter leading-[0.85]">
+        {/* Dynamic Multi-line Title Layout */}
+        <h3 className="text-3xl sm:text-4xl font-black text-white uppercase italic tracking-tighter leading-[0.9]">
           {name.split(" ").map((word: string, i: number) => (
             <span key={i} className="block">{word}</span>
           ))}
         </h3>
         
-        <p className="text-gray-400 text-sm font-medium line-clamp-2 max-w-[80%]">
+        <p className="text-neutral-300 text-xs sm:text-sm font-medium line-clamp-2 max-w-[90%] tracking-wide">
           {description}
         </p>
 
-        <div className="flex items-center space-x-2 pt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-          <MapPinIcon className="w-4 h-4 text-orange-500" />
-          <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">View Studio Details</span>
+        {/* Dynamic Studio Action Footnote */}
+        <div className="flex items-center space-x-2 pt-2 transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+          <MapPinIcon className="w-4 h-4" style={{ color: primaryColor }} />
+          <span className="text-[10px] font-bold uppercase tracking-widest text-white">View Studio Details</span>
         </div>
       </div>
     </div>
@@ -120,73 +140,135 @@ const dummyLocations = [
 
 export default function LocationsSection() {
   const { storeFormData } = useStoreContext();
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || "#f97316";
   const { CompanyLocation = [] } = storeFormData || {};
+  
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const normalizedLocations = CompanyLocation?.length > 0
-      ? CompanyLocation.map((cl: ICompanyLocation, i: number) => ({
-          id: cl.id,
-          name: cl.displayName || cl.location?.name || "Unnamed Location",
-          image: cl.location?.imageUrl || dummyLocations[i % 3].image,
-          programs: Math.floor(Math.random() * 50) + 10,
-          rating: 4.5 + Math.random() * 0.5,
-          description: cl.addressLine1Override || cl.location?.description || dummyLocations[i % 3].description,
-        }))
-      : dummyLocations;
+    ? CompanyLocation.map((cl: ICompanyLocation, i: number) => ({
+        id: cl.id,
+        name: cl.displayName || cl.location?.name || "Unnamed Location",
+        image: cl.location?.imageUrl || dummyLocations[i % 3].image,
+        programs: Math.floor(Math.random() * 35) + 15,
+        rating: 4.6 + Math.random() * 0.4,
+        description: cl.addressLine1Override || cl.location?.description || dummyLocations[i % 3].description,
+      }))
+    : dummyLocations;
+
+  const handleScroll = (direction: "left" | "right") => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, clientWidth } = scrollContainerRef.current;
+      const offset = direction === "left" ? -clientWidth * 0.6 : clientWidth * 0.6;
+      scrollContainerRef.current.scrollTo({ left: scrollLeft + offset, behavior: "smooth" });
+    }
+  };
 
   return (
-    <section className="py-32 bg-[#050505] overflow-hidden border-t border-white/5">
-      <div className="max-w-7xl mx-auto px-6 mb-20">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-          <div className="space-y-4">
+    <section className="py-24 sm:py-32 bg-neutral-50 dark:bg-neutral-950 transition-colors duration-500 overflow-hidden border-t border-neutral-200/60 dark:border-neutral-900 relative">
+      
+      {/* Decorative Structural Glow Orbs */}
+      <div 
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] opacity-[0.04] dark:opacity-[0.03] blur-[150px] rounded-full pointer-events-none" 
+        style={{ backgroundColor: primaryColor }}
+      />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-3">
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
-              className="text-orange-500 font-black tracking-[0.4em] uppercase text-xs"
+              viewport={{ once: true }}
+              className="font-black tracking-[0.3em] uppercase text-xs"
+              style={{ color: primaryColor }}
             >
               Elite Footprint
             </motion.div>
             <motion.h2 
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              className="text-6xl md:text-8xl font-black text-white italic tracking-tighter uppercase leading-[0.8]"
+              viewport={{ once: true }}
+              className="text-5xl sm:text-6xl lg:text-8xl font-black text-neutral-900 dark:text-white italic tracking-tighter uppercase leading-[0.85] transition-colors"
             >
-              Our Global <br /> <span className="text-white/10">Studios</span>
+              Our Global <br /> <span className="text-neutral-300 dark:text-neutral-800 transition-colors">Studios</span>
             </motion.h2>
           </div>
           
-          <div className="hidden md:block h-[1px] flex-1 bg-white/10 mx-12 mb-4" />
+          <div className="hidden md:block h-[1px] flex-1 bg-neutral-200 dark:bg-neutral-800 mx-10 mb-4 transition-colors" />
 
-          <motion.p 
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            className="max-w-[300px] text-gray-500 font-medium text-sm leading-relaxed uppercase tracking-tight"
-          >
-            Access our premium facilities across the globe with a single membership. 
-          </motion.p>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-6 md:gap-0">
+            <motion.p 
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="max-w-[280px] text-neutral-500 dark:text-neutral-400 font-semibold text-xs sm:text-sm leading-relaxed uppercase tracking-tight transition-colors"
+            >
+              Access our signature facilities across the globe with a single, synchronized membership. 
+            </motion.p>
+            
+            {/* Desktop Carousel Navigation Utilities */}
+            <div className="flex space-x-2 sm:ml-6 md:ml-8">
+              <button 
+                onClick={() => handleScroll("left")}
+                className="p-3 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 shadow-sm transition-all"
+              >
+                <ChevronLeftIcon className="w-4 h-4" />
+              </button>
+              <button 
+                onClick={() => handleScroll("right")}
+                className="p-3 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 shadow-sm transition-all"
+              >
+                <ChevronRightIcon className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Horizontal Scroll Gallery */}
+      {/* Horizontal Interactive Touch Carousel */}
       <motion.div
-        className="flex space-x-8 px-6 md:px-[calc((100vw-1280px)/2)] overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+        ref={scrollContainerRef}
+        className="flex space-x-6 sm:space-x-8 px-4 sm:px-6 md:px-[calc((100vw-1200px)/2)] lg:px-[calc((100vw-1280px)/2)] overflow-x-auto scrollbar-none snap-x snap-mandatory"
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
       >
         {normalizedLocations.map((loc, index) => (
-          <LocationItem key={loc.id} {...loc} index={index} />
+          <LocationItem 
+            key={loc.id} 
+            {...loc} 
+            index={index} 
+            primaryColor={primaryColor} 
+          />
         ))}
-        {/* Spacer for horizontal scroll padding */}
-        <div className="flex-shrink-0 w-10 h-10" />
+        {/* Invisible Carousel Terminal Anchor */}
+        <div className="flex-shrink-0 w-4 sm:w-8" />
       </motion.div>
 
-      {/* Control Hint */}
-      <div className="mt-12 flex justify-center space-x-4 items-center">
-        <div className="h-[2px] w-20 bg-orange-500" />
-        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em]">Scroll To Explore</span>
-        <div className="h-[2px] w-20 bg-white/10" />
+      {/* Bottom Interface Utility Prompt */}
+      <div className="mt-16 flex justify-center space-x-4 items-center px-4">
+        <div className="h-[1px] w-12 sm:w-20 bg-neutral-200 dark:bg-neutral-800 transition-colors" />
+        <span className="text-[9px] font-bold text-neutral-400 dark:text-neutral-600 uppercase tracking-[0.4em] text-center">
+          Swipe or Click Arrow to Navigate
+        </span>
+        <div className="h-[1px] w-12 sm:w-20 bg-neutral-200 dark:bg-neutral-800 transition-colors" style={{ backgroundColor: primaryColor }} />
       </div>
+
+      {/* Tailored Custom Global Pseudo Injection Rules */}
+      <style jsx global>{`
+        .scrollbar-none::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-none {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .group:hover var(--hover-bg) {
+          background-color: var(--hover-bg);
+        }
+      `}</style>
     </section>
   );
 }

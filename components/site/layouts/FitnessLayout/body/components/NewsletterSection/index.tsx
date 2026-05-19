@@ -1,120 +1,183 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   EnvelopeIcon, 
   ArrowRightIcon, 
-  ShieldCheckIcon 
+  ShieldCheckIcon,
+  CheckIcon
 } from "@heroicons/react/24/outline";
+import { useStoreContext } from "@/contexts/StoreContext";
 
 export default function NewsletterSection() {
+  const { storeFormData } = useStoreContext();
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || "#f97316";
+
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("loading");
-    // Simulate API call
-    setTimeout(() => setStatus("success"), 1500);
+    // Simulate tactical API verification cycle
+    setTimeout(() => setStatus("success"), 1200);
   };
 
   return (
-    <section className="relative py-24 bg-[#050505] overflow-hidden border-t border-b border-white/5">
-      {/* Background Decorative Element */}
-      <div className="absolute top-0 right-0 w-1/3 h-full bg-orange-500/5 skew-x-12 translate-x-20 pointer-events-none" />
+    <section className="relative py-20 sm:py-28 bg-neutral-50 dark:bg-neutral-950 transition-colors duration-500 overflow-hidden border-t border-b border-neutral-200/60 dark:border-neutral-900/40">
       
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      {/* Structural Background Adaptive Skew Accent */}
+      <div 
+        className="absolute top-0 right-0 w-full sm:w-1/3 h-full opacity-5 pointer-events-none skew-x-12 translate-x-32" 
+        style={{ 
+          background: `linear-gradient(90deg, transparent, ${primaryColor})` 
+        }} 
+      />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           
-          {/* Left Side: Copy */}
-          <div className="space-y-8">
+          {/* LEFT COLUMN: Section Copy */}
+          <div className="space-y-6 sm:space-y-8 text-center lg:text-left">
             <motion.div 
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -10 }}
               whileInView={{ opacity: 1, x: 0 }}
-              className="flex items-center gap-3"
+              viewport={{ once: true }}
+              className="flex items-center justify-center lg:justify-start gap-3"
             >
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                <span 
+                  className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                  style={{ backgroundColor: primaryColor }}
+                />
+                <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: primaryColor }} />
               </span>
-              <span className="text-orange-500 font-black tracking-[0.4em] uppercase text-[10px]">
+              <span className="font-black tracking-[0.35em] uppercase text-[10px]" style={{ color: primaryColor }}>
                 Intelligence Briefing
               </span>
             </motion.div>
 
             <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
-              className="text-5xl md:text-7xl font-black text-white italic tracking-tighter uppercase leading-[0.85]"
+              viewport={{ once: true }}
+              className="text-4xl sm:text-5xl md:text-7xl font-black text-neutral-900 dark:text-white italic tracking-tighter uppercase leading-[0.9]"
             >
-              Join the <br /> <span className="text-white/10">Inner Circle</span>
+              Join the <br /> 
+              <span className="text-neutral-300 dark:text-neutral-900 transition-colors">Inner Circle</span>
             </motion.h2>
 
             <motion.p 
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="max-w-md text-gray-500 font-medium text-sm leading-relaxed uppercase tracking-wide"
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="max-w-md mx-auto lg:mx-0 text-neutral-500 dark:text-neutral-400 font-medium text-xs sm:text-sm leading-relaxed uppercase tracking-wide"
             >
               Weekly protocols on metabolic optimization, tactical strength, and high-performance psychology. No noise. Just signal.
             </motion.p>
           </div>
 
-          {/* Right Side: Form */}
+          {/* RIGHT COLUMN: Stateful Subscription Center */}
           <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.98 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            className="relative group"
+            viewport={{ once: true }}
+            className="relative group w-full"
           >
-            {/* Form Container */}
-            <form 
-              onSubmit={handleSubmit}
-              className="relative z-10 bg-white/[0.02] border border-white/10 p-2 md:p-3 flex flex-col md:flex-row gap-4 backdrop-blur-md"
-            >
-              <div className="flex-grow flex items-center px-4 gap-4">
-                <EnvelopeIcon className="h-5 w-5 text-gray-600 group-focus-within:text-orange-500 transition-colors" />
-                <input 
-                  type="email" 
-                  required
-                  placeholder="ENTER EMAIL ADDRESS"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="bg-transparent border-none focus:ring-0 text-white font-black tracking-widest text-xs uppercase w-full placeholder:text-gray-700"
-                />
-              </div>
+            {/* Dynamic Card Container Platform */}
+            <div className="relative z-10 bg-white/80 dark:bg-neutral-900/30 border border-neutral-200 dark:border-neutral-800/80 p-2 sm:p-3 rounded-2xl shadow-xl backdrop-blur-md transition-colors">
+              <AnimatePresence mode="wait">
+                {status !== "success" ? (
+                  <motion.form 
+                    key="form-active"
+                    onSubmit={handleSubmit}
+                    initial={{ opacity: 1 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="flex flex-col sm:flex-row gap-2 w-full"
+                  >
+                    <div className="flex-grow flex items-center px-4 py-3 sm:py-0 gap-3 group/input">
+                      <EnvelopeIcon className="h-5 w-5 text-neutral-400 dark:text-neutral-500 transition-colors group-focus-within/input:text-neutral-900" />
+                      <input 
+                        type="email" 
+                        required
+                        placeholder="ENTER EMAIL ADDRESS"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="bg-transparent border-none focus:outline-none focus:ring-0 text-neutral-900 dark:text-white font-black tracking-widest text-xs uppercase w-full placeholder:text-neutral-400 dark:placeholder:text-neutral-600"
+                      />
+                    </div>
 
-              <button 
-                type="submit"
-                disabled={status !== "idle"}
-                className="bg-white hover:bg-orange-500 text-black font-black uppercase tracking-[0.2em] text-[10px] px-10 py-5 transition-all duration-300 flex items-center justify-center gap-3 disabled:bg-gray-800 disabled:text-gray-500"
-              >
-                {status === "loading" ? "Processing..." : status === "success" ? "Access Granted" : (
-                  <>
-                    Request Access <ArrowRightIcon className="h-4 w-4" />
-                  </>
+                    <button 
+                      type="submit"
+                      disabled={status === "loading"}
+                      className="text-white font-black uppercase tracking-[0.15em] text-[11px] px-8 py-4 sm:py-5 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 shadow-md hover:opacity-90 w-full sm:w-auto shrink-0"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      {status === "loading" ? (
+                        <span className="flex items-center gap-2">
+                          <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                          Processing
+                        </span>
+                      ) : (
+                        <>
+                          Request Access <ArrowRightIcon className="h-3.5 w-3.5" />
+                        </>
+                      )}
+                    </button>
+                  </motion.form>
+                ) : (
+                  <motion.div 
+                    key="success-state"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex flex-col sm:flex-row items-center justify-between p-4 gap-4"
+                  >
+                    <div className="flex items-center gap-4 text-center sm:text-left">
+                      <div className="p-2 rounded-xl text-white shrink-0 shadow-sm" style={{ backgroundColor: primaryColor }}>
+                        <CheckIcon className="h-5 w-5" strokeWidth={3} />
+                      </div>
+                      <div>
+                        <h4 className="font-black text-sm uppercase text-neutral-900 dark:text-white tracking-wider">Access Granted</h4>
+                        <p className="text-[11px] font-bold uppercase text-neutral-400 dark:text-neutral-500 mt-0.5">Welcome to the Inner Circle.</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => { setStatus("idle"); setEmail(""); }}
+                      className="text-[10px] font-black uppercase tracking-wider text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
+                    >
+                      Reset
+                    </button>
+                  </motion.div>
                 )}
-              </button>
-            </form>
+              </AnimatePresence>
+            </div>
 
-            {/* Bottom Meta Info */}
-            <div className="mt-6 flex flex-wrap items-center gap-8 opacity-40">
-              <div className="flex items-center gap-2">
-                <ShieldCheckIcon className="h-4 w-4 text-white" />
-                <span className="text-[9px] font-black text-white uppercase tracking-[0.2em]">Encrypted Data</span>
+            {/* Bottom Meta Badges */}
+            <div className="mt-4 flex flex-wrap justify-center lg:justify-start items-center gap-x-6 gap-y-2 opacity-60 dark:opacity-40 transition-opacity px-2">
+              <div className="flex items-center gap-1.5">
+                <ShieldCheckIcon className="h-4 w-4 text-neutral-900 dark:text-white" />
+                <span className="text-[9px] font-black text-neutral-900 dark:text-white uppercase tracking-[0.15em]">Encrypted Data</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="h-1 w-1 rounded-full bg-white" />
-                <span className="text-[9px] font-black text-white uppercase tracking-[0.2em]">Weekly Delivery</span>
+              <div className="flex items-center gap-1.5">
+                <div className="h-1 w-1 rounded-full bg-neutral-900 dark:bg-white" />
+                <span className="text-[9px] font-black text-neutral-900 dark:text-white uppercase tracking-[0.15em]">Weekly Delivery</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="h-1 w-1 rounded-full bg-white" />
-                <span className="text-[9px] font-black text-white uppercase tracking-[0.2em]">Opt-out Anytime</span>
+              <div className="flex items-center gap-1.5">
+                <div className="h-1 w-1 rounded-full bg-neutral-900 dark:bg-white" />
+                <span className="text-[9px] font-black text-neutral-900 dark:text-white uppercase tracking-[0.15em]">Opt-out Anytime</span>
               </div>
             </div>
 
-            {/* Decorative background border effect */}
-            <div className="absolute -inset-1 border border-orange-500/10 -z-10 group-hover:border-orange-500/30 transition-colors duration-500" />
+            {/* Absolute Ambient Background Shadow Contour */}
+            <div 
+              className="absolute -inset-1.5 border opacity-10 dark:opacity-20 rounded-[22px] -z-10 group-hover:opacity-30 dark:group-hover:opacity-40 transition-opacity duration-500" 
+              style={{ borderColor: primaryColor }}
+            />
           </motion.div>
 
         </div>

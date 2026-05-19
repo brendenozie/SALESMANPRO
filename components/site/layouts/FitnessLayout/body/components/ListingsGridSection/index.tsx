@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import {
@@ -10,22 +10,22 @@ import {
   UserCircleIcon,
   SparklesIcon,
 } from "@heroicons/react/24/outline";
+import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { ICourse } from "@/types/typings";
 
 const loader = ({ src }: { src: string }) => src;
 
-// Variants for the bento-grid entrance
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.15 },
+    transition: { staggerChildren: 0.12 },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 40 },
   visible: {
     opacity: 1,
     y: 0,
@@ -40,20 +40,38 @@ export default function ListingsGrid({
 }) {
   const { storeFormData } = useStoreContext();
   const primaryColor = storeFormData?.themeSettings?.primaryColor || "#f97316";
+  const [favorites, setFavorites] = useState<Record<string, boolean>>({});
+
+  const toggleFavorite = (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setFavorites(prev => ({ ...prev, [id]: !prev[id] }));
+  };
 
   return (
-    <section id="programs" className="py-24 px-6 bg-[#050505] relative overflow-hidden">
-      {/* Background Decorative Element */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-orange-500/5 blur-[120px] rounded-full -z-10" />
+    <section id="programs" className="py-24 px-4 sm:px-6 lg:px-8 bg-neutral-50 dark:bg-neutral-950 transition-colors duration-500 relative overflow-hidden">
+      
+      {/* Immersive Organic Blur Orbs */}
+      <div 
+        className="absolute top-0 right-[-10%] w-[600px] h-[600px] opacity-20 dark:opacity-10 blur-[130px] rounded-full -z-10 pointer-events-none transition-colors duration-500" 
+        style={{ backgroundColor: primaryColor }}
+      />
+      <div 
+        className="absolute bottom-12 left-[-10%] w-[500px] h-[500px] opacity-10 dark:opacity-5 blur-[120px] rounded-full -z-10 pointer-events-none transition-colors duration-500" 
+        style={{ backgroundColor: primaryColor }}
+      />
       
       <div className="max-w-7xl mx-auto">
-        {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+        
+        {/* SECTION HEADER */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
           <div className="space-y-4">
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
-              className="flex items-center space-x-2 text-orange-500 font-black tracking-[0.3em] uppercase text-xs"
+              viewport={{ once: true }}
+              className="flex items-center space-x-2 font-black tracking-[0.25em] uppercase text-xs"
+              style={{ color: primaryColor }}
             >
               <SparklesIcon className="w-4 h-4" />
               <span>Elite Selection</span>
@@ -61,116 +79,139 @@ export default function ListingsGrid({
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              className="text-5xl md:text-7xl font-black text-white tracking-tighter italic uppercase leading-[0.9]"
+              viewport={{ once: true }}
+              className="text-4xl sm:text-5xl lg:text-7xl font-black text-neutral-900 dark:text-white tracking-tighter italic uppercase leading-[0.95] transition-colors"
             >
-              Curated <br /> <span className="text-gray-500">Experiences</span>
+              Curated <br /> <span className="text-neutral-400 dark:text-neutral-600 transition-colors">Experiences</span>
             </motion.h2>
           </div>
           
           <motion.p 
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            className="max-w-sm text-gray-400 font-medium leading-relaxed"
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="max-w-md text-neutral-600 dark:text-neutral-400 font-medium text-sm sm:text-base leading-relaxed transition-colors"
           >
-            Hand-picked training protocols designed by world-class athletes and bio-performance experts.
+            Hand-picked training protocols architected by world-class athletes and elite performance specialists to maximize structural outcome.
           </motion.p>
         </div>
 
-        {/* Listings Grid */}
+        {/* LISTINGS BENTO GRID */}
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.1 }}
+          viewport={{ once: true, amount: 0.05 }}
         >
           {courses.map((course) => (
             <motion.div
               key={course.id}
               variants={itemVariants}
-              className="group relative bg-white/[0.03] border border-white/10 rounded-[2.5rem] overflow-hidden hover:bg-white/[0.06] transition-all duration-500"
+              whileHover={{ y: -8 }}
+              className="group relative bg-white dark:bg-neutral-900/40 backdrop-blur-sm border border-neutral-200/60 dark:border-neutral-800/60 rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl hover:bg-white dark:hover:bg-neutral-900 border-neutral-200/80 dark:hover:border-neutral-700/60 transition-all duration-500 flex flex-col justify-between"
             >
-              {/* IMAGE WRAPPER */}
-              <div className="relative h-80 w-full overflow-hidden">
-                <Image
-                  loader={loader}
-                  src={course.imageUrl || "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2000&auto=format&fit=crop"}
-                  alt={course.title}
-                  fill
-                  className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700 ease-in-out"
-                />
-                
-                {/* Overlay Gradients */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent opacity-80" />
-                
-                {/* Badges */}
-                <div className="absolute top-6 left-6 flex flex-col gap-2">
-                   <div className="px-4 py-1.5 bg-black/60 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-black text-white uppercase tracking-widest">
-                     {course.code || "Premium"}
-                   </div>
+              <div>
+                {/* HERO VISUAL COVER CONTAINER */}
+                <div className="relative h-72 sm:h-80 w-full overflow-hidden">
+                  <Image
+                    loader={loader}
+                    src={course.imageUrl || "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2000&auto=format&fit=crop"}
+                    alt={course.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                  />
+                  
+                  {/* Dynamic Dark Gradient Veil */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-neutral-900/90 via-neutral-900/20 to-transparent dark:from-neutral-950 dark:via-transparent transition-colors duration-500" />
+                  
+                  {/* Floating Elements */}
+                  <div className="absolute top-5 left-5">
+                    <div className="px-3.5 py-1.5 bg-neutral-900/80 dark:bg-black/60 backdrop-blur-md border border-neutral-700/40 dark:border-neutral-800/80 rounded-full text-[10px] font-bold text-white uppercase tracking-widest">
+                      {course.code || "Premium"}
+                    </div>
+                  </div>
+
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={(e) => toggleFavorite(course.id, e)}
+                    className="absolute top-5 right-5 p-3 rounded-full bg-neutral-900/40 hover:bg-white dark:hover:bg-neutral-800 backdrop-blur-md text-white hover:text-neutral-900 dark:hover:text-white border border-neutral-700/30 transition-all shadow-sm"
+                  >
+                    {favorites[course.id] ? (
+                      <HeartIconSolid className="h-4 w-4" style={{ color: primaryColor }} />
+                    ) : (
+                      <HeartIcon className="h-4 w-4" />
+                    )}
+                  </motion.button>
                 </div>
 
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="absolute top-6 right-6 p-3 rounded-full bg-white/10 backdrop-blur-md text-white border border-white/10 hover:bg-orange-500 hover:text-black transition-all"
-                >
-                  <HeartIcon className="h-5 w-5" />
-                </motion.button>
+                {/* TEXTUAL BODY CONTENT */}
+                <div className="p-6 sm:p-8 space-y-5">
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-start gap-4">
+                      <h3 className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter leading-none group-hover:text-neutral-800 dark:group-hover:text-neutral-200 transition-colors">
+                        {course.title}
+                      </h3>
+                      <span className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white italic tracking-tighter shrink-0">
+                        ${course.price}
+                      </span>
+                    </div>
+                    <p className="text-neutral-500 dark:text-neutral-400 text-xs sm:text-sm font-medium line-clamp-2 leading-relaxed">
+                      {course.description}
+                    </p>
+                  </div>
+
+                  {/* SUBTLE SEPARATOR & STATS */}
+                  <div className="flex items-center gap-5 border-y border-neutral-200/60 dark:border-neutral-800/60 py-3.5">
+                    <div className="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400">
+                      <ClockIcon className="h-4 w-4 shrink-0 opacity-80" style={{ color: primaryColor }} />
+                      <span className="text-[10px] font-bold uppercase tracking-widest">{course.duration}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-400">
+                      <UserCircleIcon className="h-4 w-4 shrink-0 opacity-80" style={{ color: primaryColor }} />
+                      <span className="text-[10px] font-bold uppercase tracking-widest">Master Coach</span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              {/* CONTENT AREA */}
-              <div className="p-8 space-y-6">
-                <div className="space-y-2">
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter leading-tight group-hover:text-orange-500 transition-colors">
-                      {course.title}
-                    </h3>
-                    <span className="text-2xl font-black text-white italic tracking-tighter">
-                      ${course.price}
-                    </span>
-                  </div>
-                  <p className="text-gray-400 text-sm font-medium line-clamp-2 leading-relaxed">
-                    {course.description}
-                  </p>
-                </div>
-
-                {/* STATS ROW */}
-                <div className="flex items-center gap-6 border-y border-white/5 py-4">
-                  <div className="flex items-center gap-2">
-                    <ClockIcon className="h-4 w-4 text-orange-500" />
-                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">{course.duration}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <UserCircleIcon className="h-4 w-4 text-orange-500" />
-                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Master Coach</span>
-                  </div>
-                </div>
-
-                {/* ACTION */}
+              {/* CARD CTA BUTTON ACTION */}
+              <div className="px-6 pb-6 sm:px-8 sm:pb-8">
                 <motion.button
                   whileTap={{ scale: 0.98 }}
-                  className="w-full group/btn flex items-center justify-between px-8 py-5 bg-white text-black rounded-2xl font-black uppercase tracking-tighter hover:bg-orange-500 transition-all"
+                  className="w-full group/btn flex items-center justify-between px-6 py-4 rounded-xl font-bold uppercase text-xs tracking-wider transition-all duration-300 shadow-sm"
+                  style={{ 
+                    backgroundColor: primaryColor,
+                    color: "#ffffff"
+                  }}
                 >
                   <span>Secure Spot</span>
-                  <ArrowRightIcon className="h-5 w-5 group-hover/btn:translate-x-2 transition-transform" />
+                  <div className="p-1 bg-white/20 rounded-lg group-hover/btn:translate-x-1.5 transition-transform duration-300">
+                    <ArrowRightIcon className="h-3.5 w-3.5 text-white" />
+                  </div>
                 </motion.button>
               </div>
+
             </motion.div>
           ))}
         </motion.div>
 
-        {/* Bottom CTA */}
+        {/* BOTTOM GLOBAL REDIRECT BUTTON */}
         <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           className="mt-20 flex flex-col items-center"
         >
-          <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-orange-500 to-transparent mb-8" />
-          <button className="text-white font-black uppercase tracking-[0.4em] text-xs hover:text-orange-500 transition-colors flex items-center gap-4">
-            Explore All Programs <ArrowRightIcon className="w-4 h-4" />
+          <div className="h-[1px] w-20 bg-neutral-200 dark:bg-neutral-800 mb-8" />
+          <button className="text-neutral-800 dark:text-neutral-200 font-bold uppercase tracking-[0.25em] text-xs hover:opacity-80 transition-opacity flex items-center gap-3 group">
+            Explore All Programs 
+            <ArrowRightIcon className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </button>
         </motion.div>
+        
       </div>
     </section>
   );

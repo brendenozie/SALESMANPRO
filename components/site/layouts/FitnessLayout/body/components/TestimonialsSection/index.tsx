@@ -8,24 +8,25 @@ import {
   ArrowRightIcon,
   StarIcon,
 } from "@heroicons/react/24/solid";
+import { useStoreContext } from "@/contexts/StoreContext";
 import { Testimonial } from "@/types/typings";
 
 const loader = ({ src }: { src: string }) => src;
 
 const slideVariants = {
   enter: (direction: number) => ({
-    y: direction > 0 ? 40 : -40,
+    x: direction > 0 ? 50 : -50,
     opacity: 0,
   }),
   center: {
-    y: 0,
+    x: 0,
     opacity: 1,
-    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
+    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
   },
   exit: (direction: number) => ({
-    y: direction < 0 ? 40 : -40,
+    x: direction < 0 ? 50 : -50,
     opacity: 0,
-    transition: { duration: 0.4 },
+    transition: { duration: 0.3 },
   }),
 };
 
@@ -53,6 +54,8 @@ export default function TestimonialsSection({
 }: {
   testimonials?: Testimonial[];
 }) {
+  const { storeFormData } = useStoreContext();
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || "#f97316";
   const [[page, direction], setPage] = useState<[number, number]>([0, 0]);
 
   const paginate = (newDirection: number) => {
@@ -63,38 +66,46 @@ export default function TestimonialsSection({
   };
 
   useEffect(() => {
+    if (testimonials.length <= 1) return;
     const timer = setInterval(() => paginate(1), 8000);
     return () => clearInterval(timer);
-  }, [testimonials.length]);
+  }, [testimonials.length, page]);
 
-  const t = testimonials[page];
+  const t = testimonials[page] || dummyTestimonials[0];
 
   return (
-    <section className="relative py-32 bg-[#050505] overflow-hidden">
-      {/* Background Stylized "COMMUNITY" Text */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 select-none pointer-events-none">
-        <span className="text-[20vw] font-black text-white/[0.02] leading-none uppercase italic tracking-tighter">
+    <section className="relative py-24 sm:py-32 bg-neutral-50 dark:bg-neutral-950 border-t border-neutral-200/60 dark:border-neutral-900/40 transition-colors duration-500 overflow-hidden">
+      {/* Background Stylized Large Watermark Text */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 select-none pointer-events-none opacity-[0.02] dark:opacity-[0.03] transition-opacity duration-500">
+        <span className="text-[18vw] font-black leading-none uppercase italic tracking-tighter text-neutral-900 dark:text-white">
           COMMUNITY
         </span>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 relative z-10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex flex-col items-center">
+          
           {/* Section Indicator */}
           <motion.div 
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            className="mb-8 flex items-center gap-4"
+            initial={{ opacity: 0, y: -10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-6 flex items-center gap-4"
           >
-            <div className="h-[1px] w-8 bg-orange-500" />
-            <span className="text-orange-500 font-black tracking-[0.4em] uppercase text-xs">Testimonials</span>
-            <div className="h-[1px] w-8 bg-orange-500" />
+            <div className="h-[1px] w-6 opacity-60" style={{ backgroundColor: primaryColor }} />
+            <span className="font-black tracking-[0.35em] uppercase text-xs" style={{ color: primaryColor }}>
+              Testimonials
+            </span>
+            <div className="h-[1px] w-6 opacity-60" style={{ backgroundColor: primaryColor }} />
           </motion.div>
 
-          {/* Large Quotation Mark */}
-          <span className="text-orange-500 text-9xl font-black italic leading-none opacity-20 -mb-12">“</span>
+          {/* Large Structural Quotation Icon Markup */}
+          <span className="text-7xl sm:text-9xl font-black italic leading-none opacity-10 dark:opacity-20 select-none -mb-6 sm:-mb-10" style={{ color: primaryColor }}>
+            “
+          </span>
 
-          <div className="relative min-h-[400px] w-full flex items-center justify-center">
+          {/* Main Context Stage Slider Wrapper */}
+          <div className="relative min-h-[460px] sm:min-h-[380px] md:min-h-[340px] w-full flex items-center justify-center px-2 sm:px-6">
             <AnimatePresence initial={false} custom={direction} mode="wait">
               <motion.div
                 key={page}
@@ -105,35 +116,42 @@ export default function TestimonialsSection({
                 exit="exit"
                 className="flex flex-col items-center text-center max-w-4xl"
               >
-                {/* Huge Typographic Quote */}
-                <h2 className="text-3xl md:text-5xl font-black text-white italic tracking-tighter uppercase leading-tight mb-12">
+                {/* Large Responsive Quote Title */}
+                <h2 className="text-xl sm:text-3xl lg:text-4xl font-black text-neutral-900 dark:text-white italic tracking-tighter uppercase leading-snug sm:leading-tight mb-10 transition-colors">
                   {t.quote}
                 </h2>
 
-                <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8">
-                   {/* Avatar with Custom Frame */}
-                  <div className="relative">
-                    <div className="absolute -inset-2 bg-orange-500/20 rounded-full blur-lg" />
+                {/* Author Card Stack Block */}
+                <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                  {/* Avatar Container with Active Frame Ring Glow */}
+                  <div className="relative shrink-0">
+                    <div 
+                      className="absolute -inset-1.5 rounded-full blur opacity-25 dark:opacity-40 transition-opacity"
+                      style={{ backgroundColor: primaryColor }}
+                    />
                     <Image
-                      src={t.avatarUrl || ''}
-                      alt={t.authorName || ''}
-                      width={80}
-                      height={80}
-                      className="relative rounded-full grayscale hover:grayscale-0 transition-all duration-500 object-cover border-2 border-orange-500 p-1"
+                      src={t.avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=2000'}
+                      alt={t.authorName || 'User Avatar'}
+                      width={70}
+                      height={70}
+                      className="relative rounded-full grayscale hover:grayscale-0 transition-all duration-500 object-cover p-0.5 bg-white dark:bg-neutral-900 border-2"
+                      style={{ borderColor: primaryColor }}
                       loader={loader}
                     />
                   </div>
 
-                  <div className="text-left">
-                    <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">
+                  <div className="text-center sm:text-left space-y-0.5">
+                    <h3 className="text-lg font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter transition-colors">
                       {t.authorName}
                     </h3>
-                    <p className="text-orange-500 text-xs font-black uppercase tracking-widest">
+                    <p className="text-[11px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
                       {t.authorTitle}
                     </p>
-                    <div className="flex mt-2 gap-1">
-                      {[...Array(t.rating)].map((_, i) => (
-                        <StarIcon key={i} className="h-3 w-3 text-orange-500" />
+                    
+                    {/* Inline Star Rating Render Module */}
+                    <div className="flex justify-center sm:justify-start mt-1.5 gap-0.5">
+                      {[...Array(t.rating || 5)].map((_, i) => (
+                        <StarIcon key={i} className="h-3 w-3" style={{ color: primaryColor }} />
                       ))}
                     </div>
                   </div>
@@ -142,36 +160,50 @@ export default function TestimonialsSection({
             </AnimatePresence>
           </div>
 
-          {/* Luxury Controls */}
-          <div className="mt-20 flex items-center gap-12">
+          {/* Premium Interface Audio-Style Track Navigation Controls */}
+          <div className="mt-12 flex items-center gap-8 sm:gap-12">
             <button
               onClick={() => paginate(-1)}
-              className="group flex items-center gap-4 text-white/40 hover:text-white transition-colors"
+              className="group flex items-center gap-3 text-neutral-400 dark:text-neutral-600 hover:text-neutral-900 dark:hover:text-white transition-colors"
+              aria-label="Previous Testimonial"
             >
-              <ArrowLeftIcon className="h-5 w-5 group-hover:-translate-x-2 transition-transform" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em]">Prev</span>
+              <ArrowLeftIcon className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] hidden sm:inline">Prev</span>
             </button>
 
-            {/* Progress Track */}
-            <div className="flex gap-2">
+            {/* Dynamic Sliding Micro Progress Elements */}
+            <div className="flex gap-2 items-center">
               {testimonials.map((_, idx) => (
-                <div
+                <button
                   key={idx}
-                  className={`h-[2px] transition-all duration-500 ${
-                    idx === page ? "w-12 bg-orange-500" : "w-4 bg-white/10"
-                  }`}
-                />
+                  onClick={() => {
+                    const dir = idx > page ? 1 : -1;
+                    setPage([idx, dir]);
+                  }}
+                  className="py-2 focus:outline-none"
+                  aria-label={`Go to slide ${idx + 1}`}
+                >
+                  <div
+                    className="h-[3px] rounded-full transition-all duration-500"
+                    style={{ 
+                      width: idx === page ? "40px" : "12px",
+                      backgroundColor: idx === page ? primaryColor : "rgba(128,128,128,0.2)" 
+                    }}
+                  />
+                </button>
               ))}
             </div>
 
             <button
               onClick={() => paginate(1)}
-              className="group flex items-center gap-4 text-white/40 hover:text-white transition-colors"
+              className="group flex items-center gap-3 text-neutral-400 dark:text-neutral-600 hover:text-neutral-900 dark:hover:text-white transition-colors"
+              aria-label="Next Testimonial"
             >
-              <span className="text-[10px] font-black uppercase tracking-[0.4em]">Next</span>
-              <ArrowRightIcon className="h-5 w-5 group-hover:translate-x-2 transition-transform" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] hidden sm:inline">Next</span>
+              <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </button>
           </div>
+          
         </div>
       </div>
     </section>
