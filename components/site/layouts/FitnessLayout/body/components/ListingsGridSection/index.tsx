@@ -13,6 +13,7 @@ import {
 import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { ICourse } from "@/types/typings";
+import { useRouter } from "next/navigation";
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -41,6 +42,7 @@ export default function ListingsGrid({
   const { storeFormData } = useStoreContext();
   const primaryColor = storeFormData?.themeSettings?.primaryColor || "#f97316";
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
+  const router = useRouter();
 
   const toggleFavorite = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -136,7 +138,7 @@ export default function ListingsGrid({
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
-                    onClick={(e) => toggleFavorite(course.id, e)}
+                    onClick={(e: React.MouseEvent<HTMLButtonElement>) => toggleFavorite(course.id, e)}
                     className="absolute top-5 right-5 p-3 rounded-full bg-neutral-900/40 hover:bg-white dark:hover:bg-neutral-800 backdrop-blur-md text-white hover:text-neutral-900 dark:hover:text-white border border-neutral-700/30 transition-all shadow-sm"
                   >
                     {favorites[course.id] ? (
@@ -155,7 +157,7 @@ export default function ListingsGrid({
                         {course.title}
                       </h3>
                       <span className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white italic tracking-tighter shrink-0">
-                        ${course.price}
+                        {course.price}
                       </span>
                     </div>
                     <p className="text-neutral-500 dark:text-neutral-400 text-xs sm:text-sm font-medium line-clamp-2 leading-relaxed">
@@ -186,6 +188,9 @@ export default function ListingsGrid({
                     backgroundColor: primaryColor,
                     color: "#ffffff"
                   }}
+                  onClick={() => {
+                    router.push(`/fitness/listings/${course.id}`);
+                  }}
                 >
                   <span>Secure Spot</span>
                   <div className="p-1 bg-white/20 rounded-lg group-hover/btn:translate-x-1.5 transition-transform duration-300">
@@ -206,7 +211,9 @@ export default function ListingsGrid({
           className="mt-20 flex flex-col items-center"
         >
           <div className="h-[1px] w-20 bg-neutral-200 dark:bg-neutral-800 mb-8" />
-          <button className="text-neutral-800 dark:text-neutral-200 font-bold uppercase tracking-[0.25em] text-xs hover:opacity-80 transition-opacity flex items-center gap-3 group">
+          <button
+            onClick={() => router.push('/fitness/listings')}
+           className="text-neutral-800 dark:text-neutral-200 font-bold uppercase tracking-[0.25em] text-xs hover:opacity-80 transition-opacity flex items-center gap-3 group">
             Explore All Programs 
             <ArrowRightIcon className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </button>

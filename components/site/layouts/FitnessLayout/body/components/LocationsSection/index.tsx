@@ -39,7 +39,7 @@ interface LocationItemProps {
 
 const LocationItem = ({ id, name, image, programs, rating, description, index, primaryColor }: LocationItemProps) => (
   <motion.a
-    href={`/locations/${id}`}
+    href={`/fitness/listings?locations=${id}`}
     variants={cardVariants}
     whileHover={{ y: -6 }}
     className="group relative flex-shrink-0 w-[82vw] sm:w-[400px] md:w-[440px] h-[560px] sm:h-[600px] rounded-[2.5rem] overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800/50 shadow-sm hover:shadow-2xl snap-center transition-all duration-500"
@@ -47,7 +47,7 @@ const LocationItem = ({ id, name, image, programs, rating, description, index, p
     {/* Immersive Cover Image */}
     <div className="absolute inset-0 z-0">
       <Image
-        src={image}
+        src={image || "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2670&auto=format&fit=crop"}
         alt={name}
         loader={({ src }) => src}
         fill

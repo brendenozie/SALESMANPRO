@@ -104,7 +104,7 @@ export default function WellnessHubSection({ blogs = [] }: { blogs?: IBlog[] }) 
           {data.map((blog) => (
             <motion.a
               key={blog.id}
-              href={`/blog/${blog.slug}`}
+              href={`/fitness/blog/${blog.slug}`}
               variants={itemVariants}
               whileHover={{ y: -6 }}
               className="group relative bg-white dark:bg-neutral-900/30 p-8 sm:p-10 flex flex-col h-[460px] sm:h-[500px] rounded-[2.5rem] overflow-hidden border border-neutral-200/80 dark:border-neutral-900/60 shadow-sm hover:shadow-xl transition-all duration-500"
@@ -196,7 +196,7 @@ export default function WellnessHubSection({ blogs = [] }: { blogs?: IBlog[] }) 
           viewport={{ once: true }}
         >
           <a
-            href="/blog"
+            href="/fitness/blog"
             className="group flex flex-col items-center gap-4"
           >
             <div 

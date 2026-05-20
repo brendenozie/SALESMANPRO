@@ -112,7 +112,7 @@ export default function GallerySection() {
             >
               {/* Core Context Content Image Asset */}
               <Image
-                src={item.src}
+                src={item.src || "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2000"}
                 alt={item.title}
                 fill
                 loader={loader}
@@ -166,7 +166,7 @@ export default function GallerySection() {
           <button 
             className="group font-black uppercase text-[10px] tracking-[0.35em] flex items-center gap-3 text-neutral-800 dark:text-neutral-200 hover:opacity-80 transition-opacity"
           >
-            <span>Access Full Database</span> 
+            {/* <span>Access Full Database</span>  */}
             <div 
               className="w-10 h-[2px] transition-all duration-500 group-hover:w-16" 
               style={{ backgroundColor: primaryColor }} 
