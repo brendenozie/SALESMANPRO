@@ -16,9 +16,6 @@ import GhubaProductCard from "../GhubaProductCard";
 const Shop = ({ addToCart, category, shopItems }: any) => {
   const router = useRouter();
   const [likedItems, setLikedItems] = useState<any>({});
-    
-  console.log("Shop Component - Category:", category);
-  console.log("Shop Component - Shop Items:", shopItems);
   
   const toggleLike = (id: any) => {
     setLikedItems((prev: any) => ({ ...prev, [id]: !prev[id] }));

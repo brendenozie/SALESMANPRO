@@ -43,8 +43,6 @@ const HomePage = ({ pageData, companyId }: { pageData: StoreForm, companyId: str
 
           const data = await response.json();
 
-          console.log("Homepage Data:", data);
-
           setCategories(data.categories);
           setFlashDeals(data.flashDeals);
           setNewArrivals(data.newArrivals);
@@ -55,14 +53,12 @@ const HomePage = ({ pageData, companyId }: { pageData: StoreForm, companyId: str
             data.categories.find((c:any) => c.isFeatured) ||
             data.categories[0];
 
-            console.log("Featured Category:", featuredCat); 
           setFeaturedCategories(featuredCat);
 
           setProductsByCategory({
             [featuredCat.name]: data.featuredCategoryProducts,
           });
 
-          console.log("Featured Category Products:", data.featuredCategoryProducts);
         } catch (err:any) {
           setError(err.message);
         } finally {
