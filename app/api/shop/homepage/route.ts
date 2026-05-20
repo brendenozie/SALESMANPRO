@@ -4,9 +4,15 @@ import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { cacheGet, cacheSet } from "@/lib/cache";
 
-const JSON_HEADER = {
-  "Content-Type": "application/json",
+
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
+
+// Optimization: Pre-calculate headers
+const JSON_HEADER = { "Content-Type": "application/json","Cache-Control": "public, s-maxage=60, stale-while-revalidate=300", ...CORS_HEADERS };
 
 export async function GET() {
   try {
@@ -16,9 +22,7 @@ export async function GET() {
 
     if (cached) {
       return NextResponse.json(cached, {
-        headers: {
-          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
-        },
+        headers: JSON_HEADER,
       });
     }
 
@@ -139,9 +143,7 @@ export async function GET() {
     await cacheSet(cacheKey, response, 300);
 
     return NextResponse.json(response, {
-      headers: {
-        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
-      },
+      headers: JSON_HEADER,
     });
   } catch (error) {
     return NextResponse.json({ error: "Internal Error" }, { status: 500 });
