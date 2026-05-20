@@ -159,8 +159,8 @@ const ProductPageClient = ({ listing, similarListings }) => {
       )}
 
       <WhatsAppInquiry 
-        productName={product.name}
-        productPrice={product.finalPrice || product.sellingPrice || 0}
+        productName={listing.name}
+        productPrice={listing.finalPrice || listing.sellingPrice || 0}
         productUrl={window.location.href}
         phoneNumber = "254712345678"
       />
