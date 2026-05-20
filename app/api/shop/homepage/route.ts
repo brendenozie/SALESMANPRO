@@ -2,8 +2,8 @@
 
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { cacheGet, cacheSet } from "@/lib/cache";
-
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -14,7 +14,7 @@ const CORS_HEADERS = {
 // Optimization: Pre-calculate headers
 const JSON_HEADER = { "Content-Type": "application/json","Cache-Control": "public, s-maxage=60, stale-while-revalidate=300", ...CORS_HEADERS };
 
-export async function GET() {
+async function getHandler(request: Request) {
   try {
     const cacheKey = "shop:homepage";
 
@@ -149,3 +149,10 @@ export async function GET() {
     return NextResponse.json({ error: "Internal Error" }, { status: 500 });
   }
 }
+
+
+
+export const GET = withApiHandler(getHandler, {
+  requireAuth: false,
+  requireRateLimit: true,
+});
