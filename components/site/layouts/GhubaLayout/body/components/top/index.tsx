@@ -40,7 +40,7 @@ const CustomNextArrow = ({ onClick }: any) => (
 
 const TopCate = ({ categories }: { categories: any[] }) => {
   const settings = {
-    dots: true,
+    dots: false,
     infinite: true,
     slidesToShow: 3,
     slidesToScroll: 1,
