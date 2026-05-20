@@ -66,7 +66,7 @@ export default function GhubaProductCard({ product, toggleLike, likedItems,  }: 
             height={400}
             loader={loaderProp}
             src={imageError ? 'https://via.placeholder.com/400x400?text=Image+Not+Found' : product.images[0]}
-            alt={product.title}
+            alt={product.title || 'Product Image'}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             onError={() => setImageError(true)}
           />
@@ -96,7 +96,7 @@ export default function GhubaProductCard({ product, toggleLike, likedItems,  }: 
         <div className="p-3 sm:p-6 flex flex-col flex-grow justify-between gap-2 sm:gap-4">
           <div className="space-y-1">
             <div className="flex justify-between items-start gap-1">
-              <h3 className="text-[11px] sm:text-lg font-black uppercase tracking-tighter text-zinc-900 dark:text-white line-clamp-2 leading-tight">
+              <h3 className="text-[11px] sm:text-lg font-black uppercase tracking-tighter text-zinc-900 dark:text-white line-clamp-2 leading-tight h-14 ">
                 {product.name || product.title}
               </h3>
               

@@ -31,69 +31,112 @@ const HomePage = ({ pageData, companyId }: { pageData: StoreForm, companyId: str
   const [isModalOpen, setModalOpen] = useState<any>(true);
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchHomepage = async () => {
       try {
-        const response = await fetch(`${apiBaseUrl}/shop/categories`);
-        if (!response.ok) throw new Error("Failed to fetch categories.");
-        const data = await response.json();
-        setCategories(data.categories);
-        setFeaturedCategories(data.categories.isFeatured ? data.categories.find((cat: any) => cat.isFeatured) : data.categories[0]);
-        console.log("Fetched Categories:", data.categories);  
-      } catch (err:any) {
-        setError(err.message);
-      }
-    };
+        setLoading(true);
 
-    fetchCategories();
-  }, []);
+          const response = await fetch(`${apiBaseUrl}/shop/homepage`);
 
-  useEffect(() => {
-    const fetchProductsByCategory = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const products: { [key: string]: any } = {};
-        const response = await fetch(`${apiBaseUrl}/shop/productsByCategory?categoryId=${featuredCategories.id}`);
-        if (!response.ok) throw new Error(`Failed to fetch products for category ${featuredCategories.name}.`);
-        const data = await response.json();
+          if (!response.ok) {
+            throw new Error("Failed to load homepage");
+          }
 
-        products[String(featuredCategories.name)] = data;
-        setProductsByCategory(products);
+          const data = await response.json();
+
+          console.log("Homepage Data:", data);
+
+          setCategories(data.categories);
+          setFlashDeals(data.flashDeals);
+          setNewArrivals(data.newArrivals);
+          setDiscounts(data.discounts);
+          setFeatured(data.featured);
+
+          const featuredCat =
+            data.categories.find((c:any) => c.isFeatured) ||
+            data.categories[0];
+
+            console.log("Featured Category:", featuredCat); 
+          setFeaturedCategories(featuredCat);
+
+          setProductsByCategory({
+            [featuredCat.name]: data.featuredCategoryProducts,
+          });
+
+          console.log("Featured Category Products:", data.featuredCategoryProducts);
+        } catch (err:any) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchHomepage();
+    }, []);
+
+  // useEffect(() => {
+  //   const fetchCategories = async () => {
+  //     try {
+  //       const response = await fetch(`${apiBaseUrl}/shop/categories`);
+  //       if (!response.ok) throw new Error("Failed to fetch categories.");
+  //       const data = await response.json();
+  //       setCategories(data.categories);
+  //       setFeaturedCategories(data.categories.isFeatured ? data.categories.find((cat: any) => cat.isFeatured) : data.categories[0]);
+  //       console.log("Fetched Categories:", data.categories);  
+  //     } catch (err:any) {
+  //       setError(err.message);
+  //     }
+  //   };
+
+  //   fetchCategories();
+  // }, []);
+
+  // useEffect(() => {
+  //   const fetchProductsByCategory = async () => {
+  //     setLoading(true);
+  //     setError(null);
+  //     try {
+  //       const products: { [key: string]: any } = {};
+  //       const response = await fetch(`${apiBaseUrl}/shop/productsByCategory?categoryId=${featuredCategories.id}`);
+  //       if (!response.ok) throw new Error(`Failed to fetch products for category ${featuredCategories.name}.`);
+  //       const data = await response.json();
+
+  //       products[String(featuredCategories.name)] = data;
+  //       setProductsByCategory(products);
       
-      } catch (err:any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+  //     } catch (err:any) {
+  //       setError(err.message);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    if (categories.length > 0) {
-      fetchProductsByCategory();
-    }
-  }, [featuredCategories]);
+  //   if (categories.length > 0) {
+  //     fetchProductsByCategory();
+  //   }
+  // }, [featuredCategories]);
 
-  useEffect(() => {
-    const fetchProductsByFlag = async (flag: string, setState: any) => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(`${apiBaseUrl}/shop/productsByFlag?flag=${flag}`);
-        if (!response.ok) throw new Error(`Failed to fetch products for flag ${flag}.`);
-        const responsedata = await response.json();
-        setState(responsedata.data);
-      } catch (err:any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchProductsByFlag = async (flag: string, setState: any) => {
+  //     setLoading(true);
+  //     setError(null);
+  //     try {
+  //       const response = await fetch(`${apiBaseUrl}/shop/productsByFlag?flag=${flag}`);
+  //       if (!response.ok) throw new Error(`Failed to fetch products for flag ${flag}.`);
+  //       const responsedata = await response.json();
+  //       setState(responsedata.data);
+  //     } catch (err:any) {
+  //       setError(err.message);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchProductsByFlag("isOnOffer", setOffers);
-    fetchProductsByFlag("isFlashDeal", setFlashDeals);
-    fetchProductsByFlag("isNewArrival", setNewArrivals);
-    fetchProductsByFlag("isDiscounted", setDiscounts);
-    fetchProductsByFlag("isFeatured", setFeatured);
-  }, []);
+  //   fetchProductsByFlag("isOnOffer", setOffers);
+  //   fetchProductsByFlag("isFlashDeal", setFlashDeals);
+  //   fetchProductsByFlag("isNewArrival", setNewArrivals);
+  //   fetchProductsByFlag("isDiscounted", setDiscounts);
+  //   fetchProductsByFlag("isFeatured", setFeatured);
+  // }, []);
 
   return (
     <>

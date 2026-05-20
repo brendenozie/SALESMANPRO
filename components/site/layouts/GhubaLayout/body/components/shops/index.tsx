@@ -17,6 +17,9 @@ const Shop = ({ addToCart, category, shopItems }: any) => {
   const router = useRouter();
   const [likedItems, setLikedItems] = useState<any>({});
     
+  console.log("Shop Component - Category:", category);
+  console.log("Shop Component - Shop Items:", shopItems);
+  
   const toggleLike = (id: any) => {
     setLikedItems((prev: any) => ({ ...prev, [id]: !prev[id] }));
   };
@@ -100,7 +103,7 @@ const Shop = ({ addToCart, category, shopItems }: any) => {
           {/* Product Grid - 2 COLUMNS ON MOBILE */}
           <div className="lg:col-span-9 order-2 lg:order-2">
             <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-8">
-              {shopItems?.data?.map((product: any) => (
+              {shopItems?.map((product: any) => (
                 <div key={product.id} className="w-full">
                   <GhubaProductCard 
                     product={product} 

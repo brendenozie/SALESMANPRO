@@ -2067,7 +2067,6 @@ model marketplaceListings {
   // Indexes for performance
   @@index([name])
   @@index([finalPrice])
-  @@index([isFeatured])
   @@index([createdAt])
   @@index([status])
   @@index([companyId])
@@ -2082,6 +2081,10 @@ model marketplaceListings {
   @@index([email])
   @@index([companyId, createdAt])
   @@index([companyId, isFeatured, createdAt])
+  @@index([isFlashDeal])
+  @@index([isFeatured])
+  @@index([isDiscounted])
+  @@index([isNewArrival])
 }
 
 model ProductReview {

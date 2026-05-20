@@ -43,28 +43,66 @@ const DiscountSlider = ({ productItems, addToCart }: any) => {
 
   const settings = {
     dots: false,
-    infinite: productItems.length > 2,
-    slidesToShow: 3,
+    infinite: productItems.length > 4,
+    speed: 600,
+    slidesToShow: 4,
     slidesToScroll: 1,
     autoplay: true,
-    autoplaySpeed: 3500,
-    speed: 800,
+    autoplaySpeed: 3000,
     nextArrow: <CustomNextArrow />,
     prevArrow: <CustomPrevArrow />,
     swipeToSlide: true,
+    touchThreshold: 10,
+
     responsive: [
-      { breakpoint: 1024, settings: { slidesToShow: 2 } },
-      { 
-        breakpoint: 640, 
-        settings: { 
-          slidesToShow: 1.1, // Slight peek for a focused discount feel
-          centerMode: true,
-          centerPadding: "20px",
-          arrows: false 
-        } 
+      {
+        breakpoint: 1280,
+        settings: {
+          slidesToShow: 3,
+        },
+      },
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 2,
+        },
+      },
+      {
+        breakpoint: 640,
+        settings: {
+          slidesToShow: 1.05,
+          slidesToScroll: 1,
+          arrows: false,
+          infinite: false,
+        },
       },
     ],
   };
+
+  // const settings = {
+  //   dots: false,
+  //   infinite: productItems.length > 2,
+  //   slidesToShow: 3,
+  //   slidesToScroll: 1,
+  //   autoplay: true,
+  //   autoplaySpeed: 3500,
+  //   speed: 800,
+  //   nextArrow: <CustomNextArrow />,
+  //   prevArrow: <CustomPrevArrow />,
+  //   swipeToSlide: true,
+  //   responsive: [
+  //     { breakpoint: 1024, settings: { slidesToShow: 2 } },
+  //     { 
+  //       breakpoint: 640, 
+  //       settings: { 
+  //         slidesToShow: 1.1, // Slight peek for a focused discount feel
+  //         centerMode: true,
+  //         centerPadding: "20px",
+  //         arrows: false 
+  //       } 
+  //     },
+  //   ],
+  // };
 
   return (
     <div className="relative">
@@ -89,6 +127,8 @@ const Discount = ({ productItems, addToCart }: any) => {
   const router = useRouter();
 
   return (
+    <>
+    
     <section className="relative py-16 md:py-24 bg-white dark:bg-[#080808] transition-colors duration-500 overflow-hidden">
       {/* Decorative Background Element */}
       <div className="absolute top-0 left-0 w-full h-full opacity-[0.03] dark:opacity-[0.07] pointer-events-none">
@@ -144,6 +184,40 @@ const Discount = ({ productItems, addToCart }: any) => {
 
       </div>
     </section>
+
+    {/* // add custom style  */}
+      <style>{`
+        /* Custom styles for slick dots */
+        .slick-dots {
+          bottom: -30px;
+        }
+        .slick-dots li button:before {
+          font-size: 10px;
+          color: #cbd5e1; /* Tailwind's zinc-400 */
+          opacity: 1;
+        }
+        .slick-dots li.slick-active button:before {
+          color: #fbbf24; /* Tailwind's amber-500 */
+        }
+
+        .slick-list {
+          padding: 12px 0 !important;
+        }
+
+        .slick-track {
+          display: flex !important;
+        }
+
+        .slick-slide {
+          height: inherit !important;
+        }
+
+        .slick-slide > div {
+          height: 100%;
+        }
+      `}
+      </style>
+      </>
   );
 };
 

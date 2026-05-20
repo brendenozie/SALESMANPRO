@@ -50,34 +50,48 @@ const NewArrivals = ({ productItems, addToCart }: any) => {
     return () => clearTimeout(timer);
   }, []);
 
+  
   const settings = {
     dots: false,
-    infinite: productItems?.length > 2,
+    infinite: productItems.length > 4,
     speed: 600,
-    autoplay: true,
-    autoplaySpeed: 4000,
     slidesToShow: 4,
     slidesToScroll: 1,
-    pauseOnHover: true,
+    autoplay: true,
+    autoplaySpeed: 3000,
     nextArrow: <CustomNextArrow />,
     prevArrow: <CustomPrevArrow />,
-    swipeToSlide: true, // Smooth swiping
+    swipeToSlide: true,
+    touchThreshold: 10,
+
     responsive: [
-      { breakpoint: 1280, settings: { slidesToShow: 3 } },
-      { breakpoint: 1024, settings: { slidesToShow: 2 } },
-      { 
-        breakpoint: 640, 
-        settings: { 
-          slidesToShow: 1.15, // Peek effect
-          centerMode: true,
-          centerPadding: "15px",
-          arrows: false 
-        } 
-      }
-    ]
+      {
+        breakpoint: 1280,
+        settings: {
+          slidesToShow: 3,
+        },
+      },
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 2,
+        },
+      },
+      {
+        breakpoint: 640,
+        settings: {
+          slidesToShow: 1.05,
+          slidesToScroll: 1,
+          arrows: false,
+          infinite: false,
+        },
+      },
+    ],
   };
 
+
   return (
+    <>
     <motion.section
       className="relative py-12 md:py-20 bg-white dark:bg-[#080808] transition-colors duration-500"
       initial={{ opacity: 0 }}
@@ -121,7 +135,7 @@ const NewArrivals = ({ productItems, addToCart }: any) => {
             ))}
           </div>
         ) : (
-          <div className="relative -mx-2 md:mx-0">
+          <div className="relative">
              <Slider {...settings}>
               {productItems.map((product: any, index: any) => (
                 <div key={index} className="px-2 md:px-3 py-4">
@@ -141,6 +155,40 @@ const NewArrivals = ({ productItems, addToCart }: any) => {
       {/* Aesthetic Background Detail - Hidden on smallest screens for performance */}
       <div className="hidden sm:block absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-amber-500/5 to-transparent pointer-events-none" />
     </motion.section>
+
+    {/* // add custom style  */}
+      <style>{`
+        /* Custom styles for slick dots */
+        .slick-dots {
+          bottom: -30px;
+        }
+        .slick-dots li button:before {
+          font-size: 10px;
+          color: #cbd5e1; /* Tailwind's zinc-400 */
+          opacity: 1;
+        }
+        .slick-dots li.slick-active button:before {
+          color: #fbbf24; /* Tailwind's amber-500 */
+        }
+
+        .slick-list {
+          padding: 12px 0 !important;
+        }
+
+        .slick-track {
+          display: flex !important;
+        }
+
+        .slick-slide {
+          height: inherit !important;
+        }
+
+        .slick-slide > div {
+          height: 100%;
+        }
+      `}
+      </style>
+      </>
   );
 };
 
