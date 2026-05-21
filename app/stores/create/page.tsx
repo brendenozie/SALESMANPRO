@@ -30,7 +30,10 @@ export default async function CreateStorePage() {
     <div className="min-h-screen bg-zinc-50/50 dark:bg-zinc-950/20 py-8">
       <Suspense fallback={<FormLoaderFallback />}>
         <CreateStoreForm
-          availableCategories={categories?.results || []}
+          availableCategories={(categories?.results?.map(cat => ({
+            ...cat,
+            subcategories: cat.subcategories && typeof cat.subcategories === 'object' ? cat.subcategories as any[] : undefined
+          })) || []) as any[]}
           availableLocations={(locations?.data as unknown as any[]) || []}
           siteCategories={siteCategories || []}
         />

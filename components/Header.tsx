@@ -42,7 +42,8 @@ const Header = () => {
           "max-w-7xl mx-auto transition-all duration-500 pointer-events-auto",
           "flex items-center justify-between px-6 py-3 rounded-2xl border",
           scrolled
-            ? "bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl shadow-2xl border-white/20 dark:border-slate-800/50 py-3"
+          ? ""
+            // ? "bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl shadow-2xl border-white/20 dark:border-slate-800/50 py-3"
             : "bg-transparent border-transparent py-5"
         )}
       >
@@ -56,7 +57,7 @@ const Header = () => {
             />
             <div className="absolute inset-0 bg-orange-500/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
-          <span className="text-xl font-black tracking-tighter text-slate-900 dark:text-white transition-colors">
+          <span className="text-xl font-black tracking-tighter text-slate-900 transition-colors">
             Salesman<span className="text-orange-600">Pro</span>
           </span>
         </Link>
