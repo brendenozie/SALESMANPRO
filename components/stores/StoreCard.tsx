@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import React from "react";
+import { motion } from "framer-motion";
 import {
   PencilIcon,
   TrashIcon,
@@ -10,18 +10,20 @@ import {
   ArrowRightCircleIcon,
   GlobeAltIcon,
   EnvelopeIcon,
-  CreditCardIcon, 
+  CreditCardIcon,
   LockClosedIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 
-// This interface defines the data for a single store from your API
 interface StoreData {
   id: string;
   slug: string;
   name: string;
-  domain: string;
+  domain?: string;
   companyId: string;
-  subscriptionStatus: string;
+  subscriptionStatus?: string;
   category?: string;
   description?: string;
   bannerUrl?: string;
@@ -29,177 +31,269 @@ interface StoreData {
   contactPhone?: string;
 }
 
-// These are the props the StoreCard component *actually* receives from StoresPage
 interface StoreCardProps extends StoreData {
   isActive: boolean;
   onEdit?: (id: string) => void;
-  onDelete?: () => void; // Parent now binds the store/ID
-  onManageSubscription?: () => void; // Parent now binds the companyId
+  onDelete?: () => void;
+  onManageSubscription?: () => void;
 }
 
 export default function StoreCard({
   id,
   slug,
   name,
-  category,
   domain,
+  category,
   description,
   bannerUrl,
   contactEmail,
   contactPhone,
+  subscriptionStatus,
   isActive,
   onEdit,
   onDelete,
-  onManageSubscription
+  onManageSubscription,
 }: StoreCardProps) {
-  
-  // Local function for navigation (replaces useRouter)
   const navigate = (path: string) => {
     window.location.href = path;
   };
 
-  const statusText = isActive ? 'Active' : 'Inactive';
-  const statusClasses = isActive 
-    ? 'bg-green-100 text-green-700' 
-    : 'bg-yellow-100 text-yellow-700';
+  const openDomain = () => {
+    if (!domain) {
+      window.open(`https://${slug}.salesmanpro.site`, "_blank");
+      return;
+    }
+
+    const normalized = domain.startsWith("http")
+      ? domain
+      : `https://${domain}`;
+
+    window.open(normalized, "_blank");
+  };
+
+  const status =
+    subscriptionStatus?.toUpperCase() ||
+    (isActive ? "ACTIVE" : "INACTIVE");
+
+  const getStatusBadge = () => {
+    switch (status) {
+      case "ACTIVE":
+        return (
+          <div className="inline-flex items-center gap-1 rounded-full bg-emerald-500/90 px-3 py-1 text-xs font-bold text-white backdrop-blur-md shadow-lg shadow-emerald-500/20">
+            <CheckCircleIcon className="h-3.5 w-3.5" />
+            Active
+          </div>
+        );
+
+      case "AWAITING_CONFIRMATION":
+        return (
+          <div className="inline-flex items-center gap-1 rounded-full bg-amber-500/90 px-3 py-1 text-xs font-bold text-white backdrop-blur-md animate-pulse shadow-lg shadow-amber-500/20">
+            <ClockIcon className="h-3.5 w-3.5" />
+            Verifying
+          </div>
+        );
+
+      default:
+        return (
+          <div className="inline-flex items-center gap-1 rounded-full bg-rose-500/90 px-3 py-1 text-xs font-bold text-white backdrop-blur-md shadow-lg shadow-rose-500/20">
+            <LockClosedIcon className="h-3.5 w-3.5" />
+            Inactive
+          </div>
+        );
+    }
+  };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      whileHover={{ y: -6, boxShadow: "0 15px 35px rgba(0, 0, 0, 0.15)" }}
-      // Use a slightly larger, softer shadow
-      className={`bg-white rounded-xl shadow-2xl border border-gray-100 transform transition duration-300 group font-inter flex flex-col ${!isActive ? 'opacity-80' : ''}`}
+      whileHover={{ y: -8 }}
+      transition={{ duration: 0.35 }}
+      className={`group relative overflow-hidden rounded-3xl border border-white/10 bg-white shadow-xl transition-all duration-500 dark:bg-slate-950 dark:border-slate-800/80 ${
+        !isActive ? "opacity-90" : ""
+      }`}
     >
-      
-      {/* Banner Section */}
-      <div className="h-40 bg-indigo-50/50 relative rounded-t-xl overflow-hidden">
-        <img
-          src={bannerUrl || `https://placehold.co/800x200/4F46E5/ffffff?text=${encodeURIComponent(name)}`}
-          alt={`${name} banner`}
-          onError={(e) => {
-            e.currentTarget.onerror = null; 
-            e.currentTarget.src = `https://placehold.co/800x200/4F46E5/ffffff?text=${encodeURIComponent(name)}`;
-          }}
-          className={`w-full h-full object-cover transition duration-300 ${bannerUrl ? 'group-hover:scale-105' : 'object-contain mix-blend-multiply opacity-50'}`}
-        />
-        
-        {/* CONDITIONAL EDIT/DELETE BUTTONS (Only shown if ACTIVE and on hover) */}
+      {/* Ambient Glow */}
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-500/[0.04] via-transparent to-indigo-500/[0.04] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+      {/* Banner */}
+      <div className="relative h-52 overflow-hidden">
+        {bannerUrl ? (
+          <img
+            src={bannerUrl}
+            alt={name}
+            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+            onError={(e) => {
+              e.currentTarget.src = `https://placehold.co/1200x500/0f172a/ffffff?text=${encodeURIComponent(
+                name
+              )}`;
+            }}
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950">
+            <div className="absolute inset-0 opacity-30">
+              <div className="absolute top-0 left-0 h-56 w-56 rounded-full bg-orange-500 blur-3xl" />
+              <div className="absolute bottom-0 right-0 h-56 w-56 rounded-full bg-indigo-500 blur-3xl" />
+            </div>
+
+            <div className="relative flex h-full items-center justify-center">
+              <BuildingStorefrontIcon className="h-24 w-24 text-white/20" />
+            </div>
+          </div>
+        )}
+
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+        {/* Top Actions */}
+        <div className="absolute top-4 left-4">
+          {getStatusBadge()}
+        </div>
+
         {isActive && (
-          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition duration-300 space-x-2">
-            {/* Edit Button */}
-            <button 
-              onClick={() => onEdit && onEdit(id)}
-              className="p-2 bg-white/95 text-indigo-600 rounded-full shadow-lg hover:bg-indigo-50 transition duration-200"
-              title="Edit Store Details"
+          <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 translate-y-2 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+            <button
+              onClick={() => onEdit?.(id)}
+              className="rounded-full bg-white/95 p-2 text-slate-700 shadow-lg backdrop-blur-md hover:bg-orange-50 hover:text-orange-600 transition"
             >
               <PencilIcon className="h-5 w-5" />
             </button>
-            {/* Delete Button */}
-            <button 
+
+            <button
               onClick={onDelete}
-              className="p-2 bg-white/95 text-red-600 rounded-full shadow-lg hover:bg-red-50 transition duration-200"
-              title="Delete Store"
+              className="rounded-full bg-white/95 p-2 text-rose-600 shadow-lg backdrop-blur-md hover:bg-rose-50 transition"
             >
               <TrashIcon className="h-5 w-5" />
             </button>
           </div>
         )}
-      </div>
 
-      {/* Content Section */}
-      <div className="p-6 flex-grow">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex flex-col">
-            <h2 className="text-2xl font-extrabold text-gray-900 truncate mb-1">{name}</h2>
-            {/* Clear Status Indicator */}
-            <div className="flex items-center space-x-2">
-                {isActive ? 
-                    <BuildingStorefrontIcon className="h-5 w-5 text-green-500" /> : 
-                    <LockClosedIcon className="h-5 w-5 text-yellow-500" />
-                }
-                <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusClasses}`}>
-                    {statusText}
+        {/* Bottom Content */}
+        <div className="absolute bottom-0 left-0 right-0 p-6">
+          <div className="flex items-end justify-between gap-4">
+            <div className="min-w-0">
+              {category && (
+                <div className="mb-3 inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white backdrop-blur-md">
+                  <SparklesIcon className="h-3.5 w-3.5" />
+                  {category}
+                </div>
+              )}
+
+              <h2 className="truncate text-2xl font-black tracking-tight text-white">
+                {name}
+              </h2>
+
+              <div className="mt-1 flex items-center gap-2 text-sm text-white/80">
+                <GlobeAltIcon className="h-4 w-4" />
+                <span className="truncate">
+                  {domain || `${slug}.salesmanpro.site`}
                 </span>
+              </div>
             </div>
           </div>
         </div>
-
-        <p className="text-gray-600 mb-5 line-clamp-3 text-sm pt-2 border-t border-gray-50/50">
-          {description || 'No detailed description available for this store. Add a description in the editor to improve communication.'}
-        </p>
-
-        {/* Contact Info */}
-        <div className="space-y-2 border-t border-b border-gray-100 py-3 mb-5">
-          {contactEmail && (
-            <div className="flex items-center text-xs text-gray-700">
-              <EnvelopeIcon className="h-4 w-4 mr-2 text-gray-400" />
-              <a href={`mailto:${contactEmail}`} className="hover:text-blue-600 transition truncate">
-                {contactEmail}
-              </a>
-            </div>
-          )}
-          {contactPhone && (
-            <div className="flex items-center text-xs text-gray-700">
-              <PhoneIcon className="h-4 w-4 mr-2 text-gray-400" />
-              <a href={`tel:${contactPhone}`} className="hover:text-blue-600 transition">
-                {contactPhone}
-              </a>
-            </div>
-          )}
-        </div>
       </div>
 
-      {/* Action Footer (Prominent Buttons) */}
-      <div className="p-6 pt-0 space-y-3">
-        {isActive ? (
-          <>
-            {/* Primary Action: Manage Store (Only when active) */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => navigate(`/admin/${id}`)}
-              className="w-full flex items-center justify-center px-4 py-3 font-bold rounded-lg text-white bg-green-600 shadow-md shadow-green-200 hover:bg-green-700 transform transition-all"
-            >
-              Manage Store
-              <ArrowRightCircleIcon className="h-5 w-5 ml-2" />
-            </motion.button>
-            
-            {/* Secondary Action: View Live Site (Always available) https:// */}
-            <button
-              // onClick={() => navigate(`https://${domain}`)}
-              // onClick={() => window.location.href = `${domain}`}
-              onClick={() => window.open(`https://${domain}`, "_blank")}
-              className="w-full text-center text-blue-600 font-semibold hover:text-blue-800 transition flex items-center justify-center text-sm p-2"
-            >
-              <GlobeAltIcon className="h-4 w-4 mr-2" />
-              View Live Site
-            </button>
-          </>
-        ) : (
-          <>
-            {/* Primary Action: Activate Subscription (When inactive) */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={onManageSubscription}
-              className="w-full inline-flex items-center justify-center px-4 py-3 font-bold rounded-lg text-white bg-gradient-to-r from-orange-500 to-red-500 shadow-lg shadow-orange-200 hover:shadow-xl transform transition-all"
-            >
-              <CreditCardIcon className="h-5 w-5 mr-2" />
-              Activate Subscription
-            </motion.button>
+      {/* Main Content */}
+      <div className="relative z-10 p-6">
+        {/* Description */}
+        <div className="mb-6">
+          <p className="line-clamp-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+            {description ||
+              "This digital storefront is ready to showcase products, manage customers, process sales, and scale online operations beautifully."}
+          </p>
+        </div>
 
-            {/* Secondary Action: View Live Site (Always available) */}
-             <button
-              onClick={() => navigate(`/site/${slug}`)}
-              className="w-full text-center text-blue-600 font-semibold hover:text-blue-800 transition flex items-center justify-center text-sm p-2"
-            >
-              <GlobeAltIcon className="h-4 w-4 mr-2" />
-              View Live Site (Read-Only)
-            </button>
-          </>
+        {/* Contact Section */}
+        {(contactEmail || contactPhone) && (
+          <div className="mb-6 rounded-2xl border border-slate-200/70 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+            <div className="space-y-3">
+              {contactEmail && (
+                <a
+                  href={`mailto:${contactEmail}`}
+                  className="flex items-center gap-3 text-sm text-slate-700 transition hover:text-orange-600 dark:text-slate-300"
+                >
+                  <div className="rounded-lg bg-white p-2 shadow-sm dark:bg-slate-800">
+                    <EnvelopeIcon className="h-4 w-4" />
+                  </div>
+
+                  <span className="truncate">{contactEmail}</span>
+                </a>
+              )}
+
+              {contactPhone && (
+                <a
+                  href={`tel:${contactPhone}`}
+                  className="flex items-center gap-3 text-sm text-slate-700 transition hover:text-orange-600 dark:text-slate-300"
+                >
+                  <div className="rounded-lg bg-white p-2 shadow-sm dark:bg-slate-800">
+                    <PhoneIcon className="h-4 w-4" />
+                  </div>
+
+                  <span>{contactPhone}</span>
+                </a>
+              )}
+            </div>
+          </div>
         )}
+
+        {/* Actions */}
+        <div className="space-y-3">
+          {isActive ? (
+            <>
+              {/* Primary CTA */}
+              <motion.button
+                whileHover={{ scale: 1.015 }}
+                whileTap={{ scale: 0.985 }}
+                onClick={() => navigate(`/admin/${id}`)}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-green-500 px-5 py-4 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:shadow-emerald-500/40"
+              >
+                Manage Store
+                <ArrowRightCircleIcon className="h-5 w-5" />
+              </motion.button>
+
+              {/* Secondary Actions */}
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={openDomain}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                >
+                  <GlobeAltIcon className="h-4 w-4" />
+                  Live Site
+                </button>
+
+                <button
+                  onClick={() => onEdit?.(id)}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                >
+                  <PencilIcon className="h-4 w-4" />
+                  Edit Site
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Subscription CTA */}
+              <motion.button
+                whileHover={{ scale: 1.015 }}
+                whileTap={{ scale: 0.985 }}
+                onClick={onManageSubscription}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 via-amber-500 to-red-500 px-5 py-4 text-sm font-bold text-white shadow-xl shadow-orange-500/20 transition-all hover:shadow-orange-500/40"
+              >
+                <CreditCardIcon className="h-5 w-5" />
+                Activate Subscription
+              </motion.button>
+
+              <button
+                onClick={() => navigate(`/site/${slug}`)}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+              >
+                <GlobeAltIcon className="h-4 w-4" />
+                Preview Store
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </motion.div>
   );

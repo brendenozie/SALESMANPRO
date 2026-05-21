@@ -11,17 +11,10 @@ import {
   ArrowRightIcon,
   ExclamationTriangleIcon,
   XMarkIcon,
-  PlusIcon,
-  PencilIcon,
-  TrashIcon,
-  CreditCardIcon,
-  GlobeAltIcon,
-  PhoneIcon,
-  EnvelopeIcon,
-  CheckCircleIcon,
-  ClockIcon
+  PlusIcon
 } from "@heroicons/react/24/outline";
 import PricingSection from './PricingSection';
+import StoreCard from '@/components/stores/StoreCard';
 
 // --- Fetcher Definition ---
 const fetcher = (url: string) => fetch(url, { credentials: 'include' })
@@ -49,145 +42,7 @@ interface Store {
 }
 
 // ------------------------------------------------------------------
-// --- 1. MODERNIZED INLINE STORE CARD COMPONENT ---
-// ------------------------------------------------------------------
-interface StoreCardProps extends Store {
-  isActive: boolean;
-  onEdit?: (id: string) => void;
-  onDelete?: () => void;
-  onManageSubscription?: () => void;
-}
-
-function StoreCard({
-  id,
-  name,
-  slug,
-  domain,
-  subscriptionStatus,
-  description,
-  bannerUrl,
-  contactEmail,
-  contactPhone,
-  category,
-  isActive,
-  onEdit,
-  onDelete,
-  onManageSubscription
-}: StoreCardProps) {
-  return (
-    <motion.div
-      whileHover={{ y: -4 }}
-      transition={{ duration: 0.2 }}
-      className="group relative flex flex-col justify-between overflow-hidden rounded-2xl bg-white border border-slate-200/80 dark:bg-slate-900 dark:border-slate-800/80 shadow-sm hover:shadow-xl transition-all duration-300"
-    >
-      {/* Banner & Status Header Area */}
-      <div className="relative h-36 w-full overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900">
-        {bannerUrl ? (
-          <img
-            src={bannerUrl}
-            alt={`${name} cover`}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center opacity-20 dark:opacity-10">
-            <BuildingStorefrontIcon className="h-20 w-20 text-slate-900 dark:text-white" />
-          </div>
-        )}
-        
-        {/* Soft Decorative Ambient Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-
-        {/* Dynamic Status Badges */}
-        <div className="absolute top-4 right-4 z-10">
-          {subscriptionStatus === 'ACTIVE' ? (
-            <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold rounded-full bg-emerald-500/90 text-white backdrop-blur-sm shadow-sm">
-              <CheckCircleIcon className="h-3.5 w-3.5" /> Active
-            </span>
-          ) : subscriptionStatus === 'AWAITING_CONFIRMATION' ? (
-            <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold rounded-full bg-amber-500/90 text-white backdrop-blur-sm shadow-sm animate-pulse">
-              <ClockIcon className="h-3.5 w-3.5" /> Verifying
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold rounded-full bg-rose-500/90 text-white backdrop-blur-sm shadow-sm">
-              Inactive
-            </span>
-          )}
-        </div>
-
-        {/* Floating Vertical Industry Tag */}
-        {category && (
-          <div className="absolute bottom-3 left-4 text-[10px] font-extrabold uppercase tracking-wider text-slate-200 bg-black/30 backdrop-blur-md px-2 py-0.5 rounded-md">
-            {category}
-          </div>
-        )}
-      </div>
-
-      {/* Core Informational Grid Body */}
-      <div className="flex-1 p-5 md:p-6 flex flex-col justify-between">
-        <div className="space-y-2 mb-4">
-          <h3 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 line-clamp-1 group-hover:text-orange-500 transition-colors">
-            {name}
-          </h3>
-          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 line-clamp-2 min-h-[40px]">
-            {description || "No specific profile descriptions structured for this digital branch storefront location node yet."}
-          </p>
-
-          {/* Quick Domain Metrics Block */}
-          <div className="pt-2 space-y-1.5 border-t border-slate-100 dark:border-slate-800/60">
-            <div className="flex items-center text-xs font-medium text-slate-600 dark:text-slate-400">
-              <GlobeAltIcon className="h-4 w-4 mr-2 text-slate-400" />
-              <span className="truncate hover:underline cursor-pointer">{domain || `${slug}.salesmanpro.com`}</span>
-            </div>
-            {(contactEmail || contactPhone) && (
-              <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-400">
-                {contactEmail && (
-                  <span className="flex items-center gap-1 truncate max-w-[150px]">
-                    <EnvelopeIcon className="h-3 w-3" /> {contactEmail}
-                  </span>
-                )}
-                {contactPhone && (
-                  <span className="flex items-center gap-1 whitespace-nowrap">
-                    <PhoneIcon className="h-3 w-3" /> {contactPhone}
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Action Engine Footers */}
-        <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">
-          {isActive ? (
-            <>
-              <button
-                onClick={() => onEdit && onEdit(id)}
-                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800/80 transition-colors"
-              >
-                <PencilIcon className="h-3.5 w-3.5" /> Edit
-              </button>
-              <button
-                onClick={onDelete}
-                className="inline-flex items-center justify-center p-2 text-xs font-bold rounded-lg border border-slate-200 text-rose-600 hover:bg-rose-50 dark:border-slate-800 dark:text-rose-400 dark:hover:bg-rose-950/20 transition-colors"
-              >
-                <TrashIcon className="h-3.5 w-3.5" />
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={onManageSubscription}
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold rounded-xl text-white bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 shadow-md shadow-orange-500/10 active:scale-[0.99] transition-all"
-            >
-              <CreditCardIcon className="h-4 w-4" /> Activate Store Subscription
-            </button>
-          )}
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-// ------------------------------------------------------------------
-// --- 2. REUSABLE SUB-COMPONENTS (MODERNIZED REARCHITECTURE) ---
+// --- 1. REUSABLE SUB-COMPONENTS (MODERNIZED REARCHITECTURE) ---
 // ------------------------------------------------------------------
 
 const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }: { isOpen: boolean; title: string; message: string; onConfirm: () => void; onCancel: () => void; }) => {
