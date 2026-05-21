@@ -174,7 +174,7 @@ export default function PricingSection({ companyId, email, category, onSubscript
         email: email,
         amount: amountInKobo,
         ref: data.data.data.reference,
-        currency: isOutsideKenya ? "USD" : "KES",
+        currency:  "KES",//isOutsideKenya ? "USD" : "KES",
         metadata: { companyId, planId },
         callback: (response: any) => {
           window.location.href = `/payments/paystack/verify?reference=${response.reference}`;
@@ -326,7 +326,7 @@ export default function PricingSection({ companyId, email, category, onSubscript
           <button
             onClick={() => {
               setIsOutsideKenya(!isOutsideKenya);
-              setPaymentMethod("PAYSTACK");
+              // setPaymentMethod("PAYSTACK");
             }}
             className={`flex items-center text-xs font-semibold px-4 py-2.5 rounded-full border transition-all ${
               isOutsideKenya
@@ -405,7 +405,7 @@ export default function PricingSection({ companyId, email, category, onSubscript
                       className="overflow-hidden mb-6 space-y-4"
                     >
                       {/* Interactive Checkout Engine */}
-                      {!isOutsideKenya && (
+                      {(//!isOutsideKenya && 
                         <div className="flex p-1 bg-slate-100 dark:bg-slate-950 rounded-xl border border-slate-200/20">
                           <button
                             onClick={() => setPaymentMethod("PAYSTACK")}
@@ -430,8 +430,8 @@ export default function PricingSection({ companyId, email, category, onSubscript
                         </div>
                       )}
 
-                      {/* M-Pesa Interactive UI Segment */}
-                      {paymentMethod === "MPESA" && !isOutsideKenya ? (
+                      {/* M-Pesa Interactive UI Segment  && !isOutsideKenya*/}
+                      {paymentMethod === "MPESA" ? (
                         <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-500/20 rounded-2xl space-y-3 text-xs">
                           <div className="flex justify-between items-center pb-2 border-b border-emerald-500/10">
                             <span className="font-bold text-emerald-800 dark:text-emerald-400">
@@ -508,7 +508,8 @@ export default function PricingSection({ companyId, email, category, onSubscript
                       type="button"
                       onClick={() => {
                         setSelectedPlan(plan);
-                        if (isOutsideKenya) setPaymentMethod("PAYSTACK");
+                        // setPaymentMethod("PAYSTACK");
+                        // if (isOutsideKenya) 
                       }}
                       disabled={loading}
                       className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98] mb-6 ${
