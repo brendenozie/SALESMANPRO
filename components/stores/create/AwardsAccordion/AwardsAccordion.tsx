@@ -1,9 +1,10 @@
 'use client';
+
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   TrophyIcon,
-  PlusCircleIcon,
+  PlusIcon,
   TrashIcon,
   ChevronUpIcon,
   ChevronDownIcon,
@@ -54,23 +55,27 @@ export const AwardsAccordion: React.FC<Props> = ({
   );
 
   return (
-    <section className="max-w-4xl mx-auto overflow-hidden">
-      {/* Header */}
+    <section className="max-w-4xl mx-auto w-full border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-950 overflow-hidden shadow-sm transition-all duration-200">
+      {/* Accordion Header */}
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="w-full flex justify-between items-center px-4 sm:px-6 py-4 bg-gradient-to-r from-yellow-400 to-yellow-300 text-white focus:outline-none"
+        className="w-full flex justify-between items-center px-5 sm:px-6 py-4 bg-zinc-50 dark:bg-zinc-900/50 hover:bg-zinc-100/70 dark:hover:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
         aria-expanded={open}
       >
         <div className="flex items-center space-x-3">
-          <TrophyIcon className="h-6 w-6" />
-          <h3 className="text-lg font-semibold">Awards</h3>
+          <div className="p-2 bg-amber-500/10 rounded-lg text-amber-600 dark:text-amber-400">
+            <TrophyIcon className="h-5 w-5" />
+          </div>
+          <h3 className="text-md font-semibold text-zinc-800 dark:text-zinc-100">Awards & Achievements</h3>
         </div>
-        {open ? (
-          <ChevronUpIcon className="h-5 w-5" />
-        ) : (
-          <ChevronDownIcon className="h-5 w-5" />
-        )}
+        <div className="text-zinc-400 dark:text-zinc-500">
+          {open ? (
+            <ChevronUpIcon className="h-5 w-5" />
+          ) : (
+            <ChevronDownIcon className="h-5 w-5" />
+          )}
+        </div>
       </button>
 
       <AnimatePresence initial={false}>
@@ -79,207 +84,221 @@ export const AwardsAccordion: React.FC<Props> = ({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="px-4 sm:px-6 py-6 space-y-6"
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
           >
-            {/* Empty State */}
-            {(!awards || awards.length === 0) && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-center text-gray-600 bg-yellow-50 border border-yellow-200 rounded-lg py-8"
-              >
-                <TrophyIcon className="h-10 w-10 text-yellow-400 mx-auto mb-3" />
-                <p className="font-medium">No awards yet!</p>
-                <p className="text-sm mb-3">
-                  Start by adding your first recognition or achievement.
-                </p>
-                <button
-                  onClick={onAdd}
-                  className="inline-flex items-center space-x-2 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
+            <div className="p-5 sm:p-6 space-y-6">
+              {/* Empty State */}
+              {(!awards || awards.length === 0) && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center bg-zinc-50 dark:bg-zinc-900/30 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl py-10 px-4"
                 >
-                  <PlusCircleIcon className="h-5 w-5" />
-                  <span>Add Award</span>
-                </button>
-              </motion.div>
-            )}
-
-            {/* Awards Grid */}
-            <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {awards &&
-                awards.map((award, idx) => (
-                  <motion.div
-                    key={idx}
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    className="relative bg-yellow-50 rounded-xl border border-yellow-200 p-4 sm:p-5 shadow-sm hover:shadow-md transition"
+                  <TrophyIcon className="h-12 w-12 text-zinc-300 dark:text-zinc-700 mx-auto mb-3 animate-pulse" />
+                  <p className="font-medium text-zinc-700 dark:text-zinc-300">No awards documented</p>
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4 max-w-xs mx-auto">
+                    Start by documenting your notable career victories, certificates, or milestones.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={onAdd}
+                    className="inline-flex items-center space-x-2 px-4 py-2 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 font-medium text-sm rounded-lg shadow-sm transition"
                   >
-                    <TrophyIcon className="absolute top-2 right-2 h-10 w-10 text-yellow-300 opacity-10" />
-
-                    {/* Header */}
-                    <div className="flex justify-between items-center mb-4">
-                      <h4 className="text-md font-medium text-yellow-800">
-                        Award {idx + 1}
-                      </h4>
-                      <button
-                        type="button"
-                        onClick={() => onRemove(idx)}
-                        aria-label="Remove award"
-                        className="text-red-500 hover:text-red-600 focus-visible:ring-2 focus-visible:ring-red-300 rounded-md p-1"
-                      >
-                        <TrashIcon className="h-5 w-5" />
-                      </button>
-                    </div>
-
-                    <div className="space-y-4">
-                      {/* Award Name */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          Name
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Best Seller 2023"
-                          value={award.name}
-                          onChange={(e) =>
-                            onUpdate(idx, 'name', e.target.value)
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 transition"
-                        />
-                        {!award.name && (
-                          <p className="text-xs text-red-500 mt-1">
-                            Please enter an award name
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Icon Selector (Modal Trigger) */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Award Icon
-                        </label>
-                        <button
-                          onClick={() => setSelectedIndex(idx)}
-                          className="w-full flex items-center justify-between px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition"
-                        >
-                          <span>
-                            {award.iconUrl
-                              ? ICON_OPTIONS.find(
-                                  (icon) => icon.url === award.iconUrl
-                                )?.name || 'Custom Icon'
-                              : 'Select an Icon'}
-                          </span>
-                          <ChevronDownIcon className="h-5 w-5 text-gray-400" />
-                        </button>
-                        {award.iconUrl && (
-                          <img
-                            src={award.iconUrl}
-                            alt="icon preview"
-                            className="h-12 w-12 mt-3 rounded object-contain"
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-
-              {/* Add New */}
-              {awards && (
-                <div
-                  onClick={canAdd ? onAdd : undefined}
-                  className={`flex flex-col justify-center items-center border-2 border-dashed border-yellow-300 rounded-lg p-8 cursor-pointer hover:bg-yellow-50 transition ${
-                    !canAdd && 'opacity-50 cursor-not-allowed'
-                  }`}
-                >
-                  <PlusCircleIcon className="h-8 w-8 text-yellow-500" />
-                  <span className="mt-2 text-yellow-700 font-medium">
-                    Add New Award
-                  </span>
-                </div>
+                    <PlusIcon className="h-4 w-4" />
+                    <span>Add First Award</span>
+                  </button>
+                </motion.div>
               )}
-            </motion.div>
 
-            {/* Tip */}
-            <div className="text-sm text-gray-600 italic text-center sm:text-left">
-              🏆 Tip: Choose a fun icon or upload a custom one to personalize awards.
+              {/* Awards Grid */}
+              <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {awards &&
+                  awards.map((award, idx) => (
+                    <motion.div
+                      key={idx}
+                      layout
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="group relative bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-xl p-4 sm:p-5 shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200"
+                    >
+                      {/* Card Context Header */}
+                      <div className="flex justify-between items-center mb-4">
+                        <span className="text-xs font-semibold tracking-wider uppercase text-zinc-400 dark:text-zinc-500">
+                          Award Entry #{idx + 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => onRemove(idx)}
+                          aria-label="Remove award"
+                          className="opacity-0 group-hover:opacity-100 focus:opacity-100 text-zinc-400 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-400 p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-all duration-150"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+
+                      {/* Fields Stack */}
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
+                            Award Name
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Employee of the Year"
+                            value={award.name}
+                            onChange={(e) => onUpdate(idx, 'name', e.target.value)}
+                            className="w-full text-sm px-3 py-2 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 dark:focus:border-amber-500 transition-all"
+                          />
+                          {!award.name.trim() && (
+                            <p className="text-xs text-red-500 dark:text-red-400/80 mt-1.5 pl-0.5">
+                              Please enter an award name
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
+                            Visual Identifier Icon
+                          </label>
+                          <div className="flex sm:items-center gap-3 flex-col sm:flex-row">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedIndex(idx)}
+                              className="flex-1 flex items-center justify-between text-sm px-3 py-2 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition text-left focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                            >
+                              <span className="truncate">
+                                {award.iconUrl
+                                  ? ICON_OPTIONS.find((icon) => icon.url === award.iconUrl)?.name || 'Custom Icon'
+                                  : 'Pick stylized badge...'}
+                              </span>
+                              <ChevronDownIcon className="h-4 w-4 text-zinc-400 flex-shrink-0 ml-2" />
+                            </button>
+
+                            {award.iconUrl && (
+                              <div className="flex-shrink-0 flex items-center justify-center h-10 w-10 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-1.5 self-start sm:self-auto">
+                                <img
+                                  src={award.iconUrl}
+                                  alt="Icon preview"
+                                  className="h-full w-full object-contain"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+
+                {/* Add New Interactive Placeholder Slot */}
+                {awards && (
+                  <button
+                    type="button"
+                    onClick={canAdd ? onAdd : undefined}
+                    disabled={!canAdd}
+                    className={`flex flex-col justify-center items-center border-2 border-dashed rounded-xl p-6 transition-all min-h-[180px] focus:outline-none focus:ring-2 focus:ring-amber-500/20 ${
+                      canAdd
+                        ? 'border-zinc-200 dark:border-zinc-800 hover:border-amber-500/40 hover:bg-zinc-50 dark:hover:bg-zinc-900/30 text-zinc-400 hover:text-amber-500 dark:text-zinc-600 dark:hover:text-amber-400'
+                        : 'border-zinc-100 dark:border-zinc-900 opacity-40 cursor-not-allowed text-zinc-300 dark:text-zinc-700'
+                    }`}
+                  >
+                    <div className="p-2.5 bg-zinc-100 dark:bg-zinc-900 rounded-full mb-2 group-hover:scale-110 transition-transform">
+                      <PlusIcon className="h-5 w-5" />
+                    </div>
+                    <span className="text-sm font-medium">Add Another Award</span>
+                  </button>
+                )}
+              </motion.div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Modal */}
+      {/* Modal Asset Selector */}
       <AnimatePresence>
         {selectedIndex !== null && (
-          <motion.div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop layer */}
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="bg-white rounded-2xl shadow-2xl p-6 max-w-2xl w-full mx-4"
+              className="fixed inset-0 bg-zinc-950/40 dark:bg-zinc-950/80 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedIndex(null)}
+            />
+
+            {/* Modal Box */}
+            <motion.div
+              initial={{ scale: 0.98, opacity: 0, y: 8 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.98, opacity: 0, y: 8 }}
+              transition={{ duration: 0.15 }}
+              className="relative w-full max-w-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl overflow-hidden z-10"
             >
-              <div className="flex justify-between items-center mb-4">
-                <h4 className="text-lg font-semibold text-gray-800">
-                  Select an Award Icon
+              {/* Modal Header */}
+              <div className="flex justify-between items-center px-6 py-4 border-b border-zinc-100 dark:border-zinc-800">
+                <h4 className="text-md font-semibold text-zinc-800 dark:text-zinc-100">
+                  Select Award Icon
                 </h4>
                 <button
+                  type="button"
                   onClick={() => setSelectedIndex(null)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="p-1 text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
                 >
-                  <XMarkIcon className="h-6 w-6" />
+                  <XMarkIcon className="h-5 w-5" />
                 </button>
               </div>
 
-              {/* Search */}
-              <div className="relative mb-4">
-                <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search icons..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400"
-                />
-              </div>
+              <div className="p-6 space-y-4">
+                {/* Search Inputs */}
+                <div className="relative">
+                  <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-4 w-4 text-zinc-400 dark:text-zinc-600" />
+                  <input
+                    type="text"
+                    placeholder="Filter icons by tag..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full text-sm pl-9 pr-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 dark:focus:border-amber-500 transition-all"
+                  />
+                </div>
 
-              {/* Icons Grid */}
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 max-h-[50vh] overflow-y-auto">
-                {filteredIcons.map((icon) => (
-                  <div
-                    key={icon.url}
-                    onClick={() => {
-                      onUpdate(selectedIndex!, 'iconUrl', icon.url);
-                      setSelectedIndex(null);
-                      setSearch('');
-                    }}
-                    className="flex flex-col items-center p-3 border rounded-lg hover:border-yellow-400 hover:bg-yellow-50 transition cursor-pointer"
-                  >
-                    <img
-                      src={icon.url}
-                      alt={icon.name}
-                      className="h-16 w-16 object-contain"
-                    />
-                    <p className="text-sm text-gray-600 mt-2 text-center truncate">
-                      {icon.name}
+                {/* Micro-Asset Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-h-[320px] overflow-y-auto pr-1">
+                  {filteredIcons.map((icon) => (
+                    <button
+                      type="button"
+                      key={icon.url}
+                      onClick={() => {
+                        onUpdate(selectedIndex!, 'iconUrl', icon.url);
+                        setSelectedIndex(null);
+                        setSearch('');
+                      }}
+                      className="group flex flex-col items-center p-3.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl hover:border-amber-500/50 dark:hover:border-amber-500/50 hover:bg-amber-500/[0.02] dark:hover:bg-amber-500/[0.02] transition text-center focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                    >
+                      <div className="h-12 w-12 flex items-center justify-center p-1 group-hover:scale-105 transition-transform duration-150">
+                        <img
+                          src={icon.url}
+                          alt={icon.name}
+                          className="h-full w-full object-contain"
+                        />
+                      </div>
+                      <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400 mt-2.5 max-w-full truncate">
+                        {icon.name}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+
+                {filteredIcons.length === 0 && (
+                  <div className="text-center py-10">
+                    <p className="text-sm text-zinc-500 dark:text-zinc-500">
+                      No badges match &ldquo;{search}&rdquo;
                     </p>
                   </div>
-                ))}
+                )}
               </div>
-
-              {filteredIcons.length === 0 && (
-                <p className="text-gray-500 text-center py-8">
-                  No icons found for “{search}”.
-                </p>
-              )}
             </motion.div>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </section>

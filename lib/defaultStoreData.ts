@@ -275,6 +275,11 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 10,000 items sold!",
+            value: null,
+          },
+        ]
         },
       ],
       promotions: [
@@ -460,6 +465,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 10,000 items sold!",
+            value: null,
+          },]
         },
       ],
       promotions: [
@@ -645,6 +654,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 10,000 items sold!",
+            value: null,
+          },]
         },
       ],
       promotions: [
@@ -830,6 +843,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 10,000 items sold!",
+            value: null,
+          },]
         },
       ],
       promotions: [
@@ -1015,6 +1032,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 10,000 items sold!",
+            value: null,
+          },]
         },
       ],
       promotions: [
@@ -1200,6 +1221,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 10,000 items sold!",
+            value: null,
+          },]
         },
       ],
       promotions: [
@@ -1385,6 +1410,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 10,000 items sold!",
+            value: null,
+          },]
         },
       ],
       promotions: [
@@ -1570,6 +1599,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 10,000 items sold!",
+            value: null,
+          },]
         },
       ],
       promotions: [
@@ -1755,6 +1788,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 10,000 items sold!",
+            value: null,
+          },]
         },
       ],
       promotions: [
@@ -1940,6 +1977,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 10,000 items sold!",
+            value: null,
+          },]
         },
       ],
       promotions: [
@@ -2125,6 +2166,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 10,000 items sold!",
+            value: null,
+          },]
         },
       ],
       promotions: [
@@ -2310,6 +2355,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 10,000 items sold!",
+            value: null,
+          },]
         },
       ],
       promotions: [
@@ -2495,6 +2544,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 10,000 items sold!",
+            value: null,
+          },]
         },
       ],
       promotions: [
@@ -2642,6 +2695,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 350 clients mentored!",
+            value: null,
+          },]
         },
       ],
       metrics: [
@@ -2790,6 +2847,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 100 events spoken at worldwide!",
+            value: null,
+          },]
         },
       ],
       events: [
@@ -2955,6 +3016,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 5,000 pairs sold!",
+            value: null,
+          },]
         },
       ],
       partnerLogos: [
@@ -3093,6 +3158,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 10,000 items sold!",
+            value: null,
+          },]
         },
       ],
       metrics: [
@@ -3224,6 +3293,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 10,000 items sold!",
+            value: null,
+          },]
         },
       ],
       metrics: [
@@ -3359,6 +3432,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 10,000 items sold!",
+            value: null,
+          },]
         },
       ],
       metrics: [
@@ -3491,6 +3568,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 50 projects completed worldwide!",
+            value: null,
+          },]
         },
       ],
       metrics: [
@@ -3617,6 +3698,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 50,000 readers this month!",
+            value: null,
+          },]
         },
       ],
       Collection: [
@@ -3737,6 +3822,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 1,000 students supported so far!",
+            value: null,
+          }],
         },
       ],
       metrics: [{ label: "Funds Raised", value: 50000 }],
@@ -3863,6 +3952,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+            stats: [{
+            label: "Over 10,000 patients served!",
+            value: null,
+          },]
         },
       ],
       services: [
@@ -3976,6 +4069,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+            stats:[ {
+            label: "Over 500,000 subscribers and counting!",
+            value: null,
+          },]
         },
       ],
       metrics: [
@@ -4090,6 +4187,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+            stats: [{
+            label: "Over 500 clients served with a 98% satisfaction rate!",
+            value: null,
+          }],
         },
       ],
       seo: {
@@ -4202,6 +4303,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+            stats: [{
+            label: "Over 500 cars sold this year!",
+            value: null,
+          }],
         },
       ],
       Collection: [
@@ -4323,6 +4428,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           videoLink: null,
           type: "image",
           price: "1200",
+          stats: [{
+            label: "Over 1,000 travelers have experienced this retreat!",
+            value: null,
+          }],
         },
       ],
       events: [{ title: "Travel Info Webinar", date: in1Day } as any],
@@ -4443,6 +4552,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 500 active members and counting!",
+            value: null,
+          }],
         },
       ],
       pricingTiers: [
@@ -4567,6 +4680,12 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats : [
+            {
+              label: "Over 5,000 businesses listed and counting!",
+              value: null,
+            }
+          ],
         },
       ],
       pricingTiers: [
@@ -4712,6 +4831,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 1,000 students have enrolled in this course!",
+            value: null,
+          }]
         },
       ],
       pricingTiers: [
@@ -4856,6 +4979,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats:[{
+            label: "Over 5,000 meals delivered with a 95% satisfaction rate!",
+            value: null,
+          }]
         },
       ],
       Collection: [
@@ -4971,6 +5098,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 10,000 tickets sold with a 95% satisfaction rate!",
+            value: null,
+          }]
         },
       ],
       events: [
@@ -5103,6 +5234,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats:[{
+            label: "Over 1,000 properties sold with a 95% satisfaction rate!",
+            value: null,
+          }]
         },
       ],
       Collection: [
@@ -5230,6 +5365,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 200 properties managed with a 98% satisfaction rate!",
+            value: null,
+          }]
         },
       ],
       Collection: [
@@ -5357,6 +5496,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 1,000 teams are using our software to boost productivity!",
+            value: null,
+          }]
         },
       ],
       pricingTiers: [
@@ -5497,6 +5640,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 5,000 listings and 20,000 buyers in your area!",
+            value: null,
+          }]
         },
       ],
       metrics: [
@@ -5619,6 +5766,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 200 systems installed with a 98% satisfaction rate!",
+            value: null,
+          }]
         },
       ],
       pricingTiers: [
@@ -5760,6 +5911,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 200 systems installed with a 98% satisfaction rate!",
+            value: null,
+          }]
         },
       ],
       pricingTiers: [
@@ -5901,6 +6056,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 300 styles available with a 95% customer satisfaction rate!",
+            value: null,
+          }]
         },
       ],
       metrics: [
@@ -6023,6 +6182,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+            stats:[{
+              label: "Over 200 furniture styles available with a 95% customer satisfaction rate!",
+              value: null,
+            }]
         },
       ],
       metrics: [
@@ -6146,6 +6309,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 100 businesses secured with a 98% satisfaction rate!",
+            value: null,
+          }]
         },
       ],
       pricingTiers: [
@@ -6287,6 +6454,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 10,000 deliveries completed with a 95% satisfaction rate!",
+            value: null,
+          }]
         },
       ],
       pricingTiers: [
@@ -6427,6 +6598,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 150 bike models available with a 95% customer satisfaction rate!",
+            value: null,
+          }]
         },
         {
           imageUrl: getSampleImageUrl("bike-store-2"),
@@ -6447,6 +6622,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 200 repairs completed with a 98% satisfaction rate!",
+            value: null,
+          }]
         },
       ],
       metrics: [
@@ -6543,7 +6722,7 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         },
       ],
     }),
-  
+
     "Meat Store": withOverrides({
       tagline: "**Fresh & Quality Meats** for Every Meal",
       description:
@@ -6590,6 +6769,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 50 meat varieties available with a 95% customer satisfaction rate!",
+            value: null,
+          }]
         },
       ],
       metrics: [
@@ -6599,8 +6782,7 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       ],
       seo: {
         id: "",
-        title:
-          "Meat Store | Fresh and Quality Meats for Every Meal",
+        title: "Meat Store | Fresh and Quality Meats for Every Meal",
         description:
           "Discover our wide selection of fresh and high-quality meats, sourced from trusted farms and suppliers to provide you with the best options for your meals. Shop now and enjoy the freshest cuts.",
         keywords: [
@@ -6714,6 +6896,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 200 tools available with a 95% customer satisfaction rate!",
+            value: null,
+          }]
         },
       ],
       metrics: [
@@ -6723,12 +6909,11 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       ],
       seo: {
         id: "",
-        title:
-          "Hardware Store | Tools and Supplies for Every Project",
+        title: "Hardware Store | Tools and Supplies for Every Project",
         description:
           "Discover our wide selection of high-quality tools and hardware supplies, designed to help you complete your projects with ease and efficiency. Shop now and find the right tools for your next project.",
         keywords: [
-          "hardware store", 
+          "hardware store",
           "tools and supplies",
           "home improvement",
           "construction tools",
@@ -6837,6 +7022,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 5,000 book titles available with a 95% customer satisfaction rate!",
+            value: null,
+          }]
         },
       ],
       metrics: [
@@ -6897,7 +7086,7 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           alt: "Brand A",
         },
         {
-          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",  
+          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
           alt: "Brand B",
         },
       ],
@@ -6949,6 +7138,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 100 motorcycle models available with a 95% customer satisfaction rate!",
+            value: null,
+          }]
         },
         {
           imageUrl: getSampleImageUrl("motorcycle-store-2"),
@@ -6969,6 +7162,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 100 motorcycle models available with a 95% customer satisfaction rate!",
+            value: null,
+          }]
         },
       ],
       metrics: [
@@ -7066,10 +7263,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       ],
     }),
 
-    "Drycleaning": {
+    Drycleaning: {
       tagline: "**Professional Dry Cleaning** for Your Wardrobe",
       description:
-        "Our dry cleaning services provide expert care for your garments, ensuring they look their best while maintaining their quality and longevity.",  
+        "Our dry cleaning services provide expert care for your garments, ensuring they look their best while maintaining their quality and longevity.",
       socialLinks: [
         {
           channel: SocialChannel.FACEBOOK,
@@ -7112,6 +7309,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           textColor: null,
           videoLink: null,
           type: "image",
+          stats: [{
+            label: "Over 5,000 garments cleaned with a 98% customer satisfaction rate!",
+            value: null,
+          }]
         },
       ],
       metrics: [
@@ -7121,8 +7322,7 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       ],
       seo: {
         id: "",
-        title:
-          "Dry Cleaning Services | Professional Care for Your Wardrobe",
+        title: "Dry Cleaning Services | Professional Care for Your Wardrobe",
         description:
           "Our dry cleaning services provide expert care for your garments, ensuring they look their best while maintaining their quality and longevity. Experience our professional dry cleaning services today.",
         keywords: [
@@ -7176,11 +7376,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           alt: "Brand B",
         },
         {
-          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",  
+          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
           alt: "Brand C",
         },
       ],
-
     },
 
     // --- Remaining Stubbed Categories ---

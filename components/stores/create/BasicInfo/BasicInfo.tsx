@@ -252,7 +252,7 @@ export default function BasicInfo({
             {/* Store Name Input */}
             <div className="flex flex-col space-y-1.5 group">
               <label htmlFor="name" className="flex items-center text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                Storefront Signature Title
+                Store Name
                 <PremiumTooltip content="Your premium corporate brand's public-facing title layout." />
               </label>
               <div className="relative">
@@ -272,7 +272,7 @@ export default function BasicInfo({
             {/* Tagline Input */}
             <div className="flex flex-col space-y-1.5 group">
               <label htmlFor="tagline" className="flex items-center text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                Brand Core Tagline <span className="ml-1 text-[10px] text-zinc-400 lowercase italic">(optional)</span>
+                Brand Tagline <span className="ml-1 text-[10px] text-zinc-400 lowercase italic">(optional)</span>
                 <PremiumTooltip content="Short motivational dynamic snippet statement (ideally limited to 3-5 words)." />
               </label>
               <div className="relative">
@@ -293,7 +293,7 @@ export default function BasicInfo({
           {/* Description Textarea */}
           <div className="flex flex-col space-y-1.5 group">
             <label htmlFor="description" className="flex items-center text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-              Corporate Mission Overview Narrative
+              Mission Statement/Description
               <PremiumTooltip content="A concise summary paragraph deployed to public search engines, indices, and portal index headers." />
             </label>
             <div className="relative">
@@ -317,7 +317,7 @@ export default function BasicInfo({
             <span className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">
               <GlobeAltIcon className="w-4 h-4" />
             </span>
-            <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200">Network Routing & Web Presence</h2>
+            <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200">Web Presence & Custom Domain</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-6">
@@ -348,8 +348,8 @@ export default function BasicInfo({
                   className="mt-0.5 h-4.5 w-4.5 text-indigo-600 dark:text-indigo-400 border-zinc-300 dark:border-zinc-700 rounded focus:ring-indigo-500/40 transition-all cursor-pointer"
                 />
                 <div className="space-y-0.5">
-                  <span className="font-bold text-zinc-800 dark:text-zinc-100">Provision Standalone Web Storefront Instance</span>
-                  <p className="text-xs text-zinc-400 dark:text-zinc-500">Enable cloud-native compilation parameters to open an isolated custom domain pipeline.</p>
+                  <span className="font-bold text-zinc-800 dark:text-zinc-100">Enable Store Website</span>
+                  <p className="text-xs text-zinc-400 dark:text-zinc-500">Enable a dedicated website for your store</p>
                 </div>
               </label>
             </div>
@@ -371,9 +371,9 @@ export default function BasicInfo({
                         name="domain"
                         value={domain || ""}
                         onChange={handleChange as (e: ChangeEvent<HTMLInputElement>) => void}
-                        placeholder="e.g. store.apexstudios.com"
-                        label="Dedicated Custom Domain Target Address"
-                        tooltip="The primary domain pointer where users map DNS records to bind storefront clusters."
+                        placeholder="e.g. store.salesmanpro.site/myduka.com"
+                        label="Custom Domain URL"
+                        tooltip="Your custom domain for direct access to your storefront (e.g. www.yourstore.com). Must be a valid domain format and not currently in use."
                         available={domainAvailable}
                         checking={checking}
                         suggestion={domainSuggestion}

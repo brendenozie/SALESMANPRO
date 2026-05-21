@@ -216,6 +216,7 @@ model StoreCategory {
 
   // Store the selected brand names as a JSON array
   allBrands Json? // e.g., ["Nike", "Adidas"]
+  
 
   @@unique([companyId, categoryId])
   @@index([companyId, sortOrder])
@@ -348,6 +349,7 @@ model Company {
   discussionTopics DiscussionTopic[]
 
   attendanceRecords AttendanceRecord[]
+  galleries Gallery[]
 
   exams                           Exam[]
   grades                          Grade[] // Grades are now directly linked to a company
@@ -468,6 +470,38 @@ model Company {
   @@index([userId])
 }
 
+model Gallery {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  type        String?  // e.g. "office", "events", "products"
+  isFeatured  Boolean  @default(false)
+
+  companyId String   @db.ObjectId
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  items GalleryItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+}
+
+model GalleryItem {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  imageUrl String
+  caption  String?
+  altText String?
+  order    Int      @default(0)
+  featured Boolean  @default(false)
+
+  galleryId String   @db.ObjectId
+  gallery   Gallery  @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
 // enum SslStatus {
 //   PENDING
 //   ISSUING
@@ -530,6 +564,7 @@ model Banner {
   badgeText       String?
   price           String?
   endsAt          DateTime?
+  stats          Json?     // e.g. { "customers": 1000, "countries": 20 }
   order           Int       @default(0)
   iconKey         String? // e.g. "laundry", "delivery"
   backgroundColor String?

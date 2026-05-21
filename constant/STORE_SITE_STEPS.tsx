@@ -333,7 +333,15 @@ export const websiteSteps: StepConfig[] = [
     title: 'Hero Slides',
     render: (f, h) => (
       <HeroSlidesAccordion
-        slides={f.heroSlides}
+        slides={
+          (Array.isArray(f.heroSlides) ? f.heroSlides : []).map((slide) => ({
+            ...slide,
+            stats:
+              slide.stats && typeof slide.stats === 'object' && !Array.isArray(slide.stats)
+                ? slide.stats
+                : null,
+          })) as any
+        }
         onUpdateSlide={h.onUpdateHeroSlide}
         onAddSlide={h.onAddHeroSlide}
         onRemoveSlide={h.onRemoveHeroSlide}

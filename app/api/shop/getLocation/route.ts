@@ -7,8 +7,6 @@ import { verifyAuth } from "@/lib/verifyAuth";
 // GET /api/location?userId=&agentId=
 async function getLocation(req: Request) {
   try {
-    const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");

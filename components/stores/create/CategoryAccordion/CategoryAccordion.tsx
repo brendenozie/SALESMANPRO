@@ -15,6 +15,9 @@ type Props = {
     onApply: () => void;
 };
 
+// Robust helper to guarantee an ID string
+const resolveId = (sub: any) => sub?.id || sub?._id?.$oid || sub?.tempId || sub?.name;
+
 function SearchBar({ search, setSearch }: { search: string; setSearch: (value: string) => void; }) {
     const inputRef = useRef<HTMLInputElement>(null);
     return (
@@ -87,7 +90,8 @@ export default function CategoryTree({
 
     const allFilteredIds = useMemo(() => {
         return new Set(filteredData.flatMap(cat => [
-            ...cat.subcategories?.map(c => c.id) || [],
+            // Use resolveId here instead of trusting c.id
+            ...cat.subcategories?.map(c => resolveId(c)) || [],
             ...(cat.allBrands || [])
         ]));
     }, [filteredData]);
@@ -114,11 +118,8 @@ export default function CategoryTree({
         };
     };
 
-    const resolveId = (sub: ISubcategory) => sub.id || sub._id?.$oid || sub.tempId;
-
     return (
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start max-w-7xl mx-auto p-4">
-            {/* Left Column: Fixed Sticky Selection Manifest */}
             <aside className="w-full lg:w-80 lg:sticky lg:top-24 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-5 shadow-sm">
                 <div className="flex items-center justify-between pb-3 border-b border-zinc-200/60 dark:border-zinc-800">
                     <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
@@ -155,12 +156,15 @@ export default function CategoryTree({
                                 </div>
                                 <div className="flex flex-wrap gap-1.5">
                                     {parent.subcategories.map(item => (
-                                        <div key={item.id} className="flex items-center gap-1 bg-indigo-50/60 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300 pl-2.5 pr-1.5 py-0.5 rounded-md text-xs border border-indigo-100 dark:border-indigo-900/40">
+                                        <div key={resolveId(item)} className="flex items-center gap-1 bg-indigo-50/60 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300 pl-2.5 pr-1.5 py-0.5 rounded-md text-xs border border-indigo-100 dark:border-indigo-900/40">
                                             <span>{item.name}</span>
                                             <button 
                                                 onClick={() => {
                                                     const parentData = parent.categoryId ? availableMap.get(parent.categoryId) : undefined;
-                                                    if (parentData) dispatch({ type: 'TOGGLE_SUB', payload: { parentId: parent.categoryId!, subcategory: item, parentData }});
+                                                    if (parentData) {
+                                                        // Pass the item with a guaranteed ID
+                                                        dispatch({ type: 'TOGGLE_SUB', payload: { parentId: parent.categoryId!, subcategory: { ...item, id: resolveId(item) }, parentData }});
+                                                    }
                                                 }} 
                                                 className="p-0.5 rounded hover:bg-indigo-200/50 dark:hover:bg-indigo-900/60 text-indigo-400 hover:text-indigo-600 transition-colors"
                                             >
@@ -187,18 +191,8 @@ export default function CategoryTree({
                         ))}
                     </AnimatePresence>
                 </div>
-
-                {/* <div className="mt-5 pt-3 border-t border-zinc-200/60 dark:border-zinc-800">
-                    <button 
-                        onClick={onApply} 
-                        className="w-full py-2.5 bg-zinc-900 dark:bg-indigo-600 text-white hover:bg-zinc-800 dark:hover:bg-indigo-700 rounded-xl text-xs font-bold uppercase tracking-wider shadow-sm transition active:scale-[0.98]"
-                    >
-                        Apply Changes
-                    </button>
-                </div> */}
             </aside>
 
-            {/* Right Column: Main Configuration Workspace */}
             <main className="flex-1 space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-zinc-50 dark:bg-zinc-900/30 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800/60">
                     <SearchBar search={search} setSearch={setSearch} />
@@ -218,7 +212,6 @@ export default function CategoryTree({
                     </div>
                 </div>
 
-                {/* Primary Structured Feed Tree */}
                 <ul className="space-y-3">
                     <AnimatePresence mode="popLayout">
                         {filteredData.map(cat => {
@@ -237,7 +230,6 @@ export default function CategoryTree({
                                     exit={{ opacity: 0, scale: 0.99 }} 
                                     className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden group"
                                 >
-                                    {/* Parent Node Strip */}
                                     <div className="flex items-center gap-4 px-5 py-4 select-none">
                                         <div className="relative flex items-center justify-center cursor-pointer">
                                             <input 
@@ -281,7 +273,6 @@ export default function CategoryTree({
                                         </div>
                                     </div>
 
-                                    {/* Child Viewports Panel Accordion */}
                                     <AnimatePresence initial={false}>
                                         {isOpen && (
                                             <motion.div 
@@ -300,7 +291,8 @@ export default function CategoryTree({
                                                                     key={resolveId(item)}
                                                                     onClick={() => dispatch({
                                                                         type: 'TOGGLE_SUB',
-                                                                        payload: { parentId: cat.id, subcategory: item, parentData: cat }
+                                                                        // Ensure we dispatch an object that DEFINITELY has an ID
+                                                                        payload: { parentId: cat.id, subcategory: { ...item, id: resolveId(item) }, parentData: cat }
                                                                     })}
                                                                     className={`px-3 py-2.5 rounded-xl border text-xs font-semibold tracking-tight transition-all text-center ${
                                                                         isSel
@@ -315,7 +307,6 @@ export default function CategoryTree({
                                                     </div>
                                                 )}
                                                 
-                                                {/* Brands Section Matrix */}
                                                 {(cat.allBrands || []).length > 0 && (
                                                     <div className="px-5 pb-5 pt-3 border-t border-zinc-100 dark:border-zinc-800/60">
                                                         <p className="text-[11px] font-black uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-2.5">

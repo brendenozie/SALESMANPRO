@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   PresentationChartLineIcon,
-  PlusCircleIcon,
+  PlusIcon,
   TrashIcon,
   ChevronDownIcon,
   ChevronUpIcon,
@@ -24,7 +25,6 @@ type MetricsAccordionProps = {
   onRemove: (idx: number) => void;
 };
 
-// Example preset icons (you can extend or fetch dynamically)
 const presetIcons = [
   { name: 'Sales', url: 'https://img.icons8.com/color/96/sales-performance.png' },
   { name: 'Revenue', url: 'https://img.icons8.com/color/96/money-bag.png' },
@@ -47,7 +47,7 @@ export const MetricsAccordion: React.FC<MetricsAccordionProps> = ({
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    if (metrics?.length === 0) onAdd();
+    if (!metrics || metrics.length === 0) onAdd();
   }, [metrics, onAdd]);
 
   const canAddNew = metrics?.every((m) => m.label.trim() && m.value !== null);
@@ -70,168 +70,239 @@ export const MetricsAccordion: React.FC<MetricsAccordionProps> = ({
   };
 
   return (
-    <section className="max-w-4xl mx-auto overflow-hidden">
+    <section className="max-w-4xl mx-auto w-full border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-950 overflow-hidden shadow-sm transition-colors duration-200">
       {/* Accordion Header */}
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="w-full flex justify-between items-center px-6 py-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white"
+        className="w-full flex justify-between items-center px-5 sm:px-6 py-4 bg-zinc-50 dark:bg-zinc-900/50 hover:bg-zinc-100/70 dark:hover:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+        aria-expanded={open}
       >
         <div className="flex items-center space-x-3">
-          <PresentationChartLineIcon className="h-6 w-6" />
-          <h2 className="text-lg font-semibold">Key Metrics</h2>
+          <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-600 dark:text-indigo-400">
+            <PresentationChartLineIcon className="h-5 w-5" />
+          </div>
+          <h2 className="text-md font-semibold text-zinc-800 dark:text-zinc-100">Key Performance Metrics</h2>
         </div>
-        {open ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
+        <div className="text-zinc-400 dark:text-zinc-500">
+          {open ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
+        </div>
       </button>
 
       {/* Accordion Content */}
-      {open && (
-        <div className="px-6 py-8 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {metrics &&
-              metrics.map((metric, idx) => (
-                <div
-                  key={idx}
-                  className="relative bg-gray-50 rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-lg transition"
-                >
-                  {/* Remove */}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
+          >
+            <div className="p-5 sm:p-6 space-y-6">
+              <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {metrics &&
+                  metrics.map((metric, idx) => (
+                    <motion.div
+                      key={idx}
+                      layout
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="group relative bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-xl p-4 sm:p-5 shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200"
+                    >
+                      {/* Section Management Ribbon */}
+                      <div className="flex justify-between items-center mb-4">
+                        <span className="text-xs font-semibold tracking-wider uppercase text-zinc-400 dark:text-zinc-500">
+                          Data Point #{idx + 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => onRemove(idx)}
+                          disabled={metrics.length === 1}
+                          aria-label="Remove metric"
+                          className="opacity-0 group-hover:opacity-100 focus:opacity-100 disabled:opacity-0 text-zinc-400 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-400 p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-all duration-150"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+
+                      {/* Stacked Inputs */}
+                      <div className="space-y-4">
+                        <div>
+                          <label
+                            htmlFor={`label-${idx}`}
+                            className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5"
+                          >
+                            Metric Title
+                          </label>
+                          <input
+                            id={`label-${idx}`}
+                            type="text"
+                            value={metric.label}
+                            placeholder="e.g. Active Subscribers"
+                            onChange={(e) => onUpdate(idx, 'label', e.target.value)}
+                            className="w-full text-sm px-3 py-2 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:focus:border-indigo-500 transition-all"
+                          />
+                        </div>
+
+                        <div>
+                          <label
+                            htmlFor={`value-${idx}`}
+                            className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5"
+                          >
+                            Numerical Value
+                          </label>
+                          <input
+                            id={`value-${idx}`}
+                            type="number"
+                            value={metric.value ?? ''}
+                            placeholder="e.g. 14250"
+                            onChange={(e) => onUpdate(idx, 'value', e.target.value === '' ? null : parseFloat(e.target.value))}
+                            className="w-full text-sm px-3 py-2 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:focus:border-indigo-500 transition-all"
+                          />
+                        </div>
+
+                        {/* Icon Visual Selection Wrapper */}
+                        <div>
+                          <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
+                            Representative Badge
+                          </label>
+                          <div className="flex items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={() => openIconModal(idx)}
+                              className="flex-1 flex items-center justify-between text-sm px-3 py-2 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition text-left focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                            >
+                              <span className="truncate">
+                                {metric.iconUrl
+                                  ? presetIcons.find((icon) => icon.url === metric.iconUrl)?.name || 'Custom Icon'
+                                  : 'Assign stylized icon...'}
+                              </span>
+                              <ChevronDownIcon className="h-4 w-4 text-zinc-400 flex-shrink-0 ml-2" />
+                            </button>
+
+                            <div className="flex-shrink-0 flex items-center justify-center h-9 w-9 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-1.5">
+                              {metric.iconUrl ? (
+                                <img
+                                  src={metric.iconUrl}
+                                  alt="Selected representation"
+                                  className="h-full w-full object-contain"
+                                />
+                              ) : (
+                                <div className="h-full w-full border border-dashed border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-950" />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+
+                {/* Grid Slot Add Placeholder */}
+                {metrics && (
                   <button
                     type="button"
-                    onClick={() => onRemove(idx)}
-                    disabled={metrics.length === 1}
-                    className="absolute top-3 right-3 text-red-500 hover:text-red-700 focus:outline-none disabled:opacity-40"
-                    title="Remove metric"
+                    onClick={canAddNew ? onAdd : undefined}
+                    disabled={!canAddNew}
+                    className={`flex flex-col justify-center items-center border-2 border-dashed rounded-xl p-6 transition-all min-h-[220px] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${
+                      canAddNew
+                        ? 'border-zinc-200 dark:border-zinc-800 hover:border-indigo-500/40 hover:bg-zinc-50 dark:hover:bg-zinc-900/30 text-zinc-400 hover:text-indigo-500 dark:text-zinc-600 dark:hover:text-indigo-400'
+                        : 'border-zinc-100 dark:border-zinc-900 opacity-40 cursor-not-allowed text-zinc-300 dark:text-zinc-700'
+                    }`}
                   >
-                    <TrashIcon className="h-5 w-5" />
+                    <div className="p-2.5 bg-zinc-100 dark:bg-zinc-900 rounded-full mb-2">
+                      <PlusIcon className="h-5 w-5" />
+                    </div>
+                    <span className="text-sm font-medium">Add Metric Field</span>
                   </button>
+                )}
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-                  {/* Label */}
-                  <div className="mb-4">
-                    <label
-                      htmlFor={`label-${idx}`}
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Label
-                    </label>
-                    <input
-                      id={`label-${idx}`}
-                      type="text"
-                      value={metric.label}
-                      placeholder="e.g. Sales"
-                      onChange={(e) => onUpdate(idx, 'label', e.target.value)}
-                      className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-purple-400 focus:border-purple-400 transition"
-                    />
-                  </div>
+      {/* Modern Fixed Overlaid Modal */}
+      <AnimatePresence>
+        {modalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Soft Backdrop Tint */}
+            <motion.div
+              className="fixed inset-0 bg-zinc-950/40 dark:bg-zinc-950/80 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setModalOpen(false)}
+            />
 
-                  {/* Value */}
-                  <div className="mb-4">
-                    <label
-                      htmlFor={`value-${idx}`}
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Value
-                    </label>
-                    <input
-                      id={`value-${idx}`}
-                      type="number"
-                      value={metric.value ?? ''}
-                      placeholder="e.g. 1000"
-                      onChange={(e) => onUpdate(idx, 'value', parseFloat(e.target.value) || 0)}
-                      className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-purple-400 focus:border-purple-400 transition"
-                    />
-                  </div>
+            {/* Container Interface */}
+            <motion.div
+              initial={{ scale: 0.98, opacity: 0, y: 8 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.98, opacity: 0, y: 8 }}
+              transition={{ duration: 0.15 }}
+              className="relative w-full max-w-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl overflow-hidden z-10"
+            >
+              {/* Header Box */}
+              <div className="flex justify-between items-center px-6 py-4 border-b border-zinc-100 dark:border-zinc-800">
+                <h3 className="text-md font-semibold text-zinc-800 dark:text-zinc-100">Select Metric Badge</h3>
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  className="p-1 text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
+              </div>
 
-                  {/* Icon Selection */}
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700">Icon</label>
-                    <div className="mt-2 flex items-center gap-4">
-                      {metric.iconUrl ? (
-                        <img
-                          src={metric.iconUrl}
-                          alt="Selected icon"
-                          className="h-10 w-10 rounded border border-gray-300 object-contain"
-                        />
-                      ) : (
-                        <div className="h-10 w-10 border border-dashed border-gray-300 rounded flex items-center justify-center text-gray-400 text-sm">
-                          No Icon
-                        </div>
-                      )}
+              {/* Form & Navigation Area */}
+              <div className="p-6 space-y-4">
+                <div className="relative">
+                  <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-4 w-4 text-zinc-400 dark:text-zinc-600" />
+                  <input
+                    type="text"
+                    placeholder="Search available dashboard items..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full text-sm pl-9 pr-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:focus:border-indigo-500 transition-all"
+                  />
+                </div>
+
+                {/* Scroll Box Area */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-h-[320px] overflow-y-auto pr-1">
+                  {filteredIcons.length > 0 ? (
+                    filteredIcons.map((icon) => (
                       <button
                         type="button"
-                        onClick={() => openIconModal(idx)}
-                        className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition"
+                        key={icon.url}
+                        onClick={() => selectIcon(icon.url)}
+                        className="group flex flex-col items-center p-3.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl hover:border-indigo-50/50 dark:hover:border-indigo-500/50 hover:bg-indigo-500/[0.02] dark:hover:bg-indigo-500/[0.02] transition text-center focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                       >
-                        Choose Icon
+                        <div className="h-12 w-12 flex items-center justify-center p-1 group-hover:scale-105 transition-transform duration-150">
+                          <img
+                            src={icon.url}
+                            alt={icon.name}
+                            className="h-full w-full object-contain"
+                          />
+                        </div>
+                        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 mt-2.5 max-w-full truncate">
+                          {icon.name}
+                        </span>
                       </button>
+                    ))
+                  ) : (
+                    <div className="text-center col-span-full py-10">
+                      <p className="text-sm text-zinc-500 dark:text-zinc-500">
+                        No metric icons found matching &ldquo;{search}&rdquo;
+                      </p>
                     </div>
-                  </div>
+                  )}
                 </div>
-              ))}
+              </div>
+            </motion.div>
           </div>
-
-          {/* Add Metric */}
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={onAdd}
-              disabled={!canAddNew}
-              className="inline-flex items-center gap-2 px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none disabled:opacity-50 transition"
-            >
-              <PlusCircleIcon className="h-5 w-5" />
-              Add Metric
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Icon Selector Modal */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 relative animate-fadeIn">
-            <button
-              onClick={() => setModalOpen(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-            >
-              <XMarkIcon className="h-6 w-6" />
-            </button>
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">Select an Icon</h3>
-
-            {/* Search */}
-            <div className="flex items-center border rounded-lg px-3 py-2 mb-4">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 mr-2" />
-              <input
-                type="text"
-                placeholder="Search icons..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 outline-none text-sm"
-              />
-            </div>
-
-            {/* Icon Grid */}
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 max-h-96 overflow-y-auto">
-              {filteredIcons.length > 0 ? (
-                filteredIcons.map((icon) => (
-                  <button
-                    key={icon.url}
-                    onClick={() => selectIcon(icon.url)}
-                    className="flex flex-col items-center gap-2 p-3 rounded-lg border hover:bg-indigo-50 hover:border-indigo-300 transition"
-                  >
-                    <img
-                      src={icon.url}
-                      alt={icon.name}
-                      className="h-14 w-14 object-contain"
-                    />
-                    <span className="text-xs text-gray-600">{icon.name}</span>
-                  </button>
-                ))
-              ) : (
-                <p className="text-center col-span-full text-gray-500">No icons found.</p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </section>
   );
 };

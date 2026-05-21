@@ -10,7 +10,8 @@ import {
   LockClosedIcon,
   LockOpenIcon,
   XMarkIcon,
-} from '@heroicons/react/24/solid';
+  CheckIcon,
+} from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export interface ThemeSettings {
@@ -42,26 +43,14 @@ const popularFonts = [
 ];
 
 const themePresets = [
-  { name: 'Vibrant', primary: '#6366F1', secondary: '#F59E0B' }, // Existing
-  { name: 'Energetic', primary: '#10B981', secondary: '#F97316' }, // Existing
-  { name: 'Elegant', primary: '#0F172A', secondary: '#E2E8F0' }, // Existing
-  { name: 'Luxury', primary: '#78350F', secondary: '#FBBF24' }, // Existing
-  { name: 'Minimal', primary: '#3B82F6', secondary: '#9CA3AF' }, // Existing
-  { name: 'Bold', primary: '#EF4444', secondary: '#1E3A8A' }, // Existing
-  { name: 'Oceanic', primary: '#0891B2', secondary: '#ECFEFF' }, // Teal primary, light secondary for contrast
-  { name: 'Sunset', primary: '#E11D48', secondary: '#FCD34D' }, // Deep red/pink primary, golden yellow secondary
-  { name: 'Forest', primary: '#059669', secondary: '#D9F99D' }, // Dark green primary, bright lime/pale green secondary
-  { name: 'Retro', primary: '#9333EA', secondary: '#F472B6' }, // Deep violet primary, hot pink secondary for a vintage feel
-  { name: 'Monochromatic', primary: '#1E40AF', secondary: '#93C5FD' },
-  { name: 'High Contrast', primary: '#000000', secondary: '#FFFF00' },
+  { name: 'Vibrant', primary: '#6366F1', secondary: '#F59E0B' },
+  { name: 'Energetic', primary: '#10B981', secondary: '#F97316' },
+  { name: 'Luxury', primary: '#78350F', secondary: '#FBBF24' },
+  { name: 'Oceanic', primary: '#0891B2', secondary: '#ECFEFF' },
+  { name: 'Sunset', primary: '#E11D48', secondary: '#FCD34D' },
+  { name: 'Forest', primary: '#059669', secondary: '#D9F99D' },
+  { name: 'Retro', primary: '#9333EA', secondary: '#F472B6' },
   { name: 'Midnight', primary: '#1F2937', secondary: '#D1D5DB' },
-  { name: 'Candy', primary: '#F43F5E', secondary: '#FBBF24' },
-  { name: 'Ice Cream', primary: '#60A5FA', secondary: '#FCA5A5' },
-  { name: 'Spring', primary: '#22C55E', secondary: '#A7F3D0' },
-  { name: 'Autumn', primary: '#D97706', secondary: '#FDE68A' },
-  { name: 'Galaxy', primary: '#7C3AED', secondary: '#C4B5FD' },
-  { name: 'Sunrise', primary: '#F59E0B', secondary: '#FEF3C7' },
-  { name: 'Earthy', primary: '#A16207', secondary: '#F3F4F6' },
 ];
 
 export default function ThemeSettingsAccordion({
@@ -73,33 +62,26 @@ export default function ThemeSettingsAccordion({
   const [fontFilter, setFontFilter] = useState('');
   const [isFontModalOpen, setIsFontModalOpen] = useState(false);
 
+  const activePrimary = themeSettings?.primaryColor || DEFAULTS.primaryColor!;
+  const activeSecondary = themeSettings?.secondaryColor || DEFAULTS.secondaryColor!;
+  const activeFont = themeSettings?.fontFamily || DEFAULTS.fontFamily!;
+
   const filteredFonts = useMemo(
-    () =>
-      popularFonts.filter((f) =>
-        f.toLowerCase().includes(fontFilter.toLowerCase())
-      ),
+    () => popularFonts.filter((f) => f.toLowerCase().includes(fontFilter.toLowerCase())),
     [fontFilter]
   );
 
-  const updateField = (key: keyof ThemeSettings, value: string) =>
+  const updateField = (key: keyof ThemeSettings, value: string) => {
     onChange({ ...themeSettings, [key]: value });
+  };
 
   const resetDefaults = () => onChange({ ...DEFAULTS });
 
-  // 🧩 Dynamically load selected Google font
+  // 🧩 Dynamically load selected Google font parameters
   useEffect(() => {
-    if (!themeSettings?.fontFamily) return;
+    const cleanFont = activeFont.replace(/, (sans-serif|serif)/, '').replace(/['"]+/g, '').trim();
+    const fontUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(cleanFont)}:wght@400;500;600;700&display=swap`;
 
-    const cleanFont = themeSettings.fontFamily
-      .replace(/, (sans-serif|serif)/, '')
-      .replace(/['"]+/g, '')
-      .trim();
-
-    const fontUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(
-      cleanFont
-    )}:wght@400;500;600;700&display=swap`;
-
-    // Remove existing dynamic font links before adding a new one
     const existing = document.getElementById('dynamic-font');
     if (existing) existing.remove();
 
@@ -108,259 +90,292 @@ export default function ThemeSettingsAccordion({
     link.rel = 'stylesheet';
     link.href = fontUrl;
     document.head.appendChild(link);
-  }, [themeSettings?.fontFamily]);
+  }, [activeFont]);
 
-  // 🎨 Apply colors globally for live theme preview
+  // 🎨 Apply style token adjustments globally
   useEffect(() => {
-    if (!themeSettings) return;
-    document.documentElement.style.setProperty(
-      '--primary-color',
-      themeSettings.primaryColor || DEFAULTS.primaryColor!
-    );
-    document.documentElement.style.setProperty(
-      '--secondary-color',
-      themeSettings.secondaryColor || DEFAULTS.secondaryColor!
-    );
-    document.documentElement.style.setProperty(
-      '--font-family',
-      themeSettings.fontFamily || DEFAULTS.fontFamily!
-    );
-  }, [themeSettings]);
+    document.documentElement.style.setProperty('--primary-color', activePrimary);
+    document.documentElement.style.setProperty('--secondary-color', activeSecondary);
+    document.documentElement.style.setProperty('--font-family', activeFont);
+  }, [activePrimary, activeSecondary, activeFont]);
 
   return (
     <motion.div
-      className="max-w-3xl mx-auto p-6 bg-white/60 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200"
-      initial={{ opacity: 0, y: 15 }}
+      className="max-w-4xl mx-auto rounded-2xl bg-white/70 dark:bg-zinc-900/70 border border-zinc-200/80 dark:border-zinc-800/80 shadow-xl backdrop-blur-md overflow-hidden"
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
     >
-      {/* Header */}
+      {/* Interactive Accordion Trigger Bar */}
       <div
-        className="flex justify-between items-center cursor-pointer pb-3 border-b border-gray-100"
+        className="flex items-center justify-between p-5 cursor-pointer bg-linear-to-r from-gray-50/50 via-transparent to-transparent dark:from-zinc-800/20 select-none"
         onClick={() => setIsOpen((o) => !o)}
       >
-        <h2 className="flex items-center text-2xl font-bold text-gray-800 hover:text-indigo-600 transition">
-          <PaintBrushIcon className="h-6 w-6 mr-2 text-indigo-600" />
-          Theme Settings
-        </h2>
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">
+            <PaintBrushIcon className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-zinc-950 dark:text-zinc-50">Interface Customization</h2>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Adapt visual design properties, layout colors, and typography signatures.</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              resetDefaults();
-            }}
-            title="Reset to defaults"
-            className="p-2 rounded-lg hover:bg-gray-100 transition"
+            onClick={resetDefaults}
+            title="Reset to Factory Defaults"
+            className="p-2 rounded-xl text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition"
           >
-            <ArrowPathIcon className="h-5 w-5 text-gray-500 hover:text-indigo-600" />
+            <ArrowPathIcon className="h-4 w-4" />
           </button>
-          {isOpen ? (
-            <ChevronUpIcon className="h-6 w-6 text-gray-500" />
-          ) : (
-            <ChevronDownIcon className="h-6 w-6 text-gray-500" />
-          )}
+          <button
+            onClick={() => setIsOpen((o) => !o)}
+            className="p-2 rounded-xl text-zinc-400 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition"
+          >
+            {isOpen ? <ChevronUpIcon className="h-4 w-4" /> : <ChevronDownIcon className="h-4 w-4" />}
+          </button>
         </div>
       </div>
 
       <AnimatePresence initial={false}>
         {isOpen && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.4, ease: 'easeInOut' }}
+            initial={{ height: 0 }}
+            animate={{ height: 'auto' }}
+            exit={{ height: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
           >
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {/* ---------- Primary Color ---------- */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Primary Color
-                </label>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="color"
-                    value={themeSettings?.primaryColor}
-                    onChange={(e) => updateField('primaryColor', e.target.value)}
-                    className="h-10 w-10 rounded cursor-pointer border border-gray-300"
-                  />
-                  <input
-                    type="text"
-                    value={themeSettings?.primaryColor}
-                    onChange={(e) => updateField('primaryColor', e.target.value)}
-                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400"
-                  />
+            <div className="p-6 pt-0 border-t border-zinc-100 dark:border-zinc-800/60 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              
+              {/* Configuration Panel Settings */}
+              <div className="lg:col-span-7 space-y-6 mt-5">
+                
+                {/* Color Inputs */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">Primary Accent</label>
+                    <div className="flex items-center gap-2 p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-2xs">
+                      <div className="relative w-8 h-8 rounded-md overflow-hidden border border-zinc-200 dark:border-zinc-800 flex-shrink-0">
+                        <input
+                          type="color"
+                          value={activePrimary}
+                          onChange={(e) => updateField('primaryColor', e.target.value)}
+                          className="absolute inset-0 w-full h-full transform scale-150 cursor-pointer"
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        value={activePrimary}
+                        onChange={(e) => updateField('primaryColor', e.target.value)}
+                        className="w-full bg-transparent px-1 border-none outline-hidden text-sm text-zinc-900 dark:text-zinc-100 uppercase focus:ring-0"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">Secondary Fill</label>
+                    <div className="flex items-center gap-2 p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-2xs">
+                      <div className="relative w-8 h-8 rounded-md overflow-hidden border border-zinc-200 dark:border-zinc-800 flex-shrink-0">
+                        <input
+                          type="color"
+                          value={activeSecondary}
+                          onChange={(e) => updateField('secondaryColor', e.target.value)}
+                          className="absolute inset-0 w-full h-full transform scale-150 cursor-pointer"
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        value={activeSecondary}
+                        onChange={(e) => updateField('secondaryColor', e.target.value)}
+                        className="w-full bg-transparent px-1 border-none outline-hidden text-sm text-zinc-900 dark:text-zinc-100 uppercase focus:ring-0"
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              {/* ---------- Secondary Color ---------- */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Secondary Color
-                </label>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="color"
-                    value={themeSettings?.secondaryColor}
-                    onChange={(e) => updateField('secondaryColor', e.target.value)}
-                    className="h-10 w-10 rounded cursor-pointer border border-gray-300"
-                  />
-                  <input
-                    type="text"
-                    value={themeSettings?.secondaryColor}
-                    onChange={(e) => updateField('secondaryColor', e.target.value)}
-                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400"
-                  />
+                {/* Theme Color Palettes Presets Selection Grid */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">Curated Palettes</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    {themePresets.map((preset) => {
+                      const isMatch = activePrimary.toLowerCase() === preset.primary.toLowerCase() && 
+                                      activeSecondary.toLowerCase() === preset.secondary.toLowerCase();
+                      return (
+                        <button
+                          key={preset.name}
+                          type="button"
+                          onClick={() => onChange({ ...themeSettings, primaryColor: preset.primary, secondaryColor: preset.secondary })}
+                          className={`flex flex-col items-start p-2.5 rounded-xl border text-left bg-white dark:bg-zinc-950 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition group relative ${
+                            isMatch ? 'border-indigo-500 ring-2 ring-indigo-500/10' : 'border-zinc-200 dark:border-zinc-800'
+                          }`}
+                        >
+                          <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 mb-2 truncate max-w-full">{preset.name}</span>
+                          <div className="flex items-center -space-x-1.5">
+                            <span className="w-5 h-5 rounded-full border border-white dark:border-zinc-950 shadow-xs" style={{ backgroundColor: preset.primary }} />
+                            <span className="w-5 h-5 rounded-full border border-white dark:border-zinc-950 shadow-xs" style={{ backgroundColor: preset.secondary }} />
+                          </div>
+                          {isMatch && (
+                            <span className="absolute top-2 right-2 p-0.5 rounded-full bg-indigo-500 text-white">
+                              <CheckIcon className="w-2.5 h-2.5 stroke-[3]" />
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            {/* ---------- Theme Presets ---------- */}
-            <div className="mt-6 flex flex-wrap gap-3">
-              {themePresets.map((preset) => (
-                <motion.button
-                  key={preset.name}
-                  whileHover={{ scale: 1.05 }}
-                  onClick={() =>
-                    onChange({
-                      ...themeSettings,
-                      primaryColor: preset.primary,
-                      secondaryColor: preset.secondary,
-                    })
-                  }
-                  className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium hover:bg-gray-50 transition"
-                >
-                  <span
-                    className="w-4 h-4 rounded-full"
-                    style={{ backgroundColor: preset.primary }}
-                  />
-                  <span
-                    className="w-4 h-4 rounded-full"
-                    style={{ backgroundColor: preset.secondary }}
-                  />
-                  {preset.name}
-                </motion.button>
-              ))}
-            </div>
-
-            {/* ---------- Font Picker ---------- */}
-            <div className="sm:col-span-2 mt-6">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Font Family
-              </label>
-              <button
-                onClick={() => setIsFontModalOpen(true)}
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-left hover:bg-indigo-50 transition"
-              >
-                <span style={{ fontFamily: themeSettings?.fontFamily }}>
-                  {themeSettings?.fontFamily?.replace(/, (sans-serif|serif)/, '') ||
-                    'Select a font'}
-                </span>
-              </button>
-            </div>
-
-            {/* ---------- Live Preview ---------- */}
-            <motion.div
-              className="mt-10 p-6 rounded-xl border relative overflow-hidden transition-all duration-300"
-              style={{
-                background: `linear-gradient(135deg, ${themeSettings?.secondaryColor}40, white)`,
-                fontFamily: themeSettings?.fontFamily,
-              }}
-              whileHover={{ scale: lockPreview ? 1 : 1.02 }}
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3
-                    className="text-xl font-bold mb-2 transition-colors"
-                    style={{ color: themeSettings?.primaryColor }}
+                {/* Typography Selection Engine Input */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">Typography Font Face</label>
+                  <button
+                    type="button"
+                    onClick={() => setIsFontModalOpen(true)}
+                    className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm text-left hover:border-indigo-400 dark:hover:border-indigo-500 transition shadow-2xs"
                   >
-                    Live Theme Preview
-                  </h3>
-                  <p className="text-sm text-gray-700 mb-4">
-                    Adjust colors and fonts above to see your brand come alive ✨
-                  </p>
+                    <span className="font-medium text-zinc-900 dark:text-zinc-100" style={{ fontFamily: activeFont }}>
+                      {activeFont.replace(/, (sans-serif|serif)/, '').replace(/['"]+/g, '')}
+                    </span>
+                    <span className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold tracking-wide uppercase">Swap Font</span>
+                  </button>
                 </div>
-                <button
-                  onClick={() => setLockPreview((l) => !l)}
-                  title={lockPreview ? 'Unlock Preview' : 'Lock Preview'}
-                  className="p-2 rounded-lg hover:bg-gray-100 transition"
-                >
-                  {lockPreview ? (
-                    <LockClosedIcon className="h-5 w-5 text-gray-500" />
-                  ) : (
-                    <LockOpenIcon className="h-5 w-5 text-gray-500" />
-                  )}
-                </button>
+
               </div>
-              <motion.button
-                className="px-6 py-2.5 rounded-full font-medium shadow hover:shadow-lg transition-transform"
-                whileHover={{ scale: lockPreview ? 1 : 1.05 }}
-                style={{
-                  backgroundColor: themeSettings?.primaryColor,
-                  color: '#fff',
-                }}
-              >
-                Explore Now
-              </motion.button>
-            </motion.div>
+
+              {/* Dynamic Interactive Visual Sandbox Preview Container */}
+              <div className="lg:col-span-5 lg:sticky lg:top-5 space-y-3 mt-5">
+                <div className="p-4 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/40">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Sandbox Render Preview</span>
+                    <button
+                      type="button"
+                      onClick={() => setLockPreview((l) => !l)}
+                      className="p-1.5 rounded-lg text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition"
+                      title={lockPreview ? 'Unlock scale transformation dynamics' : 'Lock preview card constraints'}
+                    >
+                      {lockPreview ? <LockClosedIcon className="w-4 h-4" /> : <LockOpenIcon className="w-4 h-4" />}
+                    </button>
+                  </div>
+
+                  <motion.div
+                    className="p-5 border border-white dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-950 shadow-sm relative overflow-hidden"
+                    style={{
+                      fontFamily: activeFont,
+                    }}
+                    whileHover={{ scale: lockPreview ? 1 : 1.015 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                  >
+                    <div 
+                      className="absolute -top-16 -right-16 w-32 h-32 rounded-full opacity-15 filter blur-xl transition-colors duration-300"
+                      style={{ backgroundColor: activeSecondary }}
+                    />
+                    
+                    <h3 className="text-base font-bold tracking-tight mb-1" style={{ color: activePrimary }}>
+                      Live Interface Card
+                    </h3>
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed mb-4">
+                      Tweak design configurations above. Typography rules and token variables map dynamically into view.
+                    </p>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        className="px-4 py-2 rounded-lg text-xs font-semibold shadow-xs transition-transform"
+                        style={{ backgroundColor: activePrimary, color: '#ffffff' }}
+                      >
+                        Action Accent
+                      </button>
+                      <button
+                        type="button"
+                        className="px-3 py-2 rounded-lg text-xs font-medium border dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition"
+                      >
+                        Secondary Option
+                      </button>
+                    </div>
+                  </motion.div>
+                </div>
+              </div>
+
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ---------- Font Picker Modal ---------- */}
+      {/* Font Picker Slide Modal */}
       <AnimatePresence>
         {isFontModalOpen && (
           <motion.div
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+            className="fixed inset-0 bg-zinc-950/40 dark:bg-zinc-950/60 backdrop-blur-xs flex items-center justify-center z-50 p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-white rounded-xl shadow-xl max-w-3xl w-full p-6 relative"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl max-w-2xl w-full border border-zinc-200 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[85vh]"
+              initial={{ scale: 0.96, y: 8 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.96, y: 8 }}
+              transition={{ type: 'spring', duration: 0.3 }}
             >
-              <button
-                onClick={() => setIsFontModalOpen(false)}
-                className="absolute top-4 right-4 p-2 rounded hover:bg-gray-100"
-              >
-                <XMarkIcon className="h-5 w-5 text-gray-500" />
-              </button>
+              {/* Modal Top Controls Bar */}
+              <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-950/20">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-2 h-2 rounded-full bg-indigo-500" />
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 uppercase tracking-wider">Select Font Signature</h3>
+                </div>
+                <button
+                  onClick={() => setIsFontModalOpen(false)}
+                  className="p-1.5 rounded-lg text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                >
+                  <XMarkIcon className="h-4 w-4" />
+                </button>
+              </div>
 
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                <MagnifyingGlassIcon className="h-5 w-5 mr-2 text-indigo-600" />
-                Choose a Font
-              </h3>
+              {/* Dynamic Font Filtering Input */}
+              <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                <div className="relative">
+                  <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Search available typography suites..."
+                    value={fontFilter}
+                    onChange={(e) => setFontFilter(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 text-sm bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 rounded-xl focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 focus:outline-hidden transition"
+                  />
+                </div>
+              </div>
 
-              <input
-                type="text"
-                placeholder="Search fonts…"
-                value={fontFilter}
-                onChange={(e) => setFontFilter(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2 mb-4 text-sm focus:ring-2 focus:ring-indigo-500"
-              />
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto">
-                {filteredFonts.map((font) => (
-                  <motion.div
-                    key={font}
-                    whileHover={{ scale: 1.05 }}
-                    onClick={() => {
-                      updateField('fontFamily', font);
-                      setIsFontModalOpen(false);
-                    }}
-                    style={{ fontFamily: font }}
-                    className="border rounded-lg p-4 cursor-pointer hover:border-indigo-500 transition"
-                  >
-                    <p className="text-lg font-semibold mb-1">
-                      {font.replace(/, (sans-serif|serif)/, '')}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      The quick brown fox jumps over the lazy dog.
-                    </p>
-                  </motion.div>
-                ))}
+              {/* Fonts Listing Grid Canvas */}
+              <div className="p-4 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2 bg-zinc-50/30 dark:bg-zinc-950/10 flex-1">
+                {filteredFonts.map((font) => {
+                  const isCurrent = activeFont === font;
+                  return (
+                    <div
+                      key={font}
+                      onClick={() => {
+                        updateField('fontFamily', font);
+                        setIsFontModalOpen(false);
+                      }}
+                      style={{ fontFamily: font }}
+                      className={`p-3.5 border rounded-xl cursor-pointer bg-white dark:bg-zinc-900 text-left hover:border-indigo-500 dark:hover:border-indigo-400 transition relative group ${
+                        isCurrent ? 'border-indigo-500 ring-2 ring-indigo-500/10' : 'border-zinc-200 dark:border-zinc-800'
+                      }`}
+                    >
+                      <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50 pr-6">
+                        {font.replace(/, (sans-serif|serif)/, '').replace(/['"]+/g, '')}
+                      </p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-1">
+                        Sphinx of black quartz, judge my vow.
+                      </p>
+                      {isCurrent && (
+                        <span className="absolute top-3.5 right-3.5 text-indigo-600 dark:text-indigo-400">
+                          <CheckIcon className="w-4 h-4 stroke-[2.5]" />
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </motion.div>
           </motion.div>

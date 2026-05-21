@@ -157,6 +157,16 @@ const commonEcommerce = (adminSlug: string) => {
       icon: ChartBarIcon,
     },
     {
+      label: "Blogs",
+      href: `/admin/${adminSlug}/blogs`,
+      icon: DocumentTextIcon,
+    },
+    {
+      label: "gallery",
+      href: `/admin/${adminSlug}/gallery`,
+      icon: PhotoIcon,
+    },
+    {
       label: "Messages",
       href: `/admin/${adminSlug}/messages`,
       icon: ChatBubbleBottomCenterTextIcon,
@@ -274,6 +284,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       ],
     },
     {
+      label: "Gallery",
+      href: `/admin/${adminSlug}/gallery`,
+      icon: PhotoIcon,
+    },
+    {
       label: "blogs",
       href: `/admin/${adminSlug}/blogs`,
       icon: WrenchScrewdriverIcon,
@@ -354,6 +369,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
+    {
+      label: "Gallery",
+      href: `/admin/${adminSlug}/gallery`,
+      icon: PhotoIcon,
+    },
     // { label: "Appointments", href: `/admin/${adminSlug}/appointments`, icon: ClipboardDocumentListIcon },
     // { label: "Clients", href: `/admin/${adminSlug}/storeclients`, icon: UsersIcon },
     {
@@ -401,6 +421,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: WrenchScrewdriverIcon,
     },
     {
+      label: "Gallery",
+      href: `/admin/${adminSlug}/gallery`,
+      icon: PhotoIcon,
+    },
+    {
       label: "Transport",
       href: `/admin/${adminSlug}/transport`,
       icon: HomeIcon,
@@ -436,6 +461,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
         { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
+    },
+    {
+      label: "Gallery",
+      href: `/admin/${adminSlug}/gallery`,
+      icon: PhotoIcon,
     },
     // { label: "Appointments", href: `/admin/${adminSlug}/appointments`, icon: ClipboardDocumentListIcon },
     // { label: "Clients", href: `/admin/${adminSlug}/storeclients`, icon: UsersIcon },
@@ -519,6 +549,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
         { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
+    },
+    {
+      label: "Gallery",
+      href: `/admin/${adminSlug}/gallery`,
+      icon: PhotoIcon,
     },
     // { label: "Appointments", href: `/admin/${adminSlug}/appointments`, icon: ClipboardDocumentListIcon },
     // { label: "Clients", href: `/admin/${adminSlug}/storeclients`, icon: UsersIcon },
@@ -612,6 +647,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "blogs",
       href: `/admin/${adminSlug}/blogs`,
       icon: WrenchScrewdriverIcon,
+    },
+    {
+      label: "Gallery",
+      href: `/admin/${adminSlug}/gallery`,
+      icon: PhotoIcon,
     },
     {
       label: "Reports",
@@ -912,6 +952,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: HomeIcon,
     },
     {
+      label: "Gallery",
+      href: `/admin/${adminSlug}/gallery`,
+      icon: PhotoIcon,
+    },
+    {
       label: "Messages",
       href: `/admin/${adminSlug}/messages`,
       icon: ChatBubbleBottomCenterTextIcon,
@@ -981,6 +1026,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "blogs",
       href: `/admin/${adminSlug}/blogs`,
       icon: WrenchScrewdriverIcon,
+    },
+    {
+      label: "Gallery",
+      href: `/admin/${adminSlug}/gallery`,
+      icon: PhotoIcon,
     },
     {
       label: "Manage Events",
@@ -1062,6 +1112,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/blogs`,
       icon: WrenchScrewdriverIcon,
     },
+    {
+      label: "Gallery",
+      href: `/admin/${adminSlug}/gallery`,
+      icon: PhotoIcon,
+    },
   ],
 
   "Event & Ticketing": [
@@ -1115,6 +1170,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "blogs",
       href: `/admin/${adminSlug}/blogs`,
       icon: WrenchScrewdriverIcon,
+    },
+    {
+      label: "Gallery",
+      href: `/admin/${adminSlug}/gallery`,
+      icon: PhotoIcon,
     },
   ],
 
@@ -1268,6 +1328,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: DocumentTextIcon,
       subItems: [{ label: "All Blogs", href: `/admin/${adminSlug}/blogs` }],
     },
+    {
+      label: "Gallery",
+      href: `/admin/${adminSlug}/gallery`,
+      icon: PhotoIcon,
+    },
     // { label: "Categories", href: `/admin/${adminSlug}/properties-categories`, icon: TagIcon }, // Manage property categories (e.g., Residential, Commercial, Land)
   ],
 
@@ -1370,6 +1435,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: WrenchScrewdriverIcon,
     },
     {
+      label: "Gallery",
+      href: `/admin/${adminSlug}/gallery`,
+      icon: PhotoIcon,
+    },
+    {
       label: "Reports",
       href: `/admin/${adminSlug}/health-reports`,
       icon: ChartBarIcon,
@@ -1456,6 +1526,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Announcements",
       href: `/admin/${adminSlug}/saas-announcements`,
       icon: MegaphoneIcon,
+    },
+    {
+      label: "Gallery",
+      href: `/admin/${adminSlug}/gallery`,
+      icon: PhotoIcon,
     },
     {
       label: "Content (CMS)",
@@ -1912,6 +1987,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: NewspaperIcon,
     },
     {
+      label: "Gallery",
+      href: `/admin/${adminSlug}/gallery`,
+      icon: PhotoIcon,
+    },
+    {
       label: "Promotions & Deals",
       href: `/admin/${adminSlug}/travel-promotions`,
       icon: TagIcon,
@@ -2093,6 +2173,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: PlayCircleIcon,
     },
     {
+      label: "Gallery",
+      href: `/admin/${adminSlug}/gallery`,
+      icon: PhotoIcon,
+    },
+    {
       label: "blogs",
       href: `/admin/${adminSlug}/blogs`,
       icon: WrenchScrewdriverIcon,
@@ -2207,6 +2292,16 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     //   ],
     // },
     {
+      label: "Blogs",
+      icon: DocumentTextIcon,
+      href: `/admin/${adminSlug}/blogs`,
+    },
+    {
+      label: "Gallery",
+      href: `/admin/${adminSlug}/gallery`,
+      icon: PhotoIcon,
+    },
+    {
       label: "Reports & Analytics",
       href: `/admin/${adminSlug}/analytics`,
       icon: ChartBarIcon,
@@ -2277,6 +2372,12 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     //   ],
     // },
     // { label: "Reports & Analytics", href: `/admin/${adminSlug}/analytics`, icon: ChartBarIcon }, // Icon for charts/graphs
+
+    {
+      label: "Gallery",
+      href: `/admin/${adminSlug}/gallery`,
+      icon: PhotoIcon,
+    },
     {
       label: "Messaging",
       href: `/admin/${adminSlug}/messages`,
@@ -2364,6 +2465,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Blogs",
       icon: DocumentTextIcon,
       subItems: [{ label: "All Blogs", href: `/admin/${adminSlug}/blogs` }],
+    },
+    {
+      label: "Gallery",
+      href: `/admin/${adminSlug}/gallery`,
+      icon: PhotoIcon,
     },
     {
       label: "Settings",
@@ -2460,6 +2566,21 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: CreditCardIcon,
     },
     {
+      label: "Reports & Analytics",
+      href: `/admin/${adminSlug}/logistics-reports`,
+      icon: ChartBarIcon, 
+    },
+    {
+      label: "Blogs",
+      icon: DocumentTextIcon,
+      href: `/admin/${adminSlug}/blogs`,
+    },
+    {
+      label: "Gallery",
+      href: `/admin/${adminSlug}/gallery`,
+      icon: PhotoIcon,
+    },
+    {
       label: "Messages",
       href: `/admin/${adminSlug}/messages`,
       icon: ChatBubbleBottomCenterTextIcon,
@@ -2502,6 +2623,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Analytics & Reports",
       href: `/admin/${adminSlug}/social-analytics`,
       icon: ChartBarIcon,
+    },    
+    {
+      label: "Gallery",
+      href: `/admin/${adminSlug}/gallery`,
+      icon: PhotoIcon,
     },
     {
       label: "Messages & Engagement",

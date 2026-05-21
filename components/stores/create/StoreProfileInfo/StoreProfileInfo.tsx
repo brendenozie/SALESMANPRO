@@ -350,7 +350,7 @@ export default function StoreProfileInfo({
                   />
 
                   <InputField
-                    label="Founder Creed Quote"
+                    label="Founder Quote / Motto"
                     name="founderQuote"
                     value={founderQuote ?? ''}
                     onChange={handleChange}

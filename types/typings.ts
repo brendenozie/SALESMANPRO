@@ -833,6 +833,8 @@ export interface StoreForm {
   sectionTitle?: string | null | undefined;
   sectionDescription?: string | null | undefined;
 
+  galleries: IGallery[];
+  
   // Relational arrays
   settings: CompanySettings | null;
   socialLinks: SocialLink[];
@@ -886,7 +888,28 @@ export interface StoreForm {
 
 }
 
+export interface IGalleryItem {
+  id: string;
+  imageUrl: string;
+  caption: string | null;
+  altText: string | null;
+  order: number;
+  featured: boolean;
+  galleryId: string;
+  createdAt: Date;
+}
 
+export interface IGallery {
+  id: string;
+  title: string;
+  description: string | null;
+  type: string | null; // e.g., "office", "events", "products"
+  isFeatured: boolean;
+  companyId: string;
+  items: IGalleryItem[];
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export type EducatorStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED"; // adjust if you have an enum
 
