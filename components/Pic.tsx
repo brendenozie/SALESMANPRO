@@ -45,12 +45,7 @@ export default function Pic() {
   };
 
   return (
-    <section id="features" className="relative flex flex-col py-24 bg-slate-50 dark:bg-slate-950 overflow-hidden transition-colors duration-300">
-      {/* Premium Glassmorphic Mesh Spheres */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
-        <div className="absolute w-[600px] h-[600px] bg-gradient-to-tr from-pink-400/20 to-purple-400/0 rounded-full blur-[120px] -top-48 -left-48 animate-pulse" style={{ animationDuration: "8s" }} />
-        <div className="absolute w-[500px] h-[500px] bg-gradient-to-bl from-amber-300/10 to-orange-400/0 rounded-full blur-[100px] -bottom-36 right-0" />
-      </div>
+    <section id="features" className="relative flex flex-col py-24 overflow-hidden transition-colors duration-300">
 
       <div className="max-w-7xl w-full mx-auto px-6 lg:px-12 relative z-10">
         {/* Header Block Header & Orchestrated Layout Controllers */}
