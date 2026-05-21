@@ -50,7 +50,7 @@ const DynamicLogo: React.FC<{ formData: StoreForm; isScrolled: boolean }> = ({
               .substring(0, 4)
               .toUpperCase()}`;
           }}
-          className={`object-contain transition-all duration-300 rounded-full ${
+          className={`object-contain transition-all duration-300 rounded-full  h-8 w-32 ${
             isScrolled ? "h-16" : "h-20"
           }`}
         />

@@ -117,7 +117,7 @@ export default function Header() {
                   width={44}
                   height={44}
                   loader={loader}
-                  className="relative rounded-full object-cover ring-2 ring-white shadow-sm"
+                  className="relative rounded-full object-cover ring-2 ring-white shadow-sm  h-8 w-32"
                 />
               )}
             </div>

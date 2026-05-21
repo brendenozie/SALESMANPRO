@@ -74,7 +74,7 @@ export default function Header() {
                 alt={name || 'Store Logo'}
                 width={120}
                 height={50}
-                className={`transition-all duration-300 ${scrolled ? 'scale-90' : 'scale-100'}`}
+                className={`transition-all duration-300 ${scrolled ? 'scale-90' : 'scale-100'}  h-8 w-32`}
                 loader={imageLoader}
               />
             ) : (

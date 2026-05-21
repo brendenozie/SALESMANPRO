@@ -150,7 +150,7 @@ export default function Header() {
                   width={45}
                   height={45}
                   alt={`${name} logo`}
-                  className="object-contain"
+                  className="object-contain  h-8 w-32"
                 />
               ) : (
                 <span className="text-2xl font-bold text-gray-900">

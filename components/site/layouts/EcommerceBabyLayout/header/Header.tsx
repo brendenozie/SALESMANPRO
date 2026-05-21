@@ -158,7 +158,7 @@ alt={name}
 width={120}
 height={40}
 loader={imageLoader}
-className="object-contain h-10 w-auto"
+className="object-contain  h-8 w-32"
 />
 
 ) : (

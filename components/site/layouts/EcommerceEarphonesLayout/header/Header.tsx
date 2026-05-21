@@ -99,7 +99,7 @@ export default function Header() {
                   alt={name || 'Store Logo'}
                   fill
                   loader={imageLoader}
-                  className="object-contain dark:brightness-0 dark:invert"
+                  className="object-contain dark:brightness-0 dark:invert h-8 w-32"
                 />
               </div>
             ) : (

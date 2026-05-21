@@ -123,7 +123,7 @@ export default function Header() {
               alt={name}
               width={140}
               height={40}
-              className="object-contain h-10 w-auto"
+              className="object-contain h-10 w-32"
             />
           ) : (
             <span

@@ -135,7 +135,7 @@ export default function Header() {
           
           <Link href="/" className="relative flex items-center group">
             {logoUrl ? (
-              <Image src={logoUrl} alt={name} width={140} height={45} loader={imageLoader} className="object-contain transition-transform duration-300 group-hover:scale-105" />
+              <Image src={logoUrl} alt={name} width={140} height={45} loader={imageLoader} className="object-contain transition-transform duration-300 group-hover:scale-105  h-8 w-32" />
             ) : (
               <div className="flex flex-col">
                 <span className="text-xl font-black tracking-tighter text-slate-900 dark:text-white leading-none">

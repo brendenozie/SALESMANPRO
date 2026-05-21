@@ -170,7 +170,7 @@ export default function Header() {
               alt={name}
               width={56}
               height={56}
-              className="rounded-full shadow-lg border border-gray-200"
+              className="rounded-full shadow-lg border border-gray-200  h-8 w-32"
               loader={loader}
             />
           ) : (
@@ -256,7 +256,7 @@ export default function Header() {
           >
             <div className="flex justify-between items-center mb-10">
               {logoUrl ? (
-                <Image src={logoUrl} alt={name} width={60} height={60} className="rounded-full" />
+                <Image src={logoUrl} alt={name} width={60} height={60} className="rounded-full  h-8 w-32" />
               ) : (
                 <span className="text-2xl font-extrabold">{name}</span>
               )}

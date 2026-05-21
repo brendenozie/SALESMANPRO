@@ -79,7 +79,7 @@ export default function PremiumMeatHeader() {
                     src={logoUrl}
                     alt={name || ''}
                     fill
-                    className="object-contain"
+                    className="object-contain  h-8 w-32"
                     loader={imageLoader}
                   />
                 ) : (

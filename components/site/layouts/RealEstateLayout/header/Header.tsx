@@ -140,7 +140,7 @@ export default function Header() {
                 width={160}
                 height={50}
                 loader={loader}
-                className="object-contain max-h-[50px]"
+                className="object-contain  h-8 w-32"
                 priority
               />
             ) : (

@@ -123,7 +123,7 @@ export default function HeaderLightMode() {
                 width={140}
                 height={40}
                 // Light mode: ensure logo contrast against white background
-                className={`object-contain h-10 w-auto ${scrolled ? 'filter-none' : 'filter brightness-125'}`} 
+                className={`object-contain h-10 w-32 ${scrolled ? 'filter-none' : 'filter brightness-125'}`} 
               />
             ) : (
               <span

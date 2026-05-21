@@ -73,7 +73,7 @@ export default function Header() {
                   alt={name || 'Barber'} 
                   width={140} 
                   height={40} 
-                  className={`object-contain h-8 w-auto transition-all duration-500 ${scrolled ? 'dark:invert-0 invert' : 'invert'}`} 
+                  className={`object-contain h-8 w-32 transition-all duration-500 ${scrolled ? 'dark:invert-0 invert' : 'invert'}`} 
                   loader={imageLoader} 
                 />
               ) : (

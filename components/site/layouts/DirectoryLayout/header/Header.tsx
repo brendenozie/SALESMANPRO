@@ -250,7 +250,7 @@ export default function Header() {
                     alt={name || 'Logo'}
                     width={120}
                     height={40}
-                    className="object-contain"
+                    className="object-contain  h-8 w-32"
                     loader={loader}
                     priority
                   />

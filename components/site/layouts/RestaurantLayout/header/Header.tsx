@@ -90,7 +90,7 @@ export default function Header() {
                   alt={name || 'Logo'}
                   width={140}
                   height={45}
-                  className="object-contain transition-transform duration-300 group-hover:scale-105"
+                  className="object-contain transition-transform duration-300 group-hover:scale-105  h-8 w-32"
                   loader={loader}
                 />
               ) : (
