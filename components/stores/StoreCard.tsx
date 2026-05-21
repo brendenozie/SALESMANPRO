@@ -173,8 +173,7 @@ export default function StoreCard({
           <div className="flex items-end justify-between gap-4">
             <div className="min-w-0">
               {category && (
-                <div className="mb-3 inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white backdrop-blur-md">
-                  <SparklesIcon className="h-3.5 w-3.5" />
+                <div className="mb-3 inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white backdrop-blur-md">
                   {category}
                 </div>
               )}
@@ -198,7 +197,7 @@ export default function StoreCard({
       <div className="relative z-10 p-6">
         {/* Description */}
         <div className="mb-6">
-          <p className="line-clamp-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+          <p className="line-clamp-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400 h-16">
             {description ||
               "This digital storefront is ready to showcase products, manage customers, process sales, and scale online operations beautifully."}
           </p>
