@@ -1,27 +1,30 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-
 import Modal from "./Modal";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
   CheckCircleIcon,
   XMarkIcon,
+  DocumentTextIcon,
+  PhotoIcon,
+  TagIcon,
+  MagnifyingGlassIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 import dynamic from "next/dynamic";
 import CategoryPicker from "./CategoryPicker";
 import ImageUploader, { UnifiedMediaItem } from "./ImageUploader";
 import Stepper from "./Stepper";
 
-// load the new package dynamically, no ssr
+// Load the new package dynamically, no SSR
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
-import 'react-quill-new/dist/quill.snow.css';
-import { set } from "lodash";
+// @ts-expect-error CSS side-effect import handled by bundler
+import "react-quill-new/dist/quill.snow.css";
 
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 const modules = {
   toolbar: [
@@ -34,19 +37,12 @@ const modules = {
 };
 
 const STEP_LABELS: Record<number, string> = {
-  1: "Categories & Tags",
-  2: "Details",
-  3: "Images",
-  4: "SEO",
-  5: "Review",
+  1: "Categorization",
+  2: "Content Details",
+  3: "Media Assets",
+  4: "SEO & Meta",
+  5: "Review & Publish",
 };
-
-// interface UnifiedMediaItem {
-//   id?: string;
-//   file?: File;
-//   url: string;
-//   source: "local" | "server";
-// }
 
 export async function uploadFiles(
   files: File[],
@@ -57,9 +53,10 @@ export async function uploadFiles(
 
   const uploads = files.map(async (file) => {
     try {
-      // ✅ Step 1: Request a signed upload URL from your API
       const res = await fetch(
-        `${apiBaseUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
+        `${apiBaseUrl}/upload-url?filename=${encodeURIComponent(
+          file.name
+        )}&type=${type}&contentType=${encodeURIComponent(file.type)}`
       );
 
       if (!res.ok) {
@@ -69,7 +66,6 @@ export async function uploadFiles(
 
       const { uploadUrl, publicUrl, key, contentType } = await res.json();
 
-      // ✅ Step 2: Upload directly to S3
       await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open("PUT", uploadUrl);
@@ -91,7 +87,6 @@ export async function uploadFiles(
         xhr.send(file);
       });
 
-      console.log(`✅ Uploaded: ${file.name} (${contentType}) → ${publicUrl}`);
       return { url: publicUrl, key, contentType };
     } catch (err) {
       console.error("❌ Upload error:", err);
@@ -101,11 +96,12 @@ export async function uploadFiles(
 
   return Promise.all(uploads);
 }
+
 interface AddEditBlogModalProps {
   show: boolean;
   onClose: () => void;
   categoriesData: any[];
-  initialData?: any;  
+  initialData?: any;
   companyId?: string;
 }
 
@@ -114,11 +110,18 @@ export default function AddEditBlogModal({
   onClose,
   initialData = {},
   categoriesData = [],
-  companyId
+  companyId,
 }: AddEditBlogModalProps) {
-
   const totalSteps = Object.keys(STEP_LABELS).length;
   const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  console.log("Initial Data:", initialData);
 
   const [formData, setFormData] = useState<any>({
     id: initialData.id || "",
@@ -141,31 +144,15 @@ export default function AddEditBlogModal({
     author: initialData.author || "Admin",
   });
 
-  const [mounted, setMounted] = useState(false);
+  const [images, setImages] = useState<UnifiedMediaItem[]>(
+    formData?.images?.map((img: any, idx: number) => ({
+      index: idx,
+      url: img.url,
+      source: "server",
+    })) || []
+  );
 
-  // const [newImages, setNewImages] = useState<UnifiedMediaItem[]>([]);
-  // const [newImages, setNewImages] = useState<UnifiedMediaItem[]>([]);
-   const [images, setImages] = useState<UnifiedMediaItem[]>(
-      formData?.images?.map((img: any, idx: number) => ({ index: idx, url: img.url, source: 'server' })) || []
-    );
-  // Sync unified media state when formData changes
-    // useEffect(() => {
-    //   setImages(
-    //     formData.images?.map((img: any, idx: number) => ({
-    //       id: img.url || `server-img-${idx}`,
-    //       url: typeof img === 'string' ? img : img.url,
-    //       source: 'server',
-    //       file: undefined,
-    //       title: "Untitled Image",
-    //       author: "Unknown",
-    //       coverPreviewUrl: undefined,
-    //       fileName: undefined,
-    //     })) || []
-    //   );
-    // }, [formData.images]);
-    
-   // Generic handler
-   const handleChange = (
+  const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
@@ -175,8 +162,10 @@ export default function AddEditBlogModal({
         type === "checkbox"
           ? (e.target as HTMLInputElement).checked
           : name === "tags" || name === "categories"
-          ? // split comma-separated lists
-            value.split(",").map((s) => s.trim()).filter(Boolean)
+          ? value
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
           : value,
     }));
   };
@@ -188,302 +177,447 @@ export default function AddEditBlogModal({
   const isStepValid = useMemo(() => {
     if (step === 1) return formData.category && formData.subCategory;
     if (step === 2) return formData.title && formData.content.length > 20;
-    if (step === 3) return images.length > 0 || images.length > 0;
+    if (step === 3) return images.length > 0;
     if (step === 4) return formData.seoTitle && formData.seoDescription;
     return true;
   }, [step, formData, images]);
 
-  // const uploadFile = async (file: File, type: string): Promise<string> => {
-  //   try {
-  //     const fd = new FormData();
-  //     fd.append("file", file);
-  //     fd.append("type", type);
-
-  //     const res = await fetch(`${apiBaseUrl}/admin/upload`, {
-  //       method: "POST",
-  //       body: fd,
-  //     });
-
-  //     if (!res.ok) {
-  //       console.error("File upload failed", await res.text());
-  //       return "";
-  //     }
-
-  //     const data = await res.json();
-  //     // expect the upload endpoint to return { url: "https://..." } or similar
-  //     return data?.url ?? data?.path ?? "";
-  //   } catch (err) {
-  //     console.error("Upload error", err);
-  //     return "";
-  //   }
-  // };
-
   const handleSubmit = async () => {
-    const newImageItems = images.filter(i => i.source === "local" && i.file);
-    
-    // 2. Create upload promises for new files
-    const uploadImagePromises = newImageItems.map(item =>
-      uploadFiles([item.file!], "image", (progress, file) => {
-        console.log(`Uploading image ${file.name}: ${progress}%`);
-      }).then(result => ({ id: item.id, url: result[0].url }))
-    );
+    setIsSubmitting(true);
+    try {
+      const newImageItems = images.filter((i) => i.source === "local" && i.file);
 
-    // 3. Run all uploads in parallel
-    const [uploadedImages] = await Promise.all([
-      Promise.all(uploadImagePromises),
-    ]);
+      const uploadImagePromises = newImageItems.map((item) =>
+        uploadFiles([item.file!], "image").then((result) => ({
+          id: item.id,
+          url: result[0].url,
+        }))
+      );
 
-    // 4. Create lookup maps for quick access
-    const imageUrlMap = new Map(uploadedImages.map(i => [i.id, i.url]));
+      const [uploadedImages] = await Promise.all([Promise.all(uploadImagePromises)]);
+      const imageUrlMap = new Map(uploadedImages.map((i) => [i.id, i.url]));
 
-    // 5. Build final URL arrays (server + newly uploaded)
-    const finalImageUrls = images
-      .map(img => (img.source === "server" ? img.url : imageUrlMap.get(img.id)!))
-      .filter(Boolean);
+      const finalImageUrls = images
+        .map((img) => (img.source === "server" ? img.url : imageUrlMap.get(img.id)!))
+        .filter(Boolean);
 
-    const payload = {
-      id: formData.id,
-      title: formData.title,
-      slug: formData.slug,
-      excerpt: formData.excerpt,
-      content: formData.content,
-      isFeature: formData.isFeature,
-      status: formData.status,
-      categories: [formData.category?.displayName],
-      tags: formData.tags,
-      coverImage: finalImageUrls[0] || "",
-      seo: {
-        title: formData.seoTitle,
-        description: formData.seoDescription,
-        keywords: formData.metaKeywords,
-      },
-      companyId: formData.companyId,
-      author: formData.author,
-    };
+      const payload = {
+        id: formData.id,
+        title: formData.title,
+        slug: formData.slug,
+        excerpt: formData.excerpt,
+        content: formData.content,
+        isFeature: formData.isFeature,
+        status: formData.status,
+        categories: formData.category?.displayName ? [formData.category.displayName] : [],
+        tags: formData.tags,
+        coverImage: finalImageUrls[0] || "",
+        seo: {
+          title: formData.seoTitle,
+          description: formData.seoDescription,
+          keywords: formData.metaKeywords,
+        },
+        companyId: formData.companyId,
+        author: formData.author,
+      };
 
-    await fetch(`${apiBaseUrl}/admin/post-blog`, {
-      method: formData.id ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    onClose();
+      await fetch(`${apiBaseUrl}/admin/post-blog`, {
+        method: formData.id ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      onClose();
+    } catch (error) {
+      console.error("Submission failed", error);
+      alert("Failed to submit blog post.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
+  // Shared stunning input styles
+  const inputClass =
+    "w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700/60 rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 outline-none placeholder-gray-400 dark:placeholder-gray-500 shadow-sm";
+  const labelClass = "block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5";
+
   return (
-    <Modal isOpen={show} onClose={onClose}>
-      <div className="p-6 bg-white rounded-lg shadow-lg max-w-3xl mx-auto h-[80vh] flex flex-col">
+    <Modal isOpen={show} onClose={onClose} showCloseButton={false}>
+      <div className="bg-white dark:bg-gray-800 w-full max-w-4xl mx-auto h-[90vh] sm:h-[85vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden ring-1 ring-gray-900/5 dark:ring-white/10 transition-colors duration-300">
+        
         {/* Header */}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">
-            {formData.id ? "Edit Blog" : "Add New Blog"}
-          </h2>
-          <button onClick={onClose}>
-            <XMarkIcon className="h-6 w-6 text-gray-600 hover:text-gray-800" />
+        <div className="flex justify-between items-center px-6 py-5 bg-gray-50/80 dark:bg-gray-900/50 backdrop-blur-md border-b border-gray-200 dark:border-gray-700/60 z-20">
+          <div className="flex items-center gap-3">
+            <div className="bg-indigo-100 dark:bg-indigo-500/20 p-2 rounded-lg">
+              <DocumentTextIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <div>
+              <h2 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                {formData.id ? "Edit Publication" : "Create New Story"}
+              </h2>
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">
+                Step {step} of {totalSteps}: {STEP_LABELS[step]}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+          >
+            <XMarkIcon className="h-6 w-6" />
           </button>
         </div>
 
-        {/* Stepper */}
-        <Stepper
-          step={step}
-          stepsForCategory={[1, 2, 3, 4, 5]}
-          STEP_LABELS={STEP_LABELS}
-        />
+        {/* Stepper Area */}
+        <div className="px-8 pt-6 pb-2 border-b border-gray-100 dark:border-gray-800 z-10 bg-white dark:bg-gray-800">
+          <Stepper step={step} stepsForCategory={[1, 2, 3, 4, 5]} STEP_LABELS={STEP_LABELS} />
+        </div>
 
-        {/* Content */}
-        <motion.div
-          key={step}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          className="flex-grow overflow-auto p-4"
-        >
-          {step === 1 && (
-            <CategoryPicker
-              formData={formData}
-              categories={categoriesData}
-              filteredBrands={[]}
-              onCategoryChange={(cat) =>
-                setFormData((f: any) => ({
-                  ...f,
-                  category: cat,
-                  subCategory: null,
-                  brand: null,
-                }))
-              }
-              onSubCategoryChange={(sub) =>
-                setFormData((f: any) => ({ ...f, subCategory: sub }))
-              }
-              onBrandChange={(b) =>
-                setFormData((f: any) => ({ ...f, brand: b }))
-              }
-            />
-          )}
-
-          {step === 2 && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Blog Details</h3>
-              <label className="block text-sm font-medium">Title</label>
-              <input
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                className="w-full border rounded p-2"
-                required
-              />
-
-              <label className="block text-sm font-medium">Slug</label>
-              <input
-                name="slug"
-                value={formData.slug}
-                onChange={handleChange}
-                className="w-full border rounded p-2"
-                required
-              />
-
-              <label className="block text-sm font-medium">Excerpt</label>
-              <textarea
-                name="excerpt"
-                value={formData.excerpt}
-                onChange={handleChange}
-                className="w-full border rounded p-2"
-                rows={3}
-              />
-
-              <label className="block text-sm font-medium">Content</label>
-              {mounted ? (
-                <ReactQuill
-                  value={formData.content}
-                  onChange={handleQuillChange}
-                  modules={modules}
-                  theme="snow"
-                />
-              ) : (
-                <div className="h-40 border rounded bg-gray-50" />
+        {/* Scrollable Content Body */}
+        <div className="flex-grow overflow-y-auto p-6 sm:p-8 custom-scrollbar relative">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="max-w-3xl mx-auto h-full"
+            >
+              {/* Step 1 */}
+              {step === 1 && (
+                <div className="space-y-6">
+                  <div className="mb-6">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                      Where does this belong?
+                    </h3>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">
+                      Select the appropriate category and subcategory for proper organization.
+                    </p>
+                  </div>
+                  <CategoryPicker
+                    formData={formData}
+                    categories={categoriesData}
+                    filteredBrands={[]}
+                    onCategoryChange={(cat) =>
+                      setFormData((f: any) => ({ ...f, category: cat, subCategory: null, brand: null }))
+                    }
+                    onSubCategoryChange={(sub) =>
+                      setFormData((f: any) => ({ ...f, subCategory: sub }))
+                    }
+                    onBrandChange={(b) => setFormData((f: any) => ({ ...f, brand: b }))}
+                  />
+                </div>
               )}
 
-              <div className="flex space-x-4 items-center">
-                <label className="inline-flex items-center">
-                  <input
-                    type="checkbox"
-                    name="isFeature"
-                    checked={formData.isFeature}
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
-                  Feature this post
-                </label>
+              {/* Step 2 */}
+              {step === 2 && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="md:col-span-2">
+                      <label className={labelClass}>Post Title</label>
+                      <input
+                        name="title"
+                        value={formData.title}
+                        onChange={handleChange}
+                        className={inputClass}
+                        placeholder="e.g. The Future of African Tech..."
+                        required
+                      />
+                    </div>
 
-                <label className="inline-flex items-center">
-                  Status:
-                  <select
-                    name="status"
-                    value={formData.status}
-                    onChange={handleChange}
-                    className="ml-2 border rounded p-1"
-                  >
-                    <option value="DRAFT">Draft</option>
-                    <option value="PUBLISHED">Published</option>
-                    <option value="ARCHIVED">Archived</option>
-                  </select>
-                </label>
-              </div>
+                    <div>
+                      <label className={labelClass}>URL Slug</label>
+                      <input
+                        name="slug"
+                        value={formData.slug}
+                        onChange={handleChange}
+                        className={inputClass}
+                        placeholder="the-future-of-african-tech"
+                        required
+                      />
+                    </div>
 
-              <label className="block text-sm font-medium">Tags</label>
-              <input
-                name="tags"
-                value={formData.tags.join(", ")}
-                onChange={handleChange}
-                className="w-full border rounded p-2"
-              />
-            </div>
-          )}
+                    <div>
+                      <label className={labelClass}>Tags (Comma separated)</label>
+                      <div className="relative">
+                        <TagIcon className="h-5 w-5 absolute left-3 top-3.5 text-gray-400" />
+                        <input
+                          name="tags"
+                          value={formData.tags.join(", ")}
+                          onChange={handleChange}
+                          className={`${inputClass} pl-10`}
+                          placeholder="tech, innovation, future"
+                        />
+                      </div>
+                    </div>
+                  </div>
 
-          {step === 3 && (
-            <ImageUploader
-              images={images}
-              setImages={setImages}
-              videos={[]}
-              setVideos={() => {}}
-              books={[]}
-              setBooks={() => {}}
-            />
-          )}
+                  <div>
+                    <label className={labelClass}>Short Excerpt</label>
+                    <textarea
+                      name="excerpt"
+                      value={formData.excerpt}
+                      onChange={handleChange}
+                      className={`${inputClass} resize-none`}
+                      rows={3}
+                      placeholder="A brief summary of the article..."
+                    />
+                  </div>
 
-          {step === 4 && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">SEO Settings</h3>
-              <label className="block text-sm font-medium">SEO Title</label>
-              <input
-                name="seoTitle"
-                value={formData.seoTitle}
-                onChange={handleChange}
-                className="w-full border rounded p-2"
-              />
-              <label className="block text-sm font-medium">SEO Description</label>
-              <textarea
-                name="seoDescription"
-                value={formData.seoDescription}
-                onChange={handleChange}
-                className="w-full border rounded p-2"
-                rows={3}
-              />
-              <label className="block text-sm font-medium">Meta Keywords</label>
-              <input
-                name="metaKeywords"
-                value={formData.metaKeywords.join(", ")}
-                onChange={(e) =>
-                  setFormData((prev: any) => ({
-                    ...prev,
-                    metaKeywords: e.target.value
-                      .split(",")
-                      .map((s) => s.trim()),
-                  }))
-                }
-                className="w-full border rounded p-2"
-              />
-            </div>
-          )}
+                  <div className="relative">
+                    <label className={labelClass}>Full Content</label>
+                    <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700/60 shadow-sm bg-white dark:bg-gray-900 editor-wrapper">
+                      {mounted ? (
+                        <ReactQuill
+                          value={formData.content}
+                          onChange={handleQuillChange}
+                          modules={modules}
+                          theme="snow"
+                          className="text-gray-900 dark:text-white"
+                        />
+                      ) : (
+                        <div className="h-64 flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+                          <span className="text-gray-400 animate-pulse">Loading Editor...</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-          {step === 5 && (
-            <div className="space-y-2">
-              <h3 className="font-semibold">Review before submitting</h3>
-              <pre className="bg-gray-100 p-4 rounded">
-                {JSON.stringify(formData, null, 2)}
-              </pre>
-            </div>
-          )}
-        </motion.div>
+                  <div className="flex flex-col sm:flex-row gap-6 p-5 bg-indigo-50/50 dark:bg-indigo-500/5 border border-indigo-100 dark:border-indigo-500/20 rounded-xl">
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <div className="relative flex items-center justify-center">
+                        <input
+                          type="checkbox"
+                          name="isFeature"
+                          checked={formData.isFeature}
+                          onChange={handleChange}
+                          className="peer sr-only"
+                        />
+                        <div className="w-12 h-6 bg-gray-300 dark:bg-gray-600 rounded-full peer-checked:bg-indigo-600 transition-colors duration-300"></div>
+                        <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-6"></div>
+                      </div>
+                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                        Feature this post
+                      </span>
+                    </label>
 
-        {/* Navigation */}
-        <div className="flex justify-between pt-4 border-t">
-          {step > 1 && (
-            <button
-              onClick={() => setStep(step - 1)}
-              className="flex items-center bg-gray-200 text-gray-700 px-4 py-2 rounded"
-            >
-              <ArrowLeftIcon className="h-5 w-5 mr-1" /> Back
-            </button>
-          )}
+                    <div className="h-6 w-px bg-indigo-200 dark:bg-indigo-500/20 hidden sm:block"></div>
+
+                    <label className="flex items-center gap-3">
+                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Publish Status:</span>
+                      <select
+                        name="status"
+                        value={formData.status}
+                        onChange={handleChange}
+                        className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 outline-none text-gray-800 dark:text-gray-200"
+                      >
+                        <option value="DRAFT">Draft</option>
+                        <option value="PUBLISHED">Published</option>
+                        <option value="ARCHIVED">Archived</option>
+                      </select>
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3 */}
+              {step === 3 && (
+                <div className="space-y-6">
+                  <div className="mb-6">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                      Visual Assets
+                    </h3>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">
+                      Upload high-quality images. The first image will be used as the cover.
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
+                    <ImageUploader
+                      images={images}
+                      setImages={setImages}
+                      videos={[]}
+                      setVideos={() => {}}
+                      books={[]}
+                      setBooks={() => {}}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Step 4 */}
+              {step === 4 && (
+                <div className="space-y-6">
+                  <div className="mb-6">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                      <MagnifyingGlassIcon className="h-6 w-6 text-indigo-500" />
+                      Search Engine Optimization
+                    </h3>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">
+                      Optimize how your post appears on Google and social media.
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <label className={labelClass}>SEO Title</label>
+                    <input
+                      name="seoTitle"
+                      value={formData.seoTitle}
+                      onChange={handleChange}
+                      className={inputClass}
+                      placeholder="Best title for search engines (50-60 chars)"
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>SEO Description</label>
+                    <textarea
+                      name="seoDescription"
+                      value={formData.seoDescription}
+                      onChange={handleChange}
+                      className={`${inputClass} resize-none`}
+                      rows={3}
+                      placeholder="Compelling meta description..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Meta Keywords (Comma separated)</label>
+                    <input
+                      name="metaKeywords"
+                      value={formData.metaKeywords.join(", ")}
+                      onChange={(e) =>
+                        setFormData((prev: any) => ({
+                          ...prev,
+                          metaKeywords: e.target.value.split(",").map((s) => s.trim()),
+                        }))
+                      }
+                      className={inputClass}
+                      placeholder="startup, saas, growth"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Step 5 */}
+              {step === 5 && (
+                <div className="space-y-6">
+                  <div className="text-center mb-8">
+                    <div className="mx-auto w-16 h-16 bg-emerald-100 dark:bg-emerald-500/20 rounded-full flex items-center justify-center mb-4">
+                      <SparklesIcon className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <h3 className="text-3xl font-extrabold text-gray-900 dark:text-white">
+                      Ready to Publish?
+                    </h3>
+                    <p className="text-gray-500 dark:text-gray-400 mt-2">
+                      Review the details below before making this live.
+                    </p>
+                  </div>
+
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/80 rounded-2xl p-6 shadow-sm">
+                    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6">
+                      <div className="col-span-2 sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Post Title</dt>
+                        <dd className="mt-1 text-base font-semibold text-gray-900 dark:text-white">{formData.title || "—"}</dd>
+                      </div>
+                      <div className="col-span-2 sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Status</dt>
+                        <dd className="mt-1">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-500/20 dark:text-indigo-300 uppercase">
+                            {formData.status}
+                          </span>
+                        </dd>
+                      </div>
+                      <div className="col-span-2 sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Category</dt>
+                        <dd className="mt-1 text-sm text-gray-900 dark:text-white">{formData.category?.displayName || "—"}</dd>
+                      </div>
+                      <div className="col-span-2 sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Media</dt>
+                        <dd className="mt-1 flex items-center gap-2 text-sm text-gray-900 dark:text-white">
+                          <PhotoIcon className="h-5 w-5 text-gray-400" />
+                          {images.length} Image(s) Attached
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Footer Navigation */}
+        <div className="bg-gray-50/80 dark:bg-gray-900/50 backdrop-blur-md px-6 py-4 border-t border-gray-200 dark:border-gray-700/60 flex justify-between items-center rounded-b-2xl z-20">
+          <button
+            onClick={() => step > 1 && setStep(step - 1)}
+            disabled={step === 1 || isSubmitting}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
+              step === 1
+                ? "opacity-0 pointer-events-none"
+                : "text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+            }`}
+          >
+            <ArrowLeftIcon className="h-5 w-5" /> Back
+          </button>
+
           {step < totalSteps ? (
             <button
               onClick={() => {
-                if (!isStepValid) return alert("Complete this step first.");
+                if (!isStepValid) return alert("Please complete required fields first.");
                 setStep(step + 1);
               }}
-              className="flex items-center bg-blue-600 text-white px-4 py-2 rounded"
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-md shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all duration-200 hover:-translate-y-0.5"
             >
-              Next <ArrowRightIcon className="h-5 w-5 ml-1" />
+              Continue <ArrowRightIcon className="h-5 w-5" />
             </button>
           ) : (
             <button
               onClick={handleSubmit}
-              className="flex items-center bg-green-600 text-white px-4 py-2 rounded"
+              disabled={isSubmitting}
+              className={`flex items-center gap-2 px-8 py-2.5 rounded-xl font-bold text-white shadow-lg transition-all duration-300 ${
+                isSubmitting
+                  ? "bg-gray-400 cursor-not-allowed shadow-none"
+                  : "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:-translate-y-0.5"
+              }`}
             >
-              Submit <CheckCircleIcon className="h-5 w-5 ml-1" />
+              {isSubmitting ? (
+                <>Processing...</>
+              ) : (
+                <>
+                  Publish Post <CheckCircleIcon className="h-6 w-6" />
+                </>
+              )}
             </button>
           )}
         </div>
       </div>
+
+      {/* Global dark mode override for React Quill (Injected just for this modal) */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        .editor-wrapper .ql-toolbar {
+          border-top: none !important;
+          border-left: none !important;
+          border-right: none !important;
+          border-color: inherit;
+          background-color: transparent;
+          border-bottom: 1px solid rgba(156, 163, 175, 0.2) !important;
+        }
+        .editor-wrapper .ql-container {
+          border: none !important;
+          min-height: 200px;
+          font-family: inherit;
+        }
+        @media (prefers-color-scheme: dark) {
+          .editor-wrapper .ql-toolbar .ql-stroke { stroke: #d1d5db; }
+          .editor-wrapper .ql-toolbar .ql-fill { fill: #d1d5db; }
+          .editor-wrapper .ql-toolbar .ql-picker { color: #d1d5db; }
+          .editor-wrapper .ql-editor.ql-blank::before { color: #6b7280; }
+        }
+        html.dark .editor-wrapper .ql-toolbar .ql-stroke { stroke: #d1d5db; }
+        html.dark .editor-wrapper .ql-toolbar .ql-fill { fill: #d1d5db; }
+        html.dark .editor-wrapper .ql-toolbar .ql-picker { color: #d1d5db; }
+        html.dark .editor-wrapper .ql-editor.ql-blank::before { color: #6b7280; }
+      `}} />
     </Modal>
   );
 }

@@ -1,52 +1,46 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  PlayCircleIcon, PlusCircleIcon, PencilIcon, TrashIcon, MapPinIcon, ClockIcon, TagIcon
-} from '@heroicons/react/24/solid';
-import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image';
 import { useParams } from 'next/navigation';
+import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
+import { 
+  PlayIcon, 
+  PlusIcon, 
+  PencilSquareIcon, 
+  TrashIcon, 
+  MapPinIcon, 
+  ClockIcon, 
+  TagIcon 
+} from '@heroicons/react/24/outline';
+
 import ConfirmationModal from '@/components/ConfirmationModal';
 import VirtualTourModal, { VirtualTourData } from './VirtualTourModal';
 import VideoPlayerModal from './VideoPlayerModal';
-import toast from 'react-hot-toast';
 
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
-
-
-// Define the VirtualTourData interface to match the API response
-// interface VirtualTourData {
-//   id: string;
-//   title: string;
-//   location: string;
-//   duration: string;
-//   category: string;
-//   videoUrl: string;
-//   thumbnailUrl: string;
-//   description?: string;
-//   published?: boolean;
-// }
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
-// Framer Motion variants for staggered list animation
+// Framer Motion micro-interactions
 const containerVariants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
+    transition: { staggerChildren: 0.06 },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 },
+  hidden: { opacity: 0, y: 16 },
+  show: { 
+    opacity: 1, 
+    y: 0,
+    transition: { type: "spring", stiffness: 100, damping: 15 }
+  },
 };
 
 export default function AdminVirtualToursPage() {
@@ -63,14 +57,13 @@ export default function AdminVirtualToursPage() {
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [videoToPlay, setVideoToPlay] = useState<{ url: string; title: string } | null>(null);
 
-  // Function to fetch virtual tours from the API
   const fetchVirtualTours = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/virtual-tours?companyId=${slug}`
-        , { credentials: 'include' }
-      );
+      const response = await fetch(`${apiBaseUrl}/admin/virtual-tours?companyId=${slug}`, { 
+        credentials: 'include' 
+      });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -79,7 +72,6 @@ export default function AdminVirtualToursPage() {
     } catch (err: any) {
       setError(err.message);
       toast.error(`Failed to fetch virtual tours: ${err.message}`);
-      // console.error("Failed to fetch virtual tours:", err);
     } finally {
       setLoading(false);
     }
@@ -148,144 +140,166 @@ export default function AdminVirtualToursPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 p-8 text-white font-sans">
-      <motion.h1
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-5xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-600 mb-12 drop-shadow-lg"
-      >
-        Manage Immersive Virtual Tours
-      </motion.h1>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 px-4 py-8 sm:px-6 lg:px-8 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300">
+      <div className="max-w-7xl mx-auto">
+        
+        {/* Header Section */}
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10 pb-6 border-b border-slate-200 dark:border-slate-800">
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-500 dark:from-indigo-400 dark:to-purple-400">
+              Virtual Tours Portal
+            </h1>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Create, update, and manage your immersive interactive experiences.
+            </p>
+          </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="bg-gray-800 rounded-3xl shadow-2xl p-8 mb-12 border border-gray-700"
-      >
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-white mb-4 md:mb-0">All Virtual Tours</h2>
           <motion.button
             onClick={openAddModal}
-            className="flex items-center space-x-2 bg-gradient-to-r from-teal-500 to-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:from-teal-600 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105"
-            whileHover={{ scale: 1.02 }}
+            className="inline-flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-medium py-2.5 px-5 rounded-xl shadow-md shadow-indigo-200 dark:shadow-none transition-all duration-200"
+            whileHover={{ scale: 1.02, y: -1 }}
             whileTap={{ scale: 0.98 }}
           >
-            <PlusCircleIcon className="h-6 w-6" />
+            <PlusIcon className="h-5 w-5 stroke-[2.5]" />
             <span>Add New Tour</span>
           </motion.button>
-        </div>
+        </header>
 
+        {/* Global Loading State */}
         {loading && (
-          <div className="text-center py-20">
-            <svg className="animate-spin h-10 w-10 text-indigo-400 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <p className="text-xl text-gray-400">Loading virtual tours...</p>
+          <div className="flex flex-col items-center justify-center py-32 space-y-4">
+            <div className="relative w-12 h-12">
+              <div className="absolute w-full h-full rounded-full border-[3px] border-slate-200 dark:border-slate-800"></div>
+              <div className="absolute w-full h-full rounded-full border-[3px] border-indigo-600 dark:border-indigo-400 border-t-transparent animate-spin"></div>
+            </div>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 animate-pulse">Retrieving digital experiences...</p>
           </div>
         )}
 
+        {/* Error Boundary Display */}
         {error && (
-          <div className="bg-red-900 bg-opacity-30 text-red-200 p-6 rounded-xl text-center mb-8 border border-red-700">
-            <p className="font-bold text-lg">Error loading tours:</p>
-            <p className="text-sm">{error}</p>
+          <div className="bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 p-5 rounded-2xl text-center mb-8 border border-rose-100 dark:border-rose-900/50 max-w-2xl mx-auto backdrop-blur-sm">
+            <p className="font-semibold text-base mb-1">Unable to update configuration</p>
+            <p className="text-xs opacity-90 font-mono">{error}</p>
           </div>
         )}
 
-        <AnimatePresence>
-          {!loading && !error && virtualTours.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="text-center py-20"
-            >
-              <p className="text-xl text-gray-400">No virtual tours found. Start by adding one!</p>
-            </motion.div>
-          ) : (
-            <motion.div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
-              variants={containerVariants}
-              initial="hidden"
-              animate="show"
-            >
-              {virtualTours.map((tour) => (
-                <motion.div
-                  key={tour.id}
-                  variants={itemVariants}
-                  className="relative bg-gray-900 rounded-3xl shadow-xl overflow-hidden border border-gray-700 transform transition-transform duration-300 hover:scale-105 hover:shadow-2xl"
-                  whileHover={{ y: -5 }}
-                >
-                  <div className="relative w-full h-56 bg-gray-700 overflow-hidden group">
-                    <Image
-                      src={tour.thumbnailUrl}
-                      alt={tour.title}
-                      layout="fill"
-                      objectFit="cover"
-                      className="transition-transform duration-300 group-hover:scale-110"
-                      loader={customLoader}
-                      onError={(e) => {
-                        e.currentTarget.src = 'https://placehold.co/400x250/E0E7FF/4338CA?text=Thumbnail+Error';
-                      }}
-                    />
-                    <motion.button
-                      onClick={() => handlePlayVideo(tour)}
-                      className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-60 text-white text-opacity-80 transition-opacity duration-300 opacity-0 group-hover:opacity-100"
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      aria-label={`Play ${tour.title}`}
-                    >
-                      <PlayCircleIcon className="h-20 w-20 text-indigo-400 drop-shadow-lg" />
-                    </motion.button>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold text-white mb-1 leading-tight">{tour.title}</h3>
-                    <p className="text-sm text-gray-400 line-clamp-2 mb-3">{tour.description || 'No description available.'}</p>
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-400 mb-4">
-                      <div className="flex items-center">
-                        <MapPinIcon className="h-4 w-4 mr-2 text-sky-400" />
-                        <span>{tour.location}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <ClockIcon className="h-4 w-4 mr-2 text-yellow-400" />
-                        <span>{tour.duration}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <TagIcon className="h-4 w-4 mr-2 text-purple-400" />
-                        <span>{tour.category}</span>
+        {/* Main Workspace Display */}
+        <AnimatePresence mode="wait">
+          {!loading && !error && (
+            virtualTours.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="flex flex-col items-center justify-center text-center py-24 px-6 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm"
+              >
+                <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-2xl mb-4 text-slate-400">
+                  <MapPinIcon className="h-8 w-8" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">No active environments discovered</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-sm">
+                  Get started by provisioning your initial immersive staging layer using the creation tool above.
+                </p>
+              </motion.div>
+            ) : (
+              <motion.div
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8"
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+              >
+                {virtualTours.map((tour) => (
+                  <motion.div
+                    key={tour.id}
+                    variants={itemVariants}
+                    className="group relative flex flex-col justify-between bg-white dark:bg-slate-800/60 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-700/50 overflow-hidden hover:shadow-xl hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300"
+                  >
+                    {/* Media Node */}
+                    <div className="relative w-full aspect-video sm:aspect-[4/3] md:aspect-video bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                      <Image
+                        src={tour.thumbnailUrl}
+                        alt={tour.title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        loader={customLoader}
+                        unoptimized
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://placehold.co/600x400/E2E8F0/475569?text=Frame+Rendering+Unavailable';
+                        }}
+                      />
+                      {/* Play Action Layer Overlay */}
+                      <div className="absolute inset-0 flex items-center justify-center bg-slate-950/40 backdrop-blur-[2px] transition-opacity duration-300 opacity-0 group-hover:opacity-100">
+                        <motion.button
+                          onClick={() => handlePlayVideo(tour)}
+                          className="p-4 rounded-full bg-white/90 text-slate-900 shadow-xl hover:bg-white transition-colors"
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          aria-label={`Preview ${tour.title}`}
+                        >
+                          <PlayIcon className="h-6 w-6 fill-current stroke-none pl-0.5" />
+                        </motion.button>
                       </div>
                     </div>
-                    <div className="flex justify-end space-x-3 mt-4">
-                      <motion.button
-                        onClick={() => openEditModal(tour)}
-                        className="p-2 rounded-full bg-gray-700 text-indigo-400 hover:bg-indigo-600 hover:text-white transition-colors"
-                        title="Edit Tour"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                      >
-                        <PencilIcon className="h-5 w-5" />
-                      </motion.button>
-                      <motion.button
-                        onClick={() => handleDeleteTourClick(tour)}
-                        className="p-2 rounded-full bg-gray-700 text-red-400 hover:bg-red-600 hover:text-white transition-colors"
-                        title="Delete Tour"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                      >
-                        <TrashIcon className="h-5 w-5" />
-                      </motion.button>
+
+                    {/* Metadata Content Block */}
+                    <div className="p-5 flex-1 flex flex-col justify-between">
+                      <div>
+                        <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 tracking-tight line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                          {tour.title}
+                        </h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 h-8">
+                          {tour.description || 'No descriptive summary specified for this tracking layout.'}
+                        </p>
+
+                        {/* Inline Tag Chips */}
+                        <div className="mt-4 space-y-2">
+                          <div className="flex items-center text-xs font-medium text-slate-600 dark:text-slate-400">
+                            <MapPinIcon className="h-3.5 w-3.5 mr-2 text-indigo-500/80 shrink-0" />
+                            <span className="truncate">{tour.location}</span>
+                          </div>
+                          
+                          <div className="flex items-center justify-between gap-2 pt-1">
+                            <div className="flex items-center text-xs font-medium text-slate-600 dark:text-slate-400">
+                              <ClockIcon className="h-3.5 w-3.5 mr-2 text-amber-500/80 shrink-0" />
+                              <span>{tour.duration}</span>
+                            </div>
+                            <div className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60">
+                              <TagIcon className="h-3 w-3 mr-1 text-violet-500/80" />
+                              <span className="truncate max-w-[70px]">{tour.category}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Explicit Administrative Mutation Hooks */}
+                      <div className="flex justify-end gap-2 mt-5 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+                        <button
+                          onClick={() => openEditModal(tour)}
+                          className="inline-flex items-center justify-center p-2 rounded-lg bg-slate-50 hover:bg-indigo-50 dark:bg-slate-800/40 dark:hover:bg-indigo-950/40 text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors border border-slate-200/40 dark:border-transparent"
+                          title="Modify Content Node"
+                        >
+                          <PencilSquareIcon className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTourClick(tour)}
+                          className="inline-flex items-center justify-center p-2 rounded-lg bg-slate-50 hover:bg-rose-50 dark:bg-slate-800/40 dark:hover:bg-rose-950/40 text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 transition-colors border border-slate-200/40 dark:border-transparent"
+                          title="Purge Active Environment"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )
           )}
         </AnimatePresence>
-      </motion.div>
+      </div>
 
-      {/* Add/Edit Virtual Tour Modal */}
+      {/* Global Interface Overlays */}
       <VirtualTourModal
         isOpen={isTourModalOpen}
         onClose={() => setIsTourModalOpen(false)}
@@ -294,7 +308,6 @@ export default function AdminVirtualToursPage() {
         slug={slug}
       />
 
-      {/* Confirmation Modal for Deletion */}
       <ConfirmationModal
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
@@ -304,7 +317,6 @@ export default function AdminVirtualToursPage() {
         confirmText="Delete"
       />
 
-      {/* Video Player Modal */}
       <VideoPlayerModal
         isOpen={isVideoModalOpen}
         onClose={() => setIsVideoModalOpen(false)}

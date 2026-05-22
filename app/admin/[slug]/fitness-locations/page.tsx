@@ -1,41 +1,27 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, } from 'react';
 import {
-  MapIcon, PlusCircleIcon, PencilIcon, TrashIcon, PhoneIcon, EnvelopeIcon, UsersIcon, CalendarDaysIcon, GlobeAltIcon, ExclamationCircleIcon
-} from '@heroicons/react/24/solid'; // Updated to solid icons
-import { motion } from 'framer-motion';
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  UsersIcon,
+  ClockIcon,
+  GlobeAltIcon,
+  MapPinIcon
+} from '@heroicons/react/24/outline';
+import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { useParams } from 'next/navigation';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import LocationModal, { LocationData } from './LocationModal';
 import toast from 'react-hot-toast';
 
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
-
-
-// Define the LocationData interface to match the API response
-// interface LocationData {
-//   id: string;
-//   name: string;
-//   slug: string;
-//   address: string;
-//   city: string;
-//   state: string | null;
-//   zipCode: string | null;
-//   country: string;
-//   description: string | null;
-//   imageUrl: string | null;
-//   phone: string | null;
-//   email: string | null;
-//   capacity: number | null;
-//   openHours: string | null;
-//   status: 'OPEN' | 'CLOSED' | 'MAINTENANCE';
-// }
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 interface LocationsPageProps {
-  params:Promise<{ slug: string }>
+  params: { slug: string };
 }
 
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
@@ -43,194 +29,186 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 };
 
 const containerVariants = {
+  hidden: { opacity: 0 },
   visible: {
-    transition: {
-      staggerChildren: 0.1,
-    },
+    opacity: 1,
+    transition: { staggerChildren: 0.06 },
   },
 };
 
-const locationCardVariants = {
-  hidden: { opacity: 0, y: 50, scale: 0.95 },
+const cardVariants = {
+  hidden: { opacity: 0, y: 16, scale: 0.98 },
   visible: {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: {
-      duration: 0.5,
-      ease: "easeOut",
-    },
-  },
-  hover: {
-    scale: 1.03,
-    boxShadow: "0 15px 30px rgba(0, 0, 0, 0.3)",
-    transition: {
-      duration: 0.2,
-    },
+    transition: { type: "spring", stiffness: 260, damping: 25 },
   },
 };
 
-// Reusable card component for a cleaner main file
-const LocationCard = ({ location, onEdit, onDelete }: { location: LocationData; onEdit: (location: LocationData) => void; onDelete: (location: LocationData) => void; }) => {
-  const statusColors = {
-    OPEN: 'bg-green-600/30 text-green-300 border-green-600',
-    CLOSED: 'bg-red-600/30 text-red-300 border-red-600',
-    MAINTENANCE: 'bg-yellow-400/30 text-yellow-300 border-yellow-400',
+const LocationCard = ({
+  location,
+  onEdit,
+  onDelete,
+}: {
+  location: LocationData;
+  onEdit: (location: LocationData) => void;
+  onDelete: (location: LocationData) => void;
+}) => {
+  const statusStyles = {
+    OPEN: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+    CLOSED: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',
+    MAINTENANCE: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
   };
 
   return (
     <motion.div
-      className="bg-gray-800/60 backdrop-blur-md rounded-3xl shadow-xl overflow-hidden flex flex-col relative border border-gray-700 transition-all duration-300"
-      variants={locationCardVariants}
-      whileHover="hover"
-      initial="hidden"
-      animate="visible"
+      variants={cardVariants}
+      className="group relative flex flex-col rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900"
     >
-      {/* Location Image (if available) or a vibrant placeholder */}
-      <div className="relative h-48 bg-gray-700 flex items-center justify-center text-gray-400 text-4xl">
+      {/* Image / Header Media Section */}
+      <div className="relative mb-5 h-44 w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800">
         {location.imageUrl ? (
           <Image
             src={location.imageUrl}
             alt={location.name}
-            layout="fill"
-            objectFit="cover"
-            className="transition-transform duration-300 hover:scale-110"
+            fill
+            sizes="(max-width: 768px) 100vw, 33vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
             loader={customLoader}
             onError={(e) => {
-              e.currentTarget.src = 'https://placehold.co/600x400/1F2937/9CA3AF?text=Image+Not+Found';
+              e.currentTarget.src = 'https://placehold.co/600x400/27272a/a1a1aa?text=No+Image+Found';
             }}
           />
         ) : (
-          <div className="p-6 bg-gray-700 w-full h-full flex items-center justify-center">
-            <GlobeAltIcon className="text-indigo-400 w-16 h-16" />
+          <div className="flex h-full w-full items-center justify-center">
+            <GlobeAltIcon className="h-10 w-10 text-zinc-400 dark:text-zinc-500" />
           </div>
         )}
-        <div
-          className={`absolute top-4 left-4 px-4 py-2 rounded-full text-xs font-bold border ${statusColors[location.status]}`}
-        >
+        <div className={`absolute top-3 left-3 rounded-full border px-2.5 py-1 text-xs font-medium tracking-wide shadow-sm backdrop-blur-md ${statusStyles[location.status] || statusStyles.OPEN}`}>
           {location.status.charAt(0).toUpperCase() + location.status.slice(1).toLowerCase()}
         </div>
       </div>
 
-      <div className="p-6 flex flex-col flex-grow">
-        <h4 className="text-2xl font-extrabold text-white mb-1 leading-tight">{location.name}</h4>
-        <p className="text-sm text-gray-400 mb-4">{location.address}, {location.city}, {location.country}</p>
+      {/* Main Core Metadata */}
+      <div className="flex flex-1 flex-col">
+        <h4 className="line-clamp-1 text-lg font-bold text-zinc-900 dark:text-zinc-50">{location.name}</h4>
+        
+        <div className="mt-1.5 flex items-start gap-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <MapPinIcon className="mt-0.5 h-4 w-4 shrink-0" />
+          <p className="line-clamp-1">{location.address}, {location.city}</p>
+        </div>
 
-        {/* Key Metrics */}
-        <div className="grid grid-cols-2 gap-4 text-sm mb-4 border-t border-gray-700 pt-4">
-          <div className="flex items-center text-gray-400">
-            <UsersIcon className="mr-2 text-indigo-400 w-5 h-5" />
-            <span className='font-semibold'>Capacity: <span className='font-normal text-white'>{location.capacity || 'N/A'}</span></span>
+        {/* Dynamic Secondary Metrics Grid */}
+        <div className="mt-4 grid grid-cols-2 gap-3 rounded-xl bg-zinc-50/50 p-3 text-xs dark:bg-zinc-800/30">
+          <div className="flex items-center gap-2">
+            <UsersIcon className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
+            <div className="overflow-hidden">
+              <p className="text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Capacity</p>
+              <p className="font-semibold text-zinc-700 dark:text-zinc-300 truncate">{location.capacity || 'N/A'}</p>
+            </div>
           </div>
-          <div className="flex items-center text-gray-400">
-            <CalendarDaysIcon className="mr-2 text-indigo-400 w-5 h-5" />
-            <span className='font-semibold'>Open: <span className='font-normal text-white'>{location.openHours || 'N/A'}</span></span>
+          <div className="flex items-center gap-2">
+            <ClockIcon className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
+            <div className="overflow-hidden">
+              <p className="text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Hours</p>
+              <p className="font-semibold text-zinc-700 dark:text-zinc-300 truncate">{location.openHours || 'N/A'}</p>
+            </div>
           </div>
         </div>
 
-        <div className="border-t border-gray-700 pt-4 mt-auto space-y-3">
-          <div className="flex items-center text-sm text-gray-400">
-            <PhoneIcon className="mr-2 text-indigo-400 w-5 h-5" />
-            <p className='font-normal text-white'>{location.phone || 'N/A'}</p>
+        {/* Essential Contact Information Node */}
+        <div className="mt-4 space-y-2 border-t border-zinc-100 pt-4 text-xs text-zinc-600 dark:border-zinc-800/60 dark:text-zinc-400">
+          <div className="flex items-center gap-2">
+            <PhoneIcon className="h-3.5 w-3.5 text-zinc-400" />
+            <span className="truncate">{location.phone || 'No phone registration'}</span>
           </div>
-          <div className="flex items-center text-sm text-gray-400">
-            <EnvelopeIcon className="mr-2 text-indigo-400 w-5 h-5" />
-            <p className='font-normal text-white'>{location.email || 'N/A'}</p>
+          <div className="flex items-center gap-2">
+            <EnvelopeIcon className="h-3.5 w-3.5 text-zinc-400" />
+            <span className="truncate">{location.email || 'No email configuration'}</span>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-4 mt-6 pt-6 border-t border-gray-700">
-          <motion.button
+        {/* Actions Dock */}
+        <div className="mt-5 flex gap-2 border-t border-zinc-100 pt-4 dark:border-zinc-800/60">
+          <button
             onClick={() => onEdit(location)}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-zinc-200 bg-white py-2 text-xs font-semibold text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700/80"
           >
-            <PencilIcon className='w-5 h-5' />
+            <PencilIcon className="h-3.5 w-3.5" />
             Edit
-          </motion.button>
-          <motion.button
+          </button>
+          <button
             onClick={() => onDelete(location)}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+            className="flex items-center justify-center rounded-lg border border-transparent bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-500/20"
           >
-            <TrashIcon className='w-5 h-5' />
-            Delete
-          </motion.button>
+            <TrashIcon className="h-3.5 w-3.5" />
+          </button>
         </div>
       </div>
     </motion.div>
   );
 };
 
-// Skeleton Loader Component
 const LocationCardSkeleton = () => (
-  <div className="bg-gray-800/60 p-0 rounded-3xl shadow-xl flex flex-col relative border border-gray-700 animate-pulse h-[550px]">
-    <div className="relative h-48 bg-gray-700 rounded-t-3xl"></div>
-    <div className="p-6 flex flex-col flex-grow">
-      <div className="h-8 bg-gray-700 rounded-lg w-3/4 mb-2"></div>
-      <div className="h-4 bg-gray-700 rounded-lg w-full mb-4"></div>
-      <div className="grid grid-cols-2 gap-4 text-sm mb-4 border-t border-gray-700 pt-4">
-        <div className="h-6 bg-gray-700 rounded-lg"></div>
-        <div className="h-6 bg-gray-700 rounded-lg"></div>
-      </div>
-      <div className="border-t border-gray-700 pt-4 mt-auto space-y-3">
-        <div className="h-5 bg-gray-700 rounded-lg w-full"></div>
-        <div className="h-5 bg-gray-700 rounded-lg w-2/3"></div>
-      </div>
-      <div className="flex gap-4 mt-6 pt-6 border-t border-gray-700">
-        <div className="h-12 bg-gray-700 rounded-xl flex-1"></div>
-        <div className="h-12 bg-gray-700 rounded-xl flex-1"></div>
-      </div>
+  <div className="flex flex-col rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900 animate-pulse">
+    <div className="mb-5 h-44 w-full rounded-xl bg-zinc-200 dark:bg-zinc-800"></div>
+    <div className="h-5 w-2/3 rounded bg-zinc-200 dark:bg-zinc-800"></div>
+    <div className="mt-2 h-4 w-1/2 rounded bg-zinc-200 dark:bg-zinc-800"></div>
+    <div className="mt-4 grid grid-cols-2 gap-3 rounded-xl bg-zinc-100 p-3 dark:bg-zinc-800/40">
+      <div className="h-8 rounded bg-zinc-200 dark:bg-zinc-800"></div>
+      <div className="h-8 rounded bg-zinc-200 dark:bg-zinc-800"></div>
+    </div>
+    <div className="mt-5 space-y-2 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+      <div className="h-3 w-3/4 rounded bg-zinc-200 dark:bg-zinc-800"></div>
+      <div className="h-3 w-1/2 rounded bg-zinc-200 dark:bg-zinc-800"></div>
+    </div>
+    <div className="mt-5 flex gap-2 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+      <div className="h-8 flex-1 rounded bg-zinc-200 dark:bg-zinc-800"></div>
+      <div className="h-8 w-10 rounded bg-zinc-200 dark:bg-zinc-800"></div>
     </div>
   </div>
 );
 
-export default function LocationsPage() {
-  const { slug } = useParams();
+export default function LocationsPage({ params }: LocationsPageProps) {
+  const { slug } = params;
 
   const [locations, setLocations] = useState<LocationData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
-  const [currentLocation, setCurrentLocation] = useState<LocationData | null>(null); // For edit mode
+  const [currentLocation, setCurrentLocation] = useState<LocationData | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [locationToDelete, setLocationToDelete] = useState<LocationData | null>(null);
 
-  // Function to fetch locations from the API
   const fetchLocations = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/locationsv2?companyId=${slug}`
-        , { method: 'GET', credentials: 'include' }
-      );
+      const response = await fetch(`${apiBaseUrl}/admin/locationsv2?companyId=${slug}`, {
+        method: 'GET',
+        credentials: 'include'
+      });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const responser = (await response.json()).data;
-      
-      const data: LocationData[] = responser.data;
-
+      const rawResponse = await response.json();
+      const data: LocationData[] = rawResponse.data?.data || [];
       setLocations(data);
     } catch (err: any) {
       setError(err.message);
-      // console.error("Failed to fetch locations:", err);
-      toast.error(`Failed to fetch locations: ${err.message}`);
+      toast.error(`Failed to load locations: ${err.message}`);
     } finally {
       setLoading(false);
     }
   }, [slug]);
 
-  // Fetch locations on component mount
   useEffect(() => {
     fetchLocations();
   }, [fetchLocations]);
 
   const openAddModal = () => {
-    setCurrentLocation(null); // Clear current location for add mode
+    setCurrentLocation(null);
     setIsLocationModalOpen(true);
   };
 
@@ -241,12 +219,10 @@ export default function LocationsPage() {
 
   const handleSaveLocation = (savedLocation: LocationData) => {
     if (currentLocation) {
-      // If editing, update the existing location in the list
-      setLocations(prevLocations => prevLocations.map(loc => loc.id === savedLocation.id ? savedLocation : loc));
+      setLocations(prev => prev.map(loc => loc.id === savedLocation.id ? savedLocation : loc));
       toast.success(`Location "${savedLocation.name}" updated successfully.`);
     } else {
-      // If adding, prepend the new location to the list
-      setLocations(prevLocations => [savedLocation, ...prevLocations]);
+      setLocations(prev => [savedLocation, ...prev]);
       toast.success(`Location "${savedLocation.name}" added successfully.`);
     }
     setIsLocationModalOpen(false);
@@ -260,10 +236,9 @@ export default function LocationsPage() {
   const confirmDeleteLocation = async () => {
     if (!locationToDelete) return;
 
-    setIsConfirmModalOpen(false); // Close modal immediately
-    const toastId = toast.loading(`Deleting location "${locationToDelete.name}"...`);
-    setLoading(true); // Show loading state for deletion
-
+    setIsConfirmModalOpen(false);
+    const toastId = toast.loading(`Deleting "${locationToDelete.name}"...`);
+    
     try {
       const response = await fetch(`${apiBaseUrl}/admin/locationsv2/${locationToDelete.id}`, {
         method: 'DELETE',
@@ -273,95 +248,95 @@ export default function LocationsPage() {
 
       if (!response.ok) {
         const errorData = (await response.json()).data || {};
-        throw new Error(errorData.message || `Failed to delete location "${locationToDelete.name}".`);
+        throw new Error(errorData.message || 'Deletion failed.');
       }
 
-      // If deletion is successful, update the local state
-      setLocations(prevLocations => prevLocations.filter(loc => loc.id !== locationToDelete.id));
-      toast.success(`Location "${locationToDelete.name}" deleted successfully.`, { id: toastId });
+      setLocations(prev => prev.filter(loc => loc.id !== locationToDelete.id));
+      toast.success(`Location deleted successfully.`, { id: toastId });
     } catch (err: any) {
-      setError(err.message);
-      toast.error(`Error deleting location: ${err.message}`, { id: toastId });
+      toast.error(`Error removing location: ${err.message}`, { id: toastId });
     } finally {
-      setLoading(false);
-      setLocationToDelete(null); // Clear location to delete
+      setLocationToDelete(null);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 to-purple-900 p-8 text-white font-sans">
-      <motion.h1
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-5xl md:text-6xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600 mb-6 drop-shadow-lg"
-      >
-        Manage Facilities
-      </motion.h1>
-
-      <p className="text-center text-gray-400 mb-12 max-w-2xl mx-auto">
-        Oversee and manage all your gym locations, from contact details to operational status and capacity.
-      </p>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="bg-gray-800/50 backdrop-blur-md rounded-3xl shadow-2xl p-8 mb-12 border border-gray-700"
-      >
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-white mb-4 md:mb-0">All Locations</h2>
+    <div className="min-h-screen bg-zinc-50 px-4 py-10 text-zinc-900 transition-colors duration-200 dark:bg-zinc-950 dark:text-zinc-50 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        
+        {/* Semantic Header Group */}
+        <header className="flex flex-col gap-4 border-b border-zinc-200/60 pb-6 dark:border-zinc-800/50 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-3xl">
+              Facilities
+            </h1>
+            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+              Manage physical branch infrastructure operational configurations.
+            </p>
+          </div>
           <motion.button
             onClick={openAddModal}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
           >
-            <PlusCircleIcon className="h-6 w-6" />
-            <span>Add New Location</span>
+            <PlusIcon className="h-4 w-4 stroke-[2.5]" />
+            Add Location
           </motion.button>
-        </div>
+        </header>
 
-        {loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[...Array(3)].map((_, i) => (
-              <LocationCardSkeleton key={i} />
-            ))}
-          </div>
-        )}
+        <main className="mt-8">
+          {loading && (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {[...Array(3)].map((_, i) => (
+                <LocationCardSkeleton key={i} />
+              ))}
+            </div>
+          )}
 
-        {error && (
-          <div className="bg-red-900/50 text-red-300 p-6 rounded-lg text-center mb-8 border border-red-700">
-            <p className="font-bold text-lg">Error loading locations:</p>
-            <p className="text-sm">{error}</p>
-            <p className="mt-2 text-xs">Please try refreshing the page or contact support.</p>
-          </div>
-        )}
+          {error && (
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-rose-200 bg-rose-50/50 p-8 text-center dark:border-rose-500/10 dark:bg-rose-500/5">
+              <p className="text-sm font-semibold text-rose-600 dark:text-rose-400">Error connecting to cloud gateway</p>
+              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{error}</p>
+              <button 
+                onClick={fetchLocations}
+                className="mt-4 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 shadow-sm border border-zinc-200 hover:bg-zinc-50 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-200"
+              >
+                Retry Request
+              </button>
+            </div>
+          )}
 
-        {!loading && !error && locations.length === 0 ? (
-          <div className="text-center py-20 bg-gray-700/30 rounded-2xl border border-gray-600">
-            <p className="text-xl text-gray-400">No locations found. Start by adding one! 🗺️</p>
-          </div>
-        ) : (
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {locations.map((location) => (
-              <LocationCard
-                key={location.id}
-                location={location}
-                onEdit={openEditModal}
-                onDelete={handleDeleteLocationClick}
-              />
-            ))}
-          </motion.div>
-        )}
-      </motion.div>
+          {!loading && !error && locations.length === 0 && (
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200 py-16 text-center dark:border-zinc-800">
+              <GlobeAltIcon className="h-10 w-10 text-zinc-300 dark:text-zinc-700" />
+              <p className="mt-4 text-sm font-medium text-zinc-900 dark:text-zinc-100">No facilities discovered</p>
+              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Get started by creating your primary operating location.</p>
+            </div>
+          )}
 
-      {/* Add/Edit Location Modal */}
+          {!loading && !error && locations.length > 0 && (
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            >
+              <AnimatePresence mode="popLayout">
+                {locations.map((location) => (
+                  <LocationCard
+                    key={location.id}
+                    location={location}
+                    onEdit={openEditModal}
+                    onDelete={handleDeleteLocationClick}
+                  />
+                ))}
+              </AnimatePresence>
+            </motion.div>
+          )}
+        </main>
+      </div>
+
       <LocationModal
         isOpen={isLocationModalOpen}
         onClose={() => setIsLocationModalOpen(false)}
@@ -370,14 +345,13 @@ export default function LocationsPage() {
         slug={slug?.toString() || ''}
       />
 
-      {/* Confirmation Modal for Deletion */}
       <ConfirmationModal
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
         onConfirm={confirmDeleteLocation}
-        title="Confirm Deletion"
-        message={`Are you sure you want to delete location "${locationToDelete?.name || 'N/A'}"? This action cannot be undone.`}
-        confirmText="Delete"
+        title="Remove Facility Mapping"
+        message={`Are you completely sure you want to delete "${locationToDelete?.name}"? All associated endpoint distributions will become instantly unreachable.`}
+        confirmText="Confirm Deletion"
       />
     </div>
   );

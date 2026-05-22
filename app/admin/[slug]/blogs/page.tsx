@@ -14,6 +14,8 @@ export type BlogItem = {
   excerpt: string | null;
   coverImage: string | null;
   categories: string[];
+  category :    string | null;
+  subcategory : string | null;
   tags: string[];
   author: { name: string; profileImage?: string } | null;
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
