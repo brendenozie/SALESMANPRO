@@ -676,300 +676,315 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
     const progress = ((activeTabIndex + 1) / tabs.length) * 100;
 
     return (
-       <AnimatePresence>
-            {isOpen && (
+    <AnimatePresence>
+        {isOpen && (
+            <motion.div
+                className="fixed inset-0 z-50 flex items-center justify-center p-0 overflow-hidden sm:p-4 lg:p-6"
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+            >
+                {/* Backdrop with Blur */}
+                <motion.div 
+                    className="absolute inset-0 bg-slate-950/40 backdrop-blur-md"
+                    variants={overlayVariants}
+                    onClick={onClose}
+                />
+
+                {/* Modal Card */}
                 <motion.div
-                    className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 lg:p-6 overflow-hidden"
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
+                    className="relative w-full max-w-6xl h-[100dvh] sm:h-[90vh] bg-white dark:bg-slate-900 sm:rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden border border-gray-100 dark:border-slate-800"
+                    variants={modalVariants}
                 >
-                    {/* Backdrop with Blur */}
-                    <motion.div 
-                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-                        variants={overlayVariants}
-                        onClick={onClose}
-                    />
-
-                    {/* Modal Card */}
-                    <motion.div
-                        className="relative w-full max-w-6xl h-[100dvh] sm:h-[90vh] bg-white dark:bg-gray-900 sm:rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden"
-                        variants={modalVariants}
-                    >
-                        
-                        {/* --------------------------------------------------------- */}
-                        {/* SIDEBAR (Desktop) / TOPBAR (Mobile)                       */}
-                        {/* --------------------------------------------------------- */}
-                        
-                        {/* Mobile Header & Progress (Fixed at top) */}
-                        <div className="md:hidden flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 z-20">
-                            <div className="flex items-center justify-between p-4">
-                                <h3 className="font-bold text-gray-900 dark:text-white truncate max-w-[70%]">
-                                    {initialData ? 'Edit Service' : 'New Service'}
-                                </h3>
-                                <button onClick={onClose} className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full">
-                                    <XMarkIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                                </button>
-                            </div>
-                            <div className="flex overflow-x-auto hide-scrollbar px-4 pb-3 gap-6 snap-x">
-                                {tabs.map((tab, index) => {
-                                    const isActive = activeTabIndex === index;
-                                    const hasError = tab.fields?.some(field => errors[field]);
-                                    return (
-                                        <button
-                                            key={tab.id}
-                                            onClick={() => setActiveTabIndex(index)}
-                                            className={`flex flex-col items-center flex-shrink-0 snap-center transition-colors ${isActive ? 'text-primary' : 'text-gray-400'}`}
-                                            style={{ color: isActive ? primaryColor : '' }}
-                                        >
-                                            <div className={`relative p-2 rounded-full mb-1 transition-all ${isActive ? 'bg-indigo-50 dark:bg-indigo-900/30 ring-2 ring-offset-2 ring-indigo-500' : ''}`}>
-                                                <tab.icon className="w-5 h-5" />
-                                                {hasError && <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border border-white" />}
-                                            </div>
-                                            <span className="text-[10px] font-medium uppercase tracking-wider">{tab.name}</span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                            <div className="h-1 w-full bg-gray-100 dark:bg-gray-800">
-                                <motion.div 
-                                    className="h-full bg-gradient-to-r from-indigo-500 to-purple-500"
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${progress}%` }}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Desktop Sidebar (Independent Scroll) */}
-                        <div className="hidden md:flex flex-col w-1/4 bg-gray-50 dark:bg-gray-800/50 border-r border-gray-200 dark:border-gray-700 p-8 overflow-y-auto custom-scrollbar">
-                            <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-2">
-                                {initialData ? 'Edit Service' : 'Create Service'}
-                            </h2>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
-                                Complete the steps below to publish your listing.
-                            </p>
-
-                            <nav className="space-y-1 relative">
-                                <div className="absolute left-[1.15rem] top-4 bottom-4 w-0.5 bg-gray-200 dark:bg-gray-700 -z-10" />
-                                {tabs.map((tab, index) => {
-                                    const isActive = activeTabIndex === index;
-                                    const isCompleted = index < activeTabIndex;
-                                    const hasError = tab.fields?.some(field => errors[field]);
-
-                                    return (
-                                        <motion.button
-                                            key={tab.id}
-                                            onClick={() => setActiveTabIndex(index)}
-                                            className={`group w-full flex items-center gap-4 p-3 rounded-xl transition-all duration-200 relative overflow-hidden
-                                                ${isActive ? 'bg-white dark:bg-gray-700 shadow-sm' : 'hover:bg-gray-100 dark:hover:bg-gray-700/50'}
-                                            `}
-                                        >
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 flex-shrink-0 transition-colors
-                                                ${isActive ? 'border-indigo-600 bg-indigo-600 text-white' 
-                                                : isCompleted ? 'border-green-500 bg-green-500 text-white'
-                                                : hasError ? 'border-red-500 bg-red-50 text-red-500'
-                                                : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-400'}
-                                            `}>
-                                                {isCompleted ? <CheckCircleIcon className="w-5 h-5" /> : <tab.icon className="w-4 h-4" />}
-                                            </div>
-                                            <div className="text-left">
-                                                <p className={`text-sm font-semibold ${isActive ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
-                                                    {tab.name}
-                                                </p>
-                                            </div>
-                                            {isActive && (
-                                                <motion.div layoutId="activeTabIndicator" className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-600 rounded-l-xl" />
-                                            )}
-                                        </motion.button>
-                                    );
-                                })}
-                            </nav>
-                        </div>
-
-                        {/* --------------------------------------------------------- */}
-                        {/* MAIN CONTENT AREA                                         */}
-                        {/* --------------------------------------------------------- */}
-                        
-                        <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-gray-900 relative overflow-hidden">
-                            
-                            {/* Desktop Close Button */}
-                            <button
-                                onClick={onClose}
-                                className="hidden md:flex absolute top-6 right-6 z-30 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+                    
+                    {/* --------------------------------------------------------- */}
+                    {/* SIDEBAR (Desktop) / TOPBAR (Mobile)                       */}
+                    {/* --------------------------------------------------------- */}
+                    
+                    {/* Mobile Header & Progress (Fixed at top) */}
+                    <div className="flex-shrink-0 bg-white border-b border-gray-100 md:hidden dark:bg-slate-900 dark:border-slate-800 z-20">
+                        <div className="flex items-center justify-between p-4">
+                            <h3 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white truncate max-w-[70%]">
+                                {initialData ? 'Edit Service' : 'New Service'}
+                            </h3>
+                            <button 
+                                type="button"
+                                onClick={onClose} 
+                                className="p-2 text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200 bg-gray-50 dark:bg-slate-800 rounded-xl transition-colors"
                             >
-                                <XMarkIcon className="w-6 h-6" />
+                                <XMarkIcon className="w-5 h-5" />
                             </button>
+                        </div>
+                        
+                        <div className="flex gap-6 px-4 pb-3 overflow-x-auto snap-x hide-scrollbar">
+                            {tabs.map((tab, index) => {
+                                const isActive = activeTabIndex === index;
+                                const hasError = tab.fields?.some(field => errors[field]);
+                                return (
+                                    <button
+                                        key={tab.id}
+                                        type="button"
+                                        onClick={() => setActiveTabIndex(index)}
+                                        className={`flex flex-col items-center flex-shrink-0 snap-center transition-all ${
+                                            isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-slate-500 hover:text-gray-600'
+                                        }`}
+                                    >
+                                        <div className={`relative p-2.5 rounded-xl mb-1 transition-all ${
+                                            isActive 
+                                                ? 'bg-indigo-50 dark:bg-indigo-950/50 ring-2 ring-indigo-600 dark:ring-indigo-500 ring-offset-2 dark:ring-offset-slate-900' 
+                                                : 'bg-gray-50 dark:bg-slate-800/60'
+                                        }`}>
+                                            <tab.icon className="w-5 h-5" />
+                                            {hasError && <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900" />}
+                                        </div>
+                                        <span className="text-[10px] font-semibold uppercase tracking-wider">{tab.name}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        
+                        <div className="h-1 w-full bg-gray-100 dark:bg-slate-800">
+                            <motion.div 
+                                className="h-full bg-indigo-600 dark:bg-indigo-500 rounded-r-full"
+                                initial={{ width: 0 }}
+                                animate={{ width: `${progress}%` }}
+                                transition={{ ease: "easeInOut", duration: 0.3 }}
+                            />
+                        </div>
+                    </div>
 
-                            {/* Scrollable Form Area */}
-                            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-10">
-                                <div className="max-w-3xl mx-auto pb-24 md:pb-32">
-                                    <div className="mb-6 md:mb-8">
-                                        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                                            {tabs[activeTabIndex].name}
-                                        </h2>
-                                        <p className="text-gray-500 dark:text-gray-400">
-                                            Please provide the details below.
-                                        </p>
-                                    </div>
+                    {/* Desktop Sidebar (Independent Scroll) */}
+                    <div className="hidden md:flex flex-col w-1/4 bg-gray-50/70 dark:bg-slate-900/40 border-r border-gray-100 dark:border-slate-800 p-8 overflow-y-auto custom-scrollbar">
+                        <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white mb-1">
+                            {initialData ? 'Edit Service' : 'Create Service'}
+                        </h2>
+                        <p className="text-sm text-gray-500 dark:text-slate-400 mb-8">
+                            Complete the steps below to publish your listing.
+                        </p>
 
-                                     <form id="service-form" onSubmit={handleSubmit}>
-                                        <AnimatePresence mode="wait">
-                                            <motion.div
-                                                key={activeTabId}
-                                                variants={contentVariants}
-                                                initial="hidden"
-                                                animate="visible"
-                                                exit="exit"
-                                            >
-                                                                                    {activeTabId === 'details' && (
-                                        <ServiceDetailsTab
-                                            MarketListingForm={MarketListingForm}
-                                            handleChange={handleChange}
-                                            errors={errors}
-                                            fieldVariants={fieldVariants}
-                                            tabContentVariants={tabContentVariants}
-                                            primaryColor={primaryColor}
-                                            // sellers={sellers}
-                                            // companies={companies}
-                                        />
-                                    )}
+                        <nav className="space-y-1.5 relative">
+                            <div className="absolute left-[1.4rem] top-4 bottom-4 w-0.5 bg-gray-200 dark:bg-slate-800 -z-10" />
+                            {tabs.map((tab, index) => {
+                                const isActive = activeTabIndex === index;
+                                const isCompleted = index < activeTabIndex;
+                                const hasError = tab.fields?.some(field => errors[field]);
 
-                                    {activeTabId === 'productcategory' && (
-                                        <ServiceCategoryTab
-                                            MarketListingForm={MarketListingForm}
-                                            handleChange={handleChange}
-                                            errors={errors}
-                                            fieldVariants={fieldVariants}
-                                            tabContentVariants={tabContentVariants}
-                                            primaryColor={primaryColor}
-                                            productCategories={categories}
-                                        />
-                                    )}
+                                return (
+                                    <motion.button
+                                        key={tab.id}
+                                        type="button"
+                                        onClick={() => setActiveTabIndex(index)}
+                                        className={`group w-full flex items-center gap-4 p-3 rounded-xl transition-all relative overflow-hidden ${
+                                            isActive 
+                                                ? 'bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 shadow-sm' 
+                                                : 'hover:bg-gray-100/70 dark:hover:bg-slate-800/40 border border-transparent'
+                                        }`}
+                                    >
+                                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center border flex-shrink-0 transition-all ${
+                                            isActive ? 'border-indigo-600 bg-indigo-600 text-white shadow-sm shadow-indigo-600/10' 
+                                            : isCompleted ? 'border-emerald-500 bg-emerald-500 text-white'
+                                            : hasError ? 'border-rose-500 bg-rose-50 dark:bg-rose-950/30 text-rose-500'
+                                            : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-400 dark:text-slate-500 group-hover:border-gray-300'
+                                        }`}>
+                                            {isCompleted ? <CheckCircleIcon className="w-5 h-5" /> : <tab.icon className="w-4 h-4" />}
+                                        </div>
+                                        <div className="text-left">
+                                            <p className={`text-sm font-semibold transition-colors ${
+                                                isActive ? 'text-indigo-600 dark:text-white' : 'text-gray-500 dark:text-slate-400 group-hover:text-gray-800 dark:group-hover:text-slate-200'
+                                            }`}>
+                                                {tab.name}
+                                            </p>
+                                        </div>
+                                        {isActive && (
+                                            <motion.div 
+                                                layoutId="activeTabIndicator" 
+                                                className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-600 dark:bg-indigo-500 rounded-l-xl" 
+                                            />
+                                        )}
+                                    </motion.button>
+                                );
+                            })}
+                        </nav>
+                    </div>
 
-                                    {activeTabId === 'pricing' && (
-                                        <ServicePricingTab
-                                            MarketListingForm={MarketListingForm}
-                                            handleChange={handleChange}
-                                            handleArrayFieldChange={handleArrayFieldChange}
-                                            handleAddPricingTier={handleAddPricingTier}
-                                            handleUpdatePricingTier={handleUpdatePricingTier}
-                                            handleRemovePricingTier={handleRemovePricingTier}
-                                            errors={errors}
-                                            fieldVariants={fieldVariants}
-                                            tabContentVariants={tabContentVariants}
-                                            primaryColor={primaryColor}
-                                        />
-                                    )}
+                    {/* --------------------------------------------------------- */}
+                    {/* MAIN CONTENT AREA                                         */}
+                    {/* --------------------------------------------------------- */}
+                    
+                    <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-slate-900 relative overflow-hidden">
+                        
+                        {/* Desktop Close Button */}
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="hidden md:flex absolute top-6 right-6 z-30 p-2.5 text-gray-400 hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                        >
+                            <XMarkIcon className="w-5 h-5" />
+                        </button>
 
-                                    {activeTabId === 'service' && (
-                                        <ServiceSpecificsTab
-                                            MarketListingForm={MarketListingForm}
-                                            handleChange={handleChange}
-                                            handleArrayFieldChange={handleArrayFieldChange}
-                                            errors={errors}
-                                            fieldVariants={fieldVariants}
-                                            tabContentVariants={tabContentVariants}
-                                            primaryColor={primaryColor}
-                                        />
-                                    )}
+                        {/* Scrollable Form Area */}
+                        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-12">
+                            <div className="max-w-3xl mx-auto pb-24">
+                                <div className="mb-8 border-b border-gray-50 dark:border-slate-800/60 pb-6">
+                                    <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-2">
+                                        {tabs[activeTabIndex].name}
+                                    </h2>
+                                    <p className="text-sm text-gray-500 dark:text-slate-400">
+                                        Please provide the details below.
+                                    </p>
+                                </div>
 
-                                    {activeTabId === 'availability' && (
-                                        <ServiceAvailabilityTab
-                                            MarketListingForm={MarketListingForm}
-                                            handleChange={handleChange}
-                                            handleAddBookingSlot={handleAddBookingSlot}
-                                            handleUpdateBookingSlot={handleUpdateBookingSlot}
-                                            handleRemoveBookingSlot={handleRemoveBookingSlot}
-                                            errors={errors}
-                                            fieldVariants={fieldVariants}
-                                            tabContentVariants={tabContentVariants}
-                                            primaryColor={primaryColor}
-                                        />
-                                    )}
+                                 <form id="service-form" onSubmit={handleSubmit}>
+                                    <AnimatePresence mode="wait">
+                                        <motion.div
+                                            key={activeTabId}
+                                            variants={contentVariants}
+                                            initial="hidden"
+                                            animate="visible"
+                                            exit="exit"
+                                            className="space-y-6"
+                                        >
+                                            {activeTabId === 'details' && (
+                                                <ServiceDetailsTab
+                                                    MarketListingForm={MarketListingForm}
+                                                    handleChange={handleChange}
+                                                    errors={errors}
+                                                    fieldVariants={fieldVariants}
+                                                    tabContentVariants={tabContentVariants}
+                                                    primaryColor={primaryColor}
+                                                />
+                                            )}
 
-                                    {activeTabId === 'media' && (
-                                        // <ServiceMediaTab
-                                        //     MarketListingForm={MarketListingForm}
-                                        //     handleChange={handleChange}
-                                        //     errors={errors}
-                                        //     fieldVariants={fieldVariants}
-                                        //     tabContentVariants={tabContentVariants}
-                                        //     primaryColor={primaryColor}
-                                        // />
-                                        <ImageUploader
+                                            {activeTabId === 'productcategory' && (
+                                                <ServiceCategoryTab
+                                                    MarketListingForm={MarketListingForm}
+                                                    handleChange={handleChange}
+                                                    errors={errors}
+                                                    fieldVariants={fieldVariants}
+                                                    tabContentVariants={tabContentVariants}
+                                                    primaryColor={primaryColor}
+                                                    productCategories={categories}
+                                                />
+                                            )}
+
+                                            {activeTabId === 'pricing' && (
+                                                <ServicePricingTab
+                                                    MarketListingForm={MarketListingForm}
+                                                    handleChange={handleChange}
+                                                    handleArrayFieldChange={handleArrayFieldChange}
+                                                    handleAddPricingTier={handleAddPricingTier}
+                                                    handleUpdatePricingTier={handleUpdatePricingTier}
+                                                    handleRemovePricingTier={handleRemovePricingTier}
+                                                    errors={errors}
+                                                    fieldVariants={fieldVariants}
+                                                    tabContentVariants={tabContentVariants}
+                                                    primaryColor={primaryColor}
+                                                />
+                                            )}
+
+                                            {activeTabId === 'service' && (
+                                                <ServiceSpecificsTab
+                                                    MarketListingForm={MarketListingForm}
+                                                    handleChange={handleChange}
+                                                    handleArrayFieldChange={handleArrayFieldChange}
+                                                    errors={errors}
+                                                    fieldVariants={fieldVariants}
+                                                    tabContentVariants={tabContentVariants}
+                                                    primaryColor={primaryColor}
+                                                />
+                                            )}
+
+                                            {activeTabId === 'availability' && (
+                                                <ServiceAvailabilityTab
+                                                    MarketListingForm={MarketListingForm}
+                                                    handleChange={handleChange}
+                                                    handleAddBookingSlot={handleAddBookingSlot}
+                                                    handleUpdateBookingSlot={handleUpdateBookingSlot}
+                                                    handleRemoveBookingSlot={handleRemoveBookingSlot}
+                                                    errors={errors}
+                                                    fieldVariants={fieldVariants}
+                                                    tabContentVariants={tabContentVariants}
+                                                    primaryColor={primaryColor}
+                                                />
+                                            )}
+
+                                            {activeTabId === 'media' && (
+                                                <ImageUploader
                                                     images={images}
                                                     setImages={setImages}
                                                     videos={videos}
                                                     setVideos={setVideos}
                                                     books={books}
                                                     setBooks={setBooks}
-                                                  />
-                                    )}
+                                                />
+                                            )}
 
-                                    {activeTabId === 'contactLocation' && (
-                                        <ServiceContactLocationTab
-                                            MarketListingForm={MarketListingForm}
-                                            handleChange={handleChange}
-                                            errors={errors}
-                                            fieldVariants={fieldVariants}
-                                            tabContentVariants={tabContentVariants}
-                                            primaryColor={primaryColor}
-                                            deliveryMethods={deliveryMethods}
-                                            paymentOptions={paymentOptions}
-                                        />
-                                    )}
+                                            {activeTabId === 'contactLocation' && (
+                                                <ServiceContactLocationTab
+                                                    MarketListingForm={MarketListingForm}
+                                                    handleChange={handleChange}
+                                                    errors={errors}
+                                                    fieldVariants={fieldVariants}
+                                                    tabContentVariants={tabContentVariants}
+                                                    primaryColor={primaryColor}
+                                                    deliveryMethods={deliveryMethods}
+                                                    paymentOptions={paymentOptions}
+                                                />
+                                            )}
 
-                                    {activeTabId === 'advanced' && (
-                                        <ServiceAdvancedOptionsTab
-                                            MarketListingForm={MarketListingForm}
-                                            handleChange={handleChange}
-                                            handleArrayFieldChange={handleArrayFieldChange}
-                                            errors={errors}
-                                            fieldVariants={fieldVariants}
-                                            tabContentVariants={tabContentVariants}
-                                            primaryColor={primaryColor}
-                                        />
-                                    )}
-                                            </motion.div>
-                                        </AnimatePresence>
-                                    </form>
-                                </div>
-                            </div>
-
-                            {/* Sticky Footer (Shrink-0 ensures it stays visible) */}
-                            <div className="shrink-0 p-4 md:p-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 flex justify-between items-center z-20">
-                                <button 
-                                    type="button" 
-                                    disabled={isFirstTab}
-                                    onClick={() => setActiveTabIndex(prev => prev - 1)}
-                                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 disabled:opacity-50"
-                                >
-                                    <ArrowLeftIcon className="w-4 h-4" /> Back
-                                </button>
-
-                                {isLastTab ? (
-                                    <button 
-                                        onClick={handleSubmit} 
-                                        className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors"
-                                    >
-                                        {isSubmitting ? "Saving..." : "Complete Setup"}
-                                    </button>
-                                ) : (
-                                    <button 
-                                        type="button" 
-                                        onClick={() => setActiveTabIndex(prev => prev + 1)}
-                                        className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors"
-                                    >
-                                        Next Step <ArrowRightIcon className="w-4 h-4" />
-                                    </button>
-                                )}
+                                            {activeTabId === 'advanced' && (
+                                                <ServiceAdvancedOptionsTab
+                                                    MarketListingForm={MarketListingForm}
+                                                    handleChange={handleChange}
+                                                    handleArrayFieldChange={handleArrayFieldChange}
+                                                    errors={errors}
+                                                    fieldVariants={fieldVariants}
+                                                    tabContentVariants={tabContentVariants}
+                                                    primaryColor={primaryColor}
+                                                />
+                                            )}
+                                        </motion.div>
+                                    </AnimatePresence>
+                                </form>
                             </div>
                         </div>
-                    </motion.div>
+
+                        {/* Sticky Footer (Shrink-0 ensures it stays visible) */}
+                        <div className="shrink-0 p-4 md:p-6 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-gray-100 dark:border-slate-800/80 flex justify-between items-center z-20">
+                            <button 
+                                type="button" 
+                                disabled={isFirstTab}
+                                onClick={() => setActiveTabIndex(prev => prev - 1)}
+                                className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:text-gray-900 dark:text-slate-300 dark:hover:text-white disabled:opacity-35 transition-opacity"
+                            >
+                                <ArrowLeftIcon className="w-4 h-4" /> Back
+                            </button>
+
+                            {isLastTab ? (
+                                <button 
+                                    type="submit"
+                                    form="service-form"
+                                    onClick={handleSubmit} 
+                                    className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 shadow-md shadow-indigo-600/10 transition-colors"
+                                >
+                                    {isSubmitting ? "Saving..." : "Complete Setup"}
+                                </button>
+                            ) : (
+                                <button 
+                                    type="button" 
+                                    onClick={() => setActiveTabIndex(prev => prev + 1)}
+                                    className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 shadow-md shadow-indigo-600/10 transition-colors"
+                                >
+                                    Next Step <ArrowRightIcon className="w-4 h-4" />
+                                </button>
+                            )}
+                        </div>
+                    </div>
                 </motion.div>
-            )}
-        </AnimatePresence>
-    );
+            </motion.div>
+        )}
+    </AnimatePresence>
+);
 };
 
 export default ServiceListingForm;

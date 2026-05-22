@@ -1,5 +1,8 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { motion as Motion } from "framer-motion";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { ArrowRightIcon } from "@heroicons/react/24/outline";
 
 // --- Types (Simplified for clarity) ---
 interface PlanFeatures {
@@ -113,6 +116,11 @@ const CheckIcon = (
 );
 
 // --- Component Start ---
+const handleGoogleSignIn = () => {
+  const authUrl = new URL("https://auth.salesmanpro.site/signin");
+  authUrl.searchParams.set("callbackUrl", window.location.origin);
+  window.location.href = authUrl.toString();
+};
 
 export default function PricingSectionRedesign() {
   const [plans, setPlans] = useState<Plan[]>(MOCK_PLANS); // Use mock data initially
@@ -121,6 +129,8 @@ export default function PricingSectionRedesign() {
   // State to manage the collapse/expand feature on mobile
   const [isFeaturesExpanded, setIsFeaturesExpanded] = useState<{ [key: string]: boolean }>({});
   const [isDesktop, setIsDesktop] = useState(false);
+
+  const { data: session } = useSession();
 
   useEffect(() => {
     const checkViewport = () => {
@@ -239,32 +249,45 @@ export default function PricingSectionRedesign() {
                 {/* Header */}
                 <div className="text-center mb-8">
                   <h3 className={`text-3xl font-bold ${plan.isPopular ? "text-orange-600" : "text-gray-800"}`}>
-                    {plan.name}
+                    {/* {plan.name} */}
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500">{plan.tagline}</p>
 
                   <div className="mt-6 text-5xl font-extrabold flex items-baseline justify-center">
                     <span className={`${plan.isPopular ? "text-gray-900" : "text-gray-900"}`}>
-                      {getPriceDisplay(plan)}
+                      {/* {getPriceDisplay(plan)} */}
+                      {plan.name}
                     </span>
-                    <span className="text-xl font-medium ml-2 text-gray-500">
+                    {/* <span className="text-xl font-medium ml-2 text-gray-500">
                       / mo
-                    </span>
+                    </span> */}
                   </div>
+                  
+                  <p className="mt-1 text-sm text-gray-500">{plan.tagline}</p>
                 </div>
 
 
                 {/* Button */}
                 <div className="mb-8">
-                  {/* <button
-                    className={`w-full py-4 px-6 rounded-xl font-bold text-lg shadow-lg transform transition-transform duration-300
-                      ${plan.isPopular
-                        ? "bg-orange-600 text-white hover:bg-orange-700 hover:scale-[1.02] shadow-orange-400/50"
-                        : "bg-gray-100 text-orange-600 border-2 border-orange-600 hover:bg-orange-50 hover:scale-[1.02]"
-                      }`}
-                  >
-                    Start {plan.name}
-                  </button> */}
+                  {!session ? (
+                      <button 
+                        onClick={handleGoogleSignIn}  
+                        className={`w-full py-4 px-6 rounded-xl font-bold text-lg shadow-lg transform transition-transform duration-300
+                                    ${plan.isPopular
+                                      ? "bg-orange-600 text-white hover:bg-orange-700 hover:scale-[1.02] shadow-orange-400/50"
+                                      : "bg-gray-100 text-orange-600 border-2 border-orange-600 hover:bg-orange-50 hover:scale-[1.02]"
+                                    }`}>
+                          Start {plan.name}
+                      </button>
+                    ) : (
+                      <Link
+                        href="/dashboards"className={`w-full py-4 px-6 rounded-xl font-bold text-lg shadow-lg transform transition-transform duration-300
+                          ${plan.isPopular
+                            ? "bg-orange-600 text-white hover:bg-orange-700 hover:scale-[1.02] shadow-orange-400/50"
+                            : "bg-gray-100 text-orange-600 border-2 border-orange-600 hover:bg-orange-50 hover:scale-[1.02]"
+                          }`}>
+                          Start {plan.name}
+                      </Link>
+                    )}
                 </div>
                 
                 {/* Feature List */}
