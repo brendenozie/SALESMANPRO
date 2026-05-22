@@ -4,8 +4,6 @@ import prisma from "@/server/db/prismadb";
 
 const postMaterialLogic = async (request: Request) => {
   const body = await request.json();
-  // Note: uploadedById (Educator ID) is required by your schema.
-  // You should pass the currently logged-in Admin's Educator ID here.
   const { title, type, fileUrl, linkUrl, courseId, lessonId, uploadedById } =
     body;
 
@@ -25,8 +23,9 @@ const postMaterialLogic = async (request: Request) => {
       fileUrl,
       linkUrl,
       course: { connect: { id: courseId } },
+      // uploadedBy: { connect: { id: uploadedById } },
+      uploadedById,
       lesson: lessonId ? { connect: { id: lessonId } } : undefined,
-      uploadedBy: { connect: { id: uploadedById } },
     },
   });
 

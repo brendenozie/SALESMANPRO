@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions, getAuthSession } from "@/lib/auth";
 
 import UserLayout from "@/components/UserLayout";
 import UserNav from "@/components/UserNav";
@@ -47,7 +47,8 @@ const calculateProgress = (currentValue: number, goal: number) => {
 
 // ✅ Server Component (no "use client")
 export default async function AgentDashboardPage() {
-  const session = await getServerSession(authOptions);
+  
+  const session = await getAuthSession();
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
   if (!session) {

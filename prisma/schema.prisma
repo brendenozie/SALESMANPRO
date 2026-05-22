@@ -216,7 +216,6 @@ model StoreCategory {
 
   // Store the selected brand names as a JSON array
   allBrands Json? // e.g., ["Nike", "Adidas"]
-  
 
   @@unique([companyId, categoryId])
   @@index([companyId, sortOrder])
@@ -349,7 +348,7 @@ model Company {
   discussionTopics DiscussionTopic[]
 
   attendanceRecords AttendanceRecord[]
-  galleries Gallery[]
+  galleries         Gallery[]
 
   exams                           Exam[]
   grades                          Grade[] // Grades are now directly linked to a company
@@ -466,19 +465,20 @@ model Company {
   Hub                  Hub[]
   eventTickets         EventTicket[]
   eventTicketPurchases EventTicketPurchase[]
+  userProgresses       UserProgress[]
 
   @@index([userId])
 }
 
 model Gallery {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String?
-  type        String?  // e.g. "office", "events", "products"
-  isFeatured  Boolean  @default(false)
+  type        String? // e.g. "office", "events", "products"
+  isFeatured  Boolean @default(false)
 
-  companyId String   @db.ObjectId
-  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   items GalleryItem[]
 
@@ -489,15 +489,15 @@ model Gallery {
 }
 
 model GalleryItem {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
   imageUrl String
   caption  String?
-  altText String?
-  order    Int      @default(0)
-  featured Boolean  @default(false)
+  altText  String?
+  order    Int     @default(0)
+  featured Boolean @default(false)
 
-  galleryId String   @db.ObjectId
-  gallery   Gallery  @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+  galleryId String  @db.ObjectId
+  gallery   Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 }
@@ -564,7 +564,7 @@ model Banner {
   badgeText       String?
   price           String?
   endsAt          DateTime?
-  stats          Json?     // e.g. { "customers": 1000, "countries": 20 }
+  stats           Json? // e.g. { "customers": 1000, "countries": 20 }
   order           Int       @default(0)
   iconKey         String? // e.g. "laundry", "delivery"
   backgroundColor String?
@@ -1577,6 +1577,7 @@ model User {
   candidates              candidate[]
   DeliveryTracking        DeliveryTracking[]
   eventTicketPurchases    EventTicketPurchase[]
+  userProgresses          UserProgress[]
 
   @@index([companyId])
   // @@index([settingsId])
@@ -2962,13 +2963,13 @@ model Educator {
 
   classesScheduled ClassSchedule[]
   Exam             Exam[]
-  CourseMaterial   CourseMaterial[]
+  // CourseMaterial   CourseMaterial[]
   AttendanceRecord AttendanceRecord[] @relation("RecordedAttendance")
 
   createdDiscussionTopics DiscussionTopic[] @relation("CreatedDiscussionTopic")
 
-  uploadedMaterials CourseMaterial[] @relation("UploadedMaterial")
-  headedDepartments Department[]     @relation("DepartmentHead")
+  // uploadedMaterials CourseMaterial[] @relation("UploadedMaterial")
+  headedDepartments Department[] @relation("DepartmentHead")
 
   // NEW: Junction table for many-to-many with AcademicLevel
   academicLevelAssignments EducatorAcademicLevelAssignment[]
@@ -2989,6 +2990,7 @@ model Educator {
   libraryMember            LibraryMember?
   hostelMember             HostelMember?
   hostelVisitors           HostelVisitor[]
+  // courseMaterials          CourseMaterial[]
 
   // @@index([userId])
   @@index([companyId])
@@ -3145,6 +3147,7 @@ model Module {
   title       String
   description String?
   order       Int // To sequence modules: 1, 2, 3...
+  isPublished Boolean @default(false)
 
   courseId String @db.ObjectId
   course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
@@ -3157,6 +3160,7 @@ model Module {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([courseId, order])
   @@index([courseId])
   @@index([companyId])
 }
@@ -3171,6 +3175,9 @@ model Lesson {
   duration    Int? // Estimated time in minutes
   order       Int // Sequence within the module
 
+  isFreePreview Boolean @default(false)
+  isPublished   Boolean @default(false)
+
   // Teacher-Specific "Lesson Plan" fields
   teacherNotes String? // Internal notes for the educator
   objectives   String[] // Learning goals
@@ -3182,10 +3189,35 @@ model Lesson {
   assignments CourseAssignment[]
   materials   CourseMaterial[]
 
+  progress UserProgress[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([moduleId])
+}
+
+model UserProgress {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  lessonId String @db.ObjectId
+  lesson   Lesson @relation(fields: [lessonId], references: [id])
+
+  progressPercentage Int      @default(0) // 0-100%
+  lastAccessed       DateTime @default(now())
+
+  company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@index([userId])
+  @@index([lessonId])
+  @@index([companyId])
 }
 
 enum CourseStatus {
@@ -4185,19 +4217,26 @@ model CourseMaterial {
   fileUrl      String? // URL for downloadable files (PDFs, docs)
   linkUrl      String? // URL for external links (videos, websites)
   type         CourseMaterialType @default(DOCUMENT) // Enum: DOCUMENT, VIDEO, LINK, IMAGE, AUDIO
-  uploadedById String             @db.ObjectId // Educator who uploaded the material
-  uploadedBy   Educator           @relation("UploadedMaterial", fields: [uploadedById], references: [id])
+  // uploadedById String             @db.ObjectId // Educator who uploaded the material
+  // uploadedBy   Educator           @relation("UploadedMaterial", fields: [uploadedById], references: [id])
   createdAt    DateTime?          @default(now())
   updatedAt    DateTime?          @updatedAt
-  Educator     Educator?          @relation(fields: [educatorId], references: [id])
-  educatorId   String?            @db.ObjectId
+  // Educator     Educator?          @relation(fields: [educatorId], references: [id])
+  uploadedById String?            @db.ObjectId
   lesson       Lesson?            @relation(fields: [lessonId], references: [id])
   lessonId     String?            @db.ObjectId
+
+  // educator   Educator? @relation(fields: [educatorId], references: [id])
+  educatorId String? @db.ObjectId
+  // educator   Educator? @relation(fields: [educatorId], references: [id])
+  // educatorId String?   @db.ObjectId
+  // educator   Educator? @relation(fields: [educatorId], references: [id])
+  // educator   Educator? @relation(fields: [educatorId], references: [id])
+  // educator   Educator? @relation(fields: [educatorId], references: [id])
 
   @@index([courseId, type])
   @@index([uploadedById])
   @@index([courseId])
-  @@index([educatorId])
 }
 
 // Discussion Topic Model

@@ -4,7 +4,7 @@ import prisma from "@/server/db/prismadb";
 
 const postModuleLogic = async (request: Request) => {
   const body = await request.json();
-  const { title, description, courseId, companyId, order } = body;
+  const { title, description, courseId, companyId, order, isPublished } = body;
 
   if (!title || !courseId || !companyId) {
     return formatResponse(
@@ -19,7 +19,8 @@ const postModuleLogic = async (request: Request) => {
     data: {
       title,
       description,
-      order: order || 1,
+      order: order !== undefined ? parseInt(order) : 1,
+      isPublished: Boolean(isPublished),
       course: { connect: { id: courseId } },
       company: { connect: { id: companyId } },
     },

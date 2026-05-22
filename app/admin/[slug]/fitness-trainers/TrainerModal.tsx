@@ -3,28 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  XMarkIcon,
-  UserCircleIcon,
-  EnvelopeIcon,
-  PhoneIcon,
-  BriefcaseIcon,
-  ChatBubbleBottomCenterTextIcon,
-  AcademicCapIcon,
-  PhotoIcon,
-  SparklesIcon,
-  LockClosedIcon, // Added for password fields
-} from '@heroicons/react/24/solid';
+  XMarkIcon, UserCircleIcon, EnvelopeIcon, PhoneIcon,
+  BriefcaseIcon, ChatBubbleBottomCenterTextIcon, AcademicCapIcon,
+  PhotoIcon, SparklesIcon, LockClosedIcon
+} from '@heroicons/react/24/outline';
 import Image from 'next/image';
-import toast from 'react-hot-toast'; // Import react-hot-toast
+import toast from 'react-hot-toast';
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
-
-
-// Define the TrainerData interface to match the expected API response
 export interface TrainerData {
-  id?: string; // Optional for new trainers
-  userId?: string; // Optional for new trainers
+  id?: string;
+  userId?: string;
   name: string | null;
   email: string;
   phone: string | null;
@@ -39,126 +29,80 @@ interface TrainerModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (trainer: TrainerData) => void;
-  trainer?: TrainerData | null; // Trainer data for editing, null for adding
+  trainer?: TrainerData | null;
   slug: string;
 }
 
-const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
-  return `${src}?w=${width}&q=75`; // Default quality to 75
-};
-
+const customLoader = ({ src, width }: { src: string; width: number }) => `${src}?w=${width}&q=75`;
 const TRAINER_STATUSES = ['ACTIVE', 'ON_LEAVE', 'INACTIVE'];
 
 const TrainerModal: React.FC<TrainerModalProps> = ({ isOpen, onClose, onSave, trainer, slug }) => {
-  const [name, setName] = useState(trainer?.name || '');
-  const [email, setEmail] = useState(trainer?.email || '');
-  const [phone, setPhone] = useState(trainer?.phone || '');
-  const [specialty, setSpecialty] = useState(trainer?.specialty || '');
-  const [bio, setBio] = useState(trainer?.bio || '');
-  const [certificationsInput, setCertificationsInput] = useState(trainer?.certifications.join(', ') || '');
-  const [photoUrl, setPhotoUrl] = useState(trainer?.photoUrl || '');
-  const [status, setStatus] = useState<'ACTIVE' | 'ON_LEAVE' | 'INACTIVE'>(trainer?.status || 'ACTIVE');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [specialty, setSpecialty] = useState('');
+  const [bio, setBio] = useState('');
+  const [certificationsInput, setCertificationsInput] = useState('');
+  const [photoUrl, setPhotoUrl] = useState('');
+  const [status, setStatus] = useState<'ACTIVE' | 'ON_LEAVE' | 'INACTIVE'>('ACTIVE');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-
   const [loading, setLoading] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isOpen) { // Only reset when modal opens
-      if (trainer) {
-        setName(trainer.name || '');
-        setEmail(trainer.email || '');
-        setPhone(trainer.phone || '');
-        setSpecialty(trainer.specialty || '');
-        setBio(trainer.bio || '');
-        setCertificationsInput(trainer.certifications.join(', '));
-        setPhotoUrl(trainer.photoUrl || '');
-        setStatus(trainer.status || 'ACTIVE');
-        setPassword(''); // Clear password field on edit
-        setConfirmPassword('');
-      } else {
-        // Reset form for new trainer
-        setName('');
-        setEmail('');
-        setPhone('');
-        setSpecialty('');
-        setBio('');
-        setCertificationsInput('');
-        setPhotoUrl('');
-        setStatus('ACTIVE');
-        setPassword('');
-        setConfirmPassword('');
-      }
-      setFormError(null); // Clear errors on open
+    if (isOpen) {
+      setName(trainer?.name || '');
+      setEmail(trainer?.email || '');
+      setPhone(trainer?.phone || '');
+      setSpecialty(trainer?.specialty || '');
+      setBio(trainer?.bio || '');
+      setCertificationsInput(trainer?.certifications.join(', ') || '');
+      setPhotoUrl(trainer?.photoUrl || '');
+      setStatus(trainer?.status || 'ACTIVE');
+      setPassword('');
+      setConfirmPassword('');
     }
   }, [isOpen, trainer]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setFormError(null);
 
-    const certificationsArray = certificationsInput.split(',').map(c => c.trim()).filter(c => c !== '');
-
-    // Basic client-side validation
     if (!name || !email || !specialty) {
-      setFormError('Name, email, and specialty are required.');
+      toast.error('Please complete all required baseline text parameters.');
       setLoading(false);
-      toast.error('Please fill in all required fields.');
       return;
     }
 
-    if (!trainer && (!password || password.length < 8)) {
-      setFormError('Password is required and must be at least 8 characters for new trainers.');
+    if (!trainer && (password.length < 8 || password !== confirmPassword)) {
+      toast.error('Please confirm passwords match and contain 8+ characters.');
       setLoading(false);
-      toast.error('Password is required and must be at least 8 characters for new trainers.');
-      return;
-    }
-    if (!trainer && password !== confirmPassword) {
-      setFormError('Passwords do not match.');
-      setLoading(false);
-      toast.error('Passwords do not match.');
       return;
     }
 
+    const certificationsArray = certificationsInput.split(',').map(c => c.trim()).filter(Boolean);
     const method = trainer ? 'PUT' : 'POST';
     const url = trainer ? `${apiBaseUrl}/admin/trainers/${trainer.id}` : `${apiBaseUrl}/admin/trainers?companyId=${slug}`;
-
-    const toastId = toast.loading(`${trainer ? 'Updating' : 'Adding'} trainer...`);
+    const toastId = toast.loading('Syncing data properties...');
 
     try {
       const response = await fetch(url, {
-        method: method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Credentials': 'include',
-        },
+        method,
+        headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
         body: JSON.stringify({
-          name,
-          email,
-          phone: phone || null,
-          specialty,
-          bio: bio || null,
-          certifications: certificationsArray,
-          photoUrl: photoUrl || null,
-          status,
-          password: !trainer ? password : undefined, // Only send password for new trainers
+          name, email, phone: phone || null, specialty, bio: bio || null,
+          certifications: certificationsArray, photoUrl: photoUrl || null, status,
+          password: !trainer ? password : undefined,
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Failed to ${trainer ? 'update' : 'create'} trainer.`);
-      }
-
+      if (!response.ok) throw new Error('Endpoint configuration transmission failure.');
       const savedTrainer: TrainerData = await response.json();
-      onSave(savedTrainer); // Pass the saved trainer data back to the parent
-      onClose(); // Close the modal
-      toast.success(`Trainer "${savedTrainer.name}" saved successfully!`, { id: toastId });
+      onSave(savedTrainer);
+      onClose();
+      toast.success('Roster modifications saved.', { id: toastId });
     } catch (err: any) {
-      setFormError(err.message);
-      toast.error(`Error: ${err.message}`, { id: toastId });
+      toast.error(err.message, { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -168,259 +112,120 @@ const TrainerModal: React.FC<TrainerModalProps> = ({ isOpen, onClose, onSave, tr
 
   return (
     <AnimatePresence>
-      <motion.div
-        className="fixed inset-0 backdrop-blur-sm bg-black bg-opacity-70 flex items-center justify-center z-[1000] p-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={onClose} // Close modal when clicking outside
-      >
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+        {/* Backdrop Mask */}
+        <motion.div 
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm dark:bg-slate-950/60"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          onClick={onClose}
+        />
+
+        {/* Modal Sheet container */}
         <motion.div
-          className="bg-gray-800 text-gray-200 rounded-3xl shadow-2xl p-8 w-full max-w-2xl relative border border-gray-700 max-h-[90vh] overflow-y-auto"
-          initial={{ scale: 0.9, y: -50 }}
-          animate={{ scale: 1, y: 0 }}
-          exit={{ scale: 0.9, y: 50 }}
-          transition={{ type: "spring", stiffness: 200, damping: 25 }}
-          onClick={(e:any) => e.stopPropagation()} // Prevent closing when clicking inside modal
+          className="relative z-10 flex h-full max-h-[85vh] w-full max-w-2xl flex-col rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900"
+          initial={{ opacity: 0, scale: 0.95, y: 8 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 8 }}
         >
-          <motion.button
-            onClick={onClose}
-            className="absolute top-5 right-5 text-gray-400 hover:text-white transition-colors rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            aria-label="Close modal"
-            whileHover={{ scale: 1.1, rotate: 90 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <XMarkIcon className="w-8 h-8" />
-          </motion.button>
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-slate-100 p-6 dark:border-slate-800">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-50">
+                {trainer ? 'Edit Trainer Profile' : 'Onboard Instructor'}
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Configure catalog information details.</p>
+            </div>
+            <button onClick={onClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800">
+              <XMarkIcon className="h-5 w-5" />
+            </button>
+          </div>
 
-          <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-600 mb-4 text-center drop-shadow-md">
-            {trainer ? 'Edit Trainer Profile' : 'Add New Trainer'}
-          </h2>
-          <p className="text-center text-gray-400 mb-8">
-            {trainer ? 'Update the details for this fitness professional.' : 'Fill in the details to onboard a new trainer.'}
-          </p>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Form Area */}
+          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor="name" className="flex items-center text-sm font-medium text-gray-300 mb-2">
-                  <UserCircleIcon className="w-5 h-5 mr-2 text-teal-400" /> Full Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-700 text-white border border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 transition-colors"
-                  placeholder="e.g., Jane Doe"
-                  required
-                />
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Full Name</label>
+                <input type="text" value={name} onChange={e => setName(e.target.value)} required className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-indigo-500 focus:bg-white dark:border-slate-700 dark:bg-slate-800 dark:focus:border-indigo-400" placeholder="Jane Doe" />
               </div>
               <div>
-                <label htmlFor="email" className="flex items-center text-sm font-medium text-gray-300 mb-2">
-                  <EnvelopeIcon className="w-5 h-5 mr-2 text-teal-400" /> Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-700 text-white border border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 transition-colors disabled:bg-gray-600 disabled:text-gray-400"
-                  placeholder="e.g., jane.doe@example.com"
-                  required
-                  disabled={!!trainer} // Disable email edit for existing trainers
-                />
-                {trainer && <p className="text-xs text-gray-500 mt-1">Email cannot be changed for existing trainers.</p>}
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Email Address</label>
+                <input type="email" value={email} onChange={e => setEmail(e.target.value)} disabled={!!trainer} required className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-indigo-500 focus:bg-white disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:focus:border-indigo-400" placeholder="jane@domain.com" />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor="phone" className="flex items-center text-sm font-medium text-gray-300 mb-2">
-                  <PhoneIcon className="w-5 h-5 mr-2 text-teal-400" /> Phone (Optional)
-                </label>
-                <input
-                  type="text"
-                  id="phone"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-700 text-white border border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 transition-colors"
-                  placeholder="e.g., +1 (555) 123-4567"
-                />
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Phone String</label>
+                <input type="text" value={phone} onChange={e => setPhone(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-indigo-500 focus:bg-white dark:border-slate-700 dark:bg-slate-800" placeholder="+1 (555) 000-0000" />
               </div>
               <div>
-                <label htmlFor="specialty" className="flex items-center text-sm font-medium text-gray-300 mb-2">
-                  <BriefcaseIcon className="w-5 h-5 mr-2 text-teal-400" /> Specialty
-                </label>
-                <input
-                  type="text"
-                  id="specialty"
-                  value={specialty}
-                  onChange={(e) => setSpecialty(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-700 text-white border border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 transition-colors"
-                  placeholder="e.g., Strength Training"
-                  required
-                />
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Core Specialty</label>
+                <input type="text" value={specialty} onChange={e => setSpecialty(e.target.value)} required className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-indigo-500 focus:bg-white dark:border-slate-700 dark:bg-slate-800" placeholder="Cardio / Strength" />
               </div>
             </div>
 
-            {!trainer && ( // Password fields only for new trainers
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {!trainer && (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="password" className="flex items-center text-sm font-medium text-gray-300 mb-2">
-                    <LockClosedIcon className="w-5 h-5 mr-2 text-teal-400" /> Password
-                  </label>
-                  <input
-                    type="password"
-                    id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-700 text-white border border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 transition-colors"
-                    required={!trainer}
-                    minLength={8}
-                    placeholder="Minimum 8 characters"
-                  />
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Access Password</label>
+                  <input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={8} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-indigo-500 focus:bg-white dark:border-slate-700 dark:bg-slate-800" placeholder="••••••••" />
                 </div>
                 <div>
-                  <label htmlFor="confirmPassword" className="flex items-center text-sm font-medium text-gray-300 mb-2">
-                    <LockClosedIcon className="w-5 h-5 mr-2 text-teal-400" /> Confirm Password
-                  </label>
-                  <input
-                    type="password"
-                    id="confirmPassword"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-700 text-white border border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 transition-colors"
-                    required={!trainer}
-                    minLength={8}
-                    placeholder="Re-enter password"
-                  />
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Verify Password</label>
+                  <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required minLength={8} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-indigo-500 focus:bg-white dark:border-slate-700 dark:bg-slate-800" placeholder="••••••••" />
                 </div>
               </div>
             )}
 
             <div>
-              <label htmlFor="bio" className="flex items-center text-sm font-medium text-gray-300 mb-2">
-                <ChatBubbleBottomCenterTextIcon className="w-5 h-5 mr-2 text-teal-400" /> Bio (Optional)
-              </label>
-              <textarea
-                id="bio"
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                rows={3}
-                className="w-full px-4 py-3 rounded-xl bg-gray-700 text-white border border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 transition-colors"
-                placeholder="A brief description of the trainer's background and philosophy."
-              ></textarea>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Biography</label>
+              <textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-indigo-500 focus:bg-white dark:border-slate-700 dark:bg-slate-800" placeholder="Brief statement detailing baseline professional history metrics..." />
             </div>
 
             <div>
-              <label htmlFor="certifications" className="flex items-center text-sm font-medium text-gray-300 mb-2">
-                <AcademicCapIcon className="w-5 h-5 mr-2 text-teal-400" /> Certifications (Comma-separated)
-              </label>
-              <input
-                type="text"
-                id="certifications"
-                value={certificationsInput}
-                onChange={(e) => setCertificationsInput(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-gray-700 text-white border border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 transition-colors"
-                placeholder="e.g., NASM, ACE, CrossFit L1"
-              />
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Certifications (Comma separated)</label>
+              <input type="text" value={certificationsInput} onChange={e => setCertificationsInput(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-indigo-500 focus:bg-white dark:border-slate-700 dark:bg-slate-800" placeholder="NASM, CrossFit L2, ACE" />
             </div>
 
             <div>
-              <label htmlFor="photoUrl" className="flex items-center text-sm font-medium text-gray-300 mb-2">
-                <PhotoIcon className="w-5 h-5 mr-2 text-teal-400" /> Photo URL (Optional)
-              </label>
-              <input
-                type="url"
-                id="photoUrl"
-                value={photoUrl}
-                onChange={(e) => setPhotoUrl(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-gray-700 text-white border border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 transition-colors"
-                placeholder="https://example.com/trainer_photo.jpg"
-              />
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">External Photo URL</label>
+              <input type="url" value={photoUrl} onChange={e => setPhotoUrl(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-indigo-500 focus:bg-white dark:border-slate-700 dark:bg-slate-800" placeholder="https://images.unsplash.com/photo..." />
               {photoUrl && (
-                <div className="mt-4 flex flex-col items-center">
-                  <p className="text-sm text-gray-400 mb-2">Photo Preview:</p>
-                  <div className="relative w-28 h-28 rounded-full overflow-hidden shadow-lg border-4 border-indigo-500">
-                    <Image
-                      src={photoUrl}
-                      alt="Trainer Photo Preview"
-                      layout="fill"
-                      objectFit="cover"
-                      className="transition-transform duration-300 hover:scale-110"
-                      loader={customLoader}
-                      onError={(e) => {
-                        e.currentTarget.src = 'https://placehold.co/128x128/E0E7FF/4338CA?text=Photo+Error';
-                      }}
-                    />
+                <div className="mt-3 flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/50 p-3 dark:border-slate-800 dark:bg-slate-800/40">
+                  <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full border bg-white dark:border-slate-700">
+                    <Image src={photoUrl} alt="Avatar Preview" fill sizes="48px" loader={customLoader} className="object-cover" onError={(e) => { e.currentTarget.src = 'https://placehold.co/100x100?text=Error'; }} />
                   </div>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 truncate">{photoUrl}</span>
                 </div>
               )}
             </div>
 
             <div>
-              <label className="flex items-center text-sm font-medium text-gray-300 mb-2">
-                <SparklesIcon className="w-5 h-5 mr-2 text-teal-400" /> Status
-              </label>
-              <div className="flex bg-gray-700 rounded-xl p-1 border border-gray-600">
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Roster Status</label>
+              <div className="flex gap-1.5 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
                 {TRAINER_STATUSES.map((s) => (
-                  <motion.button
-                    key={s}
-                    type="button"
-                    onClick={() => setStatus(s as 'ACTIVE' | 'ON_LEAVE' | 'INACTIVE')}
-                    className={`flex-1 text-center py-2 rounded-lg text-sm font-medium transition-colors ${
-                      status === s ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-600'
-                    }`}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                  <button
+                    key={s} type="button" onClick={() => setStatus(s as any)}
+                    className={`flex-1 rounded-lg py-2 text-xs font-semibold uppercase tracking-wider transition ${status === s ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'}`}
                   >
                     {s.replace('_', ' ')}
-                  </motion.button>
+                  </button>
                 ))}
               </div>
             </div>
-
-            {formError && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-red-900/30 text-red-300 px-4 py-3 rounded-xl text-sm text-center border border-red-700"
-              >
-                {formError}
-              </motion.div>
-            )}
-
-            <div className="flex flex-col md:flex-row justify-end space-y-3 md:space-y-0 md:space-x-3 mt-6">
-              <motion.button
-                type="button"
-                onClick={onClose}
-                className="w-full md:w-auto px-6 py-3 rounded-full text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-300"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Cancel
-              </motion.button>
-              <motion.button
-                type="submit"
-                className="w-full md:w-auto px-6 py-3 rounded-full text-sm font-medium text-white bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                disabled={loading}
-              >
-                {loading ? (
-                  <svg className="animate-spin h-5 w-5 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                ) : (
-                  trainer ? 'Save Changes' : 'Add Trainer'
-                )}
-              </motion.button>
-            </div>
           </form>
+
+          {/* Sticky Actions Footer */}
+          <div className="flex items-center justify-end gap-2 border-t border-slate-100 p-4 dark:border-slate-800">
+            <button type="button" onClick={onClose} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+              Cancel
+            </button>
+            <button type="button" onClick={handleSubmit} disabled={loading} className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50">
+              {loading ? 'Processing...' : trainer ? 'Save Changes' : 'Add Trainer'}
+            </button>
+          </div>
         </motion.div>
-      </motion.div>
+      </div>
     </AnimatePresence>
   );
 };

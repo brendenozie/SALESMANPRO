@@ -4,8 +4,19 @@ import prisma from "@/server/db/prismadb";
 
 const postLessonLogic = async (request: Request) => {
   const body = await request.json();
-  const { title, description, content, videoUrl, duration, moduleId, order } =
-    body;
+  const {
+    title,
+    description,
+    content,
+    videoUrl,
+    duration,
+    moduleId,
+    order,
+    isFreePreview,
+    isPublished,
+    teacherNotes,
+    objectives,
+  } = body;
 
   if (!title || !moduleId) {
     return formatResponse(false, null, "Title and moduleId are required", 400);
@@ -18,7 +29,11 @@ const postLessonLogic = async (request: Request) => {
       content,
       videoUrl,
       duration: duration ? parseInt(duration) : null,
-      order: order || 1,
+      order: order !== undefined ? parseInt(order) : 1,
+      isFreePreview: Boolean(isFreePreview),
+      isPublished: Boolean(isPublished),
+      teacherNotes,
+      objectives: Array.isArray(objectives) ? objectives : [],
       module: { connect: { id: moduleId } },
     },
   });

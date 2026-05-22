@@ -3,142 +3,118 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   BellAlertIcon, EnvelopeIcon, PhoneIcon, PlusCircleIcon, UserCircleIcon, PencilIcon, TrashIcon
-} from '@heroicons/react/24/solid';
-import { motion } from 'framer-motion';
+} from '@heroicons/react/24/outline';
+import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import TrainerModal, { TrainerData } from './TrainerModal';
 import toast from 'react-hot-toast';
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => 
+  `${src}?w=${width}&q=${quality || 75}`;
 
-
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
-
-
-// Define the TrainerData interface
-// interface TrainerData {
-//   id: string;
-//   userId: string;
-//   name: string | null;
-//   email: string;
-//   phone: string | null;
-//   specialty: string;
-//   bio: string | null;
-//   certifications: string[];
-//   photoUrl: string | null;
-//   status: 'ACTIVE' | 'ON_LEAVE' | 'INACTIVE';
-// }
-
-interface TrainersPageProps {
-  params:Promise<{ slug: string }>
-}
-
-// A reusable component for a single trainer's card
-const TrainerCard = ({ trainer, onEdit, onDelete }: { trainer: TrainerData; onEdit: (trainer: TrainerData) => void; onDelete: (trainer: TrainerData) => void; }) => {
-  const statusColors = {
-    ACTIVE: 'bg-green-500/30 text-green-300 border-green-500',
-    ON_LEAVE: 'bg-yellow-500/30 text-yellow-300 border-yellow-500',
-    INACTIVE: 'bg-red-500/30 text-red-300 border-red-500',
-  };
-
-  const trainerCardVariants = {
-    hidden: { opacity: 0, scale: 0.9, y: 20 },
-    visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
-    hover: {
-      scale: 1.03,
-      boxShadow: "0 15px 30px rgba(0, 0, 0, 0.3)",
-      transition: { duration: 0.2 },
-    },
+const TrainerCard = ({ 
+  trainer, 
+  onEdit, 
+  onDelete 
+}: { 
+  trainer: TrainerData; 
+  onEdit: (trainer: TrainerData) => void; 
+  onDelete: (trainer: TrainerData) => void; 
+}) => {
+  const statusStyles = {
+    ACTIVE: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
+    ON_LEAVE: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20',
+    INACTIVE: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20',
   };
 
   return (
     <motion.div
-      className="bg-gray-800/60 backdrop-blur-md p-6 rounded-3xl shadow-xl flex flex-col items-center text-center relative border border-gray-700 transition-all duration-300"
-      variants={trainerCardVariants}
-      whileHover="hover"
-      initial="hidden"
-      animate="visible"
+      layout
+      className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/60 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md dark:border-slate-800/50 dark:bg-slate-900"
+      whileHover={{ y: -4 }}
     >
-      {/* Status Badge */}
-      <div
-        className={`absolute top-5 right-5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${statusColors[trainer.status]}`}
-      >
-        {trainer.status.replace('_', ' ')}
-      </div>
-
-      {/* Trainer Image or Placeholder */}
-      <div className="w-32 h-32 rounded-full overflow-hidden mb-4 border-4 border-indigo-600 shadow-lg flex-shrink-0 relative">
-        {trainer.photoUrl ? (
-          <Image
-            src={trainer.photoUrl}
-            alt={trainer.name || 'Trainer'}
-            fill
-            style={{ objectFit: 'cover' }}
-            loader={loader}
-            priority
-            className="transition-transform duration-300 hover:scale-110"
-          />
-        ) : (
-          <div className="w-full h-full bg-gray-700 flex items-center justify-center text-indigo-400 text-5xl">
-            <UserCircleIcon className='w-20 h-20' />
+      <div>
+        {/* Header Section */}
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="relative h-16 w-16 flex-shrink-0 rounded-full border border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-800">
+            {trainer.photoUrl ? (
+              <Image
+                src={trainer.photoUrl}
+                alt={trainer.name || 'Trainer'}
+                fill
+                sizes="64px"
+                loader={loader}
+                className="rounded-full object-cover"
+              />
+            ) : (
+              <UserCircleIcon className="h-full w-full text-slate-400 dark:text-slate-600" />
+            )}
           </div>
-        )}
-      </div>
-
-      <h4 className="text-3xl font-extrabold text-white mb-1 leading-tight">{trainer.name}</h4>
-      <p className="text-teal-400 font-semibold mb-3">{trainer.specialty}</p>
-
-      <p className="text-sm text-gray-400 mb-6 line-clamp-3 flex-grow">{trainer.bio}</p>
-
-      {/* Contact & Details */}
-      <div className="w-full text-left text-sm text-gray-400 border-t border-gray-700 pt-4 mt-auto space-y-2">
-        <div className="flex items-center space-x-2">
-          <EnvelopeIcon className="text-indigo-400 w-5 h-5" />
-          <p>{trainer.email}</p>
+          <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold tracking-wide ${statusStyles[trainer.status]}`}>
+            {trainer.status.replace('_', ' ')}
+          </span>
         </div>
-        <div className="flex items-center space-x-2">
-          <PhoneIcon className="text-indigo-400 w-5 h-5" />
-          <p>{trainer.phone || 'N/A'}</p>
-        </div>
-        <div className="flex items-start space-x-2">
-          <BellAlertIcon className="text-indigo-400 mt-1 w-5 h-5" />
-          <p className="flex-1">
-            <span className="font-semibold text-gray-300">Certifications:</span>{' '}
-            {trainer.certifications.length > 0 ? trainer.certifications.join(', ') : 'N/A'}
+
+        {/* Identity & Bio */}
+        <div className="mb-4">
+          <h4 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+            {trainer.name}
+          </h4>
+          <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
+            {trainer.specialty}
+          </p>
+          <p className="mt-3 text-sm leading-relaxed text-slate-600 line-clamp-3 dark:text-slate-400">
+            {trainer.bio || "No biography provided yet."}
           </p>
         </div>
+
+        {/* Technical Attributes */}
+        <div className="space-y-2 border-t border-slate-100 pt-4 dark:border-slate-800/60">
+          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+            <EnvelopeIcon className="h-4 w-4 text-slate-400" />
+            <span className="truncate">{trainer.email}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+            <PhoneIcon className="h-4 w-4 text-slate-400" />
+            <span>{trainer.phone || 'No phone record'}</span>
+          </div>
+          <div className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400">
+            <BellAlertIcon className="h-4 w-4 mt-0.5 text-slate-400 flex-shrink-0" />
+            <p className="line-clamp-2">
+              <span className="font-medium text-slate-800 dark:text-slate-200">Certifications:</span>{' '}
+              {trainer.certifications.length > 0 ? trainer.certifications.join(', ') : 'None listed'}
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex w-full justify-center gap-4 mt-6">
-        <motion.button
+      {/* Action Row */}
+      <div className="mt-6 flex items-center gap-2 border-t border-slate-100 pt-4 dark:border-slate-800/60">
+        <button
           onClick={() => onEdit(trainer)}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-md hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700/60"
         >
-          <PencilIcon className="w-5 h-5" /> Edit
-        </motion.button>
-        <motion.button
+          <PencilIcon className="h-4 w-4" />
+          Edit
+        </button>
+        <button
           onClick={() => onDelete(trainer)}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold shadow-md hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+          className="flex items-center justify-center rounded-xl border border-rose-200 bg-rose-50 p-2.5 text-rose-600 transition hover:bg-rose-100 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-500/20"
+          aria-label="Delete Trainer"
         >
-          <TrashIcon className="w-5 h-5" /> Delete
-        </motion.button>
+          <TrashIcon className="h-4 w-4" />
+        </button>
       </div>
     </motion.div>
   );
 };
 
-
 export default function TrainersPage() {
   const { slug } = useParams();
-
   const [trainers, setTrainers] = useState<TrainerData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -155,14 +131,11 @@ export default function TrainersPage() {
         method: 'GET',
         credentials: 'include',
       });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`Error status code: ${response.status}`);
       const data: TrainerData[] = (await response.json()).data || [];
       setTrainers(data);
     } catch (err: any) {
       setError(err.message);
-      // console.error("Failed to fetch trainers:", err);
     } finally {
       setLoading(false);
     }
@@ -172,23 +145,16 @@ export default function TrainersPage() {
     fetchTrainers();
   }, [fetchTrainers]);
 
-  const openAddModal = () => {
-    setCurrentTrainer(null);
-    setIsTrainerModalOpen(true);
-  };
-
-  const openEditModal = (trainer: TrainerData) => {
-    setCurrentTrainer(trainer);
-    setIsTrainerModalOpen(true);
-  };
+  const openAddModal = () => { setCurrentTrainer(null); setIsTrainerModalOpen(true); };
+  const openEditModal = (trainer: TrainerData) => { setCurrentTrainer(trainer); setIsTrainerModalOpen(true); };
 
   const handleSaveTrainer = (savedTrainer: TrainerData) => {
     if (currentTrainer) {
-      setTrainers(prevTrainers => prevTrainers.map(t => t.id === savedTrainer.id ? savedTrainer : t));
-      toast.success(`Trainer "${savedTrainer.name}" updated successfully.`);
+      setTrainers(prev => prev.map(t => t.id === savedTrainer.id ? savedTrainer : t));
+      toast.success(`Profile updated.`);
     } else {
-      setTrainers(prevTrainers => [savedTrainer, ...prevTrainers]);
-      toast.success(`Trainer "${savedTrainer.name}" added successfully.`);
+      setTrainers(prev => [savedTrainer, ...prev]);
+      toast.success(`Trainer successfully onboarded.`);
     }
     setIsTrainerModalOpen(false);
   };
@@ -200,109 +166,84 @@ export default function TrainersPage() {
 
   const confirmDeleteTrainer = async () => {
     if (!trainerToDelete) return;
-
     setIsConfirmModalOpen(false);
-    const toastId = toast.loading(`Deleting trainer "${trainerToDelete.name}"...`);
+    const toastId = toast.loading(`Removing record...`);
 
     try {
       const response = await fetch(`${apiBaseUrl}/admin/trainers/${trainerToDelete.id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Failed to delete trainer "${trainerToDelete.name}".`);
-      }
-
-      setTrainers(prevTrainers => prevTrainers.filter(t => t.id !== trainerToDelete.id));
-      toast.success(`Trainer "${trainerToDelete.name}" deleted successfully.`, { id: toastId });
+      if (!response.ok) throw new Error("Could not drop data endpoint entry.");
+      setTrainers(prev => prev.filter(t => t.id !== trainerToDelete.id));
+      toast.success(`Data purged successfully.`, { id: toastId });
     } catch (err: any) {
-      setError(err.message);
       toast.error(`Error: ${err.message}`, { id: toastId });
     } finally {
-      setLoading(false);
       setTrainerToDelete(null);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-indigo-950 to-gray-900 p-8 text-white font-sans">
-      <motion.h1
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-5xl md:text-6xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-600 mb-6 drop-shadow-lg"
-      >
-        Fitness Staff Dashboard
-      </motion.h1>
-
-      <p className="text-center text-gray-400 mb-12 max-w-2xl mx-auto">
-        Oversee all your fitness trainers, manage their profiles, and update their availability and certifications.
-      </p>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="bg-gray-800/50 rounded-3xl shadow-2xl p-8 mb-12 border border-gray-700 backdrop-blur-md"
-      >
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-white mb-4 md:mb-0">All Trainers</h2>
-          <motion.button
+    <div className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 transition-colors duration-200 dark:bg-slate-950 dark:text-slate-50 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        
+        {/* Header Profile Dashboard Overview */}
+        <div className="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Fitness Roster</h1>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Manage system access permissions, visual showcase details, and specialist credentials.
+            </p>
+          </div>
+          <button
             onClick={openAddModal}
-            className="flex items-center space-x-2 bg-gradient-to-r from-teal-500 to-blue-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:from-teal-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
-            <PlusCircleIcon className="h-6 w-6" />
-            <span>Add New Trainer</span>
-          </motion.button>
+            <PlusCircleIcon className="h-5 w-5" />
+            Add New Trainer
+          </button>
         </div>
 
-        {loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-gray-700/50 rounded-3xl h-[450px] animate-pulse"></div>
-            ))}
-          </div>
-        )}
+        {/* Content Board */}
+        <main className="mt-8">
+          {loading && (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="h-64 animate-pulse rounded-2xl bg-slate-200 dark:bg-slate-800" />
+              ))}
+            </div>
+          )}
 
-        {error && (
-          <div className="bg-red-900/50 text-red-300 p-6 rounded-lg text-center mb-8 border border-red-700">
-            <p className="font-bold text-lg">Error loading trainers:</p>
-            <p className="text-sm">{error}</p>
-            <p className="mt-2 text-xs">Please try refreshing the page or contact support.</p>
-          </div>
-        )}
+          {error && (
+            <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 dark:border-rose-500/10 dark:bg-rose-500/5">
+              <p className="text-sm font-semibold text-rose-800 dark:text-rose-400">Failed loading records: {error}</p>
+            </div>
+          )}
 
-        {!loading && !error && trainers.length === 0 ? (
-          <div className="text-center py-20 bg-gray-700/30 rounded-2xl border border-gray-600">
-            <p className="text-xl text-gray-400">No trainers found. Start by adding one! 💪</p>
-          </div>
-        ) : (
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-            initial="hidden"
-            animate="visible"
-            variants={{
-              visible: { transition: { staggerChildren: 0.1 } },
-            }}
-          >
-            {trainers.map((trainer) => (
-              <motion.div key={trainer.id} variants={{ hidden: { opacity: 0, y: 50 }, visible: { opacity: 1, y: 0 } }}>
-                <TrainerCard
-                  trainer={trainer}
-                  onEdit={openEditModal}
-                  onDelete={handleDeleteTrainerClick}
-                />
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
-      </motion.div>
+          {!loading && !error && trainers.length === 0 && (
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 py-12 text-center dark:border-slate-800">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">No instructors found on the roster.</p>
+            </div>
+          )}
 
-      {/* Add/Edit Trainer Modal */}
+          {!loading && !error && trainers.length > 0 && (
+            <motion.div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <AnimatePresence mode="popLayout">
+                {trainers.map((trainer) => (
+                  <TrainerCard
+                    key={trainer.id}
+                    trainer={trainer}
+                    onEdit={openEditModal}
+                    onDelete={handleDeleteTrainerClick}
+                  />
+                ))}
+              </AnimatePresence>
+            </motion.div>
+          )}
+        </main>
+      </div>
+
       <TrainerModal
         isOpen={isTrainerModalOpen}
         onClose={() => setIsTrainerModalOpen(false)}
@@ -311,7 +252,6 @@ export default function TrainersPage() {
         slug={slug?.toString() || ''}
       />
 
-      {/* Confirmation Modal for Deletion */}
       <ConfirmationModal
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
