@@ -2,6 +2,7 @@
 
 import AddEditBlogModal from "@/components/AddBlogModal";
 import React, { useState } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { 
   PlusIcon, 
   PencilSquareIcon, 
@@ -19,8 +20,8 @@ export type BlogItem = {
   excerpt: string | null;
   coverImage: string | null;
   categories: string[];
-  category :    string | null;
-  subcategory : string | null;
+  category: string | null;
+  subCategory: string | null;
   tags: string[];
   author: { name: string; profileImage?: string } | null;
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
@@ -29,14 +30,6 @@ export type BlogItem = {
   likes: number;
   createdAt: string;
   updatedAt: string;
-};
-
-type Category = {
-  id: string;
-  name: string;
-  image: string;
-  tags: string[];
-  status: string;
 };
 
 interface BlogsClientProps {
@@ -58,9 +51,19 @@ export default function BlogsClient({
   currentPage,
   perPage,
 }: BlogsClientProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedBlog, setSelectedBlog] = useState<BlogItem | null>(null);
+
+  const handlePageChange = (pageNumber: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", pageNumber.toString());
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   const getStatusStyles = (status: string) => {
     switch (status) {
@@ -235,6 +238,7 @@ export default function BlogsClient({
               return (
                 <button
                   key={idx}
+                  onClick={() => handlePageChange(pageNumber)}
                   disabled={isActive}
                   className={`min-w-[40px] h-10 flex items-center justify-center rounded-xl text-sm font-semibold transition-all duration-200 ${
                     isActive
@@ -258,6 +262,11 @@ export default function BlogsClient({
           onClose={() => setShowEditModal(false)}
           initialData={selectedBlog}
           companyId={companyId}
+          onSuccess={() => {
+            setShowEditModal(false);
+            // Optionally refresh the page or update state to reflect changes
+            router.refresh();
+          }}
         />
       )}
       {showAddModal && (
@@ -265,7 +274,12 @@ export default function BlogsClient({
           show={showAddModal}
           categoriesData={categoriesData}
           onClose={() => setShowAddModal(false)}
-          companyId={companyId}
+          companyId={companyId}          
+          onSuccess={() => {
+            setShowEditModal(false);
+            // Optionally refresh the page or update state to reflect changes
+            router.refresh();
+          }}
         />
       )}
     </div>

@@ -103,6 +103,7 @@ interface AddEditBlogModalProps {
   categoriesData: any[];
   initialData?: any;
   companyId?: string;
+  onSuccess?: () => void;
 }
 
 export default function AddEditBlogModal({
@@ -111,6 +112,7 @@ export default function AddEditBlogModal({
   initialData = {},
   categoriesData = [],
   companyId,
+  onSuccess,
 }: AddEditBlogModalProps) {
   const totalSteps = Object.keys(STEP_LABELS).length;
   const [step, setStep] = useState(1);
@@ -121,8 +123,20 @@ export default function AddEditBlogModal({
     setMounted(true);
   }, []);
 
-  console.log("Initial Data:", initialData);
 
+  // 1. Find the parent category first to avoid duplicate searches and crashes
+  const initialCategory = categoriesData.find(
+    (c) => c.displayName === initialData.category || c.id === initialData.category
+  ) || null;
+
+  // 2. Find the subcategory safely from the resolved parent category
+  const initialSubCategory = initialCategory
+    ? initialCategory.subcategories?.find(
+        (sc: any) => sc.name === initialData.subCategory || sc.id === initialData.subCategory
+      ) || null
+    : null;
+
+  // 3. Initialize your useState hook
   const [formData, setFormData] = useState<any>({
     id: initialData.id || "",
     title: initialData.title || "",
@@ -137,8 +151,8 @@ export default function AddEditBlogModal({
     seoTitle: initialData.seo?.title || "",
     seoDescription: initialData.seo?.description || "",
     metaKeywords: initialData.seo?.keywords || [],
-    category: initialData.category || null,
-    subCategory: initialData.subCategory || null,
+    category: initialCategory,
+    subCategory: initialSubCategory,
     brand: initialData.brand || null,
     companyId: companyId,
     author: initialData.author || "Admin",
@@ -149,7 +163,7 @@ export default function AddEditBlogModal({
       index: idx,
       url: img.url,
       source: "server",
-    })) || []
+    })) || [formData.coverImage ? { index: 0, url: formData.coverImage, source: "server" } : []]
   );
 
   const handleChange = (
@@ -211,7 +225,9 @@ export default function AddEditBlogModal({
         status: formData.status,
         categories: formData.category?.displayName ? [formData.category.displayName] : [],
         tags: formData.tags,
-        coverImage: finalImageUrls[0] || "",
+        coverImage: finalImageUrls[0] || formData.coverImage || null,
+        category: formData.category.displayName || null,
+        subCategory: formData.subCategory.name || null,
         seo: {
           title: formData.seoTitle,
           description: formData.seoDescription,
@@ -227,6 +243,7 @@ export default function AddEditBlogModal({
         body: JSON.stringify(payload),
       });
       onClose();
+      onSuccess?.();
     } catch (error) {
       console.error("Submission failed", error);
       alert("Failed to submit blog post.");

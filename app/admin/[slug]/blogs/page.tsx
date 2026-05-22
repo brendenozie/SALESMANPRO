@@ -1,10 +1,8 @@
-// app/admin/[slug]/blogs/page.tsx
-
 import React from "react";
 import BlogsClient from "./BlogsClient";
 import { cookies } from "next/headers";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export type BlogItem = {
   id: string;
@@ -14,8 +12,8 @@ export type BlogItem = {
   excerpt: string | null;
   coverImage: string | null;
   categories: string[];
-  category :    string | null;
-  subcategory : string | null;
+  category: string | null;
+  subCategory: string | null;
   tags: string[];
   author: { name: string; profileImage?: string } | null;
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
@@ -41,14 +39,18 @@ type Category = {
 };
 
 interface PageProps {
-  params:Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function BlogsPage({ params }: PageProps) {
-  const { slug : companyId } = await params;
+export default async function BlogsPage({ params, searchParams }: PageProps) {
+  const { slug: companyId } = await params;
+  const resolvedSearchParams = await searchParams;
   const cookieHeader = (await cookies()).toString();
-  const limit     = 10;
-  const page      = 1;
+  
+  // Extract page from URL or default to 1
+  const page = typeof resolvedSearchParams.page === "string" ? parseInt(resolvedSearchParams.page, 10) : 1;
+  const limit = 10;
 
   let blogsData: BlogItem[] = [];
   let categoriesData: any[] = [];
@@ -62,20 +64,21 @@ export default async function BlogsPage({ params }: PageProps) {
     );
 
     if (res.ok) {
-      const json = await res.json() as {data: {
-        meta: {
-          totalItems: number;
-          totalPages: number;
-          currentPage: number;
-          perPage: number;
-        };
-        results: BlogItem[];
-      }
+      const json = await res.json() as {
+        data: {
+          meta: {
+            totalItems: number;
+            totalPages: number;
+            currentPage: number;
+            perPage: number;
+          };
+          results: BlogItem[];
+        }
       };
 
-      blogsData   = json.data.results;
-      totalItems  = json.data.meta.totalItems;
-      totalPages  = json.data.meta.totalPages;
+      blogsData = json.data.results;
+      totalItems = json.data.meta.totalItems;
+      totalPages = json.data.meta.totalPages;
     } else {
       console.error(
         "[BlogsPage] Failed to fetch blogs:",
@@ -86,9 +89,7 @@ export default async function BlogsPage({ params }: PageProps) {
 
     // Fetch all categories for this company
     const categoriesRes = await fetch(
-      `${apiBaseUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
-        companyId
-      )}`,
+      `${apiBaseUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (categoriesRes.ok) {

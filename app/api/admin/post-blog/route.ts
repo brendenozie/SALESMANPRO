@@ -23,8 +23,11 @@ const createOrUpdateBlog = async (req: Request) => {
     slug,
     content,
     excerpt,
+    isFeature,
     coverImage,
     categories,
+    category,
+    subCategory,
     tags,
     author,
     seo,
@@ -68,6 +71,9 @@ const createOrUpdateBlog = async (req: Request) => {
     author: Object.keys(safeAuthor).length ? safeAuthor : undefined,
     status: status || "DRAFT",
     publishedAt: pubDate,
+    category: category || null,
+    subCategory: subCategory || null,
+    isFeature: !!isFeature,
   };
 
   let blog;

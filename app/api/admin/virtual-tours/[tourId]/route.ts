@@ -18,10 +18,11 @@ export const PUT = withApiHandler(async (request, { params }) => {
     thumbnailUrl,
     description,
     published,
+    companyId,
   } = body;
 
   const company = await prisma.company.findUnique({
-    where: { slug: adminSlug },
+    where: { id: companyId },
     select: { id: true },
   });
 
@@ -73,10 +74,10 @@ export const PUT = withApiHandler(async (request, { params }) => {
 
 // DELETE /api/admin/[adminSlug]/virtual-tours/[tourId]
 export const DELETE = withApiHandler(async (_request, { params }) => {
-  const { adminSlug, tourId } = params;
+  const { companyId, tourId } = params;
 
   const company = await prisma.company.findUnique({
-    where: { slug: adminSlug },
+    where: { id: companyId },
     select: { id: true },
   });
 

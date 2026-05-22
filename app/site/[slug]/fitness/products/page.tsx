@@ -108,7 +108,7 @@ export default async function ProductListPage({ params, searchParams }: PageProp
 
           <div className="flex justify-center items-center space-x-2 mt-8">
             <Link
-              href={`/${slug}/products?page=${pageNum - 1}&search=${search}&category=${categoryId || ''}&sort=${sortOption}`}
+              href={`/fitness/products?page=${pageNum - 1}&search=${search}&category=${categoryId || ''}&sort=${sortOption}`}
               className={`px-3 py-1 border rounded ${pageNum <= 1 ? 'opacity-50 pointer-events-none' : ''}`}
             >Previous</Link>
             {Array.from({ length: totalPages }, (_, i) => (

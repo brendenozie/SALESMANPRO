@@ -1078,7 +1078,7 @@ model Blog {
   thumbnailUrl String? // For video thumbnail URL
   contentType  ContentType @default(VIDEO) // Set default to VIDEO for virtual tours
   category     String? // e.g., "Nature", "History", "Wildlife"  
-  subcategory  String? // Single subcategory name
+  subCategory  String? // Single subcategory name
   duration     String? // e.g., "5 min", "7 min"
   location     String? // ADD THIS FIELD for location
 

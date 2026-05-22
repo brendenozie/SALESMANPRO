@@ -4,6 +4,7 @@ import prisma from "@/server/db/prismadb";
 // New Imports
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { revalidateCompanyCache } from "@/lib/company-fetcher";
 
 // Type definition for the context object
 type RouteContext = {
@@ -159,6 +160,10 @@ const postProgramsLogic = async (request: Request, context: RouteContext) => {
   if (!educator) {
     return formatResponse(false, null, "Instructor not found.", 404);
   }
+   let listing:
+     | { company?: { slug?: string | null | undefined } | null | undefined }
+     | null
+     | undefined = {};
 
   // 4. Create the new Course record using a transaction for atomicity
   const newCourse = await prisma.$transaction(async (tx) => {
@@ -181,6 +186,11 @@ const postProgramsLogic = async (request: Request, context: RouteContext) => {
           },
         },
       },
+      include: {
+        company: {
+          select: { slug: true },
+        },
+      },
     });
 
     // 5. Fetch the instructor's name for the response (if available)
@@ -191,6 +201,7 @@ const postProgramsLogic = async (request: Request, context: RouteContext) => {
         select: { name: true },
       });
     }
+    
 
     return { createdCourse, instructorUser };
   });
@@ -215,6 +226,13 @@ const postProgramsLogic = async (request: Request, context: RouteContext) => {
     await cacheDel(cacheKey);
   } catch (e) {}
 
+  // Revalidate company-specific cache (if using ISR or similar caching strategy)
+  try {
+    if (newCourse.createdCourse.company?.slug) {
+      await revalidateCompanyCache(newCourse.createdCourse.company.slug);
+    }
+    } catch (e) {}
+    
   // Use formatResponse for success
   return formatResponse(
     true,

@@ -197,6 +197,7 @@ const VirtualTourModal: React.FC<VirtualTourModalProps> = ({ isOpen, onClose, on
           thumbnailUrl,
           description: description || null,
           published,
+          companyId: slug,
         }),
       });
 
