@@ -111,7 +111,7 @@ const Header: React.FC<HeaderProps> = ({ store }) => {
                   alt={store.name}
                   width={120}
                   height={40}
-                  className="object-contain"
+                  className="object-contain h-20 w-32"
                   loader={loader}
                 />
               ) : (

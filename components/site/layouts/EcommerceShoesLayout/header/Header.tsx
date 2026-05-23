@@ -103,9 +103,9 @@ export default function Header() {
                 <Image
                   src={logoUrl}
                   alt={name || 'Logo'}
-                  width={40}
-                  height={40}
-                  className="object-contain w-10 h-10 group-hover:rotate-12 transition-transform"
+                  width={160}
+                  height={80}
+                  className="object-contain w-32 h-20 group-hover:rotate-12 transition-transform"
                   loader={imageLoader}
                 />
               ) : (

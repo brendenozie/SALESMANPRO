@@ -72,7 +72,7 @@ export default function Header() {
                   alt={name || 'Pristine'} 
                   width={140} 
                   height={40} 
-                  className={`object-contain h-8 w-32 transition-all duration-500 ${scrolled ? 'brightness-100' : 'brightness-100'}`} 
+                  className={`object-contain h-20 w-32 transition-all duration-500 ${scrolled ? 'brightness-100' : 'brightness-100'}`} 
                   loader={imageLoader} 
                 />
               ) : (

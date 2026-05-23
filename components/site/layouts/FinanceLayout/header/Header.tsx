@@ -174,7 +174,7 @@ export default function FinanceHeader() {
                 width={150}
                 height={48}
                 loader={imageLoader}
-                className="object-contain h-12 w-32"
+                className="object-contain h-20 w-32"
               />
             </Link>
 

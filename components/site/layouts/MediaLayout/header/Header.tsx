@@ -121,7 +121,7 @@ export default function EnhancedMediaHeader() {
                                 alt={storeFormData.name}
                                 width={140}
                                 height={48}
-                                className="object-contain w-8 h-8"
+                                className="object-contain w-32 h-20"
                                 priority
                             />
                         ) : (

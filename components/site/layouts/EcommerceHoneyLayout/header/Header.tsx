@@ -79,7 +79,7 @@ export default function Header() {
                   src={logoUrl}
                   alt={name || 'MEERA'}
                   fill
-                  className="object-contain  h-10 w-32"
+                  className="object-contain  h-20 w-32"
                   loader={imageLoader}
                 />
               </div>

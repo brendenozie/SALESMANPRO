@@ -84,7 +84,7 @@ export default function Header() {
                   alt={name || ''}
                   width={140}
                   height={40}
-                  className="h-8 w-32 transition-all"
+                  className="h-20 w-32 transition-all"
                   loader={imageLoader}
                 />
               ) : (

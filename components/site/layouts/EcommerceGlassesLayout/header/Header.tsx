@@ -73,7 +73,7 @@ export default function Header() {
                   alt={name || 'Optics'} 
                   width={140} 
                   height={40} 
-                  className="object-contain h-7 w-32 transition-transform group-hover:scale-105" 
+                  className="object-contain h-20 w-32 transition-transform group-hover:scale-105" 
                   loader={imageLoader} 
                 />
               ) : (

@@ -148,7 +148,7 @@ export default function SaasHeader() {
                   width={45}
                   height={45}
                   loader={loader}
-                  className="rounded-full  h-8 w-32"
+                  className="rounded-full  h-20 w-32"
                 />
               ) : (
                 <span

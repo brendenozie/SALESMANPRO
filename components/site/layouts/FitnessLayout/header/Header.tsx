@@ -102,7 +102,7 @@ export default function Header() {
                 width={120}
                 height={35}
                 loader={loader}
-                className={`object-contain transition-all duration-300  h-8 w-32 ${scrolled ? 'scale-95' : 'scale-100'}`}
+                className={`object-contain transition-all duration-300  h-20 w-32 ${scrolled ? 'scale-95' : 'scale-100'}`}
               />
             ) : (
               <span className="text-xl font-black tracking-tight text-neutral-900 dark:text-white transition-colors duration-300">

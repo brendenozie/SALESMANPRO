@@ -77,7 +77,7 @@ export default function MoriahHeader() {
                   alt={name} 
                   width={24} 
                   height={24} 
-                  className="object-cover rounded-lg  h-8 w-32"
+                  className="object-cover rounded-lg  h-20 w-32"
                   loader={({src})=>src}
                 />
                 ) : (

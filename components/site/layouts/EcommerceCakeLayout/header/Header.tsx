@@ -82,7 +82,7 @@ export default function Header() {
                     alt={name || 'Sweet Crumbs'}
                     width={140}
                     height={50}
-                    className="h-12 w-32 object-contain transition-transform group-hover:scale-105"
+                    className="h-20 w-32 object-contain transition-transform group-hover:scale-105"
                     loader={imageLoader}
                   />
                 ) : (

@@ -80,14 +80,14 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
         <div className="flex items-center gap-16">
           <Link href={`/`} className="relative group">
             {data.logoUrl ? (
-              <div className="relative h-8 w-32 transition-transform duration-500 group-hover:scale-105">
+              <div className="relative h-20 w-32 transition-transform duration-500 group-hover:scale-105">
                 <Image
                   src={data.logoUrl}
                   alt={data.name}
                   loader={({ src }) => src}
                   unoptimized
                   fill
-                  className={`object-contain transition-all duration-500 h-8 w-32 ${isDarkMode ? "filter brightness-125" : ""}`}
+                  className={`object-contain transition-all duration-500 h-20 w-32 ${isDarkMode ? "filter brightness-125" : ""}`}
                 />
               </div>
             ) : (

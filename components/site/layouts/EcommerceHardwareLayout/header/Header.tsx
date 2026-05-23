@@ -132,7 +132,7 @@ export default function IndustrialHeader() {
         {/* BRAND LOGO */}
         <Link href="/" className="flex-shrink-0 group">
           {logoUrl ? (
-            <Image src={logoUrl} alt={name} width={140} height={45} loader={imageLoader} className="object-contain h-10 w-32" />
+            <Image src={logoUrl} alt={name} width={140} height={45} loader={imageLoader} className="object-contain h-20 w-32" />
           ) : (
             <div className="flex items-center gap-3">
               <div className="bg-amber-500 p-1.5 rotate-3 group-hover:rotate-0 transition-transform">

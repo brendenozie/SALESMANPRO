@@ -270,7 +270,7 @@ function InteractiveHeroCard() {
           <div className="md:col-span-2 space-y-6">
             <div className="flex justify-between items-center">
               <h3 className="font-bold text-slate-900 text-lg">Overview</h3>
-              <div className="h-8 w-32 bg-slate-100 rounded-lg"></div>
+              <div className="h-20 w-32 bg-slate-100 rounded-lg"></div>
             </div>
             
             {/* Charts Section */}

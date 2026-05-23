@@ -80,7 +80,7 @@ export default function AgrovetHeader() {
                     src={logoUrl}
                     alt={name || ''}
                     fill
-                    className="object-contain p-1  h-8 w-32"
+                    className="object-contain p-1  h-20 w-32"
                     loader={imageLoader}
                   />
                 ) : (

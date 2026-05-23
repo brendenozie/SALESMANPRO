@@ -119,7 +119,7 @@ const Header = () => {
             <div className="relative group">
               {logoUrl ? (
                 <div className="relative rounded-full overflow-hidden ring-2 ring-white/10 group-hover:ring-white/30 transition-all">
-                   <img src={logoUrl} alt={name} width={42} height={42} className="object-cover w-8 h-8" />
+                   <img src={logoUrl} alt={name} width={42} height={42} className="object-cover h-20 w-32" />
                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               ) : (

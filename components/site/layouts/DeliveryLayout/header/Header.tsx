@@ -144,7 +144,7 @@ export default function Navbar() {
               </div>
               <div className="flex flex-col leading-none">
                 {logoUrl ? (
-                  <Image src={logoUrl} alt={name || 'Logo'} width={90} height={45} loader={imageLoader} className="brightness-0 invert object-contain h-8 lg:h-10 w-auto" />
+                  <Image src={logoUrl} alt={name || 'Logo'} width={90} height={45} loader={imageLoader} className="brightness-0 invert object-contain h-20 w-32" />
                 ) : (
                   <>
                     <span className="text-2xl lg:text-3xl font-black italic tracking-tighter uppercase">{name || 'IMEVO'}</span>

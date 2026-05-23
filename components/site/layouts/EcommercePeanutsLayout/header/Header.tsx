@@ -103,7 +103,7 @@ export default function PeanutHeader() {
                     src={logoUrl}
                     alt={name}
                     fill
-                    className="object-contain  h-8 w-32"
+                    className="object-contain  h-20 w-32"
                     loader={imageLoader}
                     />
                 </div>

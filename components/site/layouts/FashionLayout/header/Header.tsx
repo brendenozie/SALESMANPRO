@@ -99,7 +99,7 @@ export default function Header() {
                 alt={name || 'Brand'}
                 width={140}
                 height={45}
-                className={`object-contain transition-all duration-500  h-8 w-32 ${
+                className={`object-contain transition-all duration-500  h-20 w-32 ${
                   scrolled ? 'brightness-100 dark:invert' : 'brightness-0 invert'
                 }`}
                 loader={imageLoader}

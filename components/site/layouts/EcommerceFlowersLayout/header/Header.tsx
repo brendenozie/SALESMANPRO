@@ -94,7 +94,7 @@ export default function Header() {
                   alt={name || 'Logo'}
                   width={120}
                   height={50}
-                  className={`object-contain  h-8 w-32 transition-transform duration-500 ${scrolled ? 'scale-90' : 'scale-110'}`}
+                  className={`object-contain  h-20 w-32 transition-transform duration-500 ${scrolled ? 'scale-90' : 'scale-110'}`}
                   loader={imageLoader}
                 />
               ) : (

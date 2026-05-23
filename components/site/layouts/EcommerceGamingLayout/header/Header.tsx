@@ -87,7 +87,7 @@ export default function Header() {
                 alt={name || 'Store Logo'}
                 width={120}
                 height={50}
-                className="object-contain dark:invert  h-8 w-32"
+                className="object-contain dark:invert  h-20 w-32"
                 loader={imageLoader}
               />
             ) : (

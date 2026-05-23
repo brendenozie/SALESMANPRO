@@ -90,10 +90,10 @@ export default function Header() {
                 <Image
                   src={logoUrl}
                   alt={name || 'Store'}
-                  width={40}
-                  height={40}
+                  width={160}
+                  height={80}
                   loader={imageLoader}
-                  className="w-10 h-10 object-contain grayscale group-hover:grayscale-0 transition-all"
+                  className="w-32 h-20 object-contain grayscale group-hover:grayscale-0 transition-all"
                 />
               ) : (
                 <span className="text-xl font-black uppercase tracking-tighter text-slate-900 dark:text-white">

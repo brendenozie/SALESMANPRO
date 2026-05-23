@@ -60,7 +60,7 @@ export default function Header() {
           {/* --- LOGO & SCHOOL NAME --- */}
           <div className="flex items-center gap-4 cursor-pointer shrink-0" onClick={() => router.push(`/site/${slug}`)}>
             {logoUrl && (
-              <Image src={logoUrl} alt={name} width={45} height={45} loader={loader} className=" object-contain  h-8 w-32" priority />
+              <Image src={logoUrl} alt={name} width={45} height={45} loader={loader} className=" object-contain  h-20 w-32" priority />
             )}
             <div className="flex flex-col border-l border-slate-200 pl-4">
               <span className="text-lg md:text-xl font-serif font-bold text-slate-900 leading-tight tracking-tight">

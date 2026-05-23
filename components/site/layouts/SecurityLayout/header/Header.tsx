@@ -114,7 +114,7 @@ export default function HeaderLightMode() {
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center h-12">
           
           {/* Logo or Name */}
-          <Link href={`/${slug}`} className="flex items-center gap-3">
+          <Link href={`/`} className="flex items-center gap-3">
             {logoUrl ? (
               <Image
                 src={logoUrl}
@@ -123,7 +123,7 @@ export default function HeaderLightMode() {
                 width={140}
                 height={40}
                 // Light mode: ensure logo contrast against white background
-                className={`object-contain h-10 w-32 ${scrolled ? 'filter-none' : 'filter brightness-125'}`} 
+                className={`object-contain h-20 w-32 ${scrolled ? 'filter-none' : 'filter brightness-125'}`} 
               />
             ) : (
               <span

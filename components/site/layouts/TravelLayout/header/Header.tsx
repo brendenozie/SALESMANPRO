@@ -87,7 +87,7 @@ export default function Header() {
                     width={130}
                     height={44}
                     loader={loader}
-                    className="object-contain cursor-pointer transition-transform duration-300 hover:scale-102 filter brightness-100 dark:invert-0  h-8 w-32"
+                    className="object-contain cursor-pointer transition-transform duration-300 hover:scale-102 filter brightness-100 dark:invert-0  h-20 w-32"
                   />
                 ) : (
                   <span className="text-2xl font-serif font-bold tracking-widest bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent">
@@ -222,7 +222,7 @@ export default function Header() {
                       width={110}
                       height={36}
                       loader={loader}
-                      className="object-contain  h-8 w-32"
+                      className="object-contain  h-20 w-32"
                     />
                   ) : (
                     <span className="text-xl font-serif font-bold tracking-widest">{name}</span>

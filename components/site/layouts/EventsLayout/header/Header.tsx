@@ -149,9 +149,9 @@ export default function Header() {
                 <Image
                   src={logoUrl}
                   alt={name}
-                  width={40}
-                  height={40}
-                  className="h-10 w-10 object-contain rounded-lg"
+                  width={160}
+                  height={80}
+                  className="h-20 w-32 object-contain rounded-lg"
                   loader={({ src, width, quality }) =>
                     `${src}?w=${width}&q=${quality || 75}`
                   }

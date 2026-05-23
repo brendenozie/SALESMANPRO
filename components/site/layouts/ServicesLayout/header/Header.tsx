@@ -198,7 +198,7 @@ const Header = ({ storeFormData }: { storeFormData: any }) => {
                   alt={storeFormData.name}
                   width={140}
                   height={50}
-                  className="h-8 w-32 object-contain"
+                  className="h-20 w-32 object-contain"
                 />
               ) : (
                 <span className={clsx(
