@@ -2078,6 +2078,23 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/properties-offers`,
       icon: DocumentTextIcon,
     }, // Manage offers, sales agreements, and contracts
+      //   Properties
+      //   ├─ All Properties
+      //   ├─ Units
+      //   ├─ Amenities
+      // Listings
+      // Tenants
+      // Owners
+      // Leases
+      // Payments
+      // Maintenance
+      // Vendors
+      // Reports
+      // Calendar
+      // Messages
+      // Documents
+      // Team
+      // Settings
     {
       label: "Virtual Tours",
       href: `/admin/${adminSlug}/properties-virtual-tours`,

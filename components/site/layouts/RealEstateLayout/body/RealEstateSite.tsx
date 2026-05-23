@@ -451,7 +451,7 @@ const handleSearch = (filters: SearchFilters) => {
   }
 
   // Navigate to listings page
-  router.push(`/realestate/${slug}/listings?${params.toString()}`);
+  router.push(`/realestate/listings?${params.toString()}`);
 };
 
   const handleNewsletter = (e: React.FormEvent) => {
