@@ -18,9 +18,12 @@ interface SearchFilters {
   location: string;
   minPrice: string;
   maxPrice: string;
-  category?: string;
-  subcategory?: string;
+  category?: string; // The ID or slug of the selected category
+  subcategory?: string; // The ID or slug of the selected subcategory
+  categoryId?: string; // The ID of the selected category
+  subcategoryId?: string; // The ID of the selected subcategory
 }
+
 
 interface HeroSectionProps {
   store?: StoreForm | null;
@@ -34,14 +37,16 @@ const defaultHeroSlides: HeroSlide[] = [
     headline: "Find Your Perfect\nUrban Oasis",
     subline: "Explore modern apartments and stylish lofts in the city's heart.",
     id: "1", companyId: "", type: null, price: null, order: 0, ctaText: null, ctaLink: null, videoLink: null, badgeText: null, endsAt: null, iconKey: null, backgroundColor: null, textColor: null,
-    productImageUrl: null
+    productImageUrl: null,
+    stats: null
   },
   {
     imageUrl: "https://images.unsplash.com/photo-1594950939511-b76964a35043?q=80&w=2670&auto=format&fit=crop",
     headline: "Escape to Serene\nCountry Living",
     subline: "Discover spacious homes with sprawling gardens and tranquil views.",
     id: "2", companyId: "", type: null, price: null, order: 0, ctaText: null, ctaLink: null, videoLink: null, badgeText: null, endsAt: null, iconKey: null, backgroundColor: null, textColor: null,
-    productImageUrl: null
+    productImageUrl: null,
+    stats: null
   },
 ];
 
@@ -83,16 +88,25 @@ export default function HeroSection({
   const subcategoryRef = useRef<HTMLDivElement>(null);
 
   // --- Search Logic ---
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSearch({
-      location,
-      minPrice,
-      maxPrice,
-      category: selectedCategory?.categoryId || selectedCategory?.id,
-      subcategory: selectedSubcategory?.slug || selectedSubcategory?.id,
-    });
-  };
+const handleSearchSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
+
+  onSearch({
+    location: location.trim(),
+
+    minPrice: minPrice ? String(minPrice) : "",
+    maxPrice: maxPrice ? String(maxPrice) : "",
+
+    // ✅ Product category → ObjectId
+    categoryId: selectedCategory?.categoryId ?? "",
+
+    // ✅ Category string (optional, if you use it) selectedCategory?.slug ?? 
+    category: selectedCategory?.displayName ?? undefined,
+
+    // ✅ Subcategory → NAME (matches subCategoryName in Prisma)
+    subcategory: selectedSubcategory?.name ?? undefined,
+  });
+};
 
   const filteredTrendingLocations = trendingLocations.filter((loc) =>
     loc.name.toLowerCase().includes(location.toLowerCase())

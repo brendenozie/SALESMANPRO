@@ -2123,7 +2123,6 @@ model marketplaceListings {
   @@index([isDiscounted])
   @@index([isNewArrival])
 }
-
 model ProductReview {
   id                    String                  @id @default(auto()) @map("_id") @db.ObjectId
   productId             String                  @db.ObjectId

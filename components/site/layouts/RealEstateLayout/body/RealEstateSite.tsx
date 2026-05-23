@@ -200,7 +200,8 @@ const sampleStoreData : StoreForm = {
       photoAlbumId: null,
       videoAlbumId: null,
       createdAt: null,
-      updatedAt: null
+      updatedAt: null,
+      subCategory: null
     },
     {
       "title": "Navigating the Current Real Estate Market: Trends and Forecasts", coverImage: "/blog/blog2.jpg", "publishDate": new Date(),
@@ -230,7 +231,8 @@ const sampleStoreData : StoreForm = {
       photoAlbumId: null,
       videoAlbumId: null,
       createdAt: null,
-      updatedAt: null
+      updatedAt: null,
+      subCategory: null
     },
     {
       "title": "Maximizing Your Home's Value: Effective Staging Techniques", coverImage: "/blog/blog3.jpg", "publishDate": new Date(),
@@ -260,13 +262,20 @@ const sampleStoreData : StoreForm = {
       photoAlbumId: null,
       videoAlbumId: null,
       createdAt: null,
-      updatedAt: null
+      updatedAt: null,
+      subCategory: null
     },
     {
       "title": "The Rise of Sustainable Homes: What You Need to Know", coverImage: "/blog/blog4.jpg", "publishDate": new Date()
       // "May 30, 2025", 
       // "author": "Green Living Expert" 
       ,
+
+
+
+
+
+
 
 
 
@@ -296,7 +305,8 @@ const sampleStoreData : StoreForm = {
       photoAlbumId: null,
       videoAlbumId: null,
       createdAt: null,
-      updatedAt: null
+      updatedAt: null,
+      subCategory: null
     },
   ],
   id: "",
@@ -348,7 +358,8 @@ const sampleStoreData : StoreForm = {
   Podcast: [],
   services: [],
   destinations: [],
-  tourPackages: []
+  tourPackages: [],
+  galleries: []
 };
 
 // Updated SearchFilters to include category and subcategory
@@ -358,6 +369,8 @@ interface SearchFilters {
   maxPrice: string;
   category?: string; // The ID or slug of the selected category
   subcategory?: string; // The ID or slug of the selected subcategory
+  categoryId?: string; // The ID of the selected category
+  subcategoryId?: string; // The ID of the selected subcategory
 }
 
 //──────────────────────────────────────────────────────────────────────────────
@@ -406,19 +419,40 @@ export default function RealEstateSite({ pageData, companyId }: { pageData: Stor
   }, [slug]);
 
   
-  // This goes in a Client Component wrapper or inside a page that uses 'use client'
-  const handleSearch = (filters: SearchFilters) => {
-    const params = new URLSearchParams();
+  // Client Component
+const handleSearch = (filters: SearchFilters) => {
+  const params = new URLSearchParams();
 
-    if (filters.location) params.set("location", filters.location);
-    if (filters.minPrice) params.set("minPrice", filters.minPrice);
-    if (filters.maxPrice) params.set("maxPrice", filters.maxPrice);
-    if (filters.category) params.set("category", filters.category);
-    if (filters.subcategory) params.set("subcategory", filters.subcategory);
+  if (filters.location) {
+    params.set("location", filters.location);
+  }
 
-    // Navigate to the current slug's listing page with new params
-    router.push(`/realestate/${slug}?${params.toString()}`);
-  };
+  if (filters.minPrice) {
+    params.set("minPrice", String(filters.minPrice));
+  }
+
+  if (filters.maxPrice) {
+    params.set("maxPrice", String(filters.maxPrice));
+  }
+
+  // ✅ Product Category (ObjectId)
+  if (filters.categoryId) {
+    params.set("categoryId", filters.categoryId);
+  }
+
+  // ✅ Optional human-readable category
+  if (filters.category) {
+    params.set("category", filters.category);
+  }
+
+  // ✅ Subcategory name (matches subCategoryName)
+  if (filters.subcategory) {
+    params.set("subcategory", filters.subcategory);
+  }
+
+  // Navigate to listings page
+  router.push(`/realestate/${slug}/listings?${params.toString()}`);
+};
 
   const handleNewsletter = (e: React.FormEvent) => {
     e.preventDefault();

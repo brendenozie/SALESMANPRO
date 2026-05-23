@@ -23,19 +23,50 @@ export default async function ProductListPage({ params, searchParams }: ProductL
   const pageSize = 12;
 
   const whereClause: Prisma.marketplaceListingsWhereInput = {
-    companyId,
-    ...(searchParams.category && { categoryId: searchParams.category }),
-    ...(searchParams.subcategory && { subCategoryId: searchParams.subcategory }),
-    ...((searchParams.minPrice || searchParams.maxPrice) && {
-      finalPrice: {
-        gte: searchParams.minPrice ? parseFloat(searchParams.minPrice) : undefined,
-        lte: searchParams.maxPrice ? parseFloat(searchParams.maxPrice) : undefined,
-      },
-    }),
-    ...(searchParams.location && {
-      locationName: { contains: searchParams.location, mode: "insensitive" },
-    }),
-  };
+  companyId,
+
+  // ✅ Product Category (ObjectId)
+  ...(searchParams.categoryId && {
+    productCategoryId: searchParams.categoryId,
+  }),
+
+  // ✅ Category (string / enum-like)
+  ...(searchParams.category && {
+    category: searchParams.category,
+  }),
+
+  // ✅ Subcategory (by name – NOT Json)
+  ...(searchParams.subcategory && {
+    subCategoryName: {
+      equals: searchParams.subcategory,
+      mode: "insensitive",
+    },
+  }),
+
+  // ✅ Price Range
+  ...((searchParams.minPrice || searchParams.maxPrice) && {
+    finalPrice: {
+      gte: searchParams.minPrice
+        ? Number(searchParams.minPrice)
+        : undefined,
+      lte: searchParams.maxPrice
+        ? Number(searchParams.maxPrice)
+        : undefined,
+    },
+  }),
+
+  // ✅ Location search (denormalized string)
+  ...(searchParams.location && {
+    locationName: {
+      contains: searchParams.location,
+      mode: "insensitive",
+    },
+  }),
+
+  // ✅ Only active listings (recommended)
+  status: "ACTIVE",
+};
+
 
   // 2. Fetch Data
   const [categories, listings, totalCount, companyLocations ] = await Promise.all([
@@ -66,23 +97,37 @@ export default async function ProductListPage({ params, searchParams }: ProductL
       <HeroSectionWrapper 
         store={store as any} 
         categories={categories}
-        initialLocations={
-        Array.isArray(companyLocations)
-          ? companyLocations.map((cl: any) => {
-              // Fallback logic: Use the nested location object, or the join record itself
-              const data = cl.location || cl; 
-              
+        // initialLocations={
+        //   Array.isArray(companyLocations)
+        //     ? companyLocations.map((cl: any) => {
+        //         // Fallback logic: Use the nested location object, or the join record itself
+        //         const data = cl.location || cl; 
+                
+        //         return {
+        //           id: data.id,
+        //           name: data.name || "Unknown Location",
+        //           // Use the slug if it exists, otherwise create one from the name
+        //           slug: data.slug || data.name?.toLowerCase().trim().replace(/\s+/g, "-") || "",
+        //           status: data.status || "active",
+        //           ...data, // Spread remaining fields
+        //         };
+        //       }).filter(loc => loc.name && loc.slug) // Filter out any broken records
+        //     : []
+        // }
+      initialLocations={
+          companyLocations
+            .map((cl) => {
+              if (!cl.location) return null;
+
               return {
-                id: data.id,
-                name: data.name || "Unknown Location",
-                // Use the slug if it exists, otherwise create one from the name
-                slug: data.slug || data.name?.toLowerCase().trim().replace(/\s+/g, "-") || "",
-                status: data.status || "active",
-                ...data, // Spread remaining fields
+                id: cl.location.id,
+                name: cl.location.name,
+                slug: cl.location.slug,
+                status: cl.location.status ?? "active",
               };
-            }).filter(loc => loc.name && loc.slug) // Filter out any broken records
-          : []
-      }
+            })
+            .filter(Boolean)
+        }
         slug={slug} 
       />
 
