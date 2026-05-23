@@ -9,6 +9,7 @@ import { StoreForm, MarketListingForm } from '@/types/typings';
 
 // Above-the-fold components - statically imported
 import CategorySection from './components/CategorySection';
+import CategoriesSection from './components/CategoriesSection';
 import DailyBestSells from './components/DailyBestSells';
 import FeaturesSection from './components/FeaturesSection';
 import SleepTapeAd from './components/SleepTapeAd';
@@ -107,14 +108,15 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteShoe
     <div>
       <HeroSlider heroSlides={heroSlides} />
       <FeaturesSection features={features} themeSettings={themeSettings} />
+      <CategoriesSection StoreCategory={StoreCategory} themeSettings={themeSettings} />
       <CategorySection promotions={promotions} themeSettings={themeSettings} />
       <PromoSection promotions={promotions} />
       <DynamicPopularProducts id={id} themeSettings={themeSettings} marketplaceListings={marketplaceListings} slug={slug} />
       <MetricsSection  coreValues={CoreValues} />
       <DynamicDailyBestSells id={id} />
       <SleepTapeAd promotions={promotions} themeSettings={themeSettings} />
-      <TrendingPromotion promotions={promotions} themeSettings={themeSettings}  />
       <AllProducts martketplaceListings={marketplaceListings} themeSettings={themeSettings} />
+      <TrendingPromotion promotions={promotions} themeSettings={themeSettings}  />
       <AwardsSection awards={awards} />
       <BannerSection promotions={promotions} themeSettings={themeSettings}/>
       <TestimonialsSection testimonials={testimonials} />

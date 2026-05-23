@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import { 
   TruckIcon, 
   ShieldCheckIcon, 
@@ -10,7 +10,6 @@ import {
   ArrowRightIcon 
 } from '@heroicons/react/24/outline';
 
-// Dummy data updated for the footwear context
 const dummyPromotionData = {
   title: 'Engineered for the Modern Athlete',
   subtitle: 'The Ultimate Comfort & Style',
@@ -18,13 +17,13 @@ const dummyPromotionData = {
     'Experience a breakthrough in footwear technology. Our shoes are designed to provide unparalleled kinetic support and cloud-like cushioning, ensuring you stay peak-performance all day long. Whether you’re hitting the track or the terminal, move with absolute confidence.',
   bannerUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80', 
   ctaText: 'Shop the Collection',
-  ctaLink: '/products',
+  ctaLink: '/ecommerceshoes/products',
   featureImage1: 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?auto=format&fit=crop&w=400&q=80',
   featureImage2: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=400&q=80',
   perks: [
-    { icon: TruckIcon, text: 'Fast Global Shipping' },
-    { icon: ShieldCheckIcon, text: 'Authenticity Guarantee' },
-    { icon: PhoneIcon, text: '24/7 Concierge' },
+    { icon: TruckIcon, text: 'Fast Global Shipping', detail: 'Priority dispatch network' },
+    { icon: ShieldCheckIcon, text: 'Authenticity Guarantee', detail: '100% verified silhouettes' },
+    { icon: PhoneIcon, text: '24/7 Priority Concierge', detail: 'Direct specialist pipeline' },
   ],
 };
 
@@ -33,123 +32,162 @@ interface ShoePromotionAdProps {
   themeSettings?: any;
 }
 
+const contentVariants: Variants = {
+  hidden: { opacity: 0, x: 40 },
+  visible: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 60, damping: 15 } }
+};
+
 export default function ShoePromotionAd({ promotions, themeSettings }: ShoePromotionAdProps) {
-  // Take the second promotion if available, otherwise fallback
   const promotion = promotions?.length >= 2 ? promotions[1] : null;
   const adData = promotion || dummyPromotionData;
 
-  const primary = themeSettings?.primaryColor || '#3B82F6';
-  const secondary = themeSettings?.secondaryColor || '#10B981';
+  const primary = themeSettings?.primaryColor || '#18181b';
 
   return (
-    <section className="relative py-24 lg:py-32 overflow-hidden bg-white dark:bg-black transition-colors duration-500">
-      {/* Background Abstract Shapes */}
-      <div 
-        className="absolute top-0 right-0 w-1/2 h-full opacity-[0.03] dark:opacity-[0.07] pointer-events-none select-none"
-        style={{ color: primary }}
-      >
-        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full scale-150">
-          <path fill="currentColor" d="M44.7,-76.4C58.3,-69.2,70.1,-59,78.5,-46.3C86.9,-33.6,91.9,-18.3,90.4,-3.4C88.9,11.5,80.9,26,71.5,39C62.1,52,51.3,63.5,38.2,71.8C25.1,80.1,9.7,85.2,-5.4,84.3C-20.5,83.4,-35.3,76.5,-48.4,67.3C-61.5,58.1,-72.9,46.6,-79.8,33.1C-86.7,19.6,-89.1,4.1,-86.3,-10.5C-83.5,-25.1,-75.5,-38.8,-64.4,-48.5C-53.3,-58.2,-39.1,-63.9,-25.7,-71.2C-12.3,-78.5,0.3,-87.4,12.3,-86.4C24.3,-85.4,31.1,-83.6,44.7,-76.4Z" transform="translate(100 100)" />
-        </svg>
+    <section className="relative py-24 lg:py-32 overflow-hidden bg-zinc-50 dark:bg-zinc-950 transition-colors duration-500 border-b border-zinc-200/40 dark:border-zinc-900/40">
+      
+      {/* High-Tech Background Structural Telemetry Grid */}
+      <div className="absolute inset-0 pointer-events-none select-none opacity-40 dark:opacity-20">
+        <div className="absolute top-12 right-12 w-96 h-96 bg-zinc-200/50 dark:bg-zinc-800/30 blur-[120px] rounded-full" />
+        <div className="absolute -bottom-24 -left-24 w-[500px] h-[500px] bg-zinc-300/40 dark:bg-zinc-900/20 blur-[140px] rounded-full" />
       </div>
 
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center relative z-10">
         
-        {/* --- Left Block: Dynamic Visuals --- */}
-        <div className="lg:col-span-5 relative">
-          <motion.div 
-            initial={{ opacity: 0, rotate: -5, scale: 0.9 }}
-            whileInView={{ opacity: 1, rotate: 3, scale: 1 }}
-            transition={{ duration: 0.8 }}
-            className="relative z-20 group"
-          >
-            <img
-              src={adData.bannerUrl}
-              alt="Promotion"
-              className="w-full rounded-[2rem] shadow-2xl border-8 border-white dark:border-zinc-900 transition-transform duration-700 group-hover:rotate-0"
-            />
-            {/* Glossy Badge */}
-            <div className="absolute -bottom-6 -right-6 bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-xl flex items-center gap-4 border border-gray-100 dark:border-zinc-700">
-               <div className="flex -space-x-3">
-                 {[1,2,3].map(i => (
-                   <div key={i} className="w-8 h-8 rounded-full border-2 border-white dark:border-zinc-800 bg-gray-200" />
-                 ))}
-               </div>
-               <span className="text-xs font-black uppercase tracking-widest dark:text-white">10k+ Sold</span>
+        {/* --- LEFT BLOCK: Asymmetric Multi-Layer Showcase Visual Deck --- */}
+        <div className="lg:col-span-5 relative w-full flex items-center justify-center lg:justify-start">
+          <div className="relative w-full max-w-[420px] sm:max-w-[450px] aspect-[4/5]">
+            
+            {/* Background Structural Vault Plate */}
+            <div className="absolute inset-0 bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-[0_24px_48px_-15px_rgba(0,0,0,0.03)] border border-zinc-100 dark:border-zinc-800" />
+            
+            {/* Overlapping Feature Layer 1 */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8, rotate: -8 }}
+              whileInView={{ opacity: 1, scale: 1, rotate: -6 }}
+              viewport={{ once: true }}
+              transition={{ type: 'spring', stiffness: 50, damping: 12, delay: 0.1 }}
+              className="absolute -top-6 -left-6 w-36 h-36 rounded-2xl overflow-hidden border-4 border-white dark:border-zinc-900 shadow-2xl hidden sm:block"
+            >
+              <img 
+                src={adData.featureImage1} 
+                alt="Architecture Close-up" 
+                className="w-full h-full object-cover"
+              />
+            </motion.div>
+
+            {/* Overlapping Feature Layer 2 */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8, rotate: 12 }}
+              whileInView={{ opacity: 1, scale: 1, rotate: 8 }}
+              viewport={{ once: true }}
+              transition={{ type: 'spring', stiffness: 50, damping: 12, delay: 0.2 }}
+              className="absolute -bottom-6 -right-6 w-40 h-40 rounded-3xl overflow-hidden border-4 border-white dark:border-zinc-900 shadow-2xl hidden sm:block"
+            >
+              <img 
+                src={adData.featureImage2} 
+                alt="Heel Configuration Cushioning" 
+                className="w-full h-full object-cover"
+              />
+            </motion.div>
+
+            {/* Primary Hero Display Plate Container */}
+            <div className="absolute inset-4 rounded-[2rem] bg-zinc-50 dark:bg-zinc-950 overflow-hidden flex items-center justify-center p-4 border border-zinc-100 dark:border-zinc-900">
+              <motion.div
+                initial={{ opacity: 0, y: 30, rotate: -15 }}
+                whileInView={{ opacity: 1, y: 0, rotate: -10 }}
+                viewport={{ once: true }}
+                whileHover={{ rotate: -2, scale: 1.05 }}
+                transition={{ type: 'spring', stiffness: 100, damping: 15 }}
+                className="relative w-full h-full cursor-grab active:cursor-grabbing"
+              >
+                <img
+                  src={adData.bannerUrl}
+                  alt="Hero Campaign Silhouette"
+                  className="w-full h-full object-contain drop-shadow-[0_25px_30px_rgba(0,0,0,0.15)] dark:drop-shadow-[0_25px_30px_rgba(255,255,255,0.02)]"
+                />
+              </motion.div>
             </div>
-          </motion.div>
-          
-          {/* Floating Accents */}
-          <motion.div 
-            animate={{ y: [0, -20, 0] }}
-            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-            className="absolute -top-10 -left-10 z-10 hidden md:block"
-          >
-            <img 
-              src={adData.featureImage1} 
-              alt="Feature" 
-              className="w-40 h-40 rounded-3xl object-cover shadow-2xl border-4 border-white dark:border-zinc-900"
-            />
-          </motion.div>
+
+            {/* Floating Live Telemetry Statistics Badge */}
+            <div className="absolute top-6 right-6 bg-zinc-900/90 dark:bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[9px] font-black uppercase tracking-widest text-white dark:text-zinc-900">10k+ Deployed</span>
+            </div>
+
+          </div>
         </div>
 
-        {/* --- Right Block: Content --- */}
-        <div className="lg:col-span-7 space-y-8">
+        {/* --- RIGHT BLOCK: Technical Campaign Copy Frame --- */}
+        <motion.div 
+          variants={contentVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="lg:col-span-7 flex flex-col justify-center space-y-8"
+        >
           <div>
-            <motion.span 
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              className="inline-block text-xs font-black uppercase tracking-[0.4em] mb-4"
-              style={{ color: primary }}
-            >
-              {adData.subtitle}
-            </motion.span>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="h-[1px] w-6 bg-zinc-400" />
+              <span 
+                className="text-[10px] font-black uppercase tracking-[0.3em] block"
+                style={{ color: primary === '#18181b' ? undefined : primary }}
+              >
+                {adData.subtitle}
+              </span>
+            </div>
             
-            <h2 className="text-5xl md:text-7xl font-black text-gray-900 dark:text-white leading-[1.1] uppercase italic tracking-tighter">
-              {adData.title}
+            <h2 className="text-4xl md:text-6xl font-black text-zinc-900 dark:text-white leading-[1.05] uppercase tracking-tight">
+              Engineered <br />
+              <span className="text-zinc-400 dark:text-zinc-500 font-normal italic font-serif lowercase">for the</span> Modern Athlete
             </h2>
             
-            <p className="mt-6 text-lg text-gray-600 dark:text-zinc-400 max-w-xl leading-relaxed">
+            <p className="mt-6 text-sm md:text-base text-zinc-500 dark:text-zinc-400 max-w-xl leading-relaxed font-medium">
               {adData.description}
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-4">
+          {/* Action Trigger Block Layout Frame */}
+          <div className="pt-2">
             <Link href={adData.ctaLink || '/ecommerceshoes/products'} passHref>
               <button 
-                className="group flex items-center gap-3 text-white font-bold py-5 px-10 rounded-2xl shadow-xl transition-all hover:scale-105 active:scale-95"
-                style={{ backgroundColor: primary }}
+                className="group inline-flex items-center gap-4 text-white dark:text-zinc-900 font-black text-[11px] uppercase tracking-widest py-5 px-10 rounded-[1.75rem] bg-zinc-900 dark:bg-white transition-all hover:opacity-90 hover:shadow-xl hover:shadow-zinc-950/10 active:scale-98"
+                style={{ backgroundColor: primary === '#18181b' ? undefined : primary }}
               >
-                {adData.ctaText}
-                <ArrowRightIcon className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                <span>{adData.ctaText}</span>
+                <div className="h-5 w-5 bg-white/10 dark:bg-zinc-900/10 rounded-full flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                  <ArrowRightIcon className="w-3 h-3 stroke-[3]" />
+                </div>
               </button>
             </Link>
           </div>
 
-          {/* Perks Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 pt-10 border-t border-gray-100 dark:border-zinc-800">
-            {adData.perks.map((perk: any, index: number) => (
-              <div key={index} className="flex flex-col items-center sm:items-start text-center sm:text-left group">
-                <div 
-                  className="p-3 rounded-xl mb-3 transition-colors group-hover:bg-opacity-20"
-                  style={{ backgroundColor: `${primary}15`, color: primary }}
-                >
-                  <perk.icon className="w-6 h-6" />
+          {/* Perks Matrix Block System */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-10 border-t border-zinc-200/60 dark:border-zinc-800/60">
+            {adData.perks.map((perk: any, index: number) => {
+              const Icon = perk.icon;
+              return (
+                <div key={index} className="flex gap-4 items-start group">
+                  <div 
+                    className="p-3 rounded-xl transition-all duration-300 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white group-hover:scale-105"
+                    style={{ color: primary === '#18181b' ? undefined : primary }}
+                  >
+                    <Icon className="w-5 h-5 stroke-[1.75]" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-zinc-900 dark:text-white uppercase tracking-tight">
+                      {perk.text}
+                    </h4>
+                    <p className="text-[11px] text-zinc-400 dark:text-zinc-500 font-medium mt-0.5 leading-tight">
+                      {perk.detail || 'Verified enterprise spec'}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-sm font-bold text-gray-900 dark:text-white leading-tight">
-                  {perk.text}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
-        </div>
-      </div>
+        </motion.div>
 
-      {/* Modern Wave Mask */}
-      <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
-        <svg className="relative block w-full h-[60px]" viewBox="0 0 1200 120" preserveAspectRatio="none">
-          <path d="M1200 120L0 120L0 0L1200 120Z" className="fill-gray-50 dark:fill-zinc-950"></path>
-        </svg>
       </div>
     </section>
   );

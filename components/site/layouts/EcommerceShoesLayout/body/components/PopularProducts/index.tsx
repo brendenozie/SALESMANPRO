@@ -1,15 +1,17 @@
 'use client';
 
-import { useStateContext } from '@/contexts/ContextProvider';
-import { motion } from 'framer-motion';
+import React, { useMemo, useState } from 'react';
+
+import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { StarIcon, ArrowRightIcon, ShoppingBagIcon } from '@heroicons/react/24/solid';
+import { StarIcon, ArrowRightIcon, ShoppingBagIcon, MinusIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import { MarketListingForm } from '@/types/typings';
 import useSWR from 'swr';
 import { createCachedFetcher } from '@/lib/swrCachedFetcher';
 import { SkeletonGrid } from '../SkeletonGrid/SkeletonGrid';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { useStateContext } from '@/contexts/ContextProvider';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -28,105 +30,251 @@ const productVariants = {
   animate: { y: 0, opacity: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
 };
 
-const ProductGridItem = ({ product, isFeatured = false, primary, secondary, contactPhone }: { product: MarketListingForm, isFeatured?: boolean, primary: string, secondary: string, slug: string, contactPhone: string }) => {
+const ProductGridItem = ({
+  product,
+  isFeatured = false,
+  primary,
+  secondary,
+  slug,
+  contactPhone,
+}: {
+  product: MarketListingForm;
+  isFeatured?: boolean;
+  primary: string;
+  secondary: string;
+  slug: string;
+  contactPhone: string;
+}) => {
+  const [isSelectingSize, setIsSelectingSize] = useState(false);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
 
-  const discount = product.sellingPrice && product.finalPrice && product.sellingPrice > product.finalPrice
-    ? Math.round(((product.sellingPrice - product.finalPrice) / product.sellingPrice) * 100)
-    : null;
+  const { cart, addToCart, decreaseQuantity } = useStateContext();
+  const { storeFormData } = useStoreContext();
 
-  const rawImage = product.images?.[0];
-  const imageSrc = (typeof rawImage === 'string' ? rawImage : (rawImage as any)?.url) || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff';
+  const quantity =
+    cart.find((item: any) => item.id === product.id)?.quantity || 0;
 
-  // WhatsApp Bridge Config
-  const whatsappNumber = `${contactPhone || "254732 771 353"}`;
-  const message = encodeURIComponent(`Hi! Checking availability for the "${product.name}" in size [Input Size]. Is it in stock?`);
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || primary;
+
+  // ---------- IMAGE ----------
+  const imageSrc =
+    (typeof product.images?.[0] === "string"
+      ? product.images?.[0]
+      : (product.images?.[0] as any)?.url) ||
+    "https://images.unsplash.com/photo-1542291026-7eec264c27ff";
+
+  // ---------- WHATSAPP ----------
+  const whatsappNumber = storeFormData?.contactPhone || contactPhone || "254732771353";
+
+  const message = encodeURIComponent(
+    `Hi! I'm interested in "${product.name}" priced at KES ${(
+      product.finalPrice || product.sellingPrice || 0
+    ).toLocaleString()}${selectedSize ? ` (Size UK ${selectedSize})` : ""}. Is it available?`
+  );
+
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
+
+  // ---------- ADD TO CART ----------
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation(); // 🔥 FIX MOBILE NAVIGATION ISSUE
+
+    if (!selectedSize && product.category?.name?.toLowerCase().includes("shoe")) {
+      setIsSelectingSize(true);
+      return;
+    }
+
+    addToCart({
+      ...product,
+      finalPrice: product.finalPrice || product.sellingPrice || 0,
+      selectedSize,
+    });
+
+    setIsSelectingSize(false);
+  };
 
   return (
     <motion.div
       variants={productVariants}
-      className={`group relative flex flex-col bg-white dark:bg-[#0c0c0c] rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 transition-all duration-500 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] ${isFeatured ? 'md:col-span-2' : ''}`}
+      className={`group relative flex flex-col bg-white dark:bg-[#0c0c0c] rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 transition-all duration-500 ${
+        isFeatured ? "md:col-span-2" : ""
+      }`}
     >
-      {/* Image Section */}
-      <Link href={`/ecommerceshoes/products/${product.id}`} className="relative block w-full bg-zinc-50 dark:bg-zinc-900/50 overflow-hidden rounded-t-[2.5rem]" style={{ height: isFeatured ? '480px' : '320px' }}>
+      {/* ================= IMAGE (ONLY NAVIGATION ZONE) ================= */}
+      <Link
+        href={`/ecommerceshoes/products/${product.id}`}
+        className="relative block w-full overflow-hidden rounded-t-[2.5rem]"
+        style={{ height: isFeatured ? "480px" : "320px" }}
+      >
         <Image
           src={imageSrc}
           alt={product.name}
           fill
-          // style={{ objectFit: 'contain' }}
-          className="transition-transform duration-1000 group-hover:scale-110 group-hover:-rotate-3"
           loader={loader}
+          className="object-cover transition-transform duration-1000 group-hover:scale-110 group-hover:-rotate-3"
         />
-        
-        {/* Floating Utility Overlay */}
-        <div className="absolute top-6 right-6 flex flex-col gap-2 z-20">
-          <a 
-            href={whatsappUrl}
-            target="_blank"
-            onClick={(e) => e.stopPropagation()}
-            className="p-3 bg-[#25D366] text-white rounded-2xl shadow-xl hover:scale-110 transition-transform"
-            title="Check Availability"
-          >
-            <WhatsAppIcon className="w-5 h-5" />
-          </a>
-        </div>
-
-        {/* Quick Labels */}
-        <div className="absolute bottom-6 left-6 flex items-center gap-2">
-           {discount && (
-            <span className="bg-red-600 text-white text-[10px] font-black px-3 py-1.5 rounded-xl shadow-lg uppercase tracking-widest">
-              {discount}% OFF
-            </span>
-          )}
-          {isFeatured && (
-            <span className="bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 text-[10px] font-black px-3 py-1.5 rounded-xl shadow-lg uppercase tracking-widest">
-              Top Pick
-            </span>
-          )}
-        </div>
       </Link>
 
-      {/* Details Area */}
+      {/* ================= WHATSAPP FLOAT ================= */}
+      <a
+        href={whatsappUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => e.stopPropagation()}
+        className="absolute top-6 right-6 z-20 p-3 bg-[#25D366] text-white rounded-2xl shadow-xl hover:scale-110 transition-transform"
+      >
+        <WhatsAppIcon className="w-5 h-5" />
+      </a>
+
+      {/* ================= BADGES ================= */}
+      <div className="absolute top-6 left-6 z-20 flex flex-col gap-2">
+        {product.isNewArrival && (
+          <span className="bg-zinc-900 text-white text-[10px] font-black px-3 py-1 rounded-full">
+            New
+          </span>
+        )}
+
+        {product.isDiscounted && (
+          <span className="bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-full">
+            -
+            {Math.round(
+              ((product.sellingPrice - (product.finalPrice || 0)) /
+                product.sellingPrice) *
+                100
+            )}
+            %
+          </span>
+        )}
+      </div>
+
+      {/* ================= DETAILS ================= */}
       <div className="p-8 flex flex-col flex-grow">
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex flex-col gap-1">
-             <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Premium Footwear</span>
-             <h4 className="text-xl font-black text-zinc-900 dark:text-white leading-tight group-hover:text-indigo-600 transition-colors">
-               {product.name}
-             </h4>
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
+              {product.category?.name || "Premium Item"}
+            </p>
+            <h4 className="text-xl font-black text-zinc-900 dark:text-white">
+              {product.name}
+            </h4>
           </div>
-          <div className="flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-800 px-3 py-1.5 rounded-xl">
-            <StarIcon className="w-4 h-4 text-amber-500" />
-            <span className="text-xs font-black text-zinc-900 dark:text-zinc-300">4.9</span>
+
+          <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-lg">
+            <StarIcon className="w-3 h-3 text-amber-500" />
+            <span className="text-[10px] font-black">4.8</span>
           </div>
         </div>
 
-        <div className="mt-auto flex items-end justify-between">
-          <div className="flex flex-col">
-            {product.sellingPrice && (
-              <span className="text-xs line-through text-zinc-400 font-bold mb-1">
-                KSH {product.sellingPrice.toLocaleString()}
-              </span>
-            )}
-            <span className="text-3xl font-black italic tracking-tighter" style={{ color: primary }}>
-              <span className="text-sm not-italic mr-1">KSH</span>
-              {(product.finalPrice ?? 0).toLocaleString()}
+        <div className="mt-4">
+          <span className="text-2xl font-black text-zinc-900 dark:text-white">
+            KES {(product.finalPrice || 0).toLocaleString()}
+          </span>
+
+          {product.isDiscounted && (
+            <span className="ml-2 text-sm line-through text-zinc-400">
+              KES {product.sellingPrice?.toLocaleString()}
             </span>
-          </div>
-          
-          <Link href={`/ecommerceshoes/products/${product.id}`}>
-            <div 
-              className="flex items-center justify-center w-14 h-14 rounded-2xl bg-zinc-900 dark:bg-zinc-800 text-white shadow-xl group-hover:bg-indigo-600 transition-all duration-300 group-hover:rotate-[360deg]"
-              style={{ backgroundColor: primary }}
-            >
-              <ShoppingBagIcon className="w-6 h-6" />
+          )}
+        </div>
+
+        {/* ================= ACTIONS ================= */}
+        <div className="mt-6">
+          {quantity > 0 ? (
+            <div className="flex items-center justify-between bg-zinc-100 dark:bg-zinc-800 p-2 rounded-2xl">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  decreaseQuantity(product.id);
+                }}
+                className="p-3 bg-white dark:bg-zinc-700 rounded-xl"
+              >
+                <MinusIcon className="w-4 h-4" />
+              </button>
+
+              <span className="font-black">{quantity}</span>
+
+              <button
+                onClick={handleAddToCart}
+                className="p-3 bg-white dark:bg-zinc-700 rounded-xl"
+              >
+                <PlusIcon className="w-4 h-4" />
+              </button>
+
+              {selectedSize && (
+                <span className="text-[10px] font-black text-zinc-400">
+                  UK {selectedSize}
+                </span>
+              )}
             </div>
-          </Link>
+          ) : (
+            <div className="flex gap-2">
+              <button
+                onClick={handleAddToCart}
+                className="flex-[4] flex items-center justify-center gap-2 py-4 bg-zinc-900 text-white rounded-[1.5rem] font-black"
+              >
+                <ShoppingBagIcon className="w-4 h-4" />
+                Add to Cart
+              </button>
+
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                className="flex-1 flex items-center justify-center bg-[#25D366] text-white rounded-[1.5rem]"
+              >
+                <WhatsAppIcon className="w-5 h-5" />
+              </a>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* ================= SIZE PICKER (LIGHT VERSION) ================= */}
+      <AnimatePresence>
+        {isSelectingSize && (
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            className="absolute inset-0 z-30 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md flex flex-col justify-center items-center p-6"
+          >
+            <button
+              onClick={() => setIsSelectingSize(false)}
+              className="absolute top-4 right-4"
+            >
+              <XMarkIcon className="w-5 h-5" />
+            </button>
+
+            <p className="text-[10px] font-black mb-4">Select Size</p>
+
+            <div className="grid grid-cols-3 gap-2 w-full">
+              {["7", "8", "9", "10", "11", "12"].map((size) => (
+                <button
+                  key={size}
+                  onClick={() => setSelectedSize(size)}
+                  className={`py-3 rounded-xl font-black text-xs border ${
+                    selectedSize === size
+                      ? "bg-black text-white"
+                      : "border-zinc-300"
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={handleAddToCart}
+              className="mt-6 w-full py-4 bg-black text-white rounded-2xl font-black"
+            >
+              Confirm
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
+
 
 export default function PopularProducts({ id, themeSettings, marketplaceListings, slug = 'store' }: any) {
   const { storeFormData } = useStoreContext();

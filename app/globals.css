@@ -3,6 +3,9 @@
 @import 'react-time-picker/dist/TimePicker.css';
 @import 'react-clock/dist/Clock.css';
 
+@import 'slick-carousel/slick/slick.css';
+@import 'slick-carousel/slick/slick-theme.css';
+
 /* @import '@fullcalendar/common/main.css'; */
 /* @import '@fullcalendar/daygrid/main.css';
 @import '@fullcalendar/timegrid/main.css';

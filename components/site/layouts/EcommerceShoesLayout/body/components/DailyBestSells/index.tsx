@@ -7,9 +7,7 @@ import { ChevronLeftIcon, ChevronRightIcon, FireIcon } from '@heroicons/react/24
 import { createCachedFetcher } from '@/lib/swrCachedFetcher';
 import Slider from 'react-slick';
 
-// Slick styles (Should be in your global CSS ideally, but here for reference)
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
+
 
 // --- STYLED ARROWS ---
 const PrevArrow = ({ onClick }: { onClick?: () => void }) => (

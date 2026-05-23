@@ -249,6 +249,7 @@ alt="User"
 width={40}
 height={40}
 className="rounded-xl border border-gray-200 dark:border-gray-700"
+loader={imageLoader}
 />
 
 ) : (
