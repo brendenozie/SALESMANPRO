@@ -2,102 +2,130 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  TagIcon, PlusCircleIcon, PencilIcon, TrashIcon, CalendarDaysIcon,
-  CurrencyDollarIcon, 
+  TagIcon, 
+  PlusIcon, 
+  PencilSquareIcon, 
+  TrashIcon, 
+  CalendarDaysIcon,
+  CurrencyDollarIcon,
+  TicketIcon
 } from '@heroicons/react/24/solid';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useParams } from 'next/navigation';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import PromotionModal, { PromotionData } from './PromotionModal';
 import toast from 'react-hot-toast';
-import Link from 'next/link';
-import { PercentBadgeIcon } from '@heroicons/react/24/outline';
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
-// Define the PromotionData interface
-
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
-
-// Function to get the color for the status badge
-const getStatusColor = (status: PromotionData['status']) => {
+// Accessible status styling for both light and dark backgrounds
+const getStatusClasses = (status: PromotionData['status']) => {
   switch (status) {
-    case 'ACTIVE': return 'bg-green-500/20 text-green-300';
-    case 'SCHEDULED': return 'bg-blue-500/20 text-blue-300';
-    case 'EXPIRED': return 'bg-red-500/20 text-red-300';
-    case 'DRAFT': return 'bg-yellow-500/20 text-yellow-300';
-    default: return 'bg-gray-500/20 text-gray-300';
+    case 'ACTIVE': 
+      return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20';
+    case 'SCHEDULED': 
+      return 'bg-blue-100 text-blue-800 dark:bg-blue-500/10 dark:text-blue-400 border-blue-200 dark:border-blue-500/20';
+    case 'EXPIRED': 
+      return 'bg-rose-100 text-rose-800 dark:bg-rose-500/10 dark:text-rose-400 border-rose-200 dark:border-rose-500/20';
+    case 'DRAFT': 
+      return 'bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400 border-amber-200 dark:border-amber-500/20';
+    default: 
+      return 'bg-slate-100 text-slate-800 dark:bg-slate-500/10 dark:text-slate-400 border-slate-200 dark:border-slate-500/20';
   }
 };
 
-const PromotionCard: React.FC<{ promo: PromotionData, onEdit: (p: PromotionData) => void, onDelete: (p: PromotionData) => void }> = ({ promo, onEdit, onDelete }) => (
+const PromotionCard: React.FC<{ 
+  promo: PromotionData, 
+  onEdit: (p: PromotionData) => void, 
+  onDelete: (p: PromotionData) => void 
+}> = ({ promo, onEdit, onDelete }) => (
   <motion.div
-    initial={{ opacity: 0, y: 50 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5, delay: 0.1 }}
-    className="relative bg-gray-800/60 backdrop-blur-md rounded-2xl shadow-xl overflow-hidden transform hover:scale-[1.02] transition-transform duration-300 group"
+    layout
+    initial={{ opacity: 0, scale: 0.95 }}
+    animate={{ opacity: 1, scale: 1 }}
+    exit={{ opacity: 0, scale: 0.95 }}
+    transition={{ duration: 0.3 }}
+    className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md transition-all duration-300 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900/60 dark:backdrop-blur-md"
   >
+    {/* Optional background image visualization */}
     {promo.imageUrl && (
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <img
           src={promo.imageUrl}
           alt={promo.name}
-          className="w-full h-full object-cover opacity-20 group-hover:opacity-30 transition-opacity duration-300"
+          className="h-full w-full object-cover opacity-[0.04] transition-transform duration-500 group-hover:scale-105 dark:opacity-10"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent dark:from-slate-900" />
       </div>
     )}
 
-    <div className="relative z-10 p-6 flex flex-col h-full">
-      <div className="flex justify-between items-start mb-4">
-        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusColor(promo.status)}`}>
+    <div className="relative z-10 p-5 md:p-6 flex flex-col h-full grow">
+      <div className="flex items-center justify-between gap-4 mb-4">
+        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider ${getStatusClasses(promo.status)}`}>
           {promo.status}
         </span>
-        <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <motion.button
+        
+        {/* Actions panel: always viewable on touch-devices, clear hover states on desktop */}
+        <div className="flex items-center space-x-1.5 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
+          <button
             onClick={() => onEdit(promo)}
-            className="p-2 rounded-full bg-gray-700 text-indigo-400 hover:bg-indigo-600 hover:text-white transition-colors"
+            className="p-2 rounded-lg text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors"
             title="Edit Promotion"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
           >
-            <PencilIcon className="h-5 w-5" />
-          </motion.button>
-          <motion.button
+            <PencilSquareIcon className="h-4 w-4 md:h-5 md:w-5" />
+          </button>
+          <button
             onClick={() => onDelete(promo)}
-            className="p-2 rounded-full bg-gray-700 text-red-400 hover:bg-red-600 hover:text-white transition-colors"
+            className="p-2 rounded-lg text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors"
             title="Delete Promotion"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
           >
-            <TrashIcon className="h-5 w-5" />
-          </motion.button>
+            <TrashIcon className="h-4 w-4 md:h-5 md:w-5" />
+          </button>
         </div>
       </div>
 
-      <h3 className="text-2xl font-bold text-white mb-2 leading-tight drop-shadow-md">{promo.name}</h3>
-      <p className="text-gray-400 text-sm mb-4 line-clamp-2">{promo.description || 'No description provided.'}</p>
+      <div className="grow">
+        <h3 className="text-xl font-bold text-slate-900 dark:text-white line-clamp-1 mb-1.5">
+          {promo.name}
+        </h3>
+        <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-5">
+          {promo.description || 'No description provided.'}
+        </p>
+      </div>
       
-      <div className="mt-auto space-y-3">
-        <div className="flex items-center space-x-2">
-          <TagIcon className="h-5 w-5 text-purple-400" />
-          <span className="font-mono text-lg font-bold text-yellow-300">{promo.code}</span>
+      <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800/60 space-y-2.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-300">
+            <TagIcon className="h-4 w-4 text-slate-400" />
+            <span className="text-xs uppercase tracking-wider font-semibold text-slate-400">Code</span>
+          </div>
+          <span className="font-mono text-sm font-bold bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded text-indigo-600 dark:text-yellow-400">
+            {promo.code}
+          </span>
         </div>
 
-        <div className="flex items-center space-x-2">
-          {promo.discountType === 'PERCENTAGE' ? (
-            <PercentBadgeIcon className="h-5 w-5 text-green-400" />
-          ) : (
-            <CurrencyDollarIcon className="h-5 w-5 text-green-400" />
-          )}
-          <span className="text-xl font-bold text-green-400">{promo.discount}</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-300">
+            {promo.discountType === 'PERCENTAGE' ? (
+              <TicketIcon className="h-4 w-4 text-emerald-500" />
+            ) : (
+              <CurrencyDollarIcon className="h-4 w-4 text-emerald-500" />
+            )}
+            <span className="text-xs uppercase tracking-wider font-semibold text-slate-400">Value</span>
+          </div>
+          <span className="text-base font-bold text-emerald-600 dark:text-emerald-400">
+            {promo.discountType === 'PERCENTAGE' ? `${promo.discount}%` : `$${promo.discount}`}
+          </span>
         </div>
 
-        <div className="flex items-center space-x-2 text-gray-400 text-sm">
-          <CalendarDaysIcon className="h-5 w-5 text-indigo-400" />
-          <span>{promo.startDate}</span>
-          <span>-</span>
-          <span>{promo.endDate}</span>
+        <div className="flex items-center justify-between pt-1 text-xs text-slate-400 dark:text-slate-500">
+          <div className="flex items-center space-x-1">
+            <CalendarDaysIcon className="h-3.5 w-3.5" />
+            <span>Validity</span>
+          </div>
+          <span className="font-medium text-slate-600 dark:text-slate-400">
+            {promo.startDate} – {promo.endDate}
+          </span>
         </div>
       </div>
     </div>
@@ -195,74 +223,87 @@ export default function AdminPromotionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-indigo-950 to-gray-900 p-8 text-white font-sans">
-      <motion.h1
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-5xl md:text-6xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-600 mb-6 drop-shadow-lg"
-      >
-        Promotions & Deals
-      </motion.h1>
-
-      <p className="text-center text-gray-400 mb-12 max-w-2xl mx-auto">
-        Efficiently create, edit, and manage dynamic promotions and discount codes for your virtual tours and products.
-      </p>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="bg-gray-800/50 rounded-3xl shadow-2xl p-8 mb-12 border border-gray-700 backdrop-blur-md"
-      >
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-white mb-4 md:mb-0">All Promotions</h2>
-          <motion.button
-            onClick={openAddModal}
-            className="flex items-center space-x-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+    <div className="min-h-screen bg-slate-50 transition-colors duration-300 dark:bg-slate-950 p-4 sm:p-6 md:p-10 text-slate-800 dark:text-slate-100 font-sans">
+      <div className="max-w-7xl mx-auto space-y-8">
+        
+        {/* Header Section */}
+        <header className="text-center md:text-left space-y-3">
+          <motion.h1
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white"
           >
-            <PlusCircleIcon className="h-6 w-6" />
-            <span>Create New Promotion</span>
-          </motion.button>
-        </div>
+            Promotions &amp; Deals
+          </motion.h1>
+          <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 max-w-2xl">
+            Efficiently create, edit, and manage dynamic promotions and discount codes for your virtual tours and products.
+          </p>
+        </header>
 
-        {loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-gray-700 rounded-2xl h-60 shadow-lg"></div>
-            ))}
+        {/* Dashboard Canvas block */}
+        <main className="bg-white border border-slate-200 dark:border-slate-800/80 rounded-2xl sm:rounded-3xl shadow-sm dark:shadow-2xl p-4 sm:p-6 md:p-8 dark:bg-slate-900/40 backdrop-blur-md">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8 pb-5 border-b border-slate-100 dark:border-slate-800/60">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Active Catalog</h2>
+              <p className="text-xs text-slate-400 dark:text-slate-500">Live system sync</p>
+            </div>
+            
+            <button
+              onClick={openAddModal}
+              className="inline-flex items-center justify-center space-x-2 bg-indigo-600 hover:bg-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-medium py-2.5 px-4 md:px-5 rounded-xl shadow-sm transition-all duration-200 text-sm active:scale-95"
+            >
+              <PlusIcon className="h-4 w-4 stroke-2" />
+              <span>New Promotion</span>
+            </button>
           </div>
-        )}
 
-        {error && (
-          <div className="bg-red-900/50 text-red-300 p-6 rounded-lg text-center mb-8 border border-red-700">
-            <p className="font-bold text-lg">Error loading promotions:</p>
-            <p className="text-sm">{error}</p>
-            <p className="mt-2 text-xs">Please try refreshing the page or contact support.</p>
-          </div>
-        )}
+          {/* Loading View Skeleton */}
+          {loading && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-slate-100 dark:bg-slate-800 rounded-2xl h-56 animate-pulse border border-slate-200/50 dark:border-transparent" />
+              ))}
+            </div>
+          )}
 
-        {!loading && !error && promotions.length === 0 ? (
-          <div className="text-center py-20 bg-gray-700/30 rounded-2xl border border-gray-600">
-            <p className="text-xl text-gray-400">No promotions found. Click 'Create New Promotion' to get started! 🚀</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {promotions.map((promo) => (
-              <PromotionCard
-                key={promo.id}
-                promo={promo}
-                onEdit={openEditModal}
-                onDelete={handleDeletePromotionClick}
-              />
-            ))}
-          </div>
-        )}
-      </motion.div>
+          {/* Error Alert Display */}
+          {error && (
+            <div className="bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 p-5 rounded-xl border border-rose-200 dark:border-rose-900/40 max-w-xl mx-auto text-center space-y-2">
+              <p className="font-semibold">Unable to map remote dashboard state</p>
+              <p className="text-xs opacity-90 font-mono">{error}</p>
+            </div>
+          )}
 
-      {/* Add/Edit Promotion Modal */}
+          {/* Cards Interface Grid */}
+          {!loading && !error && (
+            <AnimatePresence mode="popLayout">
+              {promotions.length === 0 ? (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-16 px-4 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl bg-slate-50/50 dark:bg-slate-950/30"
+                >
+                  <p className="text-slate-400 dark:text-slate-500 text-base font-medium">
+                    No promotions found. Click &apos;New Promotion&apos; to launch catalog additions. 🚀
+                  </p>
+                </motion.div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                  {promotions.map((promo) => (
+                    <PromotionCard
+                      key={promo.id}
+                      promo={promo}
+                      onEdit={openEditModal}
+                      onDelete={handleDeletePromotionClick}
+                    />
+                  ))}
+                </div>
+              )}
+            </AnimatePresence>
+          )}
+        </main>
+      </div>
+
       <PromotionModal
         isOpen={isPromotionModalOpen}
         onClose={() => setIsPromotionModalOpen(false)}
@@ -271,7 +312,6 @@ export default function AdminPromotionsPage() {
         slug={slug}
       />
 
-      {/* Confirmation Modal for Deletion */}
       <ConfirmationModal
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}

@@ -1,41 +1,24 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { PlusIcon } from '@heroicons/react/24/solid';
-import { BuildingLibraryIcon, ChevronDoubleDownIcon, ChevronDoubleUpIcon, GlobeAltIcon, MapIcon, PencilSquareIcon, SquaresPlusIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { DestinationFormModal, DeleteConfirmModal, Destination } from './DestinationFormModal'; // Assuming modals are now in a single file for cleaner import
-
 import { useParams } from 'next/navigation';
+import { 
+  PlusIcon, 
+  GlobeAltIcon, 
+  MapIcon, 
+  BuildingLibraryIcon, 
+  ChevronDownIcon, 
+  ChevronUpIcon, 
+  PencilSquareIcon, 
+  TrashIcon, 
+  SquaresPlusIcon,
+  ExclamationTriangleIcon
+} from '@heroicons/react/24/solid';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+import { DestinationFormModal, DeleteConfirmModal, Destination } from './DestinationFormModal';
 
-// --- Types and Interfaces ---
-// Ensure this Destination interface matches your Prisma Destination model exactly
-// interface Destination {
-//   id: string;
-//   name: string;
-//   slug: string;
-//   description?: string;
-//   country?: string;
-//   latitude?: number;
-//   longitude?: number;
-//   seoTitle?: string;
-//   seoDescription?: string;
-//   metaKeywords: string[];
-//   sortOrder: number;
-//   visible: boolean;
-//   createdAt?: Date;
-//   updatedAt?: Date;
-//   createdBy?: string;
-//   updatedBy?: string;
-//   status: 'active' | 'inactive' | 'draft';
-//   parentId: string | null; // This now refers to a Location's ID
-//   localization?: any; // Prisma.JsonValue
-//   attributes?: any; // Prisma.JsonValue
-//   children?: Destination[]; // This is for client-side tree building if needed, but not in the new model
-// }
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
-// Interface for Location
 interface Location {
   id: string;
   name: string;
@@ -45,50 +28,29 @@ interface Location {
   children?: Location[];
 }
 
-
-interface PageProps {
-  params:Promise<{ slug: string }>
-}
-
-// --- Helper Function to Build the Tree ---
-/**
- * Builds a hierarchical tree structure from a flat list of destinations.
- * NOTE: This function is kept for a potential destination-only tree view.
- * If a Location-Destination tree is needed, a new helper would be required.
- * @param destinations A flat array of destinations.
- * @returns An array of top-level destination nodes with their children nested.
- */
+// --- Hierarchical Tree Builder ---
 const buildDestinationTree = (destinations: Destination[]): Destination[] => {
   const destinationMap: { [key: string]: Destination } = {};
   const tree: Destination[] = [];
 
-  // First, map all destinations by their ID and initialize children array
   destinations?.forEach(destination => {
     destinationMap[destination.id] = { ...destination, children: [] };
   });
 
-  // Then, build the tree structure by assigning children to their parents
   destinations?.forEach(destination => {
     if (destination.parentId && destinationMap[destination.parentId]) {
-      // This logic assumes a Destination can be a child of another Destination,
-      // which is no longer the case per the user's latest request.
-      // This helper may be updated or replaced if the UI needs to reflect the Location -> Destination hierarchy.
       destinationMap[destination.parentId].children?.push(destinationMap[destination.id]);
-      // Sort children for consistent display
       destinationMap[destination.parentId].children?.sort((a, b) => a.name.localeCompare(b.name));
     } else {
       tree.push(destinationMap[destination.id]);
     }
   });
-  // Sort top-level nodes
+
   tree.sort((a, b) => a.name.localeCompare(b.name));
   return tree;
 };
 
-
-// Main Enhanced Destination Management Component
 export default function DestinationManagementPage() {
-  
   const params = useParams();
   const slug = params.slug as string;
 
@@ -97,22 +59,20 @@ export default function DestinationManagementPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // State for modals and forms
+  // Modals & configuration state states
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedDestination, setSelectedDestination] = useState<Destination | null>(null);
 
-  // The tree view is still based on the destination hierarchy
   const destinationTree = useMemo(() => buildDestinationTree(destinations), [destinations]);
 
-  // --- Data Fetching ---
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const [destinationsResponse, locationsResponse] = await Promise.all([
-        fetch(`${apiBaseUrl}/admin/destinations?companyId=${slug}`,{ credentials: 'include' }),
-        fetch(`${apiBaseUrl}/admin/locationsv2?companyId=${slug}`,{ credentials: 'include' })
+        fetch(`${apiBaseUrl}/admin/destinations?companyId=${slug}`, { credentials: 'include' }),
+        fetch(`${apiBaseUrl}/admin/locationsv2?companyId=${slug}`, { credentials: 'include' })
       ]);
 
       if (!destinationsResponse.ok) {
@@ -127,9 +87,6 @@ export default function DestinationManagementPage() {
       const destinationsData = (await destinationsResponse.json()).data.data;
       const locationsData = (await locationsResponse.json()).data.data;
 
-      // console.log("Fetched Destinations:", destinationsData);
-      // console.log("Fetched Locations:", locationsData);
-
       setDestinations(destinationsData || []);
       setLocations(locationsData || []);
     } catch (err: any) {
@@ -137,25 +94,24 @@ export default function DestinationManagementPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [slug]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  // --- Action Handlers ---
   const handleOpenCreateModal = () => {
-    setSelectedDestination(null); // Clear selected destination for create operation
+    setSelectedDestination(null);
     setIsFormModalOpen(true);
   };
 
   const handleOpenEditModal = (destination: Destination) => {
-    setSelectedDestination(destination); // Set destination for edit operation
+    setSelectedDestination(destination);
     setIsFormModalOpen(true);
   };
 
   const handleOpenDeleteModal = (destination: Destination) => {
-    setSelectedDestination(destination); // Set destination for delete operation
+    setSelectedDestination(destination);
     setIsDeleteModalOpen(true);
   };
 
@@ -163,50 +119,68 @@ export default function DestinationManagementPage() {
     setIsFormModalOpen(false);
     setIsDeleteModalOpen(false);
     setSelectedDestination(null);
-    setError(null); // Clear errors when closing a modal
+    setError(null);
   };
 
   const handleSuccess = () => {
-    fetchData(); // Re-fetch all data after successful CRUD operation
-    handleCloseModals(); // Close the modal
+    fetchData();
+    handleCloseModals();
   };
 
-  // --- Main Render ---
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-slate-50/50 p-4 sm:p-6 lg:p-8 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+      <div className="max-w-5xl mx-auto space-y-6">
+        
+        {/* Main Dashboard Control Banner */}
         <DashboardHeader count={destinations.length} onAddNew={handleOpenCreateModal} />
 
+        {/* Global Error Notice Overlay */}
         {error && (
-          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md shadow my-4" role="alert">
-            <p className="font-bold">An Error Occurred</p>
-            <p>{error}</p>
+          <div className="flex items-start gap-3 bg-rose-500/10 border border-rose-500/20 text-rose-700 dark:text-rose-400 p-4 rounded-2xl backdrop-blur-md shadow-sm" role="alert">
+            <ExclamationTriangleIcon className="w-5 h-5 shrink-0 mt-0.5 text-rose-500" />
+            <div>
+              <p className="font-bold text-sm">System Pipeline Exception</p>
+              <p className="text-xs opacity-90 mt-0.5">{error}</p>
+            </div>
           </div>
         )}
 
-        <main className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+        {/* Primary Operational Console view */}
+        <main className="bg-white/80 border border-slate-200/80 p-4 sm:p-6 rounded-[28px] shadow-sm backdrop-blur-md dark:bg-slate-900/70 dark:border-slate-800/80">
           {loading ? (
-            <div className="text-center py-12 text-slate-500">Loading Destinations...</div>
+            <div className="flex flex-col items-center justify-center py-20 space-y-3">
+              <svg className="animate-spin h-6 w-6 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Syncing structural nodes...</span>
+            </div>
           ) : destinationTree.length === 0 ? (
             <EmptyState onAddNew={handleOpenCreateModal} />
           ) : (
-            <DestinationTreeView
-              nodes={destinationTree}
-              onEdit={handleOpenEditModal}
-              onDelete={handleOpenDeleteModal}
-            />
+            <div>
+              <div className="mb-4 px-3 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                <span>Architecture Structure Matrix</span>
+                <span>Actions Scope</span>
+              </div>
+              <DestinationTreeView
+                nodes={destinationTree}
+                onEdit={handleOpenEditModal}
+                onDelete={handleOpenDeleteModal}
+              />
+            </div>
           )}
         </main>
       </div>
 
-      {/* Modals are mounted here */}
+      {/* Modals Mounting Sandbox */}
       {isFormModalOpen && (
         <DestinationFormModal
           isOpen={isFormModalOpen}
           onClose={handleCloseModals}
           onSuccess={handleSuccess}
           destination={selectedDestination}
-          allLocations={locations} // Pass all locations for parent dropdown
+          allLocations={locations}
         />
       )}
 
@@ -222,26 +196,28 @@ export default function DestinationManagementPage() {
   );
 }
 
-
 // --- Component: Dashboard Header ---
 function DashboardHeader({ count, onAddNew }: { count: number, onAddNew: () => void }) {
   return (
-    <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border border-slate-200/60 bg-white/60 dark:border-slate-800/50 dark:bg-slate-900/40 rounded-[28px] p-6 backdrop-blur-md">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">Destination Management</h1>
-        <p className="text-slate-500 mt-1">{count} destinations in the database</p>
+        <h1 className="text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-400">
+          Geographical Nodes
+        </h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          System currently managing <span className="font-bold text-indigo-600 dark:text-indigo-400">{count} active bound destinations</span>
+        </p>
       </div>
       <button
         onClick={onAddNew}
-        className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-all duration-200 ease-in-out transform hover:-translate-y-0.5"
+        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-xs font-bold text-white shadow-md hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100 transition-all duration-200"
       >
-        <PlusIcon className='w-6 h-6' />
-        Add New Destination
+        <PlusIcon className="w-4 h-4 stroke-[2.5]" />
+        Create New Node
       </button>
     </header>
   );
 }
-
 
 // --- Component: Destination Tree View ---
 function DestinationTreeView({ nodes, onEdit, onDelete }: { nodes: Destination[], onEdit: (loc: Destination) => void, onDelete: (loc: Destination) => void }) {
@@ -259,76 +235,124 @@ function DestinationTreeView({ nodes, onEdit, onDelete }: { nodes: Destination[]
   );
 }
 
-
 // --- Component: Individual Destination Node ---
 function DestinationNode({ node, onEdit, onDelete, level = 0 }: { node: Destination, onEdit: (loc: Destination) => void, onDelete: (loc: Destination) => void, level?: number }) {
-  const [isExpanded, setIsExpanded] = useState(level < 1); // Auto-expand top levels
-
+  const [isExpanded, setIsExpanded] = useState(level < 1);
   const hasChildren = node.children && node.children.length > 0;
-  // Using the same icon logic as the original component
-  const locationTypeIcon = level === 0 ? <GlobeAltIcon className='w-6 h-6 text-blue-500' /> : level === 1 ? <MapIcon className="text-green-500 w-6 h-6" /> : <BuildingLibraryIcon className="text-purple-500 w-6 h-6" />;
+
+  // Level-dependent geometric representation assets
+  const locationTypeIcon = level === 0 
+    ? <GlobeAltIcon className="w-4 h-4 text-indigo-500 dark:text-indigo-400" /> 
+    : level === 1 
+      ? <MapIcon className="text-emerald-500 dark:text-emerald-400 w-4 h-4" /> 
+      : <BuildingLibraryIcon className="text-amber-500 dark:text-amber-400 w-4 h-4" />;
+
+  const getStatusChipStyle = (status: string) => {
+    return status === 'inactive'
+      ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+      : 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20';
+  };
 
   return (
-    <div>
-      <div className="flex items-center bg-slate-50 hover:bg-slate-100 rounded-lg p-2 transition-colors duration-150">
-        <div style={{ paddingLeft: `${level * 24}px` }} className="flex-grow flex items-center gap-3">
-          {hasChildren ? (
-            <button onClick={() => setIsExpanded(!isExpanded)} className="p-1 rounded-full hover:bg-slate-200">
-              {isExpanded ? <ChevronDoubleDownIcon className='w-6 h-6' /> : <ChevronDoubleUpIcon className='w-6 h-6' />}
-            </button>
-          ) : (
-            <span className="w-6 h-6 inline-block"></span> // Placeholder for alignment
-          )}
-          {locationTypeIcon}
-          <span className="font-medium text-slate-800">{node.name}</span>
-          <span className="text-xs text-slate-400">({node.slug})</span>
+    <div className="w-full">
+      <div 
+        className={`flex items-center justify-between rounded-xl p-2.5 transition-all duration-200 border border-transparent hover:bg-slate-50 dark:hover:bg-slate-950/60 group ${
+          isExpanded && hasChildren ? 'bg-slate-50/50 dark:bg-slate-950/20' : ''
+        }`}
+      >
+        {/* Geometric Nesting Alignment */}
+        <div className="flex items-center min-w-0 flex-1" style={{ paddingLeft: `${level * 20}px` }}>
+          <div className="w-6 h-6 flex items-center justify-center shrink-0 mr-1">
+            {hasChildren ? (
+              <button 
+                onClick={() => setIsExpanded(!isExpanded)} 
+                className="p-1 rounded-md text-slate-400 hover:bg-slate-200/60 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors"
+              >
+                {isExpanded ? <ChevronDownIcon className="w-3.5 h-3.5" /> : <ChevronUpIcon className="w-3.5 h-3.5" />}
+              </button>
+            ) : (
+              <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+            )}
+          </div>
+          
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="p-1.5 rounded-lg bg-white shadow-sm border border-slate-100 dark:bg-slate-900 dark:border-slate-800 shrink-0">
+              {locationTypeIcon}
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0">
+              <span className="font-semibold text-sm text-slate-900 dark:text-slate-100 truncate">
+                {node.name}
+              </span>
+              <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 truncate sm:mt-0.5">
+                /{node.slug}
+              </span>
+            </div>
+          </div>
+
+          {/* Visibility and Metadata Tags */}
           {node.status !== 'active' && (
-            <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${node.status === 'inactive' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'}`}>
+            <span className={`ml-3 rounded-md border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider shrink-0 ${getStatusChipStyle(node.status)}`}>
               {node.status}
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1">
-          <button onClick={() => onEdit(node)} title="Edit" className="p-2 rounded-md text-slate-500 hover:bg-blue-100 hover:text-blue-600">
-            <PencilSquareIcon className='w-6 h-6' />
+
+        {/* Context Interaction Toolbelt */}
+        <div className="flex items-center gap-1 ml-4 opacity-80 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+          <button 
+            onClick={() => onEdit(node)} 
+            title="Edit settings" 
+            className="p-1.5 rounded-lg text-slate-400 hover:bg-white hover:text-slate-900 shadow-none hover:shadow-sm border border-transparent hover:border-slate-200/60 dark:hover:bg-slate-800 dark:hover:text-white dark:hover:border-slate-700 transition-all"
+          >
+            <PencilSquareIcon className="w-4 h-4" />
           </button>
-          <button onClick={() => onDelete(node)} title="Delete" className="p-2 rounded-md text-slate-500 hover:bg-red-100 hover:text-red-600">
-            <TrashIcon className='w-6 h-6' />
+          <button 
+            onClick={() => onDelete(node)} 
+            title="Purge node record" 
+            className="p-1.5 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 transition-all"
+          >
+            <TrashIcon className="w-4 h-4" />
           </button>
         </div>
       </div>
 
+      {/* Nested Level Processing Recursion */}
       {hasChildren && isExpanded && (
-        <div className="mt-1 space-y-1">
-          {node.children?.map(childNode => (
-            <DestinationNode
-              key={childNode.id}
-              node={childNode}
-              level={level + 1}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
-          ))}
+        <div className="mt-1 relative before:absolute before:left-[11px] before:top-0 before:bottom-3 before:w-[1px] before:bg-slate-200/60 dark:before:bg-slate-800/60">
+          <div className="space-y-1">
+            {node.children?.map(childNode => (
+              <DestinationNode
+                key={childNode.id}
+                node={childNode}
+                level={level + 1}
+                onEdit={onEdit}
+                onDelete={onDelete}
+              />
+            ))}
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-
 // --- Component: Empty State ---
 function EmptyState({ onAddNew }: { onAddNew: () => void }) {
   return (
-    <div className="text-center py-16 px-6 border-2 border-dashed border-slate-200 rounded-lg">
-      <GlobeAltIcon className='w-10 h-10 mx-auto text-slate-300' />
-      <h3 className="mt-4 text-xl font-semibold text-slate-800">No Destinations Found</h3>
-      <p className="mt-1 text-slate-500">Get started by creating your first top-level destination.</p>
+    <div className="text-center py-16 px-6 border-2 border-dashed border-slate-200 rounded-3xl dark:border-slate-800/80 bg-slate-50/30 dark:bg-slate-950/10">
+      <div className="w-12 h-12 rounded-2xl bg-white shadow-sm border border-slate-100 dark:bg-slate-900 dark:border-slate-800 flex items-center justify-center mx-auto text-slate-400 dark:text-slate-600">
+        <SquaresPlusIcon className="w-6 h-6" />
+      </div>
+      <h3 className="mt-4 text-sm font-bold text-slate-900 dark:text-white">Structural Node Layout Empty</h3>
+      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
+        Your catalog framework does not have top-level tracking configurations loaded yet.
+      </p>
       <button
         onClick={onAddNew}
-        className="mt-6 flex items-center gap-2 mx-auto px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700"
+        className="mt-6 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-all"
       >
-        <SquaresPlusIcon className='w-6 h-6'/>
-        Create First Destination
+        <PlusIcon className="w-3.5 h-3.5 stroke-[2.5]" />
+        Bind Primary Destination
       </button>
     </div>
   );
