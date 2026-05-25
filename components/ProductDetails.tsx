@@ -1,7 +1,7 @@
-
+"use client";
 
 import React, { useCallback, useMemo, useState } from "react";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon, TagIcon, CalendarDaysIcon } from "@heroicons/react/24/outline";
 import { AnimatePresence, motion } from "framer-motion";
 import { ProductForm } from "@/types/typings";
 
@@ -72,7 +72,6 @@ export const getCategoryFlags = (category?: string, subCategory?: string) => {
 // ---------------------------
 // FILE: _components/Field.tsx
 // ---------------------------
-// import React from "react";
 
 interface FieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -177,15 +176,53 @@ export const TagInput: React.FC<TagInputProps> = ({ label, placeholder = "Add ta
   );
 };
 
-interface Props {
+// Renamed to avoid duplicate identifier conflict
+interface BasicInfoProps {
   formData: ProductForm;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  setFormData: (name: string, value: any) => void;
 }
 
-export const BasicInfo: React.FC<Props> = ({ formData, handleInputChange }) => {
+export const BasicInfo: React.FC<BasicInfoProps> = ({ formData, handleInputChange, setFormData }) => {
+  // Default to "buy" if not set in your ProductForm type yet
+  const listingType = (formData as any).listingTransactionType || "SALE";
+
   return (
     <SectionWrapper title="Basic Information">
-      <div className="space-y-4">
+      <div className="space-y-5">
+        
+        {/* === Buy / Rent Toggle Segmented Control === */}
+        <div className="space-y-2">
+          <label className="block text-gray-700 text-sm font-medium">Listing Intent</label>
+          <div className="flex bg-gray-200/70 p-1 rounded-xl w-full sm:w-72">
+            <button
+              type="button"
+              onClick={() => setFormData("listingTransactionType", "SALE")}
+              className={`flex-1 flex items-center justify-center py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
+                listingType === "SALE"
+                  ? "bg-white shadow-sm text-blue-600"
+                  : "text-gray-500 hover:text-gray-800"
+              }`}
+            >
+              <TagIcon className="w-4 h-4 mr-2" />
+              For Sale
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormData("listingTransactionType", "RENT")}
+              className={`flex-1 flex items-center justify-center py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
+                listingType === "RENT"
+                  ? "bg-white shadow-sm text-blue-600"
+                  : "text-gray-500 hover:text-gray-800"
+              }`}
+            >
+              <CalendarDaysIcon className="w-4 h-4 mr-2" />
+              For Rent
+            </button>
+          </div>
+        </div>
+
+        {/* Existing Fields */}
         <Field
           label="Product Title"
           name="name"
@@ -193,16 +230,18 @@ export const BasicInfo: React.FC<Props> = ({ formData, handleInputChange }) => {
           value={formData.name || ""}
           onChange={handleInputChange}
         />
-        <Field
-          label="Description"
-          name="description"
-          textarea
-          placeholder="Enter a comprehensive description (max 500 characters)."
-          maxLength={500}
-          value={formData.description || ""}
-          onChange={handleInputChange}
-        />
-        <p className="text-sm text-gray-500 text-right">{(formData.description || "").length}/500 characters</p>
+        <div>
+          <Field
+            label="Description"
+            name="description"
+            textarea
+            placeholder="Enter a comprehensive description (max 500 characters)."
+            maxLength={500}
+            value={formData.description || ""}
+            onChange={handleInputChange}
+          />
+          <p className="text-sm text-gray-500 text-right mt-1">{(formData.description || "").length}/500 characters</p>
+        </div>
       </div>
     </SectionWrapper>
   );
@@ -291,7 +330,6 @@ export const PropertyDetails: React.FC<{ formData: ProductForm; handleInputChang
         <Field label="Bathrooms" name="bathrooms" type="number" placeholder="e.g., 2" value={formData.bathrooms || ""} onChange={handleInputChange} />
         <Field label="Bedrooms" name="bedrooms" type="number" placeholder="e.g., 3" value={formData.bedrooms || ""} onChange={handleInputChange} />
         <Field label="Plot Size" name="plotSize" placeholder="e.g., 500 sqm" value={""} onChange={handleInputChange} />
-        {/* formData.plotSize ||  */}
       </div>
     </SectionWrapper>
   );
@@ -317,7 +355,6 @@ export const TravelDetails: React.FC<{ formData: ProductForm; handleInputChange:
   return (
     <SectionWrapper title="Travel Specifics">
       <Field label={label} name="travelDetail" placeholder="Enter travel detail" value={""} onChange={handleInputChange} />
-      {/* formData.travelDetail ||  */}
     </SectionWrapper>
   );
 };
@@ -333,7 +370,8 @@ export const PhysicalSpecs: React.FC<{ formData: ProductForm; handleInputChange:
   );
 };
 
-interface Props {
+// Renamed to avoid duplicate identifier conflict
+interface ProductDetailsProps {
   formData: ProductForm;
   setFormData: (name: string, value: any) => void;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
@@ -344,7 +382,7 @@ const container = {
   show: { transition: { staggerChildren: 0.05 } },
 };
 
-export const ProductDetails: React.FC<Props> = ({ formData, setFormData, handleInputChange }) => {
+export const ProductDetails: React.FC<ProductDetailsProps> = ({ formData, setFormData, handleInputChange }) => {
   const subCategoryName = formData.subCategoryName || "";
   const categoryDisplayName = formData.category?.displayName || "";
 
@@ -374,8 +412,6 @@ export const ProductDetails: React.FC<Props> = ({ formData, setFormData, handleI
       {isTravel && <TravelDetails formData={formData} handleInputChange={handleInputChange} subCategoryName={subCategoryName} />}
 
       {isPhysical && <PhysicalSpecs formData={formData} handleInputChange={handleInputChange} />}
-
-      {/* {isProperty && <PropertyDetails formData={formData} handleInputChange={handleInputChange} />} */}
 
       <motion.section initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="space-y-2 p-5 border border-gray-200 rounded-lg bg-gray-50 shadow-sm">
         <TagInput label="Product Tags" placeholder="Add keywords like 'new', 'sale', 'electronics'" tags={formData.tags || []} onTagsChange={handleTagsChange} />

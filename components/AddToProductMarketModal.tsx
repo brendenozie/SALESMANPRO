@@ -297,6 +297,8 @@ function productToListingForm(
     images: p?.images ?? [],
     videos: p?.videos ?? [],
     ebooks: p?.ebooks ?? [],
+
+    listingTransactionType: p?.listingTransactionType
     // NOTE: videos are not part of the standard ProductForm -> MarketListingForm conversion in original code
   } as MarketListingForm;
 }
@@ -415,7 +417,8 @@ function buildListingPayload(
     autoDeliver: f.autoDeliver,
     status: f.status,
     collectionId: f.collectionId || null,
-    year: f.year,
+    year: f.year,    
+    listingTransactionType: f.listingTransactionType
   };
 }
 

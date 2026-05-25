@@ -5,7 +5,6 @@ import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 import {
-  ShieldCheckIcon,
   EyeIcon,
   EyeSlashIcon,
   DocumentDuplicateIcon,
@@ -21,7 +20,8 @@ import {
   SparklesIcon,
   ArrowUturnLeftIcon,
   CircleStackIcon,
-  ShieldExclamationIcon
+  ShieldExclamationIcon,
+  BanknotesIcon
 } from "@heroicons/react/24/outline";
 
 /* ============================
@@ -95,6 +95,23 @@ type GatewayConfig = {
 };
 
 const GATEWAYS: Record<string, GatewayConfig> = {
+  cash: {
+    id: "cash",
+    toggleKey: "isCashEnabled",
+    label: "Cash on Delivery",
+    hint: "Accept physical cash for in-person fulfillment and marketplace handoffs.",
+    feeDescription: "Zero processing fees. Manual settlement required.",
+    brandColor: "border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500",
+    icon: BanknotesIcon,
+    fields: [
+      { 
+        key: "cashInstructions", 
+        label: "Collection Instructions", 
+        placeholder: "e.g., Please have exact change ready upon delivery...", 
+        requiredWhenEnabled: false 
+      },
+    ],
+  },
   ghuba: {
     id: "ghuba",
     toggleKey: "isGhubaEnabled",
