@@ -4,13 +4,11 @@ import { notFound } from 'next/navigation';
 import { findCompanyCached, pageDataInclude } from '@/lib/company-fetcher';
 import { transformCompanyToStoreForm } from '@/utils/transformPrismaToStoreForm';
 import { getComponentNameForCategory } from '@/components/site/layouts/siteBodyComponentMap';
-import { BodyComponentMap } from '@/components/site/BodyComponentMap';
 
 export interface LoadedStore {
   raw: any;
   pageData: any;
   componentName: string;
-  BodyComponent: any;
 }
 
 export async function loadStore(slug: string): Promise<LoadedStore> {
@@ -33,7 +31,5 @@ export async function loadStore(slug: string): Promise<LoadedStore> {
     pageData.variant || ''
   );
   
-  const BodyComponent = BodyComponentMap[componentName] || BodyComponentMap['DefaultSite'];
-
-  return { raw, pageData, componentName, BodyComponent };
+  return { raw, pageData, componentName };
 }

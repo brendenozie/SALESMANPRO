@@ -4,6 +4,7 @@
 import AnalyticsProvider from '@/components/analytics/AnalyticsProvider';
 import { loadStore } from '@/lib/loadStore';
 import { getEnabledPaymentMethods } from '@/utils/payment-utils';
+import { BodyComponentMap } from '@/components/site/BodyComponentMap';
 
 interface StorePageProps {
   params: Promise<{
@@ -16,9 +17,10 @@ export default async function StorePage({
 }: StorePageProps) {
   const { slug } = await params;
 
-  const { BodyComponent, pageData, raw } = await loadStore(slug);
-
-  // ✅ Transform and Filter here
+  const { componentName, pageData, raw } = await loadStore(slug);
+  
+  const BodyComponent = BodyComponentMap[componentName] || BodyComponentMap['DefaultSite'];
+  
   // This ensures 'enabledMethods' only contains safe, active methods
   const enabledPaymentMethods = getEnabledPaymentMethods(raw.PaymentSettings);
 

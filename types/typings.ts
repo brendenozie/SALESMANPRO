@@ -704,9 +704,9 @@ export interface MarketListingForm {
   commissionStartDate?: string | null;
   commissionEndDate?: string | null;
 
-  listingMarketStatus: ListingMarketStatus 
-  listingSystemStatus: ListingSystemStatus 
-  listingTransactionType: ListingTransactionType 
+  listingMarketStatus: ListingMarketStatus; 
+  listingSystemStatus: ListingSystemStatus; 
+  listingTransactionType: ListingTransactionType;
 
 }
 

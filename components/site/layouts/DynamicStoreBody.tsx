@@ -12,7 +12,7 @@ export default function DynamicStoreBody() {
   // Rely ONLY on the context. It's now the single source of truth.
   const { storeFormData } = useStoreContext();
 
-  if (!storeFormData) {
+  if (!storeFormData || storeFormData.hasWebsite === false) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-xl">Store not found</p>
