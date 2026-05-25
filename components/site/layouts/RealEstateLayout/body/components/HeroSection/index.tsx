@@ -33,7 +33,7 @@ interface HeroSectionProps {
 
 const defaultHeroSlides: HeroSlide[] = [
   {
-    imageUrl: "https://images.unsplash.com/photo-1560518883-ffc4573f0053?q=80&w=2670&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070",
     headline: "Find Your Perfect\nUrban Oasis",
     subline: "Explore modern apartments and stylish lofts in the city's heart.",
     id: "1", companyId: "", type: null, price: null, order: 0, ctaText: null, ctaLink: null, videoLink: null, badgeText: null, endsAt: null, iconKey: null, backgroundColor: null, textColor: null,
@@ -41,7 +41,7 @@ const defaultHeroSlides: HeroSlide[] = [
     stats: null
   },
   {
-    imageUrl: "https://images.unsplash.com/photo-1594950939511-b76964a35043?q=80&w=2670&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070",
     headline: "Escape to Serene\nCountry Living",
     subline: "Discover spacious homes with sprawling gardens and tranquil views.",
     id: "2", companyId: "", type: null, price: null, order: 0, ctaText: null, ctaLink: null, videoLink: null, badgeText: null, endsAt: null, iconKey: null, backgroundColor: null, textColor: null,
