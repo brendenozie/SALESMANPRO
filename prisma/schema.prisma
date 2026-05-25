@@ -774,6 +774,24 @@ model AppPromo {
 // Use your actual enum definitions if they exist in your schema.prisma
 // For demonstration, I'm assuming 'ListingStatus' is defined elsewhere.
 // If not, you'll need to define it:
+enum ListingMarketStatus {
+  AVAILABLE // Replaces ACTIVE / Available
+  UNDER_OFFER // Replaces PENDING / Under_Offer
+  SOLD // Replaces SOLD / Sold
+  RENTED // Replaces RENTED
+}
+
+enum ListingSystemStatus {
+  DRAFT // Replaces DRAFT / Draft
+  INACTIVE // Replaces INACTIVE (Archived/Hidden)
+  REJECTED // Replaces REJECTED (Admin denied)
+}
+
+enum ListingTransactionType {
+  SALE // Replaces BUY
+  RENT // Replaces RENT
+}
+
 enum ListingStatus {
   ACTIVE
   PENDING
@@ -852,9 +870,9 @@ model Product {
   isFeatured   Boolean @default(false)
 
   // Vehicle Specifics (Engine & Performance, Ownership & Pricing)
-  make String?
-  trim String?
-  type String?
+  make String? // e.g., "Toyota", "Ford"
+  trim String? // e.g., "Sport", "Luxury", "Base"
+  type String? // e.g., "SUV", "Sedan", "Truck" // Added: From General Details
 
   mileage    String? // e.g., "50000 km"
   engineType String? // e.g., "V6", "Inline-4"
@@ -947,7 +965,15 @@ model Product {
   bookingSlots      Json[] // Store complex booking slot data as JSON
 
   // Admin & Auditing
-  status         ListingStatus    @default(ACTIVE) // Assuming ListingStatus enum exists
+  status ListingStatus @default(ACTIVE) // Assuming ListingStatus enum exists
+
+  listingMarketStatus    ListingMarketStatus    @default(AVAILABLE)
+  listingSystemStatus    ListingSystemStatus    @default(DRAFT)
+  listingTransactionType ListingTransactionType @default(SALE)
+
+  //buy, rent, rented, draft
+  active Boolean @default(true)
+
   Collection     Collection?      @relation(fields: [collectionId], references: [id])
   collectionId   String?          @db.ObjectId
   CollectionItem CollectionItem[]
@@ -2101,6 +2127,10 @@ model marketplaceListings {
   offers        OfferContract[] @relation("PropertyOffers") // Offers made for this listing
   OfferContract OfferContract[]
 
+  listingMarketStatus    ListingMarketStatus    @default(AVAILABLE)
+  listingSystemStatus    ListingSystemStatus    @default(DRAFT)
+  listingTransactionType ListingTransactionType @default(SALE)
+
   // Indexes for performance
   @@index([name])
   @@index([finalPrice])
@@ -2123,6 +2153,7 @@ model marketplaceListings {
   @@index([isDiscounted])
   @@index([isNewArrival])
 }
+
 model ProductReview {
   id                    String                  @id @default(auto()) @map("_id") @db.ObjectId
   productId             String                  @db.ObjectId

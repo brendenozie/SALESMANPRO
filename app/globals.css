@@ -418,3 +418,22 @@
   color: #d1d5db;
   /* Lighter text for dark mode */
 }
+
+/* globals.css */
+
+html {
+  background-color: black;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  background-color: black;
+  color: white;
+}
+
+html.dark * {
+  transition: none !important;
+}

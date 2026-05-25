@@ -1,4 +1,4 @@
-"use client"
+
 import React, { ReactNode, useState } from "react";
 import { StoreForm } from "@/types/typings";
 import Footer from "./footer/Footer";

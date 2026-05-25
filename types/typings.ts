@@ -429,6 +429,29 @@ export interface IStoreCategory {
   category?: IProductCategory;
 }
 
+// 1. System state: Tracks the workflow and moderation lifecycle
+export enum ListingSystemStatus {
+  DRAFT = "DRAFT",          // Form saved but not published
+  UNDER_REVIEW = "UNDER_REVIEW", // Sent to admin for approval (Replaces REJECTED pipeline)
+  ACTIVE = "ACTIVE",        // Live on the marketplace
+  REJECTED = "REJECTED",    // Failed admin moderation
+  INACTIVE = "INACTIVE",    // Hidden/archived by the seller
+}
+
+// 2. Market state: Tracks transactional availability for consumers
+export enum ListingMarketStatus {
+  AVAILABLE = "AVAILABLE",  // Instantly purchasable / Ready
+  UNDER_OFFER = "UNDER_OFFER", // Real estate/Vehicle deposit paid
+  SOLD = "SOLD",            // Out of stock permanently / Handled
+  RENTED = "RENTED",        // For rental categories
+}
+
+enum ListingTransactionType {
+  SALE = "SALE", // Replaces BUY
+  RENT = "RENT", // Replaces RENT
+}
+
+
 export interface ProductForm {
   // Manual definition matching Prisma's Product model
   id: string;
@@ -437,11 +460,11 @@ export interface ProductForm {
   longDescription?: string | null;
   category?: any | null; //string | null;
   subCategory?: any;
-  subCategoryName?: string | null;  
+  subCategoryName?: string | null;
   productCategory?: any | null | undefined;
   images: any[];
-  videos?: any[];//string | null;
-  ebooks?: any[];//string | null;
+  videos?: any[]; //string | null;
+  ebooks?: any[]; //string | null;
   tags: string[];
   brand?: string | null;
   companyId?: string | null;
@@ -474,7 +497,7 @@ export interface ProductForm {
   mileage?: string | null;
   engineType?: string | null;
   engineSize?: number | null;
-  
+
   requiredClientInfo: string[];
   horsepower?: number | null;
   torque?: number | null;
@@ -542,9 +565,12 @@ export interface ProductForm {
   tax?: number | null;
   shippingCost?: number | null;
   locationId?: string | null;
-  
+
   currentBookedCount?: number | null;
-  
+
+  listingMarketStatus: ListingMarketStatus;
+  listingSystemStatus: ListingSystemStatus;
+  listingTransactionType: ListingTransactionType;
 }
 
 export interface MarketListingForm {
@@ -677,6 +703,10 @@ export interface MarketListingForm {
   availabilityEnd?: string | null;
   commissionStartDate?: string | null;
   commissionEndDate?: string | null;
+
+  listingMarketStatus: ListingMarketStatus 
+  listingSystemStatus: ListingSystemStatus 
+  listingTransactionType: ListingTransactionType 
 
 }
 

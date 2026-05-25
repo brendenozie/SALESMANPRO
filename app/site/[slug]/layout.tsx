@@ -90,7 +90,7 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
 
   return (
     <StoreContextProvider initialStore={storeFormData} userRole="ADMIN" userId={userId}>
-      <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 w-full mx-auto ">
+      <div className="bg-black dark:bg-gray-900 text-gray-800 dark:text-gray-200 w-full mx-auto ">
         <LayoutComponent params={{ storeFormData }}>
           {/* Suspense is key for streaming UI while page data loads */}
           <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
