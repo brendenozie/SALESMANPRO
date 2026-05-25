@@ -424,16 +424,3 @@
 html {
   background-color: black;
 }
-
-html.dark {
-  color-scheme: dark;
-}
-
-body {
-  background-color: black;
-  color: white;
-}
-
-html.dark * {
-  transition: none !important;
-}

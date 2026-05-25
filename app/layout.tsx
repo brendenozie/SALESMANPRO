@@ -119,7 +119,7 @@ export default async function RootLayout({
         />
       </head>
 
-      <body className="bg-black text-white">
+      <body>
         <ThemeProvider>
           <Providers session={session}>
             <TokenSignIn />
