@@ -153,7 +153,10 @@ async function handlePost(req: Request) {
     updatedAt,
     year,
     digitalUrl,
-    autoDeliver
+    autoDeliver,    
+    listingMarketStatus,
+    listingSystemStatus,
+    listingTransactionType
   } = body;
 
   if (!companyId || !productCategoryId) {
@@ -314,6 +317,9 @@ async function handlePost(req: Request) {
     updatedAt: now,
     createdAt: now,
     year: parsedYear,
+    listingMarketStatus,
+    listingSystemStatus,
+    listingTransactionType
   };
 
    let listing: { company?: { slug?: string | null | undefined } | null | undefined } | null | undefined = {};

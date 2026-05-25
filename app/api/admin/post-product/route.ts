@@ -138,6 +138,10 @@ async function handlePost(req: Request) {
     commissionRate,
     commissionStartDate,
     commissionEndDate,
+
+    listingMarketStatus,
+    listingSystemStatus,
+    listingTransactionType,
   } = body;
 
   // Determine the true productCategoryId
@@ -212,8 +216,9 @@ async function handlePost(req: Request) {
   // const data : any = 
   // Create or update
   const product = id
-    ? await prisma.product.update({ where: { id }, 
-      data:{
+    ? await prisma.product.update({
+        where: { id },
+        data: {
           company: { connect: { id: companyId } },
           name,
           description: description || null,
@@ -294,8 +299,14 @@ async function handlePost(req: Request) {
             : undefined,
           bathrooms: parsedBathrooms != null ? String(parsedBathrooms) : null,
           area: area || null,
-          bedrooms: parsedBedrooms !== null && parsedBedrooms !== undefined ? [parsedBedrooms] : undefined,
-          studios: parsedStudios !== null && parsedStudios !== undefined ? [parsedStudios] : undefined,
+          bedrooms:
+            parsedBedrooms !== null && parsedBedrooms !== undefined
+              ? [parsedBedrooms]
+              : undefined,
+          studios:
+            parsedStudios !== null && parsedStudios !== undefined
+              ? [parsedStudios]
+              : undefined,
           serviceSchedule: serviceSchedule || null,
           availabilityStart: parsedAvailabilityStart,
           availabilityEnd: parsedAvailabilityEnd,
@@ -323,16 +334,23 @@ async function handlePost(req: Request) {
           fulfillmentStatus: fulfillmentStatus || null,
           providerRating: parsedProviderRating,
           bookingSlots: parsedBookingSlots,
-          Collection: collectionId ? { connect: { id: collectionId } } : undefined,
+          Collection: collectionId
+            ? { connect: { id: collectionId } }
+            : undefined,
           status: status || "ACTIVE",
           tax: tax != null ? parseFloat(tax as any) : 0,
-          shippingCost: shippingCost != null ? parseFloat(shippingCost as any) : 0,
+          shippingCost:
+            shippingCost != null ? parseFloat(shippingCost as any) : 0,
           updatedAt: new Date(),
-        }
+
+          listingMarketStatus,
+          listingSystemStatus,
+          listingTransactionType,
+        },
       })
-    : await prisma.product.create(
-      {  data:{
-              company: { connect: { id: companyId } },
+    : await prisma.product.create({
+        data: {
+          company: { connect: { id: companyId } },
           name,
           description: description || null,
           longDescription: parsedLongDesc,
@@ -412,8 +430,14 @@ async function handlePost(req: Request) {
             : undefined,
           bathrooms: parsedBathrooms != null ? String(parsedBathrooms) : null,
           area: area || null,
-          bedrooms: parsedBedrooms !== null && parsedBedrooms !== undefined ? [parsedBedrooms] : undefined,
-          studios: parsedStudios !== null && parsedStudios !== undefined ? [parsedStudios] : undefined,
+          bedrooms:
+            parsedBedrooms !== null && parsedBedrooms !== undefined
+              ? [parsedBedrooms]
+              : undefined,
+          studios:
+            parsedStudios !== null && parsedStudios !== undefined
+              ? [parsedStudios]
+              : undefined,
           serviceSchedule: serviceSchedule || null,
           availabilityStart: parsedAvailabilityStart,
           availabilityEnd: parsedAvailabilityEnd,
@@ -441,13 +465,21 @@ async function handlePost(req: Request) {
           fulfillmentStatus: fulfillmentStatus || null,
           providerRating: parsedProviderRating,
           bookingSlots: parsedBookingSlots,
-          Collection: collectionId ? { connect: { id: collectionId } } : undefined,
+          Collection: collectionId
+            ? { connect: { id: collectionId } }
+            : undefined,
           status: status || "ACTIVE",
           tax: tax != null ? parseFloat(tax as any) : 0,
-          shippingCost: shippingCost != null ? parseFloat(shippingCost as any) : 0,
+          shippingCost:
+            shippingCost != null ? parseFloat(shippingCost as any) : 0,
           updatedAt: new Date(),
           createdAt: new Date(),
-               }});
+
+          listingMarketStatus,
+          listingSystemStatus,
+          listingTransactionType,
+        },
+      });
 
   
     try { await cacheDel(`admin:post-product:${companyId || 'global'}:*`); } catch (e) {}
