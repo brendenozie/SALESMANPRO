@@ -49,9 +49,10 @@ const HomePage = ({ pageData, companyId }: { pageData: StoreForm, companyId: str
           setDiscounts(data.discounts);
           setFeatured(data.featured);
 
-          const featuredCat =
-            data.categories.find((c:any) => c.isFeatured) ||
-            data.categories[0];
+          const featuredCat = data.categories.find((c:any) => c.isFeatured) || data.categories[0];
+
+          // products[String(featuredCategories.name)] = data;
+          // setProductsByCategory(products);
 
           setFeaturedCategories(featuredCat);
 

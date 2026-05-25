@@ -1,6 +1,6 @@
+// app/site/[tenantSlug]/layout.tsx
 import { notFound } from 'next/navigation';
 import { ReactNode, Suspense } from 'react';
-import { headers } from 'next/headers';
 import type { Metadata } from 'next';
 
 import { StoreContextProvider } from '@/contexts/StoreContext';
@@ -8,10 +8,11 @@ import categoryHeaderFooterLayoutMap from '@/components/site/layouts/categoryHea
 import { transformCompanyToStoreForm } from '@/utils/transformPrismaToStoreForm';
 import LoadingSpinner from '@/components/site/LoadingSpinner';
 import { SITE_CATEGORIES } from '@/utils/sitedata';
-import { findCompanyCached, leanShellInclude } from '@/lib/company-fetcher';
+import { findCompanyCached } from '@/lib/company-fetcher';
 import WhatsAppBubble from '@/components/WhatsAppBubble';
 
-// Cache for ISR (60 seconds)
+
+// ISR Activation: Allows caching static pages on the edge for 60 seconds
 export const revalidate = 60;
 
 interface Props {
@@ -20,18 +21,14 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const hdrs = await headers();
-  const requestedHost = hdrs.get('x-requested-host');
-  const requestedSubdomain = hdrs.get('x-requested-subdomain');
 
-  // Request only data needed for shell & SEO. The cached `findCompany` is used.
-  let company = await findCompanyCached(slug, requestedHost, requestedSubdomain, leanShellInclude());
+  // Blazing fast cache read using only the parsed param string
+  const company = await findCompanyCached(slug, 'lean');
 
   if (!company) {
     return { title: 'Store not found' };
   }
 
-  // Normalize access to SEO data
   const seo = (company as any).SEO ?? (company as any).sEO;
   const title = seo?.title || company.name || 'Ghuba';
   const description = seo?.description || 'Discover our exclusive collection.';
@@ -55,18 +52,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 interface StoreLayoutProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
   children: ReactNode;
 }
 
 export default async function StoreLayout({ params, children }: StoreLayoutProps) {
   const { slug } = await params;
-  const hdrs = await headers();
-  const requestedHost = hdrs.get('x-requested-host');
-  const requestedSubdomain = hdrs.get('x-requested-subdomain');
 
-  // This call will be de-duplicated by React.cache, hitting the cache instead of the DB again.
-  const raw = await findCompanyCached(slug, requestedHost, requestedSubdomain, leanShellInclude());
+  // React dedupes this call automatically. It will hit the unstable_cache, not your database.
+  const raw = await findCompanyCached(slug, 'lean');
+  
   if (!raw) {
     notFound();
   }
@@ -74,11 +69,13 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
   const storeFormData = transformCompanyToStoreForm(raw);
   const category = normalize(storeFormData.category || 'other');
   const variant = normalize(storeFormData.variant || '');
+
+  const categoryMap = new Map(SITE_CATEGORIES.map(c => [normalize(c.name), c]));
   
-  // --- Layout selection logic (remains the same) ---
   let LayoutComponent = categoryHeaderFooterLayoutMap[variant] || categoryHeaderFooterLayoutMap[category]
     || (() => {
-      const matchedCategory = SITE_CATEGORIES.find((c) => normalize(c.name) === category);
+      // const matchedCategory = SITE_CATEGORIES.find((c) => normalize(c.name) === category);
+      const matchedCategory = categoryMap.get(category)
       if (matchedCategory?.variants?.length) {
         const firstVariant = normalize(matchedCategory.variants[0].name);
         return categoryHeaderFooterLayoutMap[firstVariant];
@@ -86,14 +83,16 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
     })()
     || categoryHeaderFooterLayoutMap['default'];
 
-  const userId = ''; // TODO: Replace with session data
+  const userId = ''; // Replace with session data when needed
 
   return (
     <StoreContextProvider initialStore={storeFormData} userRole="ADMIN" userId={userId}>
-      <div className="bg-black dark:bg-gray-900 text-gray-800 dark:text-gray-200 w-full mx-auto ">
+      <div className="bg-black dark:bg-gray-900 text-gray-800 dark:text-gray-200 w-full mx-auto">
         <LayoutComponent params={{ storeFormData }}>
-          {/* Suspense is key for streaming UI while page data loads */}
-          <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
+          {/* Suspense handles streaming UI cleanly while the lower page data mounts */}
+          <Suspense fallback={<LoadingSpinner />}>
+            {children}
+          </Suspense>
           <WhatsAppBubble productName={''} />
         </LayoutComponent>
       </div>
@@ -101,7 +100,6 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
   );
 }
 
-// Helper can remain or be moved to a utils file
 function normalize(raw: string) {
   return raw
     .trim()
