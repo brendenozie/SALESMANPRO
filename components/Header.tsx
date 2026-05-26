@@ -57,18 +57,18 @@ const Header = () => {
             />
             <div className="absolute inset-0 bg-orange-500/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
-          <span className="text-xl font-black tracking-tighter text-slate-900 transition-colors">
+          <span className="text-xl font-black tracking-tighter text-slate-900 transition-colors duration-300 ">
             Salesman<span className="text-orange-600">Pro</span>
           </span>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-1 bg-slate-100/50 dark:bg-slate-800/40 p-1 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
+        <nav className="hidden lg:flex items-center gap-1 p-1 rounded-xl border border-slate-200/50 backdrop-blur-sm shadow-sm ">
           {navLinks.map((link) => (
             <Link
               key={link.name}
               href={link.href}
-              className="px-4 py-1.5 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all"
+              className="px-4 py-1.5 text-sm font-semibold rounded-lg transition-all "
             >
               {link.name}
             </Link>
@@ -82,7 +82,7 @@ const Header = () => {
               <>
                 <button
                   onClick={() => handleAuth("signin")}
-                  className="px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-orange-600 transition-colors"
+                  className="px-4 py-2 text-sm font-bold text-slate-700 hover:text-orange-600 transition-colors"
                 >
                   Log In
                 </button>
