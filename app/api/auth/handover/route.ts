@@ -18,6 +18,11 @@ export async function GET(req: NextRequest) {
   // ✅ IMPORTANT: decode URL-encoded target
   const target = decodeURIComponent(rawTarget);
 
+  // 🚫 NEVER issue auth tokens on sign-out flows
+  if (req.nextUrl.searchParams.get("auth") === "logout") {
+    return NextResponse.redirect(target);
+  }
+
   try {
     const session = await getAuthSession();
 
