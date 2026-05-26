@@ -8,9 +8,6 @@ import { Metadata } from "next";
 import { getAuthSession } from "@/lib/auth";
 import TokenSignIn from "@/components/TokenSignIn";
 import ThemeProvider from "./theme-provider";
-import Script from "next/script";
-
-
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteMetadata.siteUrl),
@@ -66,16 +63,8 @@ export default async function RootLayout({
     <html
       lang={siteMetadata.language}
       suppressHydrationWarning
-      className="dark"
     >
       <head>
-        {/* Prevent light flash */}
-        <Script id="theme-script" strategy="beforeInteractive">
-          {`
-            document.documentElement.classList.add('dark');
-          `}
-        </Script>
-
         {/* Favicons */}
         <link
           rel="apple-touch-icon"
@@ -106,11 +95,21 @@ export default async function RootLayout({
           rel="mask-icon"
           href={`${basePath}/favicons/safari-pinned-tab.svg`}
           color="#5bbad5"
+        /> 
+
+        <meta name="msapplication-TileColor" content="#000000" /> 
+
+        <meta
+          name="theme-color"
+          media="(prefers-color-scheme: light)"
+          content="#fff"
         />
 
-        <meta name="msapplication-TileColor" content="#000000" />
-
-        <meta name="theme-color" content="#000000" />
+        <meta
+          name="theme-color"
+          media="(prefers-color-scheme: dark)"
+          content="#000"
+        />
 
         <link
           rel="alternate"

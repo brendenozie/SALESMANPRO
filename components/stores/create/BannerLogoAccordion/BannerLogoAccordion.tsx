@@ -74,7 +74,7 @@ export default function MediaAndValuesEditor({
   const bannerInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
-  const [activeTab, setActiveTab] = useState<"media" | "values">("media");
+  const [activeTabAccordion, setActiveTabAccordion] = useState<"mediaaccordion" | "valuesaccordion">("mediaaccordion");
   const [isCompressing, setIsCompressing] = useState(false);
   const [reorderValues, setReorderValues] = useState<ICoreValue[]>(coreValues || []);
   const [openIconPickerIndex, setOpenIconPickerIndex] = useState<number | null>(null);
@@ -270,13 +270,13 @@ export default function MediaAndValuesEditor({
       {/* Segmented Sliding Filter Ribbon Layout */}
       <div className="flex justify-center border-b border-slate-100 dark:border-zinc-800/50 bg-slate-50/50 dark:bg-zinc-900/30 p-2.5">
         <div className="flex bg-slate-200/50 dark:bg-zinc-800/80 p-1 rounded-xl w-full max-w-xs sm:max-w-sm shadow-inner">
-          {(["media", "values"] as const).map((tab) => {
-            const isSelected = activeTab === tab;
+          {(["mediaaccordion", "valuesaccordion"] as const).map((tab) => {
+            const isSelected = activeTabAccordion === tab;
             return (
               <button
                 key={tab}
                 type="button"
-                onClick={() => setActiveTab(tab)}
+                onClick={() => setActiveTabAccordion(tab)}
                 className={`relative flex-1 py-2 text-[11px] sm:text-xs font-bold tracking-wide uppercase transition-colors outline-none rounded-lg cursor-pointer ${
                   isSelected 
                     ? "text-slate-900 dark:text-white font-extrabold" 
@@ -291,7 +291,7 @@ export default function MediaAndValuesEditor({
                   />
                 )}
                 <span className="relative z-10 flex items-center justify-center gap-1.5">
-                  {tab === "media" ? "🖼️ Library Media" : "🌟 Core Identity"}
+                  {tab === "mediaaccordion" ? "🖼️ Library Media" : "🌟 Core Identity"}
                 </span>
               </button>
             );
@@ -302,7 +302,7 @@ export default function MediaAndValuesEditor({
       {/* Workspace Display Viewports */}
       <div className="p-5 sm:p-8 min-h-[400px]">
         <AnimatePresence mode="wait">
-          {activeTab === "media" ? (
+          {activeTabAccordion === "mediaaccordion" ? (
             <motion.div
               key="media-panel"
               initial={{ opacity: 0, y: 10 }}
