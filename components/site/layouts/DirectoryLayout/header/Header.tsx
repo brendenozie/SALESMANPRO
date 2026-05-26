@@ -113,7 +113,14 @@ export default function Header() {
     window.location.href = url.toString();
   };
 
-  const handleSignOutUser = () => signOut({ redirect: true, callbackUrl: "/?logout=true" });
+  const handleSignOutUser = ()=> {
+      const returnTo = window.location.origin;
+
+      signOut({
+        redirect: true,
+        callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
+      });
+    };
 
 
   // --------------------------------------

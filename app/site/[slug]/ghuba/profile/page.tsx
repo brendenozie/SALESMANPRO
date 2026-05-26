@@ -97,7 +97,15 @@ const ProfilePage: React.FC = () => {
           <button className="relative p-2 rounded-full bg-gray-200 dark:bg-gray-700">
             <BellIcon className="w-5 h-5" />
           </button>
-          <button onClick={() => signOut({ redirect: true, callbackUrl: "/?logout=true" })} className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
+          <button onClick={()=> {
+            const returnTo = window.location.origin;
+
+            signOut({
+              redirect: true,
+              callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
+            });
+          }} 
+          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
             Logout
           </button>
         </div>

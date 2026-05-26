@@ -270,7 +270,11 @@ export default function Header() {
                 <button
                   onClick={() => {
                     setMobileMenu(false);
-                    signOut({ redirect: true, callbackUrl: "/?logout=true" });
+                    const returnTo = window.location.origin;
+                    signOut({
+                        redirect: true,
+                        callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
+                      });        
                   }}
                   className="text-gray-600 underline"
                 >

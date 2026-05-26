@@ -193,7 +193,14 @@ export default function Header() {
                   </button>
                 ) : (
                   <button
-                    onClick={() => signOut({ redirect: true, callbackUrl: "/?logout=true" })}
+                    onClick={()=> {
+                      const returnTo = window.location.origin;
+
+                      signOut({
+                        redirect: true,
+                        callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
+                      });
+                    }}
                     className="text-gray-400 uppercase tracking-widest text-xs"
                   >
                     Sign Out

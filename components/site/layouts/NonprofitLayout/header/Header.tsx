@@ -160,7 +160,14 @@ export default function Header() {
                   {user.name || "Profile"}
                 </button>
                 <button
-                  onClick={() => signOut({ redirect: true, callbackUrl: "/?logout=true" })}
+                  onClick={()=> {
+                    const returnTo = window.location.origin;
+
+                    signOut({
+                      redirect: true,
+                      callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
+                    });
+                  }}
                   className="text-red-600 font-semibold text-sm"
                 >
                   Logout
@@ -226,7 +233,14 @@ export default function Header() {
                     Profile
                   </button>
                   <button
-                    onClick={() => signOut({ redirect: true, callbackUrl: "/?logout=true" })}
+                    onClick={()=> {
+  const returnTo = window.location.origin;
+
+  signOut({
+    redirect: true,
+    callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
+  });
+}}
                     className="block w-full text-left py-2 text-red-600"
                   >
                     Logout

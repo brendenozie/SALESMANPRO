@@ -68,7 +68,14 @@ export default function Header() {
     window.location.href = authUrl.toString();
   };
 
-  const handleSignOut = () => signOut({ redirect: true, callbackUrl: "/?logout=true" });
+  const handleSignOut = ()=> {
+    const returnTo = window.location.origin;
+
+    signOut({
+      redirect: true,
+      callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
+    });
+  };
 
   // --- Effects ---
   useEffect(() => {

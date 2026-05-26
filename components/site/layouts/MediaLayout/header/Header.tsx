@@ -218,7 +218,14 @@ export default function EnhancedMediaHeader() {
                                                 )}
 
                                                 <button
-                                                    onClick={() => signOut({ redirect: true, callbackUrl: "/?logout=true" })}
+                                                    onClick={()=> {
+                                                        const returnTo = window.location.origin;
+
+                                                        signOut({
+                                                            redirect: true,
+                                                            callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
+                                                        });
+                                                        }}
                                                     className="w-full text-left px-4 py-2 rounded-lg hover:bg-red-50 text-red-600"
                                                 >
                                                     Logout
@@ -300,7 +307,14 @@ export default function EnhancedMediaHeader() {
                                         </button>
 
                                         <button
-                                            onClick={() => signOut({ redirect: true, callbackUrl: "/?logout=true" })}
+                                            onClick={()=> {
+  const returnTo = window.location.origin;
+
+  signOut({
+    redirect: true,
+    callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
+  });
+}}
                                             className="block text-left w-full px-3 py-2 rounded-lg text-red-600 hover:bg-red-50"
                                         >
                                             Logout

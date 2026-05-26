@@ -64,7 +64,11 @@ export default function FinanceHeader() {
   };
 
   const handleLogout = () => {
-    signOut({ redirect: true, callbackUrl: "/?logout=true" });
+    const returnTo = window.location.origin;
+    signOut({
+        redirect: true,
+        callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
+      }) ;
   };
 
   // UI State

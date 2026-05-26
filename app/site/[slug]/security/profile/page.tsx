@@ -134,7 +134,14 @@ const SecurityDashboard = () => {
               )}
             </div>
             <button 
-              onClick={() => signOut({ redirect: true, callbackUrl: "/?logout=true" })}
+              onClick={()=> {
+                const returnTo = window.location.origin;
+
+                signOut({
+                  redirect: true,
+                  callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
+                });
+              }}
               className="p-2 text-gray-400 hover:text-red-400 transition-colors"
             >
               <ArrowRightOnRectangleIcon className="w-6 h-6" />

@@ -63,7 +63,14 @@ export default function Header() {
 
   // --- Auth Handlers (Adjusted for clarity and better UX) ---
   
-  const handleSignOut = () => signOut({ redirect: true, callbackUrl: "/?logout=true" });
+  const handleSignOut = ()=> {
+    const returnTo = window.location.origin;
+
+    signOut({
+      redirect: true,
+      callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
+    });
+  };
 
   const redirectToAuth = (action: 'signin' | 'signup') => {
     // Assuming 'salesmanpro.site' is the external auth provider

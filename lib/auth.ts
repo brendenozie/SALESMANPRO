@@ -372,24 +372,14 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       const HUB_URL = "https://salesmanpro.site";
       const AUTH_HOST = new URL(baseUrl).hostname;
 
-      // 🚫 logout is inert — never handover
-      if (url.includes("logout=true")) {
-        // return `${baseUrl}/`;
+       // 🚫 Logout must NEVER go through handover
+      if (url.includes("/logout")) {
         return url.startsWith("/") ? `${baseUrl}${url}` : url;
       }
 
+      // 🚫 Never handover on signout
       if (url.includes("/api/auth/signout")) {
-        // return `${baseUrl}/`;
-        return url.startsWith("/") ? `${baseUrl}${url}` : url;
-      }
-
-      // 🚫 If this is a sign-out, DO NOT handover
-      if (
-        // url === baseUrl ||
-        // url === "/" ||
-        url.includes("/api/auth/signout")
-      ) {
-        return url.startsWith("/") ? `${baseUrl}${url}` : url;
+        return baseUrl;
       }
 
       // const finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;

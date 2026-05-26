@@ -200,7 +200,14 @@ export default function Header() {
                  </button>
                  {user && (
                     <button 
-                      onClick={() => signOut({ redirect: true, callbackUrl: "/?logout=true" })}
+                      onClick={()=> {
+                        const returnTo = window.location.origin;
+
+                        signOut({
+                          redirect: true,
+                          callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
+                        });
+                      }}
                       className="w-full mt-4 text-slate-400 text-sm font-medium"
                     >
                       Logout

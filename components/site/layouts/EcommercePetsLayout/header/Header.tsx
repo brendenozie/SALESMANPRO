@@ -43,7 +43,14 @@ export default function Header() {
     else router.push(`/petsecommerce/profile`);
   };
 
-  const handleSignOut = () => signOut({ redirect: true, callbackUrl: "/?logout=true" });
+  const handleSignOut = ()=> {
+    const returnTo = window.location.origin;
+
+    signOut({
+      redirect: true,
+      callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
+    });
+  };
   const handleGoogleSignIn = () => {
     const authUrl = new URL("https://auth.salesmanpro.site/signin");
     authUrl.searchParams.set("callbackUrl", `${window.location.origin}`);

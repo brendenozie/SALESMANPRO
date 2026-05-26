@@ -235,7 +235,15 @@ export default function Navbar() {
                     <button onClick={handleUserAction} className="flex items-center gap-3 text-orange-500 text-sm font-black uppercase">
                       <UserIcon className="w-5 h-5" /> Account Profile
                     </button>
-                    <button onClick={() => signOut({ redirect: true, callbackUrl: "/?logout=true" })} className="flex items-center gap-3 text-red-400 text-sm font-black uppercase">
+                    <button onClick={()=> {
+                        const returnTo = window.location.origin;
+
+                        signOut({
+                          redirect: true,
+                          callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
+                        });
+                      }} 
+                      className="flex items-center gap-3 text-red-400 text-sm font-black uppercase">
                       <ArrowRightOnRectangleIcon className="w-5 h-5" /> Sign Out
                     </button>
                   </div>

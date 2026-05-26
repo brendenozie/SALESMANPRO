@@ -60,7 +60,14 @@ export default function AdminLayout({ children, params }: {
   const { storeFormData, userRole, userId } = useStoreContext();
   const pathname = usePathname();
 
-  const handleSignOut = () => signOut({ redirect: true, callbackUrl: "/?logout=true" });
+  const handleSignOut = ()=> {
+    const returnTo = window.location.origin;
+
+    signOut({
+      redirect: true,
+      callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
+    });
+  };
   
   // 1. This is the core logic.
   // It checks if the current URL path ends with '/pos'.

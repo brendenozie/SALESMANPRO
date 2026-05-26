@@ -164,7 +164,14 @@ export default function Header() {
   };
 
   // ---------- Auth helpers ----------
-    const handleSignOut = () => signOut({ redirect: true, callbackUrl: "/?logout=true" });
+    const handleSignOut = ()=> {
+      const returnTo = window.location.origin;
+
+      signOut({
+        redirect: true,
+        callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
+      });
+    };
   
 
   const handleGoogleSignIn = () => {
