@@ -114,7 +114,7 @@ const ProgramCard = ({
   };
 
   const handleCardClick = () => {
-    router.push(`/admin/${slug}/fitness-programs/${program.id}`);
+    router.push(`/admin/${slug}/fitness-classes/${program.id}`);
   };
 
   return (
@@ -333,8 +333,8 @@ const ProgramFormModal = ({ isOpen, onClose, onSave, program, slug }: any) => {
       };
 
       const url = program 
-        ? `${apiBaseUrl}/admin/fitness-programs/${program.id}?id=${slug}`
-        : `${apiBaseUrl}/admin/fitness-programs?id=${slug}`;
+        ? `${apiBaseUrl}/admin/fitness-classes/${program.id}?id=${slug}`
+        : `${apiBaseUrl}/admin/fitness-classes?id=${slug}`;
         
       const method = program ? "PUT" : "POST";
 
@@ -569,7 +569,7 @@ export default function ProgramsClient({ slug }: Props) {
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
-        const res = await fetch(`${apiBaseUrl}/admin/fitness-programs?id=${slug}`, { credentials: "include" });
+        const res = await fetch(`${apiBaseUrl}/admin/fitness-classes?id=${slug}`, { credentials: "include" });
         const json = await res.json();
         setPrograms(json.data || []);
       } catch (error) {
@@ -603,7 +603,7 @@ export default function ProgramsClient({ slug }: Props) {
     if (!window.confirm("Are you absolutely sure you want to terminate this operational program module path?")) return;
 
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/fitness-programs/${programId}?id=${slug}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/fitness-classes/${programId}?id=${slug}`, {
         method: "DELETE"
       });
       const responseData = await res.json();

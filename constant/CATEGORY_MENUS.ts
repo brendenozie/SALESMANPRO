@@ -2078,23 +2078,23 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/properties-offers`,
       icon: DocumentTextIcon,
     }, // Manage offers, sales agreements, and contracts
-      //   Properties
-      //   ├─ All Properties
-      //   ├─ Units
-      //   ├─ Amenities
-      // Listings
-      // Tenants
-      // Owners
-      // Leases
-      // Payments
-      // Maintenance
-      // Vendors
-      // Reports
-      // Calendar
-      // Messages
-      // Documents
-      // Team
-      // Settings
+    //   Properties
+    //   ├─ All Properties
+    //   ├─ Units
+    //   ├─ Amenities
+    // Listings
+    // Tenants
+    // Owners
+    // Leases
+    // Payments
+    // Maintenance
+    // Vendors
+    // Reports
+    // Calendar
+    // Messages
+    // Documents
+    // Team
+    // Settings
     {
       label: "Virtual Tours",
       href: `/admin/${adminSlug}/properties-virtual-tours`,
@@ -2150,8 +2150,13 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: ClipboardDocumentListIcon,
     },
     {
-      label: "Programs & Classes",
-      href: `/admin/${adminSlug}/fitness-programs`,
+      label: "Programs",
+      href: `/admin/${adminSlug}/fitness-listings`,
+      icon: ClipboardDocumentListIcon,
+    }, // Manage fitness programs, classes, schedules
+    {
+      label: "Classes",
+      href: `/admin/${adminSlug}/fitness-classes`,
       icon: ClipboardDocumentListIcon,
     }, // Manage fitness programs, classes, schedules
     {
@@ -2585,7 +2590,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     {
       label: "Reports & Analytics",
       href: `/admin/${adminSlug}/logistics-reports`,
-      icon: ChartBarIcon, 
+      icon: ChartBarIcon,
     },
     {
       label: "Blogs",
@@ -2640,7 +2645,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Analytics & Reports",
       href: `/admin/${adminSlug}/social-analytics`,
       icon: ChartBarIcon,
-    },    
+    },
     {
       label: "Gallery",
       href: `/admin/${adminSlug}/gallery`,
