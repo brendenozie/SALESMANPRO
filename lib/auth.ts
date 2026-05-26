@@ -372,7 +372,18 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       const HUB_URL = "https://salesmanpro.site";
       const AUTH_HOST = new URL(baseUrl).hostname;
 
-       // 🚫 If this is a sign-out, DO NOT handover
+      // 🚫 logout is inert — never handover
+      if (url.includes("logout=true")) {
+        // return `${baseUrl}/`;
+        return url.startsWith("/") ? `${baseUrl}${url}` : url;
+      }
+
+      if (url.includes("/api/auth/signout")) {
+        // return `${baseUrl}/`;
+        return url.startsWith("/") ? `${baseUrl}${url}` : url;
+      }
+
+      // 🚫 If this is a sign-out, DO NOT handover
       if (
         // url === baseUrl ||
         // url === "/" ||
@@ -381,16 +392,11 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         return url.startsWith("/") ? `${baseUrl}${url}` : url;
       }
 
-      if (url.includes("logout=true")) {
-        return `${baseUrl}/`;
-      }
-
       // const finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
       if (url.includes("/api/auth/handover")) {
         return url; // 🚀 STOP processing immediately
       }
 
-      
       let finalRedirectUrl = url.startsWith("/") ? `${baseUrl}${url}` : url;
 
       // 🔥 FIX: decode if encoded
