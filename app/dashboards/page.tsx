@@ -191,7 +191,7 @@ export default function WelcomePage() {
           </div>
 
           <button
-            onClick={() => signOut({ redirect: true, callbackUrl: "/" })}
+            onClick={() => signOut({ redirect: true, callbackUrl: "/?logout=true", })}
             className="group flex items-center gap-2 px-3.5 py-2 text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-200 dark:hover:border-rose-900/50 transition-all duration-200"
             title="Disconnect Terminal Session"
           >

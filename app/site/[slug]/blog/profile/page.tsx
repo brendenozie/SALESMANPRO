@@ -218,7 +218,7 @@ const UserDashboard = () => {
 
         <div className="p-4 border-t border-slate-100">
           <button 
-            onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` })}
+            onClick={() => signOut({ redirect: true, callbackUrl: "/?logout=true" })}
             className="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-red-50 hover:text-red-600 w-full transition-colors"
           >
             <ArrowRightOnRectangleIcon className="h-6 w-6 shrink-0" />

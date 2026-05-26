@@ -39,7 +39,7 @@ const FailurePage = ({
         </div>
         
         <button 
-          onClick={() => signOut({ callbackUrl: '/' })}
+          onClick={() => signOut({ redirect: true, callbackUrl: "/?logout=true" })}
           className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
         >
           Sign out

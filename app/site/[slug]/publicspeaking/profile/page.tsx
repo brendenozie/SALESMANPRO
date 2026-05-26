@@ -179,7 +179,7 @@ export default function UserDashboard() {
               </div>
 
               <button
-                onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` })}
+                onClick={() => signOut({ redirect: true, callbackUrl: "/?logout=true" })}
                 className="mt-6 w-full py-3 text-sm font-bold text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors dark:border-red-800 dark:text-red-400 dark:hover:bg-gray-700"
               >
                 <ArrowRightOnRectangleIcon className="w-5 h-5 inline mr-2" />

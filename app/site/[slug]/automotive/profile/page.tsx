@@ -143,7 +143,7 @@ const AutomotiveDashboard = () => {
           <div className="mt-auto space-y-4">
              <NavIcon icon={<CogIcon />} label="Settings" active={false} />
              <button 
-               onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` })}
+               onClick={() => signOut({ redirect: true, callbackUrl: "/?logout=true" })}
                className="w-12 h-12 flex items-center justify-center text-zinc-500 hover:text-red-400 transition-colors"
              >
                <ArrowRightOnRectangleIcon className="w-6 h-6" />

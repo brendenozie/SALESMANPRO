@@ -134,7 +134,7 @@ const SecurityDashboard = () => {
               )}
             </div>
             <button 
-              onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` })}
+              onClick={() => signOut({ redirect: true, callbackUrl: "/?logout=true" })}
               className="p-2 text-gray-400 hover:text-red-400 transition-colors"
             >
               <ArrowRightOnRectangleIcon className="w-6 h-6" />

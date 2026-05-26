@@ -142,7 +142,7 @@ const ConsultantDashboard = () => {
             
             {/* Sign Out Button */}
             <button 
-              onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` })}
+              onClick={() => signOut({ redirect: true, callbackUrl: "/?logout=true" })}
               className="flex items-center gap-2 px-4 py-2 text-gray-500 hover:text-red-600 transition-colors"
             >
               <ArrowRightOnRectangleIcon className="w-5 h-5" />

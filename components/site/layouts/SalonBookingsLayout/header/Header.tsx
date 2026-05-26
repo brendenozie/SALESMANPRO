@@ -73,7 +73,7 @@ export default function Header() {
     window.location.href = authUrl.toString();
   };
 
-  const handleSignOut = () => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` });
+  const handleSignOut = () => signOut({ redirect: true, callbackUrl: "/?logout=true" });
   
   // Animation Variants
   const menuVariants = {

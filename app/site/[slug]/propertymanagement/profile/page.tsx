@@ -507,7 +507,7 @@ export default function RealEstateDashboard() {
           </nav>
           
           <button 
-            onClick={() => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` })}
+            onClick={() => signOut({ redirect: true, callbackUrl: "/?logout=true" })}
             className="mb-4 mt-4 flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-400 hover:bg-red-900/30 hover:text-red-300 transition-all group"
           >
             <ArrowRightOnRectangleIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

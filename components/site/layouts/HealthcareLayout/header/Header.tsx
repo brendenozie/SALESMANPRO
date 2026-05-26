@@ -61,7 +61,7 @@ export default function Header() {
     }
   };
 
-  const handleSignOut = () => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` });
+  const handleSignOut = () => signOut({ redirect: true, callbackUrl: "/?logout=true" });
 
   // DATA
   const {
