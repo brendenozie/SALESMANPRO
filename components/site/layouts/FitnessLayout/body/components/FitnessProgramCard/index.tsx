@@ -170,6 +170,8 @@ const FitnessProgramCard: React.FC<ProductCardProps> = ({ product, slug = 'fitne
           primaryColor={primary}
         />
       )}
+
+      
     </>
   );
 };
