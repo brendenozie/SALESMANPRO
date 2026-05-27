@@ -32,7 +32,15 @@ export async function verifyAuth(request: Request | NextRequest): Promise<AuthRe
   try {
     // The `getToken` helper from `next-auth/jwt` is designed to read and decrypt
     // the JWT stored in the session cookie. It uses the NEXTAUTH_SECRET automatically.
-    const token = await getToken({ req: request as NextRequest });
+    const token = await getToken({ 
+      req: request as NextRequest,
+      secret: process.env.NEXTAUTH_SECRET!,
+    // secureCookie: true, // Force secure cookies in production, but allow non-secure in development
+    cookieName:
+      process.env.NODE_ENV === "production"
+        ? "__Secure-next-auth.session-token"
+        : "next-auth.session-token",
+     });
 
     if (!token) {
       return { success: false, error: "Unauthorized: No valid session found" };
