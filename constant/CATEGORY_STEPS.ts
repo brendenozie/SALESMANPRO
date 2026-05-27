@@ -210,7 +210,8 @@ export const CATEGORY_STEPS: Record<string, number[]> = {
 
   "Finance & Legal": [1, 2, 7, 8, 9, 10, 12, 11],
 
-  "Fitness & Wellness": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  // "Fitness & Wellness": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  "Fitness & Wellness": [1, 2, 3, 16, 7, 15, 17, 8, 9, 10, 12, 11],
 
   "Flowers Store": [1, 2, 7, 8, 9, 10, 12, 11],
 

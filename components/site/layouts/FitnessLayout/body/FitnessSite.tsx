@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 // Assuming useStoreContext provides a way to get global data,
 // but for this example, we'll use local dummy data.
@@ -15,11 +15,13 @@ import ExpertsSection from "./components/ExpertsSection";
 import FilterBar from "./components/FilterBarSection";
 import GallerySection from "./components/GallerySection";
 import HeroSection from "./components/heroSection";
-import ListingsGrid from "./components/ListingsGridSection";
+import ClassesGrid from "./components/classesGridSection";
 import LocationsSection from "./components/LocationsSection";
 import MarketInsights from "./components/MarketInsightsSection";
 import NewsletterSection from "./components/NewsletterSection"; // Renamed for clarity
 import VirtualTours from "./components/VirtualToursSection";
+import ListingsGrid from "./components/ListingsGridSection";
+import CategorySection from "./components/CategorySection";
 
 // --- Sample Data Definitions (Aligned with enhanced component props) ---
 
@@ -459,9 +461,14 @@ export default function FitnessSite({ pageData, companyId }: { pageData: StoreFo
         // In a real app, you'd send this data to a backend
       };
     
+    const featured = useMemo(
+          () => (marketplaceListings || []).filter((item) => item.isFeatured).slice(0, 12),
+          [marketplaceListings]
+        );
+      
 
     return (
-        <div className={'relative w-full overflow-hidden bg-[#050505] text-white'}>
+        <div className={'relative w-full overflow-hidden bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100'}>
             {/* Hero Section */}
             <HeroSection store={pageData} 
             onSearch={handleSearch}
@@ -480,11 +487,14 @@ export default function FitnessSite({ pageData, companyId }: { pageData: StoreFo
                 : []
             } />
 
-            {/* Filter Bar */}
-            {/* <FilterBar  storeFormData={siteData || {}}  onSearch={()=>{}}  /> */}
+            {/* --- 02. NAVIGATION NODES (Categories) --- */}
+            <CategorySection store={pageData} />
 
             {/* Listings Grid */}
-            <ListingsGrid courses={siteData?.courses}/>
+            <ListingsGrid programs={featured}/>
+
+            {/* Listings Grid */}
+            <ClassesGrid courses={siteData?.courses}/>
 
             {/* Trending Locations */}
             <LocationsSection  />

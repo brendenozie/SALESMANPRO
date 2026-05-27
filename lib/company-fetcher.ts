@@ -2,7 +2,6 @@
 import "server-only";
 import { unstable_cache, revalidateTag } from "next/cache";
 import prisma from "@/server/db/prismadb";
-import { GalleryItemEditor } from "@/app/admin/[slug]/gallery/AdminGalleryManager";
 
 const INCLUDE_MAP = {
   lean: leanShellInclude(),
@@ -165,3 +164,23 @@ export function pageDataInclude() {
     // Gallery: true,
   };
 }
+
+
+// /**
+//  * -----------------------------------------------------
+//  * ♻️ Revalidation helper (for admin use)
+//  * -----------------------------------------------------
+//  * Call this after updating a company's data in the admin panel.
+//  */
+export async function revalidateCompanyCache(slug: string) {
+  // revalidateTag('companies');      // invalidate all companies
+  revalidateTag(`company:${slug}`); // invalidate this specific company
+}
+
+export const revalidateStore = (companyId: string) => {
+  revalidateTag(`products-${companyId}`);
+  revalidateTag(`categories-${companyId}`);
+  revalidateTag(`blogs-${companyId}`);
+  revalidateTag(`testimonials-${companyId}`);
+  // console.log(`✨ All caches purged for company: ${companyId}`);
+};
