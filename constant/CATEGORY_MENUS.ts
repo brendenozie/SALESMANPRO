@@ -92,7 +92,7 @@ const commonEcommerce = (adminSlug: string) => {
       subItems: [
         { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
         // { label: "Riders", href: `/admin/${adminSlug}/riders` },
-        { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
+        { label: "Clients", href: `/admin/${adminSlug}/consumers` },
         // { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
@@ -254,7 +254,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           label: "Manage Appointments",
           href: `/admin/${adminSlug}/appointments`,
         },
-        { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
+        { label: "Clients", href: `/admin/${adminSlug}/consumers` },
         // { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
@@ -365,7 +365,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           label: "Manage Appointments",
           href: `/admin/${adminSlug}/appointments`,
         },
-        { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
+        { label: "Clients", href: `/admin/${adminSlug}/consumers` },
         // { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
@@ -458,7 +458,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           label: "Manage Appointments",
           href: `/admin/${adminSlug}/appointments`,
         },
-        { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
+        { label: "Clients", href: `/admin/${adminSlug}/consumers` },
         // { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
@@ -546,7 +546,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           label: "Manage Appointments",
           href: `/admin/${adminSlug}/appointments`,
         },
-        { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
+        { label: "Clients", href: `/admin/${adminSlug}/consumers` },
         // { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
@@ -639,7 +639,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           label: "Manage Appointments",
           href: `/admin/${adminSlug}/appointments`,
         },
-        { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
+        { label: "Clients", href: `/admin/${adminSlug}/consumers` },
         // { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
@@ -689,7 +689,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: ClipboardDocumentListIcon,
     },
     {
-      label: "Consumers",
+      label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
     },
@@ -992,7 +992,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     }, // Added Campaigns link
     { label: "Donors", href: `/admin/${adminSlug}/donors`, icon: UsersIcon },
     {
-      label: "Consumers",
+      label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
     },
@@ -1057,7 +1057,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: ClipboardDocumentListIcon,
     },
     {
-      label: "Consumers",
+      label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
     },
@@ -1137,7 +1137,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: UsersIcon,
       subItems: [
         { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
-        { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
+        { label: "Clients", href: `/admin/${adminSlug}/consumers` },
         // { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
@@ -1200,7 +1200,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: TagIcon,
     }, // For discounts, promo codes
     {
-      label: "Consumers",
+      label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
     },
@@ -1294,7 +1294,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: UsersIcon,
     }, // Manage agent profiles, performance, and assignments
     {
-      label: "Consumers",
+      label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UserGroupIcon,
     },
@@ -1391,7 +1391,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: CalendarIcon,
     },
     {
-      label: "Consumers",
+      label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UserGroupIcon,
     },
@@ -1724,7 +1724,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: UsersIcon,
     },
     {
-      label: "Consumers",
+      label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
     },
@@ -1758,7 +1758,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: ClipboardDocumentListIcon,
     },
     {
-      label: "Consumers",
+      label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
     },
@@ -1842,7 +1842,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: UsersIcon,
     }, // Manage agent profiles, performance, and assignments
     {
-      label: "Consumers",
+      label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
     },
@@ -1912,7 +1912,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: UsersIcon,
     },
     {
-      label: "Consumers",
+      label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
     },
@@ -2026,7 +2026,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: UsersIcon,
     }, // Manage agent profiles, performance, and assignments
     {
-      label: "Consumers",
+      label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
     },
@@ -2165,7 +2165,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: BriefcaseIcon,
     }, // Manage trainer profiles, availability
     {
-      label: "Consumers",
+      label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
     },
@@ -2229,7 +2229,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: TagIcon,
     }, // Create and manage discounts, special offers
     {
-      label: "Consumers",
+      label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UserGroupIcon,
     },
@@ -2268,7 +2268,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
   "Consultant & Coach": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     {
-      label: "Consumers",
+      label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UserGroupIcon,
     },
@@ -2343,7 +2343,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
   "Public Speaking": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     {
-      label: "Consumers",
+      label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UserCircleIcon,
     },
@@ -2433,7 +2433,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: ClipboardDocumentListIcon,
     },
     {
-      label: "Consumers",
+      label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UserGroupIcon,
     },
@@ -2553,7 +2553,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     //   icon: UsersIcon,
     // },
     {
-      label: "Consumers",
+      label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UserGroupIcon,
     },
@@ -2622,7 +2622,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: ClipboardDocumentListIcon,
     },
     {
-      label: "Consumers",
+      label: "Clients",
       href: `/admin/${adminSlug}/consumers`,
       icon: UserGroupIcon,
     },
