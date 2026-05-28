@@ -141,7 +141,7 @@ export default async function ProductListPage({ params, searchParams }: PageProp
         {totalPages > 1 && (
           <div className="flex justify-center items-center space-x-2 mt-12 border-t border-slate-200 dark:border-slate-800 pt-6">
             <Link
-              href={`/${slug}/products?page=${pageNum - 1}&search=${search || ''}&category=${categoryId || ''}&sort=${sortOption}`}
+              href={`/fitness/programs?page=${pageNum - 1}&search=${search || ''}&category=${categoryId || ''}&sort=${sortOption}`}
               className={`px-4 py-2 border dark:border-slate-800 text-sm font-medium rounded-xl transition-all ${pageNum <= 1 ? 'opacity-40 pointer-events-none' : 'hover:bg-white dark:hover:bg-slate-900'}`}
             >
               Previous
@@ -149,14 +149,14 @@ export default async function ProductListPage({ params, searchParams }: PageProp
             {Array.from({ length: totalPages }, (_, i) => (
               <Link
                 key={i}
-                href={`/${slug}/products?page=${i + 1}&search=${search || ''}&category=${categoryId || ''}&sort=${sortOption}`}
+                href={`/fitness/programs?page=${i + 1}&search=${search || ''}&category=${categoryId || ''}&sort=${sortOption}`}
                 className={`w-10 h-10 flex items-center justify-center text-sm font-bold rounded-xl transition-all ${i + 1 === pageNum ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' : 'border dark:border-slate-800 hover:bg-white dark:hover:bg-slate-900'}`}
               >
                 {i + 1}
               </Link>
             ))}
             <Link
-              href={`/${slug}/products?page=${pageNum + 1}&search=${search || ''}&category=${categoryId || ''}&sort=${sortOption}`}
+              href={`/fitness/programs?page=${pageNum + 1}&search=${search || ''}&category=${categoryId || ''}&sort=${sortOption}`}
               className={`px-4 py-2 border dark:border-slate-800 text-sm font-medium rounded-xl transition-all ${pageNum >= totalPages ? 'opacity-40 pointer-events-none' : 'hover:bg-white dark:hover:bg-slate-900'}`}
             >
               Next

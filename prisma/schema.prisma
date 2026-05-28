@@ -1253,17 +1253,18 @@ model Client {
   photoUrl         String? // URL for client's photo (optional)
 
   // --- NEW FIELDS FOR CLIENT MANAGEMENT ---
-  inquiryCount           Int?                 @default(0)
+  inquiryCount           Int?      @default(0)
   dealStatus             String? // Consider making this an Enum: enum DealStatus { LEAD, ACTIVE, CLOSED, ARCHIVED }
   lastActivity           DateTime?
   notes                  String?
-  preferredPropertyTypes String[]             @default([]) // Array of strings
+  preferredPropertyTypes String[]  @default([]) // Array of strings
   budgetRange            String? // e.g., "10M-20M KES"
+
   // --- END NEW FIELDS ---
-  Case                   Case[]
-  FinanceAppointment     FinanceAppointment[]
-  Invoice                Invoice[]
-  Booking                Booking[]
+  Case               Case[]
+  FinanceAppointment FinanceAppointment[]
+  Invoice            Invoice[]
+  Booking            Booking[]
 
   @@index([companyId])
   // @@index([userId])
@@ -2343,26 +2344,109 @@ enum RequesterType {
   SALES_AGENT
 }
 
+enum ConsumerType {
+  lead
+  buyer
+  hybrid
+}
+
+enum ConsumerStage {
+  new
+  contacted
+  qualified
+  negotiation
+  converted
+  lost
+}
+
+enum ConsumerSource {
+  website
+  agent
+  ads
+  referral
+  import
+}
+
+enum ConsumerStatus {
+  active
+  suspended
+  archived
+}
+
 //One on One relationship with user
 model Consumer {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  loginCode String? @unique // Unique generated number for login
+  // 🔐 Authentication / Identity
+  loginCode String? @unique
+  userId    String  @unique @db.ObjectId
+  user      User    @relation("ConsumerProfile", fields: [userId], references: [id])
 
-  userId String @unique @db.ObjectId // Link to User model
-  user   User   @relation("ConsumerProfile", fields: [userId], references: [id])
-
-  companyId String?  @db.ObjectId // Optional: If consumers can be independent or affiliated
+  // 🏢 Optional company affiliation
+  companyId String?  @db.ObjectId
   company   Company? @relation(fields: [companyId], references: [id])
 
-  createdAt            DateTime?              @default(now())
-  updatedAt            DateTime?              @updatedAt
+  // 🧠 CRM Classification
+  type  ConsumerType  @default(lead)
+  stage ConsumerStage @default(new)
+
+  bio String? // Short biography or notes about the consumer
+
+  // 🎯 Lead Intelligence
+  source        ConsumerSource?
+  assignedAgent String?         @db.ObjectId
+  interest      String[]
+  budgetMin     Float?
+  budgetMax     Float?
+
+  // 💰 Buyer Intelligence
+  totalOrders       Int       @default(0)
+  totalSpent        Float     @default(0)
+  averageOrderValue Float     @default(0)
+  lastPurchaseAt    DateTime?
+
+  // 📊 Engagement Intelligence
+  activityScore Int       @default(0) // 0–100
+  lastActivity  DateTime?
+  lastLogin     DateTime?
+
+  // 🏷 CRM Utilities
+  tags   String[]
+  notes  String?
+  status ConsumerStatus @default(active)
+
+  membershipType   String? // e.g., "Premium", "Standard", "Trial"
+  membershipStatus ClientStatus @default(PENDING) // New status field
+  joinDate         DateTime?    @default(now())
+  lastActive       DateTime?    @default(now())
+  photoUrl         String? // URL for client's photo (optional)
+
+  // --- NEW FIELDS FOR CLIENT MANAGEMENT ---
+  inquiryCount Int?    @default(0)
+  dealStatus   String? // Consider making this an Enum: enum DealStatus { LEAD, ACTIVE, CLOSED, ARCHIVED }
+
+  preferredTypes String[] @default([]) // Array of strings
+  budgetRange            String? // e.g., "10M-20M KES"
+
+  // --- END NEW FIELDS ---
+  Case               Case[]
+  FinanceAppointment FinanceAppointment[]
+  Invoice            Invoice[]
+  Booking            Booking[]
+
+  // 🕒 Audit
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 📦 Relations
   ConsumerInventory    ConsumerInventory[]
   ConsumerInventoryLog ConsumerInventoryLog[]
 
-  // @@index([userId])
   @@unique([userId, companyId])
   @@index([companyId])
+  @@index([type])
+  @@index([stage])
+  @@index([activityScore])
 }
 
 model ConsumerInventory {
@@ -5839,8 +5923,10 @@ model Case {
   companyId        String     @db.ObjectId
   company          Company    @relation(fields: [companyId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  consumer   Consumer? @relation(fields: [consumerId], references: [id])
+  consumerId String?   @db.ObjectId
 
   @@index([assignedToUserId])
   @@index([status])
@@ -5879,8 +5965,10 @@ model FinanceAppointment {
   companyId String?  @db.ObjectId
   company   Company? @relation(fields: [companyId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  consumer   Consumer? @relation(fields: [consumerId], references: [id])
+  consumerId String?   @db.ObjectId
 
   @@index([clientId])
   @@index([expertId])
@@ -5890,8 +5978,10 @@ model FinanceAppointment {
 // Invoice model: Represents a financial invoice for a client
 model Invoice {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  clientId      String        @db.ObjectId
-  client        Client        @relation(fields: [clientId], references: [id])
+  clientId      String?        @db.ObjectId
+  client        Client?        @relation(fields: [clientId], references: [id])  
+  consumerId      String?        @db.ObjectId
+  consumer        Consumer?        @relation(fields: [consumerId], references: [id])
   invoiceNumber String        @unique
   amount        Float
   issueDate     DateTime
@@ -5902,8 +5992,8 @@ model Invoice {
   companyId String?  @db.ObjectId
   company   Company? @relation(fields: [companyId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   @@index([clientId])
   @@index([status])
@@ -6209,8 +6299,10 @@ model Booking {
   endDate    DateTime? // End date of the trip/service
   totalPrice Float? // Total price of the booking
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  consumer   Consumer? @relation(fields: [consumerId], references: [id])
+  consumerId String?   @db.ObjectId
 
   @@index([companyId])
   @@index([clientId])

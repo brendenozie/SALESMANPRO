@@ -5,111 +5,128 @@ import { formatResponse } from "@/lib/formatResponse";
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import bcrypt from "bcryptjs";
 
-// =====================
-// GET /api/consumers
-// =====================
+/* ====================================================
+   GET /api/consumers
+   Lists all consumers with nested profiles
+====================================================== */
 export const GET = withApiHandler(async (request, context) => {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId") || context.user?.companyId;
 
-  if (!companyId) {
-    return formatResponse(false, null, "Company ID is required", 400);
-  }
+  if (!companyId)
+    return formatResponse(false, null, "Company ID required", 400);
 
   const cacheKey = `admin:consumers:${companyId}:all`;
-
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
+  const cached = await cacheGet(cacheKey);
+  if (cached) return formatResponse(true, cached, "Fetched (cached)", 200);
 
   const consumers = await prisma.consumer.findMany({
     where: { companyId },
     include: {
       user: {
-        select: {
-          name: true,
-          email: true,
-          image: true,
-          phone: true,
-        },
-      },
-      _count: {
-        select: { ConsumerInventory: true },
+        select: { name: true, email: true, phone: true, image: true },
       },
     },
     orderBy: { createdAt: "desc" },
   });
 
-  try {
-    await cacheSet(cacheKey, consumers, 60);
-  } catch (e) {}
-
-  return formatResponse(true, consumers, "Consumers fetched successfully", 200);
+  await cacheSet(cacheKey, consumers, 60);
+  return formatResponse(true, consumers, "Consumers fetched", 200);
 });
 
-// =====================
-// POST /api/consumers
-// =====================
+/* ====================================================
+   POST /api/consumers
+   Handles safe atomic creation with related nested user records
+====================================================== */
 export const POST = withAuthAndRateLimit(async (request) => {
   const body = await request.json();
-  let { name, email, password, companyId, phone, profileImageUrl } = body;
+  const {
+    name,
+    email,
+    phone,
+    password,
+    companyId,
+    bio,
+    type = "lead",
+    stage = "new",
+    source,
+    interest = [],
+    preferredTypes = [],
+    budgetRange,
+    tags = [],
+    notes,
+    membershipStatus = "PENDING",
+    photoUrl,
+    activityScore = 40,
+  } = body;
 
   if (!name || !email || !companyId) {
-    return formatResponse(false, null, "Missing required fields", 400);
-  }
-
-  email = email.toLowerCase().trim();
-
-  const exists = await prisma.user.findUnique({ where: { email } });
-  if (exists) {
     return formatResponse(
       false,
       null,
-      "A user with this email already exists",
-      409,
+      "Missing required transactional identity parameters",
+      400,
     );
   }
 
-  // Generate unique 6-digit login code for the consumer
+  const normalizedEmail = email.toLowerCase().trim();
+  const exists = await prisma.user.findUnique({
+    where: { email: normalizedEmail },
+  });
+  if (exists)
+    return formatResponse(
+      false,
+      null,
+      "User profile already registered under that email token",
+      409,
+    );
+
   const loginCode = Math.floor(100000 + Math.random() * 900000).toString();
   const hashedPassword = await bcrypt.hash(password || "consumer123", 10);
 
-  try {
-    const newConsumer = await prisma.$transaction(async (tx) => {
-      return tx.user.create({
-        data: {
-          name,
-          email,
-          password: hashedPassword,
-          phone,
-          image: profileImageUrl,
-          role: "USER", // Or a specific CONSUMER role if defined in your ENUM
-          consumerProfile: {
-            create: {
-              companyId,
-              loginCode,
-            },
+  const consumer = await prisma.$transaction(async (tx) => {
+    return tx.user.create({
+      data: {
+        name,
+        email: normalizedEmail,
+        phone,
+        password: hashedPassword,
+        role: "USER",
+        image: photoUrl || null,
+        consumerProfile: {
+          create: {
+            companyId,
+            loginCode,
+            bio,
+            type,
+            stage,
+            source,
+            interest,
+            preferredTypes,
+            budgetRange,
+            tags,
+            notes,
+            membershipStatus,
+            photoUrl,
+            activityScore,
           },
         },
-        include: {
-          consumerProfile: true,
+      },
+      include: {
+        consumerProfile: {
+          include: { user: true },
         },
-      });
+      },
     });
+  });
 
-    try {
-      await cacheDel(`admin:consumers:${companyId}:*`);
-    } catch (e) {}
+  await cacheDel(`admin:consumers:${companyId}:*`);
 
-    return formatResponse(
-      true,
-      newConsumer,
-      "Consumer created successfully",
-      201,
-    );
-  } catch (error) {
-    console.error("Consumer Creation Error:", error);
-    return formatResponse(false, null, "Failed to create consumer", 500);
-  }
+  // Return nested structure matched by the updated frontend
+  return formatResponse(
+    true,
+    consumer.consumerProfile,
+    "Consumer initialized successfully",
+    201,
+  );
 });

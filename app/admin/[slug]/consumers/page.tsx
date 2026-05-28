@@ -78,7 +78,7 @@ export default async function ConsumersPage({ params }: PageProps) {
 
       <ConsumersClientPage 
         adminSlug={slug} 
-        initialData={consumers} 
+        initialConsumers={consumers} 
       />
     </div>
   );

@@ -150,9 +150,7 @@ export default function ClientsPage() {
     setShowModal(true);
   };
 
-  const filteredClients =
-    clients.length > 0
-      ? clients.filter(
+  const filteredClients =  clients && clients.length > 0 ? clients.filter(
           (client) =>
             client.user?.name
               .toLowerCase()

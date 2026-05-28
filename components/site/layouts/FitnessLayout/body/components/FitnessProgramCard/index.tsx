@@ -34,7 +34,7 @@ const FitnessProgramCard: React.FC<ProductCardProps> = ({ product, slug = 'fitne
     (typeof images?.[0] === 'string' ? images[0] : 'https://dozi4r4ug9739.cloudfront.net/images/1779884960821-pexels-ketut-subiyanto-4720807.jpg');
 
   // Unified routing path for scheduling/booking
-  const detailPageUrl = `/${slug}/programs/${id}`;
+  const detailPageUrl = `/fitness/programs/${id}`;
 
   // WhatsApp Config Matrix
   const whatsappNumber = `${storeFormData?.contactPhone || '2547003456778'}`.replace(/\s+/g, '');

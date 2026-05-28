@@ -93,7 +93,7 @@ const commonEcommerce = (adminSlug: string) => {
         { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
         // { label: "Riders", href: `/admin/${adminSlug}/riders` },
         { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
-        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
+        // { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
     {
@@ -255,7 +255,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           href: `/admin/${adminSlug}/appointments`,
         },
         { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
-        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
+        // { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
     {
@@ -366,7 +366,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           href: `/admin/${adminSlug}/appointments`,
         },
         { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
-        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
+        // { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
     {
@@ -459,7 +459,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           href: `/admin/${adminSlug}/appointments`,
         },
         { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
-        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
+        // { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
     {
@@ -547,7 +547,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           href: `/admin/${adminSlug}/appointments`,
         },
         { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
-        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
+        // { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
     {
@@ -640,7 +640,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           href: `/admin/${adminSlug}/appointments`,
         },
         { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
-        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
+        // { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
     {
@@ -1138,7 +1138,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       subItems: [
         { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
         { label: "Consumers", href: `/admin/${adminSlug}/consumers` },
-        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
+        // { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
     {
@@ -1298,11 +1298,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/consumers`,
       icon: UserGroupIcon,
     },
-    {
-      label: "Clients",
-      href: `/admin/${adminSlug}/clients`,
-      icon: UserGroupIcon,
-    }, // Manage client profiles, inquiries, and history (changed to UserGroupIcon for clarity)
+    // {
+    //   label: "Clients",
+    //   href: `/admin/${adminSlug}/clients`,
+    //   icon: UserGroupIcon,
+    // }, // Manage client profiles, inquiries, and history (changed to UserGroupIcon for clarity)
     {
       label: "Properties",
       href: `/admin/${adminSlug}/properties`,
@@ -1762,11 +1762,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
     },
-    {
-      label: "Clients",
-      href: `/admin/${adminSlug}/finance-clients`,
-      icon: UsersIcon,
-    },
+    // {
+    //   label: "Clients",
+    //   href: `/admin/${adminSlug}/finance-clients`,
+    //   icon: UsersIcon,
+    // },
     {
       label: "Experts/Team",
       href: `/admin/${adminSlug}/finance-team`,
@@ -1846,11 +1846,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
     },
-    {
-      label: "Clients",
-      href: `/admin/${adminSlug}/clients`,
-      icon: UserGroupIcon,
-    }, // Manage client profiles, inquiries, and history (changed to UserGroupIcon for clarity)
+    // {
+    //   label: "Clients",
+    //   href: `/admin/${adminSlug}/clients`,
+    //   icon: UserGroupIcon,
+    // }, // Manage client profiles, inquiries, and history (changed to UserGroupIcon for clarity)
     {
       label: "Vehicles",
       href: `/admin/${adminSlug}/vehicles`,
@@ -2030,11 +2030,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
     },
-    {
-      label: "Clients",
-      href: `/admin/${adminSlug}/clients`,
-      icon: UserGroupIcon,
-    }, // Manage client profiles, inquiries, and history (changed to UserGroupIcon for clarity)
+    // {
+    //   label: "Clients",
+    //   href: `/admin/${adminSlug}/clients`,
+    //   icon: UserGroupIcon,
+    // }, // Manage client profiles, inquiries, and history (changed to UserGroupIcon for clarity)
     {
       label: "Properties",
       href: `/admin/${adminSlug}/properties`,
@@ -2169,11 +2169,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/consumers`,
       icon: UsersIcon,
     },
-    {
-      label: "Clients & Members",
-      href: `/admin/${adminSlug}/fitness-clients`,
-      icon: UsersIcon,
-    }, // Manage client accounts, memberships, progress
+    // {
+    //   label: "Clients & Members",
+    //   href: `/admin/${adminSlug}/fitness-clients`,
+    //   icon: UsersIcon,
+    // }, // Manage client accounts, memberships, progress
     {
       label: "Locations & Facilities",
       href: `/admin/${adminSlug}/fitness-locations`,
@@ -2272,15 +2272,15 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/consumers`,
       icon: UserGroupIcon,
     },
-    {
-      label: "Clients",
-      icon: UsersIcon, // Icon for people/groups
-      subItems: [
-        { label: "Client List", href: `/admin/${adminSlug}/clients` },
-        // { label: "Leads/Prospects", href: `/admin/${adminSlug}/leads` },
-        // { label: "Client History", href: `/admin/${adminSlug}/client-history` },
-      ],
-    },
+    // {
+    //   label: "Clients",
+    //   icon: UsersIcon, // Icon for people/groups
+    //   subItems: [
+    //     { label: "Client List", href: `/admin/${adminSlug}/clients` },
+    //     // { label: "Leads/Prospects", href: `/admin/${adminSlug}/leads` },
+    //     // { label: "Client History", href: `/admin/${adminSlug}/client-history` },
+    //   ],
+    // },
     {
       label: "Programs & Courses",
       icon: BookOpenIcon, // Icon for a book or learning
@@ -2437,11 +2437,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/consumers`,
       icon: UserGroupIcon,
     },
-    {
-      label: "Clients",
-      href: `/admin/${adminSlug}/finance-clients`,
-      icon: UsersIcon,
-    },
+    // {
+    //   label: "Clients",
+    //   href: `/admin/${adminSlug}/finance-clients`,
+    //   icon: UsersIcon,
+    // },
     {
       label: "Experts/Team",
       href: `/admin/${adminSlug}/finance-team`,
@@ -2626,11 +2626,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/consumers`,
       icon: UserGroupIcon,
     },
-    {
-      label: "Clients & Accounts",
-      href: `/admin/${adminSlug}/social-clients`,
-      icon: UsersIcon,
-    },
+    // {
+    //   label: "Clients & Accounts",
+    //   href: `/admin/${adminSlug}/social-clients`,
+    //   icon: UsersIcon,
+    // },
     {
       label: "Content Calendar",
       href: `/admin/${adminSlug}/social-calendar`,
