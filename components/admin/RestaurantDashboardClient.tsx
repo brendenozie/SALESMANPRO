@@ -153,25 +153,25 @@ export default function RestaurantDashboardClient({
   const cards = [
     {
       title: "Total Orders",
-      value: metrics.totalOrders,
+      value: metrics?.totalOrders || 0,
       icon: ClipboardDocumentCheckIcon,
       accent: "text-yellow-500 bg-yellow-100 border-yellow-500",
     },
     {
       title: "Active Deliveries",
-      value: metrics.activeDeliveries,
+      value: metrics?.activeDeliveries || 0,
       icon: TruckIcon,
       accent: "text-blue-500 bg-blue-100 border-blue-500",
     },
     {
       title: "Menu Items",
-      value: metrics.menuItems,
+      value: metrics?.menuItems || 0,
       icon: FireIcon,
       accent: "text-red-500 bg-red-100 border-red-500",
     },
     {
       title: "Revenue Today",
-      value: `$${metrics.revenueToday.toLocaleString()}`,
+      value: `$${metrics?.revenueToday?.toLocaleString()}`,
       icon: CurrencyDollarIcon,
       accent: "text-green-500 bg-green-100 border-green-500",
     },

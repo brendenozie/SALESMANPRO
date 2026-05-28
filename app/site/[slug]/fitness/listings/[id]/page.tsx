@@ -7,8 +7,6 @@ import prisma from "@/server/db/prismadb";
 
 import FitnessWellnessView from "./FitnessWellnessView";
 
-import NewsletterSection from "@/components/site/NewsletterSection/NewsletterSection";
-
 export const dynamic = "force-dynamic";
 
 interface PageParams {
@@ -114,9 +112,9 @@ export default async function ProductPage({
         totalModules={totalModules}
         totalLessons={totalLessons}
         totalDuration={totalDuration}
+        slug={resolved.slug} 
+        student={undefined}     
       />
-
-      <NewsletterSection />
     </div>
   );
 }
