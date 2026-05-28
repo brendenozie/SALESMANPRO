@@ -77,7 +77,7 @@ export default async function ProductPage({ params }: PageProps) {
 
   // Pass only necessary props to the client component (smaller bundle)
   return (
-    <div className="relative w-full overflow-hidden bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 mt-20">
+    <div className="relative w-full overflow-hidden bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
       {/* ProductDetail is a client component, defined below */}
       <ProductDetail
         product={productForClient}

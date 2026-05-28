@@ -75,7 +75,6 @@ export default function FitnessWellnessView({
     return (
       <CourseCheckoutView
         course={program}
-        // student={student}
         companyId={program?.companyId}
         slug={slug}
       />

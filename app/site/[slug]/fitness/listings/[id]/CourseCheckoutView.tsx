@@ -16,6 +16,13 @@ import { useSession } from "next-auth/react";
 
 const loader = ({ src }: { src: string }) => src;
 
+type PaymentMethod =
+  | "mpesa"
+  | "paystack"
+  | "stripe"
+  | "paypal"
+  | "cod";
+
 interface CheckoutProps {
   course: any;
   companyId: string;
@@ -33,32 +40,229 @@ export default function CourseCheckoutView({ course, companyId, slug }: Checkout
   const serviceFee = Math.round(price * 0.015); // 1.5% processing fee sample
   const totalAmount = price + serviceFee;
 
-  const handleEnrollmentSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsProcessing(true);
-    setError(null);
+  const [paymentMethod, setPaymentMethod] =  useState<PaymentMethod>("mpesa");
 
-    if(!student || !student.user) {
-      setError("You must be logged in to complete the enrollment.");
-      setIsProcessing(false);
-      return;
-    }
+const [phone, setPhone] = useState(  student?.user?.phone || "");
 
-    // Call server action transaction layer
-    const result = await checkoutAndEnrollStudent({
-      courseId: course.id,
-      studentId: student && student.user.id ,
-      companyId: companyId,
-    });
+const [mpesaPhone, setMpesaPhone] =  useState(student?.user?.phone || "");
 
-    if (!result.success) {
-      setError(result.error || "Something went wrong.");
-      setIsProcessing(false);
-    } else {
-      setIsSuccess(true);
-      setIsProcessing(false);
-    }
-  };
+const handleEnrollmentSubmit = async (
+        e: React.FormEvent
+      ) => {
+        e.preventDefault();
+
+        setIsProcessing(true);
+        setError(null);
+
+        try {
+          // -----------------------------------
+          // AUTH VALIDATION
+          // -----------------------------------
+          if (!student || !student.user) {
+            setError(
+              "You must be logged in to complete enrollment."
+            );
+
+            setIsProcessing(false);
+            return;
+          }
+
+          // -----------------------------------
+          // SERVER ACTION
+          // -----------------------------------
+          const result =
+            await checkoutAndEnrollStudent({
+              courseId: course.id,
+              studentId: student.user.id,
+              companyId,
+
+              paymentOption: paymentMethod,
+
+              email: student.user.email || "",
+              phone,
+
+              mpesaPhone:
+                paymentMethod === "mpesa"
+                  ? mpesaPhone
+                  : undefined,
+            });
+
+          // -----------------------------------
+          // FAILURE
+          // -----------------------------------
+          if (!result.success) {
+            setError(
+              result.error || "Checkout failed."
+            );
+
+            setIsProcessing(false);
+            return;
+          }
+
+          // -----------------------------------
+          // REDIRECT GATEWAYS
+          // -----------------------------------
+          if (result.authorizationUrl) {
+            window.location.href =
+              result.authorizationUrl;
+
+            return;
+          }
+
+          // -----------------------------------
+          // MPESA STK
+          // -----------------------------------
+          if (paymentMethod === "mpesa") {
+            setIsSuccess(true);
+
+            setIsProcessing(false);
+
+            return;
+          }
+
+          // -----------------------------------
+          // COD / FREE
+          // -----------------------------------
+          setIsSuccess(true);
+
+        } catch (err: any) {
+          console.error(err);
+
+          setError(
+            err?.message ||
+            "Unexpected enrollment error."
+          );
+        } finally {
+          setIsProcessing(false);
+        }
+      };
+// const handleEnrollmentSubmit = async (
+//     e: React.FormEvent
+//   ) => {
+//     e.preventDefault();
+
+//     setIsProcessing(true);
+//     setError(null);
+
+//     try {
+//       // -----------------------------------
+//       // AUTH VALIDATION
+//       // -----------------------------------
+//       if (!student || !student.user) {
+//         setError(
+//           "You must be logged in to complete the enrollment."
+//         );
+
+//         setIsProcessing(false);
+//         return;
+//       }
+
+//       // -----------------------------------
+//       // INITIATE CHECKOUT
+//       // -----------------------------------
+//       const result =
+//         await checkoutAndEnrollStudent({
+//           courseId: course.id,
+//           studentId: student.user.id,
+//           companyId: companyId,
+
+//           // NEW
+//           paymentOption,
+
+//           // REQUIRED FOR GATEWAYS
+//           email: student.user.email,
+//           phone: student.user.phone || phone,
+
+//           // OPTIONAL
+//           mpesaPhone,
+//         });
+
+//       // -----------------------------------
+//       // FAILURE
+//       // -----------------------------------
+//       if (!result.success) {
+//         setError(
+//           result.error || "Something went wrong."
+//         );
+
+//         setIsProcessing(false);
+//         return;
+//       }
+
+//       // -----------------------------------
+//       // REDIRECT GATEWAYS
+//       // PAYSTACK / STRIPE / PAYPAL
+//       // -----------------------------------
+//       if (result.authorizationUrl) {
+//         window.location.href =
+//           result.authorizationUrl;
+
+//         return;
+//       }
+
+//       // -----------------------------------
+//       // MPESA STK PUSH
+//       // -----------------------------------
+//       if (
+//         paymentOption === "mpesa"
+//       ) {
+//         setIsSuccess(true);
+
+//         // optional custom message
+//         toast.success(
+//           "STK Push sent to your phone."
+//         );
+
+//         setIsProcessing(false);
+//         return;
+//       }
+
+//       // -----------------------------------
+//       // COD / FREE COURSES
+//       // -----------------------------------
+//       setIsSuccess(true);
+
+//       setIsProcessing(false);
+
+//     } catch (err: any) {
+//       console.error(err);
+
+//       setError(
+//         err?.message ||
+//         "Unexpected enrollment error."
+//       );
+
+//       setIsProcessing(false);
+//     }
+//   };
+
+
+  // const handleEnrollmentSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setIsProcessing(true);
+  //   setError(null);
+
+  //   if(!student || !student.user) {
+  //     setError("You must be logged in to complete the enrollment.");
+  //     setIsProcessing(false);
+  //     return;
+  //   }
+
+  //   // Call server action transaction layer
+  //   const result = await checkoutAndEnrollStudent({
+  //     courseId: course.id,
+  //     studentId: student && student.user.id ,
+  //     companyId: companyId,
+  //   });
+
+  //   if (!result.success) {
+  //     setError(result.error || "Something went wrong.");
+  //     setIsProcessing(false);
+  //   } else {
+  //     setIsSuccess(true);
+  //     setIsProcessing(false);
+  //   }
+  // };
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#050505] text-black dark:text-white flex flex-col justify-between">
@@ -155,6 +359,163 @@ export default function CourseCheckoutView({ course, companyId, slug }: Checkout
                   </div>
 
                   {/* SIMULATED PAYMENT INTELLIGENCE ANCHOR */}
+                  <div className="space-y-5">
+                      <div>
+                        <h3 className="text-sm font-black uppercase tracking-wider mb-2">
+                          Payment Method
+                        </h3>
+
+                        <p className="text-xs text-zinc-500">
+                          Select your preferred payment route.
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        
+                        {/* MPESA */}
+                        <button
+                          type="button"
+                          onClick={() => setPaymentMethod("mpesa")}
+                          className={`p-4 rounded-2xl border text-left transition-all ${
+                            paymentMethod === "mpesa"
+                              ? "border-emerald-500 bg-emerald-500/5"
+                              : "border-zinc-200 dark:border-zinc-800"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-black text-xs uppercase tracking-wider">
+                              M-Pesa
+                            </span>
+
+                            <div
+                              className={`w-3 h-3 rounded-full ${
+                                paymentMethod === "mpesa"
+                                  ? "bg-emerald-500"
+                                  : "bg-zinc-300"
+                              }`}
+                            />
+                          </div>
+
+                          <p className="text-[11px] text-zinc-500 mt-2">
+                            STK Push Payment
+                          </p>
+                        </button>
+
+                        {/* PAYSTACK */}
+                        <button
+                          type="button"
+                          onClick={() => setPaymentMethod("paystack")}
+                          className={`p-4 rounded-2xl border text-left transition-all ${
+                            paymentMethod === "paystack"
+                              ? "border-orange-500 bg-orange-500/5"
+                              : "border-zinc-200 dark:border-zinc-800"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-black text-xs uppercase tracking-wider">
+                              Card
+                            </span>
+
+                            <div
+                              className={`w-3 h-3 rounded-full ${
+                                paymentMethod === "paystack"
+                                  ? "bg-orange-500"
+                                  : "bg-zinc-300"
+                              }`}
+                            />
+                          </div>
+
+                          <p className="text-[11px] text-zinc-500 mt-2">
+                            Card / Bank / Wallet
+                          </p>
+                        </button>
+
+                        {/* STRIPE */}
+                        <button
+                          type="button"
+                          onClick={() => setPaymentMethod("stripe")}
+                          className={`p-4 rounded-2xl border text-left transition-all ${
+                            paymentMethod === "stripe"
+                              ? "border-indigo-500 bg-indigo-500/5"
+                              : "border-zinc-200 dark:border-zinc-800"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-black text-xs uppercase tracking-wider">
+                              Stripe
+                            </span>
+
+                            <div
+                              className={`w-3 h-3 rounded-full ${
+                                paymentMethod === "stripe"
+                                  ? "bg-indigo-500"
+                                  : "bg-zinc-300"
+                              }`}
+                            />
+                          </div>
+
+                          <p className="text-[11px] text-zinc-500 mt-2">
+                            International Cards
+                          </p>
+                        </button>
+
+                        {/* PAYPAL */}
+                        <button
+                          type="button"
+                          onClick={() => setPaymentMethod("paypal")}
+                          className={`p-4 rounded-2xl border text-left transition-all ${
+                            paymentMethod === "paypal"
+                              ? "border-sky-500 bg-sky-500/5"
+                              : "border-zinc-200 dark:border-zinc-800"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-black text-xs uppercase tracking-wider">
+                              PayPal
+                            </span>
+
+                            <div
+                              className={`w-3 h-3 rounded-full ${
+                                paymentMethod === "paypal"
+                                  ? "bg-sky-500"
+                                  : "bg-zinc-300"
+                              }`}
+                            />
+                          </div>
+
+                          <p className="text-[11px] text-zinc-500 mt-2">
+                            PayPal Checkout
+                          </p>
+                        </button>
+                      </div>
+
+                      {/* MPESA PHONE */}
+                      {paymentMethod === "mpesa" && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="space-y-2"
+                        >
+                          <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                            M-Pesa Phone Number
+                          </label>
+
+                          <input
+                            type="tel"
+                            value={mpesaPhone}
+                            onChange={(e) =>
+                              setMpesaPhone(e.target.value)
+                            }
+                            placeholder="2547XXXXXXXX"
+                            className="w-full h-14 px-5 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-sm"
+                          />
+
+                          <p className="text-[11px] text-zinc-500">
+                            STK push will be sent to this number.
+                          </p>
+                        </motion.div>
+                      )}
+                    </div>
                   <div className="p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black/40 space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -212,13 +573,19 @@ export default function CourseCheckoutView({ course, companyId, slug }: Checkout
 
               <div className="space-y-2">
                 <span className="text-xs font-black uppercase tracking-[0.3em] text-emerald-500 flex items-center justify-center gap-2">
-                  <SparklesIcon className="w-4 h-4" /> Enrollment Verified
+                  <SparklesIcon className="w-4 h-4" /> {paymentMethod === "mpesa"
+                                                          ? "STK Push Sent"
+                                                          : "Enrollment Initiated"}
+                  {/* Enrollment Verified */}
                 </span>
                 <h2 className="text-4xl lg:text-5xl font-black uppercase italic tracking-tight">Welcome Aboard</h2>
               </div>
 
               <p className="text-zinc-500 leading-relaxed">
-                Your transaction processed smoothly. The enrollment has been successfully verified. You have instant lifetime access to all components within <span className="text-black dark:text-white font-bold">"{course?.title}"</span>.
+                {paymentMethod === "mpesa"
+  ? "Complete the payment on your phone to activate access."
+  : "Your enrollment checkout has been initiated successfully."}
+                {/* Your transaction processed smoothly. The enrollment has been successfully verified. You have instant lifetime access to all components within <span className="text-black dark:text-white font-bold">"{course?.title}"</span>. */}
               </p>
 
               <button

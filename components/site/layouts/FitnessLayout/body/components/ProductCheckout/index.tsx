@@ -103,7 +103,6 @@ export default function ProductCheckout({
           phone: formData.phone,
         },
         mpesaPhone: paymentMethod === 'MPESA' ? formData.phone : undefined,
-        // consumerId: userId || "anonymous_consumer_session",
         consumerId: session?.user?.id,
         paymentOption: targetPaymentOption,
         companyId: product.companyId || null,
