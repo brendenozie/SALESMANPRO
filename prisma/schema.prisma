@@ -3325,6 +3325,8 @@ model CourseEnrollment {
   courseId String @db.ObjectId
   course   Course @relation(fields: [courseId], references: [id])
 
+  orderId String? @db.ObjectId // Optional link to an Order if enrollment is tied to a purchase
+
   grade Float? // Numeric grade for this enrollment (e.g., 85.5)
 
   progress         Int      @default(0) // Percentage 0-100
@@ -3352,6 +3354,7 @@ model CourseEnrollment {
 
 // Add this enum definition to your schema.txt
 enum EnrollmentStatus {
+  PENDING
   ENROLLED
   COMPLETED
   DROPPED
