@@ -538,7 +538,7 @@ const CategoryPicker: React.FC<Props> = ({
         </AnimatePresence>
 
         <AnimatePresence mode="popLayout">
-          {formData.subCategory && filteredBrands.length > 0 && (
+          {formData.subCategory && filteredBrands && filteredBrands.length > 0 && (
             <MotionWrapper key="brand-step">
               <BrandStep
                 brands={filteredBrands}

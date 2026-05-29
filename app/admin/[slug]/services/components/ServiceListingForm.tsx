@@ -30,7 +30,8 @@ import ServiceAvailabilityTab from './ServiceAvailabilityTab';
 import ImageUploader from '@/components/ImageUploader';
 import ServiceContactLocationTab from './ServiceContactLocationTab';
 import ServiceAdvancedOptionsTab from './ServiceAdvancedOptionsTab';
-import { IStoreCategory, MarketListingForm } from '@/types/typings';
+import { IStoreCategory, ListingMarketStatus, ListingSystemStatus, MarketListingForm } from '@/types/typings';
+import { ListingTransactionType } from '@prisma/client';
 
 // --- Type Definitions (Centralized) ---
 export type SellerType = "INDIVIDUAL" | "COMPANY";
@@ -127,7 +128,10 @@ const initialFormData: MarketListingForm = {
     studios: [],
     features: [],
     paymentOption: '',
-    location: null
+    location: null,
+    listingMarketStatus: ListingMarketStatus.AVAILABLE,
+    listingSystemStatus: ListingSystemStatus.DRAFT,
+    listingTransactionType: ListingTransactionType.SALE
 };
 
 // Mock data for dropdowns if not provided by context

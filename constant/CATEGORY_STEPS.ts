@@ -264,4 +264,11 @@ export const CATEGORY_STEPS: Record<string, number[]> = {
   "vip-protection": [1, 2, 7, 8, 9, 10, 12, 11],
 
   "Watch Store": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Delivery & Logistics": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+
+  "Logistics & Delivery": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+
+  "Logistics & Transportation": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+
 };

@@ -26,6 +26,7 @@ import Image from "next/image";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { MarketListingForm } from "@/types/typings";
 import ServiceListingForm from "./components/ServiceListingForm";
+import AddToProductMarketModal from "@/components/AddToProductMarketModal";
 
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
@@ -64,8 +65,8 @@ export default function AdminServicesClient({
   initialServices, // Expected format match from API response wrapper structure now
   categoriesData,
   companyId,
-  paymentOptions,
-  deliveryMethods
+  // paymentOptions,
+  // deliveryMethods
 }: any) {
   // Extract server-side payloads safely on hydration phase initialization
   const [services, setServices] = useState<MarketListingForm[]>(initialServices?.results || []);
@@ -183,7 +184,7 @@ export default function AdminServicesClient({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/60 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased">
       <div className="max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-10 transition-all duration-300">
         
         {/* HEADER SECTION */}
@@ -297,7 +298,7 @@ export default function AdminServicesClient({
                       <div className="absolute top-3 right-3"><StatusBadge status={service.status} /></div>
                     </div>
                     <div className="p-5 flex-1 flex flex-col">
-                      <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1"><TagIcon className="w-3 h-3 inline mr-1" />{categoriesData.find((c: any) => c.id === service.productCategoryId)?.name || "Uncategorized"}</span>
+                      <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1"><TagIcon className="w-3 h-3 inline mr-1" />{(service?.category || "Uncategorized")}</span>
                       <h3 className="font-bold text-slate-900 dark:text-white line-clamp-1 mb-1">{service.name}</h3>
                       <p className="text-xs text-slate-400 line-clamp-2 mb-4 flex-1">{service.description || "No description provided."}</p>
                       <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800/80">
@@ -406,7 +407,7 @@ export default function AdminServicesClient({
           </div>
         )}
 
-        <ServiceListingForm
+        {/* <ServiceListingForm
           isOpen={isFormModalOpen}
           onClose={() => setIsFormModalOpen(false)}
           onSave={handleSubmit}
@@ -414,7 +415,18 @@ export default function AdminServicesClient({
           productCategories={categoriesData}
           paymentOptions={paymentOptions}
           deliveryMethods={deliveryMethods}
-        />
+        /> */}
+          {isFormModalOpen && (
+                <AddToProductMarketModal
+                  showRequestProductModal={isFormModalOpen}
+                  setShowRequestProductModal={setIsFormModalOpen}
+                  product={null} 
+                  marketListItem={editingService}
+                  categories={categoriesData}
+                  companyId={companyId}
+                  locations={[]}
+                />
+              )}
       </div>
     </div>
   );

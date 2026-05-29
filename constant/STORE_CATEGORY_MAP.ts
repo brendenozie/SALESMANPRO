@@ -701,5 +701,46 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Other",
   ],
 
+  Logistics: [
+    "Logistics",
+    "Transportation",
+    "Freight & Shipping",
+    "Warehousing",
+    "Supply Chain Management",
+    "Last-Mile Delivery",
+    "Courier Services",
+    "Inventory Management",
+    "Logistics Consulting",
+    "Other",
+  ],
+
+  "Logistics & Transportation": [
+    "Logistics & Transportation",
+    "Logistics & Delivery",
+    "Transportation",
+    "Freight & Shipping",
+    "Warehousing",
+    "Supply Chain Management",
+    "Last-Mile Delivery",
+    "Courier Services",
+    "Inventory Management",
+    "Logistics Consulting",
+    "Other",
+  ],
+
+  "Delivery & Logistics": [
+    "Delivery & Logistics",
+    "Logistics & Delivery",
+    "Transportation",
+    "Freight & Shipping",
+    "Warehousing",
+    "Supply Chain Management",
+    "Last-Mile Delivery",
+    "Courier Services",
+    "Inventory Management",
+    "Logistics Consulting",
+    "Other",
+  ],
+
   Other: [],
 };

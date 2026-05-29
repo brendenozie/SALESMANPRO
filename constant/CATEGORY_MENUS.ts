@@ -2510,20 +2510,18 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     {
       label: "Services",
       icon: ClipboardDocumentListIcon,
-      subItems: [
-        { label: "Market List", href: `/admin/${adminSlug}/mymarketplace` },
-      ],
+      href: `/admin/${adminSlug}/services`,
     },
-    {
-      label: "Bookings",
-      href: `/admin/${adminSlug}/appointments`,
-      icon: UsersIcon,
-    },
+    // {
+    //   label: "Bookings",
+    //   href: `/admin/${adminSlug}/appointments`,
+    //   icon: UsersIcon,
+    // },
     {
       label: "Orders",
       icon: UsersIcon,
       subItems: [
-        { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
+        // { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
         // { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
         { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
         { label: "Delivery", href: `/admin/${adminSlug}/deliveries` },

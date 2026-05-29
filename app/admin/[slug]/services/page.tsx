@@ -60,16 +60,16 @@ export default async function ServicesPage({ params }: PageProps) {
   }
 
   // Dynamic values injected safely below to match configuration schemas
-  const paymentOptions = ["AT SHOP", "MOBILE MONEY", "BANK TRANSFER", "CREDIT CARD"];
-  const deliveryMethods = ["On-site", "Remote/Virtual", "At Location", "Shipping", "Pickup"];
+  // const paymentOptions = ["AT SHOP", "MOBILE MONEY", "BANK TRANSFER", "CREDIT CARD"];
+  // const deliveryMethods = ["On-site", "Remote/Virtual", "At Location", "Shipping", "Pickup"];
 
   return (
     <AdminServicesClient
       initialServices={initialServices}
       companyId={companyId}
       categoriesData={categoriesData}
-      paymentOptions={paymentOptions}
-      deliveryMethods={deliveryMethods}
+      // paymentOptions={paymentOptions}
+      // deliveryMethods={deliveryMethods}
     />
   );
 }
