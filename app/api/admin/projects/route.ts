@@ -23,21 +23,20 @@ interface ProjectCreateData {
   status?: ProjectStatus;
   budget?: number | null;
   companyId?: string | null;
+  mediaUrls?: string | null;
 }
 
-
 export const GET = withApiHandler(async (request: Request) => {
-  
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
-  const cacheKey = `admin:projects:${companyId || 'global'}:all`;
+  const cacheKey = `admin:projects:${companyId || "global"}:all`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
-  
+
   const projects = await prisma.project.findMany({
     where: companyId ? { companyId } : {},
     include: {
@@ -61,9 +60,7 @@ export const GET = withApiHandler(async (request: Request) => {
   return formatResponse(true, projects, "Projects fetched successfully", 200);
 });
 
-
 export const POST = withApiHandler(async (request: Request) => {
-  
   const {
     name,
     description,
@@ -72,6 +69,7 @@ export const POST = withApiHandler(async (request: Request) => {
     status,
     budget,
     companyId,
+    mediaUrls,
   }: ProjectCreateData = await request.json();
 
   if (!name) {
@@ -88,30 +86,37 @@ export const POST = withApiHandler(async (request: Request) => {
         status,
         budget,
         companyId,
+        mediaUrls,
       },
     });
 
-    try { await cacheDel(`admin:projects:${companyId || 'global'}:*`); } catch (e) {}
-    
-    return formatResponse(true, newProject, "Project created successfully", 201);
+    try {
+      await cacheDel(`admin:projects:${companyId || "global"}:*`);
+    } catch (e) {}
+
+    return formatResponse(
+      true,
+      newProject,
+      "Project created successfully",
+      201,
+    );
   } catch (error: any) {
     if (error.code === "P2002") {
       return formatResponse(
         false,
         null,
         "A project with this name already exists.",
-        409
+        409,
       );
     }
     throw error; // let withApiHandler deal with unexpected errors
   }
 });
 
+// export async function PUT() {
+//   return formatResponse(false, null, "Method Not Allowed", 405);
+// }
 
-export async function PUT() {
-  return formatResponse(false, null, "Method Not Allowed", 405);
-}
-
-export async function DELETE() {
-  return formatResponse(false, null, "Method Not Allowed", 405);
-}
+// export async function DELETE() {
+//   return formatResponse(false, null, "Method Not Allowed", 405);
+// }

@@ -2426,7 +2426,7 @@ model Consumer {
   dealStatus   String? // Consider making this an Enum: enum DealStatus { LEAD, ACTIVE, CLOSED, ARCHIVED }
 
   preferredTypes String[] @default([]) // Array of strings
-  budgetRange            String? // e.g., "10M-20M KES"
+  budgetRange    String? // e.g., "10M-20M KES"
 
   // --- END NEW FIELDS ---
   Case               Case[]
@@ -4567,6 +4567,7 @@ model Project {
   budget      Float?
   companyId   String?       @db.ObjectId // Link to Company if projects are company-specific
   company     Company?      @relation(fields: [companyId], references: [id])
+  mediaUrls   String?
 
   // Relationships
   tasks     Task[]
@@ -5978,10 +5979,10 @@ model FinanceAppointment {
 // Invoice model: Represents a financial invoice for a client
 model Invoice {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  clientId      String?        @db.ObjectId
-  client        Client?        @relation(fields: [clientId], references: [id])  
-  consumerId      String?        @db.ObjectId
-  consumer        Consumer?        @relation(fields: [consumerId], references: [id])
+  clientId      String?       @db.ObjectId
+  client        Client?       @relation(fields: [clientId], references: [id])
+  consumerId    String?       @db.ObjectId
+  consumer      Consumer?     @relation(fields: [consumerId], references: [id])
   invoiceNumber String        @unique
   amount        Float
   issueDate     DateTime
@@ -5992,8 +5993,8 @@ model Invoice {
   companyId String?  @db.ObjectId
   company   Company? @relation(fields: [companyId], references: [id])
 
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([clientId])
   @@index([status])
