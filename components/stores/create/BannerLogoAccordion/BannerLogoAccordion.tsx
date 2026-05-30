@@ -80,6 +80,19 @@ export default function MediaAndValuesEditor({
   const [openIconPickerIndex, setOpenIconPickerIndex] = useState<number | null>(null);
   const [dragOverField, setDragOverField] = useState<string | null>(null);
 
+  const tabs = [
+  {
+    id: "mediaaccordion",
+    label: "Library Media",
+    icon: "🖼️",
+  },
+  {
+    id: "valuesaccordion",
+    label: "Core Identity",
+    icon: "🌟",
+  },
+] as const;
+
   useEffect(() => {
     if (coreValues && JSON.stringify(coreValues) !== JSON.stringify(reorderValues)) {
       setReorderValues(coreValues);
@@ -268,31 +281,29 @@ export default function MediaAndValuesEditor({
       </div>
 
       {/* Segmented Sliding Filter Ribbon Layout */}
-      <div className="flex justify-center border-b border-slate-100 dark:border-zinc-800/50 bg-slate-50/50 dark:bg-zinc-900/30 p-2.5">
-        <div className="flex bg-slate-200/50 dark:bg-zinc-800/80 p-1 rounded-xl w-full max-w-xs sm:max-w-sm shadow-inner">
-          {(["mediaaccordion", "valuesaccordion"] as const).map((tab) => {
-            const isSelected = activeTabAccordion === tab;
+      <div className="border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3">
+        <div className="flex w-full max-w-md mx-auto rounded-xl bg-slate-100 dark:bg-zinc-800 p-1">
+          {tabs.map((tab) => {
+            const active = activeTabAccordion === tab.id;
+
             return (
               <button
-                key={tab}
-                type="button"
-                onClick={() => setActiveTabAccordion(tab)}
-                className={`relative flex-1 py-2 text-[11px] sm:text-xs font-bold tracking-wide uppercase transition-colors outline-none rounded-lg cursor-pointer ${
-                  isSelected 
-                    ? "text-slate-900 dark:text-white font-extrabold" 
-                    : "text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200"
-                }`}
+                key={tab.id}
+                onClick={() => setActiveTabAccordion(tab.id)}
+                className={`
+                  flex-1 rounded-lg px-3 py-2.5
+                  text-xs sm:text-sm font-semibold
+                  transition-all duration-200
+                  flex items-center justify-center gap-2
+                  ${
+                    active
+                      ? "bg-white dark:bg-zinc-700 text-slate-900 dark:text-white shadow-sm"
+                      : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
+                  }
+                `}
               >
-                {isSelected && (
-                  <motion.div
-                    layoutId="activeTabIndicator"
-                    className="absolute inset-0 bg-white dark:bg-zinc-700 rounded-lg shadow-sm border border-slate-200/20 dark:border-zinc-600/30"
-                    transition={{ type: "spring", stiffness: 400, damping: 32 }}
-                  />
-                )}
-                <span className="relative z-10 flex items-center justify-center gap-1.5">
-                  {tab === "mediaaccordion" ? "🖼️ Library Media" : "🌟 Core Identity"}
-                </span>
+                <span>{tab.icon}</span>
+                <span>{tab.label}</span>
               </button>
             );
           })}
