@@ -48,20 +48,23 @@ export const storeSteps: StepConfig[] = [
     key: 'storeProfile',
     title: 'Store Profile',
     render: (f, h) => <StoreProfileInfo 
-     partnerLogos={f.partnerLogos}
+      partnerLogos={f.partnerLogos}
+      founderImage={f.founderImage}
       founderName={f.founderName}
       founderQuote={f.founderQuote}
       sectionSubtitle={f.sectionSubtitle}
       sectionTitle={f.sectionTitle}
       sectionDescription={f.sectionDescription}
-     handleChange={h.handleChange} handleArrayChange={h.handleArrayChange}  
-    addItem={h.addItem} removeItem={h.removeItem}/>,
+      handleChange={h.handleChange} handleArrayChange={h.handleArrayChange}
+      addItem={h.addItem} 
+      removeItem={h.removeItem} 
+      onUpload={h.handleMediaUpload} 
+      onRemove={h.handleMediaRemove}/>,
   },
   {
     key: 'categories',
     title: 'Categories',
-    render: (f, h, site,cats,allLocs, selectedLocationsForDisplay,  selectedCategoriesArray,
-        dispatch) => (
+    render: (f, h, site,cats,allLocs, selectedLocationsForDisplay,  selectedCategoriesArray, dispatch) => (
       <CategoryAccordion
         category={f.category}
         availableCategories={cats}

@@ -70,7 +70,7 @@ export default function Navbar() {
   }, []);
 
   const dynamicNavLinks = useMemo(() => {
-    return navLinks.map((link) => ({ id: link.name, label: link.name, href: `/${slug}/${link.name.toLowerCase()}` }));
+    return navLinks.map((link) => ({ id: link.name, label: link.name, href: `/delivery/${link.name.toLowerCase()}` }));
     // if (!storeFormData?.StoreCategory) return [];
     // const rawCategories = [...storeFormData.StoreCategory]
     //   .filter((c) => c.visible ?? true)
@@ -133,24 +133,41 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-20 lg:h-24">
           
           {/* SLANTED BRANDING BOX */}
-          <Link
+         <Link
             href="/"
-            className="relative h-full flex items-center bg-[#f7941d] pl-6 pr-12 lg:pl-10 lg:pr-20 text-white shrink-0 group"
-            style={{ clipPath: 'polygon(0 0, 100% 0, 82% 100%, 0% 100%)' }}
+            className="relative h-full flex items-center bg-gradient-to-r from-[#f7941d] to-[#e07d10] pl-6 pr-16 lg:pl-10 lg:pr-24 text-white shrink-0 group overflow-hidden transition-all duration-500 ease-in-out select-none"
+            style={{ clipPath: 'polygon(0 0, 100% 0, 85% 100%, 0% 100%)' }}
           >
-            <div className="flex items-center gap-3 lg:gap-4 relative z-10">
-              <div className="bg-blue-700 rounded-full p-2 lg:p-2.5 shadow-inner transition-transform group-hover:scale-110">
-                <TruckIcon className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
-              </div>
-              <div className="flex flex-col leading-none">
-                {logoUrl ? (
-                  <Image src={logoUrl} alt={name || 'Logo'} width={90} height={45} loader={imageLoader} className="brightness-0 invert object-contain h-20 w-32" />
-                ) : (
-                  <>
-                    <span className="text-2xl lg:text-3xl font-black italic tracking-tighter uppercase">{name || 'IMEVO'}</span>
-                    <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-[0.2em] opacity-90">Logistics</span>
-                  </>
-                )}
+            {/* Premium Hover Glow Effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+
+            {/* Animated Bottom Accent Line */}
+            <div className="absolute bottom-0 left-0 h-[4px] w-0 bg-white group-hover:w-[75%] transition-all duration-500 ease-in-out" />
+
+            <div className="flex items-center gap-4 lg:gap-5 relative z-10 transform group-hover:scale-[1.01] transition-transform duration-300">
+              
+              {/* Logo Icon Container */}
+              {logoUrl && (
+                <div className="relative flex items-center justify-center filter drop-shadow-md transition-transform duration-300 group-hover:rotate-[-2deg]">
+                  <Image 
+                    src={logoUrl} 
+                    alt={name || 'Logo'} 
+                    width={90} 
+                    height={45} 
+                    loader={imageLoader} 
+                    className="brightness-0 invert object-contain h-12 w-auto lg:h-14" 
+                  />
+                </div>
+              )}
+
+              {/* Typography Stack */}
+              <div className="flex flex-col justify-center border-l border-white/20 pl-4 py-1">
+                <span className="text-xl lg:text-2xl font-extrabold italic tracking-tight uppercase leading-none drop-shadow-sm">
+                  {name || 'Transportation'}
+                </span>
+                <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-[0.25em] text-orange-100 mt-1 block leading-none">
+                  Logistics
+                </span>
               </div>
             </div>
           </Link>
@@ -175,14 +192,14 @@ export default function Navbar() {
             
             <div className="h-6 w-[1px] bg-gray-200 hidden sm:block" />
 
-            <div className="relative cursor-pointer group" onClick={() => cart.length > 0 && router.push('/ecommerce/checkout')}>
+            {/* <div className="relative cursor-pointer group" onClick={() => cart.length > 0 && router.push('/ecommerce/checkout')}>
               <ShoppingBagIcon className="w-6 h-6 text-gray-800 group-hover:text-orange-500 transition-colors" />
               {cart.length > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 bg-blue-700 text-white text-[9px] w-4.5 h-4.5 rounded-full flex items-center justify-center font-bold shadow-sm">
                   {cart.length}
                 </span>
               )}
-            </div>
+            </div> */}
 
             <div className="hidden lg:block">
               {user ? (

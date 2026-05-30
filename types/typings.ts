@@ -912,6 +912,7 @@ export interface StoreForm {
   
   // 🧠 Extended Company Insights
   partnerLogos?: { src: string; alt: string }[] | null | undefined; // For marquee sections
+
   founderName?: string | null | undefined;
   founderQuote?: string | null | undefined;
   founderImage?: string | null | undefined; // Optional field for founder photo
@@ -1061,8 +1062,8 @@ export interface Handlers {
   onBulkToggleLocations: (locationIds: string[]) => void;
 
   // ✅ Media handlers (unchanged)
-  handleMediaUpload: (field: "logoUrl" | "bannerUrl" | "videoUrl", file: File) => void;
-  handleMediaRemove: (field: "logoUrl" | "bannerUrl" | "videoUrl") => void;
+  handleMediaUpload: (field: "logoUrl" | "bannerUrl" | "videoUrl" | "founderImage", file: File) => void;
+  handleMediaRemove: (field: "logoUrl" | "bannerUrl" | "videoUrl" | "founderImage") => void;
 
    handleArrayChange: (
     field: "partnerLogos",

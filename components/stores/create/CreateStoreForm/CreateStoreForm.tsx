@@ -391,6 +391,7 @@ export default function CreateStoreForm({
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [founderImageFile, setFounderImageFile] = useState<File | null>(null);
   const [productImageFiles, setProductImageFiles] = useState<(File | null)[]>(
     () => form.heroSlides.map(() => null)
   );
@@ -498,11 +499,13 @@ const [promotionSlideFiles, setPromotionSlideFiles] = useState<PromotionFiles[]>
   // 2) Handlers for “Logo / Banner” Accordion
   // ─────────────────────────────────────────────────────────────────────
 
-  const handleMediaUpload = (field: "logoUrl" | "bannerUrl" | "videoUrl", file: File) => {
+  const handleMediaUpload = (field: "logoUrl" | "bannerUrl" | "videoUrl" | "founderImage", file: File) => {
     if (field === "logoUrl") {
       setLogoFile(file);
     } else if (field === "videoUrl") {
       setVideoFile(file);
+    }  else if (field === "founderImage") {
+      setFounderImageFile(file);
     } else {
       setBannerFile(file);
     }
@@ -514,11 +517,13 @@ const [promotionSlideFiles, setPromotionSlideFiles] = useState<PromotionFiles[]>
     }));
   };
 
-  const handleMediaRemove = (field: "logoUrl" | "bannerUrl" | "videoUrl") => {
+  const handleMediaRemove = (field: "logoUrl" | "bannerUrl" | "videoUrl" | "founderImage") => {
     if (field === "logoUrl") {
       setLogoFile(null);
     } else if (field === "videoUrl") {
       setVideoFile(null);
+    } else if (field === "founderImage") {
+      setFounderImageFile(null);
     } else {
       setBannerFile(null);
     }
@@ -877,18 +882,7 @@ const onUpdateTrustLogo = (
     const domain = slug ? `${slug}.salesmanpro.site` : "";
     setForm((prev) => ({ ...prev, slug, domain }));
   }, [form.name, initialData]);
-
-  // Slug & domain generator
-  // useEffect(() => {
-  //   // if (initialData) return; removed this because if change happens on the name the slug and domain should change if a .salesmanpro.site sub domain 
-  //   if (!form.name) return;
-  //   const slug = form.name
-  //     .toLowerCase()
-  //     .replace(/[^a-z0-9]+/g, "-")
-  //     .replace(/^-+|-+$/g, "");
-  //   setForm((f) => ({ ...f, slug, domain: `${slug}.salesmanpro.site` }));
-  // }, [form.name, initialData]);
-
+  
     useEffect(() => {
     if (!form.name) return;
 
@@ -1135,34 +1129,6 @@ const initializer = (rawSelected: IStoreCategory[]): SelectedState => {
     return initialState;
 };
 
-// const initializerv2 = (rawSelected: IStoreCategory[]): SelectedState => {
-//     const initialState: SelectedState = {};
-//     for (const selection of rawSelected) {
-//         const catId = selection.categoryId;
-//         if (!catId) continue;
-
-//         // This handles potential duplicate categoryId entries from raw data by merging them.
-//         if (initialState[catId]) {
-//             const existing = initialState[catId];
-//             const subIds = new Set(existing.subcategories.map(s => s.id));
-//             selection.subcategories.forEach(sub => {
-//                 if (!subIds.has(sub.id)) {
-//                     existing.subcategories.push(sub);
-//                 }
-//             });
-//             const brandSet = new Set(existing.allBrands || []);
-//             (selection.allBrands || []).forEach(brand => {
-//                 if (!brandSet.has(brand)) {
-//                     existing.allBrands.push(brand);
-//                 }
-//             });
-//         } else {
-//             initialState[catId] = selection;
-//         }
-//     }
-//     return initialState;
-// };
-
 // 2. Initialize the reducer.
 const [selectedState, dispatch] = useReducer(categoryReducer, form.StoreCategory, initializer);
 
@@ -1328,7 +1294,7 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
     onUpdateTrustLogo,
     onRemoveTrustLogo,
 
-    // Media (logo/banner)
+    // Media (logo/banner/video/founder image)
     handleMediaUpload,
     handleMediaRemove,
 
@@ -1551,13 +1517,7 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
 // Upload helper for getting signed URLs and uploading files
 ////////////////////////////////////////////////////////////////////////////////
 async function uploadFile(files: File[], type: "image" | "video" | "book") {
-  console.log("Uploading files:", files);
-  
-  console.log("Starting upload for : ", type);
-
   if (!files?.length) return [];
-  console.log("Starting upload for : ", type);
-
   const uploads = files.map(async (file, index) => {
     // 1. Request signed URL from your backend
     const res = await fetch(
@@ -1624,6 +1584,18 @@ const handleSubmit = async (e: FormEvent) => {
         payload.videoUrl = url;
         setForm((prev) => ({ ...prev, videoUrl: url }));
         console.log("✅ Video uploaded:", url);
+      })()
+    );
+  }
+
+  // --- Founder Image Upload ---
+  if (founderImageFile) {
+    uploadPromises.push(
+      (async () => {
+        const [{ url }] = await uploadFile([founderImageFile], "image");
+        payload.founderImage = url;
+        setForm((prev) => ({ ...prev, founderImage: url }));
+        console.log("✅ Founder image uploaded:", url);
       })()
     );
   }
