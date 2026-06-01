@@ -30,7 +30,7 @@ export function BookingSection() {
   ];
 
   return (
-    <section className="relative min-h-[900px] bg-[#050505] overflow-hidden flex items-center">
+    <section id="booking" className="relative min-h-[900px] bg-[#050505] overflow-hidden flex items-center">
       {/* Background Decorative Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[120px]" />

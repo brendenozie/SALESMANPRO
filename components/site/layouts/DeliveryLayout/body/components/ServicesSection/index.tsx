@@ -70,15 +70,16 @@ export default function ServicesGrid() {
                 title: sub.name,
                 desc: `Specialized ${sub.name} solutions tailored for ${storeFormData?.name || 'your business'}.`,
                 icon: dynamicHeroIconMap[sub.name] || CubeIcon,
+                image: cat.image,
                 tag: cat.displayName
             }))
         ).slice(0, 6);
     } else {
         // Fallback for Logistics/Default
         offeringsToShow = [
-            { title: "Transport", desc: "Efficient and reliable urban transport solutions tailored to your needs.", icon: TruckIcon, tag: "Ground" },
-            { title: "Logistics", desc: "Comprehensive logistics services ensuring timely and secure delivery.", icon: GlobeAmericasIcon, tag: "Global" },
-            { title: "Waste Management", desc: "Innovative solutions promoting sustainability and responsibility.", icon: ArrowPathRoundedSquareIcon, tag: "Eco" },
+            { title: "Transport", desc: "Efficient and reliable urban transport solutions tailored to your needs.", icon: TruckIcon, image: SERVICE_IMAGES[0], tag: "Ground" },
+            { title: "Logistics", desc: "Comprehensive logistics services ensuring timely and secure delivery.", icon: GlobeAmericasIcon, image: SERVICE_IMAGES[1], tag: "Global" },
+            { title: "Waste Management", desc: "Innovative solutions promoting sustainability and responsibility.", icon: ArrowPathRoundedSquareIcon, image: SERVICE_IMAGES[2], tag: "Eco" },
         ];
     }
 
@@ -134,7 +135,7 @@ export default function ServicesGrid() {
                                 {/* Image Frame */}
                                 <div className="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-slate-100 shadow-2xl">
                                     <Image
-                                        src={SERVICE_IMAGES[idx % SERVICE_IMAGES.length]}
+                                        src={service.image || SERVICE_IMAGES[idx % SERVICE_IMAGES.length]}
                                         alt={service.title}
                                         loader={loader}
                                         fill
@@ -199,6 +200,7 @@ export default function ServicesGrid() {
                 >
                     <p className="text-slate-400 font-black text-xs uppercase tracking-[0.5em] mb-6">Need a custom enterprise solution?</p>
                     <button 
+                        onClick={() => window.location.href = '#booking'} // Assuming there's a contact section with this ID
                         className="px-12 py-6 text-white font-black uppercase text-xs tracking-[0.3em] rounded-2xl hover:bg-slate-950 transition-all shadow-xl"
                         style={{ backgroundColor: primaryColor }}
                     >

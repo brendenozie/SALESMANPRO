@@ -60,12 +60,13 @@ const AboutSection: React.FC = () => {
     CoreValues,
     founderName,
     founderQuote,
+    founderImage
   } : any = storeFormData || {}; // Added : any to resolve potential TS issues
 
-  const imgSrc = useMemo(
-    () => heroSlides?.[0]?.productImageUrl || heroSlides?.[0]?.imageUrl || bannerUrl || "/coach-about.jpg",
-    [heroSlides, bannerUrl]
-  );
+  // const imgSrc = useMemo(
+  //   () => founderImage|| "https://via.placeholder.com/600x400?text=About+Us",
+  //   [founderImage]
+  // );
 
   const primaryColor = themeSettings?.primaryColor || "#F97316";
   const secondaryColor = themeSettings?.secondaryColor || "#FB923C";
@@ -89,8 +90,6 @@ const AboutSection: React.FC = () => {
             description: "Uplifting others through love and purpose to build a stronger, more connected world.",
         },
     ]), []);
-
-    // NOTE: Removed `current` state and `useEffect` for auto-advance as this is a static About section.
 
   return (
     <section
@@ -122,7 +121,7 @@ const AboutSection: React.FC = () => {
 
                 <div className="absolute top-0 left-0 w-full h-full rounded-3xl overflow-hidden shadow-2xl border-[6px] border-white z-10">
                   <Image
-                    src={imgSrc || 'https://via.placeholder.com/600x400?text=About+Us'}
+                    src={founderImage || 'https://via.placeholder.com/600x400?text=About+Us'}
                     alt={`${name} - inspiring human flourishing`}
                     layout="fill"
                     objectFit="cover"
