@@ -30,9 +30,8 @@ const navLinks = [
     { name: "Home", hasSub: true },
     { name: "About", hasSub: true },
     { name: "Services", hasSub: true },
-    { name: "Solutions", hasSub: true },
     { name: "Network", hasSub: true },
-    { name: "News", hasSub: true },
+    { name: "Blog", hasSub: true },
     { name: "Contact Us", hasSub: true },
   ];
 
@@ -60,7 +59,7 @@ export default function Navbar() {
 
   const handleUserAction = useCallback(() => {
     if (!user) return handleGoogleSignIn();
-    user.role?.toLowerCase() === 'admin' ? router.push('/dashboards') : router.push('/ecommerce/profile');
+    user.role?.toLowerCase() === 'admin' ? router.push('/dashboards') : router.push('/logistics/profile');
   }, [user, router, handleGoogleSignIn]);
 
   useEffect(() => {
@@ -70,7 +69,7 @@ export default function Navbar() {
   }, []);
 
   const dynamicNavLinks = useMemo(() => {
-    return navLinks.map((link) => ({ id: link.name, label: link.name, href: `/delivery/${link.name.toLowerCase()}` }));
+    return navLinks.map((link) => ({ id: link.name, label: link.name, href: `/logistics/${link.name.toLowerCase()}` }));
     // if (!storeFormData?.StoreCategory) return [];
     // const rawCategories = [...storeFormData.StoreCategory]
     //   .filter((c) => c.visible ?? true)
@@ -192,7 +191,7 @@ export default function Navbar() {
             
             <div className="h-6 w-[1px] bg-gray-200 hidden sm:block" />
 
-            {/* <div className="relative cursor-pointer group" onClick={() => cart.length > 0 && router.push('/ecommerce/checkout')}>
+            {/* <div className="relative cursor-pointer group" onClick={() => cart.length > 0 && router.push('/logistics/checkout')}>
               <ShoppingBagIcon className="w-6 h-6 text-gray-800 group-hover:text-orange-500 transition-colors" />
               {cart.length > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 bg-blue-700 text-white text-[9px] w-4.5 h-4.5 rounded-full flex items-center justify-center font-bold shadow-sm">

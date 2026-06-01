@@ -2039,20 +2039,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Properties",
       href: `/admin/${adminSlug}/properties`,
       icon: BuildingOfficeIcon,
-    }, // Manage all property listings (add, edit, delete, status)
-    {
-      label: "Inquiries",
-      href: `/admin/${adminSlug}/properties-inquiries`,
-      icon: ChatBubbleLeftRightIcon,
-    }, // Track and manage all property inquiries and messages
-    {
-      label: "Showings",
-      href: `/admin/${adminSlug}/properties-showings`,
-      icon: CalendarDaysIcon,
     }, // Schedule and manage property viewings
     {
       label: "Hostel",
-      href: `/admin/${adminSlug}/hostel`,
+      // href: `/admin/${adminSlug}/hostel`,
       icon: HomeIcon,
       subItems: [
         { label: "Blocks", href: `/admin/${adminSlug}/hostel-blocks` },
@@ -2072,6 +2062,16 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         { label: "Staff", href: `/admin/${adminSlug}/hostel-staff` },
         { label: "Reports", href: `/admin/${adminSlug}/hostel-reports` },
       ],
+    }, // Manage all property listings (add, edit, delete, status)
+    {
+      label: "Inquiries",
+      href: `/admin/${adminSlug}/properties-inquiries`,
+      icon: ChatBubbleLeftRightIcon,
+    }, // Track and manage all property inquiries and messages
+    {
+      label: "Showings",
+      href: `/admin/${adminSlug}/properties-showings`,
+      icon: CalendarDaysIcon,
     },
     {
       label: "Offers & Contracts",
@@ -2592,6 +2592,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     //   href: `/admin/${adminSlug}/logistics-routes`,
     //   icon: MapPinIcon,
     // },
+    {
+      label: "Inquirys & Requests",
+      href: `/admin/${adminSlug}/inquiries`,
+      icon: ChatBubbleLeftRightIcon,
+    },
     {
       label: "Shipments & Orders",
       href: `/admin/${adminSlug}/logistics-shipments`,

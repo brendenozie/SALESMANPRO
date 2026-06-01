@@ -16,11 +16,11 @@ import { useStoreContext } from "@/contexts/StoreContext";
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-export default function AbSection() {
-  const { storeFormData } = useStoreContext();
+export default function AbSection({storeFormData}: {storeFormData: any}) {
 
   const {
     name = "Imevo",
+    tagline = "Innovative Logistics Solutions",
     description,
     themeSettings,
     heroSlides = [],
@@ -36,9 +36,9 @@ export default function AbSection() {
   const images = useMemo(() => {
     const slideImgs = heroSlides.map((s: any) => s.imageUrl).filter(Boolean);
     return {
-      main: slideImgs[0] || bannerUrl || "/logistics-main.jpg",
-      sub1: slideImgs[1] || "/logistics-fleet.jpg",
-      sub2: slideImgs[2] || "/logistics-global.jpg",
+      main: bannerUrl || slideImgs[0] || "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+      sub1: slideImgs[0] || slideImgs[1] || bannerUrl  || "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+      sub2: slideImgs[1] || slideImgs[2] || bannerUrl || "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
     };
   }, [heroSlides, bannerUrl]);
 

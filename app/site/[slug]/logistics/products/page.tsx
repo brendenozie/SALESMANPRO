@@ -1,131 +1,205 @@
 // app/[slug]/products/page.tsx
-import React from 'react';
-import { notFound } from 'next/navigation';
-import prisma from '@/server/db/prismadb';
-import Link from 'next/link';
-import Section from '@/components/site/Section/Section';
-import ProductGrid from '@/components/site/productGrid/ProductGrid';
-import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
+import React from "react";
+import { notFound } from "next/navigation";
+import prisma from "@/server/db/prismadb";
+import { MarketListingForm } from "@/types/typings";
+import ProductListWrapper from "./components/ProductListWrapper/ProductListWrapper";
 
-type Category = { id: string; name: string };
-type Product = { id: string; name: string; price: number; imageUrl: string; slug?: string };
+// --- Mock sample products (used when DB has no listings) ---
+const mockProducts: MarketListingForm[] = [
+  {
+    id: "1",
+    name: "Nike Air Force 1 LV5",
+    images: [{ _key: "img1", url: "https://via.placeholder.com/600/FF5733" }],
+    finalPrice: 99.95,
+    sellingPrice: 119.95,
+    category: "Men's Shoes",
+    color: ["white", "red"],
+    isNewArrival: true,
+    isOnOffer: true,
+    isFeatured: false,
+    isDiscounted: true,
+    status: "ACTIVE",
+    productCategoryId: "cat_1",
+    subCategory: undefined,
+    tags: [],
+    option: [],
+    size: [],
+    weight: [],
+    material: [],
+    quantity: 0,
+    buyingPrice: 0,
+    pricingTiers: [],
+    isAvailable: true,
+    isFlashDeal: false,
+    bedrooms: [],
+    studios: [],
+    features: [],
+    bookingSlots: [],
+    requiredClientInfo: [],
+    amenities: [],
+    delivery: false,
+    paymentOption: "",
+    duration: undefined,
+    location: null,
+  },
+  {
+    id: "2",
+    name: "Red Runner Sneakers",
+    images: [{ _key: "img2", url: "https://via.placeholder.com/600/33FF57" }],
+    finalPrice: 159.95,
+    sellingPrice: 180.0,
+    category: "Men's Shoes",
+    color: ["red", "black"],
+    isNewArrival: false,
+    isOnOffer: false,
+    isFeatured: true,
+    isDiscounted: false,
+    status: "ACTIVE",
+    productCategoryId: "cat_1",
+    subCategory: undefined,
+    tags: [],
+    option: [],
+    size: [],
+    weight: [],
+    material: [],
+    quantity: 0,
+    buyingPrice: 0,
+    pricingTiers: [],
+    isAvailable: true,
+    isFlashDeal: false,
+    bedrooms: [],
+    studios: [],
+    features: [],
+    bookingSlots: [],
+    requiredClientInfo: [],
+    amenities: [],
+    delivery: false,
+    paymentOption: "",
+    duration: undefined,
+    location: null,
+  },
+];
 
+// --- Page Props ---
 interface PageProps {
   params:Promise<{ slug: string }>
   searchParams: Promise<{
-    page?: string;
     search?: string;
     category?: string;
     sort?: string;
+    minPrice?: string;
+    maxPrice?: string;
   }>;
 }
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function ProductListPage({ params, searchParams }: PageProps) {
-  const { slug } = await params;
-  
-  const { page, search, category, sort } = await searchParams;
-  
-  let pageSize = 12;
-  const pageNum = parseInt(page || '1', 10);
-  const categoryId = category || undefined;
-  const sortOption = sort || 'newest';
+  const { slug } = await params; 
+  const searchParamsResolved = await searchParams;
+
   // Ensure store exists
-  const baseCompany = await prisma.company.findUnique({ where: { slug } });
-  if (!baseCompany) notFound();
+  const company = await prisma.company.findUnique({ where: { slug } });
+  if (!company) notFound();
 
-  // Build filters
-  const where: any = { companyId: baseCompany.id };
-  if (search) where.title = { contains: search, mode: 'insensitive' };
+  // Extract filters
+  const search = searchParamsResolved.search || "";
+  const categoryId = searchParamsResolved.category || null;
+  const sort = searchParamsResolved.sort || "newest";
+  const minPrice = parseFloat(searchParamsResolved.minPrice || "0");
+  const maxPrice = parseFloat(searchParamsResolved.maxPrice || "100000");
+
+  // Build DB filters
+  const where: any = { companyId: company.id };
+  if (search) where.name = { contains: search, mode: "insensitive" };
   if (categoryId) where.productCategoryId = categoryId;
+  if (minPrice || maxPrice) where.finalPrice = { gte: minPrice, lte: maxPrice };
 
-  // Determine sort order
-  let orderBy: any = { createdAt: 'desc' };
-  if (sort === 'priceAsc') orderBy = { finalPrice: 'asc' };
-  if (sort === 'priceDesc') orderBy = { finalPrice: 'desc' };
-  if (sort === 'rating') orderBy = { rating: 'desc' };
+  // Sorting
+  let orderBy: any = { createdAt: "desc" };
+  if (sort === "priceAsc") orderBy = { finalPrice: "asc" };
+  if (sort === "priceDesc") orderBy = { finalPrice: "desc" };
+  if (sort === "rating") orderBy = { rating: "desc" };
 
-  // Fetch data
-  const [listings, totalCount, categories] = await Promise.all([
+  // Fetch from DB
+  const [listings, categories] = await Promise.all([
     prisma.marketplaceListings.findMany({
       where,
-      skip: (pageNum - 1) * pageSize,
-      take: pageSize,
       orderBy,
-      // include: { images: true }
+      take: 20,
+      select: {
+        id: true,
+        name: true,
+        finalPrice: true,
+        sellingPrice: true,
+        images: true,
+        productCategoryId: true,
+      },
     }),
-    prisma.marketplaceListings.count({ where }),
-    prisma.productCategory.findMany({ orderBy: { name: 'asc' } }),
+    prisma.storeCategory.findMany({
+      orderBy: { displayName: "asc" },
+      where: { companyId: company.id },
+      select: { id: true, displayName: true, categoryId: true, category: true },
+    }),
   ]);
 
-  const products: Product[] = listings.map(p => ({
+  // --- Normalize DB results into MarketListingForm ---
+  const normalizedListings: MarketListingForm[] = listings.map((p) => ({
     id: p.id,
     name: p.name,
-    price: p.finalPrice ?? 0,
-    imageUrl: 'p.images[0]?.url ',//|| '/placeholder.png',
-    slug: "",//p.slug || undefined,
+    finalPrice: p.finalPrice || 0,
+    sellingPrice: p.sellingPrice || 0,
+    images: Array.isArray(p.images) ? p.images : [],
+    productCategoryId: p.productCategoryId || '',
+
+    // Fill in defaults for required fields
+    category: "",
+    color: [],
+    isNewArrival: false,
+    isOnOffer: false,
+    isFeatured: false,
+    isDiscounted: false,
+    status: "ACTIVE",
+    subCategory: undefined,
+    tags: [],
+    option: [],
+    size: [],
+    weight: [],
+    material: [],
+    quantity: 0,
+    buyingPrice: 0,
+    pricingTiers: [],
+    isAvailable: true,
+    isFlashDeal: false,
+    bedrooms: [],
+    studios: [],
+    features: [],
+    bookingSlots: [],
+    requiredClientInfo: [],
+    amenities: [],
+    delivery: false,
+    paymentOption: "",
+    duration: undefined,
+    location: null,
   }));
 
-  const cats: Category[] = categories.map(c => ({ id: c.id, name: c.name }));
-  const totalPages = Math.ceil(totalCount / pageSize);
+  // Fallback if DB empty
+  const products: MarketListingForm[] =
+    normalizedListings.length > 0 ? normalizedListings : mockProducts;
+
+  // Normalize categories
+  const cats = categories.length
+    ? categories.map((c) => ({ id: c.id, displayName: c.displayName, categoryId: c.categoryId, category: c.category }))
+    : [
+        { id: "cat_1", displayName: "Men's Shoes", categoryId: "cat_1", category: "Shoes" },
+        { id: "cat_2", displayName: "Accessories", categoryId: "cat_2", category: "Accessories" },
+        { id: "cat_3", displayName: "Home Goods", categoryId: "cat_3", category: "Home" },
+      ];
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <Section title="Products">
-          <form method="get" className="flex flex-col lg:flex-row items-center justify-between mb-6 space-y-4 lg:space-y-0">
-            <input
-              name="search"
-              defaultValue={search}
-              placeholder="Search products..."
-              className="border rounded-full px-4 py-2 w-full lg:w-1/3"
-            />
-            <select
-              name="category"
-              defaultValue={categoryId || ''}
-              className="border rounded px-4 py-2 w-full lg:w-1/4"
-            >
-              <option value="">All Categories</option>
-              {cats.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-            <select
-              name="sort"
-              defaultValue={sort}
-              className="border rounded px-4 py-2 w-full lg:w-1/4"
-            >
-              <option value="newest">Newest</option>
-              <option value="priceAsc">Price: Low to High</option>
-              <option value="priceDesc">Price: High to Low</option>
-              <option value="rating">Top Rated</option>
-            </select>
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">Apply</button>
-          </form>
-
-          <ProductGrid products={products} />
-
-          <div className="flex justify-center items-center space-x-2 mt-8">
-            <Link
-              href={`/${slug}/products?page=${pageNum - 1}&search=${search}&category=${categoryId || ''}&sort=${sortOption}`}
-              className={`px-3 py-1 border rounded ${pageNum <= 1 ? 'opacity-50 pointer-events-none' : ''}`}
-            >Previous</Link>
-            {Array.from({ length: totalPages }, (_, i) => (
-              <Link
-                key={i}
-                href={`/${slug}/products?page=${i + 1}&search=${search}&category=${categoryId || ''}&sort=${sortOption}`}
-                className={`px-3 py-1 border rounded ${i + 1 === pageNum ? 'bg-gray-200' : ''}`}
-              >{i + 1}</Link>
-            ))}
-            <Link
-              href={`/${slug}/products?page=${pageNum + 1}&search=${search}&category=${categoryId || ''}&sort=${sortOption}`}
-              className={`px-3 py-1 border rounded ${pageNum >= totalPages ? 'opacity-50 pointer-events-none' : ''}`}
-            >Next</Link>
-          </div>
-        </Section>
-      </div>
-      <NewsletterSection />
+    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 p-8 pt-24">
+      <ProductListWrapper products={products} categories={cats} />
     </div>
   );
 }

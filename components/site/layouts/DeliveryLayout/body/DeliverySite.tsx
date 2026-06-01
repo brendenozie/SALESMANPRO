@@ -75,22 +75,18 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
   } = pageData;
     // Use pageData for all content
   const siteData = pageData;// || storeFormData;
-  
-  // marketplaceListings from siteData → map to VehicleCardProps
-  const Ebookslistings = marketplaceListings.filter(listing => listing.type === "ebook") || [];
-  const Programslisting = marketplaceListings.filter(listing => listing.type !== "ebook") || [];
 
   return (
     <div>
       <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
 
-      <AbSection />  
+      <AbSection storeFormData={siteData} />  
 
-      <TeamSection />
+      <TeamSection storeFormData={siteData} />
       
-      <ServicesSection /> 
+      <ServicesSection storeFormData={siteData} /> 
 
-      <BookingSection />
+      <BookingSection storeFormData={siteData} />
 
       <TestimonialsCarouselSection  testimonials={pageData?.testimonials || []} />
 

@@ -8,7 +8,6 @@ import {
   ChatBubbleBottomCenterIcon, 
   ArrowRightIcon 
 } from "@heroicons/react/24/outline";
-import { useStoreContext } from "@/contexts/StoreContext";
 
 // Social icons often aren't in standard Heroicons sets, 
 // but we can use simple SVGs or Heroicon-styled circles for a clean look.
@@ -25,11 +24,11 @@ const SocialIcon = ({ children }: { children: React.ReactNode }) => (
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-export default function TeamSection() {
-  const { storeFormData } = useStoreContext();
+export default function TeamSection({storeFormData}: {storeFormData: any}) {
 
   const {
     name = "Imevo",
+    founderImage,
     founderName = "Peter Jabuya",
     founderQuote = "Efficient, Safe, and Reliable Services are the cornerstone of our operations.",
     themeSettings,
@@ -65,7 +64,7 @@ export default function TeamSection() {
               className="relative aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl group"
             >
               <Image
-                src="/image77.png" // Ensuring your specified path is used
+                src={founderImage || "/image77.png"} // Ensuring your specified path is used
                 alt={founderName || "Founder" }
                 fill
                 className="object-cover transition-transform duration-1000 group-hover:scale-110"

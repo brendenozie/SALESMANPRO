@@ -73,11 +73,11 @@ export default function Footer() {
             </h4>
             <ul className="space-y-4 text-slate-400 text-sm font-medium">
               {[
-                { label: "About Us", href: "/ecommerce/about" },
-                { label: "Global Tracking", href: "/ecommerce/track" },
-                { label: "Help Center", href: "/ecommerce/help" },
-                { label: "Privacy Policy", href: "/ecommerce/privacy" },
-                { label: "Terms of Service", href: "/ecommerce/terms" }
+                { label: "About Us", href: "/logistics/about" },
+                { label: "Global Tracking", href: "/logistics/track" },
+                { label: "Help Center", href: "/logistics/help" },
+                { label: "Privacy Policy", href: "/logistics/privacy" },
+                { label: "Terms of Service", href: "/logistics/terms" }
               ].map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className="hover:text-orange-500 transition-colors flex items-center gap-2 group">
@@ -151,9 +151,9 @@ export default function Footer() {
             © {new Date().getFullYear()} {name} Solutions Inc. All Rights Reserved.
           </p>
           <div className="flex gap-8 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
-            <Link href="/ecommerce/faq" className="hover:text-white transition-colors">FAQ</Link>
-            <Link href="/ecommerce/sitemap.xml" className="hover:text-white transition-colors">Sitemap</Link>
-            <Link href="/ecommerce/support" className="hover:text-white transition-colors">Support</Link>
+            <Link href="/logistics/faq" className="hover:text-white transition-colors">FAQ</Link>
+            <Link href="/logistics/sitemap.xml" className="hover:text-white transition-colors">Sitemap</Link>
+            <Link href="/logistics/support" className="hover:text-white transition-colors">Support</Link>
           </div>
         </div>
       </div>
