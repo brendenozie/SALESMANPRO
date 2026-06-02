@@ -446,7 +446,7 @@ export enum ListingMarketStatus {
   RENTED = "RENTED",        // For rental categories
 }
 
-enum ListingTransactionType {
+export enum ListingTransactionType {
   SALE = "SALE", // Replaces BUY
   RENT = "RENT", // Replaces RENT
 }

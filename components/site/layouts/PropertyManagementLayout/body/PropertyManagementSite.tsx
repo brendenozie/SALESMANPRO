@@ -20,7 +20,7 @@ import NewsletterSection from "./components/NewsletterSection";
 import TrendingLocations from "./components/TrendingLocations";
 import WhyChooseUs from "./components/WhyChooseUs";
 import { useStoreContext } from "@/contexts/StoreContext";
-import { StoreForm } from "@/types/typings";
+import { ListingMarketStatus, ListingSystemStatus, ListingTransactionType, StoreForm } from "@/types/typings";
 import FeaturedListingsWrapper from "./components/FeaturedListings";
 
 
@@ -90,7 +90,10 @@ const sampleStoreData : StoreForm = {
       delivery: false,
       paymentOption: "",
       status: "DRAFT",
-      location: null
+      location: null,
+      listingMarketStatus: ListingMarketStatus.AVAILABLE,
+      listingSystemStatus: ListingSystemStatus.DRAFT,
+      listingTransactionType: ListingTransactionType.SALE
     },
     // { id: "h2", name: "Seaside Grand Villa", finalPrice: 25000000, images: ["/properties/villa1.jpg"], address: "456 Ocean Drive, Coastal Paradise", beds: 6, baths: 5, sqft: 5000, badge: "Exclusive", description: "An exquisite villa offering direct beach access and ultimate privacy." },
     // { id: "h3", name: "Modern Office Suite", finalPrice: 7500000, images: ["/properties/office1.jpg"], address: "789 Business Hub, Tech Park", beds: 0, baths: 2, sqft: 2000, badge: "New Listing", description: "State-of-the-art office space designed for productivity and collaboration." },
@@ -200,7 +203,8 @@ const sampleStoreData : StoreForm = {
       photoAlbumId: null,
       videoAlbumId: null,
       createdAt: null,
-      updatedAt: null
+      updatedAt: null,
+      subCategory: null
     },
     {
       "title": "Navigating the Current Real Estate Market: Trends and Forecasts", coverImage: "/blog/blog2.jpg", "publishDate": new Date(),
@@ -230,7 +234,8 @@ const sampleStoreData : StoreForm = {
       photoAlbumId: null,
       videoAlbumId: null,
       createdAt: null,
-      updatedAt: null
+      updatedAt: null,
+      subCategory: null
     },
     {
       "title": "Maximizing Your Home's Value: Effective Staging Techniques", coverImage: "/blog/blog3.jpg", "publishDate": new Date(),
@@ -260,13 +265,20 @@ const sampleStoreData : StoreForm = {
       photoAlbumId: null,
       videoAlbumId: null,
       createdAt: null,
-      updatedAt: null
+      updatedAt: null,
+      subCategory: null
     },
     {
       "title": "The Rise of Sustainable Homes: What You Need to Know", coverImage: "/blog/blog4.jpg", "publishDate": new Date()
       // "May 30, 2025", 
       // "author": "Green Living Expert" 
       ,
+
+
+
+
+
+
 
 
 
@@ -296,7 +308,8 @@ const sampleStoreData : StoreForm = {
       photoAlbumId: null,
       videoAlbumId: null,
       createdAt: null,
-      updatedAt: null
+      updatedAt: null,
+      subCategory: null
     },
   ],
   id: "",
@@ -348,7 +361,8 @@ const sampleStoreData : StoreForm = {
   Podcast: [],
   services: [],
   destinations: [],
-  tourPackages: []
+  tourPackages: [],
+  galleries: []
 };
 
 // Updated SearchFilters to include category and subcategory
@@ -366,7 +380,6 @@ interface SearchFilters {
 export default function RealEstateSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
 
   const router = useRouter();
-  const { storeFormData } = useStoreContext(); // Use for global theme settings only
 
   // Use pageData for all content, fall back to sample data if needed
   const storeData = pageData && Object.keys(pageData).length > 0
@@ -422,20 +435,6 @@ export default function RealEstateSite({ pageData, companyId }: { pageData: Stor
 
   return (
     <div className="font-sans text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-900 min-h-screen">
-      {/* Sticky Contact Agent Button (WhatsApp) */}
-      <a
-        href={`https://wa.me/${contactPhone}?text=Hi%20DreamNest%20Realty,%20I'd%20like%20to%20inquire%20about%20a%20listing`}
-        target="_blank"
-        rel="noopener noreferrer" // Added for security best practice
-        className="fixed bottom-6 right-6 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700
-                   text-white p-4 rounded-full shadow-lg hover:shadow-xl z-50 transition-all duration-300 transform hover:scale-105
-                   flex items-center justify-center group"
-        aria-label="Chat with us on WhatsApp"
-      >
-        {/* Using Heroicon for consistency, if you have a custom SVG keep it */}
-        <ChatBubbleBottomCenterTextIcon className="h-7 w-7 transition-transform duration-300 group-hover:rotate-6" />
-        <span className="sr-only">Chat on WhatsApp</span> {/* Screen reader only text */}
-      </a>
 
       {/* Hero Section */}
       <HeroSection

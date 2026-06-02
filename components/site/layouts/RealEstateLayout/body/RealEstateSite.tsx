@@ -3,11 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import {
-  ChatBubbleBottomCenterTextIcon, // A more modern chat icon for WhatsApp
-} from "@heroicons/react/24/solid"; // Changed to solid for consistency
-
-// Import your updated child components
 import FAQSection from "./components/FAQSection";
 import TestimonialsSection from "./components/TestimonialsSection";
 import AgentsSection from "./components/AgentsSection";
@@ -20,7 +15,7 @@ import NewsletterSection from "./components/NewsletterSection";
 import TrendingLocations from "./components/TrendingLocations";
 import WhyChooseUs from "./components/WhyChooseUs";
 import { useStoreContext } from "@/contexts/StoreContext";
-import { StoreForm } from "@/types/typings";
+import { ListingMarketStatus, ListingSystemStatus, ListingTransactionType, StoreForm } from "@/types/typings";
 import FeaturedListingsWrapper from "./components/FeaturedListings";
 
 
@@ -90,7 +85,10 @@ const sampleStoreData : StoreForm = {
       delivery: false,
       paymentOption: "",
       status: "DRAFT",
-      location: null
+      location: null,
+      listingMarketStatus: ListingMarketStatus.AVAILABLE,
+      listingSystemStatus: ListingSystemStatus.DRAFT,
+      listingTransactionType: ListingTransactionType.SALE
     },
     // { id: "h2", name: "Seaside Grand Villa", finalPrice: 25000000, images: ["/properties/villa1.jpg"], address: "456 Ocean Drive, Coastal Paradise", beds: 6, baths: 5, sqft: 5000, badge: "Exclusive", description: "An exquisite villa offering direct beach access and ultimate privacy." },
     // { id: "h3", name: "Modern Office Suite", finalPrice: 7500000, images: ["/properties/office1.jpg"], address: "789 Business Hub, Tech Park", beds: 0, baths: 2, sqft: 2000, badge: "New Listing", description: "State-of-the-art office space designed for productivity and collaboration." },

@@ -74,7 +74,6 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
   
   let LayoutComponent = categoryHeaderFooterLayoutMap[variant] || categoryHeaderFooterLayoutMap[category]
     || (() => {
-      // const matchedCategory = SITE_CATEGORIES.find((c) => normalize(c.name) === category);
       const matchedCategory = categoryMap.get(category)
       if (matchedCategory?.variants?.length) {
         const firstVariant = normalize(matchedCategory.variants[0].name);

@@ -2,7 +2,6 @@ import { StoreForm } from '@/types/typings';
 
 // Import all components
 import GhubaSite from '@/components/site/layouts/GhubaLayout/body/GhubaSite';
-// ... import all other Body components ...
 import DefaultSite from '@/components/site/layouts/DefaultLayout/body/DefaultSite';
 import AutomotiveSite from './layouts/AutomotiveLayout/body/AutomotiveSite';
 import BlogSite from './layouts/BlogLayout/body/BlogSite';
@@ -36,7 +35,6 @@ import NonProfitSite from './layouts/NonprofitLayout/body/NonProfitSite';
 import PortfolioSite from './layouts/PortfolioLayout/body/PortfolioSite';
 import PublicSpeakingSite from './layouts/PublicSpeakingLayout/body/PublicSpeakingSite';
 import RealEstateSite from './layouts/RealEstateLayout/body/RealEstateSite';
-import PropertyManagementLayout from './layouts/PropertyManagementLayout/body/PropertyManagementSite';
 import RestaurentSite from './layouts/RestaurantLayout/body/RestaurentSite';
 import SaaSSite from './layouts/SaaSLayout/body/SaasSite';
 import ServiceSite from './layouts/ServicesLayout/body/ServiceSite';
@@ -54,6 +52,7 @@ import EcommerceMeatSite from './layouts/EcommerceMeatLayout/body/EcommerceMeatS
 import EcommerceHardwareSite from './layouts/EcommerceHardwareLayout/body/EcommerceHardwareSite';
 import EcommerceBookSite from './layouts/EcommerceBookLayout/body/EcommerceBookSite';
 import DrycleaningBookingsSite from './layouts/DrycleaningBookingsLayout/body/DrycleaningBookingsSite';
+import PropertyManagementSite from './layouts/PropertyManagementLayout/body/PropertyManagementSite';
 
 // A single, clean map from component name to the component itself.
 export const BodyComponentMap: Record<string, React.ComponentType<{ pageData: StoreForm; companyId: string; paymentMethods: PublicPaymentMethod[] }>> = {
@@ -81,7 +80,7 @@ export const BodyComponentMap: Record<string, React.ComponentType<{ pageData: St
   'EcommerceMotorCycleSite': EcommerceMotorCycleSite,
   'ConsultancySite': ConsultancyLayout,
   'RealEstateSite': RealEstateSite,
-  'PropertyManagementSite': PropertyManagementLayout,
+  'PropertyManagementSite': PropertyManagementSite,
   'BlogSite': BlogSite,
   'CoursesSite': CoursesSite,
   'CoursesSite2': CoursesSite2,

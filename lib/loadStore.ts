@@ -12,16 +12,6 @@ export interface LoadedStore {
 }
 
 export async function loadStore(slug: string): Promise<LoadedStore> {
-  // const hdrs = await headers();
-  // const requestedHost = hdrs.get("x-requested-host");
-  // const requestedSubdomain = hdrs.get("x-requested-subdomain");
-
-  // const raw = await findCompanyCached(
-  //   slug,
-  //   requestedHost,
-  //   requestedSubdomain,
-  //   pageDataInclude()
-  // );
 
   const raw = await findCompanyCached(slug, "page");
 

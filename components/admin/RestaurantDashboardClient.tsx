@@ -192,7 +192,7 @@ export default function RestaurantDashboardClient({
               <p className="mt-2 text-stone-400">Operational overview</p>
             </div>
             <a
-              href="/admin/order/new"
+              href={`/admin/${companyId}/pos`}
               className="px-8 py-4 bg-red-600 rounded-2xl font-black hover:bg-red-700 transition flex items-center gap-3"
             >
               <TicketIcon className="w-6 h-6" /> Start New Order
@@ -224,7 +224,7 @@ export default function RestaurantDashboardClient({
                 <FireIcon className="w-8 h-8 text-red-500" />
                 Rush Hour Flow
               </h3>
-              <OrderFlowChart data={charts.dailyOrdersVolume} />
+              <OrderFlowChart data={charts?.dailyOrdersVolume || []} />
             </div>
 
             <div className="bg-white p-8 rounded-3xl shadow">
@@ -232,7 +232,7 @@ export default function RestaurantDashboardClient({
                 <CurrencyDollarIcon className="w-8 h-8 text-green-500" />
                 Revenue Performance
               </h3>
-              <RevenueTrendChart data={charts.revenueTrends} />
+              <RevenueTrendChart data={charts?.revenueTrends || []} />
             </div>
           </div>
 

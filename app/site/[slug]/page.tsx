@@ -18,8 +18,12 @@ export default async function StorePage({
   const { slug } = await params;
 
   const { componentName, pageData, raw } = await loadStore(slug);
+
+  console.log("Loaded store with slug:", slug, "and component:", componentName);
   
   const BodyComponent = BodyComponentMap[componentName] || BodyComponentMap['DefaultSite'];
+
+  console.log("Rendering component:", componentName, "for store:", pageData.name);
   
   // This ensures 'enabledMethods' only contains safe, active methods
   const enabledPaymentMethods = getEnabledPaymentMethods(raw.PaymentSettings);

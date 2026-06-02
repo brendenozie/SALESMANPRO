@@ -31,7 +31,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* ── About & Logo ── */}
         <div className="space-y-4">
-          <Link href={`/${slug}`} className="inline-flex items-center space-x-2">
+          <Link href={`/`} className="inline-flex items-center space-x-2">
             <span
               className="text-2xl font-extrabold text-white"
               style={{ textShadow: "1px 1px rgba(0,0,0,0.2)" }}
