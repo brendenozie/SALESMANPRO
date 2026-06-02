@@ -66,7 +66,7 @@ export default function Footer() {
           <ul className="space-y-3">
             <li>
               <Link
-                href={`/${slug}`}
+                href={`/`}
                 className="flex items-center text-gray-400 hover:text-white transition-colors"
               >
                 <HomeIcon className="h-5 w-5 mr-2" />
@@ -75,7 +75,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/${slug}/listings`}
+                href={`/propertymanagement/listings`}
                 className="flex items-center text-gray-400 hover:text-white transition-colors"
               >
                 <BuildingOfficeIcon className="h-5 w-5 mr-2" />
@@ -84,7 +84,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/${slug}/about`}
+                href={`/propertymanagement/about`}
                 className="flex items-center text-gray-400 hover:text-white transition-colors"
               >
                 <InformationCircleIcon className="h-5 w-5 mr-2" />
@@ -93,7 +93,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/${slug}/contact`}
+                href={`/propertymanagement/contact`}
                 className="flex items-center text-gray-400 hover:text-white transition-colors"
               >
                 <BuildingStorefrontIcon className="h-5 w-5 mr-2" />
@@ -160,13 +160,13 @@ export default function Footer() {
           <p>© {new Date().getFullYear()} {name}. All rights reserved.</p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <Link
-              href={`/${slug}/privacy`}
+              href={`/propertymanagement/privacy`}
               className="hover:text-white transition-colors"
             >
               Privacy Policy
             </Link>
             <Link
-              href={`/${slug}/terms`}
+              href={`/propertymanagement/terms`}
               className="hover:text-white transition-colors"
             >
               Terms of Service

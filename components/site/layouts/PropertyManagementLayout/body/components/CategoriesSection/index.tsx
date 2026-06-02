@@ -159,7 +159,7 @@ function CategoryCard({
   return (
     <motion.div variants={itemVariants} className="group h-full">
       <Link
-        href={`/realestate/listings?category=${catSlug}`}
+        href={`/propertymanagement/listings?category=${catSlug}`}
         className="block relative h-[380px] w-full overflow-hidden rounded-3xl bg-gray-100 shadow-lg transition-all duration-500 hover:shadow-2xl dark:bg-gray-800"
       >
         {/* Image Layer */}
@@ -229,7 +229,7 @@ function SubcategoryTile({
   return (
     <motion.div variants={itemVariants}>
       <Link
-        href={`/realestate/listings?subcategory=${sub.name}`}
+        href={`/propertymanagement/listings?subcategory=${sub.name}`}
         className={`group relative flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 ${theme.border}`}
       >
         {/* Icon Box */}
@@ -414,7 +414,7 @@ export default function CategoriesSectionV5({
             transition={{ delay: 0.4 }}
             className="mt-16 text-center"
         >
-          <Link href={`/realestate/listings/categories`} passHref legacyBehavior>
+          <Link href={`/propertymanagement/listings/categories`} passHref legacyBehavior>
             <a className="group inline-flex items-center gap-2 rounded-full bg-gray-900 px-8 py-4 text-base font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:bg-emerald-600 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:bg-white dark:text-gray-900 dark:hover:bg-emerald-400">
               View Full Catalog
               <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />

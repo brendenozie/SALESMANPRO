@@ -96,7 +96,7 @@ export default function ListingsSection({ products, slug }: any) {
           viewport={{ once: true, amount: 0.1 }}
         >
           {products.map((prop: any) => (
-            <Link key={prop.id} href={`/realestate/listings/${prop.id}`} passHref legacyBehavior>
+            <Link key={prop.id} href={`/propertymanagement/listings/${prop.id}`} passHref legacyBehavior>
               <motion.a
                 className="group relative flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700
                            hover:shadow-2xl hover:border-emerald-400 transition-all duration-300 ease-in-out cursor-pointer
@@ -175,7 +175,7 @@ export default function ListingsSection({ products, slug }: any) {
         {/* Optional: Pagination or Load More button */}
         {/* Placeholder for future expansion */}
         <motion.div
-          onClick={() => router.push(`/realestate/listings`)}
+          onClick={() => router.push(`/propertymanagement/listings`)}
           className="mt-12 text-center text-emerald-600 dark:text-emerald-400 font-semibold cursor-pointer hover:underline transition duration-150 ease-in-out"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}

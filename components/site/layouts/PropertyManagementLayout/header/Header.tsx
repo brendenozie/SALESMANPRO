@@ -96,7 +96,7 @@ export default function Header() {
 
   const handleLinkClick = (path: string) => {
     setMobileMenu(false);
-    router.push(path);
+    router.push(`${path.toLowerCase() === "home" ? "/" : `/propertymanagement/${path}`}`);
   };
 
   return (
@@ -161,7 +161,7 @@ export default function Header() {
           ].map((item) => (
             <Link
               key={item.label}
-              href={`/${slug}${item.path}`}
+              href={`${item.label.toLowerCase()==="home" ? "/" : `/propertymanagement/${item.path}`}`}
               className="relative text-gray-700 uppercase tracking-wide font-medium text-lg group hover:text-emerald-600"
             >
               {item.label}
@@ -192,7 +192,7 @@ export default function Header() {
                     className="pl-10 pr-4 py-2 w-full rounded-full bg-gray-100"
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
-                        router.push(`/realestate/listings?q=${e.currentTarget.value.trim()}`);
+                        router.push(`/propertymanagement/listings?q=${e.currentTarget.value.trim()}`);
                         setShowSearchInput(false);
                       }
                     }}
@@ -271,7 +271,7 @@ export default function Header() {
               {["home", "listings", "agents", "about", "blog", "contact"].map((item) => (
                 <button
                   key={item}
-                  onClick={() => handleLinkClick(`#${item}`)}
+                  onClick={() => handleLinkClick(`${item}`)}
                   className="text-lg font-semibold capitalize text-gray-800"
                 >
                   {item}
@@ -288,13 +288,13 @@ export default function Header() {
                   </button>
                   <button
                     onClick={()=> {
-  const returnTo = window.location.origin;
+                      const returnTo = window.location.origin;
 
-  signOut({
-    redirect: true,
-    callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
-  });
-}}
+                      signOut({
+                        redirect: true,
+                        callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
+                      });
+                    }}
                     className="block w-full text-left py-2 text-red-600"
                   >
                     Logout
