@@ -65,7 +65,7 @@ export const CATEGORY_STEPS: Record<string, number[]> = {
   // — Property listings flow —
   "Real Estate": [1, 2, 19, 7, 8, 10, 18, 12, 13, 11],
   Property: [1, 2, 19, 7, 8, 10, 18, 12, 13, 11],
-  "Property Management": [1, 2, 19, 7, 15, 16, 17, 8, 10, 18, 12, 13, 11],
+  "Property Management": [1, 2, 7, 15, 16, 17, 8, 10, 18, 12, 13, 11],
   Houses: [1, 2, 19, 7, 8, 10, 18, 12, 13, 11],
   Land: [1, 2, 19, 7, 8, 10, 18, 12, 13, 11],
   Commercial: [1, 2, 19, 7, 8, 10, 18, 12, 13, 11],

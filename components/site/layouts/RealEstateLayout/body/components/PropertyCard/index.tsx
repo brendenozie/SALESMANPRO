@@ -61,7 +61,7 @@ const safeRender = (val: any) => {
 
 
 
-const PropertyCard = ({ item }: any) => {
+const PropertyCard = ({ item, key }: any) => {
 
   const { storeFormData } = useStoreContext();
   // WhatsApp Agent Config
@@ -83,7 +83,7 @@ const PropertyCard = ({ item }: any) => {
     : (typeof rawPrice === "number" ? `KES ${rawPrice.toLocaleString()}` : "Price on request");
 
   return (
-    <Link key={item.id} href={`/realestate/listings/${item.id}`} passHref legacyBehavior>
+    <Link key={key} href={`/realestate/listings/${item.id}`} passHref legacyBehavior>
       <motion.a
         className="group relative flex flex-col bg-white dark:bg-zinc-900 rounded-[2rem] overflow-hidden border border-zinc-100 dark:border-zinc-800 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)]"
         variants={itemVariants}

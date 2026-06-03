@@ -146,8 +146,8 @@ export default function HeroSection({ store, categories, slug, initialLocations 
                 className="w-full bg-transparent outline-none text-gray-900 text-sm font-semibold cursor-pointer appearance-none pr-6"
               >
                 <option value="">All Locations</option>
-                {initialLocations?.map((loc: any) => (
-                  <option key={loc.id || loc.slug} value={loc.slug || loc.name}>
+                {initialLocations?.map((loc: any, index: number) => (
+                  <option key={`${loc.id || loc.slug}-${index}`} value={loc.slug || loc.name}>
                     {loc.name}
                   </option>
                 ))}
@@ -170,8 +170,8 @@ export default function HeroSection({ store, categories, slug, initialLocations 
                 className="w-full bg-transparent outline-none text-gray-900 text-sm font-semibold appearance-none cursor-pointer pr-4"
               >
                 <option value="">All Categories</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>{cat.displayName}</option>
+                {categories.map((cat: any, index: number) => (
+                  <option key={`${cat.id}-${index}`} value={cat.id}>{cat.displayName}</option>
                 ))}
               </select>
               <ChevronDownIcon className="w-3 h-3 absolute right-0 bottom-1.5 text-gray-400 pointer-events-none" />
@@ -189,8 +189,8 @@ export default function HeroSection({ store, categories, slug, initialLocations 
                   className="w-full bg-transparent outline-none text-gray-900 text-sm font-semibold appearance-none cursor-pointer pr-4"
                 >
                   <option value="">All Types</option>
-                  {activeSubcategories.map((sub: any) => (
-                    <option key={sub.id} value={sub.id}>{sub.displayName || sub.name}</option>
+                  {activeSubcategories.map((sub: any, index: number) => (
+                    <option key={`${sub.id}-${index}`} value={sub.id}>{sub.displayName || sub.name}</option>
                   ))}
                 </select>
                 <ChevronDownIcon className="w-3 h-3 absolute right-0 bottom-1.5 text-gray-400 pointer-events-none" />

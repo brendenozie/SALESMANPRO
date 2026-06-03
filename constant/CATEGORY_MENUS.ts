@@ -2041,7 +2041,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: BuildingOfficeIcon,
     }, // Schedule and manage property viewings
     {
-      label: "Hostel",
+      label: "Property Units",
       // href: `/admin/${adminSlug}/hostel`,
       icon: HomeIcon,
       subItems: [

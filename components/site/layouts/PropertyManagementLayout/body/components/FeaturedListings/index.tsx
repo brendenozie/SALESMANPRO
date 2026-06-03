@@ -8,6 +8,7 @@ import { MarketListingForm } from '@/types/typings'; // Assuming this is correct
 import useSWR from "swr";
 import { createCachedFetcher } from "@/lib/swrCachedFetcher";
 import { useSearchParams } from "next/navigation";
+import PropertyCard from '../PropertyCard';
 
 // API BASE
 const apiBaseUrl =
@@ -157,79 +158,8 @@ function FeaturedListings({ listings, companyId }: any) {
           whileInView="visible"
           viewport={{ once: true, amount: 0.1 }}
         >
-          {listings.map((item: MarketListingForm) => (
-            <Link key={item.id} href={`/propertymanagement/listings/${item.id}`} passHref legacyBehavior>
-              <motion.a
-                className="group relative flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700
-                           hover:shadow-2xl hover:border-emerald-400 transition-all duration-300 ease-in-out cursor-pointer
-                           focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-500 focus-visible:ring-offset-2"
-                variants={itemVariants}
-                whileHover={{ y: -6, scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                aria-label={`View details for property at ${item.name}`}
-              >
-                {/* Image Area: Slightly rounded image edges to match card */}
-                <div className="relative h-60 w-full">
-                  <Image
-                    src={item.images?.[0] || `https://placehold.co/600x400/059669/D1FAE5?text=Property`}
-                    alt={item.name}
-                    layout="fill"
-                    objectFit="cover"
-                    className="rounded-t-xl transform transition-transform duration-500 group-hover:scale-105"
-                    loader={customLoader}
-                  />
-                  
-                  {/* Price Tag: Moved inside the content area for better flow, and added a modern 'Pill' style badge */}
-                  <span className="absolute top-4 left-4 bg-emerald-600 text-white text-xs font-bold uppercase px-3 py-1 rounded-full shadow-lg">
-                     {item.type || "FEATURED"}
-                  </span>
-                </div>
-
-                {/* Content Area: Better spacing and clear typography */}
-                <div className="p-5 flex flex-col justify-between flex-grow">
-                  {/* Price at the top for immediate visibility */}
-                  <p className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mb-2">
-                    KES {item.finalPrice?.toLocaleString()}
-                  </p>
-
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-gray-50 truncate mb-1">
-                    {item.name}
-                  </h3>
-                  
-                  {/* Location/Address (New Addition for Clarity) */}
-                  <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center mb-3">
-                    <LocationIcon className="w-4 h-4 mr-1 text-amber-500" />
-                    {/* Placeholder for actual location data */}
-                    {item.locationName || "Location Not Specified"}
-                  </p>
-
-                  {/* Key Features (Structured as a grid for alignment) */}
-                  <div className="grid grid-cols-3 gap-2 text-sm text-gray-700 dark:text-gray-300 border-t border-b border-gray-100 dark:border-gray-700 py-3">
-                    <span className="flex items-center justify-center border-r dark:border-gray-700">
-                      <BedIcon className="w-4 h-4 mr-1 text-teal-500" /> <span className="font-semibold">{item.bedrooms?.length || '-'}</span> Beds
-                    </span>
-                    <span className="flex items-center justify-center border-r dark:border-gray-700">
-                      <BathIcon className="w-4 h-4 mr-1 text-teal-500" /> <span className="font-semibold">{item.bathrooms || '-'}</span> Baths
-                    </span>
-                    <span className="flex items-center justify-center">
-                      <SquareFootIcon className="w-4 h-4 mr-1 text-teal-500" /> <span className="font-semibold">{/* item.area?.toLocaleString() || */ '-'}</span> sqft
-                    </span>
-                  </div>
-
-                  {/* Description */}
-                  <p className="text-gray-500 dark:text-gray-400 text-sm mt-3 line-clamp-2 min-h-[40px]">
-                    {item.description || "A beautiful property offering comfort and convenience."}
-                  </p>
-
-                  {/* Call to Action: Changed to a text link for subtler look */}
-                  <div className="mt-4 text-center">
-                    <span className="font-medium text-amber-600 dark:text-amber-400 group-hover:text-amber-500 dark:group-hover:text-amber-300 transition-colors">
-                      Explore Property &rarr;
-                    </span>
-                  </div>
-                </div>
-              </motion.a>
-            </Link>
+          {listings.map((item: MarketListingForm, index: number) => (
+            <PropertyCard key={`${item.id}-${index}`} item={item} itemVariants={itemVariants} customLoader={customLoader} />
           ))}
         </motion.div>
 

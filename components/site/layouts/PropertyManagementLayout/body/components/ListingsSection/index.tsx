@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 
 // Placeholder Icons (Using the provided imports/definitions)
 import { MapPinIcon } from '@heroicons/react/24/solid';
+import PropertyCard from '../PropertyCard';
 // Assuming the user maps the placeholder icons:
 // BeakerIcon -> BedIcon
 // BoltSlashIcon -> BathIcon
@@ -95,80 +96,8 @@ export default function ListingsSection({ products, slug }: any) {
           whileInView="visible"
           viewport={{ once: true, amount: 0.1 }}
         >
-          {products.map((prop: any) => (
-            <Link key={prop.id} href={`/propertymanagement/listings/${prop.id}`} passHref legacyBehavior>
-              <motion.a
-                className="group relative flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700
-                           hover:shadow-2xl hover:border-emerald-400 transition-all duration-300 ease-in-out cursor-pointer
-                           focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-500 focus-visible:ring-offset-2"
-                variants={itemVariants}
-                whileHover={{ y: -6, scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                aria-label={`View details for ${prop.name}`}
-              >
-                {/* Image Area */}
-                <div className="relative h-56 w-full"> {/* Slightly reduced height for more compact feel */}
-                  <Image
-                    src={prop.images?.[0] || prop.imageUrl || `https://placehold.co/600x350/059669/D1FAE5?text=Property`}
-                    alt={`Image of ${prop.name}`}
-                    layout="fill"
-                    objectFit="cover"
-                    className="rounded-t-xl transform transition-transform duration-500 group-hover:scale-105"
-                    loader={customLoader}
-                  />
-                  
-                  {/* Price Tag: Moved inside content for better hierarchy */}
-                  <div className="absolute top-4 right-4 bg-emerald-600 text-white text-sm font-bold px-3 py-1 rounded-full shadow-lg">
-                    {prop.type || "SALE"} {/* Placeholder for property type */}
-                  </div>
-                </div>
-
-                {/* Content Area */}
-                <div className="p-5 flex flex-col justify-between flex-grow">
-                  {/* Price at the top for immediate visibility */}
-                  <p className="text-2xl font-extrabold text-amber-600 dark:text-amber-400 mb-2">
-                    KES {prop.finalPrice?.toLocaleString()}
-                  </p>
-
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-gray-50 truncate mb-1">
-                    {prop.name}
-                  </h3>
-                  
-                  {/* Location/Address */}
-                  {prop.location && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center mb-3">
-                      <MapPinIcon className="w-4 h-4 mr-1 text-emerald-500" />
-                      {prop.location}
-                    </p>
-                  )}
-
-                  {/* Key Features (Structured as a grid for alignment) */}
-                  <div className="grid grid-cols-3 gap-2 text-sm text-gray-700 dark:text-gray-300 border-t border-b border-gray-100 dark:border-gray-700 py-3">
-                    <span className="flex items-center justify-center border-r dark:border-gray-700">
-                      <BedIcon className="w-4 h-4 mr-1 text-teal-500" /> <span className="font-semibold">{prop.beds || '-'}</span> Beds
-                    </span>
-                    <span className="flex items-center justify-center border-r dark:border-gray-700">
-                      <BathIcon className="w-4 h-4 mr-1 text-teal-500" /> <span className="font-semibold">{prop.baths || '-'}</span> Baths
-                    </span>
-                    <span className="flex items-center justify-center">
-                      <SquareFootIcon className="w-4 h-4 mr-1 text-teal-500" /> <span className="font-semibold">{prop.sqft?.toLocaleString() || '-'}</span> sqft
-                    </span>
-                  </div>
-
-                  {/* Description */}
-                  <p className="text-gray-500 dark:text-gray-400 text-sm mt-3 line-clamp-2 min-h-[40px]">
-                    {prop.description || "A beautiful property offering comfort and convenience."}
-                  </p>
-
-                  {/* Call to Action: Subtler text link */}
-                  <div className="mt-4 text-center">
-                    <span className="font-medium text-emerald-600 dark:text-emerald-400 group-hover:text-emerald-500 dark:group-hover:text-emerald-300 transition-colors">
-                      View Details &rarr;
-                    </span>
-                  </div>
-                </div>
-              </motion.a>
-            </Link>
+          {products.map((prop: any, index: number) => (
+            <PropertyCard key={`${prop._id?.$oid || prop.id}-${index}`} item={prop} itemVariants={itemVariants} customLoader={customLoader} />
           ))}
         </motion.div>
 

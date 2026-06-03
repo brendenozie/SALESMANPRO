@@ -6,11 +6,39 @@ import { ArrowLeftIcon, ArrowRightIcon, HeartIcon, MapPinIcon, Square2StackIcon,
 import { MarketListingForm } from "@/types/typings";
 import Link from "next/link";
 import Image from "next/image";
-import PropertyCard from "./PropertyCard";
+import PropertyCard from "@/components/site/layouts/PropertyManagementLayout/body/components/PropertyCard";
 
-const customLoader = ({ src }: { src: string }) => {
-  return src;
-}
+
+// --- Helper Functions and Icons (Kept mostly the same, but simplified for clarity) ---
+
+const customLoader = ({ src, width, quality }: any) => {
+  return `${src}?w=${width}&q=${quality || 75}`;
+};
+
+// Animation variants for staggered reveal (Simplified and made slightly more modern)
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 50 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 120,
+      damping: 14,
+    },
+  },
+};
 
 // Utility to check if a date is within the last 30 days
 const isRecent = (dateStr: string | Date | undefined) => {
@@ -212,8 +240,8 @@ export default function ListingsClient({
 
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-        {initialListings.map((listing) => (
-          <PropertyCard key={listing.id} item={listing} />
+        {initialListings.map((listing: any, index: number) => (
+          <PropertyCard key={`${listing.id}-${index}`} item={listing}  itemVariants={itemVariants} customLoader={customLoader} />
         ))}
       </div>
 

@@ -1,7 +1,6 @@
 import prisma from "@/server/db/prismadb";
 import { loadStore } from "@/lib/loadStore";
 import ListingsClient from "./ListingsClient";
-// import HeroSection from "./HeroSection";
 import { Prisma } from "@prisma/client";
 import HeroSectionWrapper from "./HeroSectionWrapper";
 
@@ -13,7 +12,8 @@ interface ProductListPageProps {
 }
 
 // app/[slug]/listings/page.tsx (Example path)
-export default async function ProductListPage({ params, searchParams }: ProductListPageProps) {
+export default async function ProductListPage({ params, searchParams, }: ProductListPageProps) {
+
   const { slug } = params;
   const { raw: store } = await loadStore(slug);
   const companyId = store.id;
@@ -92,7 +92,7 @@ export default async function ProductListPage({ params, searchParams }: ProductL
   ]);
 
   return (
-    <main className="w-full min-h-screen bg-gray-50">
+    <main className="w-full min-h-screen ">
       {/* 3. Pass the categories and the search handler to the Hero */}
       <HeroSectionWrapper 
         store={store as any} 
@@ -133,6 +133,7 @@ export default async function ProductListPage({ params, searchParams }: ProductL
 
       <div id="listings-section" className="scroll-mt-20">
         <ListingsClient
+          companyId={companyId}
           initialListings={listings}
           totalCount={totalCount}
           pageSize={pageSize}

@@ -96,8 +96,8 @@ export default function ListingsSection({ products, slug : companyId }: any) {
           whileInView="visible"
           viewport={{ once: true, amount: 0.1 }}
         >
-          {products.map((item: any) => (
-            <PropertyCard key={item.id} item={item} companyId={companyId} />
+          {products.map((item: any, index: number) => (
+            <PropertyCard key={`${item.id}-${index}`} item={item} companyId={companyId} />
           ))}
         </motion.div>
 

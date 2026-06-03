@@ -133,8 +133,8 @@ function FeaturedListings({ listings, companyId }: any) {
           whileInView="visible"
           viewport={{ once: true, amount: 0.1 }}
         >
-          {listings.map((item: MarketListingForm) => (
-            <PropertyCard key={item.id} item={item} companyId={companyId} />
+          {listings.map((item: MarketListingForm, index: number) => (
+            <PropertyCard key={`${item.id}-${index}`} item={item} companyId={companyId} />
           ))}
         </motion.div>
 
