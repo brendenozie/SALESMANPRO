@@ -504,8 +504,8 @@ export default function ConsumersClientPage({ adminSlug, initialConsumers }: { a
     
     try {
       const url = isEdit 
-        ? `/admin/consumers/${editing.id}` 
-        : `/admin/consumers?companyId=${adminSlug}`;
+        ? `/api/admin/consumers/${editing.id}` 
+        : `/api/admin/consumers?companyId=${adminSlug}`;
         
       const response = await fetch(url, {
         method: isEdit ? 'PUT' : 'POST',
@@ -540,7 +540,7 @@ export default function ConsumersClientPage({ adminSlug, initialConsumers }: { a
     if (!window.confirm("Confirm permanent removal from directory database registers?")) return;
     
     try {
-      const response = await fetch(`/admin/consumers/${id}`, { method: 'DELETE' });
+      const response = await fetch(`/api/admin/consumers/${id}`, { method: 'DELETE' });
       const resData = await response.json();
       
       if (response.ok && resData.success) {

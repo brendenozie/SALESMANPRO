@@ -2131,6 +2131,7 @@ model marketplaceListings {
   listingMarketStatus    ListingMarketStatus    @default(AVAILABLE)
   listingSystemStatus    ListingSystemStatus    @default(DRAFT)
   listingTransactionType ListingTransactionType @default(SALE)
+  hostelBlocks           HostelBlock[]
 
   // Indexes for performance
   @@index([name])
@@ -2441,6 +2442,7 @@ model Consumer {
   // 📦 Relations
   ConsumerInventory    ConsumerInventory[]
   ConsumerInventoryLog ConsumerInventoryLog[]
+  hostelMember         HostelMember?
 
   @@unique([userId, companyId])
   @@index([companyId])
@@ -6682,6 +6684,10 @@ enum HostelBlockType {
   GIRLS
   MIXED
   STAFF
+  STUDIO
+  STANDARD_RESIDENTIAL
+  PREMIUM_SERVICED
+  COLIVING_SHARED_APARTMENT
 }
 
 enum HostelRoomType {
@@ -6692,6 +6698,12 @@ enum HostelRoomType {
   DORMITORY
   HOSTEL
   SUITE
+  ONE_BEDROOM_APARTMENT
+  TWO_BEDROOM_APARTMENT
+  THREE_BEDROOM_APARTMENT
+  FOUR_BEDROOM_APARTMENT
+  FIVE_BEDROOM_APARTMENT
+  SIX_BEDROOM_APARTMENT
 }
 
 enum HostelAllocationStatus {
@@ -7126,14 +7138,16 @@ model TransportDriver {
 // ============================================================
 
 model HostelBlock {
-  id        String          @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  type      HostelBlockType
-  companyId String          @db.ObjectId
-  company   Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  rooms     HostelRoom[]
+  id         String               @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  type       HostelBlockType
+  companyId  String               @db.ObjectId
+  company    Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  propertyId String?              @db.ObjectId
+  property   marketplaceListings? @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+  rooms      HostelRoom[]
 
   @@index([companyId])
   @@index([type])
@@ -7174,6 +7188,9 @@ model HostelMember {
 
   educatorId String?   @unique @db.ObjectId
   educator   Educator? @relation(fields: [educatorId], references: [id], onDelete: Cascade)
+
+  consumerId String?   @unique @db.ObjectId
+  consumer   Consumer? @relation(fields: [consumerId], references: [id], onDelete: Cascade)
 
   memberId String             @unique // The "LIB-XXXX" barcode/ID
   status   HostelMemberStatus @default(ACTIVE)

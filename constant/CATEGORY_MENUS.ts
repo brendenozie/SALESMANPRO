@@ -2045,22 +2045,22 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       // href: `/admin/${adminSlug}/hostel`,
       icon: HomeIcon,
       subItems: [
-        { label: "Blocks", href: `/admin/${adminSlug}/hostel-blocks` },
-        { label: "Rooms", href: `/admin/${adminSlug}/hostel-rooms` },
-        { label: "Residents", href: `/admin/${adminSlug}/hostel-residents` },
+        { label: "Blocks", href: `/admin/${adminSlug}/property-blocks` },
+        { label: "Rooms", href: `/admin/${adminSlug}/property-rooms` },
+        { label: "Residents", href: `/admin/${adminSlug}/property-residents` },
         {
           label: "Room Assignments",
-          href: `/admin/${adminSlug}/hostel-room-assignments`,
+          href: `/admin/${adminSlug}/property-room-assignments`,
         },
         {
           label: "Maintenance Requests",
-          href: `/admin/${adminSlug}/hostel-maintenance-requests`,
+          href: `/admin/${adminSlug}/property-maintenance-requests`,
         },
-        { label: "Visitors", href: `/admin/${adminSlug}/hostel-visitors` },
-        // { label: "Fee Management", href: `/admin/${adminSlug}/hostel-fee-management` },
-        // { label: "Inventory", href: `/admin/${adminSlug}/hostel-inventory` },
-        { label: "Staff", href: `/admin/${adminSlug}/hostel-staff` },
-        { label: "Reports", href: `/admin/${adminSlug}/hostel-reports` },
+        { label: "Visitors", href: `/admin/${adminSlug}/property-visitors` },
+        { label: "Fee Management", href: `/admin/${adminSlug}/property-fee-management` },
+        { label: "Inventory", href: `/admin/${adminSlug}/property-inventory` },
+        { label: "Staff", href: `/admin/${adminSlug}/property-staff` },
+        { label: "Reports", href: `/admin/${adminSlug}/property-reports` },
       ],
     }, // Manage all property listings (add, edit, delete, status)
     {
@@ -2077,7 +2077,8 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Offers & Contracts",
       href: `/admin/${adminSlug}/properties-offers`,
       icon: DocumentTextIcon,
-    }, // Manage offers, sales agreements, and contracts
+    }, 
+    // Manage offers, sales agreements, and contracts
     //   Properties
     //   ├─ All Properties
     //   ├─ Units
