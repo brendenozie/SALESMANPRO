@@ -7160,11 +7160,14 @@ model HostelRoom {
   roomNumber          String
   capacity            Int
   type                HostelRoomType
+  rentPerMonth        Float                      @default(0)
+  isAvailable         Boolean                    @default(true)
   floor               Int?
   createdAt           DateTime                   @default(now())
   updatedAt           DateTime                   @updatedAt
   allocations         HostelAllocation[]
   maintenanceRequests HostelMaintenanceRequest[]
+  hostelFees          HostelFee[]
 
   @@unique([blockId, roomNumber])
   @@index([blockId])
@@ -7195,10 +7198,13 @@ model HostelMember {
   memberId String             @unique // The "LIB-XXXX" barcode/ID
   status   HostelMemberStatus @default(ACTIVE)
 
+  accountBalance Float @default(0) // Tracks advance payments
+
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   hostelAllocations HostelAllocation[]
   hostelVisitors    HostelVisitor[]
+  hostelFees        HostelFee[]
 
   @@index([companyId])
 }
@@ -7306,6 +7312,41 @@ enum StaffRole {
   SECURITY
   CLEANER
   MAINTENANCE
+}
+
+enum FeeStatus {
+  PAID
+  OVERDUE
+  PARTIAL
+  PENDING
+}
+
+model HostelFee {
+  id            String @id @default(auto()) @map("_id") @db.ObjectId
+  invoiceNumber String @unique // e.g., INV-2026-01
+  companyId     String @db.ObjectId
+
+  hostelMemberId String       @db.ObjectId
+  hostelMember   HostelMember @relation(fields: [hostelMemberId], references: [id], onDelete: Cascade)
+
+  roomId String     @db.ObjectId
+  room   HostelRoom @relation(fields: [roomId], references: [id])
+
+  rentAmount  Float
+  messAmount  Float
+  totalAmount Float
+
+  amountPaid Float     @default(0) // Tracks how much of THIS invoice is paid
+  status     FeeStatus @default(PENDING) // PAID, OVERDUE, PARTIAL, PENDING
+
+  dueDate DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([hostelMemberId])
+  @@index([status])
 }
 
 // ============================================================
