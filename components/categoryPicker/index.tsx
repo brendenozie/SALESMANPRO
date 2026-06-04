@@ -52,7 +52,7 @@ const CategoryPicker: React.FC<CategoryPickerProps> = ({
 
   // Memoize filtered categories
   const filteredCategories = useMemo(
-    () => categories.filter((cat) => cat.category.name.toLowerCase().includes(searchTerm.toLowerCase())),
+    () => (categories && categories.filter((cat) => cat.category.name.toLowerCase().includes(searchTerm.toLowerCase())) || []),
     [categories, searchTerm]
   );
 
