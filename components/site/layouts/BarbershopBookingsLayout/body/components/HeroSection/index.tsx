@@ -188,7 +188,7 @@ export default function Hero({
         </motion.h2>
       </div>
 
-      <div className="relative z-20 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <div className="relative z-20 w-full max-w-[1440px] my-auto pt-8 mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         
         {/* 3. TEXTUAL CONTENT SLIDER PANEL */}
         <div className="lg:col-span-7 flex flex-col justify-center text-left h-full">

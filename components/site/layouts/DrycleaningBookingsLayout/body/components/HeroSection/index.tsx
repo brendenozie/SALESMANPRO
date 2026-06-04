@@ -227,7 +227,7 @@ export default function Hero({
         </motion.h2>
       </div>
 
-      <div className="relative z-20 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+      <div className="relative z-20 w-full max-w-[1440px] mx-auto pt-10 px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
         
         {/* Left Side: Context Slider Text Panel */}
         <div className="lg:col-span-7 flex flex-col justify-center text-left text-white h-full min-h-[320px] lg:min-h-0">
