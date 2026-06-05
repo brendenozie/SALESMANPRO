@@ -64,20 +64,28 @@ interface CheckoutClientProps {
 
 export default function ServiceCheckoutPage({ paymentMethods = [] }: CheckoutClientProps) {
 
-  // console.log('CheckoutClient paymentMethods', paymentMethods);
-
   const { data: session } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { storeFormData } = useStoreContext();
 
   // Extract params from URL
+  
   const listingId = (searchParams.get('listingId') || '').trim();
   const productName = (searchParams.get('name') || '').trim();
   const priceParam = searchParams.get('price') || '';
   const productType = (searchParams.get('productType') || '').trim() || 'service';
-  const enrollmentDateParam = searchParams.get('enrollmentDate') || '';
-  const timeSlotParam = searchParams.get('timeSlot') || '';
+
+  // Support both old and new URL formats
+  const enrollmentDateParam =
+    searchParams.get('enrollmentDate') ||
+    searchParams.get('date') ||
+    '';
+
+  const timeSlotParam =
+    searchParams.get('timeSlot') ||
+    '';
+    
 
   if (!listingId || !productName || !priceParam) {
     return <p className="p-6 text-red-600">Missing booking details.</p>;
@@ -107,14 +115,7 @@ export default function ServiceCheckoutPage({ paymentMethods = [] }: CheckoutCli
     locationType: 'online', // 'online' | 'inperson'
   });
 
-  // Payment
-  // const [payment, setPayment] = useState({
-  //   method: 'mpesa', // mpesa | card | paystack | cash
-  //   cardNumber: session?.user?.cardNumber || '',
-  //   cardExpiry: session?.user?.cardExpiry || '',
-  //   cvv: '',
-  //   mpesaPhone: session?.user?.phone || '',
-  // });
+  
     // Payment - Default to first available method
     const [payment, setPayment] = useState({
       method: paymentMethods[0]?.id || '',
@@ -130,6 +131,7 @@ export default function ServiceCheckoutPage({ paymentMethods = [] }: CheckoutCli
           setPayment(prev => ({ ...prev, method: paymentMethods[0].id }));
       }
     }, [paymentMethods, payment.method]);
+    
 
   // Promo / discounts
   const [promoCode, setPromoCode] = useState('');
@@ -547,20 +549,51 @@ type Slot = { id: string; label: string; capacity?: number; remaining?: number }
 function ScheduleStep({ appointment, onChange, price, productType, preselectedDate, preselectedTime, errors }: any) {
   // Simple sample available slots — in production, fetch from API per-date/provider
   const defaultSlots: Slot[] = [
-    { id: 's1', label: '09:00 - 10:00', capacity: 5, remaining: 5 },
-    { id: 's2', label: '10:00 - 11:00', capacity: 5, remaining: 5 },
-    { id: 's3', label: '11:00 - 12:00', capacity: 2, remaining: 2 },
-    { id: 's4', label: '14:00 - 15:00', capacity: 3, remaining: 3 },
-    { id: 's5', label: '16:00 - 17:00', capacity: 3, remaining: 3 },
-  ];
+                                  {
+                                    id: 'morning',
+                                    label: '08:00 AM - 11:00 AM',
+                                    capacity: 10,
+                                    remaining: 10,
+                                  },
+                                  {
+                                    id: 'midday',
+                                    label: '11:00 AM - 02:00 PM',
+                                    capacity: 10,
+                                    remaining: 10,
+                                  },
+                                  {
+                                    id: 'afternoon',
+                                    label: '02:00 PM - 05:00 PM',
+                                    capacity: 10,
+                                    remaining: 10,
+                                  },
+                                  {
+                                    id: 'evening',
+                                    label: '05:00 PM - 08:00 PM',
+                                    capacity: 10,
+                                    remaining: 10,
+                                  },
+                                ];
 
   const [availableSlots, setAvailableSlots] = useState<Slot[]>(defaultSlots);
   const [currentMonthOffset, setCurrentMonthOffset] = useState(0);
 
   // If preselected via URL, set them
+  // Pre-fill date and time from URL
   useEffect(() => {
-    if (preselectedDate) onChange({ date: preselectedDate });
-    if (preselectedTime) onChange({ timeSlot: preselectedTime });
+    const updates: any = {};
+
+    if (preselectedDate) {
+      updates.date = preselectedDate;
+    }
+
+    if (preselectedTime) {
+      updates.timeSlot = preselectedTime;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      onChange(updates);
+    }
   }, [preselectedDate, preselectedTime, onChange]);
 
   // Mock: disable weekends and past days. Replace unavailableDays with server-provided dates if available.
@@ -580,7 +613,11 @@ function ScheduleStep({ appointment, onChange, price, productType, preselectedDa
       onChange({ date: '' });
       return;
     }
-    const iso = d.toISOString().slice(0, 10);
+    const iso = [
+                  d.getFullYear(),
+                  String(d.getMonth() + 1).padStart(2, '0'),
+                  String(d.getDate()).padStart(2, '0'),
+                ].join('-');
     onChange({ date: iso, timeSlot: '' });
     // in real app: fetch available slots for `iso` from server -> setAvailableSlots(...)
     // we simulate slight variation in remaining capacity for fun
@@ -947,9 +984,23 @@ const OrderSummary = ({ productName, price, subtotal, discountAmount, total, app
         <div className="flex-1">
           <div className="font-semibold text-gray-800">{productName}</div>
           <div className="text-sm text-gray-500 mt-1">KES {price.toFixed(2)}</div>
-          {appointment.date && <div className="text-sm text-gray-500 mt-1">On {appointment.date} • {appointment.timeSlot}</div>}
-        </div>
-
+            {appointment.date && (
+                  <div className="text-sm text-gray-500 mt-1">
+                    On{' '}
+                    {new Date(`${appointment.date}T00:00:00`).toLocaleDateString(
+                      undefined,
+                      {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      }
+                    )}
+                    {' • '}
+                    {appointment.timeSlot}
+                  </div>
+                )}
+            </div>
         <div className="font-extrabold">KES {total.toFixed(2)}</div>
       </div>
 
