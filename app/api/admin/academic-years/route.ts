@@ -1,5 +1,4 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
-import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 
@@ -20,14 +19,22 @@ export async function GET(req: Request) {
   try {
     const academicYears = await prisma.academicYear.findMany({
       where: { companyId },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        startDate: true,
+        endDate: true,
+        isActive: true,
         terms: {
           select: {
             id: true,
             name: true,
             startDate: true,
             endDate: true,
+            termNumber: true,
+            isActive: true,
           },
+          orderBy: { termNumber: "asc" },
         },
       },
       orderBy: { startDate: "desc" },
@@ -36,12 +43,6 @@ export async function GET(req: Request) {
     try {
       await cacheSet(cacheKey, academicYears, 60);
     } catch (e) {}
-
-    // const response = NextResponse.json(academicYears);
-    // response.headers.set(
-    //   "Cache-Control",
-    //   "public, s-maxage=60, stale-while-revalidate=120"
-    // );
 
     return formatResponse(true, academicYears, "Fetched academic years", 200);
   } catch (error) {
@@ -52,14 +53,11 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-
     const { name, startDate, endDate, companyId } = body;
 
-    if (!companyId)
-      return formatResponse(false, null, "Company ID required", 400);
-
-    if (!name || !startDate || !endDate)
-      return formatResponse(false, null, "Missing fields", 400);
+    if (!companyId || !name || !startDate || !endDate) {
+      return formatResponse(false, null, "Missing required fields", 400);
+    }
 
     const academicYear = await prisma.academicYear.create({
       data: {
@@ -67,14 +65,18 @@ export async function POST(req: Request) {
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         companyId,
+        isActive: false,
       },
     });
 
-    await cacheDel(`admin:academicYears:${companyId}:all`);
+    // Evacuate list and overall dynamic session layouts
+    try {
+      await cacheDel(`admin:academicYears:${companyId}:all`);
+      await cacheDel(`admin:academicSession:${companyId}:all`);
+    } catch (e) {}
 
     return formatResponse(true, academicYear, "Academic Year created", 201);
   } catch (error) {
-    // console.error("Academic Year Error:", error);
     return formatResponse(false, null, "Failed to create academic year", 500);
   }
 }

@@ -1,32 +1,34 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
-import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
-// --------------------
-// Formatter (sync)
-// --------------------
 function formatAppointmentData(appointment: any) {
-  const patientName = appointment.user?.name ?? "N/A";
-  const doctorName = appointment.doctor?.User?.name ?? "N/A";
-
   const dateObj = new Date(appointment.date);
+  const pad = (n: number) => n.toString().padStart(2, "0");
+
+  let hours = dateObj.getUTCHours();
+  const minutes = pad(dateObj.getUTCMinutes());
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12;
+  hours = hours ? hours : 12;
 
   return {
     id: appointment.id,
-    patientName,
+    patientName: appointment.user?.name ?? "N/A",
     doctorId: appointment.doctorId,
-    doctorName,
-    date: dateObj.toISOString().split("T")[0],
-    time: dateObj.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    }),
+    doctorName: appointment.doctor?.User?.name ?? "N/A",
+    date:
+      dateObj.getUTCFullYear() +
+      "-" +
+      pad(dateObj.getUTCMonth() + 1) +
+      "-" +
+      pad(dateObj.getUTCDate()),
+    time: `${pad(hours)}:${minutes} ${ampm}`,
     status: appointment.status,
     service: appointment.service ?? "N/A",
     createdAt: appointment.createdAt
-      ? new Date(appointment.createdAt).toLocaleDateString()
+      ? new Date(appointment.createdAt).toISOString().split("T")[0]
       : "N/A",
   };
 }
@@ -38,341 +40,217 @@ const baseSelect = {
   status: true,
   service: true,
   createdAt: true,
+  companyId: true,
   user: { select: { name: true, email: true } },
   doctor: { select: { User: { select: { name: true } } } },
-  company:true,
 };
 
-// --------------------
-// GET
-// --------------------
-export const GET = withApiHandler(async (_request, context) => {
-  const { id } = context.params;
-  const { user } = context;
-  const searchParams = new URL(_request.url).searchParams;
-  const companyId = searchParams.get("companyId");
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const appointment = await prisma.appointment.findFirst({
-    where:
-      user.role === "ADMIN"
-        ? { id, companyId: companyId || undefined }
-        : { id, doctorId: user.id },
-    select: baseSelect,
-  });
-
-  if (!appointment) {
-    return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
-  }
-
-  return NextResponse.json(formatAppointmentData(appointment), { status: 200 });
-});
-
-// --------------------
-// PUT
-// --------------------
-export const PUT = withApiHandler(async (request, context) => {
-  const { id } = context.params;
-  const { user } = context;
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const body = await request.json();
-  const { userId, doctorId, service, date, time, status, companyId } = body;
-
-  const existing = await prisma.appointment.findFirst({
-    where:
-      user.role === "ADMIN"
-        ? { id, companyId: companyId || undefined }
-        : { id, doctorId: user.id },
-    select: { date: true },
-  });
-
-  if (!existing) {
-    return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
-  }
-
-  const updateData: any = {
-    ...(service !== undefined && { service }),
-    ...(status !== undefined && { status }),
-    ...(userId && { userId }),
-    ...(doctorId && user.role === "ADMIN" && { doctorId }),
-  };
-
-  if (date || time) {
-    const base = new Date(existing.date);
-
-    const newDate = date ?? base.toISOString().split("T")[0];
-    const newTime =
-      time ??
-      base.toISOString().split("T")[1].slice(0, 5); // HH:mm
-
-    updateData.date = new Date(`${newDate}T${newTime}:00`);
-  }
-
-  const updated = await prisma.appointment.update({
-    where: { id },
-    data: updateData,
-    select: baseSelect,
-  });
-
+export const GET = withApiHandler(async (request, context) => {
   
-    try { await cacheDel(`admin:appointments:${updated.company?.id || 'global'}:*`); } catch (e) {}
-    return NextResponse.json(formatAppointmentData(updated), { status: 200 });
-});
-
-// --------------------
-// DELETE
-// --------------------
-export const DELETE = withApiHandler(async (_request, context) => {
-  const { id } = context.params;
   const { user } = context;
-  const searchParams = new URL(_request.url).searchParams;
+
+  if (!user)
+    return formatResponse(false, null, "Unauthorized access parameters", 401);
+
+  const resolvedParams = await context.params;
+  const { id } = resolvedParams;
+  const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!companyId)
+    return formatResponse(
+      false,
+      null,
+      "Company target boundary is required",
+      400,
+    );
+
+  const cacheKey = `admin:appointments:${companyId}:item:${id}`;
+
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached)
+      return formatResponse(
+        true,
+        cached,
+        "Fetched single appointment from cache",
+        200,
+      );
+  } catch (e) {}
+
+  try {
+    const appointment = await prisma.appointment.findFirst({
+      where: {
+        id,
+        companyId,
+        ...(user.role !== "ADMIN" ? { doctorId: user.id } : {}),
+      },
+      select: baseSelect,
+    });
+
+    if (!appointment)
+      return formatResponse(
+        false,
+        null,
+        "Target booking profile record missing",
+        404,
+      );
+
+    const formatted = formatAppointmentData(appointment);
+    try {
+      await cacheSet(cacheKey, formatted, 60);
+    } catch (e) {}
+
+    return formatResponse(
+      true,
+      formatted,
+      "Appointment retrieved successfully",
+      200,
+    );
+  } catch (error) {
+    return formatResponse(
+      false,
+      null,
+      "Data layer querying execution fault",
+      500,
+    );
   }
-
-  const existing = await prisma.appointment.findFirst({
-    where: { id: id, ...(user.role !== "ADMIN" ? { doctorId: user.id } : {}), companyId: companyId || undefined }, 
-    select: { companyId: true }
-  });
-
-  if (!existing) {
-    return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
-  }
-
-  await prisma.appointment.deleteMany({
-    where: { id: id, ...(user.role !== "ADMIN" ? { doctorId: user.id } : {}), companyId: companyId || undefined }
-  });
-
-  try { await cacheDel(`admin:appointments:${existing?.companyId || 'global'}:*`); } catch (e) {}
-  return NextResponse.json({ message: "Appointment deleted successfully" }, { status: 200 });
 });
-// import { NextResponse } from "next/server";
 
-//     status: appt.status,
-//     service: appt.service ?? "N/A",
-//     createdAt: appt.createdAt?.toISOString() ?? "N/A",
-//   };
-// }
+export const PUT = withApiHandler(async (request, context) => {
+  
+  const { user } = context;
+  if (!user)
+    return formatResponse(false, null, "Unauthorized access parameters", 401);
 
-// export const GET = withApiHandler(async (request, context) => {
-//   const { id } = context.params;
-//   const { user } = context;
+  const resolvedParams = await context.params;
+  const { id } = resolvedParams;
 
-//   // OPTIMIZATION: Use findFirst with combined role logic to save an IF/ELSE block
-//   const appointment = await prisma.appointment.findFirst({
-//     where: {
-//       id,
-//       ...(user?.role !== "ADMIN" ? { doctorId: user.id } : {}),
-//     },
-//     select: {
-//       id: true, date: true, status: true, service: true, createdAt: true, doctorId: true,
-//       user: { select: { name: true } },
-//       doctor: { select: { User: { select: { name: true } } } },
-//     },
-//   });
+  try {
+    const body = await request.json();
+    const { userId, doctorId, service, date, time, status, companyId } = body;
 
-//   if (!appointment) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (!companyId)
+      return formatResponse(
+        false,
+        null,
+        "Company context tracker value required",
+        400,
+      );
 
-//   return NextResponse.json(formatAppointment(appointment), { status: 200 });
-// });
+    // Secure Verification Step: Confirm ownership within matching business boundary bounds
+    const existing = await prisma.appointment.findFirst({
+      where: {
+        id,
+        companyId,
+        ...(user.role !== "ADMIN" ? { doctorId: user.id } : {}),
+      },
+      select: { date: true },
+    });
 
-// export const PUT = withApiHandler(async (request, context) => {
-//   const { id } = context.params;
-//   const { user } = context;
-//   const { userId, doctorId, service, date, time, status } = await request.json();
+    if (!existing)
+      return formatResponse(
+        false,
+        null,
+        "Appointment entry missing or access out of bounds",
+        404,
+      );
 
-//   try {
-//     // OPTIMIZATION: Direct update with ownership check in 'where'
-//     // If Admin, they bypass the doctorId filter.
-//     const updatePayload: any = { service, status };
-//     if (userId) updatePayload.userId = userId;
-//     if (doctorId && user?.role === "ADMIN") updatePayload.doctorId = doctorId;
+    const updateData: any = {};
+    if (service !== undefined) updateData.service = service;
+    if (status !== undefined) updateData.status = status;
+    if (userId) updateData.userId = userId;
+    if (doctorId && user.role === "ADMIN") updateData.doctorId = doctorId;
 
-//     if (date || time) {
-//       // Small fetch here is necessary only if we need the OLD date to merge with a NEW time
-//       const current = await prisma.appointment.findUnique({ where: { id }, select: { date: true } });
-//       if (current) {
-//         const dPart = date || current.date.toISOString().split("T")[0];
-//         const tPart = time || current.date.toISOString().split("T")[1].substring(0, 5);
-//         updatePayload.date = new Date(`${dPart}T${tPart}:00`);
-//       }
-//     }
+    if (date || time) {
+      const baseDate = new Date(existing.date);
+      const targetDateStr = date ?? baseDate.toISOString().split("T")[0];
+      const targetTimeStr =
+        time ?? baseDate.toISOString().split("T")[1].slice(0, 5);
+      updateData.date = new Date(`${targetDateStr}T${targetTimeStr}:00.000Z`);
+    }
 
-//     const updated = await prisma.appointment.update({
-//       where: { 
-//         id, 
-//         ...(user?.role !== "ADMIN" ? { doctorId: user.id } : {}) 
-//       },
-//       data: updatePayload,
-//       include: {
-//         user: { select: { name: true } },
-//         doctor: { include: { User: { select: { name: true } } } }
-//       }
-//     });
+    // Scoped update mutation to block cross-tenant parameter injections
+    const updated = await prisma.appointment.update({
+      where: { id, companyId },
+      data: updateData,
+      select: baseSelect,
+    });
 
-//     return NextResponse.json(formatAppointment(updated), { status: 200 });
-//   } catch (error) {
-//     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-//       return NextResponse.json({ error: "Appointment not found or unauthorized" }, { status: 404 });
-//     }
-//     throw error;
-//   }
-// });
+    try {
+      await cacheDel(`admin:appointments:${companyId}:all`);
+      await cacheDel(`admin:appointments:${companyId}:item:${id}`);
+    } catch (e) {}
 
-// export const DELETE = withApiHandler(async (request, context) => {
-//   const { id } = context.params;
-//   const { user } = context;
+    return formatResponse(
+      true,
+      formatAppointmentData(updated),
+      "Appointment profile updated safely",
+      200,
+    );
+  } catch (error) {
+    return formatResponse(
+      false,
+      null,
+      "Failed to apply resource update modifications",
+      500,
+    );
+  }
+});
 
-//   try {
-//     // OPTIMIZATION: Atomic Delete (1 DB call instead of 2)
-//     await prisma.appointment.delete({
-//       where: { 
-//         id, 
-//         ...(user?.role !== "ADMIN" ? { doctorId: user.id } : {}) 
-//       },
-//     });
-//     return NextResponse.json({ message: "Deleted" }, { status: 200 });
-//   } catch (error) {
-//     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-//       return NextResponse.json({ error: "Access denied or not found" }, { status: 404 });
-//     }
-//     throw error;
-//   }
-// });
-// import { NextResponse } from "next/server";
+export const DELETE = withApiHandler(async (request, context) => {
+  const { user } = context;
+  if (!user)
+    return formatResponse(false, null, "Unauthorized access parameters", 401);
 
+  const resolvedParams = await context.params;
+  const { id } = resolvedParams;
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId");
 
-//   return {
-//     id: appointment.id,
-//     patientName,
-//     doctorId: appointment.doctorId,
-//     doctorName,
-//     date: formattedDate,
-//     time: formattedTime,
-//     status: appointment.status,
-//     service: appointment.service || "N/A",
-//     createdAt: appointment.createdAt
-//       ? new Date(appointment.createdAt).toLocaleDateString()
-//       : "N/A",
-//   };
-// }
+  if (!companyId)
+    return formatResponse(
+      false,
+      null,
+      "Company identifier tracking reference required",
+      400,
+    );
 
-// // --- GET /api/admin/appointments/[id]
-// export const GET = withApiHandler(async (request, context) => {
-//   const { id } = context.params;
-//   const { user } = context;
+  try {
+    const deletedResult = await prisma.appointment.deleteMany({
+      where: {
+        id,
+        companyId,
+        ...(user.role !== "ADMIN" ? { doctorId: user.id } : {}),
+      },
+    });
 
-//   if (!user) {
-//     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-//   }
+    if (!deletedResult.count) {
+      return formatResponse(
+        false,
+        null,
+        "Appointment record missing or delete execution blocked",
+        404,
+      );
+    }
 
-//   const appointment = await prisma.appointment.findFirst({
-//     where: context.user?.role === "ADMIN"
-//       ? { id }
-//       : { id, doctorId: user.id }, // doctors can only see their own
-//     include: {
-//       user: { select: { name: true, email: true } },
-//       doctor: { include: { User: { select: { name: true } } } },
-//     },
-//   });
+    try {
+      await cacheDel(`admin:appointments:${companyId}:all`);
+      await cacheDel(`admin:appointments:${companyId}:item:${id}`);
+    } catch (e) {}
 
-//   if (!appointment) {
-//     return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
-//   }
-
-//   const formattedAppointment = await formatAppointmentData(appointment);
-//   return NextResponse.json(formattedAppointment, { status: 200 });
-// });
-
-// // --- PUT /api/admin/appointments/[id]
-// export const PUT = withApiHandler(async (request, context) => {
-//   const { id } = context.params;
-//   const { user } = context;
-
-//   if (!user) {
-//     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-//   }
-
-//   const body = await request.json();
-
-//   const { userId, doctorId, service, date, time, status } = body;
-
-//   // Ensure doctor can only update their own appointment
-//   const existingAppointment = await prisma.appointment.findFirst({
-//     where: user?.role === "ADMIN"
-//       ? { id }
-//       : { id, doctorId: user.id },
-//   });
-
-//   if (!existingAppointment) {
-//     return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
-//   }
-
-//   let updateData: any = { service, status };
-//   if (userId) updateData.userId = userId;
-//   if (doctorId && user?.role === "ADMIN") {
-//     // only admin can reassign doctor
-//     updateData.doctorId = doctorId;
-//   }
-
-//   // Handle combined date+time updates
-//   if (date || time) {
-//     const existingDate = new Date(existingAppointment.date);
-//     const newDatePart = date || existingDate.toISOString().split("T")[0];
-//     const newTimePart =
-//       time ||
-//       existingDate.toLocaleTimeString("en-US", {
-//         hour: "2-digit",
-//         minute: "2-digit",
-//         hourCycle: "h23", // keep 24-hour format internally
-//       });
-
-//     updateData.date = new Date(`${newDatePart}T${newTimePart}:00`);
-//   }
-
-//   const updatedAppointment = await prisma.appointment.update({
-//     where: { id },
-//     data: updateData,
-//     include: {
-//       user: { select: { name: true, email: true } },
-//       doctor: { include: { User: { select: { name: true } } } },
-//     },
-//   });
-
-//   const formattedUpdatedAppointment = await formatAppointmentData(updatedAppointment);
-//   return NextResponse.json(formattedUpdatedAppointment, { status: 200 });
-// });
-
-// // --- DELETE /api/admin/appointments/[id]
-// export const DELETE = withApiHandler(async (request, context) => {
-//   const { id } = context.params;
-//   const { user } = context;
-
-//   if (!user) {
-//     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-//   }
-
-//   // Ensure doctor can only delete their own appointment
-//   const existingAppointment = await prisma.appointment.findFirst({
-//     where: user?.role === "ADMIN"
-//       ? { id }
-//       : { id, doctorId: user.id },
-//   });
-
-//   if (!existingAppointment) {
-//     return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
-//   }
-
-//   await prisma.appointment.delete({ where: { id } });
-
-//   return NextResponse.json({ message: "Appointment deleted successfully" }, { status: 200 });
-// });
+    return formatResponse(
+      true,
+      { deletedId: id },
+      "Appointment profile purged successfully",
+      200,
+    );
+  } catch (error) {
+    return formatResponse(
+      false,
+      null,
+      "Failed to completely purge target item resource entry",
+      500,
+    );
+  }
+});

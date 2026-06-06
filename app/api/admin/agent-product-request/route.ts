@@ -1,13 +1,11 @@
-import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
-// // app/api/product-requests/route.ts
-
+import { cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 export const GET = withApiHandler(async (request, context) => {
   const { searchParams } = new URL(request.url);
-  const limit = Math.min(parseInt(searchParams.get("limit") || "10", 10), 100); // Cap the limit
+  const limit = Math.min(parseInt(searchParams.get("limit") || "10", 10), 100);
   const offset = parseInt(searchParams.get("offset") || "0", 10);
 
   if (isNaN(limit) || isNaN(offset) || offset < 0) {
@@ -16,84 +14,90 @@ export const GET = withApiHandler(async (request, context) => {
 
   const { user } = context;
 
-  // Role check optimization: Move specific logic to a utility if reused
-  if (user?.role !== "SALES_AGENT") {
+  // Authorization barrier check
+  if (user?.role !== "SALES_AGENT" || !user?.id) {
     return formatResponse(false, null, "Forbidden", 403);
   }
 
-  // OPTIMIZATION: Use 'select' to avoid over-fetching and eliminate the .map() overhead
-  const cacheKey = `admin:agent-product-request:${user.id || 'global'}:all`;
+  // FIX: Append limit and offset constraints directly inside the cache string layout
+  const cacheKey = `admin:agent-product-request:${user.id}:limit:${limit}:offset:${offset}`;
 
   try {
     const cached = await cacheGet(cacheKey);
     if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
   } catch (e) {}
 
-  const productRequests = await prisma.request.findMany({
-    where: {
+  try {
+    const queryConditions = {
       requestedByType: "SALES_AGENT",
       requesterId: user.id,
-    },
-    take: limit,
-    skip: offset,
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      productId: true,
-      quantity: true,
-      status: true,
-      createdAt: true,
-      product: {
-        select: { name: true }
+    } as const;
+
+    // Execute dataset chunking query and absolute count aggregation concurrently
+    const [productRequests, totalCount] = await prisma.$transaction([
+      prisma.request.findMany({
+        where: queryConditions,
+        take: limit,
+        skip: offset,
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          productId: true,
+          quantity: true,
+          status: true,
+          createdAt: true,
+          product: {
+            select: { name: true },
+          },
+          requester: {
+            select: { id: true, name: true },
+          },
+        },
+      }),
+      prisma.request.count({
+        where: queryConditions,
+      }),
+    ]);
+
+    // Flat map projections step logic execution loop
+    const formattedRequests = productRequests.map((req) => ({
+      requestId: req.id,
+      productId: req.productId,
+      productName: req.product?.name ?? "Unknown Product",
+      quantityRequested: req.quantity,
+      salesAgentId: req.requester?.id ?? null,
+      salesAgentName: req.requester?.name ?? "Unassigned",
+      status: req.status ?? "Pending",
+      requestedAt: req.createdAt,
+    }));
+
+    const resultPayload = {
+      userId: user.id,
+      requests: formattedRequests,
+      pagination: {
+        totalItems: totalCount,
+        limit,
+        offset,
+        hasMore: offset + limit < totalCount,
       },
-      requester: {
-        select: { id: true, name: true }
-      }
-    }
-  });
+    };
 
-  // OPTIMIZATION: Transform data minimally. 
-  // Since we used 'select', the object structure is already nearly perfect.
-  const formattedRequests = productRequests.map((req) => ({
-    requestId: req.id,
-    productId: req.productId,
-    productName: req.product?.name ?? "Unknown Product",
-    quantityRequested: req.quantity,
-    salesAgentId: req.requester?.id ?? null,
-    salesAgentName: req.requester?.name ?? "Unassigned",
-    status: req.status ?? "Pending",
-    requestedAt: req.createdAt,
-  }));
+    try {
+      await cacheSet(cacheKey, resultPayload, 60);
+    } catch (e) {}
 
-  try {
-    if (formattedRequests) {
-      await cacheSet(cacheKey, { 
-        userId: user.id, 
-        requests: formattedRequests,
-        count: formattedRequests.length // Consider adding a total count query if UI needs it
-      }, 60); // Cache for 60 seconds
-    }
-  } catch (e) {}
-
-  return formatResponse(true, { 
-    userId: user.id, 
-    requests: formattedRequests,
-    count: formattedRequests.length // Consider adding a total count query if UI needs it
-  }, "Fetched", 200);
-  
+    return formatResponse(
+      true,
+      resultPayload,
+      "Fetched product requests successfully",
+      200,
+    );
+  } catch (error) {
+    return formatResponse(
+      false,
+      null,
+      "Failed to retrieve product requests data state",
+      500,
+    );
+  }
 });
-
-
-//   const formattedRequests = productRequests.map((request) => ({
-//     requestId: request.id,
-//     productId: request.productId,
-//     productName: request.product?.name || "Unknown Product",
-//     quantityRequested: request.quantity,
-//     salesAgentId: request.requester?.id || null,
-//     salesAgentName: request.requester?.name || "Unassigned",
-//     status: request.status || "Pending",
-//     requestedAt: request.createdAt?.toISOString(),
-//   }));
-
-//   return formatResponse(true, { userId: user.id, requests: formattedRequests }, "Fetched successfully", 200);
-// });
