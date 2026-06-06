@@ -42,12 +42,15 @@ const SITE_CATEGORIES_WITH_PRICING = [
   "service provider",
   "booking & appointments",
   "portfolio & personal branding",
+  "barbershop",
+  "drycleaning"
 ];
 
 const SITE_CATEGORIES_WITH_LOCATIONS = [
   "real estate",
   "automotive",
   "travel & tourism",
+  "property management"
 ];
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
