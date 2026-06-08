@@ -118,6 +118,10 @@ model CompanyCategory {
   updatedAt DateTime @updatedAt
 
   companies Company[]
+
+  @@index([name])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model Variant {
@@ -132,6 +136,10 @@ model Variant {
   category            CompanyCategory @relation(fields: [categoryId], references: [id])
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @updatedAt
+
+  @@index([name])
+  @@index([createdAt])
+  @@index([categoryId, name])
 }
 
 // Category model with self-relations for hierarchy (categories & subcategories)
@@ -184,11 +192,17 @@ model ProductCategory {
   // @@index([slug])
   events              Event[]
 
+  @@index([name])
+  @@index([createdAt])
   @@index([companyId])
   @@index([tags])
   @@index([metaKeywords])
   @@index([allBrands])
   @@index([status])
+  @@index([visible])
+  @@index([companyId, visible])
+  @@index([companyId, showInHomepage])
+  @@index([companyId, status, visible])
 }
 
 /// Associates a Company with a ProductCategory,
@@ -222,6 +236,7 @@ model StoreCategory {
   @@index([companyId])
   @@index([categoryId])
   @@index([allBrands])
+  @@index([companyId, visible, sortOrder])
 }
 
 model Company {
@@ -469,6 +484,10 @@ model Company {
   socialIntegrations   SocialIntegration[]
 
   @@index([userId])
+  @@index([companyCategoryId])
+  @@index([deletedAt])
+  @@index([createdAt])
+  @@index([deletedAt, slug])
 }
 
 // This model represents the integration of a company's account with various social media platforms.
@@ -547,6 +566,7 @@ model CoreValues {
   icon        String? @default("")
 
   @@index([companyId])
+  @@index([id])
 }
 
 model SocialLink {
@@ -557,6 +577,7 @@ model SocialLink {
   url       String         @default("")
 
   @@index([companyId])
+  @@index([id])
 }
 
 model Policy {
@@ -568,6 +589,7 @@ model Policy {
   content   String     @default("")
 
   @@index([companyId])
+  @@index([id])
 }
 
 model Banner {
@@ -594,6 +616,7 @@ model Banner {
   textColor       String?
 
   @@index([companyId])
+  @@index([id])
 }
 
 //this promotion on the other hand is a promotion table that highlights the promotions or offers a company offers something lika a banner
@@ -630,6 +653,7 @@ model Promotion {
   updatedAt DateTime? @updatedAt
 
   @@index([companyId])
+  @@index([id])
 }
 
 model AnalyticsConfig {
@@ -643,6 +667,8 @@ model AnalyticsConfig {
   isActive Boolean @default(false)
 
   company Company?
+
+  @@index([id])
 }
 
 model PaymentSettings {
@@ -697,18 +723,9 @@ model PaymentSettings {
   ghubaSecret_encrypted String?
   ghubaSecret_iv        String?
   ghubaSecret_tag       String?
-}
 
-// model PaymentSettings {
-//   id                  String   @id @default(auto()) @map("_id") @db.ObjectId
-//   stripeKey           String?
-//   paypalKey           String?
-//   mpesaShortcode      String?
-//   mpesaConsumerKey    String?
-//   mpesaConsumerSecret String?
-//   mpesaCallbackUrl    String?
-//   company             Company?
-// }
+  @@index([id])
+}
 
 model ShippingSettings {
   id                 String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -720,6 +737,8 @@ model ShippingSettings {
   company            Company?
   standardRate       Float?   @default(0.00)
   expressRate        Float?   @default(0.00)
+
+  @@index([id])
 }
 
 model PageSection {
@@ -734,6 +753,7 @@ model PageSection {
   updatedAt DateTime?   @updatedAt
 
   @@index([companyId])
+  @@index([id])
 }
 
 enum SectionType {
@@ -1032,6 +1052,13 @@ model Product {
   @@index([tags])
   @@index([images])
   @@index([email])
+  @@index([companyId, status, active])
+  @@index([companyId, createdAt])
+  @@index([productCategoryId, status, active])
+  @@index([isFeatured, status])
+  @@index([isNewArrival, createdAt])
+  @@index([listingMarketStatus, active])
+  @@index([listingSystemStatus])
 }
 
 model Payment {
@@ -1106,8 +1133,8 @@ model Blog {
   id          String     @id @default(auto()) @map("_id") @db.ObjectId
   company     Company    @relation(fields: [companyId], references: [id])
   companyId   String     @db.ObjectId
-  title       String     @unique
-  slug        String     @unique
+  title       String
+  slug        String
   content     String
   isFeature   Boolean    @default(false)
   excerpt     String? //@db.VarChar(300) // Short summary
@@ -1118,8 +1145,6 @@ model Blog {
   seo         SeoBlog?
   status      BlogStatus @default(DRAFT)
   publishedAt DateTime?
-  views       Int        @default(0)
-  likes       Int        @default(0)
   comments    Comment[]
 
   description  String? // Use this for a longer description if needed
@@ -1150,12 +1175,25 @@ model Blog {
   updatedAt DateTime? @updatedAt
   // @@index([slug])
 
+  @@unique([companyId, slug])
   @@index([authorId])
   @@index([photoAlbumId])
   @@index([videoAlbumId])
   @@index([companyId])
   @@index([tags])
   @@index([status])
+  @@index([companyId, status])
+  @@index([companyId, publishedAt])
+  @@index([categories])
+}
+
+model BlogMetrics {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  blogId String @db.ObjectId
+  views  Int    @default(0)
+  likes  Int    @default(0)
+
+  @@index([blogId])
 }
 
 model SeoBlog {
@@ -1180,12 +1218,18 @@ model SEO {
 }
 
 model Comment {
-  id        String    @id @default(auto()) @map("_id") @db.ObjectId
-  user      String
-  comment   String
-  createdAt DateTime? @default(now())
-  blogId    String    @db.ObjectId
-  blog      Blog      @relation(fields: [blogId], references: [id])
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  blogId String @db.ObjectId
+  blog   Blog   @relation(fields: [blogId], references: [id])
+
+  userId String? @db.ObjectId
+  user   User?   @relation(fields: [userId], references: [id])
+
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([blogId])
+  @@index([userId])
 }
 
 enum BlogStatus {
@@ -1629,6 +1673,7 @@ model User {
   DeliveryTracking        DeliveryTracking[]
   eventTicketPurchases    EventTicketPurchase[]
   userProgresses          UserProgress[]
+  comments                Comment[]
 
   @@index([companyId])
   // @@index([settingsId])
@@ -2177,6 +2222,15 @@ model marketplaceListings {
   @@index([isFeatured])
   @@index([isDiscounted])
   @@index([isNewArrival])
+  @@index([status, listingMarketStatus, listingSystemStatus])
+  @@index([status, isAvailable])
+  @@index([showOnGhuba, status, ghubaStatus])
+  @@index([isFeatured, status, createdAt])
+  @@index([isFlashDeal, status, createdAt])
+  @@index([isDiscounted, status, finalPrice])
+  @@index([productCategoryId, status, createdAt])
+  @@index([brand, status])
+  @@index([locationId, status])
 }
 
 model ProductReview {
