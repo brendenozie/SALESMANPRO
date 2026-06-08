@@ -466,8 +466,31 @@ model Company {
   eventTickets         EventTicket[]
   eventTicketPurchases EventTicketPurchase[]
   userProgresses       UserProgress[]
+  socialIntegrations   SocialIntegration[]
 
   @@index([userId])
+}
+
+// This model represents the integration of a company's account with various social media platforms.
+model SocialIntegration {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  platform    String // e.g., "FACEBOOK", "INSTAGRAM", "TWITTER", "LINKEDIN"
+  accountId   String // The ID of the user's account on that platform
+  accountName String? // e.g., "@GhubaShop"
+
+  accessToken  String // Store securely!
+  refreshToken String? // For renewing the session
+  expiresAt    DateTime?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, platform]) // A company should only link one of each platform type
 }
 
 model Gallery {
