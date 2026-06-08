@@ -484,6 +484,7 @@ model Company {
   socialIntegrations   SocialIntegration[]
 
   @@index([userId])
+  @@index([name])
   @@index([companyCategoryId])
   @@index([deletedAt])
   @@index([createdAt])
