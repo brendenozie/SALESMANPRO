@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import FilterSidebar from '../FilterSidebar/FilterSidebar';
 import { AdjustmentsHorizontalIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline';
 import { useRouter, useSearchParams } from 'next/navigation';
-import ProductCard from '@/components/site/layouts/EcommerceShoesLayout/body/components/ProductCard';
+import ProductCard from '@/components/site/layouts/EcommerceGroceriesLayout/body/components/ProductCard';
 
 export interface FilterState {
   search: string;
@@ -68,10 +68,10 @@ export default function ProductListWrapper({ products, categories }: any) {
           <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-8">
             <div>
               <h1 className="text-5xl font-black tracking-tighter text-zinc-900 dark:text-white uppercase italic">
-                The Collection
+                Fresh Finds Marketplace
               </h1>
               <p className="text-zinc-500 dark:text-zinc-400 font-medium mt-2">
-                Curated footwear for the modern explorer. {products.length} pairs found.
+                Curated selection of the finest products, handpicked just for you.
               </p>
             </div>
 

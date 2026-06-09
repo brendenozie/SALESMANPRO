@@ -68,7 +68,7 @@ function CategoryCard({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Link href={`/ecommerce/products?category=${catSlug}`} className="block h-full w-full">
+      <Link href={`/flowersecommerce/products?category=${catSlug}`} className="block h-full w-full">
         {/* Image with subtle parallax zoom */}
         <Image
           src={imageUrl}

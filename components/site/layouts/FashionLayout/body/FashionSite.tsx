@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import useSWR from 'swr';
 import HeroSlider from './components/HeroSlider';
-import { StoreForm, MarketListingForm } from '@/types/typings';
+import { StoreForm, MarketListingForm, ListingMarketStatus, ListingSystemStatus, ListingTransactionType } from '@/types/typings';
 import Image from 'next/image';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { 
@@ -125,7 +125,10 @@ const MOCK_PRODUCTS: MarketListingForm[] = [
     location: {},
     duration: null,
     buyingPrice: 0,
-    bookingSlots: undefined
+    bookingSlots: undefined,
+    listingMarketStatus: ListingMarketStatus.AVAILABLE,
+    listingSystemStatus: ListingSystemStatus.DRAFT,
+    listingTransactionType: ListingTransactionType.SALE
   },
   {
     id: '2',
@@ -163,7 +166,10 @@ const MOCK_PRODUCTS: MarketListingForm[] = [
     location: {},
     duration: null,
     buyingPrice: 0,
-    bookingSlots: undefined
+    bookingSlots: undefined,
+    listingMarketStatus: ListingMarketStatus.AVAILABLE,
+    listingSystemStatus: ListingSystemStatus.DRAFT,
+    listingTransactionType: ListingTransactionType.SALE
   },
   {
     id: '3',
@@ -201,7 +207,10 @@ const MOCK_PRODUCTS: MarketListingForm[] = [
     location: {},
     duration: null,
     buyingPrice: 0,
-    bookingSlots: undefined
+    bookingSlots: undefined,
+    listingMarketStatus: ListingMarketStatus.AVAILABLE,
+    listingSystemStatus: ListingSystemStatus.DRAFT,
+    listingTransactionType: ListingTransactionType.SALE
   },
   {
     id: '4',
@@ -240,7 +249,10 @@ const MOCK_PRODUCTS: MarketListingForm[] = [
     location: {},
     duration: null,
     buyingPrice: 0,
-    bookingSlots: undefined
+    bookingSlots: undefined,
+    listingMarketStatus: ListingMarketStatus.AVAILABLE,
+    listingSystemStatus: ListingSystemStatus.DRAFT,
+    listingTransactionType: ListingTransactionType.SALE
   }
 ];
 

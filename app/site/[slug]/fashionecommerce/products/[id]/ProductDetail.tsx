@@ -1,8 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 'use client';
 
-import React, { useMemo, useState } from 'react';
-import Head from 'next/head';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -11,11 +10,14 @@ import {
   ArrowRightIcon, 
   ChevronLeftIcon, 
   ChevronRightIcon, 
-  PlusIcon
+  SparklesIcon,
+  GlobeAltIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { MarketListingForm } from '@/types/typings';
+import ProductCard from '@/components/site/layouts/FashionLayout/body/components/ProductCard';
 import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
 type ImageObj = { url: string };
@@ -30,197 +32,249 @@ export function ProductDetail({
   product: MarketListingForm;
   related: MarketListingForm[];
 }) {
-  const { addToCart, cart } = useStateContext();
+  const { addToCart } = useStateContext();
   const [mainIndex, setMainIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState('M');
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [currentUrl, setCurrentUrl] = useState('');
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Fashion Brand Palette: High Contrast Mono + Electric Accent
-  const accent = '#000000'; // Black
-  const highlight = '#E5FF00'; // Electric Lime for "Fashion Forward" pop
+  useEffect(() => {
+    setCurrentUrl(window.location.href);
+  }, []);
 
-  const currentImages = (product.images as ImageObj[])?.length 
-    ? (product.images as ImageObj[]) 
-    : [{ url: '/placeholder-image.png' }];
+  const highlightColor = '#E5FF00'; // Electric Neon Lime
+
+  const currentImages = (product.images)?.length 
+    ? (product.images) 
+    : [{ url: 'https://via.placeholder.com/400x600' }];
   
   const currentImage = currentImages[mainIndex]?.url;
 
-  return (
-    <div className="bg-white text-black min-h-screen font-sans selection:bg-black selection:text-white">
-      <Head>
-        <title>{product.name} | Duka Fashion</title>
-      </Head>
+  const handleScrollRelated = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, clientWidth } = scrollContainerRef.current;
+      const offset = direction === 'left' ? -clientWidth * 0.75 : clientWidth * 0.75;
+      scrollContainerRef.current.scrollTo({ left: scrollLeft + offset, behavior: 'smooth' });
+    }
+  };
 
-      <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
-        {/* --- EDITORIAL LAYOUT --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+  return (
+    <div className="bg-white dark:bg-zinc-950 text-zinc-950 dark:text-zinc-50 min-h-screen font-sans selection:bg-[#E5FF00] selection:text-black antialiased transition-colors duration-300 pb-24 lg:pb-12">
+      
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12 py-4 sm:py-8">
+        
+        {/* BREADCRUMB TEXT */}
+        <div className="text-[10px] uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 mb-6 hidden sm:block">
+          Fashion / Curated Atelier / {product.productCategory?.name || 'Ready-To-Wear'}
+        </div>
+
+        {/* --- EDITORIAL WORKSPACE LAYOUT --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-14">
           
-          {/* LEFT: THE LOOKBOOK (Col 1-8) */}
-          <div className="lg:col-span-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Main Dynamic View */}
-              <div className="md:col-span-2 relative aspect-[3/4] overflow-hidden rounded-sm bg-gray-50">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={mainIndex}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.5, ease: "circOut" }}
-                    className="w-full h-full"
-                  >
-                    <Image
-                      src={currentImage}
-                      alt={product.name}
-                      loader={loader}
-                      fill
-                      className="object-cover"
-                      priority
-                    />
-                  </motion.div>
-                </AnimatePresence>
-                
-                {/* Navigation Pips */}
-                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-3 z-20">
-                    {currentImages.map((_, i) => (
-                        <button 
-                            key={i} 
-                            onClick={() => setMainIndex(i)}
-                            className={`h-1 transition-all duration-300 ${mainIndex === i ? 'w-12 bg-black' : 'w-4 bg-black/20'}`} 
-                        />
-                    ))}
-                </div>
+          {/* LEFT STAGE: THE ATELIER VISUAL CANVAS (Col 1-7) */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-900 shadow-sm transition-colors duration-300">
+              
+              {/* Context Floating Metadata Badges */}
+              <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
+                <span className="backdrop-blur-md bg-white/80 dark:bg-zinc-950/80 text-zinc-900 dark:text-zinc-50 text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border border-zinc-200/50 dark:border-zinc-800/50 flex items-center gap-1.5 shadow-sm">
+                  <SparklesIcon className="h-3 w-3 text-amber-500 animate-pulse" />
+                  Atelier Original
+                </span>
               </div>
 
-              {/* Secondary Details Grid (Magazine Style) */}
-              {currentImages.slice(1, 3).map((img, idx) => (
-                <div key={idx} className="relative aspect-[3/4] overflow-hidden rounded-sm hidden md:block">
-                    <Image src={img.url} alt="Detail" loader={loader} fill className="object-cover hover:scale-105 transition-transform duration-1000" />
-                </div>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={mainIndex}
+                  initial={{ opacity: 0, scale: 1.02 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                  className="w-full h-full relative"
+                >
+                  <Image
+                    src={currentImage}
+                    alt={product.name}
+                    loader={loader}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 60vw"
+                    className="object-cover object-top selection:bg-transparent"
+                    priority
+                  />
+                </motion.div>
+              </AnimatePresence>
+              
+              {/* Modern Minimal Digital Counter Pips */}
+              <div className="absolute bottom-6 right-6 backdrop-blur-md bg-zinc-950/70 text-white text-[10px] font-mono tracking-widest px-3 py-1.5 rounded-md border border-white/10 select-none z-20">
+                {(mainIndex + 1).toString().padStart(2, '0')} / {currentImages.length.toString().padStart(2, '0')}
+              </div>
+            </div>
+
+            {/* Interactive Dynamic Filmstrip Rail */}
+            <div className="grid grid-cols-5 gap-3.5">
+              {currentImages.map((img, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setMainIndex(idx)}
+                  className={`relative aspect-[3/4] overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-900 border transition-all duration-300 ${
+                    mainIndex === idx 
+                      ? 'ring-2 ring-zinc-950 dark:ring-white border-transparent scale-[1.02] shadow-sm' 
+                      : 'opacity-60 dark:opacity-40 hover:opacity-100 border-zinc-200 dark:border-zinc-800'
+                  }`}
+                >
+                  <Image src={img.url} alt="Lookbook context frame" loader={loader} fill className="object-cover object-top" />
+                </button>
               ))}
             </div>
           </div>
 
-          {/* RIGHT: THE ATELIER (Col 9-12) */}
-          <div className="lg:col-span-4 lg:sticky lg:top-10 h-fit space-y-8 py-4">
-            <div className="space-y-2">
+          {/* RIGHT STAGE: METRIC ENGINE & CURATION TOOLS (Col 8-12) */}
+          <div className="lg:col-span-5 lg:sticky lg:top-8 h-fit space-y-6 lg:pl-4">
+            
+            {/* Core Identification Matrix */}
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">New Collection</span>
-                <div className="flex items-center gap-1">
-                  <StarIcon className="h-3 w-3 text-black" />
-                  <span className="text-[10px] font-black underline italic">4.8 RATINGS</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-400 dark:text-zinc-500">
+                  // {product.productCategory?.name || 'COLLECTION EXTRAORDINAIRE'}
+                </span>
+                <div className="flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2.5 py-1 rounded-md transition-colors duration-300">
+                  <StarIcon className="h-3 w-3 text-zinc-950 dark:text-amber-400" />
+                  <span className="text-[10px] font-black tracking-wider text-zinc-800 dark:text-zinc-300">4.8</span>
                 </div>
               </div>
-              <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none italic">
+              
+              <h1 className="text-3xl sm:text-4xl xl:text-5xl font-black uppercase tracking-tight leading-[0.95] text-zinc-950 dark:text-zinc-50">
                 {product.name}
               </h1>
-              <p className="text-2xl font-medium tracking-tight mt-4">
-                KES {(product.finalPrice ?? 0).toLocaleString()}
-              </p>
-            </div>
-
-            <div className="h-px bg-gray-100 w-full" />
-
-            {/* Size Picker */}
-            <div className="space-y-4">
-              <div className="flex justify-between items-end">
-                <label className="text-xs font-bold uppercase tracking-widest">Select Size</label>
-                <button className="text-[10px] underline text-gray-400 hover:text-black">Size Guide</button>
-              </div>
-              <div className="grid grid-cols-4 gap-2">
-                {['S', 'M', 'L', 'XL'].map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`h-14 flex items-center justify-center text-sm font-bold border transition-all ${
-                      selectedSize === size ? 'bg-black text-white border-black' : 'bg-white text-black border-gray-200 hover:border-black'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
+              
+              <div className="flex items-baseline gap-4 pt-1">
+                <span className="text-2xl sm:text-3xl font-bold tracking-tighter text-zinc-950 dark:text-zinc-50">
+                  KES {(product.finalPrice ?? product.sellingPrice ?? 0).toLocaleString()}
+                </span>
+                {product.sellingPrice > (product.finalPrice || 0) && (
+                  <span className="text-sm line-through text-zinc-400 dark:text-zinc-500 font-bold">
+                    KES {product.sellingPrice.toLocaleString()}
+                  </span>
+                )}
               </div>
             </div>
 
-            {/* CTA Section */}
-            <div className="flex flex-col gap-3 pt-4">
+            <div className="h-px bg-zinc-100 dark:bg-zinc-900 w-full transition-colors duration-300" />
+
+            {/* Premium Size Atelier Matrix */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <label className="text-[11px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">Size Mapping</label>
+                <button className="text-[10px] font-bold underline tracking-wider text-zinc-400 hover:text-zinc-950 dark:hover:text-white transition-colors">Measurements Grid</button>
+              </div>
+              
+              <div className="grid grid-cols-4 gap-2.5">
+                {['S', 'M', 'L', 'XL'].map((size) => {
+                  const active = selectedSize === size;
+                  return (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`h-14 flex flex-col items-center justify-center rounded-xl border font-bold text-sm transition-all relative overflow-hidden ${
+                        active 
+                          ? 'bg-zinc-950 text-white border-zinc-950 dark:bg-zinc-50 dark:text-zinc-950 dark:border-white shadow-md' 
+                          : 'bg-white dark:bg-zinc-950/40 text-zinc-900 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600'
+                      }`}
+                    >
+                      <span>{size}</span>
+                      {active && (
+                        <div 
+                          className="absolute bottom-0 left-0 right-0 h-[3px]" 
+                          style={{ backgroundColor: highlightColor }}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Desktop Action Workspace */}
+            <div className="hidden sm:flex flex-col gap-3 pt-2">
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => addToCart(product)}
-                className="w-full h-16 bg-black text-white flex items-center justify-center gap-3 font-black uppercase text-sm tracking-widest group"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={() => addToCart({ ...product, selectedSize })}
+                className="w-full h-16 bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950 rounded-2xl flex items-center justify-center gap-3 font-black uppercase text-xs tracking-[0.2em] group shadow-xl transition-colors hover:bg-zinc-800 dark:hover:opacity-90"
               >
-                <ShoppingBagIcon className="h-5 w-5 group-hover:rotate-12 transition-transform" />
-                Add to Bag
-                <ArrowRightIcon className="h-4 w-4" />
+                <ShoppingBagIcon className="h-4 w-4 transition-transform group-hover:rotate-6" />
+                Add to Luxury Bag
+                <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
               </motion.button>
               
-              <button className="w-full h-16 border border-gray-200 flex items-center justify-center gap-3 font-bold uppercase text-[10px] tracking-widest hover:bg-gray-50 transition-colors">
-                <HeartIcon className="h-5 w-5" />
-                Move to Wishlist
+              <button 
+                onClick={() => setIsWishlisted(!isWishlisted)}
+                className={`w-full h-16 border rounded-2xl flex items-center justify-center gap-3 font-black uppercase text-[10px] tracking-widest transition-all ${
+                  isWishlisted 
+                    ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900 text-red-600 dark:text-red-400' 
+                    : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 text-zinc-800 dark:text-zinc-300'
+                }`}
+              >
+                <HeartIcon className={`h-4 w-4 transition-transform active:scale-125 ${isWishlisted ? 'fill-current' : ''}`} />
+                {isWishlisted ? 'Saved in Wishlist' : 'Add to Wishlist'}
               </button>
             </div>
 
-            {/* Product Story */}
-            <div className="pt-8 space-y-4">
-               <h4 className="text-xs font-black uppercase tracking-widest">The Story</h4>
-               <p className="text-gray-500 text-sm leading-relaxed font-light">
+            {/* Deep Specification Narratives */}
+            <div className="pt-4 border-t border-zinc-100 dark:border-zinc-900 transition-colors duration-300 space-y-3">
+               <h4 className="text-[11px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">// Tailoring Narrative</h4>
+               <p className="text-zinc-600 dark:text-zinc-400 text-xs sm:text-sm leading-relaxed font-normal">
                  {product.description || "Designed for the bold. This piece combines urban utility with high-street elegance, featuring our signature breathable fabric and tailored silhouette."}
                </p>
             </div>
 
-            {/* Trust Badge / Features */}
-            <div className="grid grid-cols-2 gap-4 pt-6">
-                <div className="p-4 bg-gray-50 rounded-sm space-y-1">
-                    <p className="text-[10px] font-bold uppercase">Delivery</p>
-                    <p className="text-[10px] text-gray-400">24-48 Hours</p>
+            {/* Dynamic Value Metrics */}
+            <div className="grid grid-cols-3 gap-3 pt-2">
+                <div className="p-3.5 bg-zinc-50/50 dark:bg-zinc-900/40 border border-zinc-100 dark:border-zinc-900 rounded-xl space-y-1 transition-colors duration-300">
+                    <GlobeAltIcon className="h-4 w-4 text-zinc-400" />
+                    <p className="text-[9px] font-black uppercase text-zinc-500 dark:text-zinc-400">Logistics Wide</p>
+                    <p className="text-[10px] font-bold text-zinc-800 dark:text-zinc-200">24-48h Dispatch</p>
                 </div>
-                <div className="p-4 bg-gray-50 rounded-sm space-y-1">
-                    <p className="text-[10px] font-bold uppercase">Returns</p>
-                    <p className="text-[10px] text-gray-400">Easy 7-day swap</p>
+                <div className="p-3.5 bg-zinc-50/50 dark:bg-zinc-900/40 border border-zinc-100 dark:border-zinc-900 rounded-xl space-y-1 transition-colors duration-300">
+                    <ArrowPathIcon className="h-4 w-4 text-zinc-400" />
+                    <p className="text-[9px] font-black uppercase text-zinc-500 dark:text-zinc-400">Guarantees</p>
+                    <p className="text-[10px] font-bold text-zinc-800 dark:text-zinc-200">7-Day Return</p>
+                </div>
+                <div className="p-3.5 bg-zinc-50/50 dark:bg-zinc-900/40 border border-zinc-100 dark:border-zinc-900 rounded-xl space-y-1 transition-colors duration-300">
+                    <SparklesIcon className="h-4 w-4 text-zinc-400" />
+                    <p className="text-[9px] font-black uppercase text-zinc-500 dark:text-zinc-400">Atelier Standard</p>
+                    <p className="text-[10px] font-bold text-zinc-800 dark:text-zinc-200">100% Authentic</p>
                 </div>
             </div>
           </div>
         </div>
 
-        {/* --- TRENDING NOW: HORIZONTAL SCROLL --- */}
+        {/* --- DYNAMIC STYLED SCROLL SLIDER CONTAINER (RELATED ITEMS) --- */}
         {related && related.length > 0 && (
-          <section className="mt-32">
-            <div className="flex items-end justify-between mb-10">
+          <section className="mt-20 sm:mt-28 border-t border-zinc-100 dark:border-zinc-900 pt-12 transition-colors duration-300">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
                <div>
-                  <h2 className="text-5xl font-black uppercase tracking-tighter italic">Style With</h2>
-                  <p className="text-gray-400 text-sm mt-2 uppercase tracking-widest">Curated by our stylists</p>
+                  <h2 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-zinc-950 dark:text-zinc-50">Style Coordination</h2>
+                  <p className="text-zinc-400 dark:text-zinc-500 text-xs uppercase tracking-widest mt-1">Curated Outfit Alternatives From Our Stylists</p>
                </div>
-               <div className="flex gap-2">
-                  <button className="p-4 border border-gray-200 rounded-full hover:bg-black hover:text-white transition-all">
-                    <ChevronLeftIcon className="h-5 w-5" />
+               <div className="flex gap-2.5 self-end">
+                  <button onClick={() => handleScrollRelated('left')} className="p-3 border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-full hover:bg-zinc-950 hover:text-white dark:hover:bg-white dark:hover:text-black transition-all shadow-sm">
+                    <ChevronLeftIcon className="h-4 w-4" />
                   </button>
-                  <button className="p-4 border border-gray-200 rounded-full hover:bg-black hover:text-white transition-all">
-                    <ChevronRightIcon className="h-5 w-5" />
+                  <button onClick={() => handleScrollRelated('right')} className="p-3 border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-full hover:bg-zinc-950 hover:text-white dark:hover:bg-white dark:hover:text-black transition-all shadow-sm">
+                    <ChevronRightIcon className="h-4 w-4" />
                   </button>
                </div>
             </div>
             
-            <div className="flex gap-6 overflow-x-auto no-scrollbar pb-10">
-              {related.map(r => (
-                <div key={r.id} className="min-w-[300px] md:min-w-[400px] group cursor-pointer">
-                   <div className="aspect-[3/4] relative overflow-hidden bg-gray-100 rounded-sm">
-                      <Image 
-                        src={r.images[0]?.url || r.images[0]} 
-                        alt={r.name} 
-                        loader={loader}
-                        fill 
-                        className="object-cover group-hover:scale-110 transition-transform duration-1000" 
-                      />
-                      <div className="absolute bottom-4 right-4 translate-y-10 group-hover:translate-y-0 transition-transform duration-500">
-                         <button className="h-12 w-12 bg-white flex items-center justify-center rounded-full shadow-xl">
-                            <PlusIcon className="h-5 w-5" />
-                         </button>
-                      </div>
-                   </div>
-                   <div className="mt-4 flex justify-between items-start">
-                      <h3 className="font-bold uppercase text-sm tracking-tight">{r.name}</h3>
-                      <p className="font-medium text-sm">KES {r.finalPrice?.toLocaleString()}</p>
-                   </div>
+            <div 
+              ref={scrollContainerRef}
+              className="flex gap-5 overflow-x-auto no-scrollbar pb-6 snap-x snap-mandatory scroll-smooth"
+            >
+              {related.map((r) => (
+                <div key={r.id} className="w-[45%] sm:w-[30%] lg:w-[22%] shrink-0 snap-start">
+                  <ProductCard product={r} />
                 </div>
               ))}
             </div>
@@ -228,14 +282,37 @@ export function ProductDetail({
         )}
       </div>
 
-      
-      <WhatsAppInquiry 
-        productName={product.name}
-        productPrice={product.finalPrice || product.sellingPrice || 0}
-        productUrl={window.location.href}
-        phoneNumber = "254712345678"
-      />
+      {/* --- LIGHT/DARK INTUITIVE MOBILE ACTION BOTTOM OVERLAY TRAY --- */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-zinc-950/80 backdrop-blur-xl border-t border-zinc-200/60 dark:border-zinc-900 z-50 shadow-[0_-8px_30px_rgba(0,0,0,0.05)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.4)] flex gap-3 items-center transition-colors duration-300">
+        <button 
+          onClick={() => setIsWishlisted(!isWishlisted)}
+          className={`p-4 border rounded-xl flex items-center justify-center transition-colors ${
+            isWishlisted 
+              ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-950 text-red-600' 
+              : 'border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-900'
+          }`}
+        >
+          <HeartIcon className={`h-5 w-5 ${isWishlisted ? 'fill-current text-red-600' : ''}`} />
+        </button>
+        
+        <button
+          onClick={() => addToCart({ ...product, selectedSize })}
+          className="flex-1 h-14 bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950 rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-all"
+        >
+          <ShoppingBagIcon className="h-4 w-4" />
+          Bag Size {selectedSize}
+        </button>
+      </div>
 
+      {/* Hydration-safe dynamically updated WhatsApp Inquiry Engine */}
+      {currentUrl && (
+        <WhatsAppInquiry 
+          productName={product.name}
+          productPrice={product.finalPrice || product.sellingPrice || 0}
+          productUrl={currentUrl}
+          phoneNumber="254712345678"
+        />
+      )}
     </div>
   );
 }

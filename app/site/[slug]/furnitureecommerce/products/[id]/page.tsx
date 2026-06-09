@@ -79,14 +79,16 @@ export default async function ProductPage({ params }: PageProps) {
 
   // Pass only necessary props to the client component (smaller bundle)
   return (
-    <div>
+    <div className=" bg-white dark:bg-gray-900">
+      <div className="py-16">
+      </div>
       {/* ProductDetail is a client component, defined below */}
       <ProductDetail
         product={productForClient}
         related={relatedForClient}
       />
 
-      <NewsletterSection />
+      <NewsletterSection className="bg-gray-100 dark:bg-gray-800 py-8" />
     </div>
   );
 }

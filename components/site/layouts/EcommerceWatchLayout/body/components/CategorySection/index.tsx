@@ -30,7 +30,7 @@ const itemVariants: Variants = {
 function TechSpecTile({ sub }: { sub: ISubcategory }) {
   return (
     <motion.div variants={itemVariants}>
-      <Link href={`/shop/catalog?subcategory=${sub.slug || sub.name}`}>
+      <Link href={`/watchecommerce/products?subcategory=${sub.slug || sub.name || sub.id}`} className="block">
         <div className="group flex items-center justify-between p-4 bg-white border border-slate-200 hover:border-slate-900 transition-all duration-300">
           <div className="flex flex-col">
             <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold mb-0.5">Series</span>

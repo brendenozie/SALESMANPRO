@@ -4,7 +4,7 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import prisma from '@/server/db/prismadb'; // server-only
-import { ProductDetail } from './ProductDetail'; // client component
+import ProductDetail  from './ProductDetail'; // client component
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
 import { MarketListingForm } from '@/types/typings';
 
@@ -78,14 +78,18 @@ export default async function ProductPage({ params }: PageProps) {
 
   // Pass only necessary props to the client component (smaller bundle)
   return (
-    <div>
+    <div className="bg-zinc-50 dark:bg-zinc-900">
+      <div className="bg-zinc-50 dark:bg-zinc-900 py-8"></div>
       {/* ProductDetail is a client component, defined below */}
       <ProductDetail
         product={productForClient}
         related={relatedForClient}
       />
 
-      <NewsletterSection />
+
+      <div className="bg-zinc-50 dark:bg-zinc-900 py-8">
+        <NewsletterSection className="bg-zinc-50 dark:bg-zinc-900 py-8"/>
+      </div>
     </div>
   );
 }

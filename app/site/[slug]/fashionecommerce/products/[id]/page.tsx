@@ -84,7 +84,17 @@ export default async function ProductPage({ params }: PageProps) {
         related={relatedForClient}
       />
 
-      <NewsletterSection />
+    <div className="bg-zinc-50 dark:bg-zinc-900 py-8">
+      <NewsletterSection className="bg-zinc-50 dark:bg-zinc-900 py-8"/>
+    </div>
     </div>
   );
+}
+
+// Utility to create URL-friendly slugs from category names
+function safeSlug(str: string) {
+  return str
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }

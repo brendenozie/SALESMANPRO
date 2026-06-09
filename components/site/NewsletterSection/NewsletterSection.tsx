@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-const NewsletterSection = () => {
+const NewsletterSection = ({ className }: { className?: string }) => {
   const [email, setEmail] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -12,7 +12,7 @@ const NewsletterSection = () => {
   };
 
   return (
-    <section className="relative my-12 mx-4 overflow-hidden rounded-3xl bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-transparent px-6 py-16 sm:px-12 md:py-20 lg:px-20 transition-colors duration-300">
+    <section className={`relative my-12 mx-4 overflow-hidden rounded-3xl bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-transparent px-6 py-16 sm:px-12 md:py-20 lg:px-20 transition-colors duration-300 ${className || ''}`}>
       {/* Decorative background glow ambient effects */}
       <div className="absolute -left-20 -top-20 h-72 w-72 rounded-full bg-orange-600/15 dark:bg-orange-600/20 opacity-70 dark:opacity-100 blur-3xl" />
       <div className="absolute -right-20 -bottom-20 h-72 w-72 rounded-full bg-amber-500/15 dark:bg-amber-500/20 opacity-70 dark:opacity-100 blur-3xl" />

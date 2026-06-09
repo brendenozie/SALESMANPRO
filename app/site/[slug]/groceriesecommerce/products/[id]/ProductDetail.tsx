@@ -16,6 +16,8 @@ import {
 } from '@heroicons/react/24/solid';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { MarketListingForm } from '@/types/typings';
+
+import ProductCard from '@/components/site/layouts/EcommerceGroceriesLayout/body/components/ProductCard';
 import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -184,14 +186,7 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {related?.slice(0, 5).map((item) => (
               <motion.div key={item.id} whileHover={{ y: -8 }} className="group">
-                <div className="relative aspect-[4/5] bg-emerald-50/50 dark:bg-zinc-900 rounded-[2rem] overflow-hidden mb-4 p-4 transition-all group-hover:shadow-2xl group-hover:shadow-emerald-500/10">
-                   <Image src={item.images[0]?.url} alt={item.name} loader={loader} fill className="object-contain p-4 group-hover:scale-105 transition-transform duration-500" />
-                   <button onClick={() => addToCart(item)} className="absolute bottom-4 right-4 p-3 bg-white text-emerald-600 rounded-xl shadow-lg translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
-                     <PlusIcon className="w-5 h-5" />
-                   </button>
-                </div>
-                <h4 className="font-bold text-sm px-2">{item.name}</h4>
-                <p className="text-emerald-600 font-black text-xs px-2 mt-1">KSh {item.finalPrice}</p>
+                <ProductCard product={item} />
               </motion.div>
             ))}
           </div>

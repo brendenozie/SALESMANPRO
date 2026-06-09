@@ -39,7 +39,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     isDiscounted,
   } = product;
 
-  const img = images?.[0] || 'https://via.placeholder.com/400x600';
+  const img = images?.[0] || images?.[0]?.url || 'https://via.placeholder.com/400x600';
   const { addToCart, cart } = useStateContext();
   const { storeFormData } = useStoreContext();
   

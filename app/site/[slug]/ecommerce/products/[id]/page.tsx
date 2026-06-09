@@ -69,29 +69,38 @@ export default async function ProductPage({ params }: PageProps) {
     expirationDate: product.expirationDate instanceof Date ? product.expirationDate.toISOString() : product.expirationDate,
     availabilityStart: product.availabilityStart instanceof Date ? product.availabilityStart.toISOString() : product.availabilityStart,
     availabilityEnd: product.availabilityEnd instanceof Date ? product.availabilityEnd.toISOString() : product.availabilityEnd,
-  };
+    listingMarketStatus: product.listingMarketStatus as any,
+  } as MarketListingForm;
 
   const relatedForClient : MarketListingForm[] = related.map(r => ({
     ...r,
     images: normalizeImages(r.images),
     productCategoryId: r.productCategoryId || '',
+    finalPrice: typeof r.finalPrice === 'number' ? r.finalPrice : Number(r.sellingPrice) || 0,
+    sellingPrice: typeof r.sellingPrice === 'number' ? r.sellingPrice : 0,
     startDealDate: r.startDealDate instanceof Date ? r.startDealDate.toISOString() : r.startDealDate,
     endDealDate: r.endDealDate instanceof Date ? r.endDealDate.toISOString() : r.endDealDate,
     expirationDate: r.expirationDate instanceof Date ? r.expirationDate.toISOString() : r.expirationDate,
     availabilityStart: r.availabilityStart instanceof Date ? r.availabilityStart.toISOString() : r.availabilityStart,
     availabilityEnd: r.availabilityEnd instanceof Date ? r.availabilityEnd.toISOString() : r.availabilityEnd,
-  }));
+    listingMarketStatus: r.listingMarketStatus as any,
+    listingSystemStatus: r.listingSystemStatus as any,
+  })) as MarketListingForm[];
 
   // Pass only necessary props to the client component (smaller bundle)
   return (
-    <div>
+    <div  className=" bg-[#fafaf9] dark:bg-black transition-colors duration-300">
+      
+      <div className="py-16 bg-[#fafaf9] dark:bg-black transition-colors duration-300">
+      </div>
       {/* ProductDetail is a client component, defined below */}
       <ProductDetail
         product={productForClient}
         related={relatedForClient}
       />
-
-      <NewsletterSection />
+      <div className="py-16 bg-[#fafaf9] dark:bg-black transition-colors duration-300">
+        <NewsletterSection className="bg-[#fafaf9] dark:bg-black " />
+      </div>
     </div>
   );
 }
