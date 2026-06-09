@@ -26,6 +26,7 @@ const defaultSlides: HeroSlide[] = [
     ctaText: 'Explore Lookbook',
     ctaLink: '/shop',
     id: '1', companyId: '', productImageUrl: null, price: null, endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: null,
+    stats: null
   },
   {
     imageUrl: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop',
@@ -35,6 +36,7 @@ const defaultSlides: HeroSlide[] = [
     ctaText: 'Shop Essentials',
     ctaLink: '/collection',
     id: '2', companyId: '', productImageUrl: null, price: null, endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: null,
+    stats: null
   }
 ];
 

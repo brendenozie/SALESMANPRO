@@ -37,9 +37,15 @@ const GlassOption = ({ active, onClick, children }: any) => (
 export default function ProductsClient({
   initialListings,
   categories,
+  companyId,
+  slug,
+  totalPages
 }: {
   initialListings: Array<MarketListingForm>;
   categories: any[];
+  companyId: string;
+  slug: string;
+  totalPages: number;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -66,7 +72,7 @@ export default function ProductsClient({
       
       {/* 1. STICKY NAVIGATION BAR - Fixed to Top */}
       {/* If your main site header is also sticky, change top-0 to top-[HEIGHT_OF_MAIN_HEADER] */}
-      <nav className="mt-20 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-slate-200 dark:border-gray-800">
+      <nav className=" bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-slate-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 flex-1">
             <div className="relative w-full max-w-md group">

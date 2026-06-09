@@ -44,7 +44,10 @@ export default async function ProductListPage({ params, searchParams }: {
   const safeInitialListings = initialListings as any;
 
   return (
-    <main>
+    <main >
+      <div className="py-16 bg-[#fafaf9] dark:bg-black transition-colors duration-300">
+      </div>
+
       <ProductsClient
         companyId={companyId}
         slug={slug}
