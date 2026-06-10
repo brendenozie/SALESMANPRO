@@ -63,6 +63,12 @@ export default function AdminInventoryClient({
   const [selectedProduct, setSelectedProduct] = useState<ProductForm | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
+  const router = useRouter();
+
+  const refreshInventory = () => {
+    router.refresh();
+  };
+
   // Filtering Logic
   const filteredProducts = useMemo(() => {
     return productsData.filter((p) =>
@@ -154,6 +160,7 @@ export default function AdminInventoryClient({
           showAddToMarketProductModal, setShowAddToMarketProductModal
         }}
         data={{ companyId, categoriesData, agentsData, selectedProduct }}
+        refreshInventory={refreshInventory}
       />
     </div>
   );
@@ -259,7 +266,7 @@ function EmptyState({ onAdd }: any) {
 }
 
 // Just a wrapper to keep the main return clean
-function ModalManager({ states, data }: any) {
+function ModalManager({ states, data, refreshInventory }: any) {
   return (
     <>
       {states.showAddProductModal && (
@@ -269,6 +276,7 @@ function ModalManager({ states, data }: any) {
           companyId={data.companyId}
           categories={data.categoriesData}
           product={null}
+          refreshInventory={refreshInventory}
         />
       )}
       {states.showEditProductModal && data.selectedProduct && (
@@ -278,6 +286,7 @@ function ModalManager({ states, data }: any) {
           categories={data.categoriesData}
           companyId={data.companyId}
           product={data.selectedProduct}
+          refreshInventory={refreshInventory}
         />
       )}
       {states.showRestockProductModal && data.selectedProduct && (
@@ -285,6 +294,8 @@ function ModalManager({ states, data }: any) {
           showRestockProductModal={states.showRestockProductModal}
           setShowRestockProductModal={states.setShowRestockProductModal}
           product={data.selectedProduct}
+          companyId={data.companyId}
+          refreshInventory={refreshInventory}
         />
       )}
       {states.showAssignProductModal && data.selectedProduct && (
@@ -294,6 +305,7 @@ function ModalManager({ states, data }: any) {
           product={data.selectedProduct}
           companyId={data.companyId}
           agents={data.agentsData}
+          refreshInventory={refreshInventory}
         />
       )}
       {states.showReturnProductModal && data.selectedProduct && (
@@ -302,6 +314,7 @@ function ModalManager({ states, data }: any) {
           setShowReturnProductModal={states.setShowReturnProductModal}
           product={data.selectedProduct}
           companyId={data.companyId}
+          refreshInventory={refreshInventory}
         />
       )}
       {states.showAddToMarketProductModal && data.selectedProduct && (
@@ -312,6 +325,7 @@ function ModalManager({ states, data }: any) {
           product={data.selectedProduct}
           companyId={data.companyId}
           locations={[]}
+          refreshInventory={refreshInventory}
         />
       )}
     </>

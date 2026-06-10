@@ -296,7 +296,7 @@ export default function EcomDashboardClient(props: DashboardData) {
             ...COLOR_PALETTE.revenue,
         },
         {
-            href: `/admin/${props.slug}/orders`,
+            href: `/admin/${props.slug}/customerorders`,
             title: 'Completed Orders',
             icon: CheckCircleIcon,
             value: props.completedOrdersToday,
@@ -454,7 +454,7 @@ export default function EcomDashboardClient(props: DashboardData) {
                             </div>
                             <div className="space-y-3">
                                 {props.recentOrders?.length > 0 ? props.recentOrders?.map((order, i) => (
-                                    <motion.a key={order.id} href={`/admin/${props.slug}/orders/${order.id}`} className="block group" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 + 0.8 }}>
+                                    <motion.a key={order.id} href={`/admin/${props.slug}/customerorders`} className="block group" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 + 0.8 }}>
                                         <div className="p-3 rounded-lg hover:bg-gray-700/70 transition-all flex items-center gap-4 border border-gray-700">
                                             <ShoppingCartIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" />
                                             <div className="flex-1 overflow-hidden">

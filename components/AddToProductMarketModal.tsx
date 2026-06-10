@@ -671,7 +671,8 @@ export default function ProductMarketModal({
   companyId,
   categories,
   locations,
-  ebookType = false
+  ebookType = false,
+  refreshInventory
 }: AddToProductMarketModalProps) {
   const { formData, updateField, setFormData } = useMarketListingForm(
     product,
@@ -953,6 +954,8 @@ export default function ProductMarketModal({
       setToast("Listing created!");
       clear();
       setShowRequestProductModal(false);
+      refreshInventory?.();
+      
     } catch (err: any) {
       console.error(err);
       setToast(err?.message || "Error creating listing");
@@ -1362,4 +1365,5 @@ interface AddToProductMarketModalProps {
   categories: IStoreCategory[];
   locations: ILocation[];
   ebookType?: boolean;
+  refreshInventory: () => void;
 }

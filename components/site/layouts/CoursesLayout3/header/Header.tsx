@@ -233,7 +233,7 @@ export default function Header() {
   // ---------- Render ----------
   return (
    <header
-  className="sticky top-0 z-50 font-inter"
+  className="sticky top-0 z-50 font-inter bg-white dark:bg-slate-900 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800"
   style={{ backdropFilter: 'saturate(120%) blur(8px)', ...themeStyles }}
 >
   {/* Top brand strip - Stays consistent as it uses the primary brand color */}

@@ -553,6 +553,7 @@ export default function AddProductModal({
   companyId,
   categories,
   locations = [],
+  refreshInventory
 }: {
   showRequestProductModal: boolean;
   setShowRequestProductModal: (open: boolean) => void;
@@ -561,6 +562,8 @@ export default function AddProductModal({
   categories: IStoreCategory[];
   // LOCATION SELECTION: Optional array of available locations for LocationPicker
   locations?: ILocation[];
+  // Callback to refresh inventory list after product changes 
+   refreshInventory: () => void;
 }) {
   const { formData, setFormData, updateField } = useProductForm(product || null, companyId);
   
@@ -797,6 +800,7 @@ export default function AddProductModal({
         setToast('Product saved successfully.');
         clear();
         setShowRequestProductModal(false);
+        refreshInventory();
 
     } catch (err: any) {
         console.error("Save error:", err);
@@ -804,7 +808,7 @@ export default function AddProductModal({
     } finally {
         setLoading(false);
     }
-  }, [formData, images, books, videos, clear, setShowRequestProductModal]);
+  }, [formData, images, books, videos, clear, setShowRequestProductModal, refreshInventory]);
 
   // Progress calculations for both modes
   const progress = Math.round((step / Math.max(1, lastStepIndex)) * 100);

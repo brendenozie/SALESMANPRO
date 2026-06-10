@@ -17,7 +17,7 @@ import Modal from './Modal'; // Assuming your Modal component is correctly impor
 //   product: Product;
 // }
 
-const AssignProductModal: React.FC<any> = ({ showAssignProductModal, setShowAssignProductModal, product, companyId }) => {
+const AssignProductModal: React.FC<any> = ({ showAssignProductModal, setShowAssignProductModal, product, companyId, refreshInventory }) => {
   const [selectedAgent, setSelectedAgent] = useState<string>("");
   const [agents, setAgents] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -97,6 +97,7 @@ const AssignProductModal: React.FC<any> = ({ showAssignProductModal, setShowAssi
       setAssignQuantity(0);
       setTargetValue(0);
       setCurrentStep(1);
+      refreshInventory();
     } catch (error: any) {
       alert(`Error: ${error.message}`);
     } finally {

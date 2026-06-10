@@ -53,7 +53,7 @@ const OrdersClient: React.FC<ClientProps> = ({ ordersData: initialOrdersData, co
   const refreshOrders = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/customer-orders?companyId=${companyId}`);
+      const res = await fetch(`${apiBaseUrl}/admin/customer-orders?companyId=${companyId}`);
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
       setOrdersData(data);

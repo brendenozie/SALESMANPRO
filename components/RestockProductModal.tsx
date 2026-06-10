@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
 
-const RestockProductModal = ({ showRestockProductModal, setShowRestockProductModal, product } : any) => {
+const RestockProductModal = ({ showRestockProductModal, setShowRestockProductModal, product, refreshInventory } : any) => {
 
    const [restockQuantity, setRestockQuantity] = useState(0);
    const [damagedQuantity, setDamagedQuantity] = useState(0);
@@ -27,6 +27,7 @@ const RestockProductModal = ({ showRestockProductModal, setShowRestockProductMod
 
       alert("Product restocked successfully.");
       setShowRestockProductModal(false);
+      refreshInventory();
     } catch (error : any) {
       alert(`Error: ${error.message}`);
     }

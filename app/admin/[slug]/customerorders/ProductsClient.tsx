@@ -258,9 +258,11 @@ export default function ProductsClient({ initialOrders, initialRiders, paginatio
 
       {/* 4. MANAGEMENT MODAL */}
       {selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden border border-white/20">
-            <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-2xl max-h-[calc(100vh-2rem)] rounded-3xl shadow-2xl overflow-hidden border border-white/20 flex flex-col">
+            
+            {/* Header - Stays fixed at the top */}
+            <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 shrink-0">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Manage Order #{selectedOrder.id.slice(-4)}</h2>
                 <p className="text-sm text-gray-500">Customer: {selectedOrder.name}</p>
@@ -270,7 +272,8 @@ export default function ProductsClient({ initialOrders, initialRiders, paginatio
               </button>
             </div>
 
-            <div className="p-8 space-y-8">
+            {/* Form Body - This section will now scroll independently if content overflows */}
+            <div className="p-8 space-y-8 overflow-y-auto flex-1 custom-scrollbar">
               {/* --- BULK UPDATE SECTION WITH RIDER --- */}
               <div className="p-6 rounded-2xl bg-indigo-50 border border-indigo-100 space-y-4">
                 <div>
@@ -312,58 +315,59 @@ export default function ProductsClient({ initialOrders, initialRiders, paginatio
                 </div>
               </div>
 
-            {/* Individual Item List */}
-            <div className="space-y-4">
-              <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Individual Items</h3>
-              {selectedOrder.items.map((item: any) => (
-                <div key={item.id} className="p-4 rounded-2xl border border-gray-100 bg-gray-50 flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-gray-100">
-                      <ShoppingBagIcon className="w-6 h-6 text-indigo-500" />
+              {/* Individual Item List */}
+              <div className="space-y-4">
+                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Individual Items</h3>
+                {selectedOrder.items.map((item: any) => (
+                  <div key={item.id} className="p-4 rounded-2xl border border-gray-100 bg-gray-50 flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-gray-100">
+                        <ShoppingBagIcon className="w-6 h-6 text-indigo-500" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-800">{item.marketplaceListing.name}</p>
+                        <p className="text-xs text-gray-500">Price: ${item.price}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold text-gray-800">{item.marketplaceListing.name}</p>
-                      <p className="text-xs text-gray-500">Price: ${item.price}</p>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                      {/* Rider Selection */}
+                      <select 
+                        className="text-sm border-gray-200 rounded-xl focus:ring-indigo-500 py-2 pl-3 pr-8"
+                        defaultValue={item.riderId || ""}
+                        onChange={(e) => item.tempRider = e.target.value}
+                      >
+                        <option value="">Assign Rider</option>
+                        {initialRiders.map((r: any) => (
+                          <option key={r.id} value={r.id}>{r.name}</option>
+                        ))}
+                      </select>
+
+                      {/* Status Update Buttons */}
+                      <div className="flex bg-white p-1 rounded-xl border border-gray-200 shadow-sm">
+                        {['PENDING', 'COMPLETED', 'CANCELLED'].map((s) => (
+                          <button
+                            key={s}
+                            disabled={isUpdating}
+                            onClick={() => handleUpdateStatus(selectedOrder.id, item.id, s, item.tempRider)}
+                            className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all ${
+                              selectedOrder.status === s 
+                                ? "bg-indigo-600 text-white shadow-md scale-105" 
+                                : "text-gray-400 hover:text-gray-600"
+                            }`}
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
-
-                  <div className="flex flex-wrap items-center gap-3">
-                    {/* Rider Selection */}
-                    <select 
-                      className="text-sm border-gray-200 rounded-xl focus:ring-indigo-500 py-2 pl-3 pr-8"
-                      defaultValue={item.riderId || ""}
-                      onChange={(e) => item.tempRider = e.target.value}
-                    >
-                      <option value="">Assign Rider</option>
-                      {initialRiders.map((r: any) => (
-                        <option key={r.id} value={r.id}>{r.name}</option>
-                      ))}
-                    </select>
-
-                    {/* Status Update Buttons */}
-                    <div className="flex bg-white p-1 rounded-xl border border-gray-200 shadow-sm">
-                      {['PENDING', 'COMPLETED', 'CANCELLED'].map((s) => (
-                        <button
-                          key={s}
-                          disabled={isUpdating}
-                          onClick={() => handleUpdateStatus(selectedOrder.id, item.id, s, item.tempRider)}
-                          className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all ${
-                            selectedOrder.status === s 
-                            ? "bg-indigo-600 text-white shadow-md scale-105" 
-                            : "text-gray-400 hover:text-gray-600"
-                          }`}
-                        >
-                          {s}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
 
-            <div className="px-8 py-6 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+            {/* Footer - Stays fixed at the bottom */}
+            <div className="px-8 py-6 bg-gray-50 border-t border-gray-100 flex justify-end gap-3 shrink-0">
               <button 
                 onClick={() => setSelectedOrder(null)}
                 className="px-6 py-2.5 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-200 transition-colors"

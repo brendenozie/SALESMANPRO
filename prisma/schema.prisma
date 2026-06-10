@@ -1807,6 +1807,7 @@ model InventoryItem {
 
   @@index([productId])
   @@index([companyId])
+  @@unique([productId, companyId])
 }
 
 model InventoryLog {

@@ -36,6 +36,11 @@ export default function ClientInventoryClient({ pagination, companyId, categorie
     params.set("page", page.toString());
     router.push(`?${params.toString()}`);
   };
+  
+  const refreshInventory = () => {
+    router.refresh();
+  };
+  
 
   const handleEditProductClick = (product: MarketListingForm) => {
     setSelectedProduct(product);
@@ -245,6 +250,7 @@ export default function ClientInventoryClient({ pagination, companyId, categorie
           categories={categoriesData}
           companyId={companyId}
           locations={[]}
+          refreshInventory={refreshInventory}
         />
       )}
     </div>

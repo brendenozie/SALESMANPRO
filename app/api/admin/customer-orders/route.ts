@@ -33,8 +33,14 @@ export const GET = withApiHandler(async (request) => {
     ...(deliveryFilter === 'false' && { delivery: false }),
   };
 
-  
-    const cacheKey = `admin:customer-orders:${companyId || 'global'}:all`;
+  const cacheKey = [
+    "admin",
+    "customer-orders",
+    companyId ?? "global",
+    `delivery:${deliveryFilter ?? "all"}`,
+    `page:${page}`,
+    `limit:${limit}`,
+  ].join(":");
 
   try {
     const cached = await cacheGet(cacheKey);
@@ -118,6 +124,8 @@ export const POST = withApiHandler(async (request) => {
 
   const { companyId, customerId, delivery, items } = parsed.data;
 
+  
+
   // Fetch authoritative prices from DB
   const listingIds = items.map((i) => i.marketplaceListingId);
 
@@ -148,14 +156,107 @@ export const POST = withApiHandler(async (request) => {
   });
 
   const newOrder = await prisma.$transaction(async (tx) => {
+    /*
+     * STEP 1: Fetch listings with products
+     */
+    const listingsWithProducts = await tx.marketplaceListings.findMany({
+      where: {
+        id: {
+          in: listingIds,
+        },
+        companyId,
+      },
+      select: {
+        id: true,
+        productId: true,
+        finalPrice: true,
+        name: true,
+      },
+    });
+
+    if (listingsWithProducts.length !== listingIds.length) {
+      throw new Error("Some listings do not exist");
+    }
+
+    /*
+     * STEP 2: Reserve inventory atomically
+     */
+    for (const item of items) {
+      const listing = listingsWithProducts.find(
+        (l) => l.id === item.marketplaceListingId,
+      );
+
+      if (!listing?.productId) {
+        throw new Error(
+          `Listing ${item.marketplaceListingId} is not linked to a product`,
+        );
+      }
+
+      const updated = await tx.inventoryItem.updateMany({
+        where: {
+          companyId,
+          productId: listing.productId,
+          quantity: {
+            gte: item.quantity,
+          },
+        },
+        data: {
+          quantity: {
+            decrement: item.quantity,
+          },
+        },
+      });
+
+      if (updated.count === 0) {
+        throw new Error(`Insufficient stock for ${listing.name}`);
+      }
+
+      /*
+       * STEP 3: Inventory log
+       */
+      await tx.inventoryLog.create({
+        data: {
+          inventoryItem: {
+            connect: {
+              productId_companyId: {
+                productId: listing.productId,
+                companyId,
+              },
+            },
+          },
+          action: "SALE",
+          quantity: item.quantity,
+          details: `Customer order`,
+        },
+      });
+    }
+
+    /*
+     * STEP 4: Create order
+     */
     return tx.customerOrder.create({
       data: {
         companyId,
         consumerId: customerId,
         delivery,
         totalPrice,
-        items: { create: orderItemsData },
+
+        items: {
+          create: items.map((item) => {
+            const listing = listingsWithProducts.find(
+              (l) => l.id === item.marketplaceListingId,
+            )!;
+
+            return {
+              marketplaceListingId: item.marketplaceListingId,
+              productId: listing.productId,
+              quantity: item.quantity,
+              price: listing.finalPrice ?? 0,
+            };
+          }),
+        },
       },
+
       select: {
         id: true,
         companyId: true,
@@ -163,11 +264,13 @@ export const POST = withApiHandler(async (request) => {
         delivery: true,
         totalPrice: true,
         createdAt: true,
+
         items: {
           select: {
             id: true,
             quantity: true,
             price: true,
+
             marketplaceListing: {
               select: {
                 name: true,
@@ -182,7 +285,7 @@ export const POST = withApiHandler(async (request) => {
   });
 
   try {
-    await cacheDel(`admin:customer-orders:${companyId || 'global'}:all`);
+    await cacheDel(`admin:customer-orders:${companyId || 'global'}:*`);
   } catch (e) {}
 
   return formatResponse(
