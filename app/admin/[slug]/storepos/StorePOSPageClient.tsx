@@ -666,7 +666,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       taxRatePercentage: taxRate, // Added: Store the numeric rate (e.g., 10 for 10%)
       totalTax: totalTax,
       finalTotal: finalTotal,
-      currency: "USD", // Added: Explicit currency code for C# string Currency
+      currency: companyInfo?.currency || 'USD', // Added: Explicit currency code for C# string Currency
 
       // Transaction & Personnel
       agentId: currentAgent?.id || 'N/A',
