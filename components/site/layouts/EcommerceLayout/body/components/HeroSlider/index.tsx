@@ -19,29 +19,54 @@ export interface HeroSliderProps {
 
 const defaultSlides: HeroSlide[] = [
   {
-    imageUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop',
+    id: '1',
+    companyId: '',
+    imageUrl:
+      'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop',
     subline: 'Spring Collection 2026',
     headline: 'REDEFINING\nMODERN ELEGANCE',
-    badgeText: 'Experience the intersection of high-performance materials and avant-garde tailoring.',
+    badgeText:
+      'Experience the intersection of high-performance materials and avant-garde tailoring.',
     ctaText: 'Explore Lookbook',
     ctaLink: '/shop',
-    id: '1', companyId: '', productImageUrl: null, price: null, endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: null,
-    stats: null
+    productImageUrl: null,
+    price: null,
+    endsAt: null,
+    order: 0,
+    iconKey: null,
+    backgroundColor: null,
+    textColor: null,
+    videoLink: null,
+    type: null,
+    stats: null,
   },
   {
-    imageUrl: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop',
+    id: '2',
+    companyId: '',
+    imageUrl:
+      'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop',
     subline: 'Limited Release',
     headline: 'THE ART OF\nMINIMALISM',
-    badgeText: 'Curated essentials designed for those who find beauty in simplicity.',
+    badgeText:
+      'Curated essentials designed for those who find beauty in simplicity.',
     ctaText: 'Shop Essentials',
     ctaLink: '/collection',
-    id: '2', companyId: '', productImageUrl: null, price: null, endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: null,
-    stats: null
-  }
+    productImageUrl: null,
+    price: null,
+    endsAt: null,
+    order: 0,
+    iconKey: null,
+    backgroundColor: null,
+    textColor: null,
+    videoLink: null,
+    type: null,
+    stats: null,
+  },
 ];
 
-export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProps) {
-  const slides = (heroSlides && heroSlides.length > 0 ? heroSlides : defaultSlides);
+export default function HeroSlider({ heroSlides }: HeroSliderProps) {
+  const slides = heroSlides?.length ? heroSlides : defaultSlides;
+
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
   const timeoutRef = useRef<NodeJS.Timeout>();
@@ -63,94 +88,109 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
 
   const handleDragEnd = (_: any, info: PanInfo) => {
     if (info.offset.x < -50) nextSlide();
-    else if (info.offset.x > 50) prevSlide();
+    if (info.offset.x > 50) prevSlide();
   };
 
   return (
-    // Replaced 100vh with 100dvh to perfectly fit mobile screen enclosures without toolbar clipping
-    <section className="relative h-[100dvh] w-full bg-slate-50 dark:bg-gray-950 overflow-hidden select-none">
+    <section className="relative h-[100dvh] w-full overflow-hidden bg-black select-none">
       <AnimatePresence initial={false} custom={direction} mode="popLayout">
         <motion.div
           key={current}
           custom={direction}
-          initial={{ opacity: 0, scale: 1.05 }}
+          initial={{ opacity: 0, scale: 1.02 }}
           animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="absolute inset-0 w-full h-full"
+          exit={{ opacity: 0, scale: 0.98 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute inset-0"
           drag="x"
           dragConstraints={{ left: 0, right: 0 }}
           onDragEnd={handleDragEnd}
         >
-          {/* Background Image Layer */}
-          <div className="absolute inset-0 overflow-hidden">
+          {/* Background */}
+          <div className="absolute inset-0">
             <Image
               src={slides[current].imageUrl || ''}
-              alt="Hero Presentation"
+              alt="Hero background"
               fill
               priority
               loader={loader}
-              className="object-cover object-center pointer-events-none"
+              className="object-cover object-center"
             />
-            {/* Responsive overlays: deeper mask on mobile to enhance text contrast */}
-            <div className="absolute inset-0 bg-black/40 md:bg-black/30 dark:bg-black/60 dark:md:bg-black/50" />
+            <div className="absolute inset-0 bg-black/50 md:bg-black/40" />
             <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
           </div>
 
-          {/* Content Overlay */}
-          <div className="relative h-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 flex flex-col justify-center target-content">
-            <div className="max-w-2xl text-left">
+          {/* Content */}
+          <div className="relative h-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 flex flex-col justify-center pt-[20dvh] md:pt-0">
+            <div className="max-w-[90%] sm:max-w-xl md:max-w-2xl">
               
               {/* Subline */}
               <motion.div
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.6 }}
-                className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6"
+                transition={{ delay: 0.2 }}
+                className="flex items-center gap-3 mb-4"
               >
-                <div className="h-[1px] w-6 md:w-8 bg-white/60" />
-                <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.25em] text-white/90">
+                <div className="h-px w-8 bg-white/60" />
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/90">
                   {slides[current].subline}
                 </span>
               </motion.div>
 
-              {/* Headline - Solved mobile line collapsing */}
-              <motion.h2
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.6 }}
-                className="text-4xl sm:text-6xl md:text-8xl font-black text-white tracking-tighter mb-4 md:mb-6 text-wrap leading-[1.1] md:leading-[0.9]"
-              >
-                {slides[current].headline?.split('\n').map((line, i) => (
-                  // Using inline-block on mobile keeps multi-line text structured but fluid
-                  <span key={i} className="block md:inline-block md:mr-4 last:mr-0">
-                    {line}
-                  </span>
-                ))}
-              </motion.h2>
+              {/* Headline */}
+              <motion.h1
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="
+                    font-black text-white tracking-tight
+                    leading-[1.05] md:leading-[0.95]
+                    text-[clamp(2.2rem,5.2vw,4.25rem)]
+                    md:text-[clamp(3.5rem,5.8vw,6.25rem)]
+                    lg:text-[clamp(4rem,5vw,6.75rem)]
+                    max-w-[13ch] md:max-w-none
+                  "
+                >
+                  {slides[current].headline?.split('\n').map((line, i) => (
+                    <span key={i} className="block md:inline-block md:mr-4">
+                      {line}
+                    </span>
+                  ))}
+                </motion.h1>
 
-              {/* Description Body */}
+              {/* Description */}
               <motion.p
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                className="text-sm sm:text-base md:text-lg text-white/80 font-medium mb-6 md:mb-10 max-w-sm md:max-w-md leading-relaxed"
+                transition={{ delay: 0.4 }}
+                className="mt-4 text-sm sm:text-base md:text-lg text-white/80 max-w-md leading-relaxed"
               >
                 {slides[current].badgeText}
               </motion.p>
 
-              {/* Call To Action */}
+              {/* CTA */}
               <motion.div
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.6 }}
+                transition={{ delay: 0.5 }}
+                className="mt-6"
               >
                 <Link
                   href={slides[current].ctaLink || '/'}
-                  className="group inline-flex items-center gap-3 bg-white text-black px-6 py-3.5 md:px-8 md:py-4 rounded-full font-black uppercase text-[10px] md:text-xs tracking-widest hover:bg-slate-100 transition-all active:scale-95 shadow-xl shadow-black/20"
+                  className="
+                    inline-flex items-center justify-center gap-3
+                    bg-white text-black
+                    w-full max-w-xs
+                    px-7 py-4
+                    sm:w-auto sm:px-6 sm:py-3.5
+                    rounded-full
+                    font-black uppercase text-[11px] tracking-widest
+                    shadow-xl shadow-black/30
+                    active:scale-95 transition
+                  "
                 >
                   {slides[current].ctaText}
-                  <ArrowRightIcon className="w-3.5 h-3.5 md:w-4 md:h-4 transition-transform group-hover:translate-x-1" />
+                  <ArrowRightIcon className="w-4 h-4" />
                 </Link>
               </motion.div>
             </div>
@@ -158,23 +198,17 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
         </motion.div>
       </AnimatePresence>
 
-      {/* Navigation Controls - Shifted layout slightly on tiny devices */}
-      <div className="absolute bottom-6 right-6 md:bottom-12 md:right-12 flex items-center gap-3 z-20">
-        <button
-          onClick={prevSlide}
-          className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white hover:text-black transition-all active:scale-90"
-        >
-          <ChevronLeftIcon className="w-4 h-4 md:w-5 md:h-5" />
+      {/* Desktop Arrows */}
+      <div className="hidden md:flex absolute bottom-12 right-12 gap-3 z-20">
+        <button onClick={prevSlide} className="hero-nav-btn">
+          <ChevronLeftIcon className="w-5 h-5" />
         </button>
-        <button
-          onClick={nextSlide}
-          className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white hover:text-black transition-all active:scale-90"
-        >
-          <ChevronRightIcon className="w-4 h-4 md:w-5 md:h-5" />
+        <button onClick={nextSlide} className="hero-nav-btn">
+          <ChevronRightIcon className="w-5 h-5" />
         </button>
       </div>
 
-      {/* Slide Indicators - Hidden on extra-small mobile devices to preserve minimal clarity */}
+      {/* Indicators */}
       <div className="hidden sm:flex absolute bottom-12 left-6 md:left-12 gap-3 z-20">
         {slides.map((_, i) => (
           <button
@@ -183,12 +217,40 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
               setDirection(i > current ? 1 : -1);
               setCurrent(i);
             }}
-            className="group relative h-10 w-1 flex flex-col justify-end"
+            className="h-10 w-1 flex items-end"
           >
-            <div className={`w-full transition-all duration-500 rounded-full ${i === current ? 'h-full bg-white' : 'h-2 bg-white/30 group-hover:bg-white/50'}`} />
+            <div
+              className={`w-full rounded-full transition-all ${
+                i === current ? 'h-full bg-white' : 'h-2 bg-white/40'
+              }`}
+            />
           </button>
         ))}
       </div>
+
+      {/* Mobile scroll cue */}
+      <div className="md:hidden absolute bottom-4 left-1/2 -translate-x-1/2">
+        <div className="h-8 w-px bg-white/40 animate-pulse" />
+      </div>
+
+      <style jsx>{`
+        .hero-nav-btn {
+          width: 3rem;
+          height: 3rem;
+          border-radius: 9999px;
+          border: 1px solid rgba(255,255,255,0.25);
+          backdrop-filter: blur(6px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          transition: all 0.25s;
+        }
+        .hero-nav-btn:hover {
+          background: white;
+          color: black;
+        }
+      `}</style>
     </section>
   );
 }

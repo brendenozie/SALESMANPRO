@@ -40,7 +40,7 @@ export default function RestaurentSite({ pageData, companyId }: { pageData: Stor
 
         <SignatureDishes marketplaceListings={pageData.marketplaceListings} StoreCategory={pageData.StoreCategory} />
 
-        <WhyDineWithUs />
+        <WhyDineWithUs storeFormData={pageData} />
 
         {testimonialsData?.data && <Testimonials />}
         

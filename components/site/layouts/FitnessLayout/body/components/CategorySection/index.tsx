@@ -88,7 +88,7 @@ function SubcategoryPill({ sub, index }: { sub: ISubcategory; index: number }) {
 
 function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
   const [imgError, setImgError] = useState(false);
-  const catSlug = safeSlug(cat.categoryId || cat.displayName || cat.id);
+  const catSlug = safeSlug(cat.categoryId || cat.category?.id || cat.id || cat.displayName || `cat-${index}`);
   const imageUrl = imgError ? FALLBACK_IMAGE_URL : (cat.category?.image || FALLBACK_IMAGE_URL);
   const icon = resolveFitnessIcon(index);
 

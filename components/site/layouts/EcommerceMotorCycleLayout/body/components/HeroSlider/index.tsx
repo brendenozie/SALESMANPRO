@@ -1,156 +1,264 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeftIcon, ChevronRightIcon, PlayIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import Link from 'next/link';
 import { HeroSlide } from '@/types/typings';
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
-
 export interface HeroSliderProps {
   heroSlides: HeroSlide[] | null;
-  themeSettings: { primaryColor?: string; secondaryColor?: string; };
+  themeSettings?: {
+    primaryColor?: string;
+    secondaryColor?: string;
+  };
 }
 
+const imageLoader = ({ src }: { src: string }) => src;
+const autoAdvanceDelay = 8000;
+
+const contentVariants = {
+  enter: (direction: number) => ({
+    opacity: 0,
+    x: direction > 0 ? 40 : -40,
+  }),
+  center: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      x: { type: 'spring', stiffness: 90, damping: 16 },
+      opacity: { duration: 0.45, ease: 'easeOut' },
+    }
+  },
+  exit: (direction: number) => ({
+    opacity: 0,
+    x: direction < 0 ? 40 : -40,
+    transition: { duration: 0.35, ease: 'easeIn' }
+  })
+};
+
+const productVariants = {
+  enter: (direction: number) => ({
+    opacity: 0,
+    scale: 0.92,
+    rotate: direction > 0 ? 4 : -4,
+    y: 15
+  }),
+  center: {
+    opacity: 1,
+    scale: 1,
+    rotate: 0,
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 75,
+      damping: 15,
+      mass: 1.1
+    }
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.96,
+    y: -10,
+    transition: { duration: 0.4, ease: 'easeIn' }
+  }
+};
+
+const watermarkVariants = {
+  enter: { opacity: 0, y: 30 },
+  center: { opacity: 0.03, y: 0, transition: { duration: 0.8, ease: 'easeOut' } },
+  exit: { opacity: 0, y: -30, transition: { duration: 0.4 } }
+};
+
 export default function MotoHero({ heroSlides, themeSettings }: HeroSliderProps) {
-  const slides = heroSlides?.length ? heroSlides : [
+  const primaryColor = themeSettings?.primaryColor || '#E62E2E';
+  const [current, setCurrent] = useState(0);
+  const [direction, setDirection] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const fallbackSlides: HeroSlide[] = useMemo(() => [
     {
       id: 'moto-1',
       badgeText: 'Next-Gen Performance',
       headline: 'APEX PREDATOR V.4',
-      subline: '1200cc of pure adrenaline. Engineered for the fearless, built for the track.',
+      subline: '1200cc of pure adrenaline. Engineered for the fearless, built directly for dominant track performance.',
       ctaText: 'Pre-Order Now',
       ctaLink: '/shop',
       imageUrl: 'https://images.unsplash.com/photo-1558981403-c5f91cbba527?auto=format&fit=crop&w=1600&q=80',
       productImageUrl: 'https://images.unsplash.com/photo-1558981403-c5f91cbba527?auto=format&fit=crop&w=800&q=80',
       price: '$18,500',
+      companyId: '', endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: null, priceBefore: null
+    },
+    {
+      id: 'moto-2',
+      badgeText: 'Hyper Tuning Edition',
+      headline: 'MONARCH STEALTH 12',
+      subline: 'Lightweight titanium framework paired with immediate electric engine response mechanics.',
+      ctaText: 'Configure Build',
+      ctaLink: '/shop?filter=stealth',
+      imageUrl: 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=1600&q=80',
+      productImageUrl: 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=800&q=80',
+      price: '$22,900',
+      companyId: '', endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: null, priceBefore: null
     }
-  ];
+  ], []);
 
-  const primary = themeSettings?.primaryColor || '#E62E2E';
-  const [current, setCurrent] = useState(0);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const slides = useMemo(() => {
+    return heroSlides && heroSlides.length > 0 ? heroSlides : fallbackSlides;
+  }, [heroSlides, fallbackSlides]);
 
-  const paginate = useCallback((newDirection: number) => {
-    setCurrent((prev) => (prev + newDirection + slides.length) % slides.length);
+  const handleNext = useCallback(() => {
+    setDirection(1);
+    setCurrent((prev) => (prev + 1) % slides.length);
   }, [slides.length]);
 
-  useEffect(() => {
-    timeoutRef.current = setTimeout(() => paginate(1), 8000);
-    return () => clearTimeout(timeoutRef.current);
-  }, [current, paginate]);
+  const handlePrev = useCallback(() => {
+    setDirection(-1);
+    setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
+  }, [slides.length]);
 
-  const slide = slides[current];
+  const handleGoTo = (idx: number) => {
+    if (idx === current) return;
+    setDirection(idx > current ? 1 : -1);
+    setCurrent(idx);
+  };
+
+  useEffect(() => {
+    if (isHovered || slides.length <= 1) return;
+    timerRef.current = setInterval(handleNext, autoAdvanceDelay);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [handleNext, isHovered, slides.length]);
+
+  const activeSlide = slides[current];
+  const headlineWords = activeSlide?.headline?.split(' ') || [];
 
   return (
-    <section className="relative w-full h-screen min-h-[800px] overflow-hidden bg-[#F2F2F2] font-sans">
-      
-      {/* 1. ASYMMETRIC BG SPLIT */}
-      <div className="absolute inset-0 z-0 flex">
-        <div className="w-full lg:w-2/3 h-full bg-white" />
-        <div className="hidden lg:block w-1/3 h-full bg-[#EBEBEB]" />
+    <section 
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="relative w-full min-h-[100svh] lg:h-screen flex items-center overflow-hidden bg-[#F6F6F6] select-none font-sans"
+    >
+      {/* 1. ASYMMETRIC BG SPLIT RUNNER */}
+      <div className="absolute inset-0 z-0 flex pointer-events-none">
+        <div className="w-full lg:w-7/12 h-full bg-white" />
+        <div className="hidden lg:block w-5/12 h-full bg-[#EEEEEE]" />
       </div>
 
-      {/* 2. OVERSIZED WATERMARK (Light Mode) */}
-      <div className="absolute right-20 bottom-0 z-0 opacity-[0.03] select-none hidden xl:block">
-        <h2 className="text-[25rem] font-black leading-none text-black uppercase tracking-tighter">
-          {slide.headline?.split(' ')[0]}
-        </h2>
+      {/* 2. OVERSIZED WATERMARK ENGINE */}
+      <div className="absolute right-12 bottom-4 z-0 select-none hidden xl:block pointer-events-none">
+        <AnimatePresence initial={false} custom={direction} mode="wait">
+          <motion.h2 
+            key={`watermark-${activeSlide.id}`}
+            variants={watermarkVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            className="text-[22rem] font-black leading-none text-stone-900 uppercase tracking-tighter"
+          >
+            {headlineWords[0]}
+          </motion.h2>
+        </AnimatePresence>
       </div>
 
-      <div className="container mx-auto px-6 h-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+      <div className="container mx-auto px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20 h-full grid grid-cols-1 lg:grid-cols-12 gap-y-12 lg:gap-8 items-center relative z-10 pt-24 pb-28 lg:py-0">
         
-        {/* 3. CONTENT BLOCK */}
-        <div className="lg:col-span-5 pt-12">
-          <AnimatePresence mode="wait">
+        {/* 3. CORE EDITORIAL COMPOSITION COLUMN */}
+        <div className="lg:col-span-5 flex flex-col justify-center text-left">
+          <AnimatePresence mode="wait" custom={direction}>
             <motion.div
-              key={slide.id}
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.6, ease: "circOut" }}
+              key={activeSlide.id}
+              custom={direction}
+              variants={contentVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              className="space-y-6 md:space-y-8 max-w-xl mx-auto lg:mx-0"
             >
-              <div className="flex items-center gap-3 mb-6">
-                <span className="h-1 w-10" style={{ backgroundColor: primary }} />
-                <span className="text-[11px] font-black uppercase tracking-[0.5em] text-gray-400">{slide.badgeText || 'Next-Gen Performance'}</span>
+              <div className="flex items-center gap-3.5">
+                <span className="h-[3px] w-8 rounded-full" style={{ backgroundColor: primaryColor }} />
+                <span className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-400">
+                  {activeSlide.badgeText || 'Next-Gen Performance'}
+                </span>
               </div>
               
-              <h1 className="text-6xl md:text-8xl font-black text-black leading-[0.9] uppercase tracking-tighter mb-8">
-                {slide.headline?.split(' ').map((word, i) => (
-                  <span key={i} className={`block ${i === 1 ? 'italic' : ''}`} style={i === 1 ? { color: primary } : {}}>
+              <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-stone-900 leading-[0.9] uppercase tracking-tighter flex flex-col">
+                {headlineWords.map((word, i) => (
+                  <span 
+                    key={i} 
+                    className={i === 1 ? "italic font-light tracking-tight" : "block"} 
+                    style={i === 1 ? { color: primaryColor } : {}}
+                  >
                     {word}
                   </span>
                 ))}
               </h1>
               
-              <p className="text-gray-500 text-lg max-w-sm mb-12 leading-relaxed font-medium">
-                {slide.subline}
+              <p className="text-stone-500 text-sm sm:text-base md:text-lg max-w-sm leading-relaxed font-normal">
+                {activeSlide.subline}
               </p>
 
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-5 pt-2">
                 <Link
-                  href={slide.ctaLink || '/motorcycleecommerce/products'}
-                  className="group relative px-10 py-5 bg-black text-white font-black uppercase tracking-widest text-xs flex items-center gap-4 hover:pr-14 transition-all duration-300"
+                  href={activeSlide.ctaLink || '/shop'}
+                  className="group relative px-10 py-5 bg-stone-900 text-white font-black uppercase tracking-widest text-xs flex items-center justify-center gap-4 border border-transparent hover:bg-stone-800 transition-all duration-300 shadow-xl shadow-stone-900/10"
                 >
-                  {slide.ctaText}
-                  <ArrowRightIcon className="w-4 h-4 text-white group-hover:translate-x-2 transition-transform" />
+                  {activeSlide.ctaText}
+                  <ArrowRightIcon className="w-4 h-4 text-white group-hover:translate-x-1.5 transition-transform stroke-[2.5]" />
                 </Link>
                 
-                <button className="flex items-center gap-3 group text-black font-black uppercase tracking-widest text-[10px]">
-                   <div className="w-10 h-10 rounded-full border border-black/10 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all">
-                     <PlayIcon className="w-4 h-4 ml-0.5" />
-                   </div>
-                   View Gallery
+                <button className="flex items-center justify-center gap-3.5 group text-stone-900 font-black uppercase tracking-widest text-[10px] py-3 focus:outline-none">
+                  <div className="w-11 h-11 rounded-full border border-stone-200 bg-white shadow-sm flex items-center justify-center group-hover:bg-stone-900 group-hover:text-white group-hover:border-stone-900 transition-all duration-300">
+                    <PlayIcon className="w-4 h-4 ml-0.5" />
+                  </div>
+                  Launch Media Gallery
                 </button>
               </div>
             </motion.div>
           </AnimatePresence>
         </div>
 
-        {/* 4. MOTORCYCLE IMAGE & SPECS */}
-        <div className="lg:col-span-7 relative h-[50vh] sm:h-[60vh] lg:h-[80%] flex items-center justify-center">
-          <AnimatePresence mode="wait">
+        {/* 4. INTERACTIVE HARDWARE ENGINE SHOWCASE */}
+        <div className="lg:col-span-7 relative w-full h-[55vw] sm:h-[450px] lg:h-[75vh] flex items-center justify-center min-h-[260px]">
+          <AnimatePresence mode="wait" custom={direction}>
             <motion.div
-              key={`img-${slide.id}`}
-              initial={{ opacity: 0, scale: 0.9, rotate: 5 }}
-              animate={{ opacity: 1, scale: 1, rotate: 0 }}
-              exit={{ opacity: 0, scale: 1.1 }}
-              transition={{ duration: 0.8, type: "spring" }}
-              /* On mobile, we use scale-110 to make the product feel massive.
-                -mt-8 helps reduce the gap between the header and the bike.
-              */
-              className="relative w-full h-full drop-shadow-[0_30px_60px_rgba(0,0,0,0.15)] scale-110 md:scale-100 -mt-8 lg:mt-0"
+              key={`img-${activeSlide.id}`}
+              custom={direction}
+              variants={productVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              className="relative w-full h-full flex items-center justify-center"
             >
               <Image
-                src={ slide.productImageUrl || slide.imageUrl || 'https://images.unsplash.com/photo-1558981403-c5f91cbba527?auto=format&fit=crop&w=1600&q=80'}
-                alt={slide.headline || 'Motorcycle Image'}
+                src={activeSlide.productImageUrl || activeSlide.imageUrl || ''}
+                alt={activeSlide.headline || 'Motorsport Variant presentation display'}
                 fill
-                loader={loader}
-                /* object-contain ensures no parts of the bike are cut off despite the larger scale */
-                className="object-contain drop-shadow-2xl"
+                loader={imageLoader}
+                className="object-contain drop-shadow-[0_35px_45px_rgba(0,0,0,0.16)] scale-105 md:scale-100"
                 priority
               />
 
-              {/* FLOATING GLASS SPECS - Repositioned for mobile visibility */}
-              <div className="absolute top-4 right-2 md:top-10 md:right-0 space-y-2 md:space-y-3">
+              {/* FLOATING INSTRUMENT SPECS CLUSTER HUD */}
+              <div className="absolute top-2 right-0 md:top-8 md:right-4 lg:right-0 space-y-3 z-20">
                 {[
-                  { label: 'Power', val: '215 HP' },
-                  { label: 'Weight', val: '168 KG' }
+                  { label: 'Power Matrix', val: '215 HP' },
+                  { label: 'Dry Weight', val: '168 KG' }
                 ].map((spec, i) => (
                   <motion.div
                     key={i}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 + i * 0.1 }}
-                    className="bg-white/40 backdrop-blur-xl border border-white/50 p-3 md:p-4 w-24 md:w-32 shadow-sm"
+                    initial={{ opacity: 0, x: 25 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.4 + i * 0.12, type: 'spring', stiffness: 100 }}
+                    className="bg-white/70 backdrop-blur-xl border border-white/60 p-3 md:p-4 w-28 md:w-36 shadow-lg shadow-stone-900/5 rounded-2xl text-left"
                   >
-                    <p className="text-[8px] md:text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-tighter">
+                    <p className="text-[9px] font-black text-stone-400 uppercase tracking-wider">
                       {spec.label}
                     </p>
-                    <p className="text-base md:text-xl font-black text-black italic">
+                    <p className="text-lg md:text-2xl font-black text-stone-900 italic mt-0.5 tracking-tight">
                       {spec.val}
                     </p>
                   </motion.div>
@@ -161,29 +269,48 @@ export default function MotoHero({ heroSlides, themeSettings }: HeroSliderProps)
         </div>
       </div>
 
-      {/* 5. MINIMALIST NAV BAR */}
-      <div className="absolute bottom-10 left-10 z-20 flex flex-col gap-6">
+      {/* 5. MINIMALIST INDUSTRIAL PROGRESS LINE TIMELINE */}
+      <div className="absolute bottom-8 left-6 sm:left-8 md:left-12 lg:left-16 xl:left-20 z-20 flex items-center gap-6">
         {slides.map((_, i) => (
           <button
             key={i}
-            onClick={() => setCurrent(i)}
-            className="group flex items-center gap-4"
+            onClick={() => handleGoTo(i)}
+            className="group flex items-center gap-3.5 focus:outline-none"
+            aria-label={`Navigate presentation to frame module number 0${i + 1}`}
           >
-            <div className={`h-[2px] transition-all duration-500 ${i === current ? 'w-12 bg-black' : 'w-6 bg-black/10'}`} />
-            <span className={`text-[10px] font-black transition-opacity ${i === current ? 'opacity-100' : 'opacity-0'}`}>0{i + 1}</span>
+            <div 
+              className={`h-[2px] transition-all duration-500 rounded-full`} 
+              style={{
+                width: i === current ? '44px' : '20px',
+                backgroundColor: i === current ? '#1c1917' : '#cbd5e1'
+              }}
+            />
+            <span className={`text-[10px] font-black transition-opacity duration-300 ${i === current ? 'opacity-100 text-stone-900' : 'opacity-0 text-stone-400'}`}>
+              0{i + 1}
+            </span>
           </button>
         ))}
       </div>
 
-      <div className="absolute bottom-10 right-10 z-20 flex gap-1">
-        <button onClick={() => paginate(-1)} className="p-4 bg-white border border-black/5 hover:bg-black hover:text-white transition-all">
-          <ChevronLeftIcon className="w-5 h-5" />
-        </button>
-        <button onClick={() => paginate(1)} className="p-4 bg-white border border-black/5 hover:bg-black hover:text-white transition-all">
-          <ChevronRightIcon className="w-5 h-5" />
-        </button>
-      </div>
-
+      {/* STACKED CHRONO CONTROLLER STEPPERS */}
+      {slides.length > 1 && (
+        <div className="absolute bottom-6 right-6 sm:right-8 md:right-12 lg:right-16 xl:right-20 z-20 flex gap-1.5 bg-white p-1 rounded-2xl border border-stone-200/60 shadow-md">
+          <button 
+            onClick={handlePrev} 
+            className="p-3.5 bg-transparent hover:bg-stone-50 rounded-xl transition-colors active:scale-95 focus:outline-none"
+            aria-label="Previous hardware build slide view"
+          >
+            <ChevronLeftIcon className="w-4 h-4 text-stone-800 stroke-[2.5]" />
+          </button>
+          <button 
+            onClick={handleNext} 
+            className="p-3.5 bg-transparent hover:bg-stone-50 rounded-xl transition-colors active:scale-95 focus:outline-none"
+            aria-label="Next hardware build slide view"
+          >
+            <ChevronRightIcon className="w-4 h-4 text-stone-800 stroke-[2.5]" />
+          </button>
+        </div>
+      )}
     </section>
   );
 }

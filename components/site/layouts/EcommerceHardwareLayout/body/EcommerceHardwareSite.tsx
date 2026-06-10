@@ -82,7 +82,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       <PromoSection promotions={promotions} />
       <DynamicTrending id={id} />
       <NewsletterPromoGrid/>
-      <ProductShowcaseGrid/>
+      <ProductShowcaseGrid  companyId={id} />
       <PromoBannerGridSection/>
       <DynamicDailyBestSells id={id} />
       <SecondPromoSection promotions={promotions} />

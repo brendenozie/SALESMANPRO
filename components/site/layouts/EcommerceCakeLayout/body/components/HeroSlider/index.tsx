@@ -5,7 +5,6 @@ import { AnimatePresence, motion, useMotionValue, useSpring } from 'framer-motio
 import Image from 'next/image';
 import Link from 'next/link';
 import { HeroSlide } from '@/types/typings';
-// Using Hero Icons as per saved preference
 import { 
   SparklesIcon, 
   ShoppingBagIcon, 
@@ -41,6 +40,8 @@ export default function HeroSlider({ heroSlides, themeSettings }: { heroSlides: 
   }));
 
   const handleMouseMove = (e: React.MouseEvent) => {
+    // Disable parallax calculations on mobile touch devices to save performance
+    if (window.innerWidth < 768) return;
     const { clientX, clientY } = e;
     const moveX = (clientX - window.innerWidth / 2) / 40;
     const moveY = (clientY - window.innerHeight / 2) / 40;
@@ -60,16 +61,17 @@ export default function HeroSlider({ heroSlides, themeSettings }: { heroSlides: 
   return (
     <section 
       onMouseMove={handleMouseMove}
-      className="relative w-full h-[95vh] min-h-[750px] overflow-hidden bg-slate-950"
+      // Using svh (Small Viewport Height) to respect mobile browser address bars perfectly
+      className="relative w-full h-[100svh] md:h-[95vh] min-h-[620px] md:min-h-[750px] overflow-hidden bg-slate-950"
     >
       <AnimatePresence mode="wait">
         {heroSlidesToShow.map((slide, idx) => (
           idx === current && (
             <motion.div key={idx} className="absolute inset-0 w-full h-full">
               
-              {/* Cinematic Background with Parallax */}
+              {/* Cinematic Background with Responsive Scale */}
               <motion.div 
-                style={{ x: springX, y: springY, scale: 1.1 }}
+                style={{ x: springX, y: springY, scale: 1.08 }}
                 className="absolute inset-0 w-full h-full"
               >
                 <Image
@@ -77,41 +79,42 @@ export default function HeroSlider({ heroSlides, themeSettings }: { heroSlides: 
                   alt="Bakery Hero"
                   fill
                   priority
-                  className="object-cover brightness-[0.5] md:brightness-[0.6] transition-opacity duration-1000"
+                  className="object-cover brightness-[0.45] md:brightness-[0.6] transition-opacity duration-1000"
                   loader={loader}
                 />
               </motion.div>
 
-              {/* Sophisticated Overlays */}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
-              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')] opacity-20 pointer-events-none" />
+              {/* Overlays */}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent md:to-black/10" />
+              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')] opacity-15 pointer-events-none" />
 
-              {/* Main Content Layout */}
-              <div className="relative h-full container mx-auto px-6 md:px-16 flex items-center">
-                <div className="max-w-4xl">
+              {/* Main Content Layout - Added pt-28 to push elements safely down away from fixed navbars */}
+              <div className="relative h-full container mx-auto px-6 md:px-16 flex items-center pt-24 pb-20 md:py-0">
+                <div className="max-w-5xl w-full">
                   
                   {/* Floating Badge Header */}
                   <motion.div 
-                    initial={{ opacity: 0, y: -20 }}
+                    initial={{ opacity: 0, y: -15 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-8"
+                    className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 mb-5 md:mb-8"
                   >
-                    <SparklesIcon className="w-5 h-5" style={{ color: primary }} />
-                    <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-white/90">
+                    <SparklesIcon className="w-4 h-4 md:w-5 h-5" style={{ color: primary }} />
+                    <span className="text-[9px] md:text-xs font-black uppercase tracking-[0.25em] text-white/90">
                       {slide.badgeText}
                     </span>
                   </motion.div>
 
-                  {/* Editorial Typography */}
-                  <div className="space-y-4 mb-10">
+                  {/* Editorial Fluid Typography */}
+                  <div className="space-y-4 mb-8 md:mb-10">
                     <motion.h1 
-                      initial={{ opacity: 0, x: -50 }}
+                      initial={{ opacity: 0, x: -30 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.8, ease: "easeOut" }}
-                      className="text-6xl md:text-[10rem] font-black text-white leading-[0.85] tracking-tighter"
+                      // clamp sizing guarantees it never drops below 2.25rem on tiny phones, or grows past 8.5rem on ultra-wide screens
+                      className="text-[clamp(2.25rem,7.5vw,6.5rem)] xl:text-[8.5rem] font-black text-white leading-[1.05] md:leading-[0.85] tracking-tighter"
                     >
-                      {slide.headline.split(' ').slice(0, -1).join(' ')} <br/>
-                      <span className="italic font-serif font-light text-transparent bg-clip-text bg-gradient-to-r from-white via-white/80 to-white/40">
+                      {slide.headline.split(' ').slice(0, -1).join(' ')} <br className="hidden sm:inline" />
+                      <span className="italic font-serif font-light text-transparent bg-clip-text bg-gradient-to-r from-white via-white/80 to-white/40 ml-0 sm:ml-2">
                         {slide.headline.split(' ').pop()}
                       </span>
                     </motion.h1>
@@ -119,29 +122,29 @@ export default function HeroSlider({ heroSlides, themeSettings }: { heroSlides: 
 
                   {/* Primary & Secondary Actions */}
                   <motion.div 
-                    initial={{ opacity: 0, y: 30 }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
-                    className="flex flex-col sm:flex-row gap-6 items-center"
+                    transition={{ delay: 0.4 }}
+                    className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center"
                   >
-                    <Link href={slide.ctaLink || '/cakeecommerce/products'}>
+                    <Link href={slide.ctaLink || '/cakeecommerce/products'} className="w-full sm:w-auto">
                       <motion.button 
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="group flex items-center gap-3 px-10 py-5 rounded-full text-white font-black uppercase tracking-widest text-xs shadow-2xl transition-all"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="group flex items-center justify-center gap-3 px-8 md:px-10 py-4 md:py-5 rounded-full text-white font-bold uppercase tracking-widest text-[11px] md:text-xs shadow-2xl transition-all w-full sm:w-auto"
                         style={{ backgroundColor: primary }}
                       >
-                        <ShoppingBagIcon className="w-5 h-5" />
-                        {slide.ctaText}
-                        <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-2" />
+                        <ShoppingBagIcon className="w-4 h-4 md:w-5 h-5" />
+                        <span>{slide.ctaText}</span>
+                        <ArrowRightIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1.5" />
                       </motion.button>
                     </Link>
 
-                    <Link href="/cakeecommerce/categories" className="group flex items-center gap-4 text-white/70 hover:text-white transition-colors">
-                      <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center group-hover:border-white transition-colors">
-                        <CakeIcon className="w-6 h-6" />
+                    <Link href="/cakeecommerce/categories" className="group flex items-center gap-3 text-white/80 hover:text-white transition-colors py-2 pl-2 sm:pl-0">
+                      <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white/40 transition-colors">
+                        <CakeIcon className="w-5 h-5" />
                       </div>
-                      <span className="font-black text-xs uppercase tracking-widest">See our menu</span>
+                      <span className="font-bold text-[11px] md:text-xs uppercase tracking-widest">See our menu</span>
                     </Link>
                   </motion.div>
                 </div>
@@ -151,27 +154,32 @@ export default function HeroSlider({ heroSlides, themeSettings }: { heroSlides: 
         ))}
       </AnimatePresence>
 
-      {/* Vertical Navigation Bar */}
-      <div className="absolute right-8 md:right-16 bottom-16 flex flex-row md:flex-col items-center gap-8 z-30">
+      {/* Responsive Slide Progress Indicators */}
+      <div className="absolute left-1/2 -translate-x-1/2 bottom-8 md:left-auto md:translate-x-0 md:right-16 md:bottom-16 flex flex-row md:flex-col items-center gap-4 md:gap-8 z-30">
         {heroSlidesToShow.map((_, i) => (
           <button 
             key={i}
             onClick={() => setCurrent(i)}
-            className="group relative h-12 w-1 flex flex-col items-center"
+            className="group relative h-2 w-8 md:h-12 md:w-1 flex items-center justify-center"
+            aria-label={`Go to slide ${i + 1}`}
           >
              <motion.div 
-              className={`absolute top-0 w-1 rounded-full transition-all duration-700 ${current === i ? 'h-full' : 'h-2 bg-white/20'}`}
+              className={`absolute rounded-full transition-all duration-500 ${
+                current === i 
+                  ? 'h-full w-full bg-amber-500' 
+                  : 'h-1.5 w-full bg-white/20 md:h-2 md:w-1'
+              }`}
               style={{ backgroundColor: current === i ? primary : undefined }}
              />
-             <span className={`absolute -left-12 top-0 text-[10px] font-black transition-opacity ${current === i ? 'opacity-100' : 'opacity-0'} text-white`}>
+             <span className={`absolute -top-6 md:top-0 md:-left-12 text-[10px] font-black transition-opacity ${current === i ? 'opacity-100' : 'opacity-0'} text-white/60 hidden md:inline`}>
               0{i + 1}
              </span>
           </button>
         ))}
       </div>
 
-      {/* Decorative Bottom Vignette */}
-      <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-black to-transparent z-10" />
+      {/* Bottom Vignette */}
+      <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-black to-transparent z-10 pointer-events-none" />
     </section>
   );
 }

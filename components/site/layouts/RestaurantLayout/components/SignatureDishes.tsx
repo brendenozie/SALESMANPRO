@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useStateContext } from "@/contexts/ContextProvider";
 import DishCard from "./DishCard";
 
-
 const loader = ({ src, width }: { src: string; width: number }) => `${src}?w=${width}&q=80`;
 
 export default function SignatureDishes({

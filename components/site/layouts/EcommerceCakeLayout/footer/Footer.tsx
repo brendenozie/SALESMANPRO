@@ -4,13 +4,12 @@ import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
-// Using Hero Icons as per saved preferences
 import { 
   EnvelopeIcon, 
   PhoneIcon, 
-  MapPinIcon, 
   ArrowUpRightIcon,
-  GlobeAltIcon
+  GlobeAltIcon,
+  ClockIcon
 } from '@heroicons/react/24/outline';
 
 export default function Footer() {
@@ -24,7 +23,7 @@ export default function Footer() {
     themeSettings = {},
   } = storeFormData || {};
 
-  const primary = themeSettings?.primaryColor || '#D97706';
+  const primaryColor = themeSettings?.primaryColor || '#D97706';
 
   // Elegant Social Icon Mapper
   const iconMapper: Record<string, React.ReactNode> = {
@@ -34,63 +33,80 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-slate-950 text-slate-400 pt-24 pb-12 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-16 mb-20">
+    <footer className="relative bg-[#0c0a09] text-stone-400 pt-20 pb-8 overflow-hidden border-t border-stone-900">
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        
+        {/* Main Grid Structure */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 mb-16">
           
-          {/* Brand Pillar */}
-          <div className="md:col-span-5 space-y-8">
+          {/* Brand Column */}
+          <div className="lg:col-span-5 space-y-6">
             <div>
-              <h2 className="text-3xl font-black text-white tracking-tighter mb-4 italic">
+              <h2 className="text-3xl font-black text-white tracking-tight mb-3 italic">
                 {name || 'The Cake Shop'}
               </h2>
-              <p className="text-lg leading-relaxed font-medium italic pr-12">
+              <p className="text-base text-stone-300 leading-relaxed font-light max-w-md">
                 {description || 'Crafting artisan moments through flour, sugar, and soul since 2026.'}
               </p>
             </div>
             
-            <div className="space-y-4">
-              <div className="flex items-center gap-4 group">
-                <div className="p-3 rounded-xl bg-white/5 group-hover:bg-amber-500/10 transition-colors">
-                  <EnvelopeIcon className="w-5 h-5 text-amber-500" />
+            {/* Quick Contact Info */}
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center gap-3.5 group">
+                <div className="p-2.5 rounded-xl bg-stone-900 border border-stone-800 group-hover:border-stone-700 transition-all">
+                  <EnvelopeIcon className="w-4 h-4 transition-colors duration-300" style={{ color: primaryColor }} />
                 </div>
-                <a href={`mailto:${contactEmail}`} className="text-sm font-bold text-white hover:text-amber-500 transition-colors">
+                <a href={`mailto:${contactEmail}`} className="text-sm font-medium text-stone-200 hover:text-white transition-colors py-1">
                   {contactEmail || 'hello@artisanbakery.com'}
                 </a>
               </div>
-              <div className="flex items-center gap-4 group">
-                <div className="p-3 rounded-xl bg-white/5 group-hover:bg-amber-500/10 transition-colors">
-                  <PhoneIcon className="w-5 h-5 text-amber-500" />
+              
+              <div className="flex items-center gap-3.5 group">
+                <div className="p-2.5 rounded-xl bg-stone-900 border border-stone-800 group-hover:border-stone-700 transition-all">
+                  <PhoneIcon className="w-4 h-4 transition-colors duration-300" style={{ color: primaryColor }} />
                 </div>
-                <a href={`tel:${contactPhone}`} className="text-sm font-bold text-white hover:text-amber-500 transition-colors">
-                  {contactPhone || '+1 (555) 000-BAKE'}
+                <a href={`tel:${contactPhone}`} className="text-sm font-medium text-stone-200 hover:text-white transition-colors py-1">
+                  {contactPhone || '+254 700 000 000'}
                 </a>
               </div>
             </div>
           </div>
 
-          {/* Navigation Columns */}
-          <div className="md:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-8">
+          {/* Dynamic Link Menus */}
+          <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8 sm:gap-6 pt-4 lg:pt-0">
+            
+            {/* Column 1 */}
             <div>
-              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-500 mb-8">Boutique</h4>
-              <ul className="space-y-4 text-sm font-bold">
+              <h4 className="text-[11px] font-black uppercase tracking-[0.2em] mb-5 sm:mb-6" style={{ color: primaryColor }}>
+                Boutique
+              </h4>
+              <ul className="space-y-3.5 text-sm">
                 {['Shop All', 'Signature Cakes', 'Wedding Studio', 'Gift Cards'].map((item) => (
                   <li key={item}>
-                    <Link href={item === 'Shop All' ? '/cakeecommerce/products' : `/cakeecommerce/products?name=${item.toLowerCase().replace(' ', '-')}`} className="hover:text-white transition-colors flex items-center gap-2 group">
-                      {item}
-                      <ArrowUpRightIcon className="w-3 h-3 opacity-0 group-hover:opacity-100 -translate-y-1 transition-all" />
+                    <Link 
+                      href={item === 'Shop All' ? '/cakeecommerce/products' : `/cakeecommerce/products?name=${item.toLowerCase().replace(' ', '-')}`} 
+                      className="hover:text-white text-stone-300 transition-colors flex items-center gap-1 group py-1"
+                    >
+                      <span>{item}</span>
+                      <ArrowUpRightIcon className="w-3 h-3 opacity-0 scale-70 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300" style={{ color: primaryColor }} />
                     </Link>
                   </li>
                 ))}
               </ul>
             </div>
 
+            {/* Column 2 */}
             <div>
-              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-500 mb-8">Company</h4>
-              <ul className="space-y-4 text-sm font-bold">
+              <h4 className="text-[11px] font-black uppercase tracking-[0.2em] mb-5 sm:mb-6" style={{ color: primaryColor }}>
+                Company
+              </h4>
+              <ul className="space-y-3.5 text-sm">
                 {['Our Story', 'Visit Us', 'Work with Us', 'Contact'].map((item) => (
                   <li key={item}>
-                    <Link href={item === 'Our Story' ? '/cakeecommerce/about' : item === 'Visit Us' ? '/cakeecommerce/visit' : item === 'Work with Us' ? '/cakeecommerce/careers' : '/cakeecommerce/contact'} className="hover:text-white transition-colors">
+                    <Link 
+                      href={item === 'Our Story' ? '/cakeecommerce/about' : item === 'Visit Us' ? '/cakeecommerce/visit' : item === 'Work with Us' ? '/cakeecommerce/careers' : '/cakeecommerce/contact'} 
+                      className="hover:text-white text-stone-300 transition-colors block py-1"
+                    >
                       {item}
                     </Link>
                   </li>
@@ -98,15 +114,20 @@ export default function Footer() {
               </ul>
             </div>
 
-            <div className="col-span-2 md:col-span-1">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-500 mb-8">Socials</h4>
-              <div className="flex gap-3">
+            {/* Column 3 - Socials */}
+            <div className="col-span-2 sm:col-span-1 pt-4 sm:pt-0">
+              <h4 className="text-[11px] font-black uppercase tracking-[0.2em] mb-4 sm:mb-6" style={{ color: primaryColor }}>
+                Social Channels
+              </h4>
+              <div className="flex flex-wrap gap-2.5">
                 {socialLinks.length > 0 ? socialLinks.map((s, idx) => (
-                   <motion.a
+                  <motion.a
                     key={idx}
-                    whileHover={{ y: -5 }}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
                     href={s.url}
-                    className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white hover:bg-amber-500 transition-all"
+                    className="w-11 h-11 rounded-xl bg-stone-900 border border-stone-800 flex items-center justify-center text-stone-300 hover:text-white transition-colors"
+                    style={{ '--hover-bg': primaryColor } as React.CSSProperties}
                   >
                     {iconMapper[String(s.channel).toLowerCase()] || <GlobeAltIcon className="w-5 h-5" />}
                   </motion.a>
@@ -114,9 +135,10 @@ export default function Footer() {
                   ['instagram', 'facebook', 'twitter'].map((platform) => (
                     <motion.a
                       key={platform}
-                      whileHover={{ y: -5 }}
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileTap={{ scale: 0.95 }}
                       href="#"
-                      className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white hover:bg-amber-500 transition-all"
+                      className="w-11 h-11 rounded-xl bg-stone-900 border border-stone-800 flex items-center justify-center text-stone-300 hover:text-white hover:bg-stone-800 transition-colors"
                     >
                       {iconMapper[platform]}
                     </motion.a>
@@ -124,38 +146,45 @@ export default function Footer() {
                 )}
               </div>
             </div>
+
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-amber-500" />
-            <p className="text-[10px] font-black uppercase tracking-widest">
-              &copy; {new Date().getFullYear()} {name}. Artisanally Crafted.
+        {/* Footer Subsections & Legal Info */}
+        <div className="pt-8 border-t border-stone-900 flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
+          <div className="flex items-center gap-2.5">
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
+            <p className="text-[11px] font-medium uppercase tracking-widest text-stone-500">
+              &copy; {new Date().getFullYear()} {name || 'The Cake Shop'}. All Rights Reserved.
             </p>
           </div>
           
-          <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest">
-            <Link href="/cakeecommerce/privacy" className="hover:text-amber-500 transition-colors">Privacy</Link>
-            <Link href="/cakeecommerce/terms" className="hover:text-amber-500 transition-colors">Terms</Link>
-            <Link href="/cakeecommerce/sitemap" className="hover:text-amber-500 transition-colors">Sitemap</Link>
+          <div className="flex flex-wrap justify-center gap-6 text-[11px] font-semibold uppercase tracking-widest text-stone-500">
+            <Link href="/cakeecommerce/privacy" className="hover:text-white transition-colors">Privacy</Link>
+            <Link href="/cakeecommerce/terms" className="hover:text-white transition-colors">Terms</Link>
+            <Link href="/cakeecommerce/sitemap" className="hover:text-white transition-colors">Sitemap</Link>
           </div>
         </div>
+
+        {/* Brand System Attribution */}
+        <div className="mt-8 pt-4 border-t border-stone-950 flex items-center justify-center gap-1.5 w-full text-center">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-stone-600">Powered by</span>
+          <a 
+            href="https://salesmanpro.site" 
+            className="text-[10px] font-extrabold uppercase tracking-widest hover:brightness-110 transition-all duration-300"
+            style={{ color: primaryColor }}
+          >
+            SalesmanPro.site
+          </a>
+        </div>
+
       </div>
-      <div className="flex items-center gap-1.5 px-4 py-2 justify-center w-full">
-        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Powered by</span>
-        <a 
-          href="https://salesmanpro.site" 
-          className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-700 transition-colors"
-        >
-          SalesmanPro.site
-        </a>
-    </div>
 
-
-      {/* Background Glow */}
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[120px] -mr-64 -mb-64 pointer-events-none" />
+      {/* Decorative Radial Ambient Glow */}
+      <div 
+        className="absolute bottom-0 right-0 w-[450px] h-[450px] rounded-full blur-[140px] -mr-48 -mb-48 pointer-events-none opacity-10 transition-all duration-1000" 
+        style={{ backgroundColor: primaryColor }}
+      />
     </footer>
   );
 }

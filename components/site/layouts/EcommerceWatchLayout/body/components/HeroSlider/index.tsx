@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-// Hero Icons as per saved preference
 import { 
   ChevronLeftIcon, 
   ChevronRightIcon, 
@@ -47,17 +46,38 @@ const defaultSlides: HeroSlide[] = [
   }
 ];
 
+// High-end staggered text animations variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.12, delayChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { duration: 0.65, ease: [0.16, 1, 0.3, 1] } 
+  }
+};
+
 export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProps) {
   const slides = (heroSlides && heroSlides.length > 0 ? heroSlides : defaultSlides);
   const [current, setCurrent] = useState(0);
+  const [direction, setDirection] = useState(1); // 1 = next, -1 = prev
   const [isHovered, setIsHovered] = useState(false);
   const primary = themeSettings?.primaryColor || '#C5A059'; 
 
   const nextSlide = useCallback(() => {
+    setDirection(1);
     setCurrent((prev) => (prev + 1) % slides.length);
   }, [slides.length]);
 
   const prevSlide = () => {
+    setDirection(-1);
     setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
   };
 
@@ -67,173 +87,239 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
     return () => clearInterval(timer);
   }, [nextSlide, isHovered]);
 
+  // Defensive parsing for dual-weight headline structures
+  const renderHeadline = (headlineStr: string = '') => {
+    const parts = headlineStr.trim().split(' ');
+    if (parts.length <= 1) {
+      return <span className="font-serif italic font-light text-white">{headlineStr}</span>;
+    Part}
+    const firstWord = parts[0];
+    const internalRemainder = parts.slice(1).join(' ');
+    return (
+      <>
+        <span className="font-serif italic font-light text-white">{firstWord}</span>
+        <br />
+        <span className="not-italic font-sans font-black uppercase text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-neutral-400">
+          {internalRemainder}
+        </span>
+      </>
+    );
+  };
+
   return (
     <section 
-      className="relative w-full bg-[#050505] min-h-[700px] lg:h-screen flex items-center overflow-hidden"
+      className="relative w-full bg-[#050505] min-h-[100svh] lg:h-screen flex items-center overflow-hidden pt-24 pb-32 lg:py-0"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* BACKGROUND ACCENT */}
-      <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-[#C5A059]/5 to-transparent pointer-events-none" />
+      {/* CINEMATIC LAYERED BACKDROPS */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div 
+          className="absolute top-0 right-0 w-full lg:w-1/2 h-full bg-gradient-to-b lg:bg-gradient-to-l opacity-40 mix-blend-screen transition-all duration-1000 blur-[120px]"
+          style={{ backgroundImage: `radial-gradient(circle at 70% 30%, ${primary}25, transparent 60%)` }}
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] [background-size:24px_24px]" />
+      </div>
       
-      <div className="container mx-auto px-6 relative z-10">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={current}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8 }}
-            className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center"
-          >
-            {/* LEFT CONTENT: EDITORIAL STYLE */}
-            <div className="lg:col-span-6 space-y-8 order-2 lg:order-1">
+      <div className="container mx-auto px-6 sm:px-8 relative z-10 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 xl:gap-16 items-center">
+          
+          {/* LEFT CONTENT CONTAINER: EDITORIAL STYLE */}
+          <div className="lg:col-span-6 order-2 lg:order-1">
+            <AnimatePresence mode="wait">
               <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="flex items-center gap-4"
+                key={current}
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                className="space-y-6 md:space-y-8 text-center lg:text-left"
               >
-                <div className="h-[1px] w-12 bg-[#C5A059]" />
-                <span className="text-[#C5A059] uppercase tracking-[0.3em] text-xs font-bold">
-                  {slides[current].badgeText || "Masterpiece Series"}
-                </span>
-              </motion.div>
-
-              <motion.h1 
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="text-6xl md:text-8xl font-serif italic text-white leading-tight"
-              >
-                {slides[current]?.headline?.split(' ')[0] || 'Slide ' + (current + 1)} <br />
-                <span className="not-italic font-sans font-black uppercase text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-gray-500">
-                  {slides[current]?.headline?.split(' ').slice(1).join(' ') || 'Headline'}
-                </span>
-              </motion.h1>
-
-              <motion.p 
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="text-gray-400 text-lg md:text-xl max-w-md leading-relaxed font-light"
-              >
-                {slides[current]?.subline || 'Subline'}
-              </motion.p>
-
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="flex flex-wrap items-center gap-6"
-              >
-                <Link
-                  href={slides[current]?.ctaLink || '/watchecommerce/products'}
-                  className="group relative inline-flex items-center gap-3 bg-[#C5A059] text-black font-bold uppercase tracking-widest px-10 py-5 transition-all hover:pr-14 hover:bg-white"
-                >
-                  {slides[current]?.ctaText || 'Shop Now'}
-                  <ArrowRightIcon className="w-5 h-5 absolute right-4 opacity-0 group-hover:opacity-100 transition-all" />
-                </Link>
-                
-                {slides[current].price && (
-                  <div className="text-white border-l border-gray-800 pl-6">
-                    <p className="text-xs uppercase text-gray-500 mb-1">Starting At</p>
-                    <p className="text-2xl font-mono">{slides[current].price}</p>
-                  </div>
-                )}
-              </motion.div>
-
-              {/* Trust Bars */}
-              <div className="grid grid-cols-2 gap-4 pt-10 opacity-50">
-                <div className="flex items-center gap-2 text-white text-xs uppercase tracking-widest">
-                  <ShieldCheckIcon className="w-4 h-4 text-[#C5A059]" /> 2 Year Warranty
-                </div>
-                <div className="flex items-center gap-2 text-white text-xs uppercase tracking-widest">
-                  <SparklesIcon className="w-4 h-4 text-[#C5A059]" /> Certified Authentic
-                </div>
-              </div>
-            </div>
-
-            {/* RIGHT CONTENT: THE VISUAL STORY */}
-            <div className="lg:col-span-6 relative order-1 lg:order-2">
-              <div className="relative w-full aspect-square max-w-[550px] mx-auto group">
-                
-                {/* Main Hero Image with Floating Effect */}
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.8, rotate: 5 }}
-                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                  transition={{ duration: 1, ease: "circOut" }}
-                  className="relative z-10 w-full h-full rounded-2xl overflow-hidden shadow-2xl grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700"
-                >
-                  <Image
-                    src={slides[current].imageUrl || 'https://images.unsplash.com/photo-1614164185128-e4ec99c436d7?auto=format&fit=crop&w=1200&q=80'}
-                    alt={slides[current].headline || 'Hero Image'}
-                    fill
-                    className="object-cover scale-110 group-hover:scale-100 transition-transform duration-[3s]"
-                    loader={loader}
-                    priority
-                  />
+                {/* Micro-Header Badge */}
+                <motion.div variants={itemVariants} className="flex items-center justify-center lg:justify-start gap-3.5">
+                  <div className="h-[1px] w-8 transition-all duration-500" style={{ backgroundColor: primary }} />
+                  <span className="uppercase tracking-[0.35em] text-[10px] md:text-xs font-bold" style={{ color: primary }}>
+                    {slides[current].badgeText || "Masterpiece Series"}
+                  </span>
                 </motion.div>
 
-                {/* Overlapping Detail Image (The "Watch Face") */}
-                <motion.div 
-                  animate={{ y: [0, -20, 0] }}
-                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -left-12 -bottom-12 z-20 w-1/2 aspect-[4/5] bg-[#111] border-[8px] border-[#050505] shadow-2xl rounded-sm overflow-hidden hidden md:block"
+                {/* Main Heading Component */}
+                <motion.h1 
+                  variants={itemVariants}
+                  className="text-4xl sm:text-6xl md:text-7xl lg:text-[4.75rem] xl:text-[5.5rem] leading-[1.08] tracking-tight"
                 >
-                  <Image
-                    src={slides[current].productImageUrl || slides[current].imageUrl || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80'}
-                    alt="Macro detail"
-                    fill
-                    className="object-cover"
-                    loader={loader}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                  <div className="absolute bottom-4 left-4">
-                    <ClockIcon className="w-6 h-6 text-[#C5A059] mb-2" />
-                    <p className="text-[10px] text-white uppercase font-bold tracking-[0.2em]">Swiss Made</p>
-                  </div>
+                  {renderHeadline(slides[current]?.headline)}
+                </motion.h1>
+
+                {/* Subheading Content Description */}
+                <motion.p 
+                  variants={itemVariants}
+                  className="text-neutral-400 text-base md:text-lg max-w-md lg:max-w-lg mx-auto lg:ml-0 leading-relaxed font-light"
+                >
+                  {slides[current]?.subline || 'Luxury timepiece configuration.'}
+                </motion.p>
+
+                {/* Interactive Action Hub */}
+                <motion.div variants={itemVariants} className="flex flex-wrap items-center justify-center lg:justify-start gap-6 pt-2">
+                  <Link
+                    href={slides[current]?.ctaLink || '/shop'}
+                    className="group relative inline-flex items-center justify-center gap-3 text-black font-bold uppercase tracking-widest text-xs md:text-sm px-8 py-4 md:px-10 md:py-5 overflow-hidden transition-transform active:scale-[0.98] rounded-none shadow-xl"
+                    style={{ backgroundColor: primary }}
+                  >
+                    <span className="absolute inset-0 w-full h-full bg-white scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 ease-out z-0" />
+                    <span className="relative z-10 transition-colors duration-300 group-hover:text-black">
+                      {slides[current]?.ctaText || 'Shop Now'}
+                    </span>
+                    <ArrowRightIcon className="w-4 h-4 relative z-10 transform transition-transform duration-300 group-hover:translate-x-1.5 group-hover:text-black" />
+                  </Link>
+                  
+                  {slides[current].price && (
+                    <div className="text-white border-l border-neutral-800 pl-6 text-left">
+                      <p className="text-[10px] uppercase tracking-wider text-neutral-500 mb-0.5">Value Statement</p>
+                      <p className="text-xl md:text-2xl font-light font-mono tracking-tight text-neutral-100">{slides[current].price}</p>
+                    </div>
+                  )}
                 </motion.div>
 
-                {/* Decorative Elements */}
-                <div className="absolute -top-10 -right-10 w-40 h-40 border border-[#C5A059]/20 rounded-full animate-pulse pointer-events-none" />
-              </div>
-            </div>
-          </motion.div>
-        </AnimatePresence>
+                {/* Horizontal Baseline Security Trust Badges */}
+                <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4 pt-6 border-t border-neutral-900 max-w-md mx-auto lg:ml-0">
+                  <div className="flex items-center justify-center lg:justify-start gap-2.5 text-neutral-400 text-[10px] md:text-xs uppercase tracking-widest font-medium">
+                    <ShieldCheckIcon className="w-4 h-4 shrink-0" style={{ color: primary }} /> 2 Year Warranty
+                  </div>
+                  <div className="flex items-center justify-center lg:justify-start gap-2.5 text-neutral-400 text-[10px] md:text-xs uppercase tracking-widest font-medium">
+                    <SparklesIcon className="w-4 h-4 shrink-0" style={{ color: primary }} /> Certified Authentic
+                  </div>
+                </motion.div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
-        {/* BOTTOM NAVIGATION: PREMIUM DASHBOARD */}
-        <div className="absolute bottom-8 left-6 right-6 flex items-end justify-between border-t border-gray-900 pt-8">
-          <div className="flex items-center gap-8">
+          {/* RIGHT CONTENT CONTAINER: VISUAL GALLERY MATRICES */}
+          <div className="lg:col-span-6 order-1 lg:order-2">
+            <div className="relative w-full aspect-square max-w-[320px] sm:max-w-[440px] lg:max-w-[500px] xl:max-w-[540px] mx-auto group">
+              
+              {/* Main Photo Card Component with Micro Ken-Burns Effect */}
+              <div className="w-full h-full rounded-2xl overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] bg-neutral-900 border border-neutral-800/60 relative">
+                <AnimatePresence initial={false} mode="popLayout" custom={direction}>
+                  <motion.div
+                    key={current}
+                    custom={direction}
+                    initial={{ opacity: 0, scale: 1.08 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.85, ease: [0.25, 1, 0.5, 1] }}
+                    className="absolute inset-0 w-full h-full"
+                  >
+                    <Image
+                      src={slides[current].imageUrl}
+                      alt={slides[current].headline || 'Timepiece showcase'}
+                      fill
+                      className="object-cover transition-transform duration-[6000ms] group-hover:scale-105"
+                      loader={loader}
+                      priority
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              {/* Floating Picture-in-Picture Macro Product Card */}
+              <AnimatePresence mode="wait">
+                <motion.div 
+                  key={current}
+                  initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="absolute -left-4 -bottom-6 sm:-left-8 sm:-bottom-8 lg:-left-12 lg:-bottom-12 z-20 w-[42%] aspect-[4/5] bg-[#0c0c0c] border-4 sm:border-8 border-[#050505] shadow-[0_30px_60px_-10px_rgba(0,0,0,0.8)] rounded-md overflow-hidden hidden sm:block group/pip"
+                >
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={slides[current].productImageUrl || slides[current].imageUrl}
+                      alt="Macro detail review"
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover/pip:scale-110"
+                      loader={loader}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                    <div className="absolute bottom-3.5 left-3.5 right-3.5 flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <ClockIcon className="w-5 h-5 mb-1" style={{ color: primary }} />
+                        <p className="text-[9px] text-white uppercase font-bold tracking-[0.18em] leading-none">Swiss Made</p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Decorative Linear Frame Overlay */}
+              <div 
+                className="absolute -top-6 -right-6 w-32 h-32 border-t border-r rounded-tr-xl opacity-20 pointer-events-none transition-colors duration-500 hidden md:block" 
+                style={{ borderColor: primary }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* BOTTOM METRIC DASHBOARD & PANEL CONTROL ARRAYS */}
+        <div className="absolute bottom-6 left-6 right-6 lg:left-8 lg:right-8 flex flex-col sm:flex-row items-center justify-between gap-6 border-t border-neutral-900/60 pt-6">
+          
+          {/* Index Pills featuring Real-time Linear Micro-Timers */}
+          <div className="flex items-center gap-6 md:gap-8 order-2 sm:order-1">
             {slides.map((_, i) => (
               <button
                 key={i}
-                onClick={() => setCurrent(i)}
-                className={`group relative py-2 transition-all ${current === i ? 'text-white' : 'text-gray-600'}`}
+                onClick={() => {
+                  setDirection(i > current ? 1 : -1);
+                  setCurrent(i);
+                }}
+                className={`group relative pb-2 text-left transition-colors duration-300 ${current === i ? 'text-white' : 'text-neutral-600 hover:text-neutral-400'}`}
               >
-                <span className="text-xs font-mono tracking-tighter mr-2">0{i + 1}</span>
-                <span className={`text-[10px] uppercase font-bold tracking-widest transition-all ${current === i ? 'opacity-100' : 'opacity-0'}`}>
-                  {slides[i]?.headline?.split(' ')[0] || 'Slide ' + (i + 1)}
-                </span>
-                <div className={`absolute bottom-0 left-0 h-[2px] bg-[#C5A059] transition-all duration-500 ${current === i ? 'w-full' : 'w-0 group-hover:w-4'}`} />
+                <div className="flex items-baseline gap-2">
+                  <span className="text-[10px] font-mono tracking-tight font-medium">0{i + 1}</span>
+                  <span className={`text-[10px] uppercase font-bold tracking-[0.2em] transition-all duration-300 hidden md:inline-block ${current === i ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 w-0'}`}>
+                    {slides[i]?.headline?.split(' ')[0] || 'Series'}
+                  </span>
+                </div>
+                
+                {/* Visual Timer Progress Bar */}
+                <div className="absolute bottom-0 left-0 h-[2px] bg-neutral-800 w-full overflow-hidden">
+                  {current === i && (
+                    <motion.div 
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: isHovered ? 0.3 : 1 }}
+                      transition={{ 
+                        duration: isHovered ? 0.2 : (autoAdvanceDelay / 1000), 
+                        ease: "linear" 
+                      }}
+                      className="h-full w-full origin-left"
+                      style={{ backgroundColor: primary }}
+                    />
+                  )}
+                </div>
               </button>
             ))}
           </div>
 
-          <div className="flex gap-[1px] bg-gray-900">
+          {/* Stepper Navigation Buttons */}
+          <div className="flex gap-[1px] bg-neutral-900/80 backdrop-blur-md border border-neutral-800 rounded-none overflow-hidden order-1 sm:order-2 shadow-2xl">
             <button 
               onClick={prevSlide}
-              className="p-5 bg-[#050505] text-white hover:bg-white hover:text-black transition-all"
+              className="p-3.5 md:p-4.5 bg-transparent text-neutral-400 hover:bg-neutral-800 hover:text-white transition-all active:scale-95"
+              aria-label="Previous Slide"
             >
-              <ChevronLeftIcon className="w-5 h-5" />
+              <ChevronLeftIcon className="w-4 h-4 md:w-5 md:h-5" />
             </button>
+            <div className="w-[1px] bg-neutral-800 self-stretch" />
             <button 
               onClick={nextSlide}
-              className="p-5 bg-[#050505] text-white hover:bg-white hover:text-black transition-all"
+              className="p-3.5 md:p-4.5 bg-transparent text-neutral-400 hover:bg-neutral-800 hover:text-white transition-all active:scale-95"
+              aria-label="Next Slide"
             >
-              <ChevronRightIcon className="w-5 h-5" />
+              <ChevronRightIcon className="w-4 h-4 md:w-5 md:h-5" />
             </button>
           </div>
+          
         </div>
       </div>
     </section>

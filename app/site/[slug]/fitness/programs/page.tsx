@@ -57,7 +57,15 @@ export default async function ProductListPage({ params, searchParams }: PageProp
       orderBy,
     }),
     prisma.marketplaceListings.count({ where }),
-    prisma.productCategory.findMany({ orderBy: { name: 'asc' } }),
+    prisma.productCategory.findMany({ 
+      where:{
+        StoreCategory: {
+          some: {
+            companyId: baseCompany.id,
+          }
+        }
+      },
+      orderBy: { name: 'asc' } }),
   ]);
 
   // Clean data hydration safely for the Client UI Cards

@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-// Hero Icons as per saved preference
 import { 
   ChevronLeftIcon, 
   ChevronRightIcon, 
@@ -17,9 +16,52 @@ import { HeroSlide } from '@/types/typings';
 const autoAdvanceDelay = 8000;
 const loader = ({ src }: { src: string }) => src;
 
+// Hardware-accelerated sliding variants mapped to input direction
+const slideVariants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? '20%' : '-20%',
+    opacity: 0,
+    filter: 'blur(8px)',
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+    filter: 'blur(0px)',
+    transition: {
+      x: { type: 'spring', stiffness: 120, damping: 20 },
+      opacity: { duration: 0.4 },
+      filter: { duration: 0.4 }
+    }
+  },
+  exit: (direction: number) => ({
+    x: direction < 0 ? '20%' : '-20%',
+    opacity: 0,
+    filter: 'blur(8px)',
+    transition: { duration: 0.35 }
+  })
+};
+
+const textContainerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.15 }
+  }
+};
+
+const textItemVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } 
+  }
+};
+
 export default function HoneyHero({ heroSlides }: { heroSlides: HeroSlide[] | null }) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
 
   const slides = useMemo(() => {
     const fallback = 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=1200&auto=format&fit=crop';
@@ -47,166 +89,219 @@ export default function HoneyHero({ heroSlides }: { heroSlides: HeroSlide[] | nu
   };
 
   useEffect(() => {
+    if (isHovered) return;
     const timer = setInterval(nextSlide, autoAdvanceDelay);
     return () => clearInterval(timer);
-  }, [nextSlide]);
+  }, [nextSlide, isHovered]);
 
   return (
-    <section className="relative min-h-[85vh] lg:min-h-screen flex items-center bg-[#FFFCF5] overflow-hidden pt-20 lg:pt-0">
+    <section 
+      className="relative min-h-[100svh] lg:h-screen flex items-center bg-[#FFFCF5] overflow-hidden pt-28 pb-24 lg:py-0"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       
       {/* 1. LAYERED DECORATIVE BACKGROUND */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Honeycomb Pattern */}
-        <div className="absolute inset-0 opacity-[0.03]" 
-             style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l25.98 15v30L30 60 4.02 45V15z' fill-rule='evenodd' stroke='%23B8860B' stroke-width='2' fill='none'/%3E%3C/svg%3E")`, backgroundSize: '60px' }} />
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        {/* Crisp Vector Honeycomb Pattern */}
+        <div 
+          className="absolute inset-0 opacity-[0.035]" 
+          style={{ 
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='56' height='97' viewBox='0 0 56 97' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M28 0L56 16.16v32.32L28 64.64l-28-16.16V16.16L28 0zm0 32.32l28 16.16v32.32l-28 16.16-28-16.16V48.48l28-16.16z' fill='%2378350f' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E")`, 
+            backgroundSize: '56px 97px' 
+          }} 
+        />
         
-        {/* Floating Particles */}
-        {[...Array(8)].map((_, i) => (
+        {/* Hydration-Safe Deterministic Atmospheric Particles */}
+        {Array.from({ length: 6 }).map((_, i) => (
           <motion.div
             key={i}
             animate={{ 
-              y: [0, -120, 0], 
-              x: [0, 40, 0],
-              scale: [1, 1.2, 1],
-              opacity: [0.1, 0.4, 0.1] 
+              y: [0, -60, 0], 
+              x: [0, 25, 0],
+              scale: [1, 1.15, 1],
+              opacity: [0.15, 0.35, 0.15] 
             }}
-            transition={{ duration: 8 + i * 2, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute w-2 h-2 bg-[#D4AF37] rounded-full blur-[1px]"
-            style={{ top: `${Math.random() * 100}%`, left: `${Math.random() * 100}%` }}
+            transition={{ 
+              duration: 9 + i * 2, 
+              repeat: Infinity, 
+              ease: "easeInOut" 
+            }}
+            className="absolute w-2 h-2 bg-amber-500 rounded-full blur-[0.5px]"
+            style={{ 
+              top: `${15 + i * 13}%`, 
+              left: `${10 + (i * 17) % 80}%` 
+            }}
           />
         ))}
 
-        {/* Large Sun Glow */}
-        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-amber-200/20 blur-[150px] rounded-full" />
+        {/* Ambient Warm Golden Fields Glow */}
+        <div className="absolute -top-40 -left-40 w-[500px] h-[500px] bg-amber-200/30 blur-[130px] rounded-full mix-blend-multiply" />
+        <div className="absolute -bottom-20 right-0 w-[400px] h-[400px] bg-orange-100/40 blur-[100px] rounded-full mix-blend-multiply" />
       </div>
 
-      <div className="container mx-auto px-6 lg:px-16 relative z-10">
-        <AnimatePresence mode="wait" custom={direction}>
-          <motion.div
-            key={current}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8 }}
-            className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center"
-          >
-            {/* TEXT CONTENT */}
-            <div className="lg:col-span-6 order-2 lg:order-1">
+      {/* 2. MAIN VIEWPORT CONTENT LAYER */}
+      <div className="container mx-auto px-6 sm:px-8 lg:px-16 relative z-10 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 xl:gap-24 items-center">
+          
+          {/* TEXT EDITORIAL MODULE */}
+          <div className="lg:col-span-6 order-2 lg:order-1">
+            <AnimatePresence mode="wait" custom={direction}>
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-8"
+                key={current}
+                variants={textContainerVariants}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                className="space-y-6 md:space-y-8 text-center lg:text-left"
               >
-                <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-amber-50 border border-amber-100/50">
-                  <SparklesIcon className="w-4 h-4 text-amber-600" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-800">
+                {/* Dynamic Season Badge */}
+                <motion.div variants={textItemVariants} className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-amber-50 border border-amber-200/40 shadow-sm">
+                  <SparklesIcon className="w-3.5 h-3.5 text-amber-700 animate-pulse" />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-amber-900">
                     {slides[current].badgeText}
                   </span>
-                </div>
+                </motion.div>
 
-                <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif text-stone-900 leading-[0.95] tracking-tight">
+                {/* Structured Split Typography */}
+                <motion.h1 
+                  variants={textItemVariants}
+                  className="text-4xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl font-serif text-stone-900 leading-[1.02] tracking-tight font-normal"
+                >
                   {slides[current].headline?.split('\n').map((text, i) => (
-                    <span key={i} className="block last:italic last:text-amber-600">
+                    <span key={i} className="block last:italic last:font-medium last:text-amber-600">
                       {text}
                     </span>
                   ))}
-                </h1>
+                </motion.h1>
 
-                <p className="text-stone-600 text-lg md:text-xl max-w-md leading-relaxed">
+                {/* Body Content Copy */}
+                <motion.p 
+                  variants={textItemVariants}
+                  className="text-stone-600 text-base md:text-lg lg:text-xl max-w-md lg:max-w-lg mx-auto lg:ml-0 leading-relaxed font-light"
+                >
                   {slides[current].subline}
-                </p>
+                </motion.p>
 
-                <div className="flex flex-col sm:flex-row items-center gap-6 pt-4">
+                {/* Call-to-Actions & Internal Quality Hub */}
+                <motion.div variants={textItemVariants} className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6 pt-2">
                   <Link
                     href={slides[current].ctaLink || '/shop'}
-                    className="w-full sm:w-auto px-12 py-5 bg-[#3E2723] text-white text-xs font-bold uppercase tracking-widest rounded-full hover:bg-amber-600 transition-all duration-500 shadow-2xl shadow-amber-900/20 hover:scale-105 flex justify-center"
+                    className="w-full sm:w-auto text-center px-10 py-6 bg-[#2B1B17] text-white text-xs font-bold uppercase tracking-widest rounded-full hover:bg-amber-600 active:scale-[0.98] transition-all duration-300 shadow-xl shadow-amber-950/10"
                   >
                     {slides[current].ctaText}
                   </Link>
-                  <div className="flex items-center gap-4 text-stone-400">
-                    <div className="w-12 h-12 rounded-full border border-stone-200 flex items-center justify-center">
-                      <BeakerIcon className="w-5 h-5" />
+                  
+                  <div className="flex items-center gap-3.5 text-stone-500 border-t sm:border-t-0 sm:border-l border-stone-200 pt-4 sm:pt-0 sm:pl-6 w-full sm:w-auto justify-center">
+                    <div className="w-10 h-10 rounded-full border border-stone-200 bg-white flex items-center justify-center shrink-0 shadow-sm">
+                      <BeakerIcon className="w-4 h-4 text-stone-600" />
                     </div>
                     <div className="text-left">
-                      <p className="text-[10px] font-black uppercase tracking-widest leading-none">Purity Verified</p>
-                      <p className="text-[10px] font-medium italic">100% Organic & Raw</p>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-stone-800 leading-none mb-0.5">Purity Verified</p>
+                      <p className="text-[11px] font-serif text-stone-400 italic">100% Organic & Raw</p>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               </motion.div>
-            </div>
+            </AnimatePresence>
+          </div>
 
-            {/* VISUAL COMPOSITION */}
-            <div className="lg:col-span-6 order-1 lg:order-2">
-              <div className="relative w-full aspect-[4/5] max-w-[500px] mx-auto">
-                {/* Main Image Arch */}
+          {/* VISUAL ARCH GALLERY COMPOSITION */}
+          <div className="lg:col-span-6 order-1 lg:order-2">
+            <div className="relative w-full aspect-[4/5] max-w-[300px] sm:max-w-[420px] lg:max-w-[460px] xl:max-w-[480px] mx-auto group">
+              
+              {/* Main Visual Frame Shaped Arch */}
+              <AnimatePresence mode="popLayout" custom={direction}>
                 <motion.div
-                  initial={{ scale: 0.9, opacity: 0, rotate: -2 }}
-                  animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                  transition={{ duration: 1.2, ease: "circOut" }}
-                  className="relative w-full h-full z-10 rounded-t-[240px] rounded-b-3xl overflow-hidden border-[16px] border-white shadow-[0_32px_64px_-16px_rgba(184,134,11,0.3)]"
+                  key={current}
+                  custom={direction}
+                  variants={slideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  className="relative w-full h-full z-10 rounded-t-[180px] sm:rounded-t-[240px] rounded-b-3xl overflow-hidden border-[12px] sm:border-[16px] border-white shadow-[0_32px_64px_-16px_rgba(120,53,15,0.18)]"
                 >
                   <Image 
-                    src={slides[current].imageUrl || slides[current].productImageUrl || 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=1200&auto=format&fit=crop'} 
-                    alt="Artisanal Honey" 
+                    src={slides[current].imageUrl || slides[current].productImageUrl || ''} 
+                    alt="Artisanal Honey Harvest" 
                     fill 
                     loader={loader}
-                    className="object-cover scale-105 hover:scale-110 transition-transform duration-[3s]"
+                    priority
+                    className="object-cover transition-transform duration-[4s] ease-out group-hover:scale-105" 
                   />
-                  {/* Subtle Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-amber-900/5 to-transparent" />
+                  {/* Subtle Protective Gradient Ambient Shadow */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-amber-950/10 via-transparent to-black/5" />
                 </motion.div>
+              </AnimatePresence>
 
-                {/* Floating "Nectar" Card */}
+              {/* Floating Analytical Trust Pill (Hidden on Mobile Viewports to maximize spacing) */}
+              <AnimatePresence mode="wait">
                 <motion.div 
-                  animate={{ y: [0, -20, 0] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -right-8 bottom-12 z-20 bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white hidden md:block"
+                  key={current}
+                  initial={{ opacity: 0, scale: 0.8, x: 20 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  exit={{ opacity: 0, scale: 0.8, x: 20 }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
+                  className="absolute -right-2 sm:-right-4 lg:-right-8 bottom-16 z-20 bg-white/95 backdrop-blur-md px-5 py-4 rounded-2xl shadow-xl border border-stone-100 hidden sm:block"
                 >
-                  <div className="flex flex-col items-center text-center">
-                    <SunIcon className="w-8 h-8 text-amber-500 mb-2" />
-                    <p className="text-[10px] font-black uppercase text-stone-400 tracking-tighter">Vitamin Content</p>
-                    <p className="text-xl font-serif text-stone-900">Naturally Rich</p>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-amber-50 rounded-xl">
+                      <SunIcon className="w-5 h-5 text-amber-600 animate-spin-slow" />
+                    </div>
+                    <div className="text-left pr-2">
+                      <p className="text-[9px] font-bold uppercase text-stone-400 tracking-wider mb-0.5">Bio-Active Content</p>
+                      <p className="text-sm font-serif text-stone-900 font-medium">Naturally Rich Nectar</p>
+                    </div>
                   </div>
                 </motion.div>
+              </AnimatePresence>
 
-                {/* Organic Decorative Blob */}
-                <div className="absolute -z-10 -bottom-10 -left-10 w-64 h-64 bg-amber-100 rounded-full blur-3xl opacity-60" />
-              </div>
+              {/* Underlying Organic Blur Shadow Cushion */}
+              <div className="absolute -z-10 -bottom-6 -left-6 w-48 h-48 bg-amber-200/40 rounded-full blur-3xl opacity-70" />
             </div>
-          </motion.div>
-        </AnimatePresence>
+          </div>
+        </div>
       </div>
 
-      {/* REFINED NAVIGATION CONTROLS */}
-      <div className="absolute bottom-10 left-0 right-0 z-30 container mx-auto px-6 lg:px-16 flex justify-between items-end pointer-events-none">
-        {/* Progress Bars */}
-        <div className="flex gap-4 mb-4 pointer-events-auto">
+      {/* 3. REFINED CONTROL DASHBOARD PANELS */}
+      <div className="absolute bottom-6 left-0 right-0 z-20 container mx-auto px-6 sm:px-8 lg:px-16 flex items-center justify-between gap-4 pointer-events-none">
+        
+        {/* Dynamic Linear Active Progress Dots */}
+        <div className="flex items-center gap-3.5 pointer-events-auto">
           {slides.map((_, i) => (
             <button 
               key={i} 
-              onClick={() => setCurrent(i)}
-              className={`h-[3px] transition-all duration-700 rounded-full ${i === current ? 'w-16 bg-amber-600' : 'w-4 bg-stone-200'}`} 
-            />
+              onClick={() => {
+                setDirection(i > current ? 1 : -1);
+                setCurrent(i);
+              }}
+              className="group relative py-3 focus:outline-none"
+              aria-label={`Jump to slide ${i + 1}`}
+            >
+              <div className={`h-[3px] rounded-full transition-all duration-500 ${i === current ? 'w-12 bg-amber-700' : 'w-3 bg-stone-300/70 group-hover:bg-stone-400'}`} />
+            </button>
           ))}
         </div>
 
-        {/* Action Arrows */}
-        <div className="flex gap-[1px] rounded-full overflow-hidden border border-stone-200 bg-white pointer-events-auto shadow-lg">
+        {/* Tactile Split Navigation Arrows */}
+        <div className="flex rounded-full border border-stone-200/80 bg-white/90 backdrop-blur-sm pointer-events-auto shadow-md overflow-hidden shrink-0">
           <button 
             onClick={prevSlide} 
-            className="p-5 hover:bg-amber-50 text-stone-400 hover:text-amber-900 transition-all"
+            className="p-3.5 sm:p-4 hover:bg-stone-50 text-stone-500 hover:text-amber-900 active:scale-95 transition-all focus:outline-none"
+            aria-label="Previous Slide"
           >
-            <ChevronLeftIcon className="w-5 h-5" />
+            <ChevronLeftIcon className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
           </button>
-          <div className="w-[1px] bg-stone-100" />
+          <div className="w-[1px] bg-stone-200 self-stretch" />
           <button 
             onClick={nextSlide} 
-            className="p-5 hover:bg-amber-50 text-stone-400 hover:text-amber-900 transition-all"
+            className="p-3.5 sm:p-4 hover:bg-stone-50 text-stone-500 hover:text-amber-900 active:scale-95 transition-all focus:outline-none"
+            aria-label="Next Slide"
           >
-            <ChevronRightIcon className="w-5 h-5" />
+            <ChevronRightIcon className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
           </button>
         </div>
+        
       </div>
     </section>
   );

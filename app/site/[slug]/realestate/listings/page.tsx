@@ -92,7 +92,7 @@ export default async function ProductListPage({ params, searchParams, }: Product
   ]);
 
   return (
-    <main className="w-full min-h-screen ">
+    <main className="w-full min-h-screen bg-gray-50 dark:bg-gray-900 ">
       {/* 3. Pass the categories and the search handler to the Hero */}
       <HeroSectionWrapper 
         store={store as any} 

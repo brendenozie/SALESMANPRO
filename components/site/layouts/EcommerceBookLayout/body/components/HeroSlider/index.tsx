@@ -1,30 +1,44 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
 import { 
   ChevronLeftIcon,
   ChevronRightIcon,
-  ArrowRightIcon,
-  PlusIcon,
   ShoppingBagIcon
 } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import Link from 'next/link';
 
+interface BookSlide {
+  imageUrl: string;
+  productImgUrl?: string;
+  headline: string;
+  badgeText: string;
+  subline?: string;
+  description: string;
+  ctaText: string;
+  ctaLink: string;
+  price: string;
+}
+
+export interface BookDukaHeroProps {
+  heroSlides?: BookSlide[] | null;
+}
+
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-export default function BookDukaResponsiveHero({ heroSlides }: any) {
+export default function BookDukaResponsiveHero({ heroSlides }: BookDukaHeroProps) {
   const [current, setCurrent] = useState(0);
+  const [direction, setDirection] = useState(0); // -1 for left, 1 for right
 
-  const slides = heroSlides?.length > 0 ? heroSlides : [
+  const defaultSlides: BookSlide[] = useMemo(() => [
     {
-      imageUrl: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f', // Direct product focus
+      imageUrl: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f',
       productImgUrl: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f',
       headline: 'The Silence of Modern Ink',
       badgeText: 'COLLECTION 001',
-      subline: 'A deep dive into contemporary African literature and the power of silent narratives.',
       description: 'A deep dive into contemporary African literature and the power of silent narratives.',
       ctaText: 'Shop Now',
       ctaLink: '/bookecommerce/products',
@@ -35,97 +49,135 @@ export default function BookDukaResponsiveHero({ heroSlides }: any) {
       productImgUrl: 'https://images.unsplash.com/photo-1512820790803-83ca734da794',
       headline: 'Heritage in Hardback',
       badgeText: 'LIMITED EDITION',
-      subline: 'Collector’s editions featuring hand-pressed covers and archival-quality paper.',
       description: 'Collector’s editions featuring hand-pressed covers and archival-quality paper.',
-      ctaText: 'Explore',
+      ctaText: 'Explore Collection',
       ctaLink: '/bookecommerce/products',
       price: 'KES 4,200',
     }
-  ];
+  ], []);
 
-  const handleDragEnd = (e: any, info: PanInfo) => {
-    if (info.offset.x > 100) setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
-    else if (info.offset.x < -100) setCurrent((prev) => (prev + 1) % slides.length);
+  const slides = useMemo(() => {
+    return heroSlides && heroSlides.length > 0 ? heroSlides : defaultSlides;
+  }, [heroSlides, defaultSlides]);
+
+  const paginate = useCallback((newDirection: number) => {
+    setDirection(newDirection);
+    setCurrent((prev) => (prev + newDirection + slides.length) % slides.length);
+  }, [slides.length]);
+
+  const handleDragEnd = (e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const threshold = 60; // Optimized response threshold
+    if (info.offset.x > threshold) {
+      paginate(-1);
+    } else if (info.offset.x < -threshold) {
+      paginate(1);
+    }
   };
 
+  const activeSlide = slides[current] || defaultSlides[0];
+
   return (
-    <section className="relative w-full h-[95vh] lg:h-[90vh] bg-white dark:bg-zinc-950 flex flex-col lg:flex-row overflow-hidden">
+    <section className="relative w-full min-h-[90vh] lg:h-[85vh] bg-white dark:bg-zinc-950 flex flex-col lg:grid lg:grid-cols-2 overflow-hidden transition-colors duration-300">
       
-      {/* BACKGROUND DECOR (Desktop Only) */}
-      <div className="absolute inset-0 flex items-center justify-center opacity-[0.02] dark:opacity-[0.04] pointer-events-none hidden lg:flex">
-        <span className="text-[45rem] font-black italic select-none">0{current + 1}</span>
+      {/* BACKGROUND DECOR FRAME */}
+      <div className="absolute inset-0 flex items-center justify-center opacity-[0.015] dark:opacity-[0.03] pointer-events-none select-none z-0">
+        <AnimatePresence mode="wait">
+          <motion.span 
+            key={current}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            transition={{ duration: 0.6 }}
+            className="text-[32rem] sm:text-[45rem] font-black italic tracking-tighter leading-none"
+          >
+            0{current + 1}
+          </motion.span>
+        </AnimatePresence>
       </div>
 
-      {/* TOP/RIGHT: VISUAL AREA (Book Focus) */}
-      <div className="relative w-full lg:w-1/2 h-1/2 lg:h-full bg-zinc-100 dark:bg-zinc-900/40 flex items-center justify-center p-6">
-        <AnimatePresence mode="wait">
+      {/* VISUAL COMPONENT LAYER (Tactile Asset Showcase) */}
+      <div className="relative w-full h-[45vh] lg:h-full bg-zinc-50 dark:bg-zinc-900/20 flex items-center justify-center p-6 sm:p-12 lg:p-16 border-b lg:border-b-0 lg:border-r border-zinc-100 dark:border-zinc-900/60 transition-colors duration-300 z-10 [perspective:1200px]">
+        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-zinc-100/30 dark:to-zinc-950/20 pointer-events-none" />
+        
+        <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={current}
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.4}
             onDragEnd={handleDragEnd}
-            // initial={{ opacity: 0, y: 40, rotate: 10, scale: 0.8 }}
-            // animate={{ opacity: 1, y: 0, rotate: -5, scale: 1 }}
-            // exit={{ opacity: 0, y: -40, rotate: 5, scale: 1.1 }}
-            transition={{ type: "spring", stiffness: 100, damping: 20 }}
-            className="relative w-[60%] lg:w-[70%] aspect-[3/4] z-10 cursor-grab active:cursor-grabbing"
+            initial={{ opacity: 0, rotateY: direction > 0 ? 45 : -45, z: -100, scale: 0.9 }}
+            animate={{ opacity: 1, rotateY: -12, z: 0, scale: 1 }}
+            exit={{ opacity: 0, rotateY: direction > 0 ? -45 : 45, z: -100, scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 90, damping: 18 }}
+            whileHover={{ scale: 1.02, rotateY: -6, transition: { duration: 0.3 } }}
+            className="relative w-[50%] sm:w-[45%] lg:w-[60%] xl:w-[50%] aspect-[3/4] z-10 cursor-grab active:cursor-grabbing [transform-style:preserve-3d]"
           >
             <Image
-              src={slides[current].productImgUrl || slides[current].imageUrl || slides[current].imageUrl || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f'}
-              alt={slides[current].headline || 'Hero Image'}
+              src={activeSlide.productImgUrl || activeSlide.imageUrl || defaultSlides[0].imageUrl}
+              alt={activeSlide.headline || 'Featured Book Cover'}
               fill
-              className="object-contain drop-shadow-[20px_30px_50px_rgba(0,0,0,0.2)] dark:drop-shadow-[0_0_60px_rgba(20,184,166,0.15)]"
+              className="object-contain drop-shadow-[15px_25px_35px_rgba(0,0,0,0.18)] dark:drop-shadow-[0_20px_50px_rgba(20,184,166,0.12)] select-none pointer-events-none"
               loader={loader}
               priority
+              unoptimized
             />
             
-            {/* Mobile Swipe Indicator Overlay */}
-            <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-2 lg:hidden opacity-40">
-                <ChevronLeftIcon className="w-4 h-4 animate-pulse" />
-                <span className="text-[10px] font-bold tracking-widest uppercase">Swipe</span>
-                <ChevronRightIcon className="w-4 h-4 animate-pulse" />
+            {/* Edge Shadow Mimic (Real Book Spine Illusion) */}
+            {/* <div className="absolute top-0 left-0 bottom-0 w-[4%] bg-gradient-to-r from-black/20 via-black/5 to-transparent pointer-events-none rounded-l-sm" /> */}
+            
+            {/* Gesture Overlay HUD for Mobile Screens */}
+            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 lg:hidden opacity-30 select-none pointer-events-none whitespace-nowrap">
+              <ChevronLeftIcon className="w-3.5 h-3.5 animate-pulse" />
+              <span className="text-[9px] font-black tracking-[0.2em] uppercase">Swipe Cover</span>
+              <ChevronRightIcon className="w-3.5 h-3.5 animate-pulse" />
             </div>
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* BOTTOM/LEFT: CONTENT AREA */}
-      <div className="w-full lg:w-1/2 h-1/2 lg:h-full flex flex-col justify-center px-6 md:px-20 relative z-20 -mt-10 lg:mt-0">
-        {/* Glassmorphism card for mobile visibility */}
-        <div className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl lg:backdrop-blur-none lg:bg-transparent p-6 lg:p-0 rounded-3xl lg:rounded-none border border-zinc-200/50 dark:border-white/5 lg:border-none shadow-2xl lg:shadow-none">
+      {/* TYPOGRAPHY CONTROL BLOCKS */}
+      <div className="w-full h-auto lg:h-full flex flex-col justify-center px-6 sm:px-12 md:px-16 xl:px-24 py-10 lg:py-0 relative z-20">
+        <div className="max-w-xl w-full mx-auto lg:mx-0">
           <AnimatePresence mode="wait">
             <motion.div
               key={current}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="space-y-6 lg:space-y-8"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="space-y-6 sm:space-y-8"
             >
-              <div className="space-y-2">
-                <p className="text-teal-600 dark:text-teal-400 font-black text-[10px] lg:text-xs tracking-[0.4em] uppercase">
-                  {slides[current].badgeText || 'COLLECTION 001'}
-                </p>
-                <h1 className="text-4xl md:text-7xl font-bold text-zinc-900 dark:text-white leading-tight lg:leading-[1.05]">
-                  {slides[current].headline}
+              <div className="space-y-3">
+                <span className="inline-block text-teal-600 dark:text-teal-400 font-black text-[10px] lg:text-xs tracking-[0.35em] uppercase">
+                  {activeSlide.badgeText || 'COLLECTION 001'}
+                </span>
+                <h1 className="text-3xl sm:text-5xl xl:text-6xl font-extrabold text-zinc-900 dark:text-white leading-[1.1] tracking-tight text-balance">
+                  {activeSlide.headline}
                 </h1>
               </div>
 
-              <p className="text-zinc-500 dark:text-zinc-400 text-sm lg:text-lg max-w-md leading-relaxed">
-                {slides[current].description || slides[current].subline || 'A deep dive into contemporary African literature and the power of silent narratives.'}
+              <p className="text-zinc-500 dark:text-zinc-400 text-sm sm:text-base xl:text-lg max-w-md leading-relaxed font-normal">
+                {activeSlide.description || activeSlide.subline}
               </p>
 
-              <div className="flex flex-wrap items-center gap-4 lg:gap-8 pt-2 ">
-                <Link href={slides[current].ctaLink || '/bookecommerce/products'} className="w-full sm:w-auto">
-                  <button className="w-full sm:w-auto flex items-center justify-center gap-3 bg-teal-600 dark:bg-white text-white dark:text-black px-8 py-4 rounded-full font-bold shadow-lg transition-all hover:bg-zinc-900 active:scale-95">
-                    {slides[current].ctaText}
-                    <ShoppingBagIcon className="w-5 h-5" />
-                  </button>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-8 pt-2">
+                <Link href={activeSlide.ctaLink || '/bookecommerce/products'} className="w-full sm:w-auto">
+                  <motion.span 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full sm:w-auto flex items-center justify-center gap-3 bg-teal-600 hover:bg-teal-700 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-black px-8 py-4 rounded-xl font-bold cursor-pointer shadow-md hover:shadow-lg transition-all text-sm uppercase tracking-wider"
+                  >
+                    <span>{activeSlide.ctaText}</span>
+                    <ShoppingBagIcon className="w-4 h-4 flex-shrink-0" />
+                  </motion.span>
                 </Link>
+
                 <div className="flex items-center gap-4">
-                  <div className="h-10 w-[1px] bg-zinc-200 dark:bg-zinc-800" />
+                  <div className="hidden sm:block h-8 w-[1px] bg-zinc-200 dark:bg-zinc-800" />
                   <div>
-                    <span className="block text-[9px] text-zinc-400 uppercase font-black tracking-widest">Price</span>
-                    <span className="text-xl lg:text-2xl font-black text-zinc-900 dark:text-white">{slides[current].price}</span>
+                    <span className="block text-[9px] text-zinc-400 dark:text-zinc-500 uppercase font-black tracking-widest mb-0.5">Price</span>
+                    <span className="text-xl xl:text-2xl font-black text-zinc-900 dark:text-white tracking-tight">{activeSlide.price}</span>
                   </div>
                 </div>
               </div>
@@ -133,31 +185,30 @@ export default function BookDukaResponsiveHero({ heroSlides }: any) {
           </AnimatePresence>
         </div>
 
-        {/* CONTROLS: Desktop Side / Mobile Bottom */}
-        <div className="absolute bottom-6 lg:bottom-12 right-6 lg:left-auto lg:right-20 flex items-center gap-4">
-          <div className="flex bg-zinc-900 dark:bg-white rounded-full p-1 shadow-xl">
+        {/* CONTROLS INTERFACE ARCHITECTURE */}
+        <div className="absolute bottom-6 lg:bottom-12 right-6 sm:right-12 lg:right-auto lg:left-16 xl:left-24 flex items-center gap-4 z-30">
+          <div className="flex bg-zinc-900/90 dark:bg-zinc-100/90 backdrop-blur-md rounded-xl p-1 shadow-lg border border-white/10 dark:border-black/5">
             <button 
-              onClick={() => setCurrent((prev) => (prev - 1 + slides.length) % slides.length)}
-              className="p-3 text-white dark:text-black hover:scale-110 transition-transform"
+              onClick={() => paginate(-1)}
+              className="p-2.5 rounded-lg text-zinc-300 dark:text-zinc-700 hover:text-white dark:hover:text-black hover:bg-white/10 dark:hover:bg-black/5 transition-all focus:outline-none"
+              aria-label="Previous literary canvas item"
             >
-              <ChevronLeftIcon className="w-5 h-5" />
+              <ChevronLeftIcon className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
-            <div className="w-[1px] bg-white/10 dark:bg-black/10 self-stretch my-2" />
+            <div className="w-[1px] bg-zinc-700 dark:bg-zinc-300 self-stretch my-1.5" />
             <button 
-              onClick={() => setCurrent((prev) => (prev + 1) % slides.length)}
-              className="p-3 text-white dark:text-black hover:scale-110 transition-transform"
+              onClick={() => paginate(1)}
+              className="p-2.5 rounded-lg text-zinc-300 dark:text-zinc-700 hover:text-white dark:hover:text-black hover:bg-white/10 dark:hover:bg-black/5 transition-all focus:outline-none"
+              aria-label="Next literary canvas item"
             >
-              <ChevronRightIcon className="w-5 h-5" />
+              <ChevronRightIcon className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
-          <div className="hidden sm:block text-[10px] font-black tracking-[0.2em] text-zinc-400 uppercase">
-             0{current + 1} / 0{slides.length}
+          <div className="hidden sm:block text-[10px] font-black tracking-[0.2em] text-zinc-400 dark:text-zinc-500 uppercase select-none">
+             0{current + 1} &mdash; 0{slides.length}
           </div>
         </div>
       </div>
-
-      {/* Subtle Bottom Highlight (Visual Intuition) */}
-      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-teal-500/50 to-transparent lg:hidden" />
     </section>
   );
 }
