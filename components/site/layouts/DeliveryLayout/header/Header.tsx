@@ -45,7 +45,7 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  const { slug, name, logoUrl, socialLinks = [], themeSettings = {} } = storeFormData || {};
+  const { slug, name, tagline, logoUrl, socialLinks = [], themeSettings = {} } = storeFormData || {};
   const primaryColor = themeSettings?.primaryColor || '#f7941d';
 
   /* =========================
@@ -154,20 +154,20 @@ export default function Navbar() {
                     width={90} 
                     height={45} 
                     loader={imageLoader} 
-                    className="brightness-0 invert object-contain h-12 w-auto lg:h-14" 
+                    className="object-contain h-12 w-auto lg:h-14" 
                   />
                 </div>
               )}
 
               {/* Typography Stack */}
-              <div className="flex flex-col justify-center border-l border-white/20 pl-4 py-1">
-                <span className="text-xl lg:text-2xl font-extrabold italic tracking-tight uppercase leading-none drop-shadow-sm">
-                  {name || 'Transportation'}
-                </span>
-                <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-[0.25em] text-orange-100 mt-1 block leading-none">
-                  Logistics
-                </span>
-              </div>
+              <div className="flex flex-col justify-center border-l border-white/20 pl-4 py-1 min-w-0">
+  <span className="text-xl lg:text-2xl font-extrabold italic tracking-tight uppercase leading-none drop-shadow-sm truncate">
+    {name || 'Transportation'}
+  </span>
+  <span className="text-[9px] lg:text-[10px] font-black uppercase text-orange-100 mt-1 block leading-none tracking-wider max-w-[22ch] sm:max-w-[28ch] truncate">
+    {tagline || 'Logistics & Delivery'}
+  </span>
+</div>
             </div>
           </Link>
 
