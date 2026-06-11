@@ -5,6 +5,7 @@ import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { VerifiedUser } from "@/lib/verifyAuth";
 import { sl } from "date-fns/locale";
+import { revalidateCompanyCache, revalidateStore } from "@/lib/company-fetcher"; // 👈 Imported revalidateStore
 import { encrypt } from "@/lib/crypto/aes";
 import { cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
@@ -289,7 +290,17 @@ async function createCompany(req: Request, context: HandlerContext) {
       },
     });
 
-    await cacheDel(`user:${user.id}:companies`); // Cache the new company for 5 minutes
+    // Replace the end of your createCompany function (inside the try block) with this:
+
+    await cacheDel(`user:${user.id}:companies`);
+
+    // ⚡ Also purge Next.js tag cache for this new slug if anyone pre-emptively attempts to load it
+    if (newCompany.slug) {
+      await revalidateCompanyCache(newCompany.slug);
+    }
+    if (newCompany.domain) {
+      await revalidateCompanyCache(newCompany.domain);
+    }
 
     return formatResponse(
       true,
@@ -297,7 +308,6 @@ async function createCompany(req: Request, context: HandlerContext) {
       "Company created successfully",
       201,
     );
-
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&

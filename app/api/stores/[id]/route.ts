@@ -1,11 +1,10 @@
-// app/api/companies/[id]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { getAuthSession } from "@/lib/auth";
 import { companySchema } from "@/lib/validations/company";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { revalidateCompanyCache } from "@/lib/company-fetcher";
+import { revalidateCompanyCache, revalidateStore } from "@/lib/company-fetcher"; // 👈 Imported revalidateStore
 import { encrypt } from "@/lib/crypto/aes";
 import { cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 
@@ -112,6 +111,7 @@ async function updateCompany(
     ...companyData
   } = parseResult.data;
 
+  // ⚡ Get old values first to clear out historical domains from cache if changed
   const companyToUpdate = await prisma.company.findFirst({
     where: { id, userId: session.user.id },
   });
@@ -126,9 +126,11 @@ async function updateCompany(
   }
 
   const cacheKey = `company:${id}`;
-
   const existingPaymentSettingsId = companyToUpdate.paymentSettingsId;
-  // Remove `id` from the nested PaymentSettings payload because Prisma's update/create inputs do not accept the related record's id field.
+  const oldSlug = companyToUpdate.slug;
+  const oldDomain = companyToUpdate.domain;
+
+  // Remove `id` from the nested PaymentSettings payload
   const paymentSettingsData = paymentSettings
     ? (({ id, ...rest }: any) => rest)(paymentSettings)
     : undefined;
@@ -141,7 +143,6 @@ async function updateCompany(
   if (paymentSettingsData) {
     encryptedPaymentSettings = { ...paymentSettingsData };
 
-    // M-PESA SECRET
     if (paymentSettingsData.mpesaConsumerSecret) {
       const encrypted = encrypt(paymentSettingsData.mpesaConsumerSecret);
       encryptedPaymentSettings.mpesaSecret_encrypted = encrypted.value;
@@ -150,7 +151,6 @@ async function updateCompany(
       encryptedPaymentSettings.mpesaConsumerSecret = null;
     }
 
-    // STRIPE SECRET
     if (paymentSettingsData.stripeSecretKey) {
       const encrypted = encrypt(paymentSettingsData.stripeSecretKey);
       encryptedPaymentSettings.stripeSecret_encrypted = encrypted.value;
@@ -159,7 +159,6 @@ async function updateCompany(
       encryptedPaymentSettings.stripeSecretKey = null;
     }
 
-    // PAYPAL SECRET
     if (paymentSettingsData.paypalClientSecret) {
       const encrypted = encrypt(paymentSettingsData.paypalClientSecret);
       encryptedPaymentSettings.paypalSecret_encrypted = encrypted.value;
@@ -168,7 +167,6 @@ async function updateCompany(
       encryptedPaymentSettings.paypalClientSecret = null;
     }
 
-    // PAYSTACK SECRET
     if (paymentSettingsData.paystackSecretKey) {
       const encrypted = encrypt(paymentSettingsData.paystackSecretKey);
       encryptedPaymentSettings.paystackSecret_encrypted = encrypted.value;
@@ -177,7 +175,6 @@ async function updateCompany(
       encryptedPaymentSettings.paystackSecretKey = null;
     }
 
-    // GHUBA API SECRET
     if (paymentSettingsData.ghubaApiKey) {
       const encrypted = encrypt(paymentSettingsData.ghubaApiKey);
       encryptedPaymentSettings.ghubaSecret_encrypted = encrypted.value;
@@ -231,22 +228,6 @@ async function updateCompany(
       AnalyticsConfig: analyticsConfig
         ? { update: analyticsConfig }
         : undefined,
-      // PaymentSettings: paymentSettings
-      //           ? {
-      //                 // Use upsert to handle both creation and updates
-      //                 upsert: {
-      //                     // 1. Where: Targets the related record using the foreign key
-      //                     where: {
-      //                         // If an ID exists, use it. If not, use a dummy value to trigger the 'create' block.
-      //                         id: existingPaymentSettingsId || "non-existent-id",
-      //                     },
-      //                     // 2. Update: What to do if the record is found
-      //                     update: paymentSettingsData as any,
-      //                     // 3. Create: What to do if the record is not found
-      //                     create: paymentSettingsData as any,
-      //                 },
-      //             }
-      //           : undefined,
 
       PaymentSettings: paymentSettings
         ? {
@@ -288,7 +269,7 @@ async function updateCompany(
             deleteMany: {},
             create: promotions.map((p) => ({
               ...p,
-              title: p.title || "Untitled", // Ensure title is always a string
+              title: p.title || "Untitled",
               perks: p.perks
                 ? p.perks.map((perk: any) => ({
                     ...perk,
@@ -324,13 +305,29 @@ async function updateCompany(
     },
   });
 
-  revalidateCompanyCache(updatedCompany.slug || "");
-
+  // ==========================================
+  // ♻️ PRUNING NEXT.JS & REDIS/KV CACHE LAYERS
+  // ==========================================
   try {
+    // 1️⃣ Purge Next.js framework-level tags for both slug & custom domain variants
+    if (updatedCompany.slug) await revalidateCompanyCache(updatedCompany.slug);
+    if (updatedCompany.domain)
+      await revalidateCompanyCache(updatedCompany.domain);
+
+    // Fallback security if handles changed: purge historic records
+    if (oldSlug && oldSlug !== updatedCompany.slug)
+      await revalidateCompanyCache(oldSlug);
+    if (oldDomain && oldDomain !== updatedCompany.domain)
+      await revalidateCompanyCache(oldDomain);
+
+    // 2️⃣ Purge sub-caches using your helper function (products, items, categories)
+    revalidateStore(updatedCompany.id);
+
+    // 3️⃣ Kill runtime key-value store instances
     await cacheDel(`user:${session.user.id}:companies`);
     await cacheDel(cacheKey);
   } catch (e) {
-    console.error("Failed to invalidate company cache:", e);
+    console.error("Failed to fully invalidate company cache pipelines:", e);
   }
 
   return formatResponse(true, updatedCompany, "Company updated successfully");
@@ -341,22 +338,26 @@ async function updateCompany(
 // =======================
 async function deleteCompany(
   req: Request,
-  { params }: { params: { companyId: string } },
+  { params }: { params: { id: string } }, // 👈 FIXED: Changed parameter key from companyId to 'id' to map path matching
 ) {
   const session = await getAuthSession();
   if (!session?.user?.id) {
     return formatResponse(false, null, "Unauthorized", 401);
   }
 
+  const { id } = params;
+
   const companyToDelete = await prisma.company.findFirst({
-    where: { id: params.companyId, userId: session.user.id },
+    where: { id: id, userId: session.user.id },
     select: {
+      id: true,
+      slug: true,
+      domain: true,
       sEOId: true,
       analyticsConfigId: true,
       paymentSettingsId: true,
       shippingSettingsId: true,
     },
-    orderBy: { createdAt: "desc" },
   });
 
   if (!companyToDelete) {
@@ -384,20 +385,27 @@ async function deleteCompany(
         where: { id: companyToDelete.shippingSettingsId },
       });
 
-    await tx.company.delete({ where: { id: params.companyId } });
+    await tx.company.delete({ where: { id: id } });
   });
 
+  // ==========================================
+  // ♻️ REMOVE ALL TRACES ON DELETION
+  // ==========================================
   try {
+    if (companyToDelete.slug)
+      await revalidateCompanyCache(companyToDelete.slug);
+    if (companyToDelete.domain)
+      await revalidateCompanyCache(companyToDelete.domain);
+
+    revalidateStore(companyToDelete.id);
+
     await cacheDel(`user:${session.user.id}:companies`);
-    await cacheDel(`company:${params.companyId}`);
+    await cacheDel(`company:${id}`);
   } catch {}
 
   return formatResponse(true, null, "Company deleted successfully");
 }
 
-// =======================
-// Export handlers with wrapper
-// =======================
 export const GET = withApiHandler(getCompany);
 export const PUT = withApiHandler(updateCompany);
 export const DELETE = withApiHandler(deleteCompany);
