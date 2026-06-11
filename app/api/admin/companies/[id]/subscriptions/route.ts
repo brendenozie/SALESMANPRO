@@ -2,10 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { addMonths } from "date-fns";
 
-export async function POST(
-  request: Request,
-  { params }: { params: { id: string } },
-) {
+export async function POST(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id: companyId } = params;
     const body = await request.json();
@@ -20,59 +17,30 @@ export async function POST(
       renewalDate = addMonths(new Date(), Number(durationMonths || 1));
     }
 
-    const subscriptionId = body.subscriptionId;
-
-    let subscription;
-
-    if (subscriptionId) {
-      // Upsert when we have an existing subscription id
-      subscription = await prisma.subscriptionCompany.upsert({
-        where: { id: subscriptionId },
-        update: {
-          planId,
-          renewalDate,
-          updatedAt: new Date(),
-        },
-        create: {
-          id: subscriptionId,
-          companyId,
-          userId: adminUserId,
-          planId,
-          status: "ACTIVE",
-          renewalDate,
-          startedAt: new Date(),
-          billingCycle: customRenewalDate
-            ? "CUSTOM"
-            : Number(durationMonths) >= 12
-              ? "ANNUALLY"
-              : "MONTHLY",
-        },
-      });
-    } else {
-      // Create new subscription when no id provided
-      subscription = await prisma.subscriptionCompany.create({
-        data: {
-          companyId,
-          userId: adminUserId,
-          planId,
-          status: "ACTIVE",
-          renewalDate,
-          startedAt: new Date(),
-          billingCycle: customRenewalDate
-            ? "CUSTOM"
-            : Number(durationMonths) >= 12
-              ? "ANNUALLY"
-              : "MONTHLY",
-        },
-      });
-    }
+    const subscription = await prisma.subscriptionCompany.upsert({
+      where: { 
+        // Example: ensuring we update the company's active sub
+        companyId_status: { companyId, status: "ACTIVE" } 
+      },
+      update: {
+        planId,
+        renewalDate,
+        updatedAt: new Date(),
+      },
+      create: {
+        companyId,
+        userId: adminUserId,
+        planId,
+        status: "ACTIVE",
+        renewalDate,
+        startedAt: new Date(),
+        billingCycle: customRenewalDate ? "CUSTOM" : (durationMonths >= 12 ? "ANNUALLY" : "MONTHLY"),
+      },
+    });
 
     return NextResponse.json({ success: true, data: subscription });
   } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
@@ -91,9 +59,9 @@ export async function POST(
 
 //     // We find the existing subscription or create a new one
 //     const subscription = await prisma.subscriptionCompany.upsert({
-//       where: {
+//       where: { 
 //         // Logic depends on your business rule, usually one active per company
-//         id: body.subscriptionId || 'new-id'
+//         id: body.subscriptionId || 'new-id' 
 //       },
 //       update: {
 //         planId,
