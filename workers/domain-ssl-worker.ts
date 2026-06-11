@@ -4,7 +4,7 @@ import fs from "fs";
 
 const CERT_PATH = "/etc/letsencrypt/live";
 // const NGINX_SITES = "/etc/nginx/sites-enabled";
-const TENANT_AVAILABLE = "/etc/nginx/sites-available/tenants";
+const TENANT_AVAILABLE = "/etc/nginx/sites-available";
 const TENANT_ENABLED = "/etc/nginx/sites-enabled";
 
 const EMAIL = process.env.ADMIN_EMAIL!;
