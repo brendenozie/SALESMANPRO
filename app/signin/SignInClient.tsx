@@ -42,6 +42,17 @@ const AlertTriangle = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+// We define a simple icon mapping for common providers.
+const ProviderIcons: Record<string, (props: React.SVGProps<SVGSVGElement>) => JSX.Element> = {
+    google: (props: React.SVGProps<SVGSVGElement>) => (
+        <svg {...props} width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M22.0001 12.5714C22.0001 11.7857 21.9287 11.0001 21.7858 10.2857H12.0001V14.1429H17.4287C17.2144 15.2857 16.5001 16.2143 15.5001 16.8572L15.5715 17.3572L18.7858 19.7857L19.0001 19.8572C20.8572 18.2857 22.0001 15.9286 22.0001 12.5714Z" fill="#4285F4"/><path d="M12 22C14.7143 22 17.0715 21.0714 18.7858 19.7857L15.5001 16.8572C14.5001 17.5 13.2144 17.9286 12 17.9286C9.35721 17.9286 7.14289 16.1429 6.35721 13.6429L6.28578 13.7143L3.07146 16.0714L3.00003 16.1429C4.64289 19.4286 8.00003 22 12 22Z" fill="#34A853"/><path d="M6.35721 13.6429C6.00007 12.7143 6.00007 11.6429 6.35721 10.7143L6.35721 10.6429L3.07146 8.28571L3.00003 8.35714C1.85718 10.5714 1.85718 13.1429 3.00003 15.3572L6.35721 13.6429Z" fill="#FBBC05"/><path d="M12 6.14286C13.8572 6.14286 15.0715 6.92857 15.8572 7.71429L19 4.5C17.0715 2.85714 14.7143 2 12 2C8.00003 2 4.64289 4.57143 3.00003 7.85714L6.35721 10.2143C7.14289 7.71429 9.35721 5.92857 12 5.92857V6.14286Z" fill="#EA4335"/></svg>
+    ),
+    github: (props: React.SVGProps<SVGSVGElement>) => (
+      <svg {...props} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3.2-1 3.2-4.2 3.2-5.7 0-.7-.2-1.2-.5-1.7 1.5-.2 1.5-1 1.5-3s-.9-2.7-1.7-3.2c-.3-.2-.7-.3-1.1-.3-1.6 0-3.3 1-4.2 2.7-.4.6-.6 1.3-.6 2.2 0 1.5.5 3.5 1 5.4 1 2 2.5 3.7 4.2 4.5v3.2"/></svg>
+    ),
+    // Add more providers as needed
+};
+
 // --- types ---
 export type Provider = { id: string; name: string };
 
@@ -159,7 +170,6 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
   };
 
  
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 overflow-auto py-12 px-4 sm:px-6 lg:px-8 relative">
       <div className="absolute inset-0 bg-indigo-900/10 dark:bg-indigo-900/40 backdrop-blur-sm"></div>
@@ -177,6 +187,42 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
             <span className="text-xs text-yellow-500">powered by salesmanpro</span>
           </p>
         </div>
+
+        {socialProviders.length > 0 && (
+          <>
+
+            {socialProviders
+              .filter((p) => p.id === "google")
+              .map((prov) => {
+                const IconComponent = ProviderIcons[prov.id.toLowerCase()] || UserIcon;
+
+                return (
+                  <button
+                    key={prov.id}
+                    className="w-full flex items-center justify-center py-3 px-4 border border-gray-300 dark:border-gray-700 
+                              rounded-xl shadow-md font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 
+                              hover:shadow-lg transition duration-300 ease-in-out transform hover:bg-gray-50 dark:hover:bg-gray-600"
+                    onClick={() => handleSocialSignIn(prov.id)}
+                  >
+                    <IconComponent className="mr-3 h-5 w-5" />
+                    Sign up with {prov.name}
+                  </button>
+                );
+              })}
+              
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300 dark:border-gray-700" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-3 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+            
+          </>
+        )}
 
         {error && (
           <div className="flex items-center p-3 bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-xl text-red-700 dark:text-red-300 text-sm font-medium">
@@ -224,35 +270,6 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
               )}
             </button>
           </form>
-        )}
-
-        {socialProviders.length > 0 && (
-          <>
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300 dark:border-gray-700" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-3 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-
-            {socialProviders
-              .filter((p) => p.id === "google")
-              .map((prov) => (
-                <button
-                  key={prov.id}
-                  onClick={() => handleSocialSignIn(prov.id)}
-                  className="w-full flex items-center justify-center py-3 px-4 border border-gray-300 dark:border-gray-700 rounded-xl shadow-md font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:shadow-lg transition duration-300 ease-in-out transform hover:bg-gray-50 dark:hover:bg-gray-600"
-                >
-                  Sign in with {prov.name}
-                </button>
-              ))}
-
-            
-          </>
         )}
 
         {/* //signup */}

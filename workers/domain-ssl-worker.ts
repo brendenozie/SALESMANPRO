@@ -131,7 +131,11 @@ server {
     const tempPath = `/tmp/${domain}.conf`;
 
     fs.writeFileSync(tempPath, config);
-    await run("mv", [tempPath, `${availablePath}/${domain}.conf`]);
+    
+    // await run("mv", [tempPath, `${availablePath}/${domain}.conf`]);
+    
+    await run("mv", [tempPath, availablePath]);
+
     // Create symlink only if missing
     await run("ln", ["-sfn", availablePath, tenantEnabledPath]);
 

@@ -188,6 +188,42 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
             </p>
           </div>
 
+          {/* 3. SOCIAL PROVIDERS */}
+          <div className="space-y-3">
+            {socialProviders
+              .filter(prov => prov.id === "google") // 👈 show only Google
+              .map((prov) => {
+                const IconComponent = ProviderIcons[prov.id.toLowerCase()] || UserIcon;
+
+                return (
+                  <button
+                    key={prov.id}
+                    className="w-full flex items-center justify-center py-3 px-4 border border-gray-300 dark:border-gray-700 
+                              rounded-xl shadow-md font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 
+                              hover:shadow-lg transition duration-300 ease-in-out transform hover:bg-gray-50 dark:hover:bg-gray-600"
+                    onClick={() => handleSocialSignUp(prov.id)}
+                  >
+                    <IconComponent className="mr-3 h-5 w-5" />
+                    Sign up with {prov.name}
+                  </button>
+                );
+              })}
+          </div>
+
+          {/* 2. DIVIDER */}
+          {socialProviders.length > 0 && (
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300 dark:border-gray-700" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-3 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                  Or sign up with
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Error Message Display */}
           {error && (
             <div className="flex items-center p-3 bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-xl text-red-700 dark:text-red-300 text-sm font-medium transition duration-300">
@@ -258,42 +294,6 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
               )}
             </button>
           </form>
-
-          {/* 2. DIVIDER */}
-          {socialProviders.length > 0 && (
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300 dark:border-gray-700" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-3 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                  Or sign up with
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* 3. SOCIAL PROVIDERS */}
-          <div className="space-y-3">
-            {socialProviders
-              .filter(prov => prov.id === "google") // 👈 show only Google
-              .map((prov) => {
-                const IconComponent = ProviderIcons[prov.id.toLowerCase()] || UserIcon;
-
-                return (
-                  <button
-                    key={prov.id}
-                    className="w-full flex items-center justify-center py-3 px-4 border border-gray-300 dark:border-gray-700 
-                              rounded-xl shadow-md font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 
-                              hover:shadow-lg transition duration-300 ease-in-out transform hover:bg-gray-50 dark:hover:bg-gray-600"
-                    onClick={() => handleSocialSignUp(prov.id)}
-                  >
-                    <IconComponent className="mr-3 h-5 w-5" />
-                    Sign up with {prov.name}
-                  </button>
-                );
-              })}
-          </div>
           
         </div>
     </div>
