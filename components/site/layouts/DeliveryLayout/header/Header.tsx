@@ -70,27 +70,6 @@ export default function Navbar() {
 
   const dynamicNavLinks = useMemo(() => {
     return navLinks.map((link) => ({ id: link.name, label: link.name, href: `/logistics/${link.name.toLowerCase()}` }));
-    // if (!storeFormData?.StoreCategory) return [];
-    // const rawCategories = [...storeFormData.StoreCategory]
-    //   .filter((c) => c.visible ?? true)
-    //   .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
-
-    // let links = rawCategories.map((cat) => ({
-    //   id: cat.id,
-    //   label: cat.displayName || 'Category',
-    //   href: `/${slug}/category/${cat.categoryId}`,
-    // }));
-
-    // if (links.length < 5) {
-    //   rawCategories.forEach((cat) => {
-    //     (cat.subcategories || []).filter((s) => s.visible ?? true).slice(0, 2).forEach((sub) => {
-    //       links.push({ id: sub.id, label: sub.name, href: `/${slug}/subcategory/${sub.slug}` });
-    //     });
-    //   });
-    // }
-
-    // const seen = new Set();
-    // return links.filter(l => !seen.has(l.label) && seen.add(l.label)).slice(0, 6);
   }, [storeFormData, slug]);
 
   return (
@@ -132,9 +111,9 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-20 lg:h-24">
           
           {/* SLANTED BRANDING BOX */}
-         <Link
+          <Link
             href="/"
-            className="relative h-full flex items-center bg-gradient-to-r from-[#f7941d] to-[#e07d10] pl-6 pr-16 lg:pl-10 lg:pr-24 text-white shrink-0 group overflow-hidden transition-all duration-500 ease-in-out select-none"
+            className="relative h-full flex items-center bg-gradient-to-r from-[#f7941d] to-[#e07d10] pl-4 pr-12 sm:pl-6 sm:pr-16 lg:pl-10 lg:pr-24 text-white shrink-0 group overflow-hidden transition-all duration-500 ease-in-out select-none min-w-0"
             style={{ clipPath: 'polygon(0 0, 100% 0, 85% 100%, 0% 100%)' }}
           >
             {/* Premium Hover Glow Effect */}
@@ -143,11 +122,11 @@ export default function Navbar() {
             {/* Animated Bottom Accent Line */}
             <div className="absolute bottom-0 left-0 h-[4px] w-0 bg-white group-hover:w-[75%] transition-all duration-500 ease-in-out" />
 
-            <div className="flex items-center gap-4 lg:gap-5 relative z-10 transform group-hover:scale-[1.01] transition-transform duration-300">
+            <div className="flex items-center gap-2 sm:gap-4 lg:gap-5 relative z-10 transform group-hover:scale-[1.01] transition-transform duration-300 min-w-0">
               
               {/* Logo Icon Container */}
               {logoUrl && (
-                <div className="relative w-20 h-10 sm:w-20 sm:h-12 md:w-28 md:h-14 lg:w-32 lg:h-16 flex items-center justify-center filter drop-shadow-md transition-transform duration-300 group-hover:rotate-[-2deg]">
+                <div className="relative w-12 h-8 sm:w-20 sm:h-12 md:w-28 md:h-14 lg:w-32 lg:h-16 flex items-center justify-center filter drop-shadow-md transition-transform duration-300 group-hover:rotate-[-2deg] shrink-0">
                   <Image 
                     src={logoUrl} 
                     alt={name || 'Logo'} 
@@ -159,11 +138,11 @@ export default function Navbar() {
               )}
 
               {/* Typography Stack */}
-              <div className="flex flex-col justify-center border-l border-white/20 pl-4 py-1 min-w-0">
-                <span className="text-xl lg:text-2xl font-extrabold italic tracking-tight uppercase leading-none drop-shadow-sm truncate">
+              <div className="flex flex-col justify-center border-l border-white/20 pl-2 sm:pl-4 py-1 min-w-0">
+                <span className="text-sm sm:text-lg lg:text-2xl font-extrabold italic tracking-tight uppercase leading-none drop-shadow-sm truncate">
                   {name || 'Transportation'}
                 </span>
-                <span className="text-[9px] lg:text-[10px] font-black uppercase text-orange-100 mt-1 block leading-none tracking-wider max-w-[22ch] sm:max-w-[28ch] truncate">
+                <span className="text-[8px] sm:text-[9px] lg:text-[10px] font-black uppercase text-orange-100 mt-1 block leading-none tracking-wider max-w-[15ch] sm:max-w-[28ch] truncate">
                   {tagline || 'Logistics & Delivery'}
                 </span>
               </div>
@@ -185,19 +164,10 @@ export default function Navbar() {
           </div>
 
           {/* ACTION ICONS */}
-          <div className="flex items-center gap-2 sm:gap-5 px-6">
+          <div className="flex items-center gap-2 sm:gap-5 px-4 sm:px-6 shrink-0">
             <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 cursor-pointer hover:text-orange-500 hidden sm:block" />
             
             <div className="h-6 w-[1px] bg-gray-200 hidden sm:block" />
-
-            {/* <div className="relative cursor-pointer group" onClick={() => cart.length > 0 && router.push('/logistics/checkout')}>
-              <ShoppingBagIcon className="w-6 h-6 text-gray-800 group-hover:text-orange-500 transition-colors" />
-              {cart.length > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-blue-700 text-white text-[9px] w-4.5 h-4.5 rounded-full flex items-center justify-center font-bold shadow-sm">
-                  {cart.length}
-                </span>
-              )}
-            </div> */}
 
             <div className="hidden lg:block">
               {user ? (
