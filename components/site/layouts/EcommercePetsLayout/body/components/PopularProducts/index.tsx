@@ -52,7 +52,7 @@ export default function DailyBestSells({ id }: { id: string }) {
     ]
   };
 
-  if (isLoading) return <div className="py-20"><SkeletonGrid count={4} /></div>;
+  if (isLoading) return <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={4} /></div>;
   if (!data?.data?.length) return null;
 
   return (

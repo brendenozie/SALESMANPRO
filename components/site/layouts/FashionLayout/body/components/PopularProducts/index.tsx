@@ -63,8 +63,8 @@ export default function DailyBestSells({ id }: { id: string }) {
     centerPadding: '30px',
   };
 
-  if (isLoading) return <div className="py-20"><SkeletonGrid count={4} /></div>;
-  if (error || !data?.data?.length) return null;
+  if (isLoading) return <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={4} /></div>;
+  if (error || !data?.data?.length) return null; 
 
   return (
     <section className="py-24 bg-white dark:bg-zinc-950 transition-colors duration-500 overflow-hidden">
