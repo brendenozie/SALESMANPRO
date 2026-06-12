@@ -2,7 +2,7 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import prisma from "@/server/db/prismadb";
-import { MarketListingForm } from "@/types/typings";
+import { ListingMarketStatus, ListingSystemStatus, ListingTransactionType, MarketListingForm } from "@/types/typings";
 import ProductListWrapper from "./components/ProductListWrapper/ProductListWrapper";
 
 // --- Mock sample products (used when DB has no listings) ---
@@ -42,6 +42,9 @@ const mockProducts: MarketListingForm[] = [
     paymentOption: "",
     duration: undefined,
     location: null,
+    listingMarketStatus: ListingMarketStatus.AVAILABLE,
+    listingSystemStatus: ListingSystemStatus.DRAFT,
+    listingTransactionType: ListingTransactionType.SALE
   },
   {
     id: "2",
@@ -78,6 +81,9 @@ const mockProducts: MarketListingForm[] = [
     paymentOption: "",
     duration: undefined,
     location: null,
+    listingMarketStatus: ListingMarketStatus.AVAILABLE,
+    listingSystemStatus: ListingSystemStatus.DRAFT,
+    listingTransactionType: ListingTransactionType.SALE
   },
 ];
 
@@ -135,6 +141,7 @@ export default async function ProductListPage({ params, searchParams }: PageProp
         sellingPrice: true,
         images: true,
         productCategoryId: true,
+        option: true
       },
     }),
     prisma.storeCategory.findMany({
@@ -163,7 +170,7 @@ export default async function ProductListPage({ params, searchParams }: PageProp
     status: "ACTIVE",
     subCategory: undefined,
     tags: [],
-    option: [],
+    option: p.option || [],
     size: [],
     weight: [],
     material: [],

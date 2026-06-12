@@ -1,13 +1,17 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { MarketListingForm } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
-import { PlusIcon, MinusIcon, ShoppingCartIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/solid';
+import { PlusIcon, MinusIcon, ShoppingCartIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/solid';
+
+interface ProductCardProps {
+  product: MarketListingForm;
+}
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -18,36 +22,105 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-export default function ProductCard({ product }: { product: MarketListingForm }) {
+export default function ProductCard({ product }: ProductCardProps) {
+  const [isConfiguring, setIsConfiguring] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
-  const primary = storeFormData?.themeSettings?.primaryColor || '#8B4513';
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#8B4513';
   
-  const quantity = cart.find((item: any) => item.id === product.id)?.quantity || 0;
-  
-  // WhatsApp Configuration
-  const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
-  const message = encodeURIComponent(`Hi! I'm interested in your "${product.name}". Is it stone-ground? I'd love to know about the texture!`);
+  const { name, images, finalPrice, sellingPrice } = product;
+
+  // 1. Structural Categorization of Roastery Variations
+  const groupedVariants = useMemo(() => {
+    const options = (product.option || []) as any[];
+    return options.reduce((acc, item) => {
+      if (!acc[item.category]) acc[item.category] = [];
+      acc[item.category].push(item);
+      return acc;
+    }, {} as Record<string, any[]>);
+  }, [product.option]);
+
+  const hasVariants = Object.keys(groupedVariants).length > 0;
+  const allOptionsSelected = Object.keys(groupedVariants).every((cat) => selectedOptions[cat]);
+
+  // 2. Dynamic Price Synthesis Engine
+  const calculatedPrices = useMemo(() => {
+    const baseFinalPrice = finalPrice ?? sellingPrice ?? 0;
+    const baseSellingPrice = sellingPrice ?? 0;
+    
+    let additiveSurcharge = 0;
+    Object.entries(selectedOptions).forEach(([category, selectedValue]) => {
+      const match = groupedVariants[category]?.find((v) => v.name === selectedValue);
+      if (match?.extraPrice) {
+        additiveSurcharge += match.extraPrice;
+      }
+    });
+
+    return {
+      finalPrice: baseFinalPrice + additiveSurcharge,
+      sellingPrice: baseSellingPrice > 0 ? baseSellingPrice + additiveSurcharge : undefined,
+    };
+  }, [selectedOptions, groupedVariants, finalPrice, sellingPrice]);
+
+  // 3. Independent SKU Context Search inside Shopping Cart
+  const quantity = cart.find((item: any) => {
+    if (item.id !== product.id) return false;
+    if (hasVariants) {
+      if (!item.selectedOptions) return false;
+      return Object.entries(selectedOptions).every(([cat, val]) => item.selectedOptions[cat] === val);
+    }
+    return true;
+  })?.quantity || 0;
+
+  // Percentage crunch-discount computation derived from config states
+  const discount = calculatedPrices.sellingPrice && calculatedPrices.sellingPrice > calculatedPrices.finalPrice 
+    ? Math.round(((calculatedPrices.sellingPrice - calculatedPrices.finalPrice) / calculatedPrices.sellingPrice) * 100) 
+    : null;
+
+  // 4. Dynamic Roastery Concierge WhatsApp String Construction
+  const optionsSummary = Object.entries(selectedOptions)
+    .map(([cat, val]) => `${cat}: ${val}`)
+    .join(', ');
+
+  const whatsappNumber = `${storeFormData?.contactPhone || "254732771353"}`.replace(/\D/g, '');
+  const message = encodeURIComponent(
+    `Hi! I'm interested in ordering your small-batch "${name}" jar${optionsSummary ? ` configured with [${optionsSummary}]` : ''}. Is this stone-ground variant ready for dispatch? I'd love to try it!`
+  );
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
-  const discount = product.sellingPrice && product.finalPrice 
-    ? Math.round(((product.sellingPrice - product.finalPrice) / product.sellingPrice) * 100) 
-    : null;
+  const handleAddToBag = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
+    if (hasVariants && !allOptionsSelected) {
+      setIsConfiguring(true);
+      return;
+    }
+
+    addToCart({
+      ...product,
+      finalPrice: calculatedPrices.finalPrice,
+      sellingPrice: calculatedPrices.sellingPrice || product.sellingPrice,
+      selectedOptions,
+    });
+  };
 
   return (
     <motion.div 
       whileHover={{ y: -10 }}
-      className="group relative bg-white rounded-[2.5rem] p-4 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(62,39,35,0.15)] border border-stone-100 h-full flex flex-col"
+      className="group relative bg-white rounded-[2.5rem] p-4 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(62,39,35,0.15)] border border-stone-100 h-full flex flex-col overflow-hidden"
     >
       {/* Image Container */}
       <div className="relative h-64 w-full rounded-[2rem] overflow-hidden bg-stone-50">
         <Link href={`/peanutecommerce/products/${product.id}`} className="block h-full w-full">
           <Image
-            src={product.images?.[0] || 'https://via.placeholder.com/300'}
-            alt={product.name}
+            src={images?.[0] || 'https://via.placeholder.com/300'}
+            alt={name}
             loader={loader}
             fill
-            className="transition-transform duration-700 group-hover:scale-110 object-cover object-center "
+            className="transition-transform duration-700 group-hover:scale-110 object-cover object-center"
           />
         </Link>
         
@@ -71,43 +144,46 @@ export default function ProductCard({ product }: { product: MarketListingForm })
         </a>
       </div>
 
-      {/* Content */}
-      <div className="mt-6 px-2 space-y-1 flex-grow">
-        <div className="flex justify-between items-center mb-1">
-          <div className="flex items-center gap-1">
-            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Small Batch</span>
-            <div className="h-1 w-1 rounded-full bg-stone-200" />
-            <a 
-              href={whatsappUrl} 
-              target="_blank" 
-              className="text-[9px] font-black text-[#128C7E] uppercase hover:underline transition-colors flex items-center gap-1"
-            >
-              <WhatsAppIcon className="w-3 h-3 inline-block" /> Order Via WhatsApp
-            </a>
+      {/* Content Section */}
+      <div className="mt-6 px-2 space-y-1 flex-grow flex flex-col justify-between">
+        <div>
+          <div className="flex justify-between items-center mb-1">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Small Batch</span>
+              <div className="h-1 w-1 rounded-full bg-stone-200" />
+              <a 
+                href={whatsappUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-[9px] font-black text-[#128C7E] uppercase hover:underline transition-colors flex items-center gap-1"
+              >
+                <WhatsAppIcon className="w-3 h-3" /> Order Via WhatsApp
+              </a>
+            </div>
           </div>
+
+          <Link href={`/peanutecommerce/products/${product.id}`} className="block">
+            <h4 style={{ color: primaryColor }} className="text-lg font-black tracking-tight group-hover:text-[#F3A852] transition-colors line-clamp-2">
+              {name}
+            </h4>
+          </Link>
+          
+          <p className="text-xs text-stone-400 font-medium italic mt-0.5">Freshly Roasted • No Added Sugar</p>
         </div>
 
-        <Link href={`/peanutecommerce/products/${product.id}`}>
-          <h4 className="text-lg font-black text-[#3E2723] tracking-tight group-hover:text-[#8B4513] transition-colors line-clamp-1">
-            {product.name}
-          </h4>
-        </Link>
-        
-        <p className="text-xs text-stone-400 font-medium italic">Freshly Roasted • No Added Sugar</p>
-
-        <div className="flex items-center justify-between pt-6 mt-auto">
+        <div className="flex items-center justify-between pt-6 border-t border-stone-50 mt-4">
           <div className="flex flex-col">
-            <span className="text-2xl font-black text-[#3E2723]">
-              Kes {(product.finalPrice ?? 0).toLocaleString()}
+            <span style={{ color: primaryColor }} className="text-2xl font-black">
+              Kes {calculatedPrices.finalPrice.toLocaleString()}
             </span>
-            {product.sellingPrice && product.sellingPrice > (product.finalPrice ?? 0) && (
+            {calculatedPrices.sellingPrice && calculatedPrices.sellingPrice > calculatedPrices.finalPrice && (
               <span className="text-xs line-through text-stone-300 font-bold">
-                Kes {product.sellingPrice.toLocaleString()}
+                Kes {calculatedPrices.sellingPrice.toLocaleString()}
               </span>
             )}
           </div>
 
-          {/* Dynamic Action Button */}
+          {/* Dynamic Action Button Toggle Matrix */}
           <div className="relative">
             <AnimatePresence mode="wait">
               {quantity === 0 ? (
@@ -116,25 +192,36 @@ export default function ProductCard({ product }: { product: MarketListingForm })
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
-                  onClick={() => addToCart(product)}
-                  className="w-12 h-12 rounded-2xl bg-[#3E2723] text-white flex items-center justify-center hover:bg-[#8B4513] transition-colors shadow-lg"
+                  onClick={handleAddToBag}
+                  style={{ backgroundColor: primaryColor }}
+                  className="px-4 h-12 rounded-2xl text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-lg"
                 >
-                  <PlusIcon className="w-6 h-6" />
+                  <ShoppingCartIcon className="w-4 h-4" />
+                  {hasVariants && !allOptionsSelected ? "Options" : "Add"}
                 </motion.button>
               ) : (
                 <motion.div
                   key="qty"
                   initial={{ width: 48, opacity: 0 }}
-                  animate={{ width: 110, opacity: 1 }}
+                  animate={{ width: 114, opacity: 1 }}
                   exit={{ width: 48, opacity: 0 }}
-                  className="h-12 bg-stone-100 rounded-2xl flex items-center justify-between px-2 overflow-hidden border border-stone-200"
+                  className="h-12 bg-stone-100 rounded-2xl flex items-center justify-between px-1.5 overflow-hidden border border-stone-200"
                 >
-                  <button onClick={() => decreaseQuantity(product.id)} className="w-8 h-8 rounded-xl hover:bg-white flex items-center justify-center text-[#3E2723] transition-colors">
-                    <MinusIcon className="w-4 h-4" />
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      decreaseQuantity(product.id);
+                    }} 
+                    className="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-stone-700 hover:bg-stone-50 transition-colors shadow-sm"
+                  >
+                    {quantity === 1 ? <TrashIcon className="w-3.5 h-3.5 text-red-500" /> : <MinusIcon className="w-3.5 h-3.5" />}
                   </button>
-                  <span className="font-black text-[#3E2723] text-sm">{quantity}</span>
-                  <button onClick={() => addToCart(product)} className="w-8 h-8 rounded-xl hover:bg-white flex items-center justify-center text-[#3E2723] transition-colors">
-                    <PlusIcon className="w-4 h-4" />
+                  <span style={{ color: primaryColor }} className="font-black text-sm w-4 text-center">{quantity}</span>
+                  <button 
+                    onClick={() => handleAddToBag()} 
+                    className="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-stone-700 hover:bg-stone-50 transition-colors shadow-sm"
+                  >
+                    <PlusIcon className="w-3.5 h-3.5" />
                   </button>
                 </motion.div>
               )}
@@ -142,6 +229,72 @@ export default function ProductCard({ product }: { product: MarketListingForm })
           </div>
         </div>
       </div>
+
+      {/* ================= ROASTERY JAR SELECTION OVERLAY DRAWER ================= */}
+      <AnimatePresence>
+        {isConfiguring && (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 15 }}
+            className="absolute inset-0 z-20 bg-white/98 backdrop-blur-md flex flex-col justify-end p-5 rounded-[2.5rem] border border-stone-100"
+          >
+            <button
+              onClick={() => setIsConfiguring(false)}
+              className="absolute top-5 right-5 p-1.5 bg-stone-100 text-stone-700 rounded-full transition-colors hover:bg-stone-200"
+            >
+              <XMarkIcon className="w-4 h-4 stroke-[3]" />
+            </button>
+
+            <div className="w-full space-y-4 pt-2 overflow-y-auto max-h-full [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <h5 style={{ color: primaryColor }} className="font-black text-center text-base border-b border-stone-100 pb-2">
+                Roastery Configurations
+              </h5>
+              
+              {Object.entries(groupedVariants).map(([category, itemsList]) => (
+                <div key={category} className="space-y-1.5 text-center">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+                    {category} Selection
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {itemsList.map((variantObj) => {
+                      const isSelected = selectedOptions[category] === variantObj.name;
+                      return (
+                        <button
+                          key={variantObj.name}
+                          type="button"
+                          onClick={() => setSelectedOptions({ ...selectedOptions, [category]: variantObj.name })}
+                          style={isSelected ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
+                          className={`px-3 py-1.5 text-[11px] font-bold rounded-xl border transition-all ${
+                            isSelected 
+                              ? "text-white shadow-sm" 
+                              : "border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100"
+                          }`}
+                        >
+                          {variantObj.name}
+                          {variantObj.extraPrice > 0 && ` (+Kes ${variantObj.extraPrice.toLocaleString()})`}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+
+              <button
+                disabled={!allOptionsSelected}
+                onClick={() => {
+                  handleAddToBag();
+                  setIsConfiguring(false);
+                }}
+                style={allOptionsSelected ? { backgroundColor: primaryColor } : {}}
+                className="mt-4 w-full py-3.5 bg-stone-300 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all disabled:cursor-not-allowed hover:opacity-90"
+              >
+                Confirm Jar Selection
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { StarIcon, ArrowRightIcon, ShoppingBagIcon, MinusIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/solid';
-import { MarketListingForm } from '@/types/typings';
+import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import useSWR from 'swr';
 import { createCachedFetcher } from '@/lib/swrCachedFetcher';
 import { SkeletonGrid } from '../SkeletonGrid/SkeletonGrid';
@@ -18,7 +17,7 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-// WhatsApp Icon for Quick Size Inquiries
+// WhatsApp Icon for Quick Inquiries
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24">
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.72.937 3.658 1.435 5.63 1.435h.008c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
@@ -45,16 +44,55 @@ const ProductGridItem = ({
   slug: string;
   contactPhone: string;
 }) => {
-  const [isSelectingSize, setIsSelectingSize] = useState(false);
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [isSelectingOptions, setIsSelectingOptions] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
 
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
 
-  const quantity =
-    cart.find((item: any) => item.id === product.id)?.quantity || 0;
-
   const primaryColor = storeFormData?.themeSettings?.primaryColor || primary;
+
+  // 1. Group dynamic product options safely by categories from database
+  const groupedVariants = useMemo(() => {
+    const options = (product.option || []) as VariantOptionItem[];
+    return options.reduce((acc, item) => {
+      if (!acc[item.category]) acc[item.category] = [];
+      acc[item.category].push(item);
+      return acc;
+    }, {} as Record<string, VariantOptionItem[]>);
+  }, [product.option]);
+
+  const hasVariants = Object.keys(groupedVariants).length > 0;
+  const allOptionsSelected = Object.keys(groupedVariants).every((cat) => selectedOptions[cat]);
+
+  // 2. Real-time cost updates pooling base pricing and option surcharges
+  const calculatedPrices = useMemo(() => {
+    const baseFinalPrice = product.finalPrice ?? product.sellingPrice ?? 0;
+    const baseSellingPrice = product.sellingPrice ?? 0;
+    
+    let totalSurcharge = 0;
+    Object.entries(selectedOptions).forEach(([category, name]) => {
+      const match = groupedVariants[category]?.find((v) => v.name === name);
+      if (match?.extraPrice) {
+        totalSurcharge += match.extraPrice;
+      }
+    });
+
+    return {
+      finalPrice: baseFinalPrice + totalSurcharge,
+      sellingPrice: baseSellingPrice > 0 ? baseSellingPrice + totalSurcharge : undefined,
+    };
+  }, [selectedOptions, groupedVariants, product.finalPrice, product.sellingPrice]);
+
+  // 3. Exact matching logic verifying item configuration records inside the cart array
+  const quantity = cart.find((item: any) => {
+    if (item.id !== product.id) return false;
+    if (hasVariants) {
+      if (!item.selectedOptions) return false;
+      return Object.entries(selectedOptions).every(([cat, val]) => item.selectedOptions[cat] === val);
+    }
+    return true;
+  })?.quantity || 0;
 
   // ---------- IMAGE ----------
   const imageSrc =
@@ -64,33 +102,34 @@ const ProductGridItem = ({
     "https://images.unsplash.com/photo-1542291026-7eec264c27ff";
 
   // ---------- WHATSAPP ----------
-  const whatsappNumber = storeFormData?.contactPhone || contactPhone || "254732771353";
+  const optionsSummary = Object.entries(selectedOptions)
+    .map(([cat, val]) => `${cat}: ${val}`)
+    .join(', ');
+
+  const whatsappNumber = `${storeFormData?.contactPhone || contactPhone || "254732771353"}`.replace(/\D/g, '');
 
   const message = encodeURIComponent(
-    `Hi! I'm interested in "${product.name}" priced at KES ${(
-      product.finalPrice || product.sellingPrice || 0
-    ).toLocaleString()}${selectedSize ? ` (Size UK ${selectedSize})` : ""}. Is it available?`
+    `Hi! I'm interested in "${product.name}"${optionsSummary ? ` (${optionsSummary})` : ''} priced at KES ${calculatedPrices.finalPrice.toLocaleString()}. Is it available?`
   );
 
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
   // ---------- ADD TO CART ----------
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation(); // 🔥 FIX MOBILE NAVIGATION ISSUE
+  const handleAddToCart = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation(); // Fix mobile layout navigation capture
 
-    if (!selectedSize && product.category?.name?.toLowerCase().includes("shoe")) {
-      setIsSelectingSize(true);
+    if (hasVariants && !allOptionsSelected) {
+      setIsSelectingOptions(true);
       return;
     }
 
     addToCart({
       ...product,
-      finalPrice: product.finalPrice || product.sellingPrice || 0,
-      selectedSize,
+      finalPrice: calculatedPrices.finalPrice,
+      sellingPrice: calculatedPrices.sellingPrice || product.sellingPrice,
+      selectedOptions,
     });
-
-    setIsSelectingSize(false);
   };
 
   return (
@@ -100,7 +139,7 @@ const ProductGridItem = ({
         isFeatured ? "md:col-span-2" : ""
       }`}
     >
-      {/* ================= IMAGE (ONLY NAVIGATION ZONE) ================= */}
+      {/* ================= IMAGE NAVIGATION ZONE ================= */}
       <Link
         href={`/ecommerceshoes/products/${product.id}`}
         className="relative block w-full overflow-hidden rounded-t-[2.5rem]"
@@ -134,15 +173,9 @@ const ProductGridItem = ({
           </span>
         )}
 
-        {product.isDiscounted && (
+        {product.isDiscounted && product.sellingPrice && (
           <span className="bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-full">
-            -
-            {Math.round(
-              ((product.sellingPrice - (product.finalPrice || 0)) /
-                product.sellingPrice) *
-                100
-            )}
-            %
+            -{Math.round(((product.sellingPrice - (product.finalPrice || 0)) / product.sellingPrice) * 100)}%
           </span>
         )}
       </div>
@@ -167,12 +200,12 @@ const ProductGridItem = ({
 
         <div className="mt-4">
           <span className="text-2xl font-black text-zinc-900 dark:text-white">
-            KES {(product.finalPrice || 0).toLocaleString()}
+            KES {calculatedPrices.finalPrice.toLocaleString()}
           </span>
 
-          {product.isDiscounted && (
+          {product.isDiscounted && calculatedPrices.sellingPrice && (
             <span className="ml-2 text-sm line-through text-zinc-400">
-              KES {product.sellingPrice?.toLocaleString()}
+              KES {calculatedPrices.sellingPrice.toLocaleString()}
             </span>
           )}
         </div>
@@ -186,40 +219,43 @@ const ProductGridItem = ({
                   e.preventDefault();
                   decreaseQuantity(product.id);
                 }}
-                className="p-3 bg-white dark:bg-zinc-700 rounded-xl"
+                className="p-3 bg-white dark:bg-zinc-700 rounded-xl shadow-sm border border-zinc-200/40 dark:border-zinc-600"
               >
                 <MinusIcon className="w-4 h-4" />
               </button>
 
-              <span className="font-black">{quantity}</span>
+              <div className="flex flex-col items-center">
+                <span className="font-black text-zinc-900 dark:text-white">{quantity}</span>
+                {optionsSummary && (
+                  <span className="text-[8px] font-black text-zinc-400 max-w-[140px] truncate uppercase tracking-tight">
+                    {optionsSummary}
+                  </span>
+                )}
+              </div>
 
               <button
-                onClick={handleAddToCart}
-                className="p-3 bg-white dark:bg-zinc-700 rounded-xl"
+                onClick={() => handleAddToCart()}
+                className="p-3 bg-white dark:bg-zinc-700 rounded-xl shadow-sm border border-zinc-200/40 dark:border-zinc-600"
               >
                 <PlusIcon className="w-4 h-4" />
               </button>
-
-              {selectedSize && (
-                <span className="text-[10px] font-black text-zinc-400">
-                  UK {selectedSize}
-                </span>
-              )}
             </div>
           ) : (
             <div className="flex gap-2">
               <button
-                onClick={handleAddToCart}
-                className="flex-[4] flex items-center justify-center gap-2 py-4 bg-zinc-900 text-white rounded-[1.5rem] font-black"
+                onClick={() => handleAddToCart()}
+                style={{ backgroundColor: primaryColor }}
+                className="flex-[4] flex items-center justify-center gap-2 py-4 text-white rounded-[1.5rem] font-black tracking-wide text-xs uppercase shadow-md transition-all active:brightness-95"
               >
                 <ShoppingBagIcon className="w-4 h-4" />
-                Add to Cart
+                {hasVariants && !allOptionsSelected ? 'Select Options' : 'Add to Cart'}
               </button>
 
               <a
                 href={whatsappUrl}
                 target="_blank"
-                className="flex-1 flex items-center justify-center bg-[#25D366] text-white rounded-[1.5rem]"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center bg-[#25D366] text-white rounded-[1.5rem] shadow-md hover:scale-[1.03] transition-transform"
               >
                 <WhatsAppIcon className="w-5 h-5" />
               </a>
@@ -228,46 +264,68 @@ const ProductGridItem = ({
         </div>
       </div>
 
-      {/* ================= SIZE PICKER (LIGHT VERSION) ================= */}
+      {/* ================= DYNAMIC SPECIFICATION VARIANT PICKER SHEET ================= */}
       <AnimatePresence>
-        {isSelectingSize && (
+        {isSelectingOptions && (
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
-            className="absolute inset-0 z-30 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md flex flex-col justify-center items-center p-6"
+            transition={{ type: "spring", damping: 25, stiffness: 220 }}
+            className="absolute inset-0 z-30 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md flex flex-col justify-end p-6 overflow-y-auto no-scrollbar"
           >
             <button
-              onClick={() => setIsSelectingSize(false)}
-              className="absolute top-4 right-4"
+              onClick={() => setIsSelectingOptions(false)}
+              className="absolute top-5 right-5 p-2 bg-zinc-50 dark:bg-zinc-800 rounded-full border border-zinc-200 dark:border-zinc-700"
             >
-              <XMarkIcon className="w-5 h-5" />
+              <XMarkIcon className="w-4 h-4" />
             </button>
 
-            <p className="text-[10px] font-black mb-4">Select Size</p>
-
-            <div className="grid grid-cols-3 gap-2 w-full">
-              {["7", "8", "9", "10", "11", "12"].map((size) => (
-                <button
-                  key={size}
-                  onClick={() => setSelectedSize(size)}
-                  className={`py-3 rounded-xl font-black text-xs border ${
-                    selectedSize === size
-                      ? "bg-black text-white"
-                      : "border-zinc-300"
-                  }`}
-                >
-                  {size}
-                </button>
+            <div className="w-full space-y-5 pt-6">
+              {Object.entries(groupedVariants).map(([category, items]) => (
+                <div key={category} className="space-y-2">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center">
+                    Choose {category}
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {items.map((opt) => {
+                      const isSelected = selectedOptions[category] === opt.name;
+                      return (
+                        <button
+                          key={opt.name}
+                          type="button"
+                          onClick={() => setSelectedOptions({ ...selectedOptions, [category]: opt.name })}
+                          style={{ 
+                            borderColor: isSelected ? primaryColor : undefined,
+                            backgroundColor: isSelected ? primaryColor : undefined 
+                          }}
+                          className={`px-4 py-2 rounded-xl border text-xs font-black transition-all ${
+                            isSelected 
+                              ? "text-white shadow-md shadow-black/10 scale-[1.02]" 
+                              : "border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-900/50 text-zinc-800 dark:text-zinc-200 active:bg-zinc-100"
+                          }`}
+                        >
+                          {opt.name}
+                          {opt.extraPrice > 0 && ` (+KES ${opt.extraPrice})`}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               ))}
-            </div>
 
-            <button
-              onClick={handleAddToCart}
-              className="mt-6 w-full py-4 bg-black text-white rounded-2xl font-black"
-            >
-              Confirm
-            </button>
+              <button
+                disabled={!allOptionsSelected}
+                onClick={() => {
+                  handleAddToCart();
+                  setIsSelectingOptions(false);
+                }}
+                style={{ backgroundColor: allOptionsSelected ? primaryColor : undefined }}
+                className="mt-4 w-full py-4 bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 rounded-2xl font-black text-xs uppercase tracking-widest disabled:opacity-40 transition-opacity shadow-lg"
+              >
+                Confirm Specification
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -279,7 +337,7 @@ const ProductGridItem = ({
 export default function PopularProducts({ id, themeSettings, marketplaceListings, slug = 'store' }: any) {
   const { storeFormData } = useStoreContext();
   
-  const primary = themeSettings?.primaryColor || '#6366f1'; // Modern Indigo Default
+  const primary = themeSettings?.primaryColor || '#6366f1'; 
   const secondary = themeSettings?.secondaryColor || '#f43f5e';
 
   const url = `${apiBaseUrl}/site/productsByFlag?companyId=${id}&flag=isFeatured&limit=5`;
@@ -300,10 +358,10 @@ export default function PopularProducts({ id, themeSettings, marketplaceListings
   return (
     <section className="py-32 bg-zinc-50 dark:bg-zinc-950 transition-colors duration-500 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative">
-        {/* Background Decorative Element */}
+        {/* Background Decorative Blur Element */}
         <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Header */}
+        {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm mb-6">
@@ -322,7 +380,7 @@ export default function PopularProducts({ id, themeSettings, marketplaceListings
           </Link>
         </div>
 
-        {/* Grid */}
+        {/* Products Grid Platform Layout */}
         <motion.div
           className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12"
           initial="initial"
@@ -338,7 +396,7 @@ export default function PopularProducts({ id, themeSettings, marketplaceListings
               primary={primary}
               secondary={secondary}
               slug={slug}
-              contactPhone={storeFormData?.contactPhone || "254732 771 353"}
+              contactPhone={storeFormData?.contactPhone || "254732771353"}
             />
           ))}
         </motion.div>

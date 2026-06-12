@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MarketListingForm } from '@/types/typings';
+import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
@@ -11,7 +11,9 @@ import {
   ShoppingBagIcon,
   HeartIcon,
   PlusIcon,
+  MinusIcon,
   EyeIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 
 const loader = ({ src }: { src: string }) => src;
@@ -39,22 +41,91 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     isDiscounted,
   } = product;
 
-  const img = images?.[0] || images?.[0]?.url || 'https://via.placeholder.com/400x600';
-  const { addToCart, cart } = useStateContext();
+  const [isSelectingOptions, setIsSelectingOptions] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+
+  const { addToCart, decreaseQuantity, cart } = useStateContext();
   const { storeFormData } = useStoreContext();
   
   const primary = storeFormData?.themeSettings?.primaryColor || '#000000';
-  const quantity = cart.find((item: any) => item.id === id)?.quantity || 0;
 
-  // WhatsApp Logic
-  const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
-  const message = encodeURIComponent(`I'm interested in the ${name} (${brand}). Please let me know more!`);
+  // 1. Group dynamic parameters by category types safely
+  const groupedVariants = useMemo(() => {
+    const options = (product.option || []) as VariantOptionItem[];
+    return options.reduce((acc, item) => {
+      if (!acc[item.category]) acc[item.category] = [];
+      acc[item.category].push(item);
+      return acc;
+    }, {} as Record<string, VariantOptionItem[]>);
+  }, [product.option]);
+
+  const hasVariants = Object.keys(groupedVariants).length > 0;
+  const allOptionsSelected = Object.keys(groupedVariants).every((cat) => selectedOptions[cat]);
+
+  // 2. Continuous surcharge compilation matching selected variants
+  const calculatedPrices = useMemo(() => {
+    const baseFinalPrice = finalPrice ?? sellingPrice ?? 0;
+    const baseSellingPrice = sellingPrice ?? 0;
+    
+    let totalSurcharge = 0;
+    Object.entries(selectedOptions).forEach(([category, optionName]) => {
+      const match = groupedVariants[category]?.find((v) => v.name === optionName);
+      if (match?.extraPrice) {
+        totalSurcharge += match.extraPrice;
+      }
+    });
+
+    return {
+      finalPrice: baseFinalPrice + totalSurcharge,
+      sellingPrice: baseSellingPrice > 0 ? baseSellingPrice + totalSurcharge : undefined,
+    };
+  }, [selectedOptions, groupedVariants, finalPrice, sellingPrice]);
+
+  // 3. Exact matching verification within the global cart storage instance
+  const quantity = cart.find((item: any) => {
+    if (item.id !== id) return false;
+    if (hasVariants) {
+      if (!item.selectedOptions) return false;
+      return Object.entries(selectedOptions).every(([cat, val]) => item.selectedOptions[cat] === val);
+    }
+    return true;
+  })?.quantity || 0;
+
+  const img = images?.[0] || (images?.[0] as any)?.url || 'https://via.placeholder.com/400x600';
+
+  // ---------- WHATSAPP ----------
+  const optionsSummary = Object.entries(selectedOptions)
+    .map(([cat, val]) => `${cat}: ${val}`)
+    .join(', ');
+
+  const whatsappNumber = `${storeFormData?.contactPhone || "254732771353"}`.replace(/\D/g, '');
+  const message = encodeURIComponent(
+    `Hi! I'm interested in "${name}"${brand ? ` [${brand}]` : ''}${optionsSummary ? ` (${optionsSummary})` : ''} priced at KES ${calculatedPrices.finalPrice.toLocaleString()}. Is it available?`
+  );
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
   const discount =
     sellingPrice && finalPrice != null && sellingPrice > finalPrice
       ? Math.round(((sellingPrice - finalPrice) / sellingPrice) * 100)
       : null;
+
+  // ---------- ADD TO CART ----------
+  const handleAddToCart = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
+    if (hasVariants && !allOptionsSelected) {
+      setIsSelectingOptions(true);
+      return;
+    }
+
+    addToCart({
+      ...product,
+      finalPrice: calculatedPrices.finalPrice,
+      sellingPrice: calculatedPrices.sellingPrice || product.sellingPrice,
+      selectedOptions,
+    });
+  };
 
   return (
     <motion.div
@@ -98,12 +169,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           )}
         </div>
 
-        {/* --- DESKTOP ACTIONS (Side Menu) --- */}
+        {/* --- DESKTOP ACTIONS (Side Hover Overlay) --- */}
         <div className="absolute top-5 right-5 flex flex-col gap-3 translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500 z-10 lg:flex hidden">
           <button className="p-3 bg-white dark:bg-zinc-900/90 backdrop-blur-xl rounded-full text-zinc-900 dark:text-white hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900 transition-all shadow-xl">
             <HeartIcon className="w-4 h-4" />
           </button>
-          {/* New WhatsApp Desktop Action */}
+          
           <a 
             href={whatsappUrl}
             target="_blank"
@@ -112,6 +183,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           >
             <WhatsAppIcon className="w-4 h-4" />
           </a>
+          
           <button className="p-3 bg-white dark:bg-zinc-900/90 backdrop-blur-xl rounded-full text-zinc-900 dark:text-white hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900 transition-all shadow-xl">
             <EyeIcon className="w-4 h-4" />
           </button>
@@ -119,7 +191,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         {/* --- MOBILE ACTIONS --- */}
         <div className="absolute bottom-4 right-4 lg:hidden z-10 flex flex-col gap-3">
-          {/* WhatsApp Mobile Action */}
           <motion.a
             href={whatsappUrl}
             target="_blank"
@@ -131,10 +202,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <WhatsAppIcon className="w-6 h-6" />
           </motion.a>
 
-          {/* Cart Button */}
           <button 
-            onClick={() => addToCart({...product, finalPrice: finalPrice || sellingPrice})}
-            className="relative p-4 rounded-2xl shadow-2xl backdrop-blur-2xl border border-white/20 active:scale-90 transition-transform"
+            onClick={() => handleAddToCart()}
+            className="relative p-4 rounded-2xl shadow-2xl backdrop-blur-2xl border border-white/20 active:scale-90 transition-transform flex items-center justify-center"
             style={{ backgroundColor: `${primary}dd`, color: '#fff' }}
           >
             <PlusIcon className="w-6 h-6" />
@@ -156,16 +226,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* --- DESKTOP QUICK-ADD OVERLAY --- */}
         <div className="absolute inset-x-0 bottom-0 p-6 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-[0.16, 1, 0.3, 1] lg:block hidden">
           <button
-            onClick={() => addToCart({...product, finalPrice: finalPrice || sellingPrice})}
+            onClick={() => handleAddToCart()}
             className="w-full py-5 bg-white dark:bg-zinc-900 text-zinc-950 dark:text-white text-[10px] font-black uppercase tracking-[0.35em] flex items-center justify-center gap-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-2xl"
           >
             {quantity > 0 ? (
               <>
                 <ShoppingBagIcon className="w-4 h-4" />
-                Added To Bag ({quantity})
+                In Wardrobe ({quantity})
               </>
             ) : (
-              "Add To Wardrobe"
+              hasVariants && !allOptionsSelected ? "Select Customization" : "Add To Wardrobe"
             )}
           </button>
         </div>
@@ -187,11 +257,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         <div className="flex items-center gap-4">
           <span className="text-base font-black text-zinc-950 dark:text-white tracking-tighter">
-            ${finalPrice || sellingPrice}
+            KES {calculatedPrices.finalPrice.toLocaleString()}
           </span>
-          {isDiscounted && sellingPrice && (
+          {isDiscounted && calculatedPrices.sellingPrice && (
             <span className="text-xs text-zinc-400 line-through font-medium opacity-60">
-              ${sellingPrice}
+              KES {calculatedPrices.sellingPrice.toLocaleString()}
             </span>
           )}
         </div>
@@ -203,8 +273,30 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           rel="noopener noreferrer"
           className="flex mt-3 text-[10px] uppercase tracking-[0.3em] text-green-500 hover:text-zinc-900 dark:hover:text-white transition-colors p-4 rounded-2xl shadow-lg bg-green-50/50 hover:bg-green-100/50 dark:bg-green-900/10 dark:hover:bg-green-900/20 gap-2"
         >
-          <WhatsAppIcon className="w-4 h-4" />  Order Via WhatsApp
+          <WhatsAppIcon className="w-4 h-4" /> Order Via WhatsApp
         </a>
+
+        {/* Dynamic Quantity Management Controls */}
+        {quantity > 0 && (
+          <div className="mt-3 flex items-center gap-4 bg-zinc-100 dark:bg-zinc-900 py-1.5 px-3 rounded-xl border border-zinc-200/20 shadow-inner">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                decreaseQuantity(id);
+              }}
+              className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white p-1"
+            >
+              <MinusIcon className="w-3 h-3" />
+            </button>
+            <span className="text-xs font-black text-zinc-800 dark:text-zinc-200">{quantity}</span>
+            <button
+              onClick={() => handleAddToCart()}
+              className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white p-1"
+            >
+              <PlusIcon className="w-3 h-3" />
+            </button>
+          </div>
+        )}
 
         {/* Status Indicator Bar */}
         <div className="mt-5 w-10 h-[2px] bg-zinc-100 dark:bg-zinc-900 rounded-full overflow-hidden">
@@ -221,6 +313,72 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </AnimatePresence>
         </div>
       </div>
+
+      {/* ================= DYNAMIC PRODUCT ATTRIBUTE CUSTOMIZATION MODAL SHEET ================= */}
+      <AnimatePresence>
+        {isSelectingOptions && (
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 26, stiffness: 210 }}
+            className="absolute inset-0 z-30 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md flex flex-col justify-end p-6 overflow-y-auto no-scrollbar rounded-[2rem]"
+          >
+            <button
+              onClick={() => setIsSelectingOptions(false)}
+              className="absolute top-5 right-5 p-2 bg-zinc-50 dark:bg-zinc-900 rounded-full border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300"
+            >
+              <XMarkIcon className="w-4 h-4" />
+            </button>
+
+            <div className="w-full space-y-5 pt-4">
+              {Object.entries(groupedVariants).map(([category, items]) => (
+                <div key={category} className="space-y-2">
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 text-center">
+                    Select {category}
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {items.map((opt) => {
+                      const isSelected = selectedOptions[category] === opt.name;
+                      return (
+                        <button
+                          key={opt.name}
+                          type="button"
+                          onClick={() => setSelectedOptions({ ...selectedOptions, [category]: opt.name })}
+                          style={{ 
+                            borderColor: isSelected ? primary : undefined,
+                            backgroundColor: isSelected ? primary : undefined 
+                          }}
+                          className={`px-3.5 py-2 rounded-xl border text-[11px] font-black transition-all ${
+                            isSelected 
+                              ? "text-white shadow-md scale-[1.02]" 
+                              : "border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-zinc-800 dark:text-zinc-200 active:bg-zinc-100"
+                          }`}
+                        >
+                          {opt.name}
+                          {opt.extraPrice > 0 && ` (+KES ${opt.extraPrice})`}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+
+              <button
+                disabled={!allOptionsSelected}
+                onClick={() => {
+                  handleAddToCart();
+                  setIsSelectingOptions(false);
+                }}
+                style={{ backgroundColor: allOptionsSelected ? primary : undefined }}
+                className="mt-4 w-full py-4 bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 rounded-xl font-black text-[10px] uppercase tracking-widest disabled:opacity-40 transition-opacity shadow-lg"
+              >
+                Confirm Customization
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

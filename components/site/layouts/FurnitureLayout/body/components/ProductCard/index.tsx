@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -12,9 +12,9 @@ import {
   CubeIcon,
   ChevronRightIcon,
   SparklesIcon,
-  ChatBubbleLeftRightIcon
+  XMarkIcon
 } from '@heroicons/react/24/outline';
-import { MarketListingForm } from '@/types/typings';
+import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 
@@ -32,21 +32,88 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+  const [isSelectingOptions, setIsSelectingOptions] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
 
   const primary = storeFormData?.themeSettings?.primaryColor || '#18181b';
-  const quantity = cart.find((item: any) => item.id === product.id)?.quantity || 0;
+
+  // 1. Group custom variants (e.g. Finish, Wood Type, Dimensions) safely
+  const groupedVariants = useMemo(() => {
+    const options = (product.option || []) as VariantOptionItem[];
+    return options.reduce((acc, item) => {
+      if (!acc[item.category]) acc[item.category] = [];
+      acc[item.category].push(item);
+      return acc;
+    }, {} as Record<string, VariantOptionItem[]>);
+  }, [product.option]);
+
+  const hasVariants = Object.keys(groupedVariants).length > 0;
+  const allOptionsSelected = Object.keys(groupedVariants).every((cat) => selectedOptions[cat]);
+
+  // 2. Compute dynamic pricing adjustments based on options selected
+  const calculatedPrices = useMemo(() => {
+    const baseFinalPrice = product.finalPrice ?? product.sellingPrice ?? 0;
+    const baseSellingPrice = product.sellingPrice ?? 0;
+    
+    let totalSurcharge = 0;
+    Object.entries(selectedOptions).forEach(([category, optionName]) => {
+      const match = groupedVariants[category]?.find((v) => v.name === optionName);
+      if (match?.extraPrice) {
+        totalSurcharge += match.extraPrice;
+      }
+    });
+
+    return {
+      finalPrice: baseFinalPrice + totalSurcharge,
+      sellingPrice: baseSellingPrice > 0 ? baseSellingPrice + totalSurcharge : undefined,
+    };
+  }, [selectedOptions, groupedVariants, product.finalPrice, product.sellingPrice]);
+
+  // 3. Exact matching logic for items inside global cart context
+  const quantity = cart.find((item: any) => {
+    if (item.id !== product.id) return false;
+    if (hasVariants) {
+      if (!item.selectedOptions) return false;
+      return Object.entries(selectedOptions).every(([cat, val]) => item.selectedOptions[cat] === val);
+    }
+    return true;
+  })?.quantity || 0;
 
   // WhatsApp Concierge Config
-  const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
-  const message = encodeURIComponent(`I am interested in commissioning the "${product.name}" piece. Could you provide more details on lead times and materials?`);
+  const optionsSummary = Object.entries(selectedOptions)
+    .map(([cat, val]) => `${cat}: ${val}`)
+    .join(', ');
+
+  const whatsappNumber = `${storeFormData?.contactPhone || "254732771353"}`.replace(/\D/g, '');
+  const message = encodeURIComponent(
+    `I am interested in commissioning the "${product.name}" piece${product.brand ? ` by ${product.brand}` : ''}${optionsSummary ? ` with customization (${optionsSummary})` : ''} priced at KES ${calculatedPrices.finalPrice.toLocaleString()}. Could you provide more details on lead times and materials?`
+  );
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
   const discount =
     product.sellingPrice && product.finalPrice != null && product.sellingPrice > product.finalPrice
       ? Math.round(((product.sellingPrice - product.finalPrice) / product.sellingPrice) * 100)
       : null;
+
+  const handleAddToCart = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
+    if (hasVariants && !allOptionsSelected) {
+      setIsSelectingOptions(true);
+      return;
+    }
+
+    addToCart({
+      ...product,
+      finalPrice: calculatedPrices.finalPrice,
+      sellingPrice: calculatedPrices.sellingPrice || product.sellingPrice,
+      selectedOptions,
+    });
+  };
 
   return (
     <motion.div
@@ -60,7 +127,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         
         <Link href={`/furnitureecommerce/products/${product.id}`} className="block w-full h-full">
           <Image
-            src={product.images[0] || "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=1000"}
+            src={product.images?.[0] || "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=1000"}
             alt={product.name}
             loader={loader}
             fill
@@ -114,11 +181,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               >
                 {/* Main Reserve Button */}
                 <button
-                  onClick={() => addToCart({...product, finalPrice: product.finalPrice || product.sellingPrice})}
+                  onClick={() => handleAddToCart()}
                   className="flex-[3] h-14 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl text-zinc-900 dark:text-white text-[9px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 rounded-2xl shadow-2xl border border-white/20 hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900 transition-all"
                 >
                   <PlusIcon className="w-4 h-4" />
-                  Reserve Piece
+                  {hasVariants && !allOptionsSelected ? "Select Setup" : "Reserve Piece"}
                 </button>
 
                 {/* Desktop Concierge Button */}
@@ -139,7 +206,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 className="flex items-center justify-between bg-white dark:bg-zinc-800 p-1 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-zinc-100 dark:border-zinc-700"
               >
                 <button
-                  onClick={() => decreaseQuantity(product.id)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    decreaseQuantity(product.id);
+                  }}
                   className="p-4 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
                 >
                   {quantity === 1 ? <TrashIcon className="h-4 w-4 text-red-500" /> : <MinusIcon className="h-4 w-4 text-zinc-400" />}
@@ -149,7 +219,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                    <span className="text-[7px] font-bold text-zinc-400 uppercase tracking-tighter">In Cart</span>
                 </div>
                 <button
-                  onClick={() => addToCart({...product, finalPrice: product.finalPrice || product.sellingPrice})}
+                  onClick={() => handleAddToCart()}
                   className="p-4 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
                 >
                   <PlusIcon className="h-4 w-4 text-zinc-900 dark:text-white" />
@@ -182,13 +252,19 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
 
           <div className="text-right">
-            {discount ? (
+            {discount && calculatedPrices.sellingPrice ? (
               <div className="flex flex-col items-end">
-                <span className="text-xs text-zinc-400 line-through tracking-tighter mb-0.5">${product.sellingPrice}</span>
-                <span className="text-xl font-black text-zinc-900 dark:text-white tracking-tighter">${product.finalPrice}</span>
+                <span className="text-xs text-zinc-400 line-through tracking-tighter mb-0.5">
+                  KES {calculatedPrices.sellingPrice.toLocaleString()}
+                </span>
+                <span className="text-xl font-black text-zinc-900 dark:text-white tracking-tighter">
+                  KES {calculatedPrices.finalPrice.toLocaleString()}
+                </span>
               </div>
             ) : (
-              <span className="text-xl font-black text-zinc-900 dark:text-white tracking-tighter">${product.sellingPrice}</span>
+              <span className="text-xl font-black text-zinc-900 dark:text-white tracking-tighter">
+                KES {calculatedPrices.finalPrice.toLocaleString()}
+              </span>
             )}
           </div>
         </div>
@@ -215,9 +291,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 href={whatsappUrl}
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="flex text-[8px] uppercase tracking-[0.3em] text-green-500 hover:text-zinc-900 dark:hover:text-white transition-colors p-4 bg-green-50/50 hover:bg-green-100/50 dark:bg-green-900/10 dark:hover:bg-green-900/20 gap-2"
+                className="flex mt-1 text-[8px] uppercase tracking-[0.25em] text-green-500 hover:text-zinc-900 dark:hover:text-white transition-colors py-1.5 px-3 rounded-lg bg-green-50/50 hover:bg-green-100/50 dark:bg-green-900/10 dark:hover:bg-green-900/20 gap-1.5 items-center font-bold"
               >
-                <WhatsAppIcon className="w-4 h-4" />  Order Via WhatsApp
+                <WhatsAppIcon className="w-3 h-3" /> Connect
               </a>
             </div>
           </div>
@@ -227,6 +303,72 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </Link>
         </div>
       </div>
+
+      {/* ================= DYNAMIC SPECIFICATION ARCHITECTURAL ATRIBUTES MODAL SHEET ================= */}
+      <AnimatePresence>
+        {isSelectingOptions && (
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 28, stiffness: 220 }}
+            className="absolute inset-0 z-30 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md flex flex-col justify-end p-6 overflow-y-auto no-scrollbar rounded-[2.5rem]"
+          >
+            <button
+              onClick={() => setIsSelectingOptions(false)}
+              className="absolute top-6 right-6 p-2 bg-zinc-50 dark:bg-zinc-900 rounded-full border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 transition-colors"
+            >
+              <XMarkIcon className="w-4 h-4" />
+            </button>
+
+            <div className="w-full space-y-5 pt-4">
+              {Object.entries(groupedVariants).map(([category, items]) => (
+                <div key={category} className="space-y-2">
+                  <p className="text-[9px] font-black uppercase tracking-[0.25em] text-zinc-400 text-center">
+                    Select {category}
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {items.map((opt) => {
+                      const isSelected = selectedOptions[category] === opt.name;
+                      return (
+                        <button
+                          key={opt.name}
+                          type="button"
+                          onClick={() => setSelectedOptions({ ...selectedOptions, [category]: opt.name })}
+                          style={{ 
+                            borderColor: isSelected ? primary : undefined,
+                            backgroundColor: isSelected ? primary : undefined 
+                          }}
+                          className={`px-3.5 py-2 rounded-xl border text-[11px] font-black transition-all ${
+                            isSelected 
+                              ? "text-white shadow-md scale-[1.02]" 
+                              : "border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-zinc-800 dark:text-zinc-200 active:bg-zinc-100"
+                          }`}
+                        >
+                          {opt.name}
+                          {opt.extraPrice > 0 && ` (+KES ${opt.extraPrice.toLocaleString()})`}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+
+              <button
+                disabled={!allOptionsSelected}
+                onClick={() => {
+                  handleAddToCart();
+                  setIsSelectingOptions(false);
+                }}
+                style={{ backgroundColor: allOptionsSelected ? primary : undefined }}
+                className="mt-4 w-full py-4 bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 rounded-xl font-black text-[10px] uppercase tracking-widest disabled:opacity-40 transition-opacity shadow-lg"
+              >
+                Confirm Specifications
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

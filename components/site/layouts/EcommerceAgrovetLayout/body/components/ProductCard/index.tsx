@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
-import { MinusIcon, PlusIcon, StarIcon, TrashIcon, ShoppingBagIcon } from '@heroicons/react/24/solid';
-import { MarketListingForm } from '@/types/typings';
+import React, { useMemo, useState } from 'react';
+import { MinusIcon, PlusIcon, StarIcon, TrashIcon, ShoppingBagIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -16,7 +16,7 @@ interface ProductCardProps {
 
 const FALLBACK_IMAGE_URL = 'https://via.placeholder.com/400';
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>  `${src}?w=${width}&q=${quality || 75}`;
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 // Custom WhatsApp Icon
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -26,21 +26,87 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 );
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
+  const [isSelectingOptions, setIsSelectingOptions] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
   
   const primary = storeFormData?.themeSettings?.primaryColor || '#059669';
 
-  const quantity = cart.find((item: any) => item.id === product.id)?.quantity || 0;
+  // 1. Structural grouping for catalog options (e.g. Volume, Weight, formulation)
+  const groupedVariants = useMemo(() => {
+    const options = (product.option || []) as VariantOptionItem[];
+    return options.reduce((acc, item) => {
+      if (!acc[item.category]) acc[item.category] = [];
+      acc[item.category].push(item);
+      return acc;
+    }, {} as Record<string, VariantOptionItem[]>);
+  }, [product.option]);
+
+  const hasVariants = Object.keys(groupedVariants).length > 0;
+  const allOptionsSelected = Object.keys(groupedVariants).every((cat) => selectedOptions[cat]);
+
+  // 2. Continuous pricing engine calculation including itemized variant surcharges
+  const calculatedPrices = useMemo(() => {
+    const baseFinalPrice = product.finalPrice ?? product.sellingPrice ?? 0;
+    const baseSellingPrice = product.sellingPrice ?? 0;
+    
+    let totalSurcharge = 0;
+    Object.entries(selectedOptions).forEach(([category, optionName]) => {
+      const match = groupedVariants[category]?.find((v) => v.name === optionName);
+      if (match?.extraPrice) {
+        totalSurcharge += match.extraPrice;
+      }
+    });
+
+    return {
+      finalPrice: baseFinalPrice + totalSurcharge,
+      sellingPrice: baseSellingPrice > 0 ? baseSellingPrice + totalSurcharge : undefined,
+    };
+  }, [selectedOptions, groupedVariants, product.finalPrice, product.sellingPrice]);
+
+  // 3. Match explicit variant configurations in the global context
+  const quantity = cart.find((item: any) => {
+    if (item.id !== product.id) return false;
+    if (hasVariants) {
+      if (!item.selectedOptions) return false;
+      return Object.entries(selectedOptions).every(([cat, val]) => item.selectedOptions[cat] === val);
+    }
+    return true;
+  })?.quantity || 0;
 
   // WhatsApp Config
-  const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`; // Kenya format example
-  const message = encodeURIComponent(`Hello! I am inquiring about "${product.name}" (KSh ${(product.finalPrice || product.sellingPrice)?.toLocaleString()}). Could I get professional advice on how to use this?`);
+  const optionsSummary = Object.entries(selectedOptions)
+    .map(([cat, val]) => `${cat}: ${val}`)
+    .join(', ');
+
+  const whatsappNumber = `${storeFormData?.contactPhone || "254732771353"}`.replace(/\D/g, ''); 
+  const message = encodeURIComponent(
+    `Hello! I am inquiring about "${product.name}"${optionsSummary ? ` (${optionsSummary})` : ''} priced at KSh ${calculatedPrices.finalPrice.toLocaleString()}. Could I get professional advice on how to use this correctly?`
+  );
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
   const discount = product.sellingPrice && product.finalPrice 
     ? Math.round(((product.sellingPrice - product.finalPrice) / product.sellingPrice) * 100) 
     : null;
+
+  const handleAddToCart = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
+    if (hasVariants && !allOptionsSelected) {
+      setIsSelectingOptions(true);
+      return;
+    }
+
+    addToCart({
+      ...product,
+      finalPrice: calculatedPrices.finalPrice,
+      sellingPrice: calculatedPrices.sellingPrice || product.sellingPrice,
+      selectedOptions,
+    });
+  };
 
   return (
     <motion.div
@@ -62,8 +128,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
           />
           
           {/* Overlay Action Area */}
-          <div className="absolute inset-0 bg-emerald-900/0 group-hover:bg-emerald-900/10 transition-colors duration-300 flex flex-col items-center justify-center gap-3">
-             <div className="opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all bg-white text-slate-900 px-6 py-3 rounded-full font-black text-[10px] uppercase tracking-widest shadow-2xl hover:bg-emerald-600 hover:text-white">
+          <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/10 transition-colors duration-300 flex flex-col items-center justify-center gap-3">
+             <div 
+               style={{ backgroundColor: primary }}
+               className="opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all text-white px-6 py-3 rounded-full font-black text-[10px] uppercase tracking-widest shadow-2xl brightness-95 hover:brightness-110"
+             >
               View Product
             </div>
           </div>
@@ -81,7 +150,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
         </a>
 
         {discount && (
-          <div className="absolute top-4 left-4 bg-emerald-600 text-white text-[10px] font-black px-3 py-1.5 rounded-lg shadow-lg">
+          <div 
+            style={{ backgroundColor: primary }}
+            className="absolute top-4 left-4 text-white text-[10px] font-black px-3 py-1.5 rounded-lg shadow-lg"
+          >
             -{discount}% OFF
           </div>
         )}
@@ -90,7 +162,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
       {/* Product Info */}
       <div className="flex flex-col flex-grow px-2">
         <div className="flex justify-between items-start mb-2">
-          <h4 className="text-lg font-black text-slate-900 tracking-tighter leading-tight group-hover:text-emerald-700 transition-colors">
+          <h4 className="text-lg font-black text-slate-900 tracking-tighter leading-tight group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-colors">
             {product.name}
           </h4>
           <div className="flex items-center gap-1 text-slate-400 text-[10px] font-bold">
@@ -102,11 +174,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <span className="text-xl font-mono font-bold text-slate-900 tracking-tighter">
-              KSh {(product.finalPrice || product.sellingPrice)?.toLocaleString()}
+              KSh {calculatedPrices.finalPrice.toLocaleString()}
             </span>
-            {product.sellingPrice && product.sellingPrice > (product.finalPrice ?? 0) && (
+            {calculatedPrices.sellingPrice && calculatedPrices.sellingPrice > calculatedPrices.finalPrice && (
               <span className="text-xs line-through text-slate-300 font-medium">
-                {product.sellingPrice.toLocaleString()}
+                {calculatedPrices.sellingPrice.toLocaleString()}
               </span>
             )}
           </div>
@@ -116,9 +188,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[9px] flex gap-2 font-black uppercase text-emerald-600 hover:text-emerald-800 underline underline-offset-4 decoration-2"
+            style={{ color: primary }}
+            className="text-[9px] flex gap-1.5 font-black uppercase underline underline-offset-4 decoration-2 items-center hover:opacity-80 transition-opacity"
           >
-           < WhatsAppIcon className="w-4 h-4" />  Order Via WhatsApp
+           <WhatsAppIcon className="w-3.5 h-3.5" /> Order
           </a>
         </div>
 
@@ -134,14 +207,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
                 className="flex items-center justify-between bg-slate-900 rounded-2xl p-1 shadow-xl"
               >
                 <button 
-                  onClick={() => decreaseQuantity(product.id)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    decreaseQuantity(product.id);
+                  }}
                   className="p-3 text-white hover:bg-white/10 rounded-xl transition-colors"
                 >
                   {quantity === 1 ? <TrashIcon className="w-4 h-4 text-red-400" /> : <MinusIcon className="w-4 h-4" />}
                 </button>
                 <span className="text-white font-black text-sm">{quantity}</span>
                 <button 
-                  onClick={() => addToCart(product)}
+                  onClick={() => handleAddToCart()}
                   className="p-3 text-white hover:bg-white/10 rounded-xl transition-colors"
                 >
                   <PlusIcon className="w-4 h-4 text-emerald-400" />
@@ -152,16 +228,94 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
                 key="add-btn"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => addToCart(product)}
-                className="w-full flex items-center justify-center gap-3 py-4 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all duration-300 shadow-sm hover:shadow-emerald-200"
+                onClick={() => handleAddToCart()}
+                style={{ 
+                  color: primary, 
+                  borderColor: `${primary}15`,
+                  backgroundColor: `${primary}08`
+                }}
+                className="w-full flex items-center justify-center gap-3 py-4 border rounded-2xl font-black text-[10px] uppercase tracking-widest hover:text-white transition-all duration-300 shadow-sm"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = primary;
+                  e.currentTarget.style.color = '#ffffff';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = `${primary}08`;
+                  e.currentTarget.style.color = primary;
+                }}
               >
                 <ShoppingBagIcon className="w-4 h-4" />
-                Add to Cart
+                {hasVariants && !allOptionsSelected ? "Configure Variant" : "Add to Cart"}
               </motion.button>
             )}
           </AnimatePresence>
         </div>
       </div>
+
+      {/* ================= DYNAMIC INVENTORY METADATA SELECTION OVERLAY ================= */}
+      <AnimatePresence>
+        {isSelectingOptions && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="absolute inset-0 z-30 bg-white/98 backdrop-blur-md flex flex-col justify-end p-6 rounded-[2rem] border border-slate-100 shadow-2xl"
+          >
+            <button
+              onClick={() => setIsSelectingOptions(false)}
+              className="absolute top-4 right-4 p-2 bg-slate-50 rounded-full border border-slate-200 text-slate-700 transition-colors hover:bg-slate-100"
+            >
+              <XMarkIcon className="w-4 h-4" />
+            </button>
+
+            <div className="w-full space-y-4 pt-4 overflow-y-auto max-h-full no-scrollbar">
+              {Object.entries(groupedVariants).map(([category, items]) => (
+                <div key={category} className="space-y-1.5 text-center">
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    {category} Size
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {items.map((opt) => {
+                      const isSelected = selectedOptions[category] === opt.name;
+                      return (
+                        <button
+                          key={opt.name}
+                          type="button"
+                          onClick={() => setSelectedOptions({ ...selectedOptions, [category]: opt.name })}
+                          style={{ 
+                            borderColor: isSelected ? primary : undefined,
+                            backgroundColor: isSelected ? primary : undefined 
+                          }}
+                          className={`px-3 py-1.5 rounded-xl border text-[11px] font-black transition-all ${
+                            isSelected 
+                              ? "text-white shadow-sm scale-[1.02]" 
+                              : "border-slate-200 bg-slate-50/50 text-slate-800 active:bg-slate-100"
+                          }`}
+                        >
+                          {opt.name}
+                          {opt.extraPrice > 0 && ` (+KSh ${opt.extraPrice.toLocaleString()})`}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+
+              <button
+                disabled={!allOptionsSelected}
+                onClick={() => {
+                  handleAddToCart();
+                  setIsSelectingOptions(false);
+                }}
+                style={{ backgroundColor: allOptionsSelected ? primary : undefined }}
+                className="mt-2 w-full py-4 bg-slate-950 text-white rounded-xl font-black text-[10px] uppercase tracking-widest disabled:opacity-30 transition-opacity shadow-md"
+              >
+                Confirm Configuration
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

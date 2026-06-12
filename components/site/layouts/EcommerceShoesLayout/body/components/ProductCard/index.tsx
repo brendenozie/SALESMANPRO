@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -12,14 +12,12 @@ import {
   XMarkIcon, 
   ShoppingBagIcon 
 } from '@heroicons/react/24/solid';
-import { MarketListingForm } from '@/types/typings';
+import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
-
-const AVAILABLE_SIZES = ['7', '8', '9', '10', '11', '12'];
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24">
@@ -28,31 +26,79 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 );
 
 export default function ProductCard({ product }: { product: MarketListingForm }) {
-  const [isSelectingSize, setIsSelectingSize] = useState(false);
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [isSelectingOptions, setIsSelectingOptions] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
   
-  // Extract custom dynamic theme color configurations safely
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#18181b'; 
-  const quantity = cart.find((item: any) => item.id === product.id && item.selectedSize === selectedSize)?.quantity || 0;
 
-  // Phone configuration structure mappings
-  const whatsappNumber = `${storeFormData?.contactPhone || "254732771353"}`.replace(/\s+/g, '');
-  const message = encodeURIComponent(`Hi, I'm interested in the ${product.name} (KES ${product.finalPrice?.toLocaleString()}). Do you have size UK ${selectedSize || '...'} available?`);
+  // 1. Group database variant options dynamically by their categories
+  const groupedVariants = useMemo(() => {
+    const options = (product.option || []) as VariantOptionItem[];
+    return options.reduce((acc, item) => {
+      if (!acc[item.category]) acc[item.category] = [];
+      acc[item.category].push(item);
+      return acc;
+    }, {} as Record<string, VariantOptionItem[]>);
+  }, [product.option]);
+
+  const hasVariants = Object.keys(groupedVariants).length > 0;
+  const allOptionsSelected = Object.keys(groupedVariants).every((cat) => selectedOptions[cat]);
+
+  // 2. Real-time cost updates combining base pricing and option surcharges
+  const calculatedPrices = useMemo(() => {
+    const baseFinalPrice = product.finalPrice ?? product.sellingPrice ?? 0;
+    const baseSellingPrice = product.sellingPrice ?? 0;
+    
+    let totalSurcharge = 0;
+    Object.entries(selectedOptions).forEach(([category, name]) => {
+      const match = groupedVariants[category]?.find((v) => v.name === name);
+      if (match?.extraPrice) {
+        totalSurcharge += match.extraPrice;
+      }
+    });
+
+    return {
+      finalPrice: baseFinalPrice + totalSurcharge,
+      sellingPrice: baseSellingPrice > 0 ? baseSellingPrice + totalSurcharge : undefined,
+    };
+  }, [selectedOptions, groupedVariants, product.finalPrice, product.sellingPrice]);
+
+  // 3. Precise item lookups matching exact chosen specification variants
+  const quantity = cart.find((item: any) => {
+    if (item.id !== product.id) return false;
+    if (hasVariants) {
+      if (!item.selectedOptions) return false;
+      return Object.entries(selectedOptions).every(([cat, val]) => item.selectedOptions[cat] === val);
+    }
+    return true;
+  })?.quantity || 0;
+
+  // Build descriptive options string for WhatsApp linking
+  const optionsSummary = Object.entries(selectedOptions)
+    .map(([cat, val]) => `${cat}: ${val}`)
+    .join(', ');
+
+  const whatsappNumber = `${storeFormData?.contactPhone || "254732771353"}`.replace(/\D/g, '');
+  const message = encodeURIComponent(
+    `Hi, I'm interested in ${product.name}${optionsSummary ? ` (${optionsSummary})` : ''} (KES ${calculatedPrices.finalPrice.toLocaleString()}). Is this configuration available?`
+  );
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault(); 
-    if (!selectedSize) {
-      setIsSelectingSize(true);
+  const handleAddToCart = (e?: React.MouseEvent) => {
+    e?.preventDefault(); 
+    if (hasVariants && !allOptionsSelected) {
+      setIsSelectingOptions(true);
       return;
     }
+    
     addToCart({ 
       ...product, 
-      finalPrice: (product.finalPrice || product.sellingPrice || 0), 
-      selectedSize 
+      finalPrice: calculatedPrices.finalPrice, 
+      sellingPrice: calculatedPrices.sellingPrice || product.sellingPrice,
+      selectedOptions 
     });
   };
 
@@ -70,7 +116,7 @@ export default function ProductCard({ product }: { product: MarketListingForm })
             NEW
           </span>
         )}
-        {product.isDiscounted && (
+        {product.isDiscounted && product.sellingPrice && (
           <span className="bg-red-500 text-white text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm">
             -{Math.round(((product.sellingPrice - (product.finalPrice || 0)) / product.sellingPrice) * 100)}%
           </span>
@@ -89,7 +135,7 @@ export default function ProductCard({ product }: { product: MarketListingForm })
         <WhatsAppIcon className="w-4 h-4 sm:w-5 h-5" />
       </motion.a>
 
-      {/* PRODUCT MEDIA BACKDROP CONTAINER */}
+      {/* PRODUCT MEDIA CONTAINER */}
       <div className="relative aspect-square w-full overflow-hidden rounded-[1.5rem] bg-zinc-50 dark:bg-zinc-800/30 group">
         <Link href={`/ecommerceshoes/products/${product.id}`} className="block w-full h-full">
           <Image
@@ -103,58 +149,66 @@ export default function ProductCard({ product }: { product: MarketListingForm })
           />
         </Link>
 
-        {/* GLASSMORPHIC SLIDE-UP SIZE SELECTOR */}
+        {/* GLASSMORPHIC DYNAMIC OPTIONS SHEETS */}
         <AnimatePresence>
-          {isSelectingSize && (
+          {isSelectingOptions && (
             <motion.div 
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: "spring", damping: 25, stiffness: 220 }}
-              className="absolute inset-0 z-30 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md p-4 sm:p-5 flex flex-col justify-end"
+              className="absolute inset-0 z-30 bg-white/85 dark:bg-zinc-950/85 backdrop-blur-md p-4 flex flex-col justify-end overflow-y-auto no-scrollbar"
             >
               <button 
-                onClick={() => setIsSelectingSize(false)}
-                className="absolute top-3 right-3 p-2 bg-white dark:bg-zinc-800 rounded-full shadow-sm border border-zinc-100 dark:border-zinc-700"
+                onClick={() => setIsSelectingOptions(false)}
+                className="absolute top-3 right-3 p-2 bg-white dark:bg-zinc-800 rounded-full shadow-sm border border-zinc-100 dark:border-zinc-700 z-10"
               >
                 <XMarkIcon className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />
               </button>
               
-              <div className="w-full space-y-3">
-                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 text-center">
-                  Select UK Size
-                </p>
-                
-                <div className="grid grid-cols-3 gap-1.5">
-                  {AVAILABLE_SIZES.map((size) => {
-                    const isSelected = selectedSize === size;
-                    return (
-                      <button
-                        key={size}
-                        onClick={() => setSelectedSize(size)}
-                        style={{ 
-                          borderColor: isSelected ? primaryColor : undefined,
-                          backgroundColor: isSelected ? primaryColor : undefined 
-                        }}
-                        className={`py-2.5 rounded-xl border text-xs font-black transition-all ${
-                          isSelected 
-                            ? 'text-white shadow-sm shadow-black/10' 
-                            : 'border-zinc-200 dark:border-zinc-700 bg-white/50 dark:bg-zinc-900/50 text-zinc-800 dark:text-zinc-200 active:bg-zinc-100'
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    );
-                  })}
-                </div>
+              <div className="w-full space-y-4 pt-8">
+                {Object.entries(groupedVariants).map(([category, items]) => (
+                  <div key={category} className="space-y-1.5">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 text-center">
+                      Choose {category}
+                    </p>
+                    <div className="flex flex-wrap justify-center gap-1.5">
+                      {items.map((opt) => {
+                        const isSelected = selectedOptions[category] === opt.name;
+                        return (
+                          <button
+                            key={opt.name}
+                            type="button"
+                            onClick={() => setSelectedOptions({ ...selectedOptions, [category]: opt.name })}
+                            style={{ 
+                              borderColor: isSelected ? primaryColor : undefined,
+                              backgroundColor: isSelected ? primaryColor : undefined 
+                            }}
+                            className={`px-3 py-1.5 rounded-xl border text-xs font-black transition-all ${
+                              isSelected 
+                                ? 'text-white shadow-sm shadow-black/10 scale-[1.02]' 
+                                : 'border-zinc-200 dark:border-zinc-700 bg-white/60 dark:bg-zinc-900/60 text-zinc-800 dark:text-zinc-200 active:bg-zinc-100'
+                            }`}
+                          >
+                            {opt.name}
+                            {opt.extraPrice > 0 && ` (+KES ${opt.extraPrice})`}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
 
                 <button
-                  disabled={!selectedSize}
-                  onClick={handleAddToCart}
-                  style={{ backgroundColor: selectedSize ? primaryColor : undefined }}
-                  className="w-full py-3.5 bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 rounded-xl font-black text-[10px] uppercase tracking-widest disabled:opacity-40 transition-opacity shadow-lg shadow-black/5"
+                  disabled={!allOptionsSelected}
+                  onClick={() => {
+                    handleAddToCart();
+                    setIsSelectingOptions(false);
+                  }}
+                  style={{ backgroundColor: allOptionsSelected ? primaryColor : undefined }}
+                  className="w-full py-3.5 bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 rounded-xl font-black text-[10px] uppercase tracking-widest disabled:opacity-40 transition-opacity shadow-lg"
                 >
-                  Confirm & Add
+                  Confirm Choice
                 </button>
               </div>
             </motion.div>
@@ -162,12 +216,12 @@ export default function ProductCard({ product }: { product: MarketListingForm })
         </AnimatePresence>
       </div>
 
-      {/* INFORMATION FRAME MATRIX */}
+      {/* METRIC DESCRIPTIVE BLOCK */}
       <div className="pt-4 px-1 pb-1 flex flex-col flex-grow">
         <div className="flex justify-between items-start gap-2">
           <div className="flex-1 min-w-0">
             <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 truncate mb-0.5">
-              {product.category?.name || "Premium Footwear"}
+              {product.category?.name || "Premium Collection"}
             </p>
             <h4 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100 leading-tight line-clamp-2">
               {product.name}
@@ -180,19 +234,19 @@ export default function ProductCard({ product }: { product: MarketListingForm })
           </div>
         </div>
 
-        {/* PRICING SCALAR PANEL */}
+        {/* PRICING CONTROL INTERFACE */}
         <div className="mt-auto pt-3 flex items-baseline gap-2">
           <span className="text-base sm:text-lg font-black text-zinc-950 dark:text-white">
-            KES {product.finalPrice?.toLocaleString() || product.sellingPrice?.toLocaleString() || '0'}
+            KES {calculatedPrices.finalPrice.toLocaleString()}
           </span>
-          {product.isDiscounted && (
+          {product.isDiscounted && calculatedPrices.sellingPrice && (
             <span className="text-xs font-medium text-zinc-400 line-through">
-              KES {product.sellingPrice?.toLocaleString() || '0'}
+              KES {calculatedPrices.sellingPrice.toLocaleString()}
             </span>
           )}
         </div>
 
-        {/* TRANSACTION BUTTON EXECUTION PLATFORM */}
+        {/* TRANSACTION ACTION CONTROLLER */}
         <div className="mt-4">
           <AnimatePresence mode="wait">
             {quantity > 0 ? (
@@ -218,12 +272,16 @@ export default function ProductCard({ product }: { product: MarketListingForm })
                   
                   <div className="flex flex-col items-center">
                     <span className="text-xs font-black text-zinc-900 dark:text-white">{quantity}</span>
-                    <span className="text-[8px] font-bold uppercase text-zinc-400 tracking-tighter">UK {selectedSize}</span>
+                    {optionsSummary && (
+                      <span className="text-[7px] font-extrabold uppercase text-zinc-400 max-w-[120px] truncate tracking-tight">
+                        {optionsSummary}
+                      </span>
+                    )}
                   </div>
                   
                   <motion.button 
                     whileTap={{ scale: 0.9 }}
-                    onClick={() => addToCart({ ...product, finalPrice: (product.finalPrice || product.sellingPrice || 0), selectedSize })} 
+                    onClick={() => handleAddToCart()} 
                     className="p-2.5 bg-white dark:bg-zinc-700 rounded-lg shadow-sm border border-zinc-100 dark:border-zinc-600 flex items-center justify-center min-w-[36px]"
                   >
                     <PlusIcon className="h-3.5 w-3.5 text-zinc-900 dark:text-white" />
@@ -235,12 +293,12 @@ export default function ProductCard({ product }: { product: MarketListingForm })
                 <motion.button
                   key="add-btn"
                   whileTap={{ scale: 0.96 }}
-                  onClick={handleAddToCart}
+                  onClick={() => handleAddToCart()}
                   style={{ backgroundColor: primaryColor }}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 rounded-xl font-black text-[11px] uppercase tracking-wider shadow-md transition-shadow active:brightness-90"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 text-white rounded-xl font-black text-[11px] uppercase tracking-wider shadow-md transition-shadow active:brightness-90"
                 >
                   <ShoppingBagIcon className="w-3.5 h-3.5" />
-                  {isSelectingSize ? 'Pick Size' : 'Add to Cart'}
+                  {hasVariants && !allOptionsSelected ? 'Select Options' : 'Add to Cart'}
                 </motion.button>
               </div>
             )}

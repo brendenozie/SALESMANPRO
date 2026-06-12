@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { MinusIcon, PlusIcon, StarIcon, ShoppingCartIcon, ChatBubbleOvalLeftEllipsisIcon } from '@heroicons/react/24/solid';
+import React, { useMemo, useState } from 'react';
+import { MinusIcon, PlusIcon, StarIcon, ShoppingCartIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import { MarketListingForm } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
@@ -17,25 +17,91 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 );
 
 const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
+  const [isSelectingOptions, setIsSelectingOptions] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
   const primary = storeFormData?.themeSettings?.primaryColor || '#0EA5E9';
-  
-  const quantity = cart.find((item: any) => item.id === product.id)?.quantity || 0;
 
-  // WhatsApp Config
-  const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
-  const message = encodeURIComponent(`Hi! I'm interested in "${product.name}" for my pet. Is this suitable for my pet's breed/age?`);
+  // 1. Group Product Options by category (e.g., Bag Size, Formula/Flavor flavor, Pet Size)
+  const groupedVariants = useMemo(() => {
+    const options = (product.option || []) as any[];
+    return options.reduce((acc, item) => {
+      if (!acc[item.category]) acc[item.category] = [];
+      acc[item.category].push(item);
+      return acc;
+    }, {} as Record<string, any[]>);
+  }, [product.option]);
+
+  const hasVariants = Object.keys(groupedVariants).length > 0;
+  const allOptionsSelected = Object.keys(groupedVariants).every((cat) => selectedOptions[cat]);
+
+  // 2. Compute Dynamically Surcharged Pricing
+  const calculatedPrices = useMemo(() => {
+    const baseFinalPrice = product.finalPrice ?? product.sellingPrice ?? 0;
+    const baseSellingPrice = product.sellingPrice ?? 0;
+    
+    let totalSurcharge = 0;
+    Object.entries(selectedOptions).forEach(([category, optionName]) => {
+      const match = groupedVariants[category]?.find((v) => v.name === optionName);
+      if (match?.extraPrice) {
+        totalSurcharge += match.extraPrice;
+      }
+    });
+
+    return {
+      finalPrice: baseFinalPrice + totalSurcharge,
+      sellingPrice: baseSellingPrice > 0 ? baseSellingPrice + totalSurcharge : undefined,
+    };
+  }, [selectedOptions, groupedVariants, product.finalPrice, product.sellingPrice]);
+
+  // 3. Match Specific Variant Sets within Global Cart Items Context
+  const quantity = cart.find((item: any) => {
+    if (item.id !== product.id) return false;
+    if (hasVariants) {
+      if (!item.selectedOptions) return false;
+      return Object.entries(selectedOptions).every(([cat, val]) => item.selectedOptions[cat] === val);
+    }
+    return true;
+  })?.quantity || 0;
+
+  // 4. Context-Aware WhatsApp Link Builder
+  const optionsSummary = Object.entries(selectedOptions)
+    .map(([cat, val]) => `${cat}: ${val}`)
+    .join(', ');
+
+  const whatsappNumber = `${storeFormData?.contactPhone || "254732771353"}`.replace(/\D/g, '');
+  const message = encodeURIComponent(
+    `Hi! I'm interested in "${product.name}"${optionsSummary ? ` (${optionsSummary})` : ''} priced at Kes ${calculatedPrices.finalPrice.toLocaleString()} for my pet. Is this profile ideal for my pet's current breed and age?`
+  );
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
   const discount = product.sellingPrice && product.finalPrice 
     ? Math.round(((product.sellingPrice - product.finalPrice) / product.sellingPrice) * 100) 
     : null;
 
+  const handleAddToCart = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
+    if (hasVariants && !allOptionsSelected) {
+      setIsSelectingOptions(true);
+      return;
+    }
+
+    addToCart({
+      ...product,
+      finalPrice: calculatedPrices.finalPrice,
+      sellingPrice: calculatedPrices.sellingPrice || product.sellingPrice,
+      selectedOptions,
+    });
+  };
+
   return (
     <motion.div 
       whileHover={{ y: -10 }}
-      className="group bg-white rounded-[2.5rem] border border-slate-100 p-3 h-full flex flex-col transition-all duration-500 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)]"
+      className="group relative bg-white rounded-[2.5rem] border border-slate-100 p-3 h-full flex flex-col transition-all duration-500 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] overflow-hidden"
     >
       {/* Image Area */}
       <div className="relative aspect-[10/11] rounded-[2rem] overflow-hidden bg-slate-50">
@@ -67,15 +133,17 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
         </a>
 
         {/* Floating Quick Add */}
-        <div className="absolute bottom-4 right-4 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-          <button 
-            onClick={() => addToCart(product)}
-            className="w-12 h-12 flex items-center justify-center rounded-2xl text-white shadow-xl shadow-blue-200"
-            style={{ backgroundColor: primary }}
-          >
-            <PlusIcon className="w-6 h-6" />
-          </button>
-        </div>
+        {quantity === 0 && (
+          <div className="absolute bottom-4 right-4 translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-10">
+            <button 
+              onClick={() => handleAddToCart()}
+              className="w-12 h-12 flex items-center justify-center rounded-2xl text-white shadow-xl shadow-blue-200"
+              style={{ backgroundColor: primary }}
+            >
+              <PlusIcon className="w-6 h-6" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Content */}
@@ -101,7 +169,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-[9px] font-black text-[#25D366] uppercase tracking-widest hover:underline transition-colors "
           >
-            <WhatsAppIcon className="w-3 h-3" />  Order Via WhatsApp
+            <WhatsAppIcon className="w-3 h-3" /> Order Via WhatsApp
           </a>
         </div>
 
@@ -109,17 +177,16 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
           <div className="flex flex-col leading-tight">
             {/* The Actual Price */}
             <span className="text-xl font-black text-slate-900">
-              Kes {(product.finalPrice ?? product.sellingPrice ).toLocaleString()}
+              Kes {calculatedPrices.finalPrice.toLocaleString()}
             </span>
 
-            {/* The "Was" Price - Only shows if finalPrice is strictly less than sellingPrice */}
-            {product.finalPrice < product.sellingPrice && (
+            {/* The "Was" Price */}
+            {calculatedPrices.sellingPrice && calculatedPrices.sellingPrice > calculatedPrices.finalPrice && (
               <span className="text-xs text-slate-400 line-through">
-                Kes {product.sellingPrice.toLocaleString()}
+                Kes {calculatedPrices.sellingPrice.toLocaleString()}
               </span>
             )}
           </div>
-
 
           <AnimatePresence mode="wait">
             {quantity > 0 ? (
@@ -129,25 +196,99 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                 exit={{ opacity: 0, x: 20 }}
                 className="flex items-center bg-slate-100 rounded-xl p-1"
               >
-                <button onClick={() => decreaseQuantity(product.id)} className="p-1.5 hover:bg-white rounded-lg transition-colors">
-                  <MinusIcon className="w-4 h-4 text-slate-600" />
+                <button 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    decreaseQuantity(product.id);
+                  }} 
+                  className="p-1.5 hover:bg-white rounded-lg transition-colors"
+                >
+                  {quantity === 1 ? <TrashIcon className="w-4 h-4 text-red-500" /> : <MinusIcon className="w-4 h-4 text-slate-600" />}
                 </button>
                 <span className="px-3 text-sm font-black text-slate-900">{quantity}</span>
-                <button onClick={() => addToCart(product)} className="p-1.5 hover:bg-white rounded-lg transition-colors">
-                  <PlusIcon className="w-4 h-4 text-slate-600" />
+                <button 
+                  onClick={() => handleAddToCart()} 
+                  className="p-1.5 hover:bg-white rounded-lg transition-colors"
+                >
+                  <PlusIcon className="w-4 h-4 text-emerald-600" />
                 </button>
               </motion.div>
             ) : (
               <button 
-                onClick={() => addToCart(product)}
+                onClick={() => handleAddToCart()}
                 className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors"
               >
-                <ShoppingCartIcon className='w-4 h-4' /> Add to Cart
+                <ShoppingCartIcon className='w-4 h-4' /> {hasVariants && !allOptionsSelected ? "Configure" : "Add to Cart"}
               </button>
             )}
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Dynamic Pet Preference Selection Drawer */}
+      <AnimatePresence>
+        {isSelectingOptions && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="absolute inset-0 z-20 bg-white/95 backdrop-blur-md flex flex-col justify-end p-6 rounded-[2.5rem] border border-slate-100"
+          >
+            <button
+              onClick={() => setIsSelectingOptions(false)}
+              className="absolute top-5 right-5 p-2 bg-slate-50 rounded-full text-slate-700 hover:bg-slate-100 transition-colors"
+            >
+              <XMarkIcon className="w-4 h-4" />
+            </button>
+
+            <div className="w-full space-y-4 pt-4 overflow-y-auto max-h-full no-scrollbar">
+              {Object.entries(groupedVariants).map(([category, items]) => (
+                <div key={category} className="space-y-2 text-center">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    Select {category}
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {items.map((opt) => {
+                      const isSelected = selectedOptions[category] === opt.name;
+                      return (
+                        <button
+                          key={opt.name}
+                          type="button"
+                          onClick={() => setSelectedOptions({ ...selectedOptions, [category]: opt.name })}
+                          style={{ 
+                            borderColor: isSelected ? primary : undefined,
+                            backgroundColor: isSelected ? primary : undefined 
+                          }}
+                          className={`px-4 py-2 rounded-xl border text-xs font-bold transition-all ${
+                            isSelected 
+                              ? "text-white shadow-sm" 
+                              : "border-slate-200 bg-slate-50 text-slate-800"
+                          }`}
+                        >
+                          {opt.name}
+                          {opt.extraPrice > 0 && ` (+Kes ${opt.extraPrice.toLocaleString()})`}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+
+              <button
+                disabled={!allOptionsSelected}
+                onClick={() => {
+                  handleAddToCart();
+                  setIsSelectingOptions(false);
+                }}
+                style={{ backgroundColor: allOptionsSelected ? primary : '#94A3B8' }}
+                className="mt-2 w-full py-3.5 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest disabled:cursor-not-allowed transition-opacity shadow-lg shadow-blue-100"
+              >
+                Confirm Selections
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

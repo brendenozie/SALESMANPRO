@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MinusIcon, 
@@ -9,9 +9,9 @@ import {
   TrashIcon, 
   ShoppingBagIcon,
   HeartIcon,
-  ChatBubbleOvalLeftIcon
+  XMarkIcon
 } from '@heroicons/react/24/solid';
-import { MarketListingForm } from '@/types/typings';
+import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
@@ -31,18 +31,68 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 );
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+  const [isSelectingOptions, setIsSelectingOptions] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
   
   const primary = storeFormData?.themeSettings?.primaryColor || '#F472B6';
   const secondary = storeFormData?.themeSettings?.secondaryColor || '#3B82F6';
 
-  const quantity = cart.find((item: any) => item.id === product.id)?.quantity || 0;
   const { name, images, finalPrice, sellingPrice } = product;
 
-  // WhatsApp Config - Pre-filled with a friendly "Mom/Dad" inquiry
-  const whatsappNumber = "254700000000";
-  const message = encodeURIComponent(`Hi! I'm looking at the "${name}" for my little one. Could you tell me more about the sizing and material?`);
+  // 1. Group variants cleanly from options array (e.g., Size, Color, Age Group)
+  const groupedVariants = useMemo(() => {
+    const options = (product.option || []) as VariantOptionItem[];
+    return options.reduce((acc, item) => {
+      if (!acc[item.category]) acc[item.category] = [];
+      acc[item.category].push(item);
+      return acc;
+    }, {} as Record<string, VariantOptionItem[]>);
+  }, [product.option]);
+
+  const hasVariants = Object.keys(groupedVariants).length > 0;
+  const allOptionsSelected = Object.keys(groupedVariants).every((cat) => selectedOptions[cat]);
+
+  // 2. Continuous pricing calculation including specific multi-variant surcharges
+  const calculatedPrices = useMemo(() => {
+    const baseFinalPrice = finalPrice ?? sellingPrice ?? 0;
+    const baseSellingPrice = sellingPrice ?? 0;
+    
+    let totalSurcharge = 0;
+    Object.entries(selectedOptions).forEach(([category, optionName]) => {
+      const match = groupedVariants[category]?.find((v) => v.name === optionName);
+      if (match?.extraPrice) {
+        totalSurcharge += match.extraPrice;
+      }
+    });
+
+    return {
+      finalPrice: baseFinalPrice + totalSurcharge,
+      sellingPrice: baseSellingPrice > 0 ? baseSellingPrice + totalSurcharge : undefined,
+    };
+  }, [selectedOptions, groupedVariants, finalPrice, sellingPrice]);
+
+  // 3. Structural variant lookup optimization within global cart state
+  const quantity = cart.find((item: any) => {
+    if (item.id !== product.id) return false;
+    if (hasVariants) {
+      if (!item.selectedOptions) return false;
+      return Object.entries(selectedOptions).every(([cat, val]) => item.selectedOptions[cat] === val);
+    }
+    return true;
+  })?.quantity || 0;
+
+  // WhatsApp Config - Populated with dynamic store number and variant choices
+  const optionsSummary = Object.entries(selectedOptions)
+    .map(([cat, val]) => `${cat}: ${val}`)
+    .join(', ');
+
+  const whatsappNumber = `${storeFormData?.contactPhone || "254700000000"}`.replace(/\D/g, '');
+  const message = encodeURIComponent(
+    `Hi! I'm looking at the "${name}"${optionsSummary ? ` (${optionsSummary})` : ''} priced at KSh ${calculatedPrices.finalPrice.toLocaleString()} for my little one. Could you tell me more about its availability and delivery options?`
+  );
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
   const discount = sellingPrice && finalPrice && sellingPrice > finalPrice
@@ -50,6 +100,23 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     : null;
     
   const imageSrc = images?.[0] || 'https://images.unsplash.com/photo-1519408230728-0c7c8f0b2c5f';
+
+  const handleAddToCart = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
+    if (hasVariants && !allOptionsSelected) {
+      setIsSelectingOptions(true);
+      return;
+    }
+
+    addToCart({
+      ...product,
+      finalPrice: calculatedPrices.finalPrice,
+      sellingPrice: calculatedPrices.sellingPrice || product.sellingPrice,
+      selectedOptions,
+    });
+  };
 
   return (
     <motion.div
@@ -103,7 +170,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {quantity === 0 && (
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={() => addToCart(product)}
+            onClick={() => handleAddToCart()}
             className="absolute bottom-4 right-4 p-4 rounded-2xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-xl opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300"
           >
             <ShoppingBagIcon className="w-5 h-5" />
@@ -125,7 +192,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             className="flex items-center gap-1 text-[10px] font-black text-[#25D366] uppercase tracking-widest hover:underline"
           >
             <WhatsAppIcon className="w-3 h-3" />
-            Order Via WhatsApp
+            Chat Details
           </a>
         </div>
 
@@ -138,11 +205,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="mt-3 flex items-center justify-between">
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-black text-slate-900 dark:text-white">
-              {finalPrice?.toLocaleString('en-US', { style: 'currency', currency: 'Kes' }) || sellingPrice?.toLocaleString('en-US', { style: 'currency', currency: 'Kes' }) || '$0.00'}
+              KSh {calculatedPrices.finalPrice.toLocaleString()}
             </span>
-            {discount && (
+            {calculatedPrices.sellingPrice && calculatedPrices.sellingPrice > calculatedPrices.finalPrice && (
               <span className="text-sm line-through text-slate-300 dark:text-zinc-600 font-medium">
-                {sellingPrice?.toLocaleString('en-US', { style: 'currency', currency: 'Kes' })}
+                KSh {calculatedPrices.sellingPrice.toLocaleString()}
               </span>
             )}
           </div>
@@ -161,7 +228,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 <div className="flex items-center gap-1">
                   <motion.button
                     whileTap={{ scale: 0.8 }}
-                    onClick={() => decreaseQuantity(product.id)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      decreaseQuantity(product.id);
+                    }}
                     className="p-3 rounded-xl bg-white dark:bg-zinc-900 shadow-sm text-slate-600 dark:text-zinc-300 hover:text-red-500 transition-colors"
                   >
                     {quantity === 1 ? <TrashIcon className="h-4 w-4" /> : <MinusIcon className="h-4 w-4" />}
@@ -169,7 +239,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   <span className="w-10 text-center font-black text-slate-700 dark:text-zinc-200">{quantity}</span>
                   <motion.button
                     whileTap={{ scale: 0.8 }}
-                    onClick={() => addToCart(product)}
+                    onClick={() => handleAddToCart()}
                     className="p-3 rounded-xl bg-white dark:bg-zinc-900 shadow-sm text-slate-600 dark:text-zinc-300 hover:text-blue-500 transition-colors"
                   >
                     <PlusIcon className="h-4 w-4" />
@@ -183,19 +253,88 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => addToCart(product)}
+                onClick={() => handleAddToCart()}
                 className="w-full py-4 rounded-2xl text-white font-bold text-sm shadow-lg transition-all active:shadow-none"
                 style={{ 
                   backgroundColor: primary,
                   boxShadow: `0 12px 24px -8px ${primary}66`
                 }}
               >
-                Add to Cart
+                {hasVariants && !allOptionsSelected ? "Choose Size / Setup" : "Add to Cart"}
               </motion.button>
             )}
           </AnimatePresence>
         </div>
       </div>
+
+      {/* ================= PLAYFUL SELECTION OVERLAY SHEET ================= */}
+      <AnimatePresence>
+        {isSelectingOptions && (
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 26, stiffness: 210 }}
+            className="absolute inset-0 z-30 bg-white/98 dark:bg-zinc-950/98 backdrop-blur-md flex flex-col justify-end p-6 rounded-[2.5rem] border border-pink-100 dark:border-zinc-800 shadow-2xl"
+          >
+            <button
+              onClick={() => setIsSelectingOptions(false)}
+              className="absolute top-5 right-5 p-2 bg-slate-50 dark:bg-zinc-900 rounded-full border border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 transition-colors hover:bg-slate-100"
+            >
+              <XMarkIcon className="w-4 h-4" />
+            </button>
+
+            <div className="w-full space-y-4 pt-4 overflow-y-auto no-scrollbar max-h-full">
+              {Object.entries(groupedVariants).map(([category, items]) => (
+                <div key={category} className="space-y-1.5 text-center">
+                  <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-zinc-500">
+                    Select Product {category}
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {items.map((opt) => {
+                      const isSelected = selectedOptions[category] === opt.name;
+                      return (
+                        <button
+                          key={opt.name}
+                          type="button"
+                          onClick={() => setSelectedOptions({ ...selectedOptions, [category]: opt.name })}
+                          style={{ 
+                            borderColor: isSelected ? primary : undefined,
+                            backgroundColor: isSelected ? primary : undefined 
+                          }}
+                          className={`px-3.5 py-2 rounded-xl border text-[11px] font-bold transition-all ${
+                            isSelected 
+                              ? "text-white shadow-sm scale-[1.02]" 
+                              : "border-slate-200 dark:border-zinc-800 bg-slate-50/40 dark:bg-zinc-900/40 text-slate-800 dark:text-zinc-200 active:bg-slate-100"
+                          }`}
+                        >
+                          {opt.name}
+                          {opt.extraPrice > 0 && ` (+KSh ${opt.extraPrice.toLocaleString()})`}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+
+              <button
+                disabled={!allOptionsSelected}
+                onClick={() => {
+                  handleAddToCart();
+                  setIsSelectingOptions(false);
+                }}
+                style={{ 
+                  backgroundColor: allOptionsSelected ? primary : undefined,
+                  boxShadow: allOptionsSelected ? `0 12px 24px -8px ${primary}66` : undefined
+                }}
+                className="mt-2 w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black text-xs uppercase tracking-widest disabled:opacity-30 transition-all shadow-md"
+              >
+                Confirm Selection
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

@@ -1,7 +1,7 @@
 'use client';
 
 import { MinusIcon, PlusIcon, StarIcon, TrashIcon } from '@heroicons/react/24/solid';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { MarketListingForm } from '@/types/typings';
 import { motion } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
@@ -28,11 +28,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const primary = storeFormData?.themeSettings?.primaryColor || '#6366f1';
   const secondary = storeFormData?.themeSettings?.secondaryColor || '#f43f5e';
 
-  // Avoid explicit MarketListingForm annotation here to match cart's CartItem type
   const quantity = cart.find((item) => item.id === product.id)?.quantity || 0;
   const { name, images, finalPrice, sellingPrice } = product;
 
-  // Safe Phone Number Extraction: Strips non-digits so formatting like spaces do not break standard deep linking
+  // Determine if this item has variants configured
+  const hasVariants = useMemo(() => {
+    return product.option && Array.isArray(product.option) && product.option.length > 0;
+  }, [product.option]);
+
   const rawPhone = storeFormData?.contactPhone || "254732771353";
   const whatsappNumber = rawPhone.replace(/\D/g, '');
   const message = encodeURIComponent(`Hello! I'd like to order: ${name} (Price: KES ${finalPrice || sellingPrice})`);
@@ -44,6 +47,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     
   const imageSrc = images?.[0]?.url || images?.[0] || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=400&q=80';
 
+  // Action execution router for card buttons
+  const handleCartAction = () => {
+    if (hasVariants) {
+      setShowQuickView(true);
+    } else {
+      addToCart(product);
+    }
+  };
+
   return (
     <>
       <motion.div
@@ -53,7 +65,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         transition={{ duration: 0.4 }}
         className="relative flex flex-col bg-white dark:bg-zinc-900 rounded-2xl sm:rounded-[2rem] shadow-sm hover:shadow-xl dark:shadow-none dark:hover:bg-zinc-800/60 transition-all duration-300 overflow-hidden group border border-slate-100 dark:border-zinc-800"
       >
-        {/* IMAGE STAGE LINK CONTAINER */}
+        {/* IMAGE CONTAINER */}
         <div className="relative aspect-square w-full overflow-hidden bg-slate-50 dark:bg-zinc-950">
           <Link href={`/ecommerce/products/${product.id}`} className="block w-full h-full">
             <Image
@@ -69,14 +81,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           
           {discount && (
             <div 
-              className="absolute top-2.5 left-2.5 sm:top-4 sm:left-4延 z-10 text-white text-[9px] sm:text-[10px] font-black px-2 sm:px-3 py-1 rounded-full shadow-md uppercase tracking-wider"
+              className="absolute top-2.5 left-2.5 sm:top-4 sm:left-4 z-10 text-white text-[9px] sm:text-[10px] font-black px-2 sm:px-3 py-1 rounded-full shadow-md uppercase tracking-wider"
               style={{ backgroundColor: secondary }}
             >
               {discount}% OFF
             </div>
           )}
 
-          {/* FLOATING CORNER QUICK WHATSAPP LINK */}
+          {/* FLOATING WHATSAPP LINK */}
           <a 
             href={whatsappUrl}
             target="_blank"
@@ -87,7 +99,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <WhatsAppIcon className="w-4 h-4 sm:w-5 sm:h-5" />
           </a>
 
-          {/* DESKTOP HOVER QUICK VIEW SYSTEM OVERLAY */}
+          {/* DESKTOP HOVER OVERLAY */}
           <div className="absolute inset-0 z-10 hidden lg:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/10 backdrop-blur-[2px]">
             <button
               onClick={(e) => {
@@ -101,7 +113,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
         </div>
 
-        {/* METRICS & DESCRIPTIVE CONTENT GRID */}
+        {/* CONTENT GRID */}
         <div className="p-3.5 sm:p-5 flex flex-col flex-grow space-y-2 sm:space-y-3">
           <div>
             <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate tracking-tight">
@@ -114,7 +126,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   <StarIcon key={i} className={`w-3 h-3 ${i < 4 ? 'fill-current' : 'opacity-25'}`} />
                 ))}
               </div>
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider hidden sm:inline">4.8 Rating</span>
+              {hasVariants && (
+                <span className="text-[9px] font-extrabold text-indigo-500 dark:text-indigo-400 uppercase tracking-wider ml-1">
+                  Options Available
+                </span>
+              )}
             </div>
           </div>
 
@@ -129,9 +145,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             )}
           </div>
 
-          {/* DYNAMIC CART CHECKOUT BUTTON LOGIC CONTROLLER */}
+          {/* DYNAMIC CART FLOW SYSTEM */}
           <div className="pt-1 mt-auto">
-            {quantity > 0 ? (
+            {quantity > 0 && !hasVariants ? (
               <div className="flex items-center justify-between bg-slate-50 dark:bg-zinc-800/50 p-1 rounded-xl border border-slate-100 dark:border-zinc-800">
                 <div className="flex items-center justify-between w-full">
                   <button
@@ -165,11 +181,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             ) : (
               <div className="flex gap-1.5 sm:gap-2">
                 <button
-                  onClick={() => addToCart(product)}
+                  onClick={handleCartAction}
                   className="flex-[3] py-2.5 sm:py-3 rounded-xl text-white font-black text-[10px] sm:text-xs uppercase tracking-wider shadow-md active:scale-[0.98] transition-all"
                   style={{ backgroundColor: primary }}
                 >
-                  Add To Cart
+                  {hasVariants ? 'Select Options' : 'Add To Cart'}
                 </button>
                 
                 <a
@@ -187,7 +203,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </div>
       </motion.div>
 
-      {/* QUICK VIEW TRIGGER CONTROL MODAL */}
+      {/* QUICK VIEW CONTROL MODAL */}
       {showQuickView && (
         <QuickViewModal 
           isOpen={showQuickView} 
