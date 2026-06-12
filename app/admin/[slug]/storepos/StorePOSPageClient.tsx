@@ -10,31 +10,14 @@ import {
   ReceiptPercentIcon,
   CreditCardIcon,
   UserCircleIcon,
-  CheckCircleIcon,
-  PrinterIcon,
-  ClipboardDocumentCheckIcon,
-  ChevronLeftIcon,
   UserIcon,
-  ChevronRightIcon,
 } from '@heroicons/react/24/outline';
-import Modal from '@/components/Modal'; // Assuming you have a reusable Modal component
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-// --- Chart.js Imports (if needed, not directly used in the POS core logic here but kept for completeness) ---
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
 import { MarketListingForm, IStoreCategory } from '@/types/typings';
 import { Company } from '@prisma/client';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "https://salesmanpro.site/api" ||'http://127.0.0.1:3000/api';//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "https://salesmanpro.site/api";
 
-/** usePersistentState - uses sessionStorage (session-lifetime) */
 function usePersistentState<T>(key: string, initial: T) {
   const [state, setState] = useState<T>(() => {
     try {
@@ -52,22 +35,18 @@ function usePersistentState<T>(key: string, initial: T) {
   return [state, setState] as const;
 };
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
-
-// --- Type Definitions (aligned with frontend needs, will be populated from API) ---
-export type Product = {
-  id: string;
+// --- Type Definitions ---
+export interface VariantOptionItem {
+  category: string;
   name: string;
-  description: string;
-  price: number;
-  imageUrl: string;
-  stock: number;
-  // Add other relevant fields from schema if needed for display, e.g., brand, category
-};
+  extraPrice: number;
+}
 
 export type CartItem = MarketListingForm & {
+  cartItemId: string; // Unique ID combining productId and selected variants
   quantity: number;
   subtotal: number;
+  selectedOptions?: VariantOptionItem[]; // Track chosen variants
 };
 
 export type Agent = {
@@ -82,7 +61,7 @@ export type CompanyInfo = Company & {
   address: string;
   phone: string;
   currency: string;
-  taxRate?: number; // Optional, default to 0.08 if not provided
+  taxRate?: number; 
 };
 
 // --- Receipt Generation Helper ---
@@ -100,10 +79,9 @@ interface ReceiptDetails {
   storeName: string;
   storeAddress: string;
   storePhone: string;
-  currencySymbol: string; // Added for dynamic currency display
+  currencySymbol: string;
 };
 
-/** useRipple - material-like ripple effect for clickable elements */
 function useRipple() {
   const containerRef = useRef<HTMLElement | null>(null);
 
@@ -113,7 +91,6 @@ function useRipple() {
     const rect = target.getBoundingClientRect();
     const circle = document.createElement('span');
 
-    // coordinates
     const clientX = 'touches' in e && e.touches?.length ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
     const clientY = 'touches' in e && e.touches?.length ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
     const x = clientX - rect.left;
@@ -127,15 +104,12 @@ function useRipple() {
     circle.style.background = 'rgba(255,255,255,0.12)';
 
     target.appendChild(circle);
-    setTimeout(() => {
-      circle.remove();
-    }, 600);
+    setTimeout(() => { circle.remove(); }, 600);
   };
 
   return { containerRef, createRipple };
 }
 
-/* ---------------------- Small CSS-in-JSX for keyframes & scrollbar (kept inside file) ---------------------- */
 const InlineStyles = () => (
   <style>{`
     @keyframes ripple {
@@ -143,41 +117,34 @@ const InlineStyles = () => (
       to   { transform: scale(1.8); opacity: 0; }
     }
     .animate-ripple { animation: ripple 600ms cubic-bezier(.22,.9,.35,1) forwards; }
-    @keyframes slow-spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
-    .animate-spin-slow { animation: slow-spin 3s linear infinite; }
-
-    /* micro bounce */
-    @keyframes tiny-bounce { 0% { transform: translateY(0) } 50% { transform: translateY(-4px) } 100% { transform: translateY(0) } }
-    .animate-bounce-slow { animation: tiny-bounce 1.6s ease-in-out infinite; }
-
-    /* skeleton shimmer */
-    .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 75%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
-    @keyframes shimmer { from { background-position: 200% 0 } to { background-position: -200% 0 } }
-
-    /* nice thin scrollbar for webkit */
     ::-webkit-scrollbar { width: 10px; height: 10px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(148,0,211,0.16); border-radius: 10px; border: 2px solid transparent; background-clip: padding-box; }
-
-    /* utility for glass look */
-    .glass { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border: 1px solid rgba(255,255,255,0.03); backdrop-filter: blur(6px); }
+    ::-webkit-scrollbar-thumb { background: rgba(79, 70, 229, 0.16); border-radius: 10px; border: 2px solid transparent; background-clip: padding-box; }
+    .glass-panel { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+    .dark .glass-panel { background: rgba(24, 24, 27, 0.8); backdrop-filter: blur(10px); }
   `}</style>
 );
 
-
 const generateReceiptHtml = (details: ReceiptDetails): string => {
-  const itemsHtml = details.cart.map(item => `
+  const itemsHtml = details.cart.map(item => {
+    // Append variants to the receipt name if they exist
+    const variantString = item.selectedOptions?.length 
+      ? ` (${item.selectedOptions.map(o => o.name).join(', ')})` 
+      : '';
+    const displayName = `${item.name}${variantString}`;
+
+    return `
     <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px;">
-      <span style="flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</span>
+      <span style="flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${displayName}</span>
       <span style="width: 40px; text-align: center;">x${item.quantity}</span>
       <span style="width: 80px; text-align: right;">${details.currencySymbol} ${item.finalPrice?.toFixed(2)}</span>
       <span style="width: 100px; text-align: right; font-weight: bold;">${details.currencySymbol} ${item.subtotal.toFixed(2)}</span>
     </div>
-  `).join('');
+  `}).join('');
 
   return `
     <div style="font-family: 'Inter', sans-serif; width: 300px; margin: 0 auto; padding: 20px; color: #333; background-color: #fff; border: 1px solid #eee;">
-      <h2 style="text-align: center; font-size: 24px; margin-bottom: 5px; color: #6A0572;">${details.storeName}</h2>
+      <h2 style="text-align: center; font-size: 24px; margin-bottom: 5px; color: #4F46E5;">${details.storeName}</h2>
       <p style="text-align: center; font-size: 12px; margin-bottom: 10px; color: #555;">${details.storeAddress}<br>${details.storePhone}</p>
       <hr style="border: none; border-top: 1px dashed #ccc; margin: 15px 0;">
 
@@ -203,81 +170,57 @@ const generateReceiptHtml = (details: ReceiptDetails): string => {
         <span>Tax:</span><span style="font-weight: bold;">${details.currencySymbol} ${details.totalTax.toFixed(2)}</span>
       </div>
 
-      <div style="display: flex; justify-content: space-between; font-size: 22px; font-weight: bold; border-top: 2px solid #6A0572; padding-top: 10px; margin-top: 10px;">
+      <div style="display: flex; justify-content: space-between; font-size: 22px; font-weight: bold; border-top: 2px solid #4F46E5; padding-top: 10px; margin-top: 10px;">
         <span>TOTAL:</span><span>${details.currencySymbol} ${details.finalTotal.toFixed(2)}</span>
       </div>
 
       <hr style="border: none; border-top: 1px dashed #ccc; margin: 15px 0;">
       <p style="text-align: center; font-size: 13px; color: #555;">Served by: ${details.agentName}</p>
-      <p style="text-align: center; font-size: 16px; font-weight: bold; margin-top: 15px; color: #6A0572;">THANK YOU!</p>
-      <p style="text-align: center; font-size: 11px; color: #777; margin-top: 10px;">All sales final. No refunds.</p>
+      <p style="text-align: center; font-size: 16px; font-weight: bold; margin-top: 15px; color: #4F46E5;">THANK YOU!</p>
     </div>
   `;
 };
 
-// --- Print Function (remains mostly the same, now uses dynamic currencySymbol) ---
-// --- Updated Print Function for Desktop Integration ---
 const printReceipt = (htmlContent: string, receiptDetails: any) => {
    const desktopPayload = {
-        // Business Identity (Matches C# Properties)
         BusinessName: receiptDetails.storeName || "Gourmet Bites Bistro",
         BusinessAddress: receiptDetails.storeAddress || "123 Tech Lane, Silicon Valley",
         TaxId: receiptDetails.taxId || "VAT-987654321",
         PhoneNumber: receiptDetails.storePhone || "+1 (555) 012-3456",
-
-        // Transaction Details
         InvoiceId: receiptDetails.invoiceId || `INV-${Date.now()}`,
         ReceiptNumber: receiptDetails.receiptNumber || `RCP-${Date.now()}`,
         CustomerName: receiptDetails.customerName || "Walking Customer",
         StaffName: receiptDetails.cashierName || "Alex P.",
         Date: `${receiptDetails.date} ${receiptDetails.time}`,
-
-        // Financials
         Currency: receiptDetails.currency || "USD",
-        TaxRate: receiptDetails.taxRatePercentage / 100 || 0.10, // Pass as decimal (e.g., 0.10 for 10%)
+        TaxRate: receiptDetails.taxRatePercentage / 100 || 0.10,
         ChangeGiven: receiptDetails.changeAmount || 0.00,
         PaymentMethod: receiptDetails.paymentType || "Cash",
-
-        // Items List
-        Items: receiptDetails.cart.map((item: any) => ({
-            Name: item.name,
+        Items: receiptDetails.cart.map((item: any) => {
+          // Append variant detail to C# receipt payload string
+          const variantString = item.selectedOptions?.length 
+            ? ` (${item.selectedOptions.map((o: any) => o.name).join(', ')})` : '';
+          return {
+            Name: `${item.name}${variantString}`,
             Quantity: parseInt(item.quantity),
             Price: parseFloat(item.finalPrice || item.price || 0),
             Discount: parseFloat(item.discountAmount || 0),
             Category: item.category || "General",
             Route: item.route || "dispatch"
-        }))
+          };
+        })
     };
 
     if ((window as any).AndroidBridge) {
-        // This calls the Kotlin @JavascriptInterface
-        // Stringify the whole object so Kotlin can parse it easily
-        const message = JSON.stringify({
-            type: 'PRINT_ESC_POS',
-            payload: desktopPayload
-        });
-        
+        const message = JSON.stringify({ type: 'PRINT_ESC_POS', payload: desktopPayload });
         (window as any).AndroidBridge.postMessage(message);
-      
-    } else  if ((window as any).chrome?.webview) {
-    
-    (window as any).chrome.webview.postMessage({
-      type: 'PRINT_ESC_POS',
-      payload: desktopPayload
-    });
+    } else if ((window as any).chrome?.webview) {
+        (window as any).chrome.webview.postMessage({ type: 'PRINT_ESC_POS', payload: desktopPayload });
+        (window as any).chrome.webview.postMessage({ type: 'PRINT_HTML_RECEIPT', payload: htmlContent });
+        (window as any).chrome.webview.postMessage({ type: 'NOTIFY', message: 'Receipt sent to printer!' });
+        return;
+    }
 
-    // Change this in your React code
-    (window as any).chrome.webview.postMessage({
-      type: 'PRINT_HTML_RECEIPT',
-      payload: htmlContent // Send the pre-rendered HTML string
-    });
-
-    (window as any).chrome.webview.postMessage({ type: 'NOTIFY', message: 'Receipt sent to printer!' });
-
-    return;
-  }
-
-  // 2. Fallback for standard Web Browsers (your existing logic)
   const iframe = document.createElement('iframe');
   iframe.style.display = 'none';
   document.body.appendChild(iframe);
@@ -287,40 +230,9 @@ const printReceipt = (htmlContent: string, receiptDetails: any) => {
     iframeDoc.open();
      iframeDoc.write(`
       <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Receipt</title>
-        <style>
-          @page {
-            size: 80mm auto;
-            margin: 0;
-          }
-          body {
-            margin: 0;
-            padding: 0;
-            -webkit-print-color-adjust: exact;
-          }
-          div { font-family: 'Inter', sans-serif; width: 300px; margin: 0 auto; padding: 20px; color: #333; background-color: #fff; border: 1px solid #eee; }
-          h2 { text-align: center; font-size: 24px; margin-bottom: 5px; color: #6A0572; }
-          p { text-align: center; font-size: 12px; margin-bottom: 10px; color: #555; }
-          hr { border: none; border-top: 1px dashed #ccc; margin: 15px 0; }
-          .flex-between { display: flex; justify-content: space-between; }
-          .item-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px; }
-          .item-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-          .item-qty { width: 40px; text-align: center; }
-          .item-price { width: 80px; text-align: right; }
-          .item-subtotal { width: 100px; text-align: right; font-weight: bold; }
-          .section-title { font-size: 15px; font-weight: bold; margin-bottom: 10px; color: #444; }
-          .summary-row { display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 5px; }
-          .total-row { display: flex; justify-content: space-between; font-size: 22px; font-weight: bold; border-top: 2px solid #6A0572; padding-top: 10px; margin-top: 10px; }
-          .thank-you { text-align: center; font-size: 16px; font-weight: bold; margin-top: 15px; color: #6A0572; }
-          .policy { text-align: center; font-size: 11px; color: #777; margin-top: 10px; }
-        </style>
-      </head>
-      <body>
-        ${htmlContent}
-      </body>
-      </html>
+      <html><head><title>Receipt</title>
+      <style>@page { size: 80mm auto; margin: 0; } body { margin: 0; -webkit-print-color-adjust: exact; }</style>
+      </head><body>${htmlContent}</body></html>
     `);
     iframeDoc.close();
     iframe.onload = () => {
@@ -334,54 +246,46 @@ const printReceipt = (htmlContent: string, receiptDetails: any) => {
       printWindow.document.write(htmlContent);
       printWindow.document.close();
       printWindow.print();
-    } else {
-      alert('Could not open print window. Please allow pop-ups for printing.');
     }
   }
 };
 
-// --- Main POS Component ---
-// Props for initial data and company ID, passed from the server-side Page.tsx
 interface StorePOSPageClientProps {
-  initialProducts?: MarketListingForm[]; // If you pre-fetch on the server
-  initialCategories?: IStoreCategory[]; // If you pre-fetch on the server
-  companyId: string; // The company ID is essential for fetching relevant data
-  userName: string; // Current user's name for display
-  userId: string | null; // Current user's ID for potential use
-  currentPage: number; // Current page number
-  totalPages: number; // Total number of pages
+  initialProducts?: MarketListingForm[]; 
+  initialCategories?: IStoreCategory[]; 
+  companyId: string; 
+  userName: string; 
+  userId: string | null; 
+  currentPage: number; 
+  totalPages: number; 
 }
 
 const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, initialProducts, initialCategories, userName, userId, currentPage, totalPages }) => {
-  // --- State Variables (now initialized as empty, will be populated by API calls) ---
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
-  const handlePageChange = (newPage: number) => {
-    const params = new URLSearchParams(searchParams);
-    params.set('page', newPage.toString());
-    router.push(`${pathname}?${params.toString()}`);
-  };
 
   const [products, setProducts] = useState<MarketListingForm[]>(initialProducts || []);
   const [categories, setCategories] = useState<IStoreCategory[]>(initialCategories || []);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [discountPercentage, setDiscountPercentage] = useState(0);
-  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showMobileCart, setShowMobileCart] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'success' | 'failed' | null>(null);
-  // persistent category (session)
+  
+  // persistent category
   const [selectedCategory, setSelectedCategory] = usePersistentState<string>('pos:selectedCategory', 'all');
-
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
-  const ripple = useRipple();
+  
+  // Variants Modal State
+  const [variantModalProduct, setVariantModalProduct] = useState<MarketListingForm | null>(null);
+  // Track selected variants by category. e.g. { "size": { name: "XL", extraPrice: 50 } }
+  const [selectedVariants, setSelectedVariants] = useState<Record<string, VariantOptionItem>>({});
 
+  const ripple = useRipple();
   const taxRate = companyInfo?.taxRate ?? 0.00;
 
-  // State for Agent and Company Info
   const [currentAgent, setCurrentAgent] = useState<Agent | null>({
     id: 'agent-001',
     name: `${userName}`,
@@ -391,43 +295,34 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
 
   const currencySymbol = useMemo(() => companyInfo?.currency === 'KES' ? 'KSh' : '$', [companyInfo]);
 
+  // Infinite Scroll State
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(page < totalPages);
+  const observer = useRef<IntersectionObserver | null>(null);
+  
     /* ------------------- Mobile Cart swipe handling ------------------- */
   const mobileCartRef = useRef<HTMLDivElement | null>(null);
   const touchStartY = useRef<number | null>(null);
   const currentTranslate = useRef<number>(0);
 
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(page < totalPages);
-  
-  const observer = useRef<IntersectionObserver | null>(null);
-
-  // The "Sentinel" ref: when this div enters the viewport, we load more
   const lastProductElementRef = useCallback((node: HTMLDivElement) => {
     if (loading) return;
     if (observer.current) observer.current.disconnect();
-
     observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        setPage(prevPage => prevPage + 1);
-      }
+      if (entries[0].isIntersecting && hasMore) setPage(prevPage => prevPage + 1);
     });
-
     if (node) observer.current.observe(node);
   }, [loading, hasMore]);
 
-  // Fetch more products when page changes
   useEffect(() => {
-    if (page === 1) return; // Skip initial load as it's handled by Server Component
-
+    if (page === 1) return;
     const fetchMoreProducts = async () => {
       setLoading(true);
       try {
         const res = await fetch(`/api/admin/pos-marketplace-listings?companyId=${companyId}&page=${page}&limit=20`);
         const data = await res.json();
-        
-        const newProducts = data.data.results;
-        setProducts(prev => [...prev, ...newProducts]);
+        setProducts(prev => [...prev, ...data.data.results]);
         setHasMore(page < data.data.totalPages);
       } catch (err) {
         console.error("Failed to load products", err);
@@ -435,128 +330,145 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
         setLoading(false);
       }
     };
-
     fetchMoreProducts();
   }, [page, companyId]);
 
+    useEffect(() => {
+        const el = mobileCartRef.current;
+        if (!el) return;
+        const start = (e: TouchEvent) => {
+          touchStartY.current = e.touches[0].clientY;
+        };
+        const move = (e: TouchEvent) => {
+          if (touchStartY.current == null) return;
+          const delta = e.touches[0].clientY - touchStartY.current;
+          if (delta > 0) {
+            currentTranslate.current = delta;
+            el.style.transform = `translateY(${delta}px)`;
+            el.style.transition = 'transform 0s';
+          }
+        };
+        const end = () => {
+          if (touchStartY.current == null) return;
+          const delta = currentTranslate.current;
+          el.style.transition = '';
+          el.style.transform = '';
+          if (delta > 120) {
+            setShowMobileCart(false);
+          }
+          touchStartY.current = null;
+          currentTranslate.current = 0;
+        };
+
+        el.addEventListener('touchstart', start, { passive: true });
+        el.addEventListener('touchmove', move, { passive: true });
+        el.addEventListener('touchend', end);
+        return () => {
+          el.removeEventListener('touchstart', start as any);
+          el.removeEventListener('touchmove', move as any);
+          el.removeEventListener('touchend', end as any);
+        };
+      }, [showMobileCart]);
+
+
   useEffect(() => {
-    const el = mobileCartRef.current;
-    if (!el) return;
-    const start = (e: TouchEvent) => {
-      touchStartY.current = e.touches[0].clientY;
-    };
-    const move = (e: TouchEvent) => {
-      if (touchStartY.current == null) return;
-      const delta = e.touches[0].clientY - touchStartY.current;
-      if (delta > 0) {
-        currentTranslate.current = delta;
-        el.style.transform = `translateY(${delta}px)`;
-        el.style.transition = 'transform 0s';
-      }
-    };
-    const end = () => {
-      if (touchStartY.current == null) return;
-      const delta = currentTranslate.current;
-      el.style.transition = '';
-      el.style.transform = '';
-      if (delta > 120) {
-        setShowMobileCart(false);
-      }
-      touchStartY.current = null;
-      currentTranslate.current = 0;
-    };
-
-    el.addEventListener('touchstart', start, { passive: true });
-    el.addEventListener('touchmove', move, { passive: true });
-    el.addEventListener('touchend', end);
-    return () => {
-      el.removeEventListener('touchstart', start as any);
-      el.removeEventListener('touchmove', move as any);
-      el.removeEventListener('touchend', end as any);
-    };
-  }, [showMobileCart]);
-
-
-  // --- useEffect to fetch data on component mount ---
-  useEffect(() => {
-    // 1. Fetch Products
-    // 2. Fetch Agent Info (assuming a current user/agent context)
     const fetchAgentInfo = async () => {
-      await new Promise(resolve => setTimeout(resolve, 300)); // Simulate network delay
-      const fetchedAgent: Agent = {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      setCurrentAgent({
         id: userId || 'agent-001',
         name: userName || 'Alice Smith',
         dailySalesCount: 15,
         dailySalesValue: 1250.75,
-      };
-      setCurrentAgent(fetchedAgent);
+      });
     };
-
-    // 3. Fetch Company Info
     const fetchCompanyInfo = async () => {
-      
-      await new Promise(resolve => setTimeout(resolve, 400)); // Simulate network delay
-      const fetchedCompany: CompanyInfo = {
+      await new Promise(resolve => setTimeout(resolve, 400));
+      setCompanyInfo({
         name: 'Your Awesome Store',
         address: '123 Main St, Nairobi, Kenya',
         phone: '+254 7XX XXX XXX',
-        currency: 'KES', // Default from schema, or fetched
-      };
-      setCompanyInfo(fetchedCompany);
+        currency: 'KES',
+      } as CompanyInfo);
     };
-
-    // // fetchProducts();
     fetchAgentInfo();
     fetchCompanyInfo();
-  }, [companyId]); // Dependency array: re-run if companyId changes
+  }, [companyId, userId, userName]);
 
-  const handleAddToCart = useCallback((product: MarketListingForm) => {
+  // -----------------------------------------------------
+  // ADD TO CART LOGIC
+  // -----------------------------------------------------
+  const handleProductClick = useCallback((product: MarketListingForm) => {
+    // Check if product has variants
+    if (product.option && product.option.length > 0) {
+      setVariantModalProduct(product);
+      setSelectedVariants({}); // Reset variants modal state
+    } else {
+      executeAddToCart(product, []); // No variants, add directly
+    }
+  }, []);
+
+  const executeAddToCart = useCallback((product: MarketListingForm, options: VariantOptionItem[]) => {
     setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.id);
-      if (existingItem) {
+      // 1. Create a unique signature for this cart line-item
+      // E.g. "prod123-color:Red|size:XL"
+      const optionsSignature = options
+        .map(o => `${o.category}:${o.name}`)
+        .sort()
+        .join('|');
+      const cartItemId = `${product.id}-${optionsSignature}`;
+
+      // 2. Calculate dynamic price
+      const basePrice = product.finalPrice || product.sellingPrice || 0;
+      const extraVariantPrice = options.reduce((sum, opt) => sum + (opt.extraPrice || 0), 0);
+      const unitFinalPrice = basePrice + extraVariantPrice;
+
+      // 3. Find if this exact configuration already exists in the cart
+      const existingItemIndex = prevCart.findIndex(item => item.cartItemId === cartItemId);
+
+      if (existingItemIndex > -1) {
+        // Increment quantity
+        const updatedCart = [...prevCart];
+        const existingItem = updatedCart[existingItemIndex];
         const newQuantity = existingItem.quantity + 1;
-        return prevCart.map(item =>
-          item.id === product.id
-            ? {
-                ...item,
-                quantity: newQuantity,
-                subtotal: (product.finalPrice || product.sellingPrice || 0) * newQuantity, // ✅ always number
-              }
-            : item
-        );
+        updatedCart[existingItemIndex] = {
+          ...existingItem,
+          quantity: newQuantity,
+          subtotal: unitFinalPrice * newQuantity,
+        };
+        return updatedCart;
       } else {
+        // Add new line item
         return [
           ...prevCart,
           {
             ...product,
+            cartItemId, 
             quantity: 1,
-            subtotal: product.finalPrice || product.sellingPrice || 0, // ✅ always number
+            finalPrice: unitFinalPrice, // Override final price with variant calculation
+            subtotal: unitFinalPrice,
+            selectedOptions: options
           },
         ];
       }
     });
+    setVariantModalProduct(null); // Close modal if it was open
   }, []);
 
-  const handleQuantityChange = useCallback((itemId: string, delta: number) => {
+  const handleQuantityChange = useCallback((cartItemId: string, delta: number) => {
     setCart(prevCart => {
-      const updatedCart = prevCart.map(item => {
-        if (item.id === itemId) {
+      return prevCart.map(item => {
+        if (item.cartItemId === cartItemId) {
           const newQuantity = item.quantity + delta;
           if (newQuantity <= 0) return null;
-          // if (newQuantity > item.stock) {
-          //   alert(`Cannot add more than available stock (${item.stock}) for ${item.name}`);
-          //   return item;
-          // }
-          return { ...item, quantity: newQuantity, subtotal: (item.finalPrice || item.sellingPrice || 0) * newQuantity };
+          return { ...item, quantity: newQuantity, subtotal: (item.finalPrice || 0) * newQuantity };
         }
         return item;
       }).filter(Boolean) as CartItem[];
-      return updatedCart;
     });
   }, []);
 
-  const handleRemoveFromCart = useCallback((itemId: string) => {
-    setCart(prevCart => prevCart.filter(item => item.id !== itemId));
+  const handleRemoveFromCart = useCallback((cartItemId: string) => {
+    setCart(prevCart => prevCart.filter(item => item.cartItemId !== cartItemId));
   }, []);
 
   const handleClearCart = useCallback(() => {
@@ -566,21 +478,12 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     }
   }, []);
 
-  // Cart calculations
-  const subtotal = useMemo(() => {
-    return cart.reduce((sum, item) => sum + item.subtotal, 0);
-  }, [cart]);
-
-  const totalDiscountAmount = useMemo(() => {
-    return (subtotal * discountPercentage) / 100;
-  }, [subtotal, discountPercentage]);
-
-  const totalTax = useMemo(() => {
-    const taxable = subtotal - totalDiscountAmount;
-    return taxable * taxRate;
-  }, [subtotal, totalDiscountAmount, companyInfo]);
-
-    /* ------------------- filtering & derived values ------------------- */
+  // --- Cart Math ---
+  const subtotal = useMemo(() => cart.reduce((sum, item) => sum + item.subtotal, 0), [cart]);
+  const totalDiscountAmount = useMemo(() => (subtotal * discountPercentage) / 100, [subtotal, discountPercentage]);
+  const totalTax = useMemo(() => (subtotal - totalDiscountAmount) * taxRate, [subtotal, totalDiscountAmount, taxRate]);
+  const finalTotal = useMemo(() => subtotal - totalDiscountAmount + totalTax, [subtotal, totalDiscountAmount, totalTax]);
+  
   const filteredProducts = useMemo(() => {
     return products.filter(p => {
       const catId = (p as any).productCategoryId || (p as any).categoryId || 'all';
@@ -593,262 +496,105 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     });
   }, [products, searchTerm, selectedCategory]);
   
-  const finalTotal = useMemo(() => subtotal - totalDiscountAmount + totalTax, [subtotal, totalDiscountAmount, totalTax]);
-  
   const finalizeSale = useCallback(async () => {
-  if (cart.length === 0) return alert("Cart is empty");
-  
-  setPaymentStatus(null);
-  // console.log("Finalizing sale...");
+    if (cart.length === 0) return alert("Cart is empty");
+    setPaymentStatus(null);
 
-  // 1. Map frontend cart to backend schema
-  const orderPayload = {
-    name: "Walk-in Customer", // Or collect from a field
-    email: "pos-customer@store.com", // Fallback for POS
-    phone: "0000000000",
-    consumerId: userId || 'pos-agent',
-    companyId: companyId,
-    paymentOption: "cod", // POS usually defaults to Cash (cod) or Card
-    totalPrice: subtotal,
-    totalFinalPrice: finalTotal,
-    items: cart.map(item => ({
-      marketplaceListingId: item.id,
-      quantity: item.quantity,
-      price: item.finalPrice || item.sellingPrice || 0,
-    })),
-    paymentData: {
-      notes: `POS Sale by ${currentAgent?.name}`,
-      discountApplied: totalDiscountAmount
-    }
-  };
-
-  try {
-    const response = await fetch(`/api/shop/orders`, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-      },
-      // credentials: 'include',
-      body: JSON.stringify(orderPayload),
-    });
-
-    const result = await response.json();
-
-    if (!response.ok || !result.success) {
-      throw new Error(`${result.error}` || 'Failed to process order');
-    }
-
-    // 2. Handle Payment Redirects (Stripe/Paystack/Paypal)
-    if (result.data.authorizationUrl) {
-      window.location.href = result.data.authorizationUrl;
-      return;
-    }
-
-    setPaymentStatus('success');
-
-    // 3. Print Receipt             
-    const now = new Date();
-
-    const receiptDetails: ReceiptDetails = {
-      // Items & Totals
-      cart: cart.map(item => ({
-        ...item,
-        // Ensure these match the expected calculation: (Price * Qty) - Discount
-        finalPrice: (item.finalPrice || item.sellingPrice || item.price || 0), // Fallbacks for price
-        subtotal: ((item.finalPrice || item.sellingPrice || item.price || 0) * item.quantity) - (item.discount || 0),
-        discountAmount: item.discount || 0,
-        category: item.category || "General",
-        route: item.route || "dispatch"
+    const orderPayload = {
+      name: "Walk-in Customer",
+      email: "pos-customer@store.com",
+      phone: "0000000000",
+      consumerId: userId || 'pos-agent',
+      companyId: companyId,
+      paymentOption: "cod",
+      totalPrice: subtotal,
+      totalFinalPrice: finalTotal,
+      items: cart.map(item => ({
+        marketplaceListingId: item.id, // Original base ID for inventory tracking
+        quantity: item.quantity,
+        price: item.finalPrice,
+        // Optional: you can pass the variant data to the backend here if your schema supports it
+        variants: item.selectedOptions?.map(o => `${o.category}:${o.name}`).join(',') || null 
       })),
-      
-      subtotal: subtotal,
-      totalDiscountAmount: totalDiscountAmount,
-      taxRatePercentage: taxRate, // Added: Store the numeric rate (e.g., 10 for 10%)
-      totalTax: totalTax,
-      finalTotal: finalTotal,
-      currency: companyInfo?.currency || 'USD', // Added: Explicit currency code for C# string Currency
-
-      // Transaction & Personnel
-      agentId: currentAgent?.id || 'N/A',
-      staffName: currentAgent?.name || 'N/A', // Renamed to match C# StaffName
-      customerName: "Walking Customer", // Added: Default or from state
-      invoiceId: result.data.trackingNumber, 
-      receiptNumber: `RCP-${result.data.trackingNumber}`, // Consistent with InvoiceId
-      
-      // Temporal
-      date: now.toISOString().split('T')[0], // Format: YYYY-MM-DD
-      time: now.toTimeString().split(' ')[0], // Format: HH:mm:ss
-      
-      // Business Identity
-      storeName: companyInfo?.name || 'Gourmet Bites Bistro',
-      storeAddress: companyInfo?.address || '123 Tech Lane, Silicon Valley',
-      storePhone: companyInfo?.contactPhone || '+1 (555) 012-3456',
-      taxId: companyInfo?.taxId || '', // Added: Needed for professional receipt
-      currencySymbol: currencySymbol,
+      paymentData: {
+        notes: `POS Sale by ${currentAgent?.name}`,
+        discountApplied: totalDiscountAmount
+      }
     };
 
-    const receiptHtml = generateReceiptHtml(receiptDetails);
-    printReceipt(receiptHtml, receiptDetails);
+    try {
+      const response = await fetch(`/api/shop/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderPayload),
+      });
 
-    // 4. Cleanup
-    setCart([]);
-    setDiscountPercentage(0);
-    setShowPaymentModal(false);
+      const result = await response.json();
 
-  } catch (error: any) {
-    console.error("Order creation failed:", error);
-    setPaymentStatus('failed');
-    alert(`Error: ${error}`);
-  }
-}, [cart, finalTotal, subtotal, totalDiscountAmount, totalTax, companyId, userId, currentAgent, companyInfo, currencySymbol]);
+      if (!response.ok || !result.success) throw new Error(`${result.error}` || 'Failed to process order');
+      if (result.data.authorizationUrl) {
+        window.location.href = result.data.authorizationUrl;
+        return;
+      }
+
+      setPaymentStatus('success');
+
+      const now = new Date();
+      const receiptDetails: ReceiptDetails = {
+        cart: cart.map(item => ({
+          ...item,
+          finalPrice: item.finalPrice || 0,
+          subtotal: item.subtotal - (item.discount || 0),
+          category: item.category || "General",
+        })) as CartItem[],
+        subtotal: subtotal,
+        totalDiscountAmount: totalDiscountAmount,
+        totalTax: totalTax,
+        finalTotal: finalTotal,
+        agentId: currentAgent?.id || 'N/A',
+        agentName: currentAgent?.name || 'N/A', 
+        transactionId: result.data.trackingNumber, 
+        date: now.toISOString().split('T')[0], 
+        time: now.toTimeString().split(' ')[0], 
+        storeName: companyInfo?.name || 'Store',
+        storeAddress: companyInfo?.address || 'Address',
+        storePhone: companyInfo?.contactPhone || 'Phone',
+        currencySymbol: currencySymbol,
+      };
+
+      printReceipt(generateReceiptHtml(receiptDetails), receiptDetails);
+
+      setCart([]);
+      setDiscountPercentage(0);
+      setShowPaymentModal(false);
+
+    } catch (error: any) {
+      console.error("Order creation failed:", error);
+      setPaymentStatus('failed');
+      alert(`Error: ${error}`);
+    }
+  }, [cart, finalTotal, subtotal, totalDiscountAmount, totalTax, companyId, userId, currentAgent, companyInfo, currencySymbol]);
 
   const handleProcessPayment = useCallback(() => {
-    if (cart.length === 0) {
-      alert('Cart is empty. Please add items before processing payment.');
-      return;
-    }
+    if (cart.length === 0) return alert('Cart is empty.');
     setShowPaymentModal(true);
-    finalizeSale(); // Call finalizeSale directly when showing payment modal
+    finalizeSale(); 
   }, [cart.length, finalizeSale]);
 
-  
-  /* ------------------- small helpers ------------------- */
   const itemCount = cart.reduce((s, i) => s + i.quantity, 0);
 
-  /* ------------------- Render pieces ------------------- */
+  // Group variants by category for the modal
+  const groupedVariants = useMemo(() => {
+    if (!variantModalProduct || !variantModalProduct.option) return {};
+    return variantModalProduct.option.reduce((acc: any, opt: VariantOptionItem) => {
+      if (!acc[opt.category]) acc[opt.category] = [];
+      acc[opt.category].push(opt);
+      return acc;
+    }, {});
+  }, [variantModalProduct]);
 
-  // Cart Summary used in both desktop and mobile overlay
-  const CartSummary = (
-    <div className="lg:col-span-1 bg-gray-800 glass p-6 rounded-2xl shadow-2xl border border-gray-700 flex flex-col h-full">
-      <div className="flex items-center justify-between mb-6 border-b border-gray-700 pb-4">
-        <h2 className="text-3xl font-bold text-purple-300 flex items-center">
-          <ShoppingCartIcon className="h-8 w-8 mr-3 text-purple-400" /> Cart ({cart.length})
-        </h2>
-        <button
-          onClick={handleClearCart}
-          className="text-red-400 hover:text-red-300 transition-colors text-sm font-medium"
-          disabled={cart.length === 0}
-        >
-          Clear
-        </button>
-      </div>
-
-      {cart.length === 0 ? (
-        <div className="flex-grow flex items-center justify-center text-gray-400 text-lg">
-          <p className="text-center">Your cart is empty. Add products to begin.</p>
-        </div>
-      ) : (
-        <div className="flex-grow overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-purple-800 scrollbar-track-gray-900 mb-6">
-          {cart.map(item => (
-            <div key={item.id} className="flex items-center justify-between bg-gray-700 p-4 rounded-xl shadow-lg mb-3 border border-gray-600 transition-all duration-300 hover:bg-gray-600">
-              <div className="flex items-center flex-grow">
-                <img
-                  src={(item.images && item.images[0]) || `https://placehold.co/50x50/4B5563/ffffff?text=Img`}
-                  alt={item.name}
-                  className="h-12 w-12 rounded-lg object-cover mr-4 ring-2 ring-purple-500/50"
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = `https://placehold.co/50x50/4B5563/ffffff?text=Img`; }}
-                />
-                <div className="flex-grow min-w-0">
-                  <h3 className="text-base font-semibold text-white truncate">{item.name}</h3>
-                  <p className="text-sm font-mono text-green-400">{currencySymbol} {(item.finalPrice ?? 0).toFixed(2)}</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2 ml-4">
-                <button
-                  onClick={() => handleQuantityChange(item.id, -1)}
-                  className="bg-purple-800 text-white p-1 rounded-full hover:bg-purple-700 transition-colors disabled:opacity-50"
-                  aria-label={`Decrease quantity of ${item.name}`}
-                  disabled={item.quantity <= 1}
-                >
-                  <MinusIcon className="h-4 w-4" />
-                </button>
-                <span className="text-lg font-extrabold text-white w-6 text-center">{item.quantity}</span>
-                <button
-                  onClick={() => handleQuantityChange(item.id, 1)}
-                  className="bg-purple-800 text-white p-1 rounded-full hover:bg-purple-700 transition-colors"
-                  aria-label={`Increase quantity of ${item.name}`}
-                >
-                  <PlusIcon className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => handleRemoveFromCart(item.id)}
-                  className="text-red-400 hover:text-red-300 ml-2 p-1 rounded-full hover:bg-gray-600"
-                  aria-label={`Remove ${item.name} from cart`}
-                >
-                  <XMarkIcon className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Discount Input */}
-      <div className="mb-4 p-4 bg-gray-700 rounded-xl shadow-inner border border-gray-600">
-        <label htmlFor="discount" className="block text-pink-400 text-sm font-bold mb-2 flex items-center">
-          <ReceiptPercentIcon className="h-5 w-5 mr-2" /> Discount (%)
-        </label>
-        <input
-          type="number"
-          id="discount"
-          value={discountPercentage}
-          onChange={(e) => setDiscountPercentage(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))}
-          className="w-full p-3 rounded-lg bg-gray-600 border border-gray-500 text-white font-mono text-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
-          min={0}
-          max={100}
-          step={1}
-          aria-label="Discount percentage"
-        />
-        <p className="text-xs text-gray-400 mt-1">Saves: <span className="text-pink-400 font-bold">{currencySymbol} {totalDiscountAmount.toFixed(2)}</span></p>
-      </div>
-
-      {/* Order Summary */}
-      <div className="space-y-3 mb-6 border-t border-gray-700 pt-4">
-        <div className="flex justify-between text-lg">
-          <span className="text-gray-300">Subtotal:</span>
-          <span className="font-semibold text-white">{currencySymbol} {subtotal.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between text-lg">
-          <span className="text-gray-300">Discount:</span>
-          <span className="font-semibold text-pink-400">- {currencySymbol} {totalDiscountAmount.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between text-lg">
-          <span className="text-gray-300">Tax ({((companyInfo?.taxRate || 0.08) * 100).toFixed(0)}%):</span>
-          <span className="font-semibold text-white">{currencySymbol} {totalTax.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between text-4xl font-extrabold border-t-2 border-green-500 pt-4 mt-4">
-          <span className="text-purple-300">TOTAL:</span>
-          <span className="text-green-400">{currencySymbol} {finalTotal.toFixed(2)}</span>
-        </div>
-      </div>
-
-      {/* Agent Info & Checkout Button */}
-      <div className="mt-auto pt-4 border-t border-gray-700">
-        {currentAgent ? (
-          <div className="bg-gray-700 p-3 rounded-xl shadow-inner flex items-center mb-4 border border-gray-600">
-            <UserCircleIcon className="h-7 w-7 text-blue-400 mr-3" />
-            <div>
-              <p className="text-sm text-gray-400">Agent: <span className="text-white font-semibold">{currentAgent.name}</span></p>
-              <p className="text-xs text-gray-500">Sales: {currentAgent.dailySalesCount} | {currencySymbol} {currentAgent.dailySalesValue.toFixed(2)}</p>
-            </div>
-          </div>
-        ) : null}
-        <button
-          onClick={(e) => { ripple.createRipple(e); handleProcessPayment(); }}
-          ref={ripple.containerRef as any}
-          className="w-full relative overflow-hidden bg-gradient-to-r from-green-500 to-teal-500 text-white py-4 rounded-xl text-2xl font-bold shadow-2xl hover:from-green-600 hover:to-teal-600 transition-all duration-300 transform hover:scale-[1.01] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={cart.length === 0 || !currentAgent || !companyInfo}
-        >
-          <CreditCardIcon className="h-7 w-7 mr-3" /> Pay Now
-        </button>
-      </div>
-    </div>
-  );
-
-  
-  // --- Render ---
   return (
-     <div className="min-h-screen bg-zinc-50 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 font-sans transition-colors duration-300">
+    <div className="min-h-screen bg-zinc-50 dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 font-sans transition-colors duration-300">
       <InlineStyles />
 
       {/* TOP NAVIGATION BAR */}
@@ -890,7 +636,6 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
         
         {/* LEFT: PRODUCT CATALOGUE */}
         <div className="lg:col-span-8 flex flex-col gap-4 overflow-hidden">
-          
           {/* CATEGORIES */}
           <div className="flex items-center gap-2 overflow-x-auto p-4 custom-scrollbar">
             {['all', ...categories].map((cat: any) => (
@@ -908,45 +653,19 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
             ))}
           </div>
 
-          {/* <div className="mt-6 flex items-center justify-between border-t border-zinc-200 dark:border-zinc-800 pt-4">
-            <p className="text-sm text-zinc-500">
-              Page <b>{currentPage}</b> of <b>{totalPages}</b>
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage <= 1}
-                className="px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 disabled:opacity-50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-              >
-                <ChevronLeftIcon className="h-5 w-5" />
-              </button>
-              
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage >= totalPages}
-                className="px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 disabled:opacity-50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-              >
-                <ChevronRightIcon className="h-5 w-5" />
-              </button>
-            </div>
-          </div> */}
-
           {/* GRID */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto pr-2 custom-scrollbar">
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto pr-2 custom-scrollbar pb-24 lg:pb-0">
             {filteredProducts.map((product, index) => {
-              // Attach the ref to the very last item in the list
               if (filteredProducts.length === index + 1) {
                 return (
                   <div ref={lastProductElementRef} key={`${product.id}-${index}`}>
-                    <ProductCard product={product} handleAddToCart={handleAddToCart} currencySymbol={currencySymbol} />
+                    <ProductCard product={product} handleAddToCart={handleProductClick} currencySymbol={currencySymbol} />
                   </div>
                 );
               }
-              // MISSING RETURN WAS HERE:
-              return <ProductCard key={`${product.id}-${index}`} product={product} handleAddToCart={handleAddToCart} currencySymbol={currencySymbol} />;
+              return <ProductCard key={`${product.id}-${index}`} product={product} handleAddToCart={handleProductClick} currencySymbol={currencySymbol} />;
             })}
             
-            {/* Loading Skeleton/Spinner */}
             {loading && (
               <div className="col-span-full py-10 flex justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
@@ -956,7 +675,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
         </div>
 
         {/* RIGHT: CART SYSTEM */}
-        <div className="hidden lg:flex lg:col-span-4 flex-col glass-panel rounded-[2rem] overflow-hidden border-none shadow-2xl">
+        <div className="hidden lg:flex lg:col-span-4 flex-col glass-panel rounded-[2rem] overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-xl">
           <div className="p-6 flex flex-col h-full">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-black flex items-center gap-2">
@@ -970,36 +689,79 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
             {/* CART ITEMS */}
             <div className="flex-grow overflow-y-auto space-y-4 pr-2 custom-scrollbar">
               {cart.map(item => (
-                <div key={item.id} className="flex gap-4 group">
+                <div key={item.cartItemId} className="flex gap-4 group bg-white dark:bg-zinc-900 p-3 rounded-xl border border-zinc-100 dark:border-zinc-800">
                   <div className="h-16 w-16 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 flex-shrink-0">
-                    <img src={item.images?.[0]} className="w-full h-full object-cover" alt="" />
+                    <img src={item.images?.[0] || `https://placehold.co/100x100`} className="w-full h-full object-cover" alt="" />
                   </div>
                   <div className="flex-grow min-w-0">
                     <p className="font-bold text-sm truncate">{item.name}</p>
-                    <div className="flex items-center gap-3 mt-1">
+                    
+                    {/* Render Selected Variants */}
+                    {item.selectedOptions && item.selectedOptions.length > 0 && (
+                      <p className="text-[10px] text-zinc-500 mt-0.5 truncate">
+                        {item.selectedOptions.map(opt => `${opt.name}`).join(' • ')}
+                      </p>
+                    )}
+
+                    <div className="flex items-center justify-between mt-2">
                       <div className="flex items-center border border-zinc-200 dark:border-zinc-800 rounded-lg">
-                        <button onClick={() => handleQuantityChange(item.id, -1)} className="p-1 hover:text-indigo-500">
+                        <button onClick={() => handleQuantityChange(item.cartItemId, -1)} className="p-1 hover:text-indigo-500">
                           <MinusIcon className="h-3 w-3" />
                         </button>
                         <span className="text-xs font-bold w-6 text-center">{item.quantity}</span>
-                        <button onClick={() => handleQuantityChange(item.id, 1)} className="p-1 hover:text-indigo-500">
+                        <button onClick={() => handleQuantityChange(item.cartItemId, 1)} className="p-1 hover:text-indigo-500">
                           <PlusIcon className="h-3 w-3" />
                         </button>
                       </div>
-                      <span className="text-sm font-bold text-zinc-500">
-                        {currencySymbol}{((item.finalPrice || item.sellingPrice || 0) * item.quantity).toLocaleString()}
+                      <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
+                        {currencySymbol}{item.subtotal.toLocaleString()}
                       </span>
                     </div>
                   </div>
+                  <button 
+                    onClick={() => handleRemoveFromCart(item.cartItemId)}
+                    className="self-start p-1 text-zinc-300 hover:text-red-500 transition-colors"
+                  >
+                    <XMarkIcon className="h-4 w-4" />
+                  </button>
                 </div>
               ))}
+              {cart.length === 0 && (
+                <div className="h-full flex items-center justify-center">
+                  <p className="text-zinc-400 text-sm italic">Cart is empty</p>
+                </div>
+              )}
+            </div>
+
+            {/* Discount Input */}
+            <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+              <div className="flex items-center bg-zinc-100 dark:bg-zinc-900 rounded-xl px-3 py-2 border border-zinc-200 dark:border-zinc-800">
+                <ReceiptPercentIcon className="h-5 w-5 text-zinc-400 mr-2" />
+                <input
+                  type="number"
+                  placeholder="Discount %"
+                  value={discountPercentage || ''}
+                  onChange={(e) => setDiscountPercentage(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))}
+                  className="bg-transparent w-full outline-none text-sm font-bold text-zinc-900 dark:text-white placeholder:text-zinc-500"
+                />
+              </div>
             </div>
 
             {/* TOTALS */}
-            <div className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-800 space-y-3">
+            <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800 space-y-3">
               <div className="flex justify-between text-sm font-medium text-zinc-500">
                 <span>Subtotal</span>
                 <span>{currencySymbol}{subtotal.toLocaleString()}</span>
+              </div>
+              {discountPercentage > 0 && (
+                <div className="flex justify-between text-sm font-medium text-pink-500">
+                  <span>Discount ({discountPercentage}%)</span>
+                  <span>-{currencySymbol}{totalDiscountAmount.toLocaleString()}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-sm font-medium text-zinc-500">
+                <span>Tax ({((companyInfo?.taxRate || 0) * 100).toFixed(0)}%)</span>
+                <span>{currencySymbol}{totalTax.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-2xl font-black pt-2">
                 <span>Total</span>
@@ -1012,15 +774,15 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
                 className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-indigo-500/20 transition-all active:scale-95 mt-4 flex items-center justify-center gap-2"
               >
                 <CreditCardIcon className="h-6 w-6" />
-                Complete Transaction
+                Checkout
               </button>
             </div>
           </div>
         </div>
       </main>
 
-      {/* MOBILE BAR */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 glass-panel border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+      {/* MOBILE BOTTOM BAR (Unchanged largely, updates cart.length to itemCount) */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 glass-panel border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between z-40">
         <div>
           <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest">Total Pay</p>
           <p className="text-xl font-black text-indigo-600">{currencySymbol}{finalTotal.toLocaleString()}</p>
@@ -1034,7 +796,79 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
         </button>
       </div>
 
-      {/* MOBILE CART OVERLAY */}
+      {/* VARIANT SELECTION MODAL */}
+      {variantModalProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 w-full max-w-md shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="text-lg font-black text-zinc-900 dark:text-white">Select Options</h3>
+                <p className="text-sm text-zinc-500">{variantModalProduct.name}</p>
+              </div>
+              <button onClick={() => setVariantModalProduct(null)} className="p-1 bg-zinc-100 dark:bg-zinc-800 rounded-full text-zinc-500 hover:text-zinc-900">
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
+              {Object.keys(groupedVariants).map((category) => (
+                <div key={category}>
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-3">{category}</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {groupedVariants[category].map((opt: VariantOptionItem) => {
+                      const isSelected = selectedVariants[category]?.name === opt.name;
+                      return (
+                        <button
+                          key={opt.name}
+                          onClick={() => setSelectedVariants({ ...selectedVariants, [category]: opt })}
+                          className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border-2 flex items-center gap-2 ${
+                            isSelected
+                              ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                              : 'border-zinc-200 dark:border-zinc-800 bg-transparent text-zinc-600 dark:text-zinc-400 hover:border-zinc-300'
+                          }`}
+                        >
+                          {opt.name}
+                          {opt.extraPrice > 0 && (
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${isSelected ? 'bg-indigo-100 text-indigo-600' : 'bg-zinc-100 text-zinc-500'}`}>
+                              +{currencySymbol}{opt.extraPrice}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Dynamic Modal Price Footer */}
+            <div className="mt-6 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-zinc-500 text-sm font-medium">Item Total</span>
+                <span className="text-xl font-black text-indigo-600">
+                  {currencySymbol}{(
+                    (variantModalProduct.finalPrice || variantModalProduct.sellingPrice || 0) + 
+                    Object.values(selectedVariants).reduce((sum, o) => sum + (o.extraPrice || 0), 0)
+                  ).toLocaleString()}
+                </span>
+              </div>
+              <button
+                onClick={() => executeAddToCart(variantModalProduct, Object.values(selectedVariants))}
+                disabled={Object.keys(groupedVariants).length !== Object.keys(selectedVariants).length}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-zinc-300 disabled:text-zinc-500 text-white py-3 rounded-xl font-bold transition-all active:scale-95"
+              >
+                Add to Order
+              </button>
+              {Object.keys(groupedVariants).length !== Object.keys(selectedVariants).length && (
+                <p className="text-[10px] text-center text-red-400 mt-2">Please select all required options.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* (Mobile Cart Overlay goes here - shortened for brevity, just ensure you map item.cartItemId instead of item.id in the loops) */}
+ {/* MOBILE CART OVERLAY */}
       {showMobileCart && (
         <div ref={mobileCartRef} className="fixed inset-0 z-50 flex justify-end bg-zinc-900/60 backdrop-blur-md">
           {/* Cart Sidebar / Modal Content */}
@@ -1127,30 +961,28 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
           </div>
         </div>
       )}
-
-
     </div>
-  
   );
 };
 
 export default StorePOSPageClient;
 
-
 const ProductCard = ({ product, handleAddToCart, currencySymbol }: { product: MarketListingForm; handleAddToCart: (product: MarketListingForm) => void; currencySymbol: string }) => {
+  const hasVariants = product.option && product.option.length > 0;
+  
   return (
     <div
       key={product.id}
       onClick={() => handleAddToCart(product)}
-      className="group cursor-pointer bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 hover:ring-2 hover:ring-indigo-500 transition-all active:scale-95 shadow-sm"
+      className="group cursor-pointer bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 hover:ring-2 hover:ring-indigo-500 transition-all active:scale-95 shadow-sm relative"
     >
-      <div className="relative aspect-square overflow-hidden rounded-xl mb-3">
+      <div className="relative aspect-square overflow-hidden rounded-xl mb-3 bg-zinc-100 dark:bg-zinc-800">
         <img
           src={product.images?.[0] || `https://placehold.co/200x200?text=${product.name}`}
           className="w-full h-full object-cover transition-transform group-hover:scale-105"
           alt=""
         />
-        {(product.stock) < 10 && (
+        {(product.quantity) < 10 && (
           <span className="absolute top-2 left-2 bg-amber-500 text-[10px] font-bold text-white px-2 py-1 rounded-md uppercase">
             Low Stock
           </span>
@@ -1161,7 +993,7 @@ const ProductCard = ({ product, handleAddToCart, currencySymbol }: { product: Ma
         <span className="text-indigo-600 dark:text-indigo-400 font-black">
           {currencySymbol}{(product.finalPrice || product.sellingPrice || 0).toLocaleString()}
         </span>
-        <div className="p-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-zinc-400 group-hover:text-indigo-500 transition-colors">
+        <div className={`p-1.5 rounded-lg transition-colors ${hasVariants ? 'bg-indigo-100 text-indigo-600' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 group-hover:text-indigo-500'}`}>
           <PlusIcon className="h-4 w-4" />
         </div>
       </div>

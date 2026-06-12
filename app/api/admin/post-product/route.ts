@@ -5,9 +5,40 @@ import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 
+// ----------------- Utils -----------------
+const parseJsonSafely = (data: any, fallback: any = null) => {
+  try {
+    return typeof data === "string" ? JSON.parse(data) : data;
+  } catch {
+    return fallback;
+  }
+};
+
+const normalizeArray = (val: any): any[] =>
+  Array.isArray(val) ? val : val ? [val] : [];
+
+const parseDate = (val: any): Date | null => {
+  if (typeof val === "string" && !isNaN(Date.parse(val))) {
+    return new Date(val);
+  }
+  return null;
+};
+
+const parseNumber = (
+  val: any,
+  fallback: number | null = null,
+): number | null => {
+  if (typeof val === "number" && Number.isFinite(val)) return val;
+  if (typeof val === "string") {
+    const n = parseFloat(val);
+    return Number.isFinite(n) ? n : fallback;
+  }
+  return fallback;
+};
+
+
 // POST or PUT /api/product
 async function handlePost(req: Request) {
-
   const body = await req.json();
   const {
     id,
@@ -43,6 +74,7 @@ async function handlePost(req: Request) {
     endDealDate,
     // Specifications
     brand,
+    option,
     model,
     color,
     size,
@@ -161,21 +193,18 @@ async function handlePost(req: Request) {
     finalPrice != null ? parseFloat(finalPrice as any) : parsedSellingPrice;
   const parsedProfitMargin =
     profitMargin != null ? parseFloat(profitMargin as any) : undefined;
-  const parsedDiscount =
-    discount != null ? parseInt(discount as any, 10) : 0;
+  const parsedDiscount = discount != null ? parseInt(discount as any, 10) : 0;
   const parsedEngineSize =
     engineSize != null ? parseFloat(engineSize as any) : null;
   const parsedHorsepower =
     horsepower != null ? parseInt(horsepower as any, 10) : null;
-  const parsedTorque =
-    torque != null ? parseInt(torque as any, 10) : null;
+  const parsedTorque = torque != null ? parseInt(torque as any, 10) : null;
   const parsedYear = year != null ? parseInt(year as any, 10) : null;
   const parsedBathrooms =
     bathrooms != null ? parseInt(bathrooms as any, 10) : null;
-  const parsedBedrooms =  bedrooms != null ? bedrooms: null;
-  const parsedStudios =  studios != null ? studios : null;
-  const parsedLatitude =
-    latitude != null ? parseFloat(latitude as any) : null;
+  const parsedBedrooms = bedrooms != null ? bedrooms : null;
+  const parsedStudios = studios != null ? studios : null;
+  const parsedLatitude = latitude != null ? parseFloat(latitude as any) : null;
   const parsedLongitude =
     longitude != null ? parseFloat(longitude as any) : null;
   const parsedHourlyRate =
@@ -189,6 +218,8 @@ async function handlePost(req: Request) {
 
   // Parse arrays
   const parsedTags = Array.isArray(tags) ? tags : [];
+
+  const parsedOption = normalizeArray(option); // <-- Normalized unified option array
   const parsedImages = Array.isArray(images) ? images : [];
   const parsedVideos = Array.isArray(videos) ? videos : [];
   const parsedColor = Array.isArray(color) ? color : [];
@@ -208,12 +239,10 @@ async function handlePost(req: Request) {
   const parsedAvailabilityEnd = availabilityEnd
     ? new Date(availabilityEnd)
     : null;
-  const parsedExpirationDate = expirationDate
-    ? new Date(expirationDate)
-    : null;
+  const parsedExpirationDate = expirationDate ? new Date(expirationDate) : null;
 
   // Construct upsert data
-  // const data : any = 
+  // const data : any =
   // Create or update
   const product = id
     ? await prisma.product.update({
@@ -248,6 +277,7 @@ async function handlePost(req: Request) {
           endDealDate: parsedEndDealDate,
           brand: brand || null,
           model: model || null,
+          option: parsedOption,
           color: parsedColor,
           size: parsedSize,
           weight: weight || null,
@@ -481,9 +511,15 @@ async function handlePost(req: Request) {
         },
       });
 
-  
-    try { await cacheDel(`admin:post-product:${companyId || 'global'}:*`); } catch (e) {}
-    return formatResponse(true, product, "Product saved successfully.", id ? 200 : 201);
+  try {
+    await cacheDel(`admin:post-product:${companyId || "global"}:*`);
+  } catch (e) {}
+  return formatResponse(
+    true,
+    product,
+    "Product saved successfully.",
+    id ? 200 : 201,
+  );
 }
 
 export const POST = withApiHandler(handlePost);

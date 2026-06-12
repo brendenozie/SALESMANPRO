@@ -5,9 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   PlusIcon, 
   AdjustmentsHorizontalIcon,
-  TrashIcon,
-  CheckIcon
+  TrashIcon
 } from "@heroicons/react/24/outline";
+import { VariantOptionItem } from "@/types/typings";
 
 interface ProductVariantsProps {
   formData: Record<string, any>;
@@ -27,29 +27,37 @@ const ProductVariants: React.FC<ProductVariantsProps> = ({ formData, setFormData
   // Local state to track the text input for "new" options per category
   const [newOptionInputs, setNewOptionInputs] = useState<Record<string, string>>({});
 
-  // 1. Flatten active variants for the pricing table
+  // 1. Flatten active variants from unified schema array
   const allVariants = useMemo(() => {
-    const list: any[] = [];
-    CATEGORIES.forEach((cat) => {
-      const items = formData[cat] || [];
-      items.forEach((item: any, index: number) => {
-        list.push({ ...item, category: cat, originalIndex: index });
-      });
-    });
-    return list;
-  }, [formData]);
+    return (formData.option || []) as VariantOptionItem[];
+  }, [formData.option]);
+
+  // Helper to sync fallback flat string arrays for database indexing
+  const syncFallbackArray = (updatedOptions: VariantOptionItem[], category: string) => {
+    const flatStrings = updatedOptions
+      .filter((v) => v.category === category)
+      .map((v) => v.name);
+    setFormData(category, flatStrings);
+  };
 
   // 2. Toggle Predefined Logic
   const toggleOption = (category: string, name: string) => {
-    const currentList = formData[category] || [];
-    const existingIndex = currentList.findIndex((v: any) => v.name === name);
+    const currentOptions = (formData.option || []) as VariantOptionItem[];
+    const existingIndex = currentOptions.findIndex(
+      (v) => v.category === category && v.name === name
+    );
 
+    let updatedOptions: VariantOptionItem[];
     if (existingIndex > -1) {
-      const next = currentList.filter((_: any, i: number) => i !== existingIndex);
-      setFormData(category, next);
+      updatedOptions = currentOptions.filter((_, i) => i !== existingIndex);
     } else {
-      setFormData(category, [...currentList, { name, extraPrice: 0 }]);
+      updatedOptions = [...currentOptions, { category, name, extraPrice: 0 }];
     }
+
+    // Update unified storage block
+    setFormData("option", updatedOptions);
+    // Sync fallback array
+    syncFallbackArray(updatedOptions, category);
   };
 
   // 3. Add a Brand New Option to a Category
@@ -57,26 +65,44 @@ const ProductVariants: React.FC<ProductVariantsProps> = ({ formData, setFormData
     const name = newOptionInputs[category]?.trim();
     if (!name) return;
 
-    const currentList = formData[category] || [];
+    const currentOptions = (formData.option || []) as VariantOptionItem[];
+    
     // Prevent duplicates
-    if (currentList.some((v: any) => v.name.toLowerCase() === name.toLowerCase())) {
+    if (currentOptions.some((v) => v.category === category && v.name.toLowerCase() === name.toLowerCase())) {
       setNewOptionInputs({ ...newOptionInputs, [category]: "" });
       return;
     }
 
-    setFormData(category, [...currentList, { name, extraPrice: 0 }]);
+    const updatedOptions = [...currentOptions, { category, name, extraPrice: 0 }];
+    
+    setFormData("option", updatedOptions);
+    syncFallbackArray(updatedOptions, category);
+    
     setNewOptionInputs({ ...newOptionInputs, [category]: "" });
   };
 
-  const updatePrice = (category: string, index: number, price: string) => {
-    const next = [...(formData[category] || [])];
-    next[index] = { ...next[index], extraPrice: price };
-    setFormData(category, next);
+  // 4. Update Pricing Callback (using the direct index from the mapped array)
+  const updatePrice = (index: number, price: string) => {
+    const updatedOptions = [...((formData.option || []) as VariantOptionItem[])];
+    
+    updatedOptions[index] = {
+      ...updatedOptions[index],
+      extraPrice: parseFloat(price) || 0
+    };
+
+    setFormData("option", updatedOptions);
   };
 
-  const removeVariant = (category: string, index: number) => {
-    const next = formData[category].filter((_: any, i: number) => i !== index);
-    setFormData(category, next);
+  // 5. Remove Variant Callback
+  const removeVariant = (index: number) => {
+    const currentOptions = (formData.option || []) as VariantOptionItem[];
+    const removedItem = currentOptions[index];
+    
+    const updatedOptions = currentOptions.filter((_, i) => i !== index);
+    
+    setFormData("option", updatedOptions);
+    // Sync the flat array specific to the category of the item we just removed
+    syncFallbackArray(updatedOptions, removedItem.category);
   };
 
   return (
@@ -99,7 +125,9 @@ const ProductVariants: React.FC<ProductVariantsProps> = ({ formData, setFormData
             <div className="flex flex-wrap gap-2">
               {/* Predefined Buttons */}
               {PREDEFINED_OPTIONS[cat].map((opt) => {
-                const isActive = (formData[cat] || []).some((v: any) => v.name === opt);
+                // Check isActive against the unified allVariants array
+                const isActive = allVariants.some(v => v.category === cat && v.name === opt);
+                
                 return (
                   <button
                     key={opt}
@@ -181,14 +209,14 @@ const ProductVariants: React.FC<ProductVariantsProps> = ({ formData, setFormData
                         <input 
                           type="number"
                           value={v.extraPrice}
-                          onChange={(e) => updatePrice(v.category, v.originalIndex, e.target.value)}
+                          onChange={(e) => updatePrice(idx, e.target.value)}
                           className="bg-gray-50 border border-transparent hover:border-gray-200 focus:ring-2 focus:ring-blue-500 rounded-lg px-3 py-1 text-right font-bold text-blue-600 w-24 outline-none transition-all"
                         />
                       </div>
                     </td>
                     <td className="px-4">
                       <button 
-                        onClick={() => removeVariant(v.category, v.originalIndex)} 
+                        onClick={() => removeVariant(idx)} 
                         className="text-gray-300 hover:text-red-500 transition-colors"
                       >
                         <TrashIcon className="w-4 h-4" />

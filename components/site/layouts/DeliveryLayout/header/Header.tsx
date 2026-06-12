@@ -147,17 +147,7 @@ export default function Navbar() {
               
               {/* Logo Icon Container */}
               {logoUrl && (
-                // <div className="relative flex items-center justify-center filter drop-shadow-md transition-transform duration-300 group-hover:rotate-[-2deg]">
-                //   <Image 
-                //         src={logoUrl} 
-                //         alt={name || 'Logo'} 
-                //         width={90} 
-                //         height={45} 
-                //         loader={imageLoader} 
-                //         className="object-contain h-[clamp(2.5rem,6vw,4rem)] w-auto" 
-                //       />
-                // </div>
-                <div className="relative w-20 h-10 sm:w-24 sm:h-12 md:w-28 md:h-14 lg:w-32 lg:h-16 flex items-center justify-center filter drop-shadow-md transition-transform duration-300 group-hover:rotate-[-2deg]">
+                <div className="relative w-20 h-10 sm:w-20 sm:h-12 md:w-28 md:h-14 lg:w-32 lg:h-16 flex items-center justify-center filter drop-shadow-md transition-transform duration-300 group-hover:rotate-[-2deg]">
                   <Image 
                     src={logoUrl} 
                     alt={name || 'Logo'} 

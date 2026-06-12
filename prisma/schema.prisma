@@ -963,6 +963,8 @@ model Product {
   expirationDate    DateTime?
 
   // Options & Amenities
+  // Stores structured items matching: { category: string, name: string, extraPrice: number }
+  // option            Json[]
   option    Json[] // Generic options (e.g., for configurable products)
   amenities String[] // Specific for properties/services
 
@@ -1805,9 +1807,9 @@ model InventoryItem {
   Assignment       ProductAssignment[]
   ClientInventory  ClientInventory[]
 
+  @@unique([productId, companyId])
   @@index([productId])
   @@index([companyId])
-  @@unique([productId, companyId])
 }
 
 model InventoryLog {
@@ -2027,6 +2029,8 @@ model marketplaceListings {
   tags              String[]
   brand             String?
 
+  // Stores structured items matching: { category: string, name: string, extraPrice: number }
+  // option            Json[]
   option Json[] // Generic options (e.g., for configurable products)
 
   // Basic Info & General Specs (Mirroring Product Model)

@@ -324,6 +324,7 @@ function buildListingPayload(
     subCategory: f.subCategory || null,
     subCategoryName: f.subCategoryName || null,
     tags: f.tags,
+    option: f.option,
     brand: f.brand || null,
     model: f.model || null,
     color: f.color,

@@ -13,6 +13,7 @@ import {
   SparklesIcon,
   WrenchScrewdriverIcon,
   GlobeAltIcon,
+  AdjustmentsHorizontalIcon,
 } from "@heroicons/react/24/outline";
 
 const SectionCard: React.FC<{
@@ -145,7 +146,7 @@ const FinalReview = ({ formData, setFormData }: {
         </motion.div>
 
         {/* Grid of Sections */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Basic Information */}
           <SectionCard icon={TagIcon} title="Basic Information">
             <KeyValue label="Title" value={displayValue(formData.name || formData.title)} />
@@ -155,19 +156,56 @@ const FinalReview = ({ formData, setFormData }: {
               value={displayValue(formData.category?.name)}
             />
             <KeyValue label="Status" value={displayValue(formData.status)} />
-            <KeyValue label="Option" value={displayValue(formData.option)} />
+            {/* Removed the old plain string formData.option KeyValue from here */}
           </SectionCard>
+
+          {/* Variants & Options */}
+          {formData.option?.length > 0 && (
+            <SectionCard icon={AdjustmentsHorizontalIcon} title="Variants & Options">
+              <div className="space-y-4">
+                {Object.entries(
+                  // Group the unified option array by category
+                  formData.option.reduce((acc: any, opt: any) => {
+                    if (!acc[opt.category]) acc[opt.category] = [];
+                    acc[opt.category].push(opt);
+                    return acc;
+                  }, {})
+                ).map(([category, options]: [string, any]) => (
+                  <div key={category}>
+                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
+                      {category}
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {options.map((opt: any, idx: number) => (
+                        <div
+                          key={idx}
+                          className="bg-blue-50 border border-blue-100 text-blue-800 px-3 py-1.5 rounded-xl text-sm flex items-center gap-2 shadow-sm"
+                        >
+                          <span className="font-semibold">{opt.name}</span>
+                          {opt.extraPrice > 0 && (
+                            <span className="bg-white text-blue-600 px-1.5 py-0.5 rounded text-[10px] font-black tracking-wider">
+                              +Ksh {Number(opt.extraPrice).toLocaleString()}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
+          )}
 
           {/* Studios & Bedrooms */}
           {(formData.studios?.length > 0 || formData.bedrooms?.length > 0) && (
             <SectionCard icon={HomeIcon} title="Unit Types">
               {formData.studios?.length > 0 && (
-                <div>
+                <div className="mb-3">
                   <h4 className="font-semibold text-gray-700 mb-1">Studios</h4>
                   <ul className="list-disc list-inside space-y-1 text-gray-800">
                     {formData.studios.map((unit: any, idx: number) => (
                       <li key={idx}>
-                        {unit.type} - {unit.size} sq m - Ksh {unit.price}
+                        {unit.type} - {unit.size} sq m - Ksh {Number(unit.price).toLocaleString()}
                       </li>
                     ))}
                   </ul>
@@ -179,7 +217,7 @@ const FinalReview = ({ formData, setFormData }: {
                   <ul className="list-disc list-inside space-y-1 text-gray-800">
                     {formData.bedrooms.map((unit: any, idx: number) => (
                       <li key={idx}>
-                        {unit.type} - {unit.size} sq m - Ksh {unit.price}
+                        {unit.type} - {unit.size} sq m - Ksh {Number(unit.price).toLocaleString()}
                       </li>
                     ))}
                   </ul>
@@ -195,7 +233,7 @@ const FinalReview = ({ formData, setFormData }: {
                 {formData.amenities.map((amenity: string, idx: number) => (
                   <li
                     key={idx}
-                    className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+                    className="bg-gray-100 border border-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm font-medium"
                   >
                     {amenity}
                   </li>
@@ -329,7 +367,6 @@ const FinalReview = ({ formData, setFormData }: {
 
           {/* Contact & Location */}
           <SectionCard icon={MapPinIcon} title="Contact & Location">
-            {/* <KeyValue label="Location" value={displayValue(formData.location)} /> */}
             <KeyValue
               label="Contact Number"
               value={displayValue(formData.contact)}

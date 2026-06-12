@@ -18,7 +18,7 @@ import {
   Prisma,
   Project,
   ExpertStatus,
-  Expertise
+  Expertise,
 } from "@prisma/client";
 import "next-auth";
 import { ChangeEvent } from "react";
@@ -161,7 +161,7 @@ export interface ICoreValue {
   id?: string;
   title: string;
   description: string | null;
-  icon: string | null ;
+  icon: string | null;
 }
 
 export interface SocialLink {
@@ -187,7 +187,7 @@ export interface Testimonial {
   id?: string;
   quote: string;
   authorId?: string | null | undefined;
-  author?: IUser |  null | undefined;
+  author?: IUser | null | undefined;
   authorName?: string | null;
   authorTitle?: string | null;
   avatarUrl?: string | null;
@@ -219,8 +219,8 @@ export interface IPromotion {
   badgeText?: string | null | undefined;
   price?: string | null | undefined;
 
-  perks: { id:string; icon: string; label: string }[];
-  trustLogos: { id:string; url: string }[];
+  perks: { id: string; icon: string; label: string }[];
+  trustLogos: { id: string; url: string }[];
 
   themePrimary?: string | null | undefined;
   themeSecondary?: string | null | undefined;
@@ -243,10 +243,10 @@ export interface IPromotion {
 // }
 
 // export interface Stat {
-  // label: string;
-  // value: string;
-  // iconUrl?: string;
-  // order?: number;
+// label: string;
+// value: string;
+// iconUrl?: string;
+// order?: number;
 // }
 
 export interface PricingTier {
@@ -268,10 +268,10 @@ export interface AppPromo {
   id?: string;
   headline: string;
   subheading: string;
-  buttons: { 
-    label: string; 
-    href: string; 
-    icon: string 
+  buttons: {
+    label: string;
+    href: string;
+    icon: string;
   }[];
   screenshots: string[];
 }
@@ -317,7 +317,7 @@ export interface Stat {
 export interface Metric {
   id?: string;
   // title: string;
-  value: any;//number;
+  value: any; //number;
   unit?: string | null; // e.g. "%", "users", "USD"
   trend?: "up" | "down" | "neutral";
   trendValue?: number | null; // e.g. +12 or -3.4
@@ -415,7 +415,7 @@ export interface IProductCategory {
 
 export interface IStoreCategory {
   id: string;
-  companyId?: string| null | undefined;
+  companyId?: string | null | undefined;
   categoryId: string | null;
   displayName?: string | null;
   icon?: string | null;
@@ -431,19 +431,19 @@ export interface IStoreCategory {
 
 // 1. System state: Tracks the workflow and moderation lifecycle
 export enum ListingSystemStatus {
-  DRAFT = "DRAFT",          // Form saved but not published
+  DRAFT = "DRAFT", // Form saved but not published
   UNDER_REVIEW = "UNDER_REVIEW", // Sent to admin for approval (Replaces REJECTED pipeline)
-  ACTIVE = "ACTIVE",        // Live on the marketplace
-  REJECTED = "REJECTED",    // Failed admin moderation
-  INACTIVE = "INACTIVE",    // Hidden/archived by the seller
+  ACTIVE = "ACTIVE", // Live on the marketplace
+  REJECTED = "REJECTED", // Failed admin moderation
+  INACTIVE = "INACTIVE", // Hidden/archived by the seller
 }
 
 // 2. Market state: Tracks transactional availability for consumers
 export enum ListingMarketStatus {
-  AVAILABLE = "AVAILABLE",  // Instantly purchasable / Ready
+  AVAILABLE = "AVAILABLE", // Instantly purchasable / Ready
   UNDER_OFFER = "UNDER_OFFER", // Real estate/Vehicle deposit paid
-  SOLD = "SOLD",            // Out of stock permanently / Handled
-  RENTED = "RENTED",        // For rental categories
+  SOLD = "SOLD", // Out of stock permanently / Handled
+  RENTED = "RENTED", // For rental categories
 }
 
 export enum ListingTransactionType {
@@ -451,6 +451,11 @@ export enum ListingTransactionType {
   RENT = "RENT", // Replaces RENT
 }
 
+export interface VariantOptionItem {
+  category: "color" | "size" | "material" | "weight" | string;
+  name: string;
+  extraPrice: number;
+}
 
 export interface ProductForm {
   // Manual definition matching Prisma's Product model
@@ -527,6 +532,7 @@ export interface ProductForm {
   usageInstructions?: string | null;
   expirationDate?: Date | null;
   option: any[];
+  // option: VariantOptionItem[];
   amenities: string[];
   propertyTypeId?: string | null;
   area?: string | null;
@@ -575,11 +581,17 @@ export interface ProductForm {
 
 export interface MarketListingForm {
   duration: string | null | undefined;
-  
+
   id: string;
   companyId?: string | null;
   sellerId?: string | null;
-  sellerType?: "CLIENT" | "CONSUMER" | "ADMIN" | "COMPANY" | "INDIVIDUAL" | null;
+  sellerType?:
+    | "CLIENT"
+    | "CONSUMER"
+    | "ADMIN"
+    | "COMPANY"
+    | "INDIVIDUAL"
+    | null;
   productId?: string | null;
   productCategoryId: string;
   productCategory?: any | null | undefined;
@@ -588,6 +600,7 @@ export interface MarketListingForm {
   subCategoryName?: string | null;
   tags: string[];
   brand?: string | null;
+  // option: VariantOptionItem[];
   option: any[];
   name: string;
   description?: string | null;
@@ -598,14 +611,14 @@ export interface MarketListingForm {
   weight: string[];
 
   badge?: string | null;
-  
+
   condition?: string | null;
   dimensions?: string | null;
   material: string[];
   quantity: number;
   images: any[];
-  videos?: any[];//string | null;
-  ebooks?: any[];//string | null;
+  videos?: any[]; //string | null;
+  ebooks?: any[]; //string | null;
   profitMargin?: number | null;
   buyingPrice: number;
   sellingPrice: number;
@@ -620,7 +633,7 @@ export interface MarketListingForm {
   isNewArrival: boolean;
   isDiscounted: boolean;
   isFeatured: boolean;
-  
+
   author?: string | null;
   publisher?: string | null;
   isbn?: string | null;
@@ -631,7 +644,7 @@ export interface MarketListingForm {
   applianceDimensions?: string | null;
   ingredients?: string | null;
   usageInstructions?: string | null;
-  
+
   area?: string | null;
   propertyTypeId?: string | null;
   serviceSchedule?: string | null;
@@ -664,12 +677,12 @@ export interface MarketListingForm {
   tireCondition?: string | null;
   accidentalHistory?: boolean | null;
   year?: number | null;
-  
+
   bookingSlots: any[] | undefined;
   minNoticePeriod?: string | null;
   maxBookingAhead?: string | null;
   requiredClientInfo: string[] | undefined;
-  
+
   fulfillmentStatus?: string | null;
   totalCapacity?: number | null;
   currentBookedCount?: number | null;
@@ -687,15 +700,15 @@ export interface MarketListingForm {
   status: ListingStatus;
   createdAt?: Date | null;
   updatedAt?: Date | null;
-  
-  location: Prisma.JsonValue; 
+
+  location: Prisma.JsonValue;
   locationName?: string | null;
   latitude?: number | null;
   longitude?: number | null;
   locationId?: string | null;
   collectionId?: string | null;
   commissionRateId?: string | null;
-  
+
   startDealDate?: string | null;
   endDealDate?: string | null;
   expirationDate?: string | null;
@@ -704,10 +717,9 @@ export interface MarketListingForm {
   commissionStartDate?: string | null;
   commissionEndDate?: string | null;
 
-  listingMarketStatus: ListingMarketStatus; 
-  listingSystemStatus: ListingSystemStatus; 
+  listingMarketStatus: ListingMarketStatus;
+  listingSystemStatus: ListingSystemStatus;
   listingTransactionType: ListingTransactionType;
-
 }
 
 //################################################################################
@@ -824,13 +836,13 @@ export interface StoreForm {
   description: string | null;
   hasWebsite: boolean | null | undefined;
   companyCategoryId: string | null;
-  /** 
-   * The broad business category (e.g. "E-commerce", "Health & Fitness") 
+  /**
+   * The broad business category (e.g. "E-commerce", "Health & Fitness")
    */
   category: string;
 
-  /** 
-   * The specific design variant chosen (e.g. "Modern Shop (v1)") 
+  /**
+   * The specific design variant chosen (e.g. "Modern Shop (v1)")
    */
   variant?: string | null;
   logoUrl: string | null;
@@ -864,7 +876,7 @@ export interface StoreForm {
   sectionDescription?: string | null | undefined;
 
   galleries: IGallery[];
-  
+
   // Relational arrays
   settings: CompanySettings | null;
   socialLinks: SocialLink[];
@@ -902,21 +914,20 @@ export interface StoreForm {
     specialties: string[];
     regions: string[];
   }[];
-  Educator:Educator[];
+  Educator: Educator[];
   Doctor: User[];
   packages: any[];
   Podcast: any[];
   services: any[];
   destinations: IDestination[];
   tourPackages: ITourPackage[];
-  
+
   // 🧠 Extended Company Insights
   partnerLogos?: { src: string; alt: string }[] | null | undefined; // For marquee sections
 
   founderName?: string | null | undefined;
   founderQuote?: string | null | undefined;
   founderImage?: string | null | undefined; // Optional field for founder photo
-
 }
 
 export interface IGalleryItem {
@@ -954,13 +965,12 @@ export interface Educator {
   address?: string | null;
   profilePicture?: string | null;
 
-  specialty?: string | null;            // e.g., "Fitness", "Yoga", "Nutrition"
-  certifications: string[];             // array of cert names
-  photoUrl?: string | null;             // profile photo URL
-  status: EducatorStatus;               // ACTIVE by default
+  specialty?: string | null; // e.g., "Fitness", "Yoga", "Nutrition"
+  certifications: string[]; // array of cert names
+  photoUrl?: string | null; // profile photo URL
+  status: EducatorStatus; // ACTIVE by default
 
-  loginCode: string;                    // unique login code
-
+  loginCode: string; // unique login code
 
   departmentId?: string | null;
   // department?: Department | null;    // add if you want to expand this relation
@@ -985,7 +995,6 @@ export interface Educator {
   // bookings?: Booking[];
 }
 
-
 //################################################################################
 //## EVENT INTERFACE
 //################################################################################
@@ -998,18 +1007,17 @@ export interface IEvent extends Event {
 //## HANDLERS & MISC
 //################################################################################
 
-
 export interface Handlers {
   // ✅ General form handlers (unchanged)
   onUpdatePaymentSettings: (updatedSettings: PaymentSettings) => void;
   handleChange: (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => void;
   onUpdateArray: <T>(
     key: keyof StoreForm,
     idx: number,
     field: keyof T,
-    value: any
+    value: any,
   ) => void;
   onAddArray: <T>(key: keyof StoreForm, item: T) => void;
   onRemoveArray: (key: keyof StoreForm, idx: number) => void;
@@ -1028,33 +1036,47 @@ export interface Handlers {
 
   // ✅ Hero slide handlers (unchanged)
   onUpdateHeroSlide: (
-      index: number,
-      field: keyof HeroSlide,
-      value: string
-    ) => void;
+    index: number,
+    field: keyof HeroSlide,
+    value: string,
+  ) => void;
   onAddHeroSlide: () => void;
   onRemoveHeroSlide: (index: number) => void;
   handleSlideImageUpload: (
-      index: number,
-      file: File,
-      field: keyof HeroSlide
-    ) => void;
-    
+    index: number,
+    file: File,
+    field: keyof HeroSlide,
+  ) => void;
+
   // ✅ Promotion handlers (unchanged)
   onUpdatePromotion: (
-      index: number,
-      field: keyof IPromotion,
-      value: string
-    ) => void;
+    index: number,
+    field: keyof IPromotion,
+    value: string,
+  ) => void;
   onAddPromotion: () => void;
   onRemovePromotion: (index: number) => void;
-  onPromotionImageUpload: (index: number, file: File, field: keyof IPromotion) => void;
+  onPromotionImageUpload: (
+    index: number,
+    file: File,
+    field: keyof IPromotion,
+  ) => void;
 
   onAddPerk: (promoIndex: number) => void;
-  onUpdatePerk: (promoIndex: number, perkIndex: number, field: keyof { id:string; icon: string; label: string }, value: string) => void;
+  onUpdatePerk: (
+    promoIndex: number,
+    perkIndex: number,
+    field: keyof { id: string; icon: string; label: string },
+    value: string,
+  ) => void;
   onRemovePerk: (promoIndex: number, perkIndex: number) => void;
   onAddTrustLogo: (promoIndex: number) => void;
-  onUpdateTrustLogo: (promoIndex: number, logoIndex: number, field: 'id' | 'url', value: string) => void;
+  onUpdateTrustLogo: (
+    promoIndex: number,
+    logoIndex: number,
+    field: "id" | "url",
+    value: string,
+  ) => void;
   onRemoveTrustLogo: (promoIndex: number, logoIndex: number) => void;
 
   // ✅ Location handlers (unchanged)
@@ -1062,17 +1084,22 @@ export interface Handlers {
   onBulkToggleLocations: (locationIds: string[]) => void;
 
   // ✅ Media handlers (unchanged)
-  handleMediaUpload: (field: "logoUrl" | "bannerUrl" | "videoUrl" | "founderImage", file: File) => void;
-  handleMediaRemove: (field: "logoUrl" | "bannerUrl" | "videoUrl" | "founderImage") => void;
+  handleMediaUpload: (
+    field: "logoUrl" | "bannerUrl" | "videoUrl" | "founderImage",
+    file: File,
+  ) => void;
+  handleMediaRemove: (
+    field: "logoUrl" | "bannerUrl" | "videoUrl" | "founderImage",
+  ) => void;
 
-   handleArrayChange: (
+  handleArrayChange: (
     field: "partnerLogos",
     index: number,
     key: string,
-    value: string | number
+    value: string | number,
   ) => void;
-    addItem: (field: "partnerLogos") => void;
-    removeItem: (field: "partnerLogos", index: number) => void;
+  addItem: (field: "partnerLogos") => void;
+  removeItem: (field: "partnerLogos", index: number) => void;
 }
 // export interface Handlers {
 //   handleChange: (
@@ -1120,7 +1147,7 @@ export interface Handlers {
 
 //   handleMediaUpload: (field: "logoUrl" | "bannerUrl", file: File) => void;
 //   handleMediaRemove: (field: "logoUrl" | "bannerUrl") => void;
-  
+
 // }
 
 export interface StepConfig {
@@ -1131,16 +1158,33 @@ export interface StepConfig {
     handlers: Handlers,
     siteCategories: any[],
     availableCategories: IProductCategory[],
-    allLocs: ILocation[], 
+    allLocs: ILocation[],
     selectedLocationsForDisplay: SelectedLocation[],
     selectedCategoriesArray: IStoreCategory[],
-    dispatch: React.Dispatch<CategoryAction>
+    dispatch: React.Dispatch<CategoryAction>,
   ) => React.ReactNode;
 }
 
 // Define all possible actions for type safety
 export type CategoryAction =
-  | { type: 'TOGGLE_PARENT'; payload: { parent: IProductCategory } }
-  | { type: 'TOGGLE_SUB'; payload: { parentId: string; subcategory: ISubcategory; parentData: IProductCategory } }
-  | { type: 'TOGGLE_BRAND'; payload: { parentId: string; brand: string; parentData: IProductCategory } }
-  | { type: 'BULK_UPDATE'; payload: { ids: Set<string>; availableForContext: IProductCategory[] } };
+  | { type: "TOGGLE_PARENT"; payload: { parent: IProductCategory } }
+  | {
+      type: "TOGGLE_SUB";
+      payload: {
+        parentId: string;
+        subcategory: ISubcategory;
+        parentData: IProductCategory;
+      };
+    }
+  | {
+      type: "TOGGLE_BRAND";
+      payload: {
+        parentId: string;
+        brand: string;
+        parentData: IProductCategory;
+      };
+    }
+  | {
+      type: "BULK_UPDATE";
+      payload: { ids: Set<string>; availableForContext: IProductCategory[] };
+    };
