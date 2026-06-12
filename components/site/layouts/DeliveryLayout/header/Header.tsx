@@ -147,27 +147,36 @@ export default function Navbar() {
               
               {/* Logo Icon Container */}
               {logoUrl && (
-                <div className="relative flex items-center justify-center filter drop-shadow-md transition-transform duration-300 group-hover:rotate-[-2deg]">
+                // <div className="relative flex items-center justify-center filter drop-shadow-md transition-transform duration-300 group-hover:rotate-[-2deg]">
+                //   <Image 
+                //         src={logoUrl} 
+                //         alt={name || 'Logo'} 
+                //         width={90} 
+                //         height={45} 
+                //         loader={imageLoader} 
+                //         className="object-contain h-[clamp(2.5rem,6vw,4rem)] w-auto" 
+                //       />
+                // </div>
+                <div className="relative w-20 h-10 sm:w-24 sm:h-12 md:w-28 md:h-14 lg:w-32 lg:h-16 flex items-center justify-center filter drop-shadow-md transition-transform duration-300 group-hover:rotate-[-2deg]">
                   <Image 
                     src={logoUrl} 
                     alt={name || 'Logo'} 
-                    width={90} 
-                    height={45} 
+                    fill 
                     loader={imageLoader} 
-                    className="object-contain h-12 w-auto lg:h-14" 
+                    className="object-contain" 
                   />
                 </div>
               )}
 
               {/* Typography Stack */}
               <div className="flex flex-col justify-center border-l border-white/20 pl-4 py-1 min-w-0">
-  <span className="text-xl lg:text-2xl font-extrabold italic tracking-tight uppercase leading-none drop-shadow-sm truncate">
-    {name || 'Transportation'}
-  </span>
-  <span className="text-[9px] lg:text-[10px] font-black uppercase text-orange-100 mt-1 block leading-none tracking-wider max-w-[22ch] sm:max-w-[28ch] truncate">
-    {tagline || 'Logistics & Delivery'}
-  </span>
-</div>
+                <span className="text-xl lg:text-2xl font-extrabold italic tracking-tight uppercase leading-none drop-shadow-sm truncate">
+                  {name || 'Transportation'}
+                </span>
+                <span className="text-[9px] lg:text-[10px] font-black uppercase text-orange-100 mt-1 block leading-none tracking-wider max-w-[22ch] sm:max-w-[28ch] truncate">
+                  {tagline || 'Logistics & Delivery'}
+                </span>
+              </div>
             </div>
           </Link>
 
