@@ -29,7 +29,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
   // Grocery option groups can be loaded from your metadata configurations
   // Examples: weight variations, processing configurations (e.g. cut type)
-  const optionGroups = product.variantOptions || product.options || null;
+  const optionGroups = product.option || product.option || null;
   const hasOptions = optionGroups && Object.keys(optionGroups).length > 0;
 
   // Determine current quantity based on option groups mapping strategy

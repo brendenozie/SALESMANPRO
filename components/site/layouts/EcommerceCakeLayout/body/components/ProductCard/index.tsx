@@ -72,7 +72,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       return Object.entries(selectedOptions).every(([cat, val]) => item.selectedOptions[cat] === val);
     }
     return true;
-  )?.quantity || 0;
+})?.quantity || 0;
   
   // WhatsApp Configuration - Built from item variant parameters
   const optionsSummary = Object.entries(selectedOptions)

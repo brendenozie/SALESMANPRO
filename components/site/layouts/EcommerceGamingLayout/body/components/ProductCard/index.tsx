@@ -29,7 +29,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   const { name, images, finalPrice, sellingPrice } = product;
 
   // Inspect standard variants array strings or complex dynamic option forms 
-  const hasOptions = product.variants && product.variants.length > 0;
+  const hasOptions = product.option && product.option.length > 0;
 
   // WhatsApp "Tech Support" Config
   const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
@@ -43,16 +43,16 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
   // Initialize standard options matching configuration shapes if none are locked yet
   React.useEffect(() => {
-    if (hasOptions && product.variants) {
+    if (hasOptions && product.option) {
       const initialOptions: Record<string, string> = {};
-      product.variants.forEach((v: any) => {
-        if (v.name && v.options && v.options.length > 0) {
-          initialOptions[v.name] = v.options[0];
+      product.option.forEach((v: any) => {
+        if (v.name && v.values && v.values.length > 0) {
+          initialOptions[v.name] = v.values[0];
         }
       });
       setSelectedOptions(initialOptions);
     }
-  }, [product.variants, hasOptions]);
+  }, [product.option, hasOptions]);
 
   const handleEquipClick = () => {
     if (hasOptions) {
@@ -217,7 +217,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
               {/* Dynamic Option Variants Layout Selection HUD */}
               <div className="space-y-4 my-6">
-                {product.variants?.map((v: any) => (
+                {product.option?.map((v: any) => (
                   <div key={v.name} className="space-y-1.5">
                     <label className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block">
                       Select {v.name}:

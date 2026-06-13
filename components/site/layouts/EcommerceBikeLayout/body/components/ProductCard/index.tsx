@@ -68,7 +68,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
       return Object.entries(selectedOptions).every(([cat, val]) => item.selectedOptions[cat] === val);
     }
     return true;
-  )?.quantity || 0;
+  })?.quantity || 0;
   
   // WhatsApp "Mechanic Support" Config
   const optionsSummary = Object.entries(selectedOptions)

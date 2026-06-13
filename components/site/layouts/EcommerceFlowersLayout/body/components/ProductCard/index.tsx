@@ -26,6 +26,19 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { storeFormData } = useStoreContext();
   const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // Local option state management (e.g., bouquet sizes or wrapping types)
+    const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(() => {
+      const initial: Record<string, string> = {};
+      if (product.option && Array.isArray(product.option)) {
+        product.option.forEach((opt: any) => {
+          if (opt.values && opt.values.length > 0) {
+            initial[opt.name] = opt.values[0];
+          }
+        });
+      }
+      return initial;
+    });
   
   // Local states for custom flower arrangements inside the options modal
   const [selectedSize, setSelectedSize] = useState('Classic');
@@ -35,7 +48,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const quantity = cart.find((item: any) => item.id === product.id)?.quantity || 0;
 
   // Check if product requires special options setup
-  const hasOptions = product.hasOptions || true; 
+  const hasOptions = product.option && Array.isArray(product.option) && product.option.length > 0;
 
   const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
   const message = encodeURIComponent(`Hi! I'm interested in the "${product.name}" bouquet. Do you offer same-day delivery, and can I include a custom handwritten note?`);
@@ -226,22 +239,34 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-3">
                     Select Display Density / Size
                   </label>
-                  <div className="grid grid-cols-3 gap-3">
-                    {['Classic', 'Premium', 'Luxurious'].map((size) => (
-                      <button
-                        key={size}
-                        type="button"
-                        onClick={() => setSelectedSize(size)}
-                        className={`py-3 px-2 text-xs font-medium rounded-xl border text-center transition-all ${
-                          selectedSize === size
-                            ? 'border-slate-900 bg-slate-900 text-white shadow-md'
-                            : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
+                  {/* Render options dynamically mapping to lists or chips */}
+                            <div className="space-y-6 max-h-[40vh] overflow-y-auto pr-1">
+                              {product.option?.map((option: any) => (
+                                <div key={option.name} className="flex flex-col gap-2.5">
+                                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                                    {option.name}
+                                  </label>
+                                  <div className="flex flex-wrap gap-2">
+                                    {option.values?.map((val: string) => {
+                                      const isSelected = selectedOptions[option.name] === val;
+                                      return (
+                                        <button
+                                          key={val}
+                                          onClick={() => setSelectedOptions(prev => ({ ...prev, [option.name]: val }))}
+                                          className={`px-4 py-2 text-xs rounded-xl border transition-all duration-300 font-medium ${
+                                            isSelected 
+                                              ? 'bg-slate-900 border-slate-900 text-white shadow-md' 
+                                              : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                                          }`}
+                                        >
+                                          {val}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
                 </div>
 
                 {/* Optional Handwritten Card Note */}

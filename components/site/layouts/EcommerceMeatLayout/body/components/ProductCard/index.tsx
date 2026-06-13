@@ -131,7 +131,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
         <div className="flex flex-col flex-grow px-3 pb-2">
           <div className="flex justify-between items-center mb-1">
             <span className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em]">Cut: Fresh Daily</span>
-            {product.isTrending && <FireIcon className="w-3.5 h-3.5 text-orange-500" />}
+            {product.isFeatured && <FireIcon className="w-3.5 h-3.5 text-orange-500" />}
           </div>
           
           <Link href={`/meatecommerce/products/${product.id}`}>

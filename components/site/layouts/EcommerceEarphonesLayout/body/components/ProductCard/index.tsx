@@ -30,8 +30,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   // Local option state management (e.g., bouquet sizes or wrapping types)
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
-    if (product.options && Array.isArray(product.options)) {
-      product.options.forEach((opt: any) => {
+    if (product.option && Array.isArray(product.option)) {
+      product.option.forEach((opt: any) => {
         if (opt.values && opt.values.length > 0) {
           initial[opt.name] = opt.values[0];
         }
@@ -50,7 +50,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const imageSrc = product.images?.[0] || 'https://via.placeholder.com/600x800';
   
   // Check if product requires customization options before placing into bag
-  const hasOptions = product.options && Array.isArray(product.options) && product.options.length > 0;
+  const hasOptions = product.option && Array.isArray(product.option) && product.option.length > 0;
 
   const handleAddClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -228,7 +228,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
               {/* Render options dynamically mapping to lists or chips */}
               <div className="space-y-6 max-h-[40vh] overflow-y-auto pr-1">
-                {product.options?.map((option: any) => (
+                {product.option?.map((option: any) => (
                   <div key={option.name} className="flex flex-col gap-2.5">
                     <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
                       {option.name}
