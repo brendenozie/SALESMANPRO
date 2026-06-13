@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MinusIcon, 
@@ -8,9 +8,9 @@ import {
   TrashIcon, 
   ShoppingBagIcon,
   HeartIcon,
-  EyeIcon,
   BookOpenIcon,
-  BookmarkIcon
+  BookmarkIcon,
+  XMarkIcon
 } from '@heroicons/react/24/solid';
 import { MarketListingForm } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
@@ -36,12 +36,33 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { storeFormData } = useStoreContext();
   
   const primary = storeFormData?.themeSettings?.primaryColor || '#0D9488';
-  const quantity = cart.find((item: any) => item.id === product.id)?.quantity || 0;
   const { name, images, finalPrice, sellingPrice } = product;
 
-  // WhatsApp Librarian/Curator Config
+  // Intercept States for Configuration Modals
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+
+  // Safety normalizations for alternative API shapes (options or productOptions arrays)
+  const productOptions = (product as any).options || (product as any).productOptions || [];
+  const hasOptions = Array.isArray(productOptions) && productOptions.length > 0;
+
+  // Calculate isolated context matching total quantities matching target configurations
+  const currentSelectionQuantity = cart.find((item: any) => {
+    if (item.id !== product.id) return false;
+    if (!hasOptions) return true; 
+    // Check if configuration options are fully identical
+    return item.selectedOptions && 
+      Object.entries(selectedOptions).every(([k, v]) => item.selectedOptions[k] === v);
+  })?.quantity || 0;
+
+  // Total absolute baseline quantities of all items combined matching this product ID
+  const totalGlobalQuantity = cart
+    .filter((item: any) => item.id === product.id)
+    .reduce((acc: number, curr: any) => acc + (curr.quantity || 0), 0);
+
+  // WhatsApp configuration logic
   const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
-  const message = encodeURIComponent(`Hello Librarian! I'm interested in "${name}". Is this the hardcover edition, and do you have other titles by this author in stock?`);
+  const message = encodeURIComponent(`Hello Librarian! I'm interested in "${name}". Do you have this edition or author collections available in stock?`);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
   const discount = sellingPrice && finalPrice && sellingPrice > finalPrice
@@ -50,129 +71,271 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     
   const imageSrc = images?.[0]?.url || images?.[0] || 'https://images.unsplash.com/photo-1519408230728-0c7c8f0b2c5f';
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true }}
-      className="group relative bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800/50 p-4 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)]"
-    >
-      {/* --- IMAGE CONTAINER (The "Book Cover" Display) --- */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden bg-zinc-50 dark:bg-zinc-800/50 shadow-sm transition-transform duration-500 group-hover:-rotate-1 group-hover:scale-[1.02]">
-        {/* Book Spine Detail (Subtle Left Border) */}
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-black/10 z-10" />
-        
-        <Link href={`/bookecommerce/products/${product.id}`} className="block h-full w-full">
-          <Image
-            src={imageSrc}
-            alt={name}
-            fill
-            loader={loader}
-            className="object-cover transition-all duration-1000 group-hover:brightness-110"
-          />
-        </Link>
+  // Handler intercepting add events
+  const handleActionClick = () => {
+    if (hasOptions) {
+      // Pre-initialize selection defaults if unpopulated
+      const initialSelection: Record<string, string> = { ...selectedOptions };
+      productOptions.forEach((opt: any) => {
+        if (!initialSelection[opt.name] && opt.choices?.length > 0) {
+          initialSelection[opt.name] = opt.choices[0];
+        }
+      });
+      setSelectedOptions(initialSelection);
+      setIsModalOpen(true);
+    } else {
+      addToCart({ ...product, selectedOptions: {} });
+    }
+  };
 
-        {/* Curation Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-2 z-20">
-          {discount && (
-            <div className="bg-amber-500 text-black px-2 py-1 text-[9px] font-black uppercase tracking-widest shadow-xl">
-              -{discount}%
+  const executeConfiguredAdd = () => {
+    addToCart({
+      ...product,
+      selectedOptions
+    });
+  };
+
+  const executeConfiguredDecrease = () => {
+    decreaseQuantity(product.id, selectedOptions);
+  };
+
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        className="group relative bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800/50 p-4 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)]"
+      >
+        {/* --- IMAGE CONTAINER (The "Book Cover" Display) --- */}
+        <div className="relative aspect-[3/4] w-full overflow-hidden bg-zinc-50 dark:bg-zinc-800/50 shadow-sm transition-transform duration-500 group-hover:-rotate-1 group-hover:scale-[1.02]">
+          {/* Book Spine Detail (Subtle Left Border) */}
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-black/10 z-10" />
+          
+          <Link href={`/bookecommerce/products/${product.id}`} className="block h-full w-full">
+            <Image
+              src={imageSrc}
+              alt={name}
+              fill
+              loader={loader}
+              className="object-cover transition-all duration-1000 group-hover:brightness-110"
+            />
+          </Link>
+
+          {/* Curation Badges */}
+          <div className="absolute top-3 left-3 flex flex-col gap-2 z-20">
+            {discount && (
+              <div className="bg-amber-500 text-black px-2 py-1 text-[9px] font-black uppercase tracking-widest shadow-xl">
+                -{discount}%
+              </div>
+            )}
+            <div className="bg-white/90 backdrop-blur-sm text-zinc-900 px-2 py-1 text-[8px] font-bold uppercase tracking-tighter flex items-center gap-1 shadow-sm">
+               <BookOpenIcon className="w-3 h-3" style={{ color: primary }} /> Collector's Pick
             </div>
-          )}
-          <div className="bg-white/90 backdrop-blur-sm text-zinc-900 px-2 py-1 text-[8px] font-bold uppercase tracking-tighter flex items-center gap-1 shadow-sm">
-             <BookOpenIcon className="w-3 h-3 text-teal-600" /> Collector's Pick
+          </div>
+
+          {/* Quick Interaction Icons */}
+          <div className="absolute top-3 right-3 flex flex-col gap-2 translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-20">
+            <a 
+              href={whatsappUrl}
+              target="_blank"
+              className="p-2.5 bg-white text-[#25D366] rounded-full shadow-xl hover:scale-110 transition-transform"
+              title="Ask Librarian"
+            >
+              <WhatsAppIcon className="w-4 h-4" />
+            </a>
+            <button className="p-2.5 bg-white text-zinc-400 hover:text-red-500 rounded-full shadow-xl transition-colors">
+              <HeartIcon className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Add To Cart Slide-up Action Bar */}
+          <div className="absolute bottom-0 inset-x-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-zinc-900/90 to-transparent z-30">
+            <AnimatePresence mode="wait">
+              {totalGlobalQuantity === 0 ? (
+                <button
+                  onClick={handleActionClick}
+                  className="w-full py-3 bg-white text-zinc-900 font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:text-white transition-all"
+                  style={{ '--hover-bg': primary } as React.CSSProperties}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = primary)}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#FFFFFF')}
+                >
+                  <ShoppingBagIcon className="w-4 h-4" /> {hasOptions ? "Configure Edition" : "Reserve Copy"}
+                </button>
+              ) : (
+                <button
+                  onClick={handleActionClick}
+                  className="w-full py-3 text-white font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-2 transition-all"
+                  style={{ backgroundColor: primary }}
+                >
+                  <ShoppingBagIcon className="w-4 h-4" /> 
+                  {hasOptions ? `Manage Editions (${totalGlobalQuantity})` : `${totalGlobalQuantity} in Bag`}
+                </button>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
-        {/* Quick Interaction Icons */}
-        <div className="absolute top-3 right-3 flex flex-col gap-2 translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-20">
-          <a 
-            href={whatsappUrl}
-            target="_blank"
-            className="p-2.5 bg-white text-[#25D366] rounded-full shadow-xl hover:scale-110 transition-transform"
-            title="Ask Librarian"
-          >
-            <WhatsAppIcon className="w-4 h-4" />
-          </a>
-          <button className="p-2.5 bg-white text-zinc-400 hover:text-red-500 rounded-full shadow-xl transition-colors">
-            <HeartIcon className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Add To Cart Slide-up */}
-        <div className="absolute bottom-0 inset-x-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-zinc-900/90 to-transparent z-30">
-          <AnimatePresence mode="wait">
-            {quantity === 0 ? (
-              <button
-                onClick={() => addToCart(product)}
-                className="w-full py-3 bg-white text-zinc-900 font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-teal-500 hover:text-white transition-all"
+        {/* --- CONTENT AREA --- */}
+        <div className="pt-5 space-y-2 text-center">
+          <div className="flex flex-col items-center">
+            <span className="text-[10px] font-black uppercase tracking-[0.25em] mb-1" style={{ color: primary }}>
+              Literary Works
+            </span>
+            <Link href={`/bookecommerce/products/${product.id}`}>
+              <h4 
+                className="text-lg font-serif italic text-zinc-900 dark:text-white line-clamp-1 group-hover:underline underline-offset-4 transition-all"
+                style={{ '--decoration-color': primary } as React.CSSProperties}
               >
-                <ShoppingBagIcon className="w-4 h-4" /> Reserve Copy
-              </button>
-            ) : (
-              <div className="w-full flex items-center justify-between bg-teal-600 p-1">
+                {name}
+              </h4>
+            </Link>
+          </div>
+
+          <div className="flex flex-col items-center gap-1">
+             {discount && (
+                <span className="text-[10px] line-through text-zinc-400 font-medium">
+                  Kes {sellingPrice?.toLocaleString()}
+                </span>
+             )}
+             <span className="text-xl font-light tracking-tighter text-zinc-900 dark:text-white">
+                Kes {(finalPrice || sellingPrice)?.toLocaleString()}
+             </span>
+          </div>
+
+          {/* WhatsApp Contact */}
+          <a 
+            href={whatsappUrl} 
+            target="_blank"
+            className="mt-2 inline-flex uppercase items-center gap-1 text-sm text-[#25D366] hover:underline transition-all"
+          >
+            <WhatsAppIcon className="w-4 h-4" /> Order Via WhatsApp
+          </a>
+
+          {/* Metadata Footer */}
+          <div className="flex items-center justify-center gap-4 pt-3 mt-2 border-t border-zinc-50 dark:border-zinc-800">
+             <div className="flex items-center gap-1.5">
+                <BookmarkIcon className="w-3 h-3 text-zinc-300" />
+                <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Pristine Condition</span>
+             </div>
+             <span className="text-[9px] font-mono text-zinc-300 dark:text-zinc-600 tracking-tighter uppercase">
+               ID: {product.id?.toString().slice(-6)}
+             </span>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* --- RECONFIGURED INTERCEPT OPTION SELECTOR MODAL --- */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            {/* Dark Blur Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsModalOpen(false)}
+              className="absolute inset-0 bg-zinc-950/60 backdrop-blur-sm"
+            />
+
+            {/* Modal Box Frame */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-sm overflow-hidden bg-white dark:bg-zinc-900 p-6 shadow-2xl border border-zinc-100 dark:border-zinc-800 text-left"
+            >
+              {/* Header Configuration Panel */}
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="font-serif text-lg italic text-zinc-900 dark:text-white leading-tight">
+                    Select Specification
+                  </h3>
+                  <p className="text-[10px] text-zinc-400 uppercase tracking-widest mt-0.5">{name}</p>
+                </div>
                 <button 
-                  onClick={() => decreaseQuantity(product.id)}
-                  className="p-2 hover:bg-white/10 text-white transition-colors"
+                  onClick={() => setIsModalOpen(false)}
+                  className="p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 dark:text-zinc-500 transition-colors"
                 >
-                  {quantity === 1 ? <TrashIcon className="h-4 w-4" /> : <MinusIcon className="h-4 w-4" />}
-                </button>
-                <span className="font-black text-white text-xs">{quantity} in Bag</span>
-                <button 
-                  onClick={() => addToCart(product)}
-                  className="p-2 hover:bg-white/10 text-white transition-colors"
-                >
-                  <PlusIcon className="h-4 w-4" />
+                  <XMarkIcon className="w-5 h-5" />
                 </button>
               </div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
 
-      {/* --- CONTENT AREA --- */}
-      <div className="pt-5 space-y-2 text-center">
-        <div className="flex flex-col items-center">
-          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-teal-600 dark:text-teal-400 mb-1">
-            Literary Works
-          </span>
-          <Link href={`/bookecommerce/products/${product.id}`}>
-            <h4 className="text-lg font-serif italic text-zinc-900 dark:text-white line-clamp-1 group-hover:underline decoration-teal-500 underline-offset-4 transition-all">
-              {name}
-            </h4>
-          </Link>
-        </div>
+              {/* Dynamic Array Option Fields */}
+              <div className="space-y-4 my-6">
+                {productOptions.map((opt: any) => (
+                  <div key={opt.name} className="space-y-1.5">
+                    <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400">
+                      {opt.name}
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {opt.choices?.map((choice: string) => {
+                        const isSelected = selectedOptions[opt.name] === choice;
+                        return (
+                          <button
+                            key={choice}
+                            onClick={() => setSelectedOptions(prev => ({ ...prev, [opt.name]: choice }))}
+                            className="px-3 py-1.5 text-xs font-medium uppercase tracking-tight transition-all border"
+                            style={{
+                              backgroundColor: isSelected ? primary : 'transparent',
+                              borderColor: isSelected ? primary : 'rgba(212, 212, 216, 0.5)',
+                              color: isSelected ? '#FFFFFF' : 'inherit'
+                            }}
+                          >
+                            {choice}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-        <div className="flex flex-col items-center gap-1">
-           {discount && (
-              <span className="text-[10px] line-through text-zinc-400 font-medium">
-                Kes {sellingPrice?.toLocaleString()}
-              </span>
-           )}
-           <span className="text-xl font-light tracking-tighter text-zinc-900 dark:text-white">
-              Kes {(finalPrice || sellingPrice)?.toLocaleString()}
-           </span>
-        </div>
+              {/* Selection Summary Counter Trigger bar */}
+              <div className="border-t border-zinc-100 dark:border-zinc-800 pt-4 flex items-center justify-between">
+                <div>
+                  <p className="text-[8px] font-mono uppercase tracking-widest text-zinc-400">Selected Copy price</p>
+                  <p className="text-lg font-light tracking-tighter text-zinc-900 dark:text-white">
+                    Kes {(finalPrice || sellingPrice)?.toLocaleString()}
+                  </p>
+                </div>
 
-        {/* Whatsapp Contact for Literary Consultation */}
-        <a 
-          href={whatsappUrl} 
-          target="_blank"
-          className="mt-2 inline-flex uppercase items-center gap-1 text-sm text-[#25D366] hover:underline transition-all"
-        >
-          <WhatsAppIcon className="w-4 h-4" /> Order Via WhatsApp
-        </a>
+                <div>
+                  {currentSelectionQuantity === 0 ? (
+                    <button
+                      onClick={executeConfiguredAdd}
+                      className="px-4 py-2.5 text-white font-black text-[10px] uppercase tracking-widest flex items-center gap-1.5 shadow-md transition-transform active:scale-95"
+                      style={{ backgroundColor: primary }}
+                    >
+                      <ShoppingBagIcon className="w-3.5 h-3.5" /> Add Edition
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2 border p-1 rounded-full bg-zinc-50 dark:bg-zinc-800/40 border-zinc-100 dark:border-zinc-800">
+                      <button
+                        onClick={executeConfiguredDecrease}
+                        className="p-1.5 rounded-full text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                      >
+                        <MinusIcon className="w-3 h-3" />
+                      </button>
+                      <span className="px-2 text-xs font-black text-zinc-900 dark:text-white">
+                        {currentSelectionQuantity}
+                      </span>
+                      <button
+                        onClick={executeConfiguredAdd}
+                        className="p-1.5 rounded-full text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                      >
+                        <PlusIcon className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
 
-        {/* Metadata Footer */}
-        <div className="flex items-center justify-center gap-4 pt-3 mt-2 border-t border-zinc-50 dark:border-zinc-800">
-           <div className="flex items-center gap-1.5">
-              <BookmarkIcon className="w-3 h-3 text-zinc-300" />
-              <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Pristine Condition</span>
-           </div>
-           <span className="text-[9px] font-mono text-zinc-300 dark:text-zinc-600 tracking-tighter uppercase">ID: {product.id?.toString().slice(-6)}</span>
-        </div>
-      </div>
-    </motion.div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

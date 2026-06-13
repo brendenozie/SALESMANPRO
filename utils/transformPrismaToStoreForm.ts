@@ -208,6 +208,7 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
       videos: Array.isArray(m.videos) ? m.videos : [],
       isAvailable: m.isAvailable,
       isFeatured: m.isFeatured,
+      option: m.option,
       product: m.product
         ? {
             id: m.product.id,

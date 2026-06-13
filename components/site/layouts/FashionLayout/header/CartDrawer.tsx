@@ -1,146 +1,208 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XMarkIcon, ShoppingBagIcon, TrashIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { useStateContext } from '@/contexts/ContextProvider';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-
 import { useRouter } from 'next/navigation';
 
-export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: boolean; setIsCartOpen: (open: boolean) => void }) {
-  const { cart, addToCart, decreaseQuantity, removeFromCart,  } = useStateContext();
-  
+interface CartDrawerProps {
+  isCartOpen: boolean;
+  setIsCartOpen: (open: boolean) => void;
+  primaryColor?: string;
+}
+
+export default function CartDrawer({ isCartOpen, setIsCartOpen, primaryColor = '#18181b' }: CartDrawerProps) {
+  const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
   const { data: session } = useSession();
   const user = session?.user as { role?: string; name?: string } | undefined;
-
   const router = useRouter();
 
-  const primary = '#D97706'; // Sweet Crumbs Amber
+  // Dynamically calculate cumulative basket weight 
+  const totalCartAmount = useMemo(() => {
+    return cart.reduce((acc: number, item: any) => {
+      const activePrice = item.finalPrice ?? item.sellingPrice ?? 0;
+      return acc + activePrice * item.quantity;
+    }, 0);
+  }, [cart]);
 
-  
   const handleGoogleSignIn = () => {
     const authUrl = new URL("https://auth.salesmanpro.site/signin");
     authUrl.searchParams.set("callbackUrl", `${window.location.origin}`);
     window.location.href = authUrl.toString();
   };
 
-
   return (
     <AnimatePresence>
       {isCartOpen && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop Blur */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsCartOpen(false)}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100]"
+            className="fixed inset-0 bg-zinc-950/40 backdrop-blur-md z-[100]"
           />
 
-          {/* Drawer */}
+          {/* Luxury Architectural Sidebar Drawer */}
           <motion.div
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-full max-w-md bg-[#FDFCF9] shadow-2xl z-[101] flex flex-col"
+            transition={{ type: 'spring', damping: 28, stiffness: 220 }}
+            className="fixed right-0 top-0 h-full w-full max-w-md bg-white dark:bg-[#0c0c0c] border-l border-zinc-100 dark:border-zinc-900 shadow-[0_0_60px_-15px_rgba(0,0,0,0.3)] z-[101] flex flex-col"
           >
-            {/* Header */}
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white">
+            {/* Header Area */}
+            <div className="p-6 md:p-8 border-b border-zinc-100 dark:border-zinc-900 flex items-center justify-between bg-white dark:bg-[#0c0c0c]">
               <div>
-                <h2 className="text-2xl font-black tracking-tighter text-gray-900 uppercase">Your Basket</h2>
-                <p className="text-[10px] text-amber-600 font-bold tracking-[0.2em] uppercase">Artisan Selection</p>
+                <h2 className="text-xl font-black tracking-wide text-zinc-900 dark:text-white uppercase">Your Wardrobe</h2>
+                <p className="text-[9px] font-black tracking-[0.25em] text-zinc-400 uppercase mt-0.5">Curated Selection</p>
               </div>
               <button 
                 onClick={() => setIsCartOpen(false)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-2.5 hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded-full text-zinc-400 hover:text-zinc-900 dark:hover:text-white border border-transparent hover:border-zinc-200/50 dark:hover:border-zinc-800/80 transition-all active:scale-95"
               >
-                <XMarkIcon className="w-6 h-6 text-gray-400" />
+                <XMarkIcon className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Cart Items List */}
-            <div className="flex-grow overflow-y-auto p-6 space-y-6">
+            {/* Scrolling Cart Items Track */}
+            <div className="flex-grow overflow-y-auto p-6 md:p-8 space-y-6 no-scrollbar">
               {cart.length > 0 ? (
-                cart.map((item: any) => (
-                  <motion.div 
-                    layout
-                    key={item.id} 
-                    className="flex gap-4 items-center border-b border-gray-50 pb-6"
-                  >
-                    <div className="relative h-20 w-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
-                      <Image 
-                        src={item.images?.[0] || '/placeholder.png'} 
-                        alt={item.name} 
-                        fill 
-                        className="object-cover"
-                        loader={({ src }) => src} // Use the URL directly without modification
-                      />
-                    </div>
-                    
-                    <div className="flex-grow">
-                      <h3 className="font-bold text-gray-900 text-sm leading-tight mb-1">{item.name}</h3>
-                      <p className="text-amber-700 font-black text-xs">${item.finalPrice?.toFixed(2)}</p>
-                      
-                      <div className="flex items-center gap-3 mt-3">
-                        <div className="flex items-center bg-gray-100 rounded-full px-2 py-1">
-                          <button onClick={() => decreaseQuantity(item.id)} className="p-1 hover:text-amber-600"><MinusIcon className="w-3 h-3" /></button>
-                          <span className="px-3 text-xs font-bold">{item.quantity}</span>
-                          <button onClick={() => addToCart(item)} className="p-1 hover:text-amber-600"><PlusIcon className="w-3 h-3" /></button>
-                        </div>
-                        <button onClick={() => removeFromCart(item.id)} className="text-gray-300 hover:text-red-500 transition-colors">
-                          <TrashIcon className="w-4 h-4" />
-                        </button>
+                cart.map((item: any, index: number) => {
+                  // Compile dynamic specifications signature safely
+                  const optionsLabel = item.selectedOptions
+                    ? Object.entries(item.selectedOptions)
+                        .map(([_, val]) => `${val}`)
+                        .join(' / ')
+                    : null;
+
+                  return (
+                    <motion.div 
+                      layout
+                      key={item.id ? `${item.id}-${index}` : index} 
+                      className="flex gap-4 items-center border-b border-zinc-100 dark:border-zinc-900/60 pb-6 last:border-0 last:pb-0"
+                    >
+                      {/* Product Thumbnail Frame */}
+                      <div className="relative h-24 w-18 aspect-[3/4] rounded-xl overflow-hidden bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-900 flex-shrink-0 shadow-sm">
+                        <Image 
+                          src={item.images?.[0]?.url || item.images?.[0] || 'https://via.placeholder.com/150x200'} 
+                          alt={item.name} 
+                          fill 
+                          className="object-cover"
+                          sizes="96px"
+                          loader={({ src }) => src}
+                        />
                       </div>
-                    </div>
-                  </motion.div>
-                ))
+                      
+                      {/* Metadata Details Column */}
+                      <div className="flex-grow min-w-0">
+                        <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-xs tracking-wide uppercase truncate mb-0.5">
+                          {item.name}
+                        </h3>
+                        
+                        {/* Selected Variants Tracker badge */}
+                        {optionsLabel && (
+                          <span className="inline-block text-[9px] font-bold text-zinc-400 uppercase tracking-wider mb-2">
+                            {optionsLabel}
+                          </span>
+                        )}
+
+                        <p className="text-zinc-900 dark:text-zinc-200 font-black text-xs tracking-tight">
+                          KES {(item.finalPrice ?? item.sellingPrice ?? 0).toLocaleString()}
+                        </p>
+                        
+                        {/* Action Steps Wrapper */}
+                        <div className="flex items-center gap-3 mt-3">
+                          <div className="flex items-center bg-zinc-50 dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800 rounded-lg p-0.5">
+                            <button 
+                              onClick={() => decreaseQuantity(item)} 
+                              className="w-6 h-6 rounded-md flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                            >
+                              <MinusIcon className="w-2.5 h-2.5" />
+                            </button>
+                            <span className="px-2.5 min-w-[24px] text-center text-[10px] font-black text-zinc-800 dark:text-zinc-200">
+                              {item.quantity}
+                            </span>
+                            <button 
+                              onClick={() => addToCart(item)} 
+                              className="w-6 h-6 rounded-md flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                            >
+                              <PlusIcon className="w-2.5 h-2.5" />
+                            </button>
+                          </div>
+
+                          <button 
+                            onClick={() => removeFromCart(item)} 
+                            className="p-1.5 text-zinc-300 dark:text-zinc-700 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                          >
+                            <TrashIcon className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })
               ) : (
+                /* Sophisticated Clean Empty State Placeholder */
                 <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
-                  <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center text-3xl">🥐</div>
-                  <p className="text-gray-400 font-medium italic">Your basket is as empty as a morning oven...</p>
+                  <div className="w-16 h-16 rounded-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 flex items-center justify-center text-zinc-300 dark:text-zinc-700">
+                    <ShoppingBagIcon className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-zinc-800 dark:text-zinc-300 text-xs font-bold uppercase tracking-wide">Your wardrobe is empty</p>
+                    <p className="text-zinc-400 dark:text-zinc-500 text-[11px] max-w-[200px] mx-auto leading-relaxed">
+                      Discover new arrivals and curate your personalized collection.
+                    </p>
+                  </div>
                   <button 
                     onClick={() => setIsCartOpen(false)}
-                    className="text-xs font-black uppercase tracking-widest text-amber-600 border-b border-amber-600"
+                    className="pt-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-900 dark:text-white border-b-2 border-zinc-900 dark:border-white transition-all hover:opacity-70"
                   >
-                    Start Shopping
+                    Browse Collections
                   </button>
                 </div>
               )}
             </div>
 
-            {/* Glassmorphism Footer Summary */}
-            <div className="relative p-8 space-y-4 bg-white/80 backdrop-blur-xl border-t border-gray-100">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-500 font-medium">Subtotal</span>
-                {/* ${} totalPrice?.toFixed(2) */}
-                <span className="text-gray-900 font-bold">10000000</span>
+            {/* Sticky Order Pricing Summary Footer */}
+            <div className="p-6 md:p-8 space-y-4 bg-zinc-50/80 dark:bg-[#0a0a0a]/80 backdrop-blur-xl border-t border-zinc-100 dark:border-zinc-900">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-zinc-400 dark:text-zinc-500 font-medium uppercase tracking-wider">Subtotal</span>
+                <span className="text-zinc-900 dark:text-zinc-200 font-bold tracking-tight">
+                  KES {totalCartAmount.toLocaleString()}
+                </span>
               </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-500 font-medium">Bakery Delivery</span>
-                <span className="text-green-600 font-bold uppercase text-[10px] tracking-widest">Free</span>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-zinc-400 dark:text-zinc-500 font-medium uppercase tracking-wider">Priority Shipping</span>
+                <span className="text-emerald-600 dark:text-emerald-500 font-black uppercase text-[9px] tracking-widest">Complimentary</span>
               </div>
               
-              <div className="pt-4 flex justify-between items-end">
-                <div>
-                  <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">Total Amount</p>
-                  <p className="text-3xl font-black text-gray-900">10000000</p>
+              <div className="pt-2 flex justify-between items-end">
+                <div className="space-y-0.5">
+                  <p className="text-[9px] text-zinc-400 dark:text-zinc-500 font-black uppercase tracking-[0.25em]">Estimated Total</p>
+                  <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
+                    KES {totalCartAmount.toLocaleString()}
+                  </p>
                 </div>
               </div>
 
               <button
-                onClick={() => {user ? router.push(`/ecommerce/checkout`) : handleGoogleSignIn() } }
-                className="block w-full py-5 bg-gray-900 text-white text-center font-black uppercase tracking-[0.2em] text-xs hover:bg-amber-600 transition-all shadow-xl active:scale-[0.98]"
+                disabled={cart.length === 0}
+                onClick={() => { user ? router.push(`/ecommerce/checkout`) : handleGoogleSignIn(); }}
+                style={{ backgroundColor: cart.length > 0 ? primaryColor : undefined }}
+                className={`block w-full py-4 text-white text-center font-black uppercase tracking-[0.2em] text-[10px] shadow-lg rounded-xl transition-all active:scale-[0.99] ${
+                  cart.length === 0 ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed shadow-none' : 'hover:brightness-95'
+                }`}
               >
                 Secure Checkout
               </button>
               
-              <p className="text-[9px] text-center text-gray-400 italic">
-                Each order is hand-packed with care at our local bakery.
+              <p className="text-[9px] text-center text-zinc-400 dark:text-zinc-500 tracking-wide">
+                Insured express logistics and seamless premium returns.
               </p>
             </div>
           </motion.div>

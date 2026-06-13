@@ -8,7 +8,7 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
-import QuickViewModal from '@/components/site/QuickViewModal';
+import QuickViewModal from '../QuickViewModal';
 
 interface ProductCardProps {
   product: MarketListingForm;
@@ -28,17 +28,28 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const primary = storeFormData?.themeSettings?.primaryColor || '#6366f1';
   const secondary = storeFormData?.themeSettings?.secondaryColor || '#f43f5e';
 
-  const quantity = cart.find((item) => item.id === product.id)?.quantity || 0;
   const { name, images, finalPrice, sellingPrice } = product;
 
-  // Determine if this item has variants configured
+  // Verify options array integrity
   const hasVariants = useMemo(() => {
     return product.option && Array.isArray(product.option) && product.option.length > 0;
   }, [product.option]);
 
+  // Aggregate item quantity safely across plain items vs multifaceted variants
+  const totalQuantityInCart = useMemo(() => {
+    return cart
+      .filter((item) => item.id === product.id)
+      .reduce((total, item) => total + (item.quantity || 0), 0);
+  }, [cart, product.id]);
+
+  // Pricing presentation logic (shows base starting price)
+  const displayPrice = useMemo(() => {
+    return finalPrice ?? sellingPrice ?? 0;
+  }, [finalPrice, sellingPrice]);
+
   const rawPhone = storeFormData?.contactPhone || "254732771353";
   const whatsappNumber = rawPhone.replace(/\D/g, '');
-  const message = encodeURIComponent(`Hello! I'd like to order: ${name} (Price: KES ${finalPrice || sellingPrice})`);
+  const message = encodeURIComponent(`Hello! I'm interested in looking at your options for: ${name} (Base Price: KES ${displayPrice.toLocaleString()})`);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
   const discount = sellingPrice && finalPrice && sellingPrice > finalPrice
@@ -47,15 +58,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     
   const imageSrc = images?.[0]?.url || images?.[0] || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=400&q=80';
 
-  // Action execution router for card buttons
-  const handleCartAction = () => {
-    if (hasVariants) {
-      setShowQuickView(true);
-    } else {
-      addToCart(product);
-    }
-  };
-
   return (
     <>
       <motion.div
@@ -63,9 +65,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-40px" }}
         transition={{ duration: 0.4 }}
-        className="relative flex flex-col bg-white dark:bg-zinc-900 rounded-2xl sm:rounded-[2rem] shadow-sm hover:shadow-xl dark:shadow-none dark:hover:bg-zinc-800/60 transition-all duration-300 overflow-hidden group border border-slate-100 dark:border-zinc-800"
+        className="relative flex flex-col bg-white dark:bg-zinc-900 rounded-2xl sm:rounded-[2rem] shadow-sm hover:shadow-xl dark:shadow-none dark:hover:bg-zinc-800/60 transition-all duration-300 overflow-hidden group border border-slate-100 dark:border-zinc-800 h-full"
       >
-        {/* IMAGE CONTAINER */}
+        {/* IMAGE HUB CONTAINER */}
         <div className="relative aspect-square w-full overflow-hidden bg-slate-50 dark:bg-zinc-950">
           <Link href={`/ecommerce/products/${product.id}`} className="block w-full h-full">
             <Image
@@ -88,7 +90,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </div>
           )}
 
-          {/* FLOATING WHATSAPP LINK */}
+          {/* FLOAT CHAT ACTIONS */}
           <a 
             href={whatsappUrl}
             target="_blank"
@@ -99,7 +101,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <WhatsAppIcon className="w-4 h-4 sm:w-5 sm:h-5" />
           </a>
 
-          {/* DESKTOP HOVER OVERLAY */}
+          {/* HOVER OVERLAY FOR WIDE VIEWPORTS */}
           <div className="absolute inset-0 z-10 hidden lg:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/10 backdrop-blur-[2px]">
             <button
               onClick={(e) => {
@@ -108,102 +110,140 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               }}
               className="bg-white text-black text-[10px] font-black uppercase tracking-widest px-5 py-2.5 rounded-full shadow-xl hover:scale-105 transition-transform"
             >
-              Quick View
+              {hasVariants ? 'Configure Item' : 'Quick View'}
             </button>
           </div>
         </div>
 
-        {/* CONTENT GRID */}
-        <div className="p-3.5 sm:p-5 flex flex-col flex-grow space-y-2 sm:space-y-3">
-          <div>
-            <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate tracking-tight">
-              {name}
-            </h4>
+        {/* METADATA AND INVENTORY MANAGEMENT FIELD */}
+        <div className="p-3.5 sm:p-5 flex flex-col flex-grow justify-between space-y-3">
+          <div className="space-y-1">
+            <Link href={`/ecommerce/products/${product.id}`} className="block group-hover:underline decoration-1 underline-offset-2">
+              <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white line-clamp-2 tracking-tight leading-tight">
+                {name}
+              </h4>
+            </Link>
             
-            <div className="flex items-center gap-1 mt-1">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <div className="flex text-amber-400">
                 {[...Array(5)].map((_, i) => (
                   <StarIcon key={i} className={`w-3 h-3 ${i < 4 ? 'fill-current' : 'opacity-25'}`} />
                 ))}
               </div>
               {hasVariants && (
-                <span className="text-[9px] font-extrabold text-indigo-500 dark:text-indigo-400 uppercase tracking-wider ml-1">
-                  Options Available
+                <span className="text-[9px] font-black text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                  Multiple Options
                 </span>
               )}
             </div>
           </div>
 
-          <div className="flex items-baseline gap-1.5 sm:gap-2">
-            <span className="text-base sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
-              KES {(finalPrice ?? sellingPrice ?? 0).toLocaleString()}
-            </span>
-            {sellingPrice && sellingPrice > (finalPrice ?? 0) && (
-              <span className="text-xs line-through text-slate-400 font-medium">
-                {sellingPrice.toLocaleString()}
+          <div className="space-y-3 pt-1">
+            <div className="flex items-baseline gap-1.5 sm:gap-2">
+              <span className="text-base sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                {hasVariants && <span className="text-[10px] font-bold text-slate-400 uppercase mr-1">From</span>}
+                KES {displayPrice.toLocaleString()}
               </span>
-            )}
-          </div>
+              {sellingPrice && sellingPrice > displayPrice && (
+                <span className="text-xs line-through text-slate-400 font-medium">
+                  {sellingPrice.toLocaleString()}
+                </span>
+              )}
+            </div>
 
-          {/* DYNAMIC CART FLOW SYSTEM */}
-          <div className="pt-1 mt-auto">
-            {quantity > 0 && !hasVariants ? (
-              <div className="flex items-center justify-between bg-slate-50 dark:bg-zinc-800/50 p-1 rounded-xl border border-slate-100 dark:border-zinc-800">
-                <div className="flex items-center justify-between w-full">
+            {/* PIPELINE RENDERING INTERACTION BUTTONS */}
+            <div>
+              {hasVariants ? (
+                /* Complex Variant Strategy: Delegates deep configs safely to the Modal */
+                <div className="flex gap-1.5 sm:gap-2">
                   <button
-                    onClick={() => decreaseQuantity(product.id)}
-                    aria-label="Decrease quantity"
-                    className="p-1.5 hover:bg-white dark:hover:bg-zinc-700 rounded-lg transition-colors text-slate-600 dark:text-zinc-300 shadow-xs"
+                    onClick={() => setShowQuickView(true)}
+                    className="flex-[3] py-2.5 sm:py-3 rounded-xl text-white font-black text-[10px] sm:text-xs uppercase tracking-wider shadow-md active:scale-[0.98] transition-all relative overflow-hidden"
+                    style={{ backgroundColor: primary }}
                   >
-                    {quantity === 1 ? <TrashIcon className="h-4 w-4 text-rose-500" /> : <MinusIcon className="h-4 w-4" />}
+                    <span>Choose Options</span>
+                    {totalQuantityInCart > 0 && (
+                      <span className="absolute top-1 right-1.5 bg-white text-slate-900 text-[9px] h-4 min-w-4 px-1 flex items-center justify-center rounded-full font-black">
+                        {totalQuantityInCart}
+                      </span>
+                    )}
                   </button>
                   
-                  <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white px-2">{quantity}</span>
-                  
-                  <button
-                    onClick={() => addToCart(product)}
-                    aria-label="Increase quantity"
-                    className="p-1.5 hover:bg-white dark:hover:bg-zinc-700 rounded-lg transition-colors text-slate-600 dark:text-zinc-300 shadow-xs"
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Inquire via WhatsApp"
+                    className="flex-1 bg-[#25D366] hover:bg-[#20ba59] flex items-center justify-center rounded-xl shadow-md active:scale-[0.98] transition-all text-white"
                   >
-                    <PlusIcon className="h-4 w-4" />
-                  </button>
+                    <WhatsAppIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                  </a>
                 </div>
+              ) : (
+                /* Native Direct Cart Flow Strategy (No Custom Variations) */
+                <>
+                  {totalQuantityInCart > 0 ? (
+                    <div className="flex items-center justify-between bg-slate-50 dark:bg-zinc-800/50 p-1 rounded-xl border border-slate-100 dark:border-zinc-800">
+                      <div className="flex items-center justify-between w-full">
+                        <button
+                          onClick={() => decreaseQuantity(product.id)}
+                          aria-label="Decrease quantity"
+                          className="p-1.5 hover:bg-white dark:hover:bg-zinc-700 rounded-lg transition-colors text-slate-600 dark:text-zinc-300 shadow-xs"
+                        >
+                          {totalQuantityInCart === 1 ? <TrashIcon className="h-4 w-4 text-rose-500" /> : <MinusIcon className="h-4 w-4" />}
+                        </button>
+                        
+                        <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white px-2">
+                          {totalQuantityInCart}
+                        </span>
+                        
+                        <button
+                          onClick={() => addToCart(product)}
+                          aria-label="Increase quantity"
+                          className="p-1.5 hover:bg-white dark:hover:bg-zinc-700 rounded-lg transition-colors text-slate-600 dark:text-zinc-300 shadow-xs"
+                        >
+                          <PlusIcon className="h-4 w-4" />
+                        </button>
+                      </div>
 
-                <div className="h-5 w-[1px] bg-slate-200 dark:bg-zinc-700 mx-1" />
-                
-                <button
-                  onClick={() => removeFromCart(product.id)}
-                  className="px-2.5 text-[9px] sm:text-[10px] font-black uppercase text-rose-500 hover:text-rose-600 transition-colors shrink-0"
-                >
-                  Clear
-                </button>
-              </div>
-            ) : (
-              <div className="flex gap-1.5 sm:gap-2">
-                <button
-                  onClick={handleCartAction}
-                  className="flex-[3] py-2.5 sm:py-3 rounded-xl text-white font-black text-[10px] sm:text-xs uppercase tracking-wider shadow-md active:scale-[0.98] transition-all"
-                  style={{ backgroundColor: primary }}
-                >
-                  {hasVariants ? 'Select Options' : 'Add To Cart'}
-                </button>
-                
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Order this item via WhatsApp directly"
-                  className="flex-1 bg-[#25D366] hover:bg-[#20ba59] flex items-center justify-center rounded-xl shadow-md active:scale-[0.98] transition-all text-white"
-                >
-                  <WhatsAppIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                </a>
-              </div>
-            )}
+                      <div className="h-5 w-[1px] bg-slate-200 dark:bg-zinc-700 mx-1" />
+                      
+                      <button
+                        onClick={() => removeFromCart(product.id)}
+                        className="px-2.5 text-[9px] sm:text-[10px] font-black uppercase text-rose-500 hover:text-rose-600 transition-colors shrink-0"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-1.5 sm:gap-2">
+                      <button
+                        onClick={() => addToCart(product)}
+                        className="flex-[3] py-2.5 sm:py-3 rounded-xl text-white font-black text-[10px] sm:text-xs uppercase tracking-wider shadow-md active:scale-[0.98] transition-all"
+                        style={{ backgroundColor: primary }}
+                      >
+                        Add To Cart
+                      </button>
+                      
+                      <a
+                        href={whatsappUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Order via WhatsApp directly"
+                        className="flex-1 bg-[#25D366] hover:bg-[#20ba59] flex items-center justify-center rounded-xl shadow-md active:scale-[0.98] transition-all text-white"
+                      >
+                        <WhatsAppIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                      </a>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
       </motion.div>
 
-      {/* QUICK VIEW CONTROL MODAL */}
+      {/* QUICK VIEW CONTROL MODAL LAYER */}
       {showQuickView && (
         <QuickViewModal 
           isOpen={showQuickView} 

@@ -10,7 +10,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: boolean; setIsCartOpen: (open: boolean) => void }) {
-  const { cart, addToCart, decreaseQuantity, removeFromCart, totalPrice } = useStateContext();
+  const { cart, addToCart, decreaseQuantity, removeFromCart, cartSubtotal } = useStateContext();
   const { storeFormData } = useStoreContext();
   const { data: session } = useSession();
   const user = session?.user;
@@ -22,6 +22,24 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
     const authUrl = new URL("https://auth.salesmanpro.site/signin");
     authUrl.searchParams.set("callbackUrl", `${window.location.origin}`);
     window.location.href = authUrl.toString();
+  };
+
+  // Safe wrapper for quantity reductions that preserves unique option combinations
+  const handleDecreaseQuantity = (item: any) => {
+    if (decreaseQuantity.length > 1 || typeof item === 'object') {
+      decreaseQuantity(item);
+    } else {
+      decreaseQuantity(item.id);
+    }
+  };
+
+  // Safe wrapper for item removal that preserves unique option combinations
+  const handleRemoveFromCart = (item: any) => {
+    if (removeFromCart.length > 1 || typeof item === 'object') {
+      removeFromCart(item);
+    } else {
+      removeFromCart(item.id);
+    }
   };
 
   return (
@@ -52,7 +70,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                   Bag<span className="font-light text-gray-400">.</span>
                 </h2>
                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 mt-1">
-                  {cart.length} {cart.length === 1 ? 'Item' : 'Items'} selected
+                  {cart.length} {cart.length === 1 ? 'Configuration' : 'Configurations'} selected
                 </span>
               </div>
               <button 
@@ -64,65 +82,86 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
             </div>
 
             {/* Cart Items List */}
-            <div className="flex-grow overflow-y-auto p-6 space-y-6 scrollbar-hide">
+            <div className="flex-grow overflow-y-auto p-6 space-y-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {cart.length > 0 ? (
-                cart.map((item: any, idx: number) => (
-                  <motion.div 
-                    layout
-                    key={item.id} 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className="flex gap-6 group"
-                  >
-                    {/* Image Container */}
-                    <div className="relative h-28 w-24 bg-gray-50 rounded-2xl overflow-hidden flex-shrink-0 border border-gray-100">
-                      <Image 
-                        src={item.images?.[0] || '/placeholder.png'} 
-                        alt={item.name} 
-                        fill 
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                        loader={({ src }) => src}
-                      />
-                    </div>
-                    
-                    {/* Item Details */}
-                    <div className="flex-grow flex flex-col justify-between py-1">
-                      <div className="space-y-1">
-                        <div className="flex justify-between items-start">
-                          <h3 className="font-bold text-gray-900 text-sm uppercase tracking-tight leading-tight max-w-[150px]">
-                            {item.name}
-                          </h3>
-                          <button onClick={() => removeFromCart(item.id)} className="text-gray-300 hover:text-red-500 transition-colors">
-                            <TrashIcon className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <p className="font-black text-lg" style={{ color: primary }}>
-                          ${item.finalPrice?.toFixed(2)}
-                        </p>
+                cart.map((item: any, idx: number) => {
+                  // Generate an optimized scannable label from configured item variants 
+                  const optionLabel = item.selectedOptions 
+                    ? Object.entries(item.selectedOptions)
+                        .map(([category, value]) => `${category}: ${value}`)
+                        .join(' • ')
+                    : null;
+
+                  return (
+                    <motion.div 
+                      layout
+                      key={item.id + (optionLabel ? `-${optionLabel}` : `-${idx}`)} 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      className="flex gap-6 group"
+                    >
+                      {/* Image Container */}
+                      <div className="relative h-28 w-24 bg-gray-50 rounded-2xl overflow-hidden flex-shrink-0 border border-gray-100">
+                        <Image 
+                          src={item.images?.[0]?.url || item.images?.[0] || '/placeholder.png'} 
+                          alt={item.name} 
+                          fill 
+                          className="object-contain p-2 transition-transform duration-500 group-hover:scale-105"
+                          sizes="96px"
+                          loader={({ src }) => src}
+                        />
                       </div>
                       
-                      {/* Quantity Controls */}
-                      <div className="flex items-center justify-between mt-4">
-                        <div className="flex items-center bg-gray-50 rounded-full px-2 py-1 border border-gray-100">
-                          <button 
-                            onClick={() => decreaseQuantity(item.id)} 
-                            className="p-1.5 hover:bg-white rounded-full transition-all text-gray-400 hover:text-gray-900 shadow-sm"
-                          >
-                            <MinusIcon className="w-3.5 h-3.5" />
-                          </button>
-                          <span className="px-4 text-xs font-black text-gray-900">{item.quantity}</span>
-                          <button 
-                            onClick={() => addToCart(item)} 
-                            className="p-1.5 hover:bg-white rounded-full transition-all text-gray-400 hover:text-gray-900 shadow-sm"
-                          >
-                            <PlusIcon className="w-3.5 h-3.5" />
-                          </button>
+                      {/* Item Details */}
+                      <div className="flex-grow flex flex-col justify-between py-1">
+                        <div className="space-y-1">
+                          <div className="flex justify-between items-start gap-2">
+                            <div className="flex flex-col">
+                              <h3 className="font-extrabold text-gray-900 text-sm uppercase tracking-tight leading-tight max-w-[200px] truncate">
+                                {item.name}
+                              </h3>
+                              {/* Subtitle Option Tags Container */}
+                              {optionLabel && (
+                                <span className="text-[11px] font-medium text-gray-400 mt-1 bg-gray-50 border border-gray-100 rounded-md px-2 py-0.5 w-max max-w-[200px] truncate">
+                                  {optionLabel}
+                                </span>
+                              )}
+                            </div>
+                            <button 
+                              onClick={() => handleRemoveFromCart(item)} 
+                              className="text-gray-300 hover:text-red-500 transition-colors flex-shrink-0 pt-0.5"
+                            >
+                              <TrashIcon className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <p className="font-black text-base pt-1" style={{ color: primary }}>
+                            KES {(item.finalPrice ?? item.sellingPrice ?? 0).toLocaleString()}
+                          </p>
+                        </div>
+                        
+                        {/* Quantity Controls */}
+                        <div className="flex items-center justify-between mt-2">
+                          <div className="flex items-center bg-gray-50 rounded-full px-2 py-1 border border-gray-100">
+                            <button 
+                              onClick={() => handleDecreaseQuantity(item)} 
+                              className="p-1.5 hover:bg-white rounded-full transition-all text-gray-400 hover:text-gray-900 shadow-sm"
+                            >
+                              <MinusIcon className="w-3.5 h-3.5" />
+                            </button>
+                            <span className="px-4 text-xs font-black text-gray-900">{item.quantity}</span>
+                            <button 
+                              onClick={() => addToCart(item)} 
+                              className="p-1.5 hover:bg-white rounded-full transition-all text-gray-400 hover:text-gray-900 shadow-sm"
+                            >
+                              <PlusIcon className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))
+                    </motion.div>
+                  );
+                })
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-center">
                   <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6">
@@ -146,7 +185,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
               <div className="space-y-3">
                 <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest text-gray-400">
                   <span>Subtotal</span>
-                  <span className="text-gray-900">${totalPrice?.toFixed(2) || '0.00'}</span>
+                  <span className="text-gray-900 font-extrabold">KES {cartSubtotal?.toLocaleString() || '0'}</span>
                 </div>
                 <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest text-gray-400">
                   <span>Shipping</span>
@@ -154,11 +193,11 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                 </div>
               </div>
               
-              <div className="pt-4 flex justify-between items-end">
+              <div className="pt-2 flex justify-between items-end">
                 <div className="flex flex-col">
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Total Amount</span>
-                  <span className="text-4xl font-black text-gray-900 tracking-tighter leading-none italic">
-                    ${totalPrice?.toFixed(2) || '0.00'}
+                  <span className="text-3xl font-black text-gray-900 tracking-tighter leading-none italic mt-1">
+                    KES {cartSubtotal?.toLocaleString() || '0'}
                   </span>
                 </div>
               </div>
@@ -167,10 +206,10 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => { user ? router.push(`/ecommerce/checkout`) : handleGoogleSignIn() }}
-                className="w-full py-6 rounded-[2rem] text-white font-black uppercase tracking-[0.2em] text-xs transition-all shadow-xl flex items-center justify-center gap-3"
+                className="w-full py-5 rounded-[2rem] text-white font-black uppercase tracking-[0.2em] text-xs transition-all shadow-xl flex items-center justify-center gap-3"
                 style={{ backgroundColor: primary }}
               >
-                Checkout Now
+                <span>Checkout Now</span>
                 <ChevronRightIcon className="w-4 h-4" />
               </motion.button>
               

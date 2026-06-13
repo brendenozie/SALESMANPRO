@@ -1,7 +1,7 @@
 'use client';
 
-import { MinusIcon, PlusIcon, StarIcon, TrashIcon, ShoppingCartIcon } from '@heroicons/react/24/solid';
-import React from 'react';
+import { MinusIcon, PlusIcon, ShoppingBagIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import React, { useState } from 'react';
 import { MarketListingForm } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
@@ -17,132 +17,263 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
+interface ProductCardProps {
+  product: MarketListingForm;
+}
+
+const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
+  const [isHovered, setIsHovered] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
-  const primary = storeFormData?.themeSettings?.primaryColor || '#1d4ed8';
+  // Local option state management (e.g., bouquet sizes or wrapping types)
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    if (product.options && Array.isArray(product.options)) {
+      product.options.forEach((opt: any) => {
+        if (opt.values && opt.values.length > 0) {
+          initial[opt.name] = opt.values[0];
+        }
+      });
+    }
+    return initial;
+  });
+
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#10B981';
   const quantity = cart.find((item: any) => item.id === product.id)?.quantity || 0;
 
   const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
-  const message = encodeURIComponent(`INQUIRY: I'm interested in the "${product.name}"`);
+  const message = encodeURIComponent(`Hi! I'm interested in the "${product.name}" bouquet. Do you offer same-day delivery, and can I include a custom handwritten note?`);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
-  const discount = product.sellingPrice && product.finalPrice && product.sellingPrice > product.finalPrice
-      ? Math.round(((product.sellingPrice - product.finalPrice) / product.sellingPrice) * 100)
-      : null;
+  const imageSrc = product.images?.[0] || 'https://via.placeholder.com/600x800';
+  
+  // Check if product requires customization options before placing into bag
+  const hasOptions = product.options && Array.isArray(product.options) && product.options.length > 0;
+
+  const handleAddClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (hasOptions) {
+      setIsModalOpen(true);
+    } else {
+      addToCart(product);
+    }
+  };
+
+  const handleConfirmOptions = () => {
+    // Merge customization details directly into payload reference
+    const customizedProduct = {
+      ...product,
+      selectedOptions: selectedOptions
+    };
+    addToCart(customizedProduct);
+    setIsModalOpen(false);
+  };
 
   return (
-    <motion.div 
-      whileHover={{ y: -10 }}
-      className="group relative flex flex-col bg-white dark:bg-[#0a0a0a] rounded-[2.5rem] border border-black/5 dark:border-white/5 overflow-hidden transition-all duration-500 hover:shadow-2xl dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
-    >
-      {/* Media Container */}
-      <div className="relative h-80 w-full bg-zinc-50 dark:bg-[#111] transition-colors overflow-hidden">
-        <Link href={`/earphonesecommerce/products/${product.id}`} className="block h-full w-full">
-          <Image
-            src={product.images?.[0] || 'https://via.placeholder.com/300'}
-            alt={product.name}
-            fill
-            loader={loader}
-            className="object-contain p-10 transition-transform duration-700 group-hover:scale-110"
-          />
-        </Link>
-        
-        {/* Scrim */}
-        <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-[#0a0a0a] via-transparent to-transparent opacity-40 pointer-events-none" />
-
-        {/* Badge Overlay */}
-        <div className="absolute top-6 left-6 z-10 flex flex-col gap-2">
-          {discount && (
-            <div className="bg-black dark:bg-white text-white dark:text-black text-[10px] font-black px-3 py-1 rounded-full uppercase italic">
-              -{discount}% OFF
+    <>
+      <div 
+        className="group relative flex flex-col bg-transparent"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {/* Image Container */}
+        <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-slate-50">
+          <Link href={`/flowersecommerce/products/${product.id}`} className="block h-full w-full">
+            <Image
+              src={imageSrc}
+              alt={product.name}
+              loader={loader}
+              fill
+              className="object-cover transition-transform duration-1000 ease-out group-hover:scale-110"
+              sizes="(max-width: 768px) 100vw, 25vw"
+            />
+          </Link>
+          
+          {/* Soft Status Tags */}
+          <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+            {product.sellingPrice! > product.finalPrice! && (
+              <div className="bg-rose-50/90 backdrop-blur-md px-3 py-1 rounded-full border border-rose-100 shadow-sm">
+                <span className="text-[9px] font-bold text-rose-500 uppercase tracking-widest">
+                  Seasonal Offer
+                </span>
+              </div>
+            )}
+            <div className="bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full border border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <span className="text-[9px] font-medium text-slate-600 uppercase tracking-widest">
+                Freshly Picked
+              </span>
             </div>
-          )}
-          <div className="bg-black/5 dark:bg-white/10 backdrop-blur-md text-black/60 dark:text-white/70 text-[8px] font-bold px-3 py-1 rounded-full uppercase tracking-widest border border-black/5 dark:border-white/5">
-            Original Global
           </div>
-        </div>
 
-        {/* WhatsApp Comms Icon */}
-        <a 
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="absolute top-6 right-6 z-10 p-2.5 bg-white dark:bg-white/5 shadow-lg dark:shadow-none backdrop-blur-md text-[#25D366] rounded-full border border-black/5 dark:border-white/10 transition-all duration-300 hover:scale-110"
-        >
-          <WhatsAppIcon className="w-4 h-4" />
-        </a>
-      </div>
-
-      {/* Content Area */}
-      <div className="p-8">
-        <div className="flex justify-between items-start mb-2">
-          <h4 className="text-xl font-black text-black dark:text-white italic tracking-tighter uppercase leading-tight line-clamp-1">
-            {product.name}
-          </h4>
-        </div>
-
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-1 text-white/40 text-[10px] font-bold tracking-widest uppercase">
-            <StarIcon className="w-3 h-3" style={{ color: primary }} />
-            <span>Studio Grade</span>
-          </div>
+          {/* WhatsApp Icon Float */}
           <a 
             href={whatsappUrl}
             target="_blank"
-            className="text-[9px] font-mono font-bold text-[#25D366] uppercase hover:underline transition-colors flex items-center gap-1"
+            rel="noopener noreferrer"
+            className="absolute top-4 right-4 z-20 p-2.5 bg-white/90 backdrop-blur-md text-[#25D366] rounded-full shadow-sm transition-all duration-300 hover:bg-white hover:scale-110"
+            title="Ask the Florist"
           >
-            <WhatsAppIcon className='w-4 h-4'/> Order Via Whatsapp
+            <WhatsAppIcon className="w-4 h-4" />
           </a>
+
+          {/* Action Overlay */}
+          <AnimatePresence>
+            {isHovered && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-white/10 flex items-center justify-center p-6"
+              >
+                {quantity === 0 ? (
+                  <motion.button
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    onClick={handleAddClick}
+                    className="w-full bg-slate-900 text-white py-4 rounded-xl flex items-center justify-center gap-2 shadow-2xl hover:bg-slate-800 transition-all active:scale-95"
+                  >
+                    <ShoppingBagIcon className="w-5 h-5" />
+                    <span className="text-xs font-bold uppercase tracking-widest">
+                      {hasOptions ? 'Configure' : 'Add to Bag'}
+                    </span>
+                  </motion.button>
+                ) : (
+                  <motion.div 
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    className="w-full bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl flex items-center justify-between p-1.5"
+                  >
+                    <button onClick={() => decreaseQuantity(product.id)} className="p-3 hover:bg-slate-50 rounded-lg transition-colors">
+                      <MinusIcon className="w-4 h-4 text-slate-600" />
+                    </button>
+                    <span className="font-bold text-slate-900 text-sm">{quantity}</span>
+                    <button onClick={handleAddClick} className="p-3 hover:bg-slate-50 rounded-lg transition-colors">
+                      <PlusIcon className="w-4 h-4 text-slate-600" />
+                    </button>
+                  </motion.div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Price & Action Row */}
-        <div className="flex items-center justify-between mt-auto pt-6 border-t border-black/5 dark:border-white/5">
-          <div className="flex flex-col">
-            <span className="text-black dark:text-white font-black text-2xl italic leading-none">
+        {/* Details Section */}
+        <div className="mt-6 flex flex-col items-center text-center">
+          <Link href={`/flowersecommerce/products/${product.id}`}>
+            <h4 className="text-lg font-serif italic text-slate-900 group-hover:text-rose-500 transition-colors duration-500">
+              {product.name}
+            </h4>
+          </Link>
+          
+          <div className="flex items-center gap-3 mt-2">
+            <span className="text-slate-900 font-bold tracking-tight">
               Kes {(product.finalPrice ?? 0).toLocaleString()}
             </span>
-            {product.sellingPrice && product.sellingPrice > (product.finalPrice ?? 0) && (
-              <span className="text-black/30 dark:text-white/30 line-through text-xs mt-1">
-                Kes {product.sellingPrice.toLocaleString()}
+            {product.sellingPrice! > product.finalPrice! && (
+              <span className="text-slate-300 line-through text-xs font-medium">
+                Kes {product.sellingPrice?.toLocaleString()}
               </span>
             )}
           </div>
 
-          <div className="relative">
-            <AnimatePresence mode="wait">
-              {quantity > 0 ? (
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.5 }}
-                  className="flex items-center bg-zinc-100 dark:bg-white/5 rounded-2xl p-1 border border-black/5 dark:border-white/10"
-                >
-                  <button onClick={() => decreaseQuantity(product.id)} className="p-2 text-black dark:text-white hover:text-red-500 transition-colors">
-                    {quantity === 1 ? <TrashIcon className="h-4 w-4" /> : <MinusIcon className="h-4 w-4" />}
-                  </button>
-                  <span className="px-3 text-black dark:text-white font-black text-sm">{quantity}</span>
-                  <button onClick={() => addToCart(product)} className="p-2 text-black dark:text-white hover:opacity-70 transition-opacity">
-                    <PlusIcon className="h-4 w-4" />
-                  </button>
-                </motion.div>
-              ) : (
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => addToCart(product)}
-                  className="bg-black dark:bg-white p-5 rounded-[1.5rem] text-white dark:text-black transition-all shadow-xl"
-                  style={{ backgroundColor: quantity === 0 ? undefined : primary }}
-                >
-                  <ShoppingCartIcon className="h-5 w-5" />
-                </motion.button>
-              )}
-            </AnimatePresence>
+          {/* Interactive Bloom Indicator */}
+          <div className="flex items-center gap-4 mt-5 group-hover:gap-8 transition-all duration-700">
+            <div className="h-[1px] w-6 bg-slate-200 group-hover:bg-rose-200" />
+            <a 
+              href={whatsappUrl}
+              target="_blank"
+              className="text-[9px] font-black uppercase tracking-[0.2em] text-green-500 hover:text-rose-500 transition-colors flex items-center gap-1"
+            >
+              <WhatsAppIcon className="w-3 h-3" /> Order Via WhatsApp
+            </a>
+            <div className="h-[1px] w-6 bg-slate-200 group-hover:bg-rose-200" />
           </div>
         </div>
       </div>
-    </motion.div>
+
+      {/* Flower Customization Drawer / Modal */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop Layer */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsModalOpen(false)}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+            />
+            
+            {/* Modal Body */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative w-full max-w-md bg-white rounded-3xl p-8 shadow-2xl border border-slate-100 z-10 overflow-hidden"
+            >
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="absolute top-6 right-6 p-2 rounded-full text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+
+              <div className="mb-6">
+                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-rose-400 block mb-1">Custom Arrangement</span>
+                <h3 className="text-xl font-serif text-slate-900 italic">{product.name}</h3>
+                <p className="text-sm text-slate-500 mt-1">Select your preferred stem count or wrapping options below.</p>
+              </div>
+
+              {/* Render options dynamically mapping to lists or chips */}
+              <div className="space-y-6 max-h-[40vh] overflow-y-auto pr-1">
+                {product.options?.map((option: any) => (
+                  <div key={option.name} className="flex flex-col gap-2.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                      {option.name}
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {option.values?.map((val: string) => {
+                        const isSelected = selectedOptions[option.name] === val;
+                        return (
+                          <button
+                            key={val}
+                            onClick={() => setSelectedOptions(prev => ({ ...prev, [option.name]: val }))}
+                            className={`px-4 py-2 text-xs rounded-xl border transition-all duration-300 font-medium ${
+                              isSelected 
+                                ? 'bg-slate-900 border-slate-900 text-white shadow-md' 
+                                : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                            }`}
+                          >
+                            {val}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Modal Footer actions */}
+              <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between gap-4">
+                <div>
+                  <span className="text-[10px] uppercase font-semibold text-slate-400 block tracking-wider">Total Valuation</span>
+                  <span className="text-lg font-black text-slate-900">Kes {(product.finalPrice ?? 0).toLocaleString()}</span>
+                </div>
+                
+                <button
+                  onClick={handleConfirmOptions}
+                  className="flex-grow max-w-[200px] bg-slate-900 hover:bg-slate-800 text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg transition-all active:scale-95"
+                >
+                  Confirm Configuration
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

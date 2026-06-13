@@ -153,6 +153,7 @@ export function pageDataInclude() {
         isAvailable: true,
         isFeatured: true,
         category: true,
+        option: true, 
       },
     },
     Writer: { where: { user: { isNot: null } }, include: { user: userSelect } },

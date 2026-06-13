@@ -1,8 +1,8 @@
 'use client';
 
-import { MinusIcon, PlusIcon, BoltIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
-import React from 'react';
-import { MarketListingForm } from '@/types/typings';
+import { MinusIcon, PlusIcon, BoltIcon, XMarkIcon, TrashIcon } from '@heroicons/react/24/outline';
+import React, { useMemo, useState } from 'react';
+import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -19,26 +19,93 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 );
 
 const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
+  const [isSelectingOptions, setIsSelectingOptions] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
   
   const primary = storeFormData?.themeSettings?.primaryColor || "#FF6B00";
-  const quantity = cart.find((item: any) => item.id === product.id)?.quantity || 0;
   const { name, images, finalPrice, sellingPrice } = product;
+
+  // 1. Map Options Array into Mechanical Category Groups
+  const groupedVariants = useMemo(() => {
+    const options = (product.option || []) as VariantOptionItem[];
+    return options.reduce((acc, item) => {
+      if (!acc[item.category]) acc[item.category] = [];
+      acc[item.category].push(item);
+      return acc;
+    }, {} as Record<string, VariantOptionItem[]>);
+  }, [product.option]);
+
+  const hasVariants = Object.keys(groupedVariants).length > 0;
+  const allOptionsSelected = Object.keys(groupedVariants).every((cat) => selectedOptions[cat]);
+
+  // 2. Computed Pricing Surcharges Block
+  const calculatedPrices = useMemo(() => {
+    const baseFinalPrice = finalPrice ?? sellingPrice ?? 0;
+    const baseSellingPrice = sellingPrice ?? 0;
+    
+    let surchargeSum = 0;
+    Object.entries(selectedOptions).forEach(([category, optionName]) => {
+      const match = groupedVariants[category]?.find((v) => v.name === optionName);
+      if (match?.extraPrice) {
+        surchargeSum += match.extraPrice;
+      }
+    });
+
+    return {
+      finalPrice: baseFinalPrice + surchargeSum,
+      sellingPrice: baseSellingPrice > 0 ? baseSellingPrice + surchargeSum : 0,
+    };
+  }, [selectedOptions, groupedVariants, finalPrice, sellingPrice]);
+
+  // 3. Resolve exact match quantity against context cart items
+  const quantity = cart.find((item: any) => {
+    if (item.id !== product.id) return false;
+    if (hasVariants) {
+      if (!item.selectedOptions) return false;
+      return Object.entries(selectedOptions).every(([cat, val]) => item.selectedOptions[cat] === val);
+    }
+    return true;
+  )?.quantity || 0;
   
   // WhatsApp "Mechanic Support" Config
-  const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
-  const message = encodeURIComponent(`BIKE_INQUIRY: I'm looking at the "${name}". Could you confirm the frame size availability and if it comes pre-assembled?`);
+  const optionsSummary = Object.entries(selectedOptions)
+    .map(([cat, val]) => `${cat}: ${val}`)
+    .join(', ');
+
+  const whatsappNumber = `${storeFormData?.contactPhone || "254732771353"}`.replace(/\D/g, '');
+  const message = encodeURIComponent(
+    `BIKE_INQUIRY: I'm looking at the "${name}"${optionsSummary ? ` (${optionsSummary})` : ''}. Could you confirm configuration availability and if it comes pre-assembled? Price: Kes ${calculatedPrices.finalPrice.toLocaleString()}`
+  );
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
   const imageSrc = images?.[0] || 'https://via.placeholder.com/600';
+
+  const handleAddToCart = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
+    if (hasVariants && !allOptionsSelected) {
+      setIsSelectingOptions(true);
+      return;
+    }
+
+    addToCart({
+      ...product,
+      finalPrice: calculatedPrices.finalPrice,
+      sellingPrice: calculatedPrices.sellingPrice || product.sellingPrice,
+      selectedOptions,
+    });
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="group relative flex flex-col bg-white border border-gray-100 p-5 transition-all duration-500 hover:shadow-[20px_20px_60px_#bebebe,-20px_-20px_60px_#ffffff] hover:-translate-y-2"
+      className="group relative flex flex-col bg-white border border-gray-100 p-5 transition-all duration-500 hover:shadow-[20px_20px_60px_#bebebe,-20px_-20px_60px_#ffffff] hover:-translate-y-2 overflow-hidden"
     >
       {/* Tactical Header: ID & WhatsApp */}
       <div className="flex justify-between items-start mb-4">
@@ -49,7 +116,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="p-2 bg-gray-50 rounded-full text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all duration-300 shadow-sm"
+          className="p-2 bg-gray-50 rounded-full text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all duration-300 shadow-sm z-10"
           title="Consult Mechanic"
         >
           <WhatsAppIcon className="w-4 h-4" />
@@ -59,11 +126,11 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
       {/* Price Badge - Floating Impact */}
       <div className="absolute top-16 right-6 z-10 flex flex-col items-end pointer-events-none">
         <span className="text-2xl font-black italic tracking-tighter text-gray-900 leading-none">
-          Kes {(finalPrice ?? 0).toLocaleString()}
+          Kes {calculatedPrices.finalPrice.toLocaleString()}
         </span>
-        {sellingPrice > (finalPrice ?? 0) && (
+        {calculatedPrices.sellingPrice > calculatedPrices.finalPrice && (
           <span className="text-[10px] line-through text-red-500 font-bold uppercase tracking-widest mt-1">
-            Kes {sellingPrice.toLocaleString()}
+            Kes {calculatedPrices.sellingPrice.toLocaleString()}
           </span>
         )}
       </div>
@@ -107,26 +174,31 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
         </div>
         
         <Link href={`/bikeecommerce/products/${product.id}`}>
-          <h4 className="text-xl font-black italic uppercase tracking-tighter text-gray-900 leading-tight mt-1 group-hover:underline decoration-primary-color decoration-2" style={{ textDecorationColor: primary }}>
+          <h4 className="text-xl font-black italic uppercase tracking-tighter text-gray-900 leading-tight mt-1 group-hover:underline decoration-2" style={{ textDecorationColor: primary }}>
             {name}
           </h4>
         </Link>
 
-        {/* Functional Footer */}
+        {/* Functional Build Actions Block */}
         <div className="mt-auto pt-8 flex items-center justify-between">
           <AnimatePresence mode="wait">
             {quantity === 0 ? (
               <motion.button
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                onClick={() => addToCart(product)}
-                className="flex items-center gap-4 group/btn w-full"
+                onClick={handleAddToCart}
+                className="flex items-center gap-4 group/btn w-full text-left"
               >
-                <div className="w-12 h-12 rounded-full border-2 border-gray-900 flex items-center justify-center transition-all group-hover/btn:bg-black group-hover/btn:text-white group-hover/btn:scale-110">
+                <div 
+                  style={{ '--hover-bg': primary } as React.CSSProperties}
+                  className="w-12 h-12 rounded-full border-2 border-gray-900 flex items-center justify-center transition-all group-hover/btn:border-[var(--hover-bg)] group-hover/btn:bg-[var(--hover-bg)] group-hover/btn:text-white group-hover/btn:scale-110"
+                >
                   <PlusIcon className="w-6 h-6" />
                 </div>
                 <div className="flex flex-col items-start">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 leading-none">Add to Build</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 leading-none">
+                    {hasVariants && !allOptionsSelected ? "Configure Specs" : "Add to Build"}
+                  </span>
                   <span className="text-[8px] text-gray-400 uppercase mt-1">In Stock • Ready to Ride</span>
                 </div>
               </motion.button>
@@ -137,23 +209,94 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                 className="flex items-center bg-gray-900 text-white rounded-full p-1.5 w-full justify-between shadow-lg"
               >
                 <button 
-                  onClick={() => decreaseQuantity(product.id)} 
+                  onClick={() => decreaseQuantity(product.id, selectedOptions)} 
                   className="p-2.5 hover:bg-white/10 rounded-full transition-colors"
                 >
-                  <MinusIcon className="w-4 h-4" />
+                  {quantity === 1 ? <TrashIcon className="w-4 h-4 text-red-400" /> : <MinusIcon className="w-4 h-4" />}
                 </button>
                 <span className="font-black text-sm tracking-tighter">QTY: {quantity}</span>
                 <button 
-                  onClick={() => addToCart(product)} 
+                  onClick={() => handleAddToCart()} 
                   className="p-2.5 hover:bg-white/10 rounded-full transition-colors"
                 >
-                  <PlusIcon className="w-4 h-4" />
+                  <PlusIcon className="w-4 h-4 text-emerald-400" />
                 </button>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
       </div>
+
+      {/* ================= TACTICAL CONFIGURATION SLIDE MODULE ================= */}
+      <AnimatePresence>
+        {isSelectingOptions && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="absolute inset-0 z-20 bg-white/FA backdrop-blur-md flex flex-col justify-end p-6 border-t-2 shadow-2xl"
+            style={{ borderTopColor: primary }}
+          >
+            <button
+              onClick={() => setIsSelectingOptions(false)}
+              className="absolute top-4 right-4 p-2 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-none transition-colors"
+            >
+              <XMarkIcon className="w-4 h-4" />
+            </button>
+
+            <div className="w-full space-y-4 pt-4 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-h-full">
+              <div className="text-center pb-2 border-b border-gray-100">
+                <span className="text-[9px] font-mono tracking-widest text-gray-400 block uppercase">Custom Build Setup</span>
+                <h5 className="text-sm font-black italic uppercase tracking-tight text-gray-900">{name}</h5>
+              </div>
+
+              {Object.entries(groupedVariants).map(([category, items]) => (
+                <div key={category} className="space-y-2 text-center">
+                  <p style={{ color: primary }} className="text-[9px] font-black uppercase tracking-wider">
+                    Select {category}
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {items.map((opt) => {
+                      const isSelected = selectedOptions[category] === opt.name;
+                      return (
+                        <button
+                          key={opt.name}
+                          type="button"
+                          onClick={() => setSelectedOptions({ ...selectedOptions, [category]: opt.name })}
+                          style={{ 
+                            borderColor: isSelected ? primary : undefined,
+                            backgroundColor: isSelected ? primary : undefined 
+                          }}
+                          className={`px-3 py-2 text-[10px] font-black tracking-tight uppercase transition-all border rounded-none ${
+                            isSelected 
+                              ? "text-white shadow-md font-bold" 
+                              : "border-gray-200 bg-gray-50 text-gray-800 active:bg-gray-100"
+                          }`}
+                        >
+                          {opt.name}
+                          {opt.extraPrice > 0 && ` (+Kes ${opt.extraPrice.toLocaleString()})`}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+
+              <button
+                disabled={!allOptionsSelected}
+                onClick={() => {
+                  handleAddToCart();
+                  setIsSelectingOptions(false);
+                }}
+                style={{ backgroundColor: allOptionsSelected ? primary : '#9CA3AF' }}
+                className="mt-4 w-full py-3 text-white font-black text-xs uppercase tracking-widest transition-opacity shadow-md rounded-none"
+              >
+                Lock In Specifications
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

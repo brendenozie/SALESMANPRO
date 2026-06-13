@@ -24,6 +24,16 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
     window.location.href = authUrl.toString();
   };
 
+  // Lock body window scroll interaction layers when cart is deployed
+  React.useEffect(() => {
+    if (isCartOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isCartOpen]);
+
   return (
     <AnimatePresence>
       {isCartOpen && (
@@ -66,63 +76,83 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
             {/* Cart Items List */}
             <div className="flex-grow overflow-y-auto p-6 space-y-6 scrollbar-hide">
               {cart.length > 0 ? (
-                cart.map((item: any, idx: number) => (
-                  <motion.div 
-                    layout
-                    key={item.id} 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className="flex gap-6 group"
-                  >
-                    {/* Image Container */}
-                    <div className="relative h-28 w-24 bg-gray-50 rounded-2xl overflow-hidden flex-shrink-0 border border-gray-100">
-                      <Image 
-                        src={item.images?.[0] || '/placeholder.png'} 
-                        alt={item.name} 
-                        fill 
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                        loader={({ src }) => src}
-                      />
-                    </div>
-                    
-                    {/* Item Details */}
-                    <div className="flex-grow flex flex-col justify-between py-1">
-                      <div className="space-y-1">
-                        <div className="flex justify-between items-start">
-                          <h3 className="font-bold text-gray-900 text-sm uppercase tracking-tight leading-tight max-w-[150px]">
-                            {item.name}
-                          </h3>
-                          <button onClick={() => removeFromCart(item.id)} className="text-gray-300 hover:text-red-500 transition-colors">
-                            <TrashIcon className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <p className="font-black text-lg" style={{ color: primary }}>
-                          ${item.finalPrice?.toFixed(2)}
-                        </p>
+                cart.map((item: any, idx: number) => {
+                  // Compute a descriptive item string key to protect custom arrangement states
+                  const optionSummary = item.selectedOptions ? Object.values(item.selectedOptions).join('-') : '';
+                  const compositeKey = `${item.id}-${optionSummary || idx}`;
+
+                  return (
+                    <motion.div 
+                      layout
+                      key={compositeKey} 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      className="flex gap-6 group"
+                    >
+                      {/* Image Container */}
+                      <div className="relative h-28 w-24 bg-gray-50 rounded-2xl overflow-hidden flex-shrink-0 border border-gray-100">
+                        <Image 
+                          src={item.images?.[0] || '/placeholder.png'} 
+                          alt={item.name} 
+                          fill 
+                          className="object-cover transition-transform duration-500 group-hover:scale-110"
+                          loader={({ src }) => src}
+                        />
                       </div>
                       
-                      {/* Quantity Controls */}
-                      <div className="flex items-center justify-between mt-4">
-                        <div className="flex items-center bg-gray-50 rounded-full px-2 py-1 border border-gray-100">
-                          <button 
-                            onClick={() => decreaseQuantity(item.id)} 
-                            className="p-1.5 hover:bg-white rounded-full transition-all text-gray-400 hover:text-gray-900 shadow-sm"
-                          >
-                            <MinusIcon className="w-3.5 h-3.5" />
-                          </button>
-                          <span className="px-4 text-xs font-black text-gray-900">{item.quantity}</span>
-                          <button 
-                            onClick={() => addToCart(item)} 
-                            className="p-1.5 hover:bg-white rounded-full transition-all text-gray-400 hover:text-gray-900 shadow-sm"
-                          >
-                            <PlusIcon className="w-3.5 h-3.5" />
-                          </button>
+                      {/* Item Details */}
+                      <div className="flex-grow flex flex-col justify-between py-1">
+                        <div className="space-y-1">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="font-bold text-gray-900 text-sm uppercase tracking-tight leading-tight max-w-[180px]">
+                                {item.name}
+                              </h3>
+                              
+                              {/* Custom Floral Arrangements Selections Map */}
+                              {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
+                                <div className="mt-1.5 flex flex-wrap gap-x-2 gap-y-0.5 text-[10px] text-gray-400 font-medium">
+                                  {Object.entries(item.selectedOptions).map(([key, val]: [string, any]) => (
+                                    <span key={key} className="inline-block bg-slate-50 border border-slate-100 rounded px-1 py-0.5">
+                                      {key}: <span className="text-slate-600 font-semibold">{val}</span>
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            
+                            <button onClick={() => removeFromCart(item.id)} className="text-gray-300 hover:text-red-500 transition-colors pt-0.5 flex-shrink-0">
+                              <TrashIcon className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <p className="font-black text-lg mt-1" style={{ color: primary }}>
+                            Kes {(item.finalPrice ?? 0).toLocaleString()}
+                          </p>
+                        </div>
+                        
+                        {/* Quantity Controls */}
+                        <div className="flex items-center justify-between mt-3">
+                          <div className="flex items-center bg-gray-50 rounded-full px-2 py-1 border border-gray-100">
+                            <button 
+                              onClick={() => decreaseQuantity(item.id)} 
+                              className="p-1.5 hover:bg-white rounded-full transition-all text-gray-400 hover:text-gray-900 shadow-sm"
+                            >
+                              <MinusIcon className="w-3.5 h-3.5" />
+                            </button>
+                            <span className="px-4 text-xs font-black text-gray-900">{item.quantity}</span>
+                            <button 
+                              onClick={() => addToCart(item)} 
+                              className="p-1.5 hover:bg-white rounded-full transition-all text-gray-400 hover:text-gray-900 shadow-sm"
+                            >
+                              <PlusIcon className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))
+                    </motion.div>
+                  );
+                })
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-center">
                   <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6">
@@ -146,7 +176,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
               <div className="space-y-3">
                 <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest text-gray-400">
                   <span>Subtotal</span>
-                  <span className="text-gray-900">${totalPrice?.toFixed(2) || '0.00'}</span>
+                  <span className="text-gray-900">Kes {(totalPrice ?? 0).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest text-gray-400">
                   <span>Shipping</span>
@@ -158,7 +188,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                 <div className="flex flex-col">
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Total Amount</span>
                   <span className="text-4xl font-black text-gray-900 tracking-tighter leading-none italic">
-                    ${totalPrice?.toFixed(2) || '0.00'}
+                    Kes {(totalPrice ?? 0).toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -167,7 +197,8 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => { user ? router.push(`/ecommerce/checkout`) : handleGoogleSignIn() }}
-                className="w-full py-6 rounded-[2rem] text-white font-black uppercase tracking-[0.2em] text-xs transition-all shadow-xl flex items-center justify-center gap-3"
+                disabled={cart.length === 0}
+                className="w-full py-6 rounded-[2rem] text-white font-black uppercase tracking-[0.2em] text-xs transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-40 disabled:pointer-events-none"
                 style={{ backgroundColor: primary }}
               >
                 Checkout Now

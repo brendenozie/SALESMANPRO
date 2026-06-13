@@ -24,6 +24,16 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
     window.location.href = authUrl.toString();
   };
 
+  // Lock body scroll when inventory overlay is active
+  React.useEffect(() => {
+    if (isCartOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isCartOpen]);
+
   return (
     <AnimatePresence>
       {isCartOpen && (
@@ -158,18 +168,21 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
 
               <button
                 onClick={() => { user ? router.push(`/ecommerce/checkout`) : handleGoogleSignIn() }}
-                className="group relative w-full py-6 bg-white text-black font-black uppercase tracking-[0.3em] text-xs transition-all hover:bg-transparent hover:text-white border border-white active:scale-95"
+                disabled={cart.length === 0}
+                className="group relative w-full py-6 bg-white text-black font-black uppercase tracking-[0.3em] text-xs transition-all hover:bg-transparent hover:text-white border border-white active:scale-95 disabled:opacity-40 disabled:pointer-events-none"
                 style={{ clipPath: 'polygon(0% 0%, 100% 0%, 100% 70%, 92% 100%, 0% 100%)' }}
               >
-                <span className="relative z-10 group-hover:text-white">Initialize_Deployment</span>
-                <div className="absolute inset-0 bg-white translate-y-0 group-hover:translate-y-full transition-transform duration-500" />
+                <span className="relative z-10 mix-blend-difference group-hover:text-white">
+                  {user ? 'Initialize_Deployment' : 'Uplink_Identity_To_Deploy'}
+                </span>
+                <div className="absolute inset-0 bg-black translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
               </button>
               
               <div className="flex flex-col items-center gap-2">
                  <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: primary }} />
                     <span className="text-[9px] text-white/20 font-mono uppercase tracking-widest">
-                      Secure_Uplink: Establised
+                      Secure_Uplink: Established
                     </span>
                  </div>
               </div>

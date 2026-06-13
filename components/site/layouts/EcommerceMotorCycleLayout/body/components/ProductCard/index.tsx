@@ -1,8 +1,8 @@
 'use client';
 
-import { MinusIcon, PlusIcon, StarIcon, ShoppingBagIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { MinusIcon, PlusIcon, StarIcon, ShoppingBagIcon, XMarkIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { CheckBadgeIcon } from '@heroicons/react/24/solid';
-import React from 'react';
+import React, { useState } from 'react';
 import { MarketListingForm } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
@@ -12,7 +12,6 @@ import Image from 'next/image';
 
 const loader = ({ src }: { src: string }) => src;
 
-// Elegant, minimal WhatsApp Icon for luxury branding
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24">
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.72.937 3.658 1.435 5.63 1.435h.008c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
@@ -22,13 +21,30 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
-  
-  // Luxury Theme Settings
-  const primary = "#1a1a1a"; 
-  const accent = "#c5a059"; // Champagne Gold
 
-  const quantity = cart.find((item: any) => item.id === product.id)?.quantity || 0;
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+
   const { name, images, finalPrice, sellingPrice } = product;
+
+  // Safe configuration options extraction 
+  const productOptions = typeof product.option === 'string' 
+    ? JSON.parse(product.option || '{}') 
+    : (product.option || {});
+    
+  const hasOptions = Object.keys(productOptions).length > 0;
+
+  // Track state signature variations explicitly
+  const currentKeySignature = hasOptions && Object.keys(selectedOptions).length > 0
+    ? `${product.id}-${JSON.stringify(selectedOptions)}`
+    : product.id;
+
+  const quantity = cart.find((item: any) => {
+    if (item.selectedOptions && Object.keys(item.selectedOptions).length > 0) {
+      return `${item.id}-${JSON.stringify(item.selectedOptions)}` === currentKeySignature;
+    }
+    return item.id === currentKeySignature;
+  })?.quantity || 0;
 
   // WhatsApp Showroom Config
   const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
@@ -37,109 +53,219 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
   const imageSrc = images?.[0] || 'https://via.placeholder.com/600';
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      className="group bg-transparent"
-    >
-      {/* Image Container */}
-      <div className="relative aspect-[4/5] overflow-hidden bg-[#f9f9f9] rounded-sm mb-6 border border-gray-100/50">
-        <Link href={`/motorcycleecommerce/products/${product.id}`}>
-          <Image
-            src={imageSrc}
-            alt={name}
-            loader={loader}
-            fill
-            className="object-cover grayscale-[20%] transition-all duration-1000 group-hover:scale-110 group-hover:grayscale-0"
-            sizes="(max-width: 768px) 100vw, 25vw"
-          />
-        </Link>
+  const handleOpenSelector = () => {
+    if (hasOptions) {
+      const initial: Record<string, string> = {};
+      Object.entries(productOptions).forEach(([key, values]: [string, any]) => {
+        if (Array.isArray(values) && values.length > 0) initial[key] = values[0];
+      });
+      setSelectedOptions(initial);
+      setIsModalOpen(true);
+    } else {
+      addToCart({ ...product });
+    }
+  };
 
-        {/* Floating Luxury Status Badges */}
-        <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-          {sellingPrice > finalPrice && (
-            <div className="bg-black text-white px-3 py-1.5 shadow-xl border-l-2 border-[#c5a059]">
-              <p className="text-[9px] font-bold tracking-[0.2em] uppercase">
-                Limited Edition
-              </p>
+  const handleCommitSelection = () => {
+    addToCart({
+      ...product,
+      selectedOptions: { ...selectedOptions }
+    });
+    setIsModalOpen(false);
+  };
+
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="group bg-transparent"
+      >
+        {/* Image Container */}
+        <div className="relative aspect-[4/5] overflow-hidden bg-[#f9f9f9] dark:bg-stone-900 rounded-sm mb-6 border border-stone-100 dark:border-stone-800/50">
+          <Link href={`/motorcycleecommerce/products/${product.id}`}>
+            <Image
+              src={imageSrc}
+              alt={name}
+              loader={loader}
+              fill
+              className="object-cover grayscale-[20%] transition-all duration-1000 group-hover:scale-110 group-hover:grayscale-0"
+              sizes="(max-width: 768px) 100vw, 25vw"
+            />
+          </Link>
+
+          {/* Floating Luxury Status Badges */}
+          <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+            {sellingPrice > finalPrice && (
+              <div className="bg-black text-white px-3 py-1.5 shadow-xl border-l-2 border-[#c5a059]">
+                <p className="text-[9px] font-bold tracking-[0.2em] uppercase">
+                  Limited Edition
+                </p>
+              </div>
+            )}
+            <div className="bg-white/90 dark:bg-stone-950/90 backdrop-blur-md px-3 py-1.5 flex items-center gap-2 shadow-sm border border-stone-100 dark:border-stone-800">
+               <CheckBadgeIcon className="w-3 h-3 text-[#c5a059]" />
+               <span className="text-[8px] font-black uppercase tracking-tighter text-stone-600 dark:text-stone-400">Certified Authentic</span>
             </div>
-          )}
-          <div className="bg-white/90 backdrop-blur-md px-3 py-1.5 flex items-center gap-2 shadow-sm border border-gray-100">
-             <CheckBadgeIcon className="w-3 h-3 text-[#c5a059]" />
-             <span className="text-[8px] font-black uppercase tracking-tighter text-gray-600">Certified Authentic</span>
+          </div>
+
+          {/* Showroom WhatsApp Link */}
+          <a 
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute top-4 right-4 z-20 p-2.5 bg-white dark:bg-stone-900 shadow-2xl text-[#25D366] rounded-full transition-all duration-500 hover:scale-110 border border-stone-100 dark:border-stone-800"
+            title="Speak with a Consultant"
+          >
+            <WhatsAppIcon className="w-4 h-4" />
+          </a>
+
+          {/* Quick Add Overlay - Slide Up Transition */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+            {quantity === 0 ? (
+              <button
+                onClick={handleOpenSelector}
+                className="w-full bg-white text-black py-4 text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-[#c5a059] hover:text-white transition-all duration-300"
+              >
+                <ShoppingBagIcon className="w-4 h-4" /> {hasOptions ? 'Configure Build' : 'Secure Purchase'}
+              </button>
+            ) : (
+              <div className="flex items-center justify-between bg-white dark:bg-stone-900 p-1 shadow-2xl border border-stone-200 dark:border-stone-800">
+                <button 
+                  onClick={() => decreaseQuantity(currentKeySignature)} 
+                  className="p-3 text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
+                >
+                  <MinusIcon className="w-4 h-4" />
+                </button>
+                <span className="font-black text-xs tracking-widest text-stone-900 dark:text-stone-100">BAG: {quantity}</span>
+                <button 
+                  onClick={() => addToCart(hasOptions ? { ...product, selectedOptions } : { ...product })} 
+                  className="p-3 text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
+                >
+                  <PlusIcon className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Showroom WhatsApp Link */}
-        <a 
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="absolute top-4 right-4 z-20 p-2.5 bg-white shadow-2xl text-[#25D366] rounded-full transition-all duration-500 hover:scale-110 border border-gray-100"
-          title="Speak with a Consultant"
-        >
-          <WhatsAppIcon className="w-4 h-4" />
-        </a>
+        {/* Info Container */}
+        <div className="text-center px-4">
+          <div className="flex justify-center items-center gap-1.5 mb-3">
+              <div className="flex text-[#c5a059]">
+                {[...Array(5)].map((_, i) => <StarIcon key={i} className="w-2.5 h-2.5 fill-current" />)}
+              </div>
+              <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest border-l border-stone-200 dark:border-stone-800 pl-2">Premium Rating</span>
+          </div>
+          
+          <Link href={`/motorcycleecommerce/products/${product.id}`}>
+            <h4 className="text-lg font-serif italic text-stone-900 dark:text-stone-100 group-hover:text-[#c5a059] transition-colors duration-500 line-clamp-1">
+              {name}
+            </h4>
+          </Link>
 
-        {/* Quick Add Overlay - Slide Up Transition */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out bg-gradient-to-t from-black/80 to-transparent">
-          {quantity === 0 ? (
-            <button
-              onClick={() => addToCart(product)}
-              className="w-full bg-white text-black py-4 text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-[#c5a059] hover:text-white transition-all duration-300"
-            >
-              <ShoppingBagIcon className="w-4 h-4" /> Secure Purchase
-            </button>
-          ) : (
-            <div className="flex items-center justify-between bg-white/95 backdrop-blur-sm p-1 shadow-2xl">
-              <button onClick={() => decreaseQuantity(product.id)} className="p-3 hover:bg-gray-100 transition-colors"><MinusIcon className="w-4 h-4" /></button>
-              <span className="font-black text-xs tracking-widest text-gray-900">BAG: {quantity}</span>
-              <button onClick={() => addToCart(product)} className="p-3 hover:bg-gray-100 transition-colors"><PlusIcon className="w-4 h-4" /></button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Info Container */}
-      <div className="text-center px-4">
-        <div className="flex justify-center items-center gap-1.5 mb-3">
-            <div className="flex text-[#c5a059]">
-              {[...Array(5)].map((_, i) => <StarIcon key={i} className="w-2.5 h-2.5 fill-current" />)}
-            </div>
-            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest border-l border-gray-200 pl-2">Premium Rating</span>
-        </div>
-        
-        <Link href={`/motorcycleecommerce/products/${product.id}`}>
-          <h4 className="text-lg font-serif italic text-gray-900 group-hover:text-[#c5a059] transition-colors duration-500 line-clamp-1">
-            {name}
-          </h4>
-        </Link>
-
-        <div className="mt-3 flex items-baseline justify-center gap-3">
-          <span className="text-xl font-light tracking-[0.1em] text-gray-900">
-            Kes {(finalPrice ?? 0).toLocaleString()}
-          </span>
-          {sellingPrice > finalPrice && (
-            <span className="text-xs line-through text-gray-300 font-medium">
-              Kes {sellingPrice.toLocaleString()}
+          <div className="mt-3 flex items-baseline justify-center gap-3">
+            <span className="text-xl font-light tracking-[0.1em] text-stone-900 dark:text-white">
+              Kes {(finalPrice ?? 0).toLocaleString()}
             </span>
-          )}
-        </div>
+            {sellingPrice > finalPrice && (
+              <span className="text-xs line-through text-stone-300 dark:text-stone-600 font-medium">
+                Kes {sellingPrice.toLocaleString()}
+              </span>
+            )}
+          </div>
 
-        {/* Showroom Link Footer */}
-        <div className="mt-4 flex justify-center">
-            <a 
-              href={whatsappUrl} 
-              target="_blank"
-              className="text-[9px] font-black uppercase tracking-[0.2em] text-green-500 hover:text-black transition-colors py-2 border-b border-transparent hover:border-[#c5a059] flex gap-1 "
-            >
-              <WhatsAppIcon className="w-3 h-3 inline-block mr-1" /> Order Via Whatsapp
-            </a>
+          {/* Showroom Link Footer */}
+          <div className="mt-4 flex justify-center">
+              <a 
+                href={whatsappUrl} 
+                target="_blank"
+                className="text-[9px] font-black uppercase tracking-[0.2em] text-green-500 hover:text-black dark:hover:text-white transition-colors py-2 border-b border-transparent hover:border-[#c5a059] flex gap-1 "
+              >
+                <WhatsAppIcon className="w-3 h-3 inline-block mr-1" /> Order Via Whatsapp
+              </a>
+          </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+
+      {/* Luxury Spec Config Modal */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsModalOpen(false)}
+              className="absolute inset-0 bg-black/70 backdrop-blur-md"
+            />
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.98, y: 10 }}
+              className="relative w-full max-w-md overflow-hidden bg-white dark:bg-[#0D0D0D] border border-stone-200 dark:border-stone-800 rounded-none p-8 shadow-2xl z-10 text-stone-900 dark:text-stone-100"
+            >
+              {/* Header */}
+              <div className="flex items-start justify-between border-b border-stone-100 dark:border-stone-900 pb-5 mb-6">
+                <div>
+                  <span className="text-[9px] font-bold tracking-[0.2em] text-[#c5a059] uppercase">Bespoke Specifications</span>
+                  <h3 className="text-xl font-serif italic mt-1">{name}</h3>
+                </div>
+                <button 
+                  onClick={() => setIsModalOpen(false)}
+                  className="p-1 hover:bg-stone-50 dark:hover:bg-stone-900 transition-colors text-stone-400 hover:text-stone-900 dark:hover:text-white"
+                >
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Specs Options Grid Matrix Layout */}
+              <div className="space-y-6 max-h-[55vh] overflow-y-auto pr-1">
+                {Object.entries(productOptions).map(([optionKey, values]: [string, any]) => (
+                  <div key={optionKey} className="space-y-2">
+                    <label className="text-[9px] font-black uppercase tracking-[0.15em] text-stone-400 block">
+                      Select {optionKey}
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {Array.isArray(values) && values.map((val: string) => {
+                        const isSelected = selectedOptions[optionKey] === val;
+                        return (
+                          <button
+                            key={val}
+                            type="button"
+                            onClick={() => setSelectedOptions(prev => ({ ...prev, [optionKey]: val }))}
+                            className={`p-3 text-left border text-[11px] font-bold uppercase transition-all flex items-center justify-between tracking-wider rounded-none ${
+                              isSelected
+                                ? 'bg-black dark:bg-[#c5a059] border-black dark:border-[#c5a059] text-white'
+                                : 'bg-stone-50 dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 hover:border-stone-400'
+                            }`}
+                          >
+                            <span className="truncate">{val}</span>
+                            {isSelected && <CheckIcon className="w-3.5 h-3.5 text-white stroke-[3] flex-shrink-0 ml-2" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Confirm Selection Actions Button */}
+              <div className="border-t border-stone-100 dark:border-stone-900 pt-6 mt-6">
+                <button
+                  onClick={handleCommitSelection}
+                  className="w-full py-4 bg-[#1a1a1a] hover:bg-[#c5a059] dark:bg-stone-900 dark:hover:bg-[#c5a059] text-white font-black uppercase tracking-[0.25em] text-[10px] transition-all shadow-xl active:scale-[0.99]"
+                >
+                  Add Configured Build to Bag
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

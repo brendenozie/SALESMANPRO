@@ -34,7 +34,8 @@ export default async function ProductListPage({ params, searchParams }: {
         name: true,
         finalPrice: true,
         sellingPrice: true,
-        images: true
+        images: true,
+        option:true
       }
     }),
 

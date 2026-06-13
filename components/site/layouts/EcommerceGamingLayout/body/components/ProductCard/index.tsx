@@ -1,7 +1,7 @@
 'use client';
 
-import { MinusIcon, PlusIcon, StarIcon, TrashIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/solid';
-import React from 'react';
+import { MinusIcon, PlusIcon, StarIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import React, { useState } from 'react';
 import { MarketListingForm } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
@@ -22,8 +22,14 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
   
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+
   const quantity = cart.find((item: any) => item.id === product.id)?.quantity || 0;
   const { name, images, finalPrice, sellingPrice } = product;
+
+  // Inspect standard variants array strings or complex dynamic option forms 
+  const hasOptions = product.variants && product.variants.length > 0;
 
   // WhatsApp "Tech Support" Config
   const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
@@ -35,111 +41,230 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
     
   const imageSrc = images?.[0] || 'https://via.placeholder.com/300';
 
+  // Initialize standard options matching configuration shapes if none are locked yet
+  React.useEffect(() => {
+    if (hasOptions && product.variants) {
+      const initialOptions: Record<string, string> = {};
+      product.variants.forEach((v: any) => {
+        if (v.name && v.options && v.options.length > 0) {
+          initialOptions[v.name] = v.options[0];
+        }
+      });
+      setSelectedOptions(initialOptions);
+    }
+  }, [product.variants, hasOptions]);
+
+  const handleEquipClick = () => {
+    if (hasOptions) {
+      setIsModalOpen(true);
+    } else {
+      addToCart({ ...product, selectedOptions: {} });
+    }
+  };
+
+  const handleModalConfirm = () => {
+    addToCart({ ...product, selectedOptions });
+    setIsModalOpen(false);
+  };
+
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true }}
-      className="group relative flex flex-col bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 hover:border-red-600/50 dark:hover:border-red-600/50 transition-all duration-300 shadow-sm hover:shadow-xl overflow-hidden"
-    >
-      {/* Tactical Top Bar */}
-      <div className="flex justify-between items-center p-3 border-b border-zinc-100 dark:border-white/5 bg-zinc-50 dark:bg-black/40">
-        <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500 uppercase tracking-tighter">
-          SEC_ID: {product.id.slice(-8).toUpperCase()}
-        </span>
-        <div className="flex gap-2">
-          <a 
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[#25D366] hover:text-white transition-colors"
-            title="Request Tech Specs"
-          >
-            <WhatsAppIcon className="w-4 h-4" />
-          </a>
-          {discount && (
-            <div className="bg-red-600 text-white text-[10px] font-black px-2 py-0.5 skew-x-[-12deg]">
-              -{discount}%
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Image Section */}
-      <Link href={`/gamingecommerce/products/${product.id}`} className="relative h-64 w-full overflow-hidden bg-zinc-100 dark:bg-black">
-        <Image
-          src={imageSrc}
-          alt={name}
-          fill
-          loader={loader}
-          className="object-contain p-4 opacity-90 dark:opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-white/40 via-transparent to-transparent dark:from-zinc-900 dark:via-transparent dark:to-transparent" />
-      </Link>
-
-      {/* Product Info */}
-      <div className="p-5 flex flex-col flex-grow">
-        <div className="flex justify-between items-start mb-1">
-          <h4 className="text-lg font-black italic text-zinc-900 dark:text-white uppercase tracking-tighter group-hover:text-red-500 transition-colors truncate">
-            {name}
-          </h4>
-        </div>
-        
-        <div className="flex items-center justify-between mt-1 mb-4">
-          <div className="flex items-center gap-2">
-            <StarIcon className="w-3 h-3 text-red-600" />
-            <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 uppercase">Class: Premium_Loot</span>
-          </div>
-          <a 
-            href={whatsappUrl}
-            target="_blank"
-            className="text-[9px] font-mono font-bold text-[#25D366] hover:text-red-500 transition-colors flex items-center gap-1"
-          >
-            <WhatsAppIcon className="w-3 h-3" /> Order Via WhatsApp
-          </a>
-        </div>
-
-        <div className="flex items-baseline gap-3 mb-6">
-          <span className="text-2xl font-black italic text-zinc-900 dark:text-white">
-            Kes {(finalPrice ?? 0).toLocaleString()}
+    <>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        className="group relative flex flex-col bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 hover:border-red-600/50 dark:hover:border-red-600/50 transition-all duration-300 shadow-sm hover:shadow-xl overflow-hidden"
+      >
+        {/* Tactical Top Bar */}
+        <div className="flex justify-between items-center p-3 border-b border-zinc-100 dark:border-white/5 bg-zinc-50 dark:bg-black/40">
+          <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500 uppercase tracking-tighter">
+            SEC_ID: {product.id.slice(-8).toUpperCase()}
           </span>
-          {sellingPrice && sellingPrice > (finalPrice ?? 0) && (
-            <span className="text-sm line-through text-zinc-400 dark:text-zinc-600 font-mono">
-              Kes {sellingPrice.toLocaleString()}
-            </span>
-          )}
+          <div className="flex gap-2">
+            <a 
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#25D366] hover:text-white transition-colors"
+              title="Request Tech Specs"
+            >
+              <WhatsAppIcon className="w-4 h-4" />
+            </a>
+            {discount && (
+              <div className="bg-red-600 text-white text-[10px] font-black px-2 py-0.5 skew-x-[-12deg]">
+                -{discount}%
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Action Button - Industrial Style */}
-        <div className="mt-auto">
-          <AnimatePresence mode="wait">
-            {quantity > 0 ? (
-              <motion.div 
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center bg-zinc-100 dark:bg-black border border-zinc-200 dark:border-white/10 p-1"
-              >
-                <button onClick={() => decreaseQuantity(product.id)} className="p-2 hover:text-red-500 text-zinc-900 dark:text-white transition-colors">
-                  {quantity === 1 ? <TrashIcon className="h-4 w-4" /> : <MinusIcon className="h-4 w-4" />}
-                </button>
-                <div className="flex-1 text-center font-mono font-bold text-zinc-900 dark:text-white">{quantity}</div>
-                <button onClick={() => addToCart(product)} className="p-2 hover:text-red-500 text-zinc-900 dark:text-white transition-colors">
-                  <PlusIcon className="h-4 w-4" />
-                </button>
-              </motion.div>
-            ) : (
-              <button
-                onClick={() => addToCart(product)}
-                className="w-full py-3 bg-zinc-900 dark:bg-white text-white dark:text-black font-black uppercase tracking-tighter italic hover:bg-red-600 hover:text-white transition-all shadow-md active:scale-95"
-                style={{ clipPath: 'polygon(0 0, 100% 0, 95% 100%, 0% 100%)' }}
-              >
-                EQUIP ITEM
-              </button>
+        {/* Image Section */}
+        <Link href={`/gamingecommerce/products/${product.id}`} className="relative h-64 w-full overflow-hidden bg-zinc-100 dark:bg-black">
+          <Image
+            src={imageSrc}
+            alt={name}
+            fill
+            loader={loader}
+            className="object-contain p-4 opacity-90 dark:opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-white/40 via-transparent to-transparent dark:from-zinc-900 dark:via-transparent dark:to-transparent" />
+        </Link>
+
+        {/* Product Info */}
+        <div className="p-5 flex flex-col flex-grow">
+          <div className="flex justify-between items-start mb-1">
+            <h4 className="text-lg font-black italic text-zinc-900 dark:text-white uppercase tracking-tighter group-hover:text-red-500 transition-colors truncate">
+              {name}
+            </h4>
+          </div>
+          
+          <div className="flex items-center justify-between mt-1 mb-4">
+            <div className="flex items-center gap-2">
+              <StarIcon className="w-3 h-3 text-red-600" />
+              <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 uppercase">Class: Premium_Loot</span>
+            </div>
+            <a 
+              href={whatsappUrl}
+              target="_blank"
+              className="text-[9px] font-mono font-bold text-[#25D366] hover:text-red-500 transition-colors flex items-center gap-1"
+            >
+              <WhatsAppIcon className="w-3 h-3" /> Order Via WhatsApp
+            </a>
+          </div>
+
+          <div className="flex items-baseline gap-3 mb-6">
+            <span className="text-2xl font-black italic text-zinc-900 dark:text-white">
+              Kes {(finalPrice ?? 0).toLocaleString()}
+            </span>
+            {sellingPrice && sellingPrice > (finalPrice ?? 0) && (
+              <span className="text-sm line-through text-zinc-400 dark:text-zinc-600 font-mono">
+                Kes {sellingPrice.toLocaleString()}
+              </span>
             )}
-          </AnimatePresence>
+          </div>
+
+          {/* Action Button - Industrial Style */}
+          <div className="mt-auto">
+            <AnimatePresence mode="wait">
+              {quantity > 0 ? (
+                <motion.div 
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center bg-zinc-100 dark:bg-black border border-zinc-200 dark:border-white/10 p-1"
+                >
+                  <button onClick={() => decreaseQuantity(product.id)} className="p-2 hover:text-red-500 text-zinc-900 dark:text-white transition-colors">
+                    {quantity === 1 ? <TrashIcon className="h-4 w-4" /> : <MinusIcon className="h-4 w-4" />}
+                  </button>
+                  <div className="flex-1 text-center font-mono font-bold text-zinc-900 dark:text-white">{quantity}</div>
+                  <button onClick={handleEquipClick} className="p-2 hover:text-red-500 text-zinc-900 dark:text-white transition-colors">
+                    <PlusIcon className="h-4 w-4" />
+                  </button>
+                </motion.div>
+              ) : (
+                <button
+                  onClick={handleEquipClick}
+                  className="w-full py-3 bg-zinc-900 dark:bg-white text-white dark:text-black font-black uppercase tracking-tighter italic hover:bg-red-600 hover:text-white transition-all shadow-md active:scale-95"
+                  style={{ clipPath: 'polygon(0 0, 100% 0, 95% 100%, 0% 100%)' }}
+                >
+                  EQUIP ITEM
+                </button>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+
+      {/* Option Customization Tactical Overlay HUD */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 overflow-x-hidden overflow-y-auto">
+            {/* Backdrop layer skin */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsModalOpen(false)}
+              className="fixed inset-0 bg-zinc-950/80 backdrop-blur-sm"
+            />
+
+            {/* Tactical Spec Card Panel */}
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="relative w-full max-w-md bg-zinc-900 border border-zinc-800 text-white p-6 shadow-2xl overflow-hidden"
+            >
+              {/* Corner industrial crosshairs styling */}
+              <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-red-600" />
+              <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-red-600" />
+              <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-red-600" />
+              <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-red-600" />
+
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <span className="text-[9px] font-mono tracking-widest uppercase text-red-500 block mb-1">
+                    // CONFIGURATION_REQUIRED
+                  </span>
+                  <h3 className="text-xl font-black italic uppercase tracking-tight">{name}</h3>
+                </div>
+                <button 
+                  onClick={() => setIsModalOpen(false)}
+                  className="p-1 text-zinc-500 hover:text-white transition-colors"
+                >
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Dynamic Option Variants Layout Selection HUD */}
+              <div className="space-y-4 my-6">
+                {product.variants?.map((v: any) => (
+                  <div key={v.name} className="space-y-1.5">
+                    <label className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block">
+                      Select {v.name}:
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {v.options?.map((opt: string) => {
+                        const isSelected = selectedOptions[v.name] === opt;
+                        return (
+                          <button
+                            key={opt}
+                            onClick={() => setSelectedOptions(prev => ({ ...prev, [v.name]: opt }))}
+                            className={`p-2.5 text-xs font-mono font-bold tracking-tight uppercase text-left border transition-all ${
+                              isSelected 
+                                ? 'bg-red-600 text-white border-red-600' 
+                                : 'bg-zinc-950 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-white'
+                            }`}
+                          >
+                            {opt}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Operational Trigger Footers */}
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <Link
+                  href={`/gamingecommerce/products/${product.id}`}
+                  className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-mono text-xs font-black uppercase text-center tracking-tight"
+                >
+                  VIEW DETAILS
+                </Link>
+                <button
+                  onClick={handleModalConfirm}
+                  className="w-full py-3 bg-white text-black font-black uppercase tracking-tighter italic hover:bg-red-600 hover:text-white transition-all shadow-md"
+                  style={{ clipPath: 'polygon(0 0, 100% 0, 92% 100%, 0% 100%)' }}
+                >
+                  LOCK SPEC & EQUIP
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

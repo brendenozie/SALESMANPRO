@@ -18,10 +18,11 @@ const StateContext = createContext<AppContextType | undefined>(undefined);
 interface CartItem {
   id: string;
   title?: string;
+  name?: string;
   finalPrice: number;
   quantity: number;
-  selectedSize?: string | null;
-  [key: string]: any; // allows extra fields
+  selectedOptions?: Record<string, string> | null;
+  [key: string]: any; 
 }
 
 interface ClickState {
@@ -35,8 +36,8 @@ interface AppContextType {
   user: any;
   cart: CartItem[];
   addToCart: (product: CartItem) => void;
-  removeFromCart: (id: string) => void;
-  decreaseQuantity: (id: string) => void;
+  removeFromCart: (target: string | CartItem) => void;
+  decreaseQuantity: (target: string | CartItem) => void;
   clearCart: () => void;
 
   currentColor: string;
@@ -62,6 +63,7 @@ interface AppContextType {
 
   isLoading: boolean;
   cartSubtotal: number;
+  totalPrice: number; // Added to match consumer expectations in your custom templates
 
   isOpen: boolean;
   setIsOpen: (value: boolean) => void;
@@ -75,8 +77,6 @@ interface AppContextType {
   isCartOpen: boolean;
   setIsCartOpen: (value: boolean) => void;
 }
-
-
 
 const initialState: ClickState = {
   chat: false,
@@ -95,7 +95,6 @@ const progress = new ProgressBar({
 interface ProviderProps {
   children: ReactNode;
 }
-
 
 export const ContextProvider = ({ children }: ProviderProps) => {
   const { data: session } = useSession();
@@ -122,7 +121,6 @@ export const ContextProvider = ({ children }: ProviderProps) => {
   });
 
   const [isClicked, setIsClicked] = useState<ClickState>(initialState);
-
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -144,7 +142,7 @@ export const ContextProvider = ({ children }: ProviderProps) => {
     setUser(session?.user || null);
   }, [session]);
 
-  // router loading indicator
+  // Router loading indicator
   useEffect(() => {
     const start = () => setIsLoading(true);
     const end = () => setIsLoading(false);
@@ -160,7 +158,7 @@ export const ContextProvider = ({ children }: ProviderProps) => {
     };
   }, []);
 
-  // persist cart + menu
+  // Persist cart + menu
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem("cart", JSON.stringify(cart));
@@ -168,44 +166,71 @@ export const ContextProvider = ({ children }: ProviderProps) => {
     }
   }, [cart, activeMenu]);
 
-  // dark/light mode toggle
+  // Dark/Light mode toggle
   useEffect(() => {
     if (isDarkMode) document.body.classList.add("dark");
     else document.body.classList.remove("dark");
   }, [isDarkMode]);
 
+  // Deterministic identifier string to safely evaluate multi-variant line equality
+  const getLineHash = (item: CartItem) => {
+    if (!item.selectedOptions) return `${item.id}-default`;
+    const sortedOptionsHash = Object.entries(item.selectedOptions)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, v]) => `${k}:${v}`)
+      .join("|");
+    return `${item.id}-${sortedOptionsHash}`;
+  };
+
   // CART FUNCTIONS
   const addToCart = (product: CartItem) => {
     setCart((prevCart) => {
-      const exists = prevCart.find((item) => item.id === product.id);
+      const targetHash = getLineHash(product);
+      const exists = prevCart.find((item) => getLineHash(item) === targetHash);
 
       if (exists) {
         toast.success("Increased quantity!");
         return prevCart.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
+          getLineHash(item) === targetHash
+            ? { ...item, quantity: item.quantity + (product.quantity || 1) }
             : item
         );
       }
 
       toast.success("Added to cart!");
-      return [...prevCart, { ...product, quantity: 1 }];
+      return [...prevCart, { ...product, quantity: product.quantity || 1 }];
     });
   };
 
-  const removeFromCart = (id: string) => {
-    setCart((prev) => prev.filter((item) => item.id !== id));
+  const removeFromCart = (target: string | CartItem) => {
+    setCart((prev) => {
+      if (typeof target === "string") {
+        // Fallback for simple scalar components deleting all matching root IDs
+        return prev.filter((item) => item.id !== target);
+      }
+      const targetHash = getLineHash(target);
+      return prev.filter((item) => getLineHash(item) !== targetHash);
+    });
     toast.error("Removed from cart!");
   };
 
-  const decreaseQuantity = (id: string) => {
-    setCart((prev) =>
-      prev.map((item) =>
-        item.id === id
+  const decreaseQuantity = (target: string | CartItem) => {
+    setCart((prev) => {
+      if (typeof target === "string") {
+        return prev.map((item) =>
+          item.id === target
+            ? { ...item, quantity: Math.max(item.quantity - 1, 1) }
+            : item
+        );
+      }
+      
+      const targetHash = getLineHash(target);
+      return prev.map((item) =>
+        getLineHash(item) === targetHash
           ? { ...item, quantity: Math.max(item.quantity - 1, 1) }
           : item
-      )
-    );
+      );
+    });
     toast("Decreased quantity.", { icon: "ℹ️" });
   };
 
@@ -263,6 +288,7 @@ export const ContextProvider = ({ children }: ProviderProps) => {
 
     isLoading,
     cartSubtotal,
+    totalPrice: cartSubtotal, // Maps explicitly to both tracking naming schemas smoothly
 
     isOpen,
     setIsOpen,
@@ -278,13 +304,11 @@ export const ContextProvider = ({ children }: ProviderProps) => {
   };
 
   return (
-  <StateContext.Provider value={value}>
-    {children}
-  </StateContext.Provider>
-);
-
+    <StateContext.Provider value={value}>
+      {children}
+    </StateContext.Provider>
+  );
 };
-
 
 export const useStateContext = () => {
   const context = useContext(StateContext);
@@ -293,4 +317,3 @@ export const useStateContext = () => {
   }
   return context;
 };
-

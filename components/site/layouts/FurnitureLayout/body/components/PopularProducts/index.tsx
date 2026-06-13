@@ -66,7 +66,7 @@ export default function WeeklyProducts({ id }: { id: string }) {
     ]
   };
 
-  if (isLoading) return <SkeletonGrid count={8} />;
+  if (isLoading) <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>;
   if (error || !data?.data?.length) return null;
 
   return (

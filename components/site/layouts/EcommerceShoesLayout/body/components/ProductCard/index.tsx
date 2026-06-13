@@ -10,11 +10,13 @@ import {
   StarIcon, 
   TrashIcon, 
   XMarkIcon, 
-  ShoppingBagIcon 
+  ShoppingBagIcon,
+  ArrowsRightLeftIcon
 } from '@heroicons/react/24/solid';
 import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
+import QuickViewModal from '../QuickViewModal';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -26,7 +28,7 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 );
 
 export default function ProductCard({ product }: { product: MarketListingForm }) {
-  const [isSelectingOptions, setIsSelectingOptions] = useState(false);
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   
   const { cart, addToCart, decreaseQuantity } = useStateContext();
@@ -34,7 +36,6 @@ export default function ProductCard({ product }: { product: MarketListingForm })
   
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#18181b'; 
 
-  // 1. Group database variant options dynamically by their categories
   const groupedVariants = useMemo(() => {
     const options = (product.option || []) as VariantOptionItem[];
     return options.reduce((acc, item) => {
@@ -45,9 +46,7 @@ export default function ProductCard({ product }: { product: MarketListingForm })
   }, [product.option]);
 
   const hasVariants = Object.keys(groupedVariants).length > 0;
-  const allOptionsSelected = Object.keys(groupedVariants).every((cat) => selectedOptions[cat]);
 
-  // 2. Real-time cost updates combining base pricing and option surcharges
   const calculatedPrices = useMemo(() => {
     const baseFinalPrice = product.finalPrice ?? product.sellingPrice ?? 0;
     const baseSellingPrice = product.sellingPrice ?? 0;
@@ -66,7 +65,6 @@ export default function ProductCard({ product }: { product: MarketListingForm })
     };
   }, [selectedOptions, groupedVariants, product.finalPrice, product.sellingPrice]);
 
-  // 3. Precise item lookups matching exact chosen specification variants
   const quantity = cart.find((item: any) => {
     if (item.id !== product.id) return false;
     if (hasVariants) {
@@ -76,7 +74,6 @@ export default function ProductCard({ product }: { product: MarketListingForm })
     return true;
   })?.quantity || 0;
 
-  // Build descriptive options string for WhatsApp linking
   const optionsSummary = Object.entries(selectedOptions)
     .map(([cat, val]) => `${cat}: ${val}`)
     .join(', ');
@@ -89,11 +86,6 @@ export default function ProductCard({ product }: { product: MarketListingForm })
 
   const handleAddToCart = (e?: React.MouseEvent) => {
     e?.preventDefault(); 
-    if (hasVariants && !allOptionsSelected) {
-      setIsSelectingOptions(true);
-      return;
-    }
-    
     addToCart({ 
       ...product, 
       finalPrice: calculatedPrices.finalPrice, 
@@ -103,208 +95,148 @@ export default function ProductCard({ product }: { product: MarketListingForm })
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="relative flex flex-col bg-white dark:bg-zinc-900 rounded-[2rem] p-3 sm:p-4 border border-zinc-100 dark:border-zinc-800 shadow-sm transition-all duration-300 md:hover:shadow-xl md:hover:shadow-black/[0.04]"
-    >
-      {/* BADGE PRODUCT DATA TAGS */}
-      <div className="absolute top-5 left-5 z-20 flex flex-col gap-1.5 pointer-events-none">
-        {product.isNewArrival && (
-          <span className="bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm">
-            NEW
-          </span>
-        )}
-        {product.isDiscounted && product.sellingPrice && (
-          <span className="bg-red-500 text-white text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm">
-            -{Math.round(((product.sellingPrice - (product.finalPrice || 0)) / product.sellingPrice) * 100)}%
-          </span>
-        )}
-      </div>
-
-      {/* FLOATING ACTION OVERLAYS */}
-      <motion.a 
-        whileTap={{ scale: 0.9 }}
-        href={whatsappUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="absolute top-5 right-5 z-20 p-2.5 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md rounded-full shadow-md text-[#25D366] border border-zinc-100 dark:border-zinc-700"
-        aria-label="Inquire via WhatsApp"
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="relative flex flex-col bg-white dark:bg-zinc-900 rounded-[2rem] p-3 sm:p-4 border border-zinc-100 dark:border-zinc-800 shadow-sm transition-all duration-300 md:hover:shadow-xl md:hover:shadow-black/[0.04]"
       >
-        <WhatsAppIcon className="w-4 h-4 sm:w-5 h-5" />
-      </motion.a>
-
-      {/* PRODUCT MEDIA CONTAINER */}
-      <div className="relative aspect-square w-full overflow-hidden rounded-[1.5rem] bg-zinc-50 dark:bg-zinc-800/30 group">
-        <Link href={`/ecommerceshoes/products/${product.id}`} className="block w-full h-full">
-          <Image
-            src={(product.images?.[0] as any)?.url || product.images?.[0] || 'https://via.placeholder.com/600'}
-            alt={product.name}
-            loader={loader}
-            fill
-            sizes="(max-width: 640px) 50vw, 33vw"
-            className="object-contain p-4 transition-transform duration-500 md:group-hover:scale-105"
-            priority={product.isNewArrival}
-          />
-        </Link>
-
-        {/* GLASSMORPHIC DYNAMIC OPTIONS SHEETS */}
-        <AnimatePresence>
-          {isSelectingOptions && (
-            <motion.div 
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: "spring", damping: 25, stiffness: 220 }}
-              className="absolute inset-0 z-30 bg-white/85 dark:bg-zinc-950/85 backdrop-blur-md p-4 flex flex-col justify-end overflow-y-auto no-scrollbar"
-            >
-              <button 
-                onClick={() => setIsSelectingOptions(false)}
-                className="absolute top-3 right-3 p-2 bg-white dark:bg-zinc-800 rounded-full shadow-sm border border-zinc-100 dark:border-zinc-700 z-10"
-              >
-                <XMarkIcon className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />
-              </button>
-              
-              <div className="w-full space-y-4 pt-8">
-                {Object.entries(groupedVariants).map(([category, items]) => (
-                  <div key={category} className="space-y-1.5">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500 text-center">
-                      Choose {category}
-                    </p>
-                    <div className="flex flex-wrap justify-center gap-1.5">
-                      {items.map((opt) => {
-                        const isSelected = selectedOptions[category] === opt.name;
-                        return (
-                          <button
-                            key={opt.name}
-                            type="button"
-                            onClick={() => setSelectedOptions({ ...selectedOptions, [category]: opt.name })}
-                            style={{ 
-                              borderColor: isSelected ? primaryColor : undefined,
-                              backgroundColor: isSelected ? primaryColor : undefined 
-                            }}
-                            className={`px-3 py-1.5 rounded-xl border text-xs font-black transition-all ${
-                              isSelected 
-                                ? 'text-white shadow-sm shadow-black/10 scale-[1.02]' 
-                                : 'border-zinc-200 dark:border-zinc-700 bg-white/60 dark:bg-zinc-900/60 text-zinc-800 dark:text-zinc-200 active:bg-zinc-100'
-                            }`}
-                          >
-                            {opt.name}
-                            {opt.extraPrice > 0 && ` (+KES ${opt.extraPrice})`}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-
-                <button
-                  disabled={!allOptionsSelected}
-                  onClick={() => {
-                    handleAddToCart();
-                    setIsSelectingOptions(false);
-                  }}
-                  style={{ backgroundColor: allOptionsSelected ? primaryColor : undefined }}
-                  className="w-full py-3.5 bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 rounded-xl font-black text-[10px] uppercase tracking-widest disabled:opacity-40 transition-opacity shadow-lg"
-                >
-                  Confirm Choice
-                </button>
-              </div>
-            </motion.div>
+        {/* BADGE PRODUCT DATA TAGS */}
+        <div className="absolute top-5 left-5 z-20 flex flex-col gap-1.5 pointer-events-none">
+          {product.isNewArrival && (
+            <span className="bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm">
+              NEW
+            </span>
           )}
-        </AnimatePresence>
-      </div>
-
-      {/* METRIC DESCRIPTIVE BLOCK */}
-      <div className="pt-4 px-1 pb-1 flex flex-col flex-grow">
-        <div className="flex justify-between items-start gap-2">
-          <div className="flex-1 min-w-0">
-            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 truncate mb-0.5">
-              {product.category?.name || "Premium Collection"}
-            </p>
-            <h4 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100 leading-tight line-clamp-2">
-              {product.name}
-            </h4>
-          </div>
-          
-          <div className="flex items-center gap-0.5 bg-zinc-50 dark:bg-zinc-800/60 px-2 py-1 rounded-md border border-zinc-100 dark:border-zinc-700/50 flex-shrink-0">
-            <StarIcon className="w-3 h-3 text-amber-400" />
-            <span className="text-[10px] font-black text-zinc-700 dark:text-zinc-300">4.8</span>
-          </div>
-        </div>
-
-        {/* PRICING CONTROL INTERFACE */}
-        <div className="mt-auto pt-3 flex items-baseline gap-2">
-          <span className="text-base sm:text-lg font-black text-zinc-950 dark:text-white">
-            KES {calculatedPrices.finalPrice.toLocaleString()}
-          </span>
-          {product.isDiscounted && calculatedPrices.sellingPrice && (
-            <span className="text-xs font-medium text-zinc-400 line-through">
-              KES {calculatedPrices.sellingPrice.toLocaleString()}
+          {product.isDiscounted && product.sellingPrice && (
+            <span className="bg-red-500 text-white text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm">
+              -{Math.round(((product.sellingPrice - (product.finalPrice || 0)) / product.sellingPrice) * 100)}%
             </span>
           )}
         </div>
 
-        {/* TRANSACTION ACTION CONTROLLER */}
-        <div className="mt-4">
-          <AnimatePresence mode="wait">
-            {quantity > 0 ? (
-              <motion.div 
-                key="qty-control"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-800/50 p-1 rounded-xl border border-zinc-200/60 dark:border-zinc-700/60"
-              >
-                <div className="flex items-center gap-1 w-full justify-between">
-                  <motion.button 
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => decreaseQuantity(product.id)} 
-                    className="p-2.5 bg-white dark:bg-zinc-700 rounded-lg shadow-sm border border-zinc-100 dark:border-zinc-600 flex items-center justify-center min-w-[36px]"
-                  >
-                    {quantity === 1 ? (
-                      <TrashIcon className="h-3.5 w-3.5 text-red-500" />
-                    ) : (
-                      <MinusIcon className="h-3.5 w-3.5 text-zinc-900 dark:text-white" />
-                    )}
-                  </motion.button>
-                  
-                  <div className="flex flex-col items-center">
-                    <span className="text-xs font-black text-zinc-900 dark:text-white">{quantity}</span>
-                    {optionsSummary && (
-                      <span className="text-[7px] font-extrabold uppercase text-zinc-400 max-w-[120px] truncate tracking-tight">
-                        {optionsSummary}
-                      </span>
-                    )}
+        {/* PRODUCT MEDIA CONTAINER */}
+        <div className="relative aspect-square w-full overflow-hidden rounded-[1.5rem] bg-zinc-50 dark:bg-zinc-800/30 group">
+          <Link href={`/ecommerceshoes/products/${product.id}`} className="block w-full h-full">
+            <Image
+              src={(product.images?.[0] as any)?.url || product.images?.[0] || 'https://via.placeholder.com/600'}
+              alt={product.name}
+              loader={loader}
+              fill
+              sizes="(max-width: 640px) 50vw, 33vw"
+              className="object-contain p-4 transition-transform duration-500 md:group-hover:scale-105"
+              priority={product.isNewArrival}
+            />
+          </Link>
+        </div>
+
+        {/* METRIC DESCRIPTIVE BLOCK */}
+        <div className="pt-4 px-1 pb-1 flex flex-col flex-grow">
+          <div className="flex justify-between items-start gap-2">
+            <div className="flex-1 min-w-0">
+              <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 truncate mb-0.5">
+                {product.category?.name || "Premium Collection"}
+              </p>
+              <h4 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100 leading-tight line-clamp-2">
+                {product.name}
+              </h4>
+            </div>
+            
+            <div className="flex items-center gap-0.5 bg-zinc-50 dark:bg-zinc-800/60 px-2 py-1 rounded-md border border-zinc-100 dark:border-zinc-700/50 flex-shrink-0">
+              <StarIcon className="w-3 h-3 text-amber-400" />
+              <span className="text-[10px] font-black text-zinc-700 dark:text-zinc-300">4.8</span>
+            </div>
+          </div>
+
+          {/* PRICING CONTROL INTERFACE */}
+          <div className="mt-auto pt-3 flex items-baseline gap-2">
+            <span className="text-base sm:text-lg font-black text-zinc-950 dark:text-white">
+              KES {calculatedPrices.finalPrice.toLocaleString()}
+            </span>
+            {product.isDiscounted && calculatedPrices.sellingPrice && (
+              <span className="text-xs font-medium text-zinc-400 line-through">
+                KES {calculatedPrices.sellingPrice.toLocaleString()}
+              </span>
+            )}
+          </div>
+
+          {/* TRANSACTION ACTION CONTROLLER */}
+          <div className="mt-4 flex gap-2">
+            <AnimatePresence mode="wait">
+              {quantity > 0 ? (
+                <motion.div 
+                  key="qty-control"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="flex-1 flex items-center justify-between bg-zinc-50 dark:bg-zinc-800/50 p-1 rounded-xl border border-zinc-200/60 dark:border-zinc-700/60"
+                >
+                  <div className="flex items-center gap-1 w-full justify-between">
+                    <motion.button 
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => decreaseQuantity(product.id)} 
+                      className="p-2.5 bg-white dark:bg-zinc-700 rounded-lg shadow-sm border border-zinc-100 dark:border-zinc-600 flex items-center justify-center min-w-[36px]"
+                    >
+                      {quantity === 1 ? (
+                        <TrashIcon className="h-3.5 w-3.5 text-red-500" />
+                      ) : (
+                        <MinusIcon className="h-3.5 w-3.5 text-zinc-900 dark:text-white" />
+                      )}
+                    </motion.button>
+                    
+                    <div className="flex flex-col items-center">
+                      <span className="text-xs font-black text-zinc-900 dark:text-white">{quantity}</span>
+                      {optionsSummary && (
+                        <span className="text-[7px] font-extrabold uppercase text-zinc-400 max-w-[120px] truncate tracking-tight">
+                          {optionsSummary}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <motion.button 
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleAddToCart()} 
+                      className="p-2.5 bg-white dark:bg-zinc-700 rounded-lg shadow-sm border border-zinc-100 dark:border-zinc-600 flex items-center justify-center min-w-[36px]"
+                    >
+                      <PlusIcon className="h-3.5 w-3.5 text-zinc-900 dark:text-white" />
+                    </motion.button>
                   </div>
-                  
-                  <motion.button 
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => handleAddToCart()} 
-                    className="p-2.5 bg-white dark:bg-zinc-700 rounded-lg shadow-sm border border-zinc-100 dark:border-zinc-600 flex items-center justify-center min-w-[36px]"
-                  >
-                    <PlusIcon className="h-3.5 w-3.5 text-zinc-900 dark:text-white" />
-                  </motion.button>
-                </div>
-              </motion.div>
-            ) : (
-              <div className="flex gap-2">
+                </motion.div>
+              ) : (
                 <motion.button
                   key="add-btn"
                   whileTap={{ scale: 0.96 }}
-                  onClick={() => handleAddToCart()}
+                  onClick={() => setIsQuickViewOpen(true)}
                   style={{ backgroundColor: primaryColor }}
                   className="flex-1 flex items-center justify-center gap-2 py-3 text-white rounded-xl font-black text-[11px] uppercase tracking-wider shadow-md transition-shadow active:brightness-90"
                 >
                   <ShoppingBagIcon className="w-3.5 h-3.5" />
-                  {hasVariants && !allOptionsSelected ? 'Select Options' : 'Add to Cart'}
+                  Quick View
                 </motion.button>
-              </div>
-            )}
-          </AnimatePresence>
+              )}
+            </AnimatePresence>
+            <motion.a 
+                whileTap={{ scale: 0.9 }}
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-3 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md rounded-xl shadow-md text-[#25D366] border border-zinc-100 dark:border-zinc-700 block flex items-center justify-center"
+                aria-label="Inquire via WhatsApp"
+              >
+                <WhatsAppIcon className="w-4 h-4 sm:w-5 h-5" />
+              </motion.a>
+          </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+
+      {/* QUICK VIEW SLIDE POD MODAL */}
+      <QuickViewModal 
+        isOpen={isQuickViewOpen}
+        onClose={() => setIsQuickViewOpen(false)}
+        product={product}
+        primaryColor={primaryColor}
+      />
+    </>
   );
 }

@@ -8,7 +8,7 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
-import QuickViewModal from '@/components/site/QuickViewModal';
+import QuickViewModal from '@/components/site/layouts/EcommerceLayout/body/components/QuickViewModal';
 
 interface ProductCardProps {
   product: MarketListingForm & { currency?: string; paymentOption?: string };

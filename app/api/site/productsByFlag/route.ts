@@ -72,6 +72,7 @@ const getProductsByFlag = (companyId: string, flag: string, limit: number, page:
             isFlashDeal: true,
             isNewArrival: true,
             providerRating: true,
+            option:true,
           },
         }),
         prisma.marketplaceListings.count({ where }),
