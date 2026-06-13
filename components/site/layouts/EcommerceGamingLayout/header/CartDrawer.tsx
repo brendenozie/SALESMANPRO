@@ -2,11 +2,17 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { XMarkIcon, TrashIcon, MinusIcon, PlusIcon, ShoppingCartIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, TrashIcon, MinusIcon, PlusIcon, ShoppingCartIcon } from '@heroicons/react/24/solid';
 import { useStateContext } from '@/contexts/ContextProvider';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+
+const loader = ({ src }: { src: string }) => {
+  // Custom loader to handle external images with Next.js Image component 
+  return src;
+};
+
 
 export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: boolean; setIsCartOpen: (open: boolean) => void }) {
   const { cart, addToCart, decreaseQuantity, removeFromCart, totalPrice } = useStateContext();
@@ -75,7 +81,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
             </div>
 
             {/* Cart Items List: Inventory Slots */}
-            <div className="relative flex-grow overflow-y-auto p-6 space-y-4 scrollbar-hide">
+            <div className="relative flex-grow overflow-y-auto p-6 space-y-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
               {cart.length > 0 ? (
                 cart.map((item: any, idx: number) => {
                   // Resolve options string parameters to create absolute unique mapping slots
@@ -88,26 +94,27 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                       key={compositeKey} 
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ delay: idx * 0.05 }}
                       className="relative group flex gap-4 p-4 bg-zinc-900/40 border border-white/5 hover:border-red-600/30 transition-all overflow-hidden"
                     >
                       {/* Item ID HUD */}
                       <div className="absolute top-0 right-0 p-1 font-mono text-[8px] text-zinc-700">
-                        #SPEC_{item.id.slice(-4).toUpperCase()}
+                        #SPEC_{item.id ? item.id.slice(-4).toUpperCase() : '0000'}
                       </div>
 
                       <div className="relative h-20 w-20 bg-black border border-white/10 overflow-hidden flex-shrink-0">
                         <Image 
-                          src={item.images?.[0] || '/placeholder.png'} 
-                          alt={item.name} 
+                          src={item.images?.[0] || 'https://via.placeholder.com/300'} 
+                          alt={item.name || "Item Spec Image"} 
                           fill 
                           className="object-contain p-1 grayscale group-hover:grayscale-0 transition-all duration-500"
-                          loader={({ src }) => src}
+                          loader={loader}
                         />
                         <div className="absolute inset-0 bg-red-600/5 mix-blend-overlay" />
                       </div>
                       
-                      <div className="flex-grow flex flex-col justify-between">
+                      <div className="flex-grow flex flex-col justify-between text-left">
                         <div>
                           <h3 className="font-black text-white text-xs uppercase tracking-widest leading-tight group-hover:text-red-500 transition-colors max-w-[200px] truncate">
                             {item.name}
@@ -132,7 +139,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                         <div className="flex items-center justify-between mt-2">
                           <div className="flex items-center border border-white/10 bg-black overflow-hidden">
                             <button 
-                              onClick={() => decreaseQuantity(compositeKey)} 
+                              onClick={() => decreaseQuantity(item.id, item.selectedOptions)} 
                               className="px-2 py-1 hover:bg-red-600/20 text-zinc-400 transition-colors"
                             >
                               <MinusIcon className="w-3 h-3" />
@@ -148,7 +155,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                             </button>
                           </div>
                           <button 
-                            onClick={() => removeFromCart(compositeKey)} 
+                            onClick={() => removeFromCart(item.id, item.selectedOptions)} 
                             className="text-zinc-600 hover:text-red-600 transition-colors"
                           >
                             <TrashIcon className="w-4 h-4" />
@@ -187,7 +194,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                 </div>
               </div>
               
-              <div className="py-4 border-y border-white/5 flex justify-between items-end">
+              <div className="py-4 border-y border-white/5 flex justify-between items-end text-left">
                 <div>
                   <p className="text-[9px] text-red-600 font-black uppercase tracking-[0.3em]">Total_Liability</p>
                   <p className="text-4xl font-black text-white italic tracking-tighter leading-none mt-1">
@@ -209,7 +216,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
               <div className="flex items-center justify-center gap-2">
                  <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse" />
                  <p className="text-[8px] text-zinc-600 font-mono uppercase tracking-widest text-center">
-                    Secure Tactical Link Active // Encrypted_v4.2
+                   Secure Tactical Link Active // Encrypted_v4.2
                  </p>
               </div>
             </div>

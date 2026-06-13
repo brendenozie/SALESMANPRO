@@ -24,6 +24,14 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
     window.location.href = authUrl.toString();
   };
 
+  // Helper to accurately track specific variants distinctly inside your cart loop
+  const getItemSignatureId = (item: any) => {
+    if (item.selectedOptions && Object.keys(item.selectedOptions).length > 0) {
+      return `${item.id}-${JSON.stringify(item.selectedOptions)}`;
+    }
+    return item.id;
+  };
+
   return (
     <AnimatePresence>
       {isCartOpen && (
@@ -57,7 +65,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
               </div>
               <button 
                 onClick={() => setIsCartOpen(false)}
-                className="p-3 rounded-full hover:bg-gray-50 transition-colors group"
+                className="p-3 rounded-full hover:bg-gray-50 transition-colors group cursor-pointer"
               >
                 <XMarkIcon className="w-6 h-6 text-gray-400 group-hover:text-gray-900" />
               </button>
@@ -66,63 +74,93 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
             {/* Cart Items List */}
             <div className="flex-grow overflow-y-auto p-6 space-y-6 scrollbar-hide">
               {cart.length > 0 ? (
-                cart.map((item: any, idx: number) => (
-                  <motion.div 
-                    layout
-                    key={item.id} 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className="flex gap-6 group"
-                  >
-                    {/* Image Container */}
-                    <div className="relative h-28 w-24 bg-gray-50 rounded-2xl overflow-hidden flex-shrink-0 border border-gray-100">
-                      <Image 
-                        src={item.images?.[0] || '/placeholder.png'} 
-                        alt={item.name} 
-                        fill 
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                        loader={({ src }) => src}
-                      />
-                    </div>
-                    
-                    {/* Item Details */}
-                    <div className="flex-grow flex flex-col justify-between py-1">
-                      <div className="space-y-1">
-                        <div className="flex justify-between items-start">
-                          <h3 className="font-bold text-gray-900 text-sm uppercase tracking-tight leading-tight max-w-[150px]">
-                            {item.name}
-                          </h3>
-                          <button onClick={() => removeFromCart(item.id)} className="text-gray-300 hover:text-red-500 transition-colors">
-                            <TrashIcon className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <p className="font-black text-lg" style={{ color: primary }}>
-                          ${item.finalPrice?.toFixed(2)}
-                        </p>
+                cart.map((item: any, idx: number) => {
+                  const targetSigId = getItemSignatureId(item);
+                  
+                  return (
+                    <motion.div 
+                      layout
+                      key={targetSigId} 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      className="flex gap-6 group"
+                    >
+                      {/* Image Container */}
+                      <div className="relative h-28 w-24 bg-gray-50 rounded-2xl overflow-hidden flex-shrink-0 border border-gray-100">
+                        <Image 
+                          src={item.images?.[0] || '/placeholder.png'} 
+                          alt={item.name} 
+                          fill 
+                          className="object-cover transition-transform duration-500 group-hover:scale-110"
+                          loader={({ src }) => src}
+                        />
                       </div>
                       
-                      {/* Quantity Controls */}
-                      <div className="flex items-center justify-between mt-4">
-                        <div className="flex items-center bg-gray-50 rounded-full px-2 py-1 border border-gray-100">
-                          <button 
-                            onClick={() => decreaseQuantity(item.id)} 
-                            className="p-1.5 hover:bg-white rounded-full transition-all text-gray-400 hover:text-gray-900 shadow-sm"
-                          >
-                            <MinusIcon className="w-3.5 h-3.5" />
-                          </button>
-                          <span className="px-4 text-xs font-black text-gray-900">{item.quantity}</span>
-                          <button 
-                            onClick={() => addToCart(item)} 
-                            className="p-1.5 hover:bg-white rounded-full transition-all text-gray-400 hover:text-gray-900 shadow-sm"
-                          >
-                            <PlusIcon className="w-3.5 h-3.5" />
-                          </button>
+                      {/* Item Details */}
+                      <div className="flex-grow flex flex-col justify-between py-1">
+                        <div className="space-y-1">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="font-bold text-gray-900 text-sm uppercase tracking-tight leading-tight max-w-[180px]">
+                                {item.name}
+                              </h3>
+                              
+                              {/* Display Custom Variant Properties */}
+                              {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
+                                <div className="flex flex-wrap gap-x-2 gap-y-0.5 mt-1">
+                                  {Object.entries(item.selectedOptions).map(([key, value]) => {
+                                    if (key === 'message') return null; // Skip non-variant text fields
+                                    return (
+                                      <span key={key} className="text-[10px] font-medium text-gray-400 lowercase bg-gray-50 px-1.5 py-0.5 rounded">
+                                        <span className="text-gray-300 uppercase font-bold text-[9px] mr-0.5">{key}:</span> 
+                                        {String(value)}
+                                      </span>
+                                    );
+                                  })}
+                                  {item.selectedOptions.message && (
+                                    <p className="text-[10px] text-gray-400 mt-1 italic block w-full line-clamp-1">
+                                      "{item.selectedOptions.message}"
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                            
+                            <button 
+                              onClick={() => removeFromCart(targetSigId)} 
+                              className="text-gray-300 hover:text-red-500 transition-colors p-1 cursor-pointer"
+                            >
+                              <TrashIcon className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <p className="font-black text-lg mt-1" style={{ color: primary }}>
+                            Kes {(item.finalPrice * item.quantity).toLocaleString()}
+                          </p>
+                        </div>
+                        
+                        {/* Quantity Controls */}
+                        <div className="flex items-center justify-between mt-2">
+                          <div className="flex items-center bg-gray-50 rounded-full px-2 py-1 border border-gray-100">
+                            <button 
+                              onClick={() => decreaseQuantity(targetSigId)} 
+                              className="p-1.5 hover:bg-white rounded-full transition-all text-gray-400 hover:text-gray-900 shadow-sm cursor-pointer"
+                            >
+                              <MinusIcon className="w-3.5 h-3.5" />
+                            </button>
+                            <span className="px-4 text-xs font-black text-gray-900">{item.quantity}</span>
+                            <button 
+                              onClick={() => addToCart(item)} 
+                              className="p-1.5 hover:bg-white rounded-full transition-all text-gray-400 hover:text-gray-900 shadow-sm cursor-pointer"
+                            >
+                              <PlusIcon className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))
+                    </motion.div>
+                  );
+                })
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-center">
                   <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6">
@@ -132,7 +170,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                   <p className="text-gray-400 text-sm mt-2 max-w-[200px]">Looks like you haven't added anything to your collection yet.</p>
                   <button 
                     onClick={() => setIsCartOpen(false)}
-                    className="mt-8 text-sm font-black uppercase tracking-widest underline underline-offset-8 decoration-2"
+                    className="mt-8 text-sm font-black uppercase tracking-widest underline underline-offset-8 decoration-2 cursor-pointer"
                     style={{ textDecorationColor: primary }}
                   >
                     Start Shopping
@@ -146,7 +184,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
               <div className="space-y-3">
                 <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest text-gray-400">
                   <span>Subtotal</span>
-                  <span className="text-gray-900">${totalPrice?.toFixed(2) || '0.00'}</span>
+                  <span className="text-gray-900">Kes {totalPrice?.toLocaleString() || '0'}</span>
                 </div>
                 <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest text-gray-400">
                   <span>Shipping</span>
@@ -158,7 +196,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                 <div className="flex flex-col">
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Total Amount</span>
                   <span className="text-4xl font-black text-gray-900 tracking-tighter leading-none italic">
-                    ${totalPrice?.toFixed(2) || '0.00'}
+                    Kes {totalPrice?.toLocaleString() || '0'}
                   </span>
                 </div>
               </div>
@@ -167,7 +205,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => { user ? router.push(`/ecommerce/checkout`) : handleGoogleSignIn() }}
-                className="w-full py-6 rounded-[2rem] text-white font-black uppercase tracking-[0.2em] text-xs transition-all shadow-xl flex items-center justify-center gap-3"
+                className="w-full py-6 rounded-[2rem] text-white font-black uppercase tracking-[0.2em] text-xs transition-all shadow-xl flex items-center justify-center gap-3 cursor-pointer"
                 style={{ backgroundColor: primary }}
               >
                 Checkout Now

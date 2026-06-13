@@ -65,10 +65,10 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
             <div className="flex-grow overflow-y-auto p-6 space-y-6">
               {cart.length > 0 ? (
                 cart.map((item: any) => {
-                  // Resolve signature lookup matrix parameters to manage custom variant blocks
-                  const variantSignature = item.selectedOptions && Object.keys(item.selectedOptions).length > 0
-                    ? `${item.id}-${JSON.stringify(item.selectedOptions)}`
-                    : item.id;
+                  // MATCHES PRODUCT CARD EXACT GENERATION STRUCTURE FOR STABLE CONTEXT HOOKS
+                  const variantSignature = item.cartItemId || (item.selectedOptions && Object.keys(item.selectedOptions).length > 0
+                    ? `${item.id}-${Object.entries(item.selectedOptions).sort(([a], [b]) => a.localeCompare(b)).map(([cat, val]) => `${cat}:${val}`).join('-')}`
+                    : item.id);
 
                   return (
                     <motion.div 
@@ -107,7 +107,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                         <div className="flex items-center gap-3 mt-3">
                           <div className="flex items-center bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-none px-1 py-0.5">
                             <button 
-                              onClick={() => decreaseQuantity(variantSignature)} 
+                              onClick={() => decreaseQuantity(variantSignature, item.selectedOptions)} 
                               className="p-1 text-stone-400 hover:text-black dark:hover:text-white transition-colors"
                             >
                               <MinusIcon className="w-3 h-3 stroke-[2.5]" />
@@ -116,7 +116,10 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                               {item.quantity}
                             </span>
                             <button 
-                              onClick={() => addToCart(item)} 
+                              onClick={() => addToCart({
+                                ...item,
+                                cartItemId: variantSignature
+                              })} 
                               className="p-1 text-stone-400 hover:text-black dark:hover:text-white transition-colors"
                             >
                               <PlusIcon className="w-3 h-3 stroke-[2.5]" />
@@ -124,7 +127,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                           </div>
                           
                           <button 
-                            onClick={() => removeFromCart(variantSignature)} 
+                            onClick={() => removeFromCart(variantSignature, item.selectedOptions)} 
                             className="text-stone-300 dark:text-stone-700 hover:text-red-500 transition-colors p-1"
                           >
                             <TrashIcon className="w-4 h-4" />

@@ -72,7 +72,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       return Object.entries(selectedOptions).every(([cat, val]) => item.selectedOptions[cat] === val);
     }
     return true;
-})?.quantity || 0;
+  })?.quantity || 0;
   
   // WhatsApp Configuration - Built from item variant parameters
   const optionsSummary = Object.entries(selectedOptions)
@@ -109,220 +109,267 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      className="group relative flex flex-col bg-white rounded-2xl transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] overflow-hidden border border-gray-100/50"
-    >
-      {/* 1. Image View Window Section */}
-      <div className="relative h-80 w-full overflow-hidden bg-gray-50">
-        <Link href={`/cakeecommerce/products/${product.id}`} className="block h-full w-full">
-          <Image
-            src={imageSrc}
-            alt={name}
-            fill
-            loader={loader}
-            sizes="(max-width: 768px) 100vw, 33vw"
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-          />
-        </Link>
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="group relative flex flex-col bg-white rounded-2xl transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] overflow-hidden border border-gray-100/50"
+      >
+        {/* 1. Image View Window Section */}
+        <div className="relative h-80 w-full overflow-hidden bg-gray-50">
+          <Link href={`/cakeecommerce/products/${product.id}`} className="block h-full w-full">
+            <Image
+              src={imageSrc}
+              alt={name}
+              fill
+              loader={loader}
+              sizes="(max-width: 768px) 100vw, 33vw"
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+            />
+          </Link>
 
-        {/* Minimalist Promotional Labels */}
-        <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-          {discount !== null && (
-            <div className="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full shadow-sm border border-orange-50">
-              <span style={{ color: primary }} className="text-[10px] font-black tracking-widest">
-                -{discount}% OFF
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Floating Chat Communication Action Anchor */}
-        <a 
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="absolute top-4 right-4 z-10 p-2.5 bg-white/80 backdrop-blur-md rounded-full shadow-sm text-[#128C7E] duration-300 hover:bg-white"
-          title="Inquire with Vendor"
-        >
-          <WhatsAppIcon className="w-4 h-4" />
-        </a>
-
-        {/* Floating Instant Sync Button */}
-        {quantity === 0 && (
-          <button 
-            onClick={handleAddToCart}
-            style={{ '--hover-bg': primary } as React.CSSProperties}
-            className="absolute bottom-4 right-4 p-3 bg-white text-gray-800 rounded-full shadow-xl translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[var(--hover-bg)] hover:text-white"
-          >
-            <ShoppingBagIcon className="w-5 h-5" />
-          </button>
-        )}
-      </div>
-
-      {/* 2. Content Info Matrix Grid */}
-      <div className="p-5 flex flex-col flex-grow">
-        <div className="flex justify-between items-start mb-2">
-          <div className="flex-1">
-            <Link href={`/cakeecommerce/products/${product.id}`}>
-              <h4 
-                style={{ '--hover-color': primary } as React.CSSProperties}
-                className="text-lg font-bold text-gray-900 tracking-tight line-clamp-1 group-hover:text-[var(--hover-color)] transition-colors"
-              >
-                {name}
-              </h4>
-            </Link>
-            <div className="flex items-center gap-3 mt-1">
-              <div className="flex items-center gap-1">
-                <StarIcon style={{ color: primary }} className="w-3 h-3" />
-                <span className="text-[11px] font-medium text-gray-400 tracking-wide uppercase">Top Choice</span>
+          {/* Minimalist Promotional Labels */}
+          <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+            {discount !== null && (
+              <div className="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full shadow-sm border border-orange-50">
+                <span style={{ color: primary }} className="text-[10px] font-black tracking-widest">
+                  -{discount}% OFF
+                </span>
               </div>
-              <div className="h-1 w-1 rounded-full bg-gray-200" />
-              <a 
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[10px] flex gap-1 font-black text-[#128C7E] uppercase tracking-tighter hover:underline items-center"
-              >
-                <WhatsAppIcon className="w-3.5 h-3.5" /> Order
-              </a>
-            </div>
-          </div>
-        </div>
-
-        {/* 3. Pricing Details Frame Block */}
-        <div className="mt-auto pt-4 flex items-center justify-between">
-          <div className="flex flex-col leading-tight">
-            <span className="text-xl font-black text-gray-900">
-              KSh {calculatedPrices.finalPrice.toLocaleString()}
-            </span>
-
-            {calculatedPrices.sellingPrice && calculatedPrices.sellingPrice > calculatedPrices.finalPrice && (
-              <span className="text-xs line-through text-gray-400 font-medium">
-                KSh {calculatedPrices.sellingPrice.toLocaleString()}
-              </span>
             )}
           </div>
 
-          <div className="flex items-center">
-            <AnimatePresence mode="wait">
-              {quantity > 0 ? (
-                <motion.div 
-                  initial={{ width: 0, opacity: 0 }}
-                  animate={{ width: 'auto', opacity: 1 }}
-                  exit={{ width: 0, opacity: 0 }}
-                  className="flex items-center bg-gray-50 rounded-full border border-gray-100 p-1"
+          {/* Floating Chat Communication Action Anchor */}
+          <a 
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute top-4 right-4 z-10 p-2.5 bg-white/80 backdrop-blur-md rounded-full shadow-sm text-[#128C7E] duration-300 hover:bg-white"
+            title="Inquire with Vendor"
+          >
+            <WhatsAppIcon className="w-4 h-4" />
+          </a>
+
+          {/* Floating Instant Sync Button */}
+          {quantity === 0 && (
+            <button 
+              onClick={handleAddToCart}
+              style={{ '--hover-bg': primary } as React.CSSProperties}
+              className="absolute bottom-4 right-4 p-3 bg-white text-gray-800 rounded-full shadow-xl translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[var(--hover-bg)] hover:text-white"
+            >
+              <ShoppingBagIcon className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+
+        {/* 2. Content Info Matrix Grid */}
+        <div className="p-5 flex flex-col flex-grow">
+          <div className="flex justify-between items-start mb-2">
+            <div className="flex-1">
+              <Link href={`/cakeecommerce/products/${product.id}`}>
+                <h4 
+                  style={{ '--hover-color': primary } as React.CSSProperties}
+                  className="text-lg font-bold text-gray-900 tracking-tight line-clamp-1 group-hover:text-[var(--hover-color)] transition-colors"
                 >
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      decreaseQuantity(product.id, selectedOptions);
-                    }}
-                    style={{ '--hover-color': primary } as React.CSSProperties}
-                    className="p-1.5 text-gray-400 hover:text-[var(--hover-color)] transition-colors"
-                  >
-                    {quantity === 1 ? <TrashIcon className="h-4 w-4 text-red-500" /> : <MinusIcon className="h-4 w-4" />}
-                  </button>
-                  <span className="px-3 text-sm font-bold text-gray-800">{quantity}</span>
-                  <button
-                    onClick={() => handleAddToCart()}
-                    style={{ '--hover-color': primary } as React.CSSProperties}
-                    className="p-1.5 text-gray-400 hover:text-[var(--hover-color)] transition-colors"
-                  >
-                    <PlusIcon className="h-4 w-4 text-emerald-600" />
-                  </button>
-                </motion.div>
-              ) : (
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleAddToCart}
-                  style={{ borderColor: primary, color: primary }}
-                  className="px-5 py-2 rounded-full border-2 text-xs font-black uppercase tracking-widest transition-all"
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = primary;
-                    e.currentTarget.style.color = '#ffffff';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.color = primary;
-                  }}
+                  {name}
+                </h4>
+              </Link>
+              <div className="flex items-center gap-3 mt-1">
+                <div className="flex items-center gap-1">
+                  <StarIcon style={{ color: primary }} className="w-3 h-3" />
+                  <span className="text-[11px] font-medium text-gray-400 tracking-wide uppercase">Top Choice</span>
+                </div>
+                <div className="h-1 w-1 rounded-full bg-gray-200" />
+                <a 
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] flex gap-1 font-black text-[#128C7E] uppercase tracking-tighter hover:underline items-center"
                 >
-                  {hasVariants && !allOptionsSelected ? "Customize" : "Add To Cart"}
-                </motion.button>
+                  <WhatsAppIcon className="w-3.5 h-3.5" /> Order
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. Pricing Details Frame Block */}
+          <div className="mt-auto pt-4 flex items-center justify-between">
+            <div className="flex flex-col leading-tight">
+              <span className="text-xl font-black text-gray-900">
+                KSh {calculatedPrices.finalPrice.toLocaleString()}
+              </span>
+
+              {calculatedPrices.sellingPrice && calculatedPrices.sellingPrice > calculatedPrices.finalPrice && (
+                <span className="text-xs line-through text-gray-400 font-medium">
+                  KSh {calculatedPrices.sellingPrice.toLocaleString()}
+                </span>
               )}
-            </AnimatePresence>
+            </div>
+
+            <div className="flex items-center">
+              <AnimatePresence mode="wait">
+                {quantity > 0 ? (
+                  <motion.div 
+                    initial={{ width: 0, opacity: 0 }}
+                    animate={{ width: 'auto', opacity: 1 }}
+                    exit={{ width: 0, opacity: 0 }}
+                    className="flex items-center bg-gray-50 rounded-full border border-gray-100 p-1"
+                  >
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        decreaseQuantity(product.id, selectedOptions);
+                      }}
+                      style={{ '--hover-color': primary } as React.CSSProperties}
+                      className="p-1.5 text-gray-400 hover:text-[var(--hover-color)] transition-colors"
+                    >
+                      {quantity === 1 ? <TrashIcon className="h-4 w-4 text-red-500" /> : <MinusIcon className="h-4 w-4" />}
+                    </button>
+                    <span className="px-3 text-sm font-bold text-gray-800">{quantity}</span>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleAddToCart();
+                      }}
+                      style={{ '--hover-color': primary } as React.CSSProperties}
+                      className="p-1.5 text-gray-400 hover:text-[var(--hover-color)] transition-colors"
+                    >
+                      <PlusIcon className="h-4 w-4 text-emerald-600" />
+                    </button>
+                  </motion.div>
+                ) : (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleAddToCart}
+                    style={{ borderColor: primary, color: primary }}
+                    className="px-5 py-2 rounded-full border-2 text-xs font-black uppercase tracking-widest transition-all"
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = primary;
+                      e.currentTarget.style.color = '#ffffff';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.color = primary;
+                    }}
+                  >
+                    {hasVariants && !allOptionsSelected ? "Customize" : "Add To Cart"}
+                  </motion.button>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* ================= SELECTION DRAWDOWN OVERLAY MODULE ================= */}
+      {/* ================= TRUE DIALOG MODAL BACKDROP MODULE ================= */}
       <AnimatePresence>
         {isSelectingOptions && (
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 15 }}
-            className="absolute inset-0 z-30 bg-white/95 backdrop-blur-md flex flex-col justify-end p-6 rounded-2xl border border-gray-100 shadow-2xl"
-          >
-            <button
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Modal Screen Blocker */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setIsSelectingOptions(false)}
-              className="absolute top-4 right-4 p-2 bg-gray-50 rounded-full border border-gray-200 text-gray-700 transition-colors hover:bg-gray-100"
+              className="absolute inset-0 bg-zinc-950/40 backdrop-blur-sm"
+            />
+
+            {/* Modal Box Container */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: 'spring', duration: 0.5 }}
+              className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 flex flex-col z-10"
             >
-              <XMarkIcon className="w-4 h-4" />
-            </button>
+              {/* Dynamic Accent Header Bar */}
+              <div style={{ backgroundColor: primary }} className="h-1.5 w-full" />
 
-            <div className="w-full space-y-4 pt-4 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-h-full">
-              {Object.entries(groupedVariants).map(([category, items]) => (
-                <div key={category} className="space-y-1.5 text-center">
-                  <p style={{ color: primary }} className="text-[10px] font-black uppercase tracking-widest">
-                    {category}
-                  </p>
-                  <div className="flex flex-wrap justify-center gap-1.5">
-                    {items.map((opt) => {
-                      const isSelected = selectedOptions[category] === opt.name;
-                      return (
-                        <button
-                          key={opt.name}
-                          type="button"
-                          onClick={() => setSelectedOptions({ ...selectedOptions, [category]: opt.name })}
-                          style={{ 
-                            borderColor: isSelected ? primary : undefined,
-                            backgroundColor: isSelected ? primary : undefined 
-                          }}
-                          className={`px-3.5 py-1.5 rounded-full border text-[11px] font-bold transition-all ${
-                            isSelected 
-                              ? "text-white shadow-sm scale-[1.02]" 
-                              : "border-gray-200 bg-gray-50/50 text-gray-800 active:bg-gray-100"
-                          }`}
-                        >
-                          {opt.name}
-                          {opt.extraPrice > 0 && ` (+KSh ${opt.extraPrice.toLocaleString()})`}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-
+              {/* Close Button Trigger */}
               <button
-                disabled={!allOptionsSelected}
-                onClick={() => {
-                  handleAddToCart();
-                  setIsSelectingOptions(false);
-                }}
-                style={{ backgroundColor: allOptionsSelected ? primary : undefined }}
-                className="mt-2 w-full py-3.5 bg-gray-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest disabled:opacity-35 transition-opacity shadow-md"
+                onClick={() => setIsSelectingOptions(false)}
+                className="absolute top-4 right-4 p-2 rounded-full bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-colors border border-gray-100"
               >
-                Confirm Customization
+                <XMarkIcon className="w-4 h-4" />
               </button>
-            </div>
-          </motion.div>
+
+              {/* Content Panel Frame */}
+              <div className="p-6 md:p-8 space-y-6">
+                <div>
+                  <span style={{ color: primary }} className="text-[10px] font-black uppercase tracking-widest block mb-1">
+                    Custom Options Available
+                  </span>
+                  <h3 className="text-xl font-extrabold text-gray-900 tracking-tight leading-tight">
+                    Configure {name}
+                  </h3>
+                </div>
+
+                {/* Main Option Choice Loops */}
+                <div className="space-y-6 overflow-y-auto max-h-[60vh] pr-1 [scrollbar-width:thin]">
+                  {Object.entries(groupedVariants).map(([category, items]) => (
+                    <div key={category} className="space-y-3">
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        Select {category}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {items.map((opt) => {
+                          const isSelected = selectedOptions[category] === opt.name;
+                          return (
+                            <button
+                              key={opt.name}
+                              type="button"
+                              onClick={() => setSelectedOptions({ ...selectedOptions, [category]: opt.name })}
+                              style={{ 
+                                borderColor: isSelected ? primary : undefined,
+                                backgroundColor: isSelected ? primary : undefined 
+                              }}
+                              className={`px-4 py-2.5 rounded-xl border text-xs font-bold transition-all ${
+                                isSelected 
+                                  ? "text-white shadow-md shadow-black/5 scale-[1.02]" 
+                                  : "border-gray-200 bg-gray-50/70 text-gray-800 hover:bg-gray-100/70 active:scale-95"
+                              }`}
+                            >
+                              {opt.name}
+                              {opt.extraPrice > 0 && ` (+KSh ${opt.extraPrice.toLocaleString()})`}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Subtotal Footer Calculator Box */}
+                <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Estimated Total</span>
+                    <span className="text-xl font-black text-gray-900">
+                      KSh {calculatedPrices.finalPrice.toLocaleString()}
+                    </span>
+                  </div>
+
+                  <button
+                    disabled={!allOptionsSelected}
+                    onClick={() => {
+                      handleAddToCart();
+                      setIsSelectingOptions(false);
+                    }}
+                    style={{ backgroundColor: allOptionsSelected ? primary : undefined }}
+                    className="px-6 py-3 bg-gray-900 text-white rounded-xl font-black text-xs uppercase tracking-widest disabled:opacity-30 disabled:pointer-events-none transition-all shadow-lg active:scale-95"
+                  >
+                    Confirm Order Setup
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </>
   );
 };
 

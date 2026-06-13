@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { MinusIcon, PlusIcon, TrashIcon, ShoppingBagIcon, FireIcon, XMarkIcon, CheckIcon } from '@heroicons/react/24/solid';
-import { MarketListingForm } from '@/types/typings';
+import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -23,31 +23,82 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
-  const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
+export const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
+  const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // Modal tracking selection parameters isolated from baseline listing grid components
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
 
-  // Parse structured customization maps safely
-  const productOptions = typeof product.option === 'string' 
-    ? JSON.parse(product.option || '{}') 
-    : (product.option || {});
-    
-  const hasOptions = Object.keys(productOptions).length > 0;
-
-  // Derive signatures tracking configured vs standard layout cuts
-  const currentKeySignature = hasOptions && Object.keys(selectedOptions).length > 0
-    ? `${product.id}-${JSON.stringify(selectedOptions)}`
-    : product.id;
-
-  const quantity = cart.find((item: any) => {
-    if (item.selectedOptions && Object.keys(item.selectedOptions).length > 0) {
-      return `${item.id}-${JSON.stringify(item.selectedOptions)}` === currentKeySignature;
+  // Parse unified variant collection safely
+  const rawVariants = useMemo((): VariantOptionItem[] => {
+    if (!product.option) return [];
+    if (typeof product.option === 'string') {
+      try {
+        return JSON.parse(product.option);
+      } catch {
+        return [];
+      }
     }
-    return item.id === currentKeySignature;
-  })?.quantity || 0;
+    return Array.isArray(product.option) ? product.option : [];
+  }, [product.option]);
+
+  // Group items out to categories map layout matrix
+  const groupedCategories = useMemo(() => {
+    const categories: Record<string, string[]> = {};
+    rawVariants.forEach((variant) => {
+      if (!categories[variant.category]) {
+        categories[variant.category] = [];
+      }
+      if (!categories[variant.category].includes(variant.name)) {
+        categories[variant.category].push(variant.name);
+      }
+    });
+    return categories;
+  }, [rawVariants]);
+
+  const hasOptions = Object.keys(groupedCategories).length > 0;
+
+  // Calculate cumulative item totals across all configurations for rendering the display card interface state
+  const totalBaseProductQuantity = useMemo(() => {
+    return cart
+      .filter((item: any) => item.id === product.id)
+      .reduce((acc: number, curr: any) => acc + (curr.quantity || 0), 0);
+  }, [cart, product.id]);
+
+  // Dynamic cost calculation within the modal viewport
+  const currentSelectionsSurcharge = useMemo(() => {
+    let surcharge = 0;
+    Object.entries(selectedOptions).forEach(([cat, val]) => {
+      const match = rawVariants.find((v) => v.category === cat && v.name === val);
+      if (match) surcharge += match.extraPrice || 0;
+    });
+    return surcharge;
+  }, [selectedOptions, rawVariants]);
+
+  const displayBasePrice = product.finalPrice || product.sellingPrice || 0;
+  const computedTotalProductPrice = displayBasePrice + currentSelectionsSurcharge;
+
+  // Key generator framework calculation matching cart-drawer expectations
+  const currentKeySignature = useMemo(() => {
+    if (!hasOptions || Object.keys(selectedOptions).length === 0) {
+      return product.id;
+    }
+    const sortedOptionsString = Object.entries(selectedOptions)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, v]) => `${k}:${v}`)
+      .join('-');
+    return `${product.id}-${sortedOptionsString}`;
+  }, [selectedOptions, product.id, hasOptions]);
+
+  // Read sub-item metrics inside variant modal selector explicitly
+  const modalSelectionQuantity = useMemo(() => {
+    return cart.find((item: any) => {
+      if (item.cartItemId) return item.cartItemId === currentKeySignature;
+      return item.id === currentKeySignature;
+    })?.quantity || 0;
+  }, [cart, currentKeySignature]);
 
   // WhatsApp Config Integration
   const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
@@ -58,24 +109,29 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
     ? Math.round(((product.sellingPrice - product.finalPrice) / product.sellingPrice) * 100) 
     : null;
 
-  // Auto-fill configuration shortcuts safely
   const handleOpenSelector = () => {
     if (hasOptions) {
       const initial: Record<string, string> = {};
-      Object.entries(productOptions).forEach(([key, values]: [string, any]) => {
-        if (Array.isArray(values) && values.length > 0) initial[key] = values[0];
+      Object.entries(groupedCategories).forEach(([key, values]) => {
+        if (values.length > 0) initial[key] = values[0];
       });
       setSelectedOptions(initial);
       setIsModalOpen(true);
     } else {
-      addToCart({ ...product });
+      addToCart({ 
+        ...product, 
+        finalPrice: displayBasePrice,
+        cartItemId: product.id 
+      });
     }
   };
 
   const handleCommitSelection = () => {
     addToCart({
       ...product,
-      selectedOptions: { ...selectedOptions }
+      finalPrice: computedTotalProductPrice,
+      selectedOptions: { ...selectedOptions },
+      cartItemId: currentKeySignature
     });
     setIsModalOpen(false);
   };
@@ -143,11 +199,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
 
           <div className="flex items-center gap-2 mb-5">
             <span className="text-lg font-black text-stone-950 dark:text-white tracking-tighter">
-              KES {(product.finalPrice || product.sellingPrice)?.toLocaleString()}
+              KES {displayBasePrice.toLocaleString()}
             </span>
             {discount && (
               <span className="text-[10px] line-through text-stone-400 font-bold italic">
-                {product.sellingPrice?.toLocaleString()}
+                {(product.sellingPrice || 0).toLocaleString()}
               </span>
             )}
           </div>
@@ -155,28 +211,22 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
           {/* Action Tray Container */}
           <div className="mt-auto relative h-12">
             <AnimatePresence mode="wait">
-              {quantity > 0 ? (
-                <motion.div 
-                  key="in-cart"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  className="flex items-center justify-between bg-stone-950 dark:bg-stone-900 rounded-2xl h-full px-1 shadow-lg border border-stone-800"
+              {totalBaseProductQuantity > 0 ? (
+                <motion.button
+                  key="configure-more-btn"
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={handleOpenSelector}
+                  className="w-full h-full flex items-center justify-between gap-2 bg-stone-950 dark:bg-stone-900 text-white border border-stone-800 rounded-2xl font-black text-[10px] uppercase tracking-[0.15em] px-5 hover:bg-red-600 hover:border-red-600 transition-all duration-300 shadow-md"
                 >
-                  <button 
-                    onClick={() => decreaseQuantity(currentKeySignature)}
-                    className="w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-xl transition-colors"
-                  >
-                    {quantity === 1 ? <TrashIcon className="w-4 h-4 text-red-500" /> : <MinusIcon className="w-4 h-4" />}
-                  </button>
-                  <span className="text-white font-black text-xs tabular-nums">QTY: {quantity} Pk</span>
-                  <button 
-                    onClick={() => addToCart(hasOptions ? { ...product, selectedOptions } : { ...product })}
-                    className="w-10 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-xl transition-colors"
-                  >
-                    <PlusIcon className="w-4 h-4" />
-                  </button>
-                </motion.div>
+                  <span className="flex items-center gap-2">
+                    <ShoppingBagIcon className="w-4 h-4 text-red-500 group-hover:text-white" />
+                    {hasOptions ? 'Add Extra Variant' : 'Add Pack'}
+                  </span>
+                  <span className="bg-white/10 px-2.5 py-1 rounded-lg text-[10px] font-mono">
+                    In Cart: {totalBaseProductQuantity}
+                  </span>
+                </motion.button>
               ) : (
                 <motion.button
                   key="add-btn"
@@ -196,6 +246,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
             <a 
               href={whatsappUrl} 
               target="_blank"
+              rel="noopener noreferrer"
               className="text-[9px] font-black uppercase tracking-[0.2em] text-green-500 hover:text-stone-950 dark:hover:text-white transition-colors py-2 border-b border-transparent flex gap-1 items-center"
             >
               <WhatsAppIcon className="w-3 h-3 inline-block mr-1" /> Order Via Whatsapp
@@ -237,28 +288,38 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
               </div>
 
               {/* Dynamic Option Spec Matrices */}
-              <div className="space-y-5 max-h-[60vh] overflow-y-auto pr-1 scrollbar-hide">
-                {Object.entries(productOptions).map(([optionKey, values]: [string, any]) => (
+              <div className="space-y-5 max-h-[50vh] overflow-y-auto pr-1 scrollbar-hide">
+                {Object.entries(groupedCategories).map(([optionKey, values]) => (
                   <div key={optionKey} className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 block">
                       Choose {optionKey}
                     </label>
                     <div className="grid grid-cols-2 gap-2">
-                      {Array.isArray(values) && values.map((val: string) => {
+                      {values.map((val) => {
                         const isSelected = selectedOptions[optionKey] === val;
+                        const individualMatch = rawVariants.find(v => v.category === optionKey && v.name === val);
+                        const surchargeAmount = individualMatch?.extraPrice || 0;
+
                         return (
                           <button
                             key={val}
                             type="button"
                             onClick={() => setSelectedOptions(prev => ({ ...prev, [optionKey]: val }))}
-                            className={`p-3 text-left rounded-xl border text-xs font-bold uppercase transition-all flex items-center justify-between group ${
+                            className={`p-3 text-left rounded-xl border text-xs font-bold uppercase transition-all flex flex-col justify-between group h-20 ${
                               isSelected
                                 ? 'bg-red-600 border-red-600 text-white shadow-md shadow-red-600/10'
                                 : 'bg-stone-50 dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 hover:border-stone-400'
                             }`}
                           >
-                            <span className="truncate">{val}</span>
-                            {isSelected && <CheckIcon className="w-4 h-4 text-white flex-shrink-0 ml-2" />}
+                            <div className="flex items-center justify-between w-full">
+                              <span className="truncate">{val}</span>
+                              {isSelected && <CheckIcon className="w-4 h-4 text-white flex-shrink-0" />}
+                            </div>
+                            {surchargeAmount > 0 && (
+                              <span className={`text-[9px] mt-1 font-mono ${isSelected ? 'text-red-100' : 'text-red-500'}`}>
+                                + KES {surchargeAmount.toLocaleString()}
+                              </span>
+                            )}
                           </button>
                         );
                       })}
@@ -267,13 +328,49 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
                 ))}
               </div>
 
+              {/* In-Modal Mini Increment Counter Tray */}
+              <div className="bg-stone-50 dark:bg-stone-900 p-3 rounded-2xl flex items-center justify-between border border-stone-200/50 dark:border-stone-800 mt-4">
+                <span className="text-[10px] font-black uppercase tracking-wider text-stone-400 pl-2">
+                  This Variation Qty
+                </span>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    disabled={modalSelectionQuantity === 0}
+                    onClick={() => decreaseQuantity(currentKeySignature, selectedOptions)}
+                    className="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700 disabled:opacity-40 transition-all active:scale-95"
+                  >
+                    <MinusIcon className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="text-xs font-black min-w-[2ch] text-center tabular-nums">
+                    {modalSelectionQuantity}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => addToCart({
+                      ...product,
+                      finalPrice: computedTotalProductPrice,
+                      selectedOptions: { ...selectedOptions },
+                      cartItemId: currentKeySignature
+                    })}
+                    className="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700 transition-all active:scale-95"
+                  >
+                    <PlusIcon className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
               {/* Action Commit Button */}
-              <div className="border-t border-stone-100 dark:border-stone-900 pt-5 mt-6">
+              <div className="border-t border-stone-100 dark:border-stone-900 pt-5 mt-5 flex items-center justify-between gap-4">
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-black uppercase tracking-wider text-stone-400">Unit Price</span>
+                  <span className="text-xl font-black text-stone-950 dark:text-white">KES {computedTotalProductPrice.toLocaleString()}</span>
+                </div>
                 <button
                   onClick={handleCommitSelection}
-                  className="w-full py-4 bg-stone-950 hover:bg-red-600 dark:bg-stone-900 dark:hover:bg-red-600 text-white font-black uppercase tracking-[0.2em] text-xs rounded-2xl transition-all shadow-xl active:scale-[0.99]"
+                  className="flex-1 py-4 bg-stone-950 hover:bg-red-600 dark:bg-stone-900 dark:hover:bg-red-600 text-white font-black uppercase tracking-[0.2em] text-xs rounded-2xl transition-all shadow-xl active:scale-[0.99]"
                 >
-                  Confirm Configuration
+                  {modalSelectionQuantity > 0 ? "Done" : "Add variation"}
                 </button>
               </div>
             </motion.div>

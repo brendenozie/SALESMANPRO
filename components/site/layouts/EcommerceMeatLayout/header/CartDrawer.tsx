@@ -26,6 +26,20 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
     window.location.href = authUrl.toString();
   };
 
+  // UNIQUE SIGNATURE ALPHABETICAL KEY SORT SCHEME FOR CART IDENTITIES
+  const generateSignature = (item: any) => {
+    if (item.cartItemId) return item.cartItemId;
+    
+    const hasOptions = item.selectedOptions && Object.keys(item.selectedOptions).length > 0;
+    if (!hasOptions) return item.id;
+
+    const sortedOptionsString = Object.entries(item.selectedOptions)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, val]) => `${key}:${val}`)
+      .join('-');
+    return `${item.id}-${sortedOptionsString}`;
+  };
+
   return (
     <AnimatePresence>
       {isCartOpen && (
@@ -65,10 +79,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
             <div className="flex-grow overflow-y-auto p-6 space-y-6">
               {cart.length > 0 ? (
                 cart.map((item: any) => {
-                  // Resolve signature lookup matrix parameters to manage custom variant blocks
-                  const variantSignature = item.selectedOptions && Object.keys(item.selectedOptions).length > 0
-                    ? `${item.id}-${JSON.stringify(item.selectedOptions)}`
-                    : item.id;
+                  const variantSignature = generateSignature(item);
 
                   return (
                     <motion.div 
@@ -107,7 +118,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                         <div className="flex items-center gap-3 mt-3">
                           <div className="flex items-center bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl px-1.5 py-0.5">
                             <button 
-                              onClick={() => decreaseQuantity(variantSignature)} 
+                              onClick={() => decreaseQuantity(variantSignature, item.selectedOptions || {})} 
                               className="p-1 text-stone-500 hover:text-red-600 transition-colors"
                             >
                               <MinusIcon className="w-3 h-3 stroke-[3]" />
@@ -116,7 +127,11 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                               {item.quantity}
                             </span>
                             <button 
-                              onClick={() => addToCart(item)} 
+                              onClick={() => addToCart({
+                                ...item,
+                                cartItemId: variantSignature,
+                                selectedOptions: item.selectedOptions || {}
+                              })} 
                               className="p-1 text-stone-500 hover:text-red-600 transition-colors"
                             >
                               <PlusIcon className="w-3 h-3 stroke-[3]" />
@@ -124,7 +139,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                           </div>
                           
                           <button 
-                            onClick={() => removeFromCart(variantSignature)} 
+                            onClick={() => removeFromCart(variantSignature, item.selectedOptions || {})} 
                             className="text-stone-300 dark:text-stone-700 hover:text-red-500 transition-colors p-1"
                           >
                             <TrashIcon className="w-4 h-4" />

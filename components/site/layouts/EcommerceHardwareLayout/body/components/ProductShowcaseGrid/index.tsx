@@ -8,6 +8,7 @@ import { PlusIcon, BoltIcon } from '@heroicons/react/24/solid';
 import { useStoreContext } from '@/contexts/StoreContext';
 import useSWR from 'swr';
 import ProductCard from '../ProductCard';
+import { MarketListingForm } from '@/types/typings';
 
 type ListingFlag =
   | 'isOnOffer'
@@ -30,7 +31,7 @@ const FALLBACK_PRODUCTS: Record<ListingFlag, Partial<MarketListingForm>[]> = {
       sellingPrice: 12500,
       discount: 1500,
       images: ['https://images.unsplash.com/photo-1504148455328-c376907d081c'],
-      rating: 5,
+      
     },
   ],
   isFeatured: [
@@ -39,7 +40,7 @@ const FALLBACK_PRODUCTS: Record<ListingFlag, Partial<MarketListingForm>[]> = {
       name: 'Reinforced Steel',
       sellingPrice: 1200,
       images: ['https://images.unsplash.com/photo-1530124566582-a618bc2615ad'],
-      rating: 5,
+      
     },
   ],
   isNewArrival: [
@@ -48,7 +49,7 @@ const FALLBACK_PRODUCTS: Record<ListingFlag, Partial<MarketListingForm>[]> = {
       name: 'IoT Energy Monitor',
       sellingPrice: 5400,
       images: ['https://images.unsplash.com/photo-1591136934893-b6c867a1d132'],
-      rating: 5,
+      
     },
   ],
   isFlashDeal: [],

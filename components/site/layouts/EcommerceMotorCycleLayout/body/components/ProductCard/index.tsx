@@ -2,8 +2,8 @@
 
 import { MinusIcon, PlusIcon, StarIcon, ShoppingBagIcon, XMarkIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { CheckBadgeIcon } from '@heroicons/react/24/solid';
-import React, { useState } from 'react';
-import { MarketListingForm } from '@/types/typings';
+import React, { useState, useEffect, useMemo } from 'react';
+import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -27,48 +27,91 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
   const { name, images, finalPrice, sellingPrice } = product;
 
-  // Safe configuration options extraction 
-  const productOptions = typeof product.option === 'string' 
-    ? JSON.parse(product.option || '{}') 
-    : (product.option || {});
-    
-  const hasOptions = Object.keys(productOptions).length > 0;
+  // 1. Process variants safely based on the unified array model
+  const rawOptions = product.option;
+  const activeVariants = useMemo(() => {
+    if (!rawOptions) return [];
+    if (typeof rawOptions === 'string') {
+      try {
+        return JSON.parse(rawOptions) as VariantOptionItem[];
+      } catch {
+        return [];
+      }
+    }
+    return rawOptions as VariantOptionItem[];
+  }, [rawOptions]);
 
-  // Track state signature variations explicitly
+  // Group items by category to render matching layout groups
+  const groupedOptions = useMemo(() => {
+    const groups: Record<string, string[]> = {};
+    activeVariants.forEach((v) => {
+      if (!groups[v.category]) groups[v.category] = [];
+      if (!groups[v.category].includes(v.name)) {
+        groups[v.category].push(v.name);
+      }
+    });
+    return groups;
+  }, [activeVariants]);
+
+  const hasOptions = Object.keys(groupedOptions).length > 0;
+
+  // 2. Initialize default configurations safely on layout pass
+  useEffect(() => {
+    if (hasOptions) {
+      const initial: Record<string, string> = {};
+      Object.entries(groupedOptions).forEach(([cat, names]) => {
+        if (names.length > 0) initial[cat] = names[0];
+      });
+      setSelectedOptions(initial);
+    }
+  }, [groupedOptions, hasOptions]);
+
+  // 3. Dynamic surcharge pricing accumulation calculation
+  const totalSurcharge = useMemo(() => {
+    let surcharge = 0;
+    Object.entries(selectedOptions).forEach(([cat, val]) => {
+      const match = activeVariants.find(v => v.category === cat && v.name === val);
+      if (match) surcharge += match.extraPrice || 0;
+    });
+    return surcharge;
+  }, [selectedOptions, activeVariants]);
+
+  const currentFinalPrice = (finalPrice ?? 0) + totalSurcharge;
+  const currentSellingPrice = (sellingPrice ?? 0) + totalSurcharge;
+
+  // 4. Stable and deterministic key matching configuration signature
   const currentKeySignature = hasOptions && Object.keys(selectedOptions).length > 0
-    ? `${product.id}-${JSON.stringify(selectedOptions)}`
+    ? `${product.id}-${Object.entries(selectedOptions).sort(([a], [b]) => a.localeCompare(b)).map(([cat, val]) => `${cat}:${val}`).join('-')}`
     : product.id;
 
   const quantity = cart.find((item: any) => {
-    if (item.selectedOptions && Object.keys(item.selectedOptions).length > 0) {
-      return `${item.id}-${JSON.stringify(item.selectedOptions)}` === currentKeySignature;
-    }
-    return item.id === currentKeySignature;
+    const itemKey = item.cartItemId || (item.selectedOptions
+      ? `${item.id}-${Object.entries(item.selectedOptions).sort(([a], [b]) => a.localeCompare(b)).map(([cat, val]) => `${cat}:${val}`).join('-')}`
+      : item.id);
+    return itemKey === currentKeySignature;
   })?.quantity || 0;
 
-  // WhatsApp Showroom Config
+  // WhatsApp Showroom Link configuration
   const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
-  const message = encodeURIComponent(`EXECUTIVE INQUIRY: I am interested in viewing the "${name}". Please provide details on financing and showroom availability.`);
-  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
+  const whatsappMsg = encodeURIComponent(`EXECUTIVE INQUIRY: I am looking at the "${name}" with configuration options: ${Object.entries(selectedOptions).map(([k, v]) => `${k}: ${v}`).join(', ') || 'Standard'}. Total pricing evaluated: Kes ${currentFinalPrice.toLocaleString()}.`);
+  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMsg}`;
 
   const imageSrc = images?.[0] || 'https://via.placeholder.com/600';
 
   const handleOpenSelector = () => {
     if (hasOptions) {
-      const initial: Record<string, string> = {};
-      Object.entries(productOptions).forEach(([key, values]: [string, any]) => {
-        if (Array.isArray(values) && values.length > 0) initial[key] = values[0];
-      });
-      setSelectedOptions(initial);
       setIsModalOpen(true);
     } else {
-      addToCart({ ...product });
+      addToCart({ ...product, finalPrice: currentFinalPrice, sellingPrice: currentSellingPrice });
     }
   };
 
   const handleCommitSelection = () => {
     addToCart({
       ...product,
+      finalPrice: currentFinalPrice,
+      sellingPrice: currentSellingPrice,
+      cartItemId: currentKeySignature,
       selectedOptions: { ...selectedOptions }
     });
     setIsModalOpen(false);
@@ -82,7 +125,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
         viewport={{ once: true }}
         className="group bg-transparent"
       >
-        {/* Image Container */}
+        {/* Image Display Wrapper Frame */}
         <div className="relative aspect-[4/5] overflow-hidden bg-[#f9f9f9] dark:bg-stone-900 rounded-sm mb-6 border border-stone-100 dark:border-stone-800/50">
           <Link href={`/motorcycleecommerce/products/${product.id}`}>
             <Image
@@ -95,13 +138,11 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             />
           </Link>
 
-          {/* Floating Luxury Status Badges */}
+          {/* Badges */}
           <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-            {sellingPrice > finalPrice && (
+            {currentSellingPrice > currentFinalPrice && (
               <div className="bg-black text-white px-3 py-1.5 shadow-xl border-l-2 border-[#c5a059]">
-                <p className="text-[9px] font-bold tracking-[0.2em] uppercase">
-                  Limited Edition
-                </p>
+                <p className="text-[9px] font-bold tracking-[0.2em] uppercase">Limited Edition</p>
               </div>
             )}
             <div className="bg-white/90 dark:bg-stone-950/90 backdrop-blur-md px-3 py-1.5 flex items-center gap-2 shadow-sm border border-stone-100 dark:border-stone-800">
@@ -110,7 +151,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             </div>
           </div>
 
-          {/* Showroom WhatsApp Link */}
+          {/* WhatsApp Action Link */}
           <a 
             href={whatsappUrl}
             target="_blank"
@@ -121,7 +162,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             <WhatsAppIcon className="w-4 h-4" />
           </a>
 
-          {/* Quick Add Overlay - Slide Up Transition */}
+          {/* Interaction Quick Add Slide-Up Control Overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out bg-gradient-to-t from-black/80 via-black/40 to-transparent">
             {quantity === 0 ? (
               <button
@@ -133,14 +174,20 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             ) : (
               <div className="flex items-center justify-between bg-white dark:bg-stone-900 p-1 shadow-2xl border border-stone-200 dark:border-stone-800">
                 <button 
-                  onClick={() => decreaseQuantity(currentKeySignature)} 
+                  onClick={() => decreaseQuantity(currentKeySignature, selectedOptions)} 
                   className="p-3 text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
                 >
                   <MinusIcon className="w-4 h-4" />
                 </button>
                 <span className="font-black text-xs tracking-widest text-stone-900 dark:text-stone-100">BAG: {quantity}</span>
                 <button 
-                  onClick={() => addToCart(hasOptions ? { ...product, selectedOptions } : { ...product })} 
+                  onClick={() => addToCart({
+                    ...product,
+                    finalPrice: currentFinalPrice,
+                    sellingPrice: currentSellingPrice,
+                    cartItemId: currentKeySignature,
+                    selectedOptions: { ...selectedOptions }
+                  })} 
                   className="p-3 text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
                 >
                   <PlusIcon className="w-4 h-4" />
@@ -150,7 +197,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
           </div>
         </div>
 
-        {/* Info Container */}
+        {/* Text Metadata Deck Layout */}
         <div className="text-center px-4">
           <div className="flex justify-center items-center gap-1.5 mb-3">
               <div className="flex text-[#c5a059]">
@@ -167,21 +214,20 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
           <div className="mt-3 flex items-baseline justify-center gap-3">
             <span className="text-xl font-light tracking-[0.1em] text-stone-900 dark:text-white">
-              Kes {(finalPrice ?? 0).toLocaleString()}
+              Kes {currentFinalPrice.toLocaleString()}
             </span>
-            {sellingPrice > finalPrice && (
+            {currentSellingPrice > currentFinalPrice && (
               <span className="text-xs line-through text-stone-300 dark:text-stone-600 font-medium">
-                Kes {sellingPrice.toLocaleString()}
+                Kes {currentSellingPrice.toLocaleString()}
               </span>
             )}
           </div>
 
-          {/* Showroom Link Footer */}
           <div className="mt-4 flex justify-center">
               <a 
                 href={whatsappUrl} 
                 target="_blank"
-                className="text-[9px] font-black uppercase tracking-[0.2em] text-green-500 hover:text-black dark:hover:text-white transition-colors py-2 border-b border-transparent hover:border-[#c5a059] flex gap-1 "
+                className="text-[9px] font-black uppercase tracking-[0.2em] text-green-500 hover:text-black dark:hover:text-white transition-colors py-2 border-b border-transparent hover:border-[#c5a059] flex gap-1"
               >
                 <WhatsAppIcon className="w-3 h-3 inline-block mr-1" /> Order Via Whatsapp
               </a>
@@ -189,7 +235,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
         </div>
       </motion.div>
 
-      {/* Luxury Spec Config Modal */}
+      {/* Configuration Customizer Modal Window */}
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
@@ -207,7 +253,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
               exit={{ opacity: 0, scale: 0.98, y: 10 }}
               className="relative w-full max-w-md overflow-hidden bg-white dark:bg-[#0D0D0D] border border-stone-200 dark:border-stone-800 rounded-none p-8 shadow-2xl z-10 text-stone-900 dark:text-stone-100"
             >
-              {/* Header */}
+              {/* Header Details */}
               <div className="flex items-start justify-between border-b border-stone-100 dark:border-stone-900 pb-5 mb-6">
                 <div>
                   <span className="text-[9px] font-bold tracking-[0.2em] text-[#c5a059] uppercase">Bespoke Specifications</span>
@@ -221,29 +267,41 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                 </button>
               </div>
 
-              {/* Specs Options Grid Matrix Layout */}
+              {/* Dynamic Categories Mapping Layout Matrix */}
               <div className="space-y-6 max-h-[55vh] overflow-y-auto pr-1">
-                {Object.entries(productOptions).map(([optionKey, values]: [string, any]) => (
+                {Object.entries(groupedOptions).map(([optionKey, values]) => (
                   <div key={optionKey} className="space-y-2">
                     <label className="text-[9px] font-black uppercase tracking-[0.15em] text-stone-400 block">
                       Select {optionKey}
                     </label>
                     <div className="grid grid-cols-2 gap-2">
-                      {Array.isArray(values) && values.map((val: string) => {
+                      {values.map((val) => {
                         const isSelected = selectedOptions[optionKey] === val;
+                        
+                        // Discover surcharge adjustment label information context
+                        const matchingVariant = activeVariants.find(v => v.category === optionKey && v.name === val);
+                        const extraPrice = matchingVariant?.extraPrice || 0;
+
                         return (
                           <button
                             key={val}
                             type="button"
                             onClick={() => setSelectedOptions(prev => ({ ...prev, [optionKey]: val }))}
-                            className={`p-3 text-left border text-[11px] font-bold uppercase transition-all flex items-center justify-between tracking-wider rounded-none ${
+                            className={`p-3 text-left border text-[11px] font-bold uppercase transition-all flex flex-col justify-between tracking-wider rounded-none min-h-[62px] ${
                               isSelected
                                 ? 'bg-black dark:bg-[#c5a059] border-black dark:border-[#c5a059] text-white'
                                 : 'bg-stone-50 dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 hover:border-stone-400'
                             }`}
                           >
-                            <span className="truncate">{val}</span>
-                            {isSelected && <CheckIcon className="w-3.5 h-3.5 text-white stroke-[3] flex-shrink-0 ml-2" />}
+                            <div className="flex items-center justify-between w-full">
+                              <span className="truncate">{val}</span>
+                              {isSelected && <CheckIcon className="w-3.5 h-3.5 text-white stroke-[3] flex-shrink-0 ml-2" />}
+                            </div>
+                            {extraPrice > 0 && (
+                              <span className={`text-[9px] mt-1 tracking-normal normal-case font-normal ${isSelected ? 'text-stone-200' : 'text-[#c5a059]'}`}>
+                                + Kes {extraPrice.toLocaleString()}
+                              </span>
+                            )}
                           </button>
                         );
                       })}
@@ -252,8 +310,12 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                 ))}
               </div>
 
-              {/* Confirm Selection Actions Button */}
-              <div className="border-t border-stone-100 dark:border-stone-900 pt-6 mt-6">
+              {/* Save Selection and Actions Deck */}
+              <div className="border-t border-stone-100 dark:border-stone-900 pt-6 mt-6 space-y-4">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">Calculated Build Subtotal:</span>
+                  <span className="text-xl font-light tracking-wide">Kes {currentFinalPrice.toLocaleString()}</span>
+                </div>
                 <button
                   onClick={handleCommitSelection}
                   className="w-full py-4 bg-[#1a1a1a] hover:bg-[#c5a059] dark:bg-stone-900 dark:hover:bg-[#c5a059] text-white font-black uppercase tracking-[0.25em] text-[10px] transition-all shadow-xl active:scale-[0.99]"

@@ -23,7 +23,6 @@ const mockProducts: MarketListingForm[] = [
     productCategoryId: "cat_1",
     subCategory: undefined,
     tags: [],
-    option: [],
     size: [],
     weight: [],
     material: [],
@@ -44,7 +43,8 @@ const mockProducts: MarketListingForm[] = [
     location: null,
     listingMarketStatus: ListingMarketStatus.AVAILABLE,
     listingSystemStatus: ListingSystemStatus.DRAFT,
-    listingTransactionType: ListingTransactionType.SALE
+    listingTransactionType: ListingTransactionType.SALE,
+    option: []
   },
   {
     id: "2",
@@ -62,7 +62,6 @@ const mockProducts: MarketListingForm[] = [
     productCategoryId: "cat_1",
     subCategory: undefined,
     tags: [],
-    option: [],
     size: [],
     weight: [],
     material: [],
@@ -83,7 +82,8 @@ const mockProducts: MarketListingForm[] = [
     location: null,
     listingMarketStatus: ListingMarketStatus.AVAILABLE,
     listingSystemStatus: ListingSystemStatus.DRAFT,
-    listingTransactionType: ListingTransactionType.SALE
+    listingTransactionType: ListingTransactionType.SALE,
+    option: []
   },
 ];
 

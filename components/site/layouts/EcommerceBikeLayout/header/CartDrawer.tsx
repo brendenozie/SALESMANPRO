@@ -76,10 +76,12 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
             <div className="flex-grow overflow-y-auto p-6 space-y-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {cart.length > 0 ? (
                 cart.map((item: any, idx: number) => {
-                  // Unique compound variant isolation key
-                  const uniqueItemKey = item.selectedOptions
-                    ? `${item.id}-${Object.entries(item.selectedOptions).map(([cat, val]) => `${cat}:${val}`).join('-')}`
-                    : `${item.id}-${idx}`;
+                  // Unique compound variant identifier mapping signature match
+                  const uniqueItemKey = item.cartItemId || (item.selectedOptions
+                    ? `${item.id}-${Object.entries(item.selectedOptions).sort(([a], [b]) => a.localeCompare(b)).map(([cat, val]) => `${cat}:${val}`).join('-')}`
+                    : `${item.id}-${idx}`);
+
+                  const trackingId = item.cartItemId || item.id;
 
                   return (
                     <motion.div 
@@ -124,7 +126,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                         <div className="flex items-center gap-3 mt-3">
                           <div className="flex items-center bg-gray-100 rounded-full px-2 py-1">
                             <button 
-                              onClick={() => decreaseQuantity(item.id, item.selectedOptions)} 
+                              onClick={() => decreaseQuantity(trackingId, item.selectedOptions)} 
                               style={{ '--hover-color': primary } as React.CSSProperties}
                               className="p-1 text-gray-500 hover:text-[var(--hover-color)] transition-colors"
                             >
@@ -140,7 +142,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                             </button>
                           </div>
                           <button 
-                            onClick={() => removeFromCart(item.id, item.selectedOptions)} 
+                            onClick={() => removeFromCart(trackingId, item.selectedOptions)} 
                             className="text-gray-300 hover:text-red-500 transition-colors"
                           >
                             <TrashIcon className="w-4 h-4" />

@@ -1,8 +1,8 @@
 'use client';
 
 import { MinusIcon, PlusIcon, ShoppingBagIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import React, { useState } from 'react';
-import { MarketListingForm } from '@/types/typings';
+import React, { useState, useEffect, useMemo } from 'react';
+import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -26,29 +26,43 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { storeFormData } = useStoreContext();
   const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-    // Local option state management (e.g., bouquet sizes or wrapping types)
-    const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(() => {
-      const initial: Record<string, string> = {};
-      if (product.option && Array.isArray(product.option)) {
-        product.option.forEach((opt: any) => {
-          if (opt.values && opt.values.length > 0) {
-            initial[opt.name] = opt.values[0];
-          }
-        });
-      }
-      return initial;
-    });
-  
-  // Local states for custom flower arrangements inside the options modal
-  const [selectedSize, setSelectedSize] = useState('Classic');
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [cardMessage, setCardMessage] = useState('');
 
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#10B981';
-  const quantity = cart.find((item: any) => item.id === product.id)?.quantity || 0;
+  
+  // Explicitly reference flat database array block mapping
+  const optionsList = (product.option || []) as VariantOptionItem[];
+  const hasOptions = optionsList.length > 0;
 
-  // Check if product requires special options setup
-  const hasOptions = product.option && Array.isArray(product.option) && product.option.length > 0;
+  // Group your flat object structure array cleanly by category tracking labels
+  const groupedOptions = useMemo(() => {
+    const groups: Record<string, VariantOptionItem[]> = {};
+    optionsList.forEach((item) => {
+      if (!groups[item.category]) groups[item.category] = [];
+      groups[item.category].push(item);
+    });
+    return groups;
+  }, [optionsList]);
+
+  // Track real-time extra pricing adjust surcharges chosen across active categories
+  const dynamicExtraSurcharge = useMemo(() => {
+    let surcharge = 0;
+    Object.entries(selectedOptions).forEach(([category, chosenValue]) => {
+      const match = optionsList.find(
+        (opt) => opt.category === category && String(opt.name).trim().toUpperCase() === String(chosenValue).trim().toUpperCase()
+      );
+      if (match) surcharge += match.extraPrice;
+    });
+    return surcharge;
+  }, [selectedOptions, optionsList]);
+
+  const computedFinalPrice = (product.finalPrice ?? 0) + dynamicExtraSurcharge;
+
+  // Compute aggregated quantities safely matching across instances inside the basket view
+  const totalProductQuantityInCart = cart
+    .filter((item: any) => item.id === product.id)
+    .reduce((acc: number, item: any) => acc + item.quantity, 0);
 
   const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
   const message = encodeURIComponent(`Hi! I'm interested in the "${product.name}" bouquet. Do you offer same-day delivery, and can I include a custom handwritten note?`);
@@ -56,17 +70,40 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const imageSrc = product.images?.[0] || 'https://via.placeholder.com/600x800';
 
+  // Synchronize initial selections cleanly when options populate using categorized first items
+  useEffect(() => {
+    if (hasOptions) {
+      const initial: Record<string, string> = {};
+      Object.entries(groupedOptions).forEach(([category, items]) => {
+        if (items.length > 0) {
+          initial[category] = items[0].name;
+        }
+      });
+      setSelectedOptions(initial);
+    }
+  }, [groupedOptions, hasOptions]);
+
+  const handleSelectOption = (category: string, value: string) => {
+    setSelectedOptions(prev => ({
+      ...prev,
+      [category]: String(value)
+    }));
+  };
+
   const handleModalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Pass custom arrangement variants alongside context dispatch configuration
-    const customizedProduct = {
+    
+    const payloadOptions: Record<string, string> = { ...selectedOptions };
+    if (cardMessage.trim()) {
+      payloadOptions.message = cardMessage.trim();
+    }
+
+    // Pass custom selections along with recalculated final pricing objects downstream
+    addToCart({
       ...product,
-      selectedOptions: {
-        size: selectedSize,
-        message: cardMessage || 'No handwritten note requested.'
-      }
-    };
-    addToCart(customizedProduct);
+      selectedOptions: payloadOptions,
+      finalPrice: computedFinalPrice
+    });
     setIsModalOpen(false);
   };
 
@@ -126,7 +163,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 exit={{ opacity: 0 }}
                 className="absolute inset-0 bg-white/10 flex items-center justify-center p-6"
               >
-                {quantity === 0 ? (
+                {totalProductQuantityInCart === 0 ? (
                   <motion.button
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -135,10 +172,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                       if (hasOptions) {
                         setIsModalOpen(true);
                       } else {
-                        addToCart(product);
+                        addToCart({ ...product, selectedOptions: {}, finalPrice: product.finalPrice });
                       }
                     }}
-                    className="w-full bg-slate-900 text-white py-4 rounded-xl flex items-center justify-center gap-2 shadow-2xl hover:bg-slate-800 transition-all active:scale-95"
+                    className="w-full bg-slate-900 text-white py-4 rounded-xl flex items-center justify-center gap-2 shadow-2xl hover:bg-slate-800 transition-all active:scale-95 cursor-pointer"
                   >
                     <ShoppingBagIcon className="w-5 h-5" />
                     <span className="text-xs font-bold uppercase tracking-widest">
@@ -151,11 +188,33 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                     animate={{ y: 0, opacity: 1 }}
                     className="w-full bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl flex items-center justify-between p-1.5"
                   >
-                    <button onClick={() => decreaseQuantity(product.id)} className="p-3 hover:bg-slate-50 rounded-lg transition-colors">
+                    <button 
+                      onClick={() => {
+                        const lastConfiguredItem = cart.filter((item: any) => item.id === product.id).pop();
+                        if (lastConfiguredItem) {
+                          const sigId = lastConfiguredItem.selectedOptions && Object.keys(lastConfiguredItem.selectedOptions).length > 0
+                            ? `${lastConfiguredItem.id}-${JSON.stringify(lastConfiguredItem.selectedOptions)}`
+                            : lastConfiguredItem.id;
+                          decreaseQuantity(sigId);
+                        } else {
+                          decreaseQuantity(product.id);
+                        }
+                      }} 
+                      className="p-3 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
+                    >
                       <MinusIcon className="w-4 h-4 text-slate-600" />
                     </button>
-                    <span className="font-bold text-slate-900 text-sm">{quantity}</span>
-                    <button onClick={() => addToCart(product)} className="p-3 hover:bg-slate-50 rounded-lg transition-colors">
+                    <span className="font-bold text-slate-900 text-sm">{totalProductQuantityInCart}</span>
+                    <button 
+                      onClick={() => {
+                        if (hasOptions) {
+                          setIsModalOpen(true);
+                        } else {
+                          addToCart({ ...product, selectedOptions: {}, finalPrice: product.finalPrice });
+                        }
+                      }} 
+                      className="p-3 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
+                    >
                       <PlusIcon className="w-4 h-4 text-slate-600" />
                     </button>
                   </motion.div>
@@ -190,6 +249,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <a 
               href={whatsappUrl}
               target="_blank"
+              rel="noopener noreferrer"
               className="text-[9px] font-black uppercase tracking-[0.2em] text-green-500 hover:text-rose-500 transition-colors flex items-center gap-1"
             >
               <WhatsAppIcon className="w-3 h-3" /> Order Via WhatsApp
@@ -203,7 +263,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
-            {/* Soft Overlay backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -212,7 +271,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
             />
 
-            {/* Modal Card Structure */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -221,8 +279,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               className="relative w-full max-w-md bg-white rounded-3xl p-8 shadow-2xl border border-slate-100 overflow-hidden"
             >
               <button 
+                type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors"
+                className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
               >
                 <XMarkIcon className="w-5 h-5" />
               </button>
@@ -234,59 +293,73 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               </div>
 
               <form onSubmit={handleModalSubmit} className="space-y-6">
-                {/* Variant Selector Field */}
-                <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-3">
-                    Select Display Density / Size
-                  </label>
-                  {/* Render options dynamically mapping to lists or chips */}
-                            <div className="space-y-6 max-h-[40vh] overflow-y-auto pr-1">
-                              {product.option?.map((option: any) => (
-                                <div key={option.name} className="flex flex-col gap-2.5">
-                                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                                    {option.name}
-                                  </label>
-                                  <div className="flex flex-wrap gap-2">
-                                    {option.values?.map((val: string) => {
-                                      const isSelected = selectedOptions[option.name] === val;
-                                      return (
-                                        <button
-                                          key={val}
-                                          onClick={() => setSelectedOptions(prev => ({ ...prev, [option.name]: val }))}
-                                          className={`px-4 py-2 text-xs rounded-xl border transition-all duration-300 font-medium ${
-                                            isSelected 
-                                              ? 'bg-slate-900 border-slate-900 text-white shadow-md' 
-                                              : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
-                                          }`}
-                                        >
-                                          {val}
-                                        </button>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
+                
+                {/* Dynamically Unrolled Group Category Form Fields */}
+                <div className="space-y-6 max-h-[35vh] overflow-y-auto pr-1">
+                  {Object.entries(groupedOptions).map(([category, items]) => (
+                    <div key={category} className="flex flex-col gap-2.5">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                        {category}
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {items.map((item) => {
+                          const isSelected = String(selectedOptions[category]).trim().toUpperCase() === String(item.name).trim().toUpperCase();
+                          return (
+                            <button
+                              key={item.name}
+                              type="button"
+                              onClick={() => handleSelectOption(category, item.name)}
+                              className={`px-4 py-2 text-xs rounded-xl border transition-all duration-200 font-medium cursor-pointer ${
+                                isSelected 
+                                  ? 'bg-slate-900 border-slate-900 text-white shadow-md' 
+                                  : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                              }`}
+                            >
+                              <span className="mr-1">{item.name}</span>
+                              {item.extraPrice > 0 && (
+                                <span className={`text-[10px] ml-0.5 font-bold ${isSelected ? 'text-rose-300' : 'text-rose-500'}`}>
+                                  (+ Kes {item.extraPrice})
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 {/* Optional Handwritten Card Note */}
                 <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-2">
-                    Handwritten Note (Optional)
-                  </label>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                      Handwritten Note (Optional)
+                    </label>
+                    <span className="text-[10px] font-mono text-slate-300">Envelope Included</span>
+                  </div>
                   <textarea
-                    rows={3}
+                    rows={2}
                     value={cardMessage}
                     onChange={(e) => setCardMessage(e.target.value)}
                     placeholder="Write a warm note to be carefully included in the arrangement envelopes..."
-                    className="w-full text-sm rounded-xl border-slate-200 border p-4 focus:ring-1 focus:ring-slate-900 focus:border-slate-900 placeholder:text-slate-300 resize-none outline-none"
+                    className="w-full text-sm rounded-xl border-slate-200 border p-4 focus:ring-1 focus:ring-slate-900 focus:border-slate-900 placeholder:text-slate-300 resize-none outline-none text-slate-700"
                   />
+                </div>
+
+                {/* Absolute Pricing Breakdowns Summary */}
+                <div className="flex justify-between items-baseline pt-2 border-t border-slate-100">
+                  <span className="text-xs font-medium text-slate-500">Estimated Total:</span>
+                  <div className="text-right">
+                    <span className="text-xl font-bold text-slate-900">
+                      Kes {computedFinalPrice.toLocaleString()}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Submission CTA Block */}
                 <button
                   type="submit"
-                  className="w-full bg-slate-900 text-white py-4 rounded-xl flex items-center justify-center gap-2 font-bold uppercase tracking-widest text-xs shadow-xl hover:bg-slate-800 transition-all active:scale-95"
+                  className="w-full bg-slate-900 text-white py-4 rounded-xl flex items-center justify-center gap-2 font-bold uppercase tracking-widest text-xs shadow-xl hover:bg-slate-800 transition-all active:scale-95 cursor-pointer"
                 >
                   <ShoppingBagIcon className="w-4 h-4" />
                   Confirm Arrangement Selection

@@ -67,6 +67,14 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
     return true;
   })?.quantity || 0;
 
+  // Global identifier calculation to sync mutations cleanly with the drawer actions
+  const targetSignatureId = useMemo(() => {
+    if (hasVariants && Object.keys(selectedOptions).length > 0) {
+      return `${product.id}-${JSON.stringify(selectedOptions)}`;
+    }
+    return product.id;
+  }, [product.id, selectedOptions, hasVariants]);
+
   const imageSrc = images?.[0] || 'https://via.placeholder.com/600';
 
   // 4. Bespoke Concierge WhatsApp Link Configuration
@@ -76,7 +84,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
   const whatsappNumber = `${storeFormData?.contactPhone || "254732771353"}`.replace(/\D/g, '');
   const message = encodeURIComponent(
-    `Hi! I'm inquiring about the "${name}" timepiece${optionsSummary ? ` configured with [${optionsSummary}]` : ''} listed at $${calculatedPrices.finalPrice.toLocaleString()}. Is this specific configuration available for immediate dispatch?`
+    `Hi! I'm inquiring about the "${name}" timepiece${optionsSummary ? ` configured with [${optionsSummary}]` : ''} listed at Kes ${calculatedPrices.finalPrice.toLocaleString()}. Is this specific configuration available for immediate dispatch?`
   );
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
@@ -98,183 +106,225 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      className="group bg-transparent relative flex flex-col h-full overflow-hidden"
-    >
-      {/* Image Container */}
-      <div className="relative aspect-[4/5] overflow-hidden bg-[#f3f3f3] rounded-sm mb-6">
-        <Link href={`/watchecommerce/products/${product.id}`}>
-          <Image
-            src={imageSrc}
-            alt={name}
-            loader={({ src }) => src}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-110"
-            sizes="(max-width: 768px) 100vw, 25vw"
-          />
-        </Link>
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="group bg-transparent relative flex flex-col h-full overflow-hidden"
+      >
+        {/* Image Container */}
+        <div className="relative aspect-[4/5] overflow-hidden bg-[#f3f3f3] rounded-sm mb-6">
+          <Link href={`/watchecommerce/products/${product.id}`}>
+            <Image
+              src={imageSrc}
+              alt={name}
+              loader={({ src }) => src}
+              fill
+              className="object-cover transition-transform duration-700 group-hover:scale-110"
+              sizes="(max-width: 768px) 100vw, 25vw"
+            />
+          </Link>
 
-        {/* WhatsApp Floating Button (Top Right) */}
-        <a 
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="absolute top-4 right-4 bg-white/90 p-2 rounded-full shadow-md duration-300 hover:bg-[#25D366] hover:text-white text-[#25D366] z-10"
-        >
-          <WhatsAppIcon className="w-5 h-5" />
-        </a>
+          {/* WhatsApp Floating Button (Top Right) */}
+          <a 
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute top-4 right-4 bg-white/90 p-2 rounded-full shadow-md duration-300 hover:bg-[#25D366] hover:text-white text-[#25D366] z-10"
+          >
+            <WhatsAppIcon className="w-5 h-5" />
+          </a>
 
-        {/* Floating Badges */}
-        {sellingPrice > (finalPrice || 0) && (
-          <div className="absolute top-4 left-4 bg-white px-3 py-1 shadow-sm">
-            <p className="text-[10px] font-bold tracking-tighter uppercase text-red-600">
-              Limited Edition
-            </p>
-          </div>
-        )}
-
-        {/* Quick Add Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-black/60 to-transparent z-10">
-          {quantity === 0 ? (
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={() => handleAddToBag()}
-                className="w-full bg-white text-black py-3 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-black hover:text-white transition-colors"
-              >
-                <ShoppingBagIcon className="w-4 h-4" /> 
-                {hasVariants && !allOptionsSelected ? "Configure Timepiece" : "Add to Bag"}
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between bg-white p-1">
-              <button 
-                onClick={(e) => {
-                  e.preventDefault();
-                  decreaseQuantity(product.id);
-                }} 
-                className="p-2 hover:bg-gray-100 transition-colors"
-              >
-                {quantity === 1 ? <TrashIcon className="w-4 h-4 text-red-600" /> : <MinusIcon className="w-4 h-4 text-gray-700" />}
-              </button>
-              <span className="font-bold text-sm text-gray-900">{quantity}</span>
-              <button 
-                onClick={() => handleAddToBag()} 
-                className="p-2 hover:bg-gray-100 transition-colors"
-              >
-                <PlusIcon className="w-4 h-4 text-gray-700" />
-              </button>
+          {/* Floating Badges */}
+          {sellingPrice > (finalPrice || 0) && (
+            <div className="absolute top-4 left-4 bg-white px-3 py-1 shadow-sm">
+              <p className="text-[10px] font-bold tracking-tighter uppercase text-red-600">
+                Limited Edition
+              </p>
             </div>
           )}
-        </div>
-      </div>
 
-      {/* Info Container */}
-      <div className="text-center mt-auto flex flex-col flex-grow justify-between">
-        <div>
-          <div className="flex justify-center mb-2">
-            <div className="flex text-amber-500">
-              {[...Array(5)].map((_, i) => <StarIcon key={i} className="w-3 h-3 fill-current" />)}
-            </div>
-          </div>
-
-          <Link href={`/watchecommerce/products/${product.id}`}>
-            <h4 className="text-lg font-serif italic text-gray-900 group-hover:text-[#c5a059] transition-colors line-clamp-1 px-2">
-              {name}
-            </h4>
-          </Link>
-        </div>
-
-        <div className="mt-2 flex flex-col items-center gap-1">
-          <div className="flex items-center justify-center gap-3">
-            <span className="text-xl font-light tracking-wider text-gray-900">
-              ${calculatedPrices.finalPrice.toLocaleString()}
-            </span>
-            {calculatedPrices.sellingPrice && calculatedPrices.sellingPrice > calculatedPrices.finalPrice && (
-              <span className="text-sm line-through text-gray-400">
-                ${calculatedPrices.sellingPrice.toLocaleString()}
-              </span>
+          {/* Quick Add Overlay */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-black/60 to-transparent z-10">
+            {quantity === 0 ? (
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={handleAddToBag}
+                  className="w-full bg-white text-black py-3 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-black hover:text-white transition-colors"
+                >
+                  <ShoppingBagIcon className="w-4 h-4" /> 
+                  {hasVariants && !allOptionsSelected ? "Configure Timepiece" : "Add to Bag"}
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between bg-white p-1">
+                <button 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    decreaseQuantity(targetSignatureId);
+                  }} 
+                  className="p-2 hover:bg-gray-100 transition-colors"
+                >
+                  {quantity === 1 ? <TrashIcon className="w-4 h-4 text-red-600" /> : <MinusIcon className="w-4 h-4 text-gray-700" />}
+                </button>
+                <span className="font-bold text-sm text-gray-900">{quantity}</span>
+                <button 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleAddToBag();
+                  }} 
+                  className="p-2 hover:bg-gray-100 transition-colors"
+                >
+                  <PlusIcon className="w-4 h-4 text-gray-700" />
+                </button>
+              </div>
             )}
           </div>
-          
-          {/* Subtle Inquire Link */}
-          <a 
-            href={whatsappUrl} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-emerald-600 hover:text-[#c5a059] transition-colors mt-1 font-medium"
-          >
-            <WhatsAppIcon className='w-3.5 h-3.5'/> Order via WhatsApp
-          </a>
         </div>
-      </div>
 
-      {/* ================= ATELIER SPECIFICATION OVERLAY DRAWER ================= */}
+        {/* Info Container */}
+        <div className="text-center mt-auto flex flex-col flex-grow justify-between">
+          <div>
+            <div className="flex justify-center mb-2">
+              <div className="flex text-amber-500">
+                {[...Array(5)].map((_, i) => <StarIcon key={i} className="w-3 h-3 fill-current" />)}
+              </div>
+            </div>
+
+            <Link href={`/watchecommerce/products/${product.id}`}>
+              <h4 className="text-lg font-serif italic text-gray-900 group-hover:text-[#c5a059] transition-colors line-clamp-1 px-2">
+                {name}
+              </h4>
+            </Link>
+          </div>
+
+          <div className="mt-2 flex flex-col items-center gap-1">
+            <div className="flex items-center justify-center gap-3">
+              <span className="text-xl font-light tracking-wider text-gray-900">
+                Kes {calculatedPrices.finalPrice.toLocaleString()}
+              </span>
+              {calculatedPrices.sellingPrice && calculatedPrices.sellingPrice > calculatedPrices.finalPrice && (
+                <span className="text-sm line-through text-gray-400">
+                  Kes {calculatedPrices.sellingPrice.toLocaleString()}
+                </span>
+              )}
+            </div>
+            
+            {/* Subtle Inquire Link */}
+            <a 
+              href={whatsappUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-emerald-600 hover:text-[#c5a059] transition-colors mt-1 font-medium"
+            >
+              <WhatsAppIcon className='w-3.5 h-3.5'/> Order via WhatsApp
+            </a>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ================= THE ATELIER CONFIGURATION SCREEN-PORTAL MODAL ================= */}
       <AnimatePresence>
         {isConfiguring && (
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 15 }}
-            className="absolute inset-0 z-20 bg-white/98 backdrop-blur-md flex flex-col justify-end p-5 border border-neutral-200"
-          >
-            <button
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Absolute Frosted Glass Overlay Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setIsConfiguring(false)}
-              className="absolute top-4 right-4 p-1.5 bg-neutral-100 rounded-full text-neutral-800 transition-colors hover:bg-neutral-200"
+              className="absolute inset-0 bg-neutral-950/40 backdrop-blur-md"
+            />
+
+            {/* Centered Modal Dialogue Structural Frame */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.97, y: 15 }}
+              transition={{ type: 'spring', duration: 0.4 }}
+              className="relative w-full max-w-lg bg-white rounded-sm shadow-2xl overflow-hidden border border-neutral-100 flex flex-col z-10"
             >
-              <XMarkIcon className="w-4 h-4" />
-            </button>
-
-            <div className="w-full space-y-4 pt-4 overflow-y-auto no-scrollbar max-h-full">
-              <h5 className="font-serif italic text-base text-center text-neutral-900 mb-2 border-b border-neutral-100 pb-2">
-                Atelier Customization
-              </h5>
-              
-              {Object.entries(groupedVariants).map(([category, items]) => (
-                <div key={category} className="space-y-1.5 text-center">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-neutral-400">
-                    {category}
-                  </p>
-                  <div className="flex flex-wrap justify-center gap-1.5">
-                    {items.map((opt) => {
-                      const isSelected = selectedOptions[category] === opt.name;
-                      return (
-                        <button
-                          key={opt.name}
-                          type="button"
-                          onClick={() => setSelectedOptions({ ...selectedOptions, [category]: opt.name })}
-                          className={`px-3 py-1 text-[11px] uppercase tracking-wider border font-medium transition-all ${
-                            isSelected 
-                              ? "bg-neutral-900 text-white border-neutral-900 shadow-sm" 
-                              : "border-neutral-200 bg-neutral-50 text-neutral-800 hover:bg-neutral-100"
-                          }`}
-                        >
-                          {opt.name}
-                          {opt.extraPrice > 0 && ` (+$${opt.extraPrice.toLocaleString()})`}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-
+              {/* Close Overlay Trigger */}
               <button
-                disabled={!allOptionsSelected}
-                onClick={() => {
-                  handleAddToBag();
-                  setIsConfiguring(false);
-                }}
-                className="mt-4 w-full py-3 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] transition-opacity disabled:opacity-40 hover:bg-[#c5a059] disabled:hover:bg-neutral-900"
+                onClick={() => setIsConfiguring(false)}
+                className="absolute top-5 right-5 p-2 text-neutral-400 hover:text-neutral-900 transition-colors bg-neutral-50 hover:bg-neutral-100 rounded-full"
               >
-                Confirm Specifications
+                <XMarkIcon className="w-4 h-4" />
               </button>
-            </div>
-          </motion.div>
+
+              <div className="p-6 md:p-8 space-y-6">
+                {/* Header Context Typography */}
+                <div className="border-b border-neutral-100 pb-4">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#c5a059] mb-1">
+                    Bespoke Atelier Commission
+                  </p>
+                  <h3 className="font-serif italic text-2xl text-neutral-900 pr-8 leading-snug">
+                    Configure {name}
+                  </h3>
+                </div>
+
+                {/* Left-Aligned Structured Specification Row Scroller */}
+                <div className="space-y-6 overflow-y-auto max-h-[50vh] pr-1 [scrollbar-width:thin] text-left">
+                  {Object.entries(groupedVariants).map(([category, items]) => (
+                    <div key={category} className="space-y-2.5">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-neutral-400">
+                        {category}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {items.map((opt) => {
+                          const isSelected = selectedOptions[category] === opt.name;
+                          return (
+                            <button
+                              key={opt.name}
+                              type="button"
+                              onClick={() => setSelectedOptions({ ...selectedOptions, [category]: opt.name })}
+                              className={`px-4 py-2 text-xs uppercase tracking-wider border transition-all font-medium ${
+                                isSelected 
+                                  ? "bg-neutral-900 text-white border-neutral-900 shadow-sm" 
+                                  : "border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100 hover:border-neutral-300"
+                              }`}
+                            >
+                              {opt.name}
+                              {opt.extraPrice > 0 && ` (+Kes ${opt.extraPrice.toLocaleString()})`}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Bottom Totalizer Line & Action Submit Panel */}
+                <div className="pt-5 border-t border-neutral-100 flex items-center justify-between gap-4">
+                  <div className="text-left leading-tight">
+                    <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest block mb-0.5">
+                      Total Valuation
+                    </span>
+                    <span className="text-2xl font-light tracking-wider text-neutral-900">
+                      Kes {calculatedPrices.finalPrice.toLocaleString()}
+                    </span>
+                  </div>
+
+                  <button
+                    disabled={!allOptionsSelected}
+                    onClick={() => {
+                      handleAddToBag();
+                      setIsConfiguring(false);
+                    }}
+                    className="px-6 py-3.5 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#c5a059]"
+                  >
+                    Confirm Specifications
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </>
   );
 };
 

@@ -143,14 +143,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
             />
             
             {/* Direct Action Area Overlay */}
-            <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/10 transition-colors duration-300 flex flex-col items-center justify-center gap-3">
+            {/* <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/10 transition-colors duration-300 flex flex-col items-center justify-center gap-3">
               <div 
                 style={{ backgroundColor: primary }}
                 className="opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all text-white px-6 py-3 rounded-full font-black text-[10px] uppercase tracking-widest shadow-2xl brightness-95 hover:brightness-110"
               >
                 View Product
               </div>
-            </div>
+            </div> */}
           </Link>
 
           {/* Quick Consultation Floating Trigger Action Link */}

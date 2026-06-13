@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MinusIcon, 
@@ -9,10 +9,9 @@ import {
   WrenchScrewdriverIcon,
   ShieldCheckIcon,
   BoltIcon,
-  TrashIcon,
   XMarkIcon
 } from '@heroicons/react/24/solid';
-import { MarketListingForm } from '@/types/typings';
+import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
@@ -31,30 +30,83 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 );
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
+  const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // Holds selected values as { color: "Red", size: "M" }
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   
   const primary = storeFormData?.themeSettings?.primaryColor || '#F59E0B';
   const { name, images, finalPrice, sellingPrice, option } = product;
 
-  // Determine if this item possesses customizable options (e.g., Size, Weight, Voltage)
-  const hasOptions = option && Object.keys(option).length > 0;
+  // 1. Safe cast to our unified schema format array
+  const rawOptionsList = useMemo(() => {
+    return (option || []) as VariantOptionItem[];
+  }, [option]);
 
-  // Key creation fallback strategy mirroring the Cart Drawer state configuration
-  const currentCompositeKey = hasOptions 
-    ? `${product.id}-${JSON.stringify(selectedOptions)}`
-    : product.id;
+  // 2. Regroup flat list into a Category Mapping object dictionary
+  const groupedCategories = useMemo(() => {
+    const groups: Record<string, VariantOptionItem[]> = {};
+    rawOptionsList.forEach((item) => {
+      if (!groups[item.category]) {
+        groups[item.category] = [];
+      }
+      groups[item.category].push(item);
+    });
+    return groups;
+  }, [rawOptionsList]);
 
-  // Initialize variant defaults if the variant modal panel triggers
+  const hasOptions = Object.keys(groupedCategories).length > 0;
+
+  // 3. Compute dynamic surcharge adjustments for currently selected variant values
+  const currentSurcharge = useMemo(() => {
+    let totalSurcharge = 0;
+    Object.entries(selectedOptions).forEach(([catKey, chosenVal]) => {
+      const match = groupedCategories[catKey]?.find((v) => v.name === chosenVal);
+      if (match) {
+        totalSurcharge += match.extraPrice || 0;
+      }
+    });
+    return totalSurcharge;
+  }, [selectedOptions, groupedCategories]);
+
+  // Base pricing declarations
+  const activeBasePrice = finalPrice ?? sellingPrice ?? 0;
+  const liveCalculatedPrice = activeBasePrice + currentSurcharge;
+
+  // 4. Variant composite key assembly validation router
+  const currentCompositeKey = useMemo(() => {
+    if (!hasOptions) return product.id;
+    const sortedOptions = Object.keys(selectedOptions)
+      .sort()
+      .reduce((acc, key) => ({ ...acc, [key]: selectedOptions[key] }), {});
+    return `${product.id}-${JSON.stringify(sortedOptions)}`;
+  }, [selectedOptions, product.id, hasOptions]);
+
+  // Aggregate quantity counter for total product instances matching this ID
+  const totalProductQuantity = useMemo(() => {
+    return cart
+      .filter((item: any) => item.id === product.id)
+      .reduce((acc: number, curr: any) => acc + (curr.quantity || 0), 0);
+  }, [cart, product.id]);
+
+  // Read current configuration sub-item tally inside active selection criteria
+  const activeVariantQuantity = useMemo(() => {
+    return cart.find((item: any) => {
+      if (hasOptions) {
+        return item.id === product.id && JSON.stringify(item.selectedOptions) === JSON.stringify(selectedOptions);
+      }
+      return item.id === product.id;
+    })?.quantity || 0;
+  }, [cart, selectedOptions, product.id, hasOptions]);
+
   const openOptionSelector = () => {
-    if (option && Object.keys(option).length > 0) {
+    if (hasOptions) {
       const defaults: Record<string, string> = {};
-      Object.entries(option).forEach(([key, values]) => {
-        if (Array.isArray(values) && values.length > 0) {
-          defaults[key] = values[0];
+      Object.entries(groupedCategories).forEach(([category, variants]) => {
+        if (variants.length > 0) {
+          defaults[category] = variants[0].name;
         }
       });
       setSelectedOptions(defaults);
@@ -63,26 +115,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   };
 
   const handleAddToCart = () => {
-    if (hasOptions && !isModalOpen) {
-      openOptionSelector();
-    } else {
-      // Package item with custom selections appended
-      addToCart({
-        ...product,
-        uid: currentCompositeKey, // fallback validation identity
-        selectedOptions: hasOptions ? selectedOptions : undefined
-      });
-      setIsModalOpen(false);
-    }
+    addToCart({
+      ...product,
+      uid: currentCompositeKey,
+      finalPrice: liveCalculatedPrice, // Passes total adjusted price downstream
+      selectedOptions: hasOptions ? { ...selectedOptions } : undefined
+    });
   };
 
-  // Find accurate item tally inside active layout state stack
-  const quantity = cart.find((item: any) => {
-    if (hasOptions) {
-      return item.id === product.id && JSON.stringify(item.selectedOptions) === JSON.stringify(selectedOptions);
-    }
-    return item.id === product.id;
-  })?.quantity || 0;
+  const handleCommitSelection = () => {
+    handleAddToCart();
+    setIsModalOpen(false);
+  };
 
   const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
   const message = encodeURIComponent(`TECH_SPEC_REQUEST: I'm inquiring about SKU: ${product.id.slice(0, 8).toUpperCase()} ("${name}"). Do you have a technical data sheet or compatibility guide for this?`);
@@ -102,11 +146,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         viewport={{ once: true }}
         className="group relative flex flex-col bg-white dark:bg-[#0A0A0A] border border-zinc-200 dark:border-zinc-800 transition-all duration-300 overflow-hidden hover:shadow-2xl text-zinc-900 dark:text-zinc-100"
       >
-        {/* --- IMAGE / SPECS OVERLAY --- */}
+        {/* --- IMAGE OVERLAY --- */}
         <div className="relative h-72 w-full overflow-hidden bg-[#F4F4F5] dark:bg-zinc-900/50">
-          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-               style={{ backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 10px, #000 10px, #000 11px)` }} />
-          
           <Link href={`/hardwareecommerce/products/${product.id}`} className="block h-full w-full relative z-10">
             <Image
               src={imageSrc}
@@ -134,7 +175,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             target="_blank"
             rel="noopener noreferrer"
             className="absolute top-4 right-4 z-20 p-2.5 bg-white shadow-xl text-[#25D366] rounded-sm transition-all duration-300 hover:bg-zinc-900"
-            title="Consult Technical Specialist"
           >
             <WhatsAppIcon className="w-4 h-4" />
           </a>
@@ -175,7 +215,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <div className="mt-auto">
             <div className="flex items-baseline gap-2 mb-4">
               <span className="text-2xl font-black text-zinc-900 dark:text-white tabular-nums">
-                Kes {(finalPrice ?? sellingPrice ?? 0).toLocaleString()}
+                Kes {activeBasePrice.toLocaleString()}
               </span>
               {discount && (
                 <span className="text-xs line-through text-zinc-400 font-bold decoration-red-500/50">
@@ -184,34 +224,27 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               )}
             </div>
 
-            {/* --- INDUSTRIAL ACTION CONTROL ROUTER --- */}
+            {/* --- ACTION ROUTER --- */}
             <AnimatePresence mode="wait">
-              {quantity > 0 ? (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="flex items-center bg-zinc-900 border-2 border-zinc-900"
+              {totalProductQuantity > 0 ? (
+                <motion.button 
+                  key="has-items-manifested"
+                  whileTap={{ scale: 0.98 }}
+                  onClick={hasOptions ? openOptionSelector : handleAddToCart}
+                  className="w-full py-4 text-white font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-between px-4 transition-all"
+                  style={{ backgroundColor: primary, color: '#000000' }}
                 >
-                  <button
-                    onClick={() => decreaseQuantity(currentCompositeKey)}
-                    className="p-3.5 text-white hover:bg-zinc-800 transition-colors"
-                  >
-                    {quantity === 1 ? <TrashIcon className="h-5 w-5" /> : <MinusIcon className="h-5 w-5" />}
-                  </button>
-                  <div className="flex-grow text-center flex flex-col leading-none">
-                    <span className="text-white font-black text-sm">{quantity}</span>
-                    <span className="text-[7px] text-amber-500 font-bold uppercase tracking-widest mt-0.5">Manifested</span>
-                  </div>
-                  <button
-                    onClick={handleAddToCart}
-                    className="p-3.5 text-white hover:bg-zinc-800 transition-colors border-l border-zinc-800"
-                  >
-                    <PlusIcon className="h-5 w-5" />
-                  </button>
-                </motion.div>
+                  <span className="flex items-center gap-2">
+                    <ShoppingBagIcon className="w-4 h-4" />
+                    {hasOptions ? 'Configure Alternative' : 'Add To Manifest'}
+                  </span>
+                  <span className="bg-black/10 text-black px-2 py-0.5 text-[10px] font-mono font-bold">
+                    In Cart: {totalProductQuantity}
+                  </span>
+                </motion.button>
               ) : (
                 <motion.button
+                  key="add-btn"
                   whileTap={{ scale: 0.98 }}
                   onClick={hasOptions ? openOptionSelector : handleAddToCart}
                   className="w-full py-4 bg-zinc-900 text-white dark:bg-white dark:text-black font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-amber-500 dark:hover:bg-amber-500 hover:text-black transition-all"
@@ -234,7 +267,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           Order Via Whatsapp
         </a>
 
-        {/* Industrial Warning Stripe */}
+        {/* Warning Stripe */}
         <div className="h-1 w-full flex flex-shrink-0">
            <div className="h-full flex-grow bg-amber-500" />
            <div className="h-full flex-grow bg-zinc-900" />
@@ -243,11 +276,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </div>
       </motion.div>
 
-      {/* --- INDUSTRIAL SPECIFICATION MODAL --- */}
+      {/* --- SPECIFICATION MODAL --- */}
       <AnimatePresence>
-        {isModalOpen && option && Object.keys(option).length > 0 && (
+        {isModalOpen && hasOptions && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-            {/* Dark industrial backdrop overlay */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -256,7 +288,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               className="absolute inset-0 bg-zinc-950/80 backdrop-blur-sm"
             />
 
-            {/* Modal Box */}
+            {/* Modal Content Box */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -278,26 +310,32 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               </div>
 
               {/* Options Selector Contents */}
-              <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto">
-                {Object.entries(option).map(([optionKey, values]) => (
+              <div className="p-6 space-y-5 max-h-[50vh] overflow-y-auto">
+                {Object.entries(groupedCategories).map(([optionKey, variantItems]) => (
                   <div key={optionKey} className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-wider text-zinc-400">
                       Select {optionKey}
                     </label>
                     <div className="grid grid-cols-2 gap-2">
-                      {Array.isArray(values) && values.map((val: string) => {
-                        const isSelected = selectedOptions[optionKey] === val;
+                      {variantItems.map((variant) => {
+                        const isSelected = selectedOptions[optionKey] === variant.name;
                         return (
                           <button
-                            key={val}
-                            onClick={() => setSelectedOptions(prev => ({ ...prev, [optionKey]: val }))}
-                            className={`py-3 px-4 text-xs font-bold uppercase tracking-tight text-left transition-all border ${
+                            key={variant.name}
+                            type="button"
+                            onClick={() => setSelectedOptions(prev => ({ ...prev, [optionKey]: variant.name }))}
+                            className={`py-3 px-4 text-xs font-bold uppercase tracking-tight text-left transition-all border flex flex-col justify-between h-16 ${
                               isSelected
                                 ? 'bg-zinc-900 text-white dark:bg-white dark:text-black border-zinc-900 dark:border-white'
                                 : 'bg-zinc-50 dark:bg-zinc-900/50 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400'
                             }`}
                           >
-                            {val}
+                            <span>{variant.name}</span>
+                            {variant.extraPrice > 0 && (
+                              <span className={`text-[9px] block font-mono ${isSelected ? 'text-amber-400 dark:text-amber-500' : 'text-blue-500'}`}>
+                                + Kes {variant.extraPrice.toLocaleString()}
+                              </span>
+                            )}
                           </button>
                         );
                       })}
@@ -306,33 +344,43 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 ))}
               </div>
 
-              {/* Modal Footer with Interactive Add/Quantity Toggles */}
+              {/* Modal Footer with live calculation layout breakdown */}
               <div className="p-6 bg-zinc-50 dark:bg-zinc-900/30 border-t border-zinc-100 dark:border-zinc-800">
+                <div className="mb-4 flex justify-between items-center border-b border-dashed border-zinc-200 dark:border-zinc-700 pb-3">
+                  <span className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">Estimated Price:</span>
+                  <span className="text-xl font-black text-zinc-900 dark:text-white tabular-nums">
+                    Kes {liveCalculatedPrice.toLocaleString()}
+                  </span>
+                </div>
+
                 <div className="flex gap-3">
-                  {quantity > 0 && (
-                    <div className="flex items-center bg-zinc-200 dark:bg-zinc-800 border border-transparent">
-                      <button
-                        onClick={() => decreaseQuantity(currentCompositeKey)}
-                        className="p-3 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors"
-                      >
-                        <MinusIcon className="h-4 w-4" />
-                      </button>
-                      <span className="px-3 font-black text-xs text-zinc-900 dark:text-white">{quantity}</span>
-                      <button
-                        onClick={handleAddToCart}
-                        className="p-3 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors"
-                      >
-                        <PlusIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                  )}
+                  <div className="flex items-center bg-zinc-200 dark:bg-zinc-800 border border-transparent">
+                    <button
+                      type="button"
+                      disabled={activeVariantQuantity === 0}
+                      onClick={() => decreaseQuantity(currentCompositeKey)}
+                      className="p-3 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors disabled:opacity-30"
+                    >
+                      <MinusIcon className="h-4 w-4" />
+                    </button>
+                    <span className="px-3 font-black text-xs text-zinc-900 dark:text-white tabular-nums">
+                      {activeVariantQuantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleAddToCart}
+                      className="p-3 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors"
+                    >
+                      <PlusIcon className="h-4 w-4" />
+                    </button>
+                  </div>
                   
                   <button
-                    onClick={handleAddToCart}
+                    onClick={handleCommitSelection}
                     className="flex-grow py-4 font-black text-[10px] uppercase tracking-[0.2em] text-center text-white bg-zinc-900 dark:bg-white dark:text-black hover:bg-amber-500 dark:hover:bg-amber-500 dark:hover:text-black transition-colors"
-                    style={quantity > 0 ? { backgroundColor: primary, color: '#000000' } : {}}
+                    style={activeVariantQuantity > 0 ? { backgroundColor: primary, color: '#000000' } : {}}
                   >
-                    {quantity > 0 ? 'Update Manifest Quantity' : 'Confirm & Add to Manifest'}
+                    {activeVariantQuantity > 0 ? 'Done' : 'Confirm & Add to Manifest'}
                   </button>
                 </div>
               </div>

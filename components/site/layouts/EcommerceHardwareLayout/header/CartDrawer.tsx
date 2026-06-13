@@ -2,7 +2,13 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { XMarkIcon, ShoppingBagIcon, TrashIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { 
+  XMarkIcon, 
+  ShoppingBagIcon, 
+  TrashIcon, 
+  MinusIcon, 
+  PlusIcon 
+} from '@heroicons/react/24/outline';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Image from 'next/image';
@@ -25,10 +31,14 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
     window.location.href = authUrl.toString();
   };
 
-  // Safe unique item key builder matching selection card signatures
+  // 1. Fully aligned Unique Composite Key builder matching the Product Card architecture
   const getItemUniqueKey = (item: any) => {
+    if (item.uid) return item.uid; // Prioritize the robust composite UID string generated upstream
     if (item.selectedOptions && Object.keys(item.selectedOptions).length > 0) {
-      return `${item.id}-${JSON.stringify(item.selectedOptions)}`;
+      const sortedOptions = Object.keys(item.selectedOptions)
+        .sort()
+        .reduce((acc, key) => ({ ...acc, [key]: item.selectedOptions[key] }), {});
+      return `${item.id}-${JSON.stringify(sortedOptions)}`;
     }
     return item.id;
   };
@@ -81,13 +91,14 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                       key={itemKey} 
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.04 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
                       className="flex gap-4 items-center border-b border-zinc-100 dark:border-zinc-800/60 pb-6"
                     >
                       {/* Technical Image Thumb */}
                       <div className="relative h-20 w-20 rounded-xl overflow-hidden bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 flex-shrink-0">
                         <Image 
-                          src={item.images?.[0] || '/placeholder.png'} 
+                          src={item.images?.[0] || 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189'} 
                           alt={item.name} 
                           fill 
                           className="object-contain p-2"
@@ -107,7 +118,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                             {Object.entries(item.selectedOptions).map(([key, val]: [string, any]) => (
                               <span 
                                 key={key}
-                                className="inline-block bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 text-[8px] px-1.5 py-0.5 font-bold uppercase tracking-tight"
+                                className="inline-block bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 text-[8px] px-1.5 py-0.5 font-bold uppercase tracking-tight"
                               >
                                 {key}: {val}
                               </span>
@@ -115,14 +126,16 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                           </div>
                         )}
 
+                        {/* Explicit price indicator capturing calculated variant base surcharges */}
                         <p className="font-black text-sm mt-1.5" style={{ color: primary }}>
-                          Kes {(item.finalPrice ?? 0).toLocaleString()}
+                          Kes {(item.finalPrice ?? item.sellingPrice ?? 0).toLocaleString()}
                         </p>
                         
                         {/* Quantity Logic Handlers */}
                         <div className="flex items-center gap-3 mt-3">
                           <div className="flex items-center bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full px-2 py-0.5">
                             <button 
+                              type="button"
                               onClick={() => decreaseQuantity(itemKey)} 
                               className="p-1 text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
                             >
@@ -130,6 +143,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                             </button>
                             <span className="px-3 text-xs font-black tabular-nums">{item.quantity}</span>
                             <button 
+                              type="button"
                               onClick={() => addToCart(item)} 
                               className="p-1 text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
                             >
@@ -137,6 +151,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                             </button>
                           </div>
                           <button 
+                            type="button"
                             onClick={() => removeFromCart(itemKey)} 
                             className="text-zinc-300 dark:text-zinc-700 hover:text-red-500 transition-colors"
                           >
@@ -155,6 +170,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                   <h3 className="text-md font-black uppercase tracking-tight">Manifest Empty</h3>
                   <p className="text-zinc-400 text-xs max-w-[240px]">No active SKUs or technical materials have been added to your provisioning manifest yet.</p>
                   <button 
+                    type="button"
                     onClick={() => setIsCartOpen(false)}
                     className="text-xs font-black uppercase tracking-widest border-b-2 pb-1 transition-colors hover:text-zinc-900 dark:hover:text-white"
                     style={{ borderColor: primary, color: primary }}
@@ -196,6 +212,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
               </div>
 
               <button
+                type="button"
                 onClick={() => { user ? router.push(`/hardwareecommerce/checkout`) : handleGoogleSignIn() }}
                 className="block w-full py-5 bg-zinc-900 text-white dark:bg-white dark:text-black text-center font-black uppercase tracking-[0.2em] text-xs hover:bg-amber-500 dark:hover:bg-amber-500 dark:hover:text-black transition-all shadow-xl active:scale-[0.98]"
               >

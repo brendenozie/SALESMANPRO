@@ -2,11 +2,10 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { XMarkIcon, ShoppingBagIcon, TrashIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, TrashIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
@@ -49,8 +48,8 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-full max-w-md bg-[#FDFCF9] shadow-2xl z-[101] flex flex-col"
-          >
+            className="fixed right-0 top-0 h-full w-full max-w-md bg-[#FDFCF9] shadow-2xl z-[101] flex flex-col min-h-screen "
+          > 
             {/* Header */}
             <div className="p-6 border-b border-zinc-100 flex items-center justify-between bg-white">
               <div>
@@ -68,18 +67,21 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
             </div>
 
             {/* Cart Items List */}
-            <div className="flex-grow overflow-y-auto p-6 space-y-6">
+            <div className="flex-grow overflow-y-auto p-6 space-y-6 bg-white ">
               {cart.length > 0 ? (
-                cart.map((item: any, index: number) => {
-                  // Unique compound identifier using item id and option string values
-                  const itemKey = item.selectedOptions 
-                    ? `${item.id}-${Object.values(item.selectedOptions).join('-')}`
-                    : `${item.id}-${index}`;
+                cart.map((item: any) => {
+                  // Generate a safe, sorted signature to map layout keys perfectly to the ProductCard configuration keys
+                  const sortedOptionsString = Object.keys(item.selectedOptions || {})
+                    .sort()
+                    .reduce((acc, key) => `${acc}-${key}:${item.selectedOptions[key]}`, '');
+                  
+                  // Primary lookup uses item.uid configured from selection, falling back to composite string matching
+                  const uniqueVariantKey = item.uid || `${item.id}${sortedOptionsString}`;
 
                   return (
                     <motion.div 
                       layout
-                      key={itemKey} 
+                      key={uniqueVariantKey} 
                       className="flex gap-4 items-center border-b border-zinc-100 pb-6"
                     >
                       <div className="relative h-24 w-18 aspect-[3/4] overflow-hidden bg-zinc-50 shadow-sm flex-shrink-0 border-l-2 border-black/10">
@@ -99,7 +101,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                         {item.selectedOptions && Object.entries(item.selectedOptions).length > 0 && (
                           <div className="flex flex-wrap gap-1.5 mb-2">
                             {Object.entries(item.selectedOptions).map(([key, val]: any) => (
-                              <span key={key} className="text-[9px] bg-zinc-100 text-zinc-600 px-2 py-0.5 uppercase tracking-tight font-medium">
+                              <span key={key} className="text-[9px] bg-zinc-100 text-zinc-600 px-2 py-0.5 uppercase tracking-tight font-medium rounded-sm">
                                 {key}: {val}
                               </span>
                             ))}
@@ -113,12 +115,12 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                         <div className="flex items-center gap-3 mt-3">
                           <div className="flex items-center bg-zinc-100 rounded-full px-2 py-1">
                             <button 
-                              onClick={() => decreaseQuantity(item.id, item.selectedOptions)} 
+                              onClick={() => decreaseQuantity(uniqueVariantKey)} 
                               className="p-1 text-zinc-500 hover:text-zinc-900"
                             >
                               <MinusIcon className="w-3 h-3" />
                             </button>
-                            <span className="px-3 text-xs font-bold text-zinc-900">{item.quantity}</span>
+                            <span className="px-3 text-xs font-bold text-zinc-900 tabular-nums">{item.quantity}</span>
                             <button 
                               onClick={() => addToCart(item)} 
                               className="p-1 text-zinc-500 hover:text-zinc-900"
@@ -127,7 +129,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                             </button>
                           </div>
                           <button 
-                            onClick={() => removeFromCart(item.id, item.selectedOptions)} 
+                            onClick={() => removeFromCart(uniqueVariantKey)} 
                             className="text-zinc-300 hover:text-red-500 transition-colors"
                           >
                             <TrashIcon className="w-4 h-4" />

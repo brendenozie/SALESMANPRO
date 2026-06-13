@@ -24,6 +24,14 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
     window.location.href = authUrl.toString();
   };
 
+  // Helper logic matching ProductCard's compound identification signatures
+  const getItemSignatureId = (item: any) => {
+    if (item.selectedOptions && Object.keys(item.selectedOptions).length > 0) {
+      return `${item.id}-${JSON.stringify(item.selectedOptions)}`;
+    }
+    return item.id;
+  };
+
   return (
     <AnimatePresence>
       {isCartOpen && (
@@ -66,63 +74,82 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
             {/* Cart Items List */}
             <div className="flex-grow overflow-y-auto p-6 space-y-6 scrollbar-hide">
               {cart.length > 0 ? (
-                cart.map((item: any, idx: number) => (
-                  <motion.div 
-                    layout
-                    key={item.id} 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className="flex gap-6 group"
-                  >
-                    {/* Image Container */}
-                    <div className="relative h-28 w-24 bg-gray-50 rounded-2xl overflow-hidden flex-shrink-0 border border-gray-100">
-                      <Image 
-                        src={item.images?.[0] || '/placeholder.png'} 
-                        alt={item.name} 
-                        fill 
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                        loader={({ src }) => src}
-                      />
-                    </div>
-                    
-                    {/* Item Details */}
-                    <div className="flex-grow flex flex-col justify-between py-1">
-                      <div className="space-y-1">
-                        <div className="flex justify-between items-start">
-                          <h3 className="font-bold text-gray-900 text-sm uppercase tracking-tight leading-tight max-w-[150px]">
-                            {item.name}
-                          </h3>
-                          <button onClick={() => removeFromCart(item.id)} className="text-gray-300 hover:text-red-500 transition-colors">
-                            <TrashIcon className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <p className="font-black text-lg" style={{ color: primary }}>
-                          ${item.finalPrice?.toFixed(2)}
-                        </p>
+                cart.map((item: any, idx: number) => {
+                  const targetSignatureId = getItemSignatureId(item);
+                  
+                  return (
+                    <motion.div 
+                      layout
+                      key={targetSignatureId} 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      className="flex gap-6 group"
+                    >
+                      {/* Image Container */}
+                      <div className="relative h-28 w-24 bg-gray-50 rounded-2xl overflow-hidden flex-shrink-0 border border-gray-100">
+                        <Image 
+                          src={item.images?.[0] || '/placeholder.png'} 
+                          alt={item.name} 
+                          fill 
+                          className="object-cover transition-transform duration-500 group-hover:scale-110"
+                          loader={({ src }) => src}
+                        />
                       </div>
                       
-                      {/* Quantity Controls */}
-                      <div className="flex items-center justify-between mt-4">
-                        <div className="flex items-center bg-gray-50 rounded-full px-2 py-1 border border-gray-100">
-                          <button 
-                            onClick={() => decreaseQuantity(item.id)} 
-                            className="p-1.5 hover:bg-white rounded-full transition-all text-gray-400 hover:text-gray-900 shadow-sm"
-                          >
-                            <MinusIcon className="w-3.5 h-3.5" />
-                          </button>
-                          <span className="px-4 text-xs font-black text-gray-900">{item.quantity}</span>
-                          <button 
-                            onClick={() => addToCart(item)} 
-                            className="p-1.5 hover:bg-white rounded-full transition-all text-gray-400 hover:text-gray-900 shadow-sm"
-                          >
-                            <PlusIcon className="w-3.5 h-3.5" />
-                          </button>
+                      {/* Item Details */}
+                      <div className="flex-grow flex flex-col justify-between py-1 text-left">
+                        <div className="space-y-1">
+                          <div className="flex justify-between items-start gap-2">
+                            <h3 className="font-bold text-gray-900 text-sm uppercase tracking-tight leading-tight max-w-[180px]">
+                              {item.name}
+                            </h3>
+                            <button 
+                              onClick={() => removeFromCart(targetSignatureId)} 
+                              className="text-gray-300 hover:text-red-500 transition-colors flex-shrink-0 p-1"
+                            >
+                              <TrashIcon className="w-4 h-4" />
+                            </button>
+                          </div>
+
+                          {/* Dynamic display tracking configurations chosen */}
+                          {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
+                            <div className="flex flex-wrap gap-1 pt-0.5">
+                              {Object.entries(item.selectedOptions).map(([category, selectionValue]) => (
+                                <span key={category} className="inline-block bg-stone-50 border border-stone-100 text-stone-500 text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
+                                  {category}: {String(selectionValue)}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
+                          <p className="font-black text-lg pt-1" style={{ color: primary }}>
+                            Kes {item.finalPrice?.toLocaleString()}
+                          </p>
+                        </div>
+                        
+                        {/* Quantity Controls */}
+                        <div className="flex items-center justify-between mt-2">
+                          <div className="flex items-center bg-gray-50 rounded-full px-2 py-1 border border-gray-100">
+                            <button 
+                              onClick={() => decreaseQuantity(targetSignatureId)} 
+                              className="p-1.5 hover:bg-white rounded-full transition-all text-gray-400 hover:text-gray-900 shadow-sm"
+                            >
+                              <MinusIcon className="w-3.5 h-3.5" />
+                            </button>
+                            <span className="px-4 text-xs font-black text-gray-900">{item.quantity}</span>
+                            <button 
+                              onClick={() => addToCart(item)} 
+                              className="p-1.5 hover:bg-white rounded-full transition-all text-gray-400 hover:text-gray-900 shadow-sm"
+                            >
+                              <PlusIcon className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))
+                    </motion.div>
+                  );
+                })
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-center">
                   <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6">
@@ -146,7 +173,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
               <div className="space-y-3">
                 <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest text-gray-400">
                   <span>Subtotal</span>
-                  <span className="text-gray-900">${totalPrice?.toFixed(2) || '0.00'}</span>
+                  <span className="text-gray-900 font-black">Kes {totalPrice?.toLocaleString() || '0'}</span>
                 </div>
                 <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest text-gray-400">
                   <span>Shipping</span>
@@ -154,11 +181,11 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                 </div>
               </div>
               
-              <div className="pt-4 flex justify-between items-end">
+              <div className="pt-2 flex justify-between items-end text-left">
                 <div className="flex flex-col">
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Total Amount</span>
-                  <span className="text-4xl font-black text-gray-900 tracking-tighter leading-none italic">
-                    ${totalPrice?.toFixed(2) || '0.00'}
+                  <span className="text-4xl font-black text-gray-900 tracking-tighter leading-none italic mt-1">
+                    Kes {totalPrice?.toLocaleString() || '0'}
                   </span>
                 </div>
               </div>

@@ -1,8 +1,8 @@
 'use client';
 
 import { MinusIcon, PlusIcon, ShoppingBagIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import React, { useState } from 'react';
-import { MarketListingForm } from '@/types/typings';
+import React, { useState, useEffect, useMemo } from 'react';
+import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -26,46 +26,101 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { storeFormData } = useStoreContext();
   const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  // Local option state management (e.g., bouquet sizes or wrapping types)
-  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(() => {
-    const initial: Record<string, string> = {};
-    if (product.option && Array.isArray(product.option)) {
-      product.option.forEach((opt: any) => {
-        if (opt.values && opt.values.length > 0) {
-          initial[opt.name] = opt.values[0];
-        }
-      });
-    }
-    return initial;
-  });
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
 
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#10B981';
-  const quantity = cart.find((item: any) => item.id === product.id)?.quantity || 0;
+
+  // Group dynamic variants by their designated category key
+  const groupedCategories = useMemo(() => {
+    const optionsArray = (product.option || []) as VariantOptionItem[];
+    const groups: Record<string, VariantOptionItem[]> = {};
+    
+    optionsArray.forEach((item) => {
+      if (!groups[item.category]) {
+        groups[item.category] = [];
+      }
+      groups[item.category].push(item);
+    });
+    return groups;
+  }, [product.option]);
+
+  const hasOptions = Object.keys(groupedCategories).length > 0;
+
+  // Initialize selected configuration values cleanly
+  useEffect(() => {
+    if (hasOptions) {
+      const initialSelection: Record<string, string> = {};
+      Object.entries(groupedCategories).forEach(([category, items]) => {
+        if (items.length > 0) {
+          initialSelection[category] = items[0].name;
+        }
+      });
+      setSelectedOptions(initialSelection);
+    }
+  }, [groupedCategories, hasOptions]);
+
+  // Compute calculated pricing matrix based on active variant extra choices
+  const currentTotalPrice = useMemo(() => {
+    const basePrice = product.finalPrice ?? 0;
+    let surcharge = 0;
+
+    Object.entries(selectedOptions).forEach(([category, chosenValue]) => {
+      const match = (product.option || []).find(
+        (v: VariantOptionItem) => v.category === category && v.name === chosenValue
+      );
+      if (match) {
+        surcharge += match.extraPrice || 0;
+      }
+    });
+
+    return basePrice + surcharge;
+  }, [product.finalPrice, product.option, selectedOptions]);
+
+  // Track unique configuration patterns to keep item counters accurately sync'd
+  const currentConfigUniqueSignature = useMemo(() => {
+    const sortedSpecs = Object.entries(selectedOptions)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([cat, val]) => `${cat}:${val}`)
+      .join('|');
+    return sortedSpecs ? `${product.id}-${sortedSpecs}` : product.id;
+  }, [product.id, selectedOptions]);
+
+  // Find target matches inside global state using fallback signatures
+  const cartItemMatch = useMemo(() => {
+    return cart.find((item: any) => {
+      if (item.cartItemId) return item.cartItemId === currentConfigUniqueSignature;
+      return item.id === product.id;
+    });
+  }, [cart, currentConfigUniqueSignature, product.id]);
+
+  const quantity = cartItemMatch?.quantity || 0;
 
   const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
-  const message = encodeURIComponent(`Hi! I'm interested in the "${product.name}" bouquet. Do you offer same-day delivery, and can I include a custom handwritten note?`);
+  const message = encodeURIComponent(`Hi! I'm interested in the "${product.name}". Is it currently available in stock, and what are the delivery timelines?`);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
   const imageSrc = product.images?.[0] || 'https://via.placeholder.com/600x800';
-  
-  // Check if product requires customization options before placing into bag
-  const hasOptions = product.option && Array.isArray(product.option) && product.option.length > 0;
 
   const handleAddClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (hasOptions) {
       setIsModalOpen(true);
     } else {
-      addToCart(product);
+      addToCart({
+        ...product,
+        cartItemId: product.id,
+        selectedOptions: {},
+        calculatedPrice: product.finalPrice
+      });
     }
   };
 
   const handleConfirmOptions = () => {
-    // Merge customization details directly into payload reference
     const customizedProduct = {
       ...product,
-      selectedOptions: selectedOptions
+      cartItemId: currentConfigUniqueSignature,
+      selectedOptions: { ...selectedOptions },
+      calculatedPrice: currentTotalPrice
     };
     addToCart(customizedProduct);
     setIsModalOpen(false);
@@ -80,29 +135,29 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       >
         {/* Image Container */}
         <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-slate-50">
-          <Link href={`/flowersecommerce/products/${product.id}`} className="block h-full w-full">
+          <Link href={`/products/${product.id}`} className="block h-full w-full">
             <Image
               src={imageSrc}
               alt={product.name}
               loader={loader}
               fill
-              className="object-cover transition-transform duration-1000 ease-out group-hover:scale-110"
+              className="object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
               sizes="(max-width: 768px) 100vw, 25vw"
             />
           </Link>
           
-          {/* Soft Status Tags */}
+          {/* Status Tags */}
           <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
             {product.sellingPrice! > product.finalPrice! && (
               <div className="bg-rose-50/90 backdrop-blur-md px-3 py-1 rounded-full border border-rose-100 shadow-sm">
                 <span className="text-[9px] font-bold text-rose-500 uppercase tracking-widest">
-                  Seasonal Offer
+                  Special Offer
                 </span>
               </div>
             )}
             <div className="bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full border border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <span className="text-[9px] font-medium text-slate-600 uppercase tracking-widest">
-                Freshly Picked
+                Official Warranty
               </span>
             </div>
           </div>
@@ -113,7 +168,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             target="_blank"
             rel="noopener noreferrer"
             className="absolute top-4 right-4 z-20 p-2.5 bg-white/90 backdrop-blur-md text-[#25D366] rounded-full shadow-sm transition-all duration-300 hover:bg-white hover:scale-110"
-            title="Ask the Florist"
+            title="Inquire on WhatsApp"
           >
             <WhatsAppIcon className="w-4 h-4" />
           </a>
@@ -125,7 +180,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-white/10 flex items-center justify-center p-6"
+                className="absolute inset-0 bg-black/10 flex items-center justify-center p-6"
               >
                 {quantity === 0 ? (
                   <motion.button
@@ -145,11 +200,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                     animate={{ y: 0, opacity: 1 }}
                     className="w-full bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl flex items-center justify-between p-1.5"
                   >
-                    <button onClick={() => decreaseQuantity(product.id)} className="p-3 hover:bg-slate-50 rounded-lg transition-colors">
+                    <button 
+                      onClick={() => decreaseQuantity(cartItemMatch?.cartItemId || product.id)} 
+                      className="p-3 hover:bg-slate-50 rounded-lg transition-colors"
+                    >
                       <MinusIcon className="w-4 h-4 text-slate-600" />
                     </button>
                     <span className="font-bold text-slate-900 text-sm">{quantity}</span>
-                    <button onClick={handleAddClick} className="p-3 hover:bg-slate-50 rounded-lg transition-colors">
+                    <button 
+                      onClick={handleAddClick} 
+                      className="p-3 hover:bg-slate-50 rounded-lg transition-colors"
+                    >
                       <PlusIcon className="w-4 h-4 text-slate-600" />
                     </button>
                   </motion.div>
@@ -161,13 +222,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         {/* Details Section */}
         <div className="mt-6 flex flex-col items-center text-center">
-          <Link href={`/flowersecommerce/products/${product.id}`}>
-            <h4 className="text-lg font-serif italic text-slate-900 group-hover:text-rose-500 transition-colors duration-500">
+          <Link href={`/products/${product.id}`}>
+            <h4 className="text-base font-semibold tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors duration-300">
               {product.name}
             </h4>
           </Link>
           
-          <div className="flex items-center gap-3 mt-2">
+          <div className="flex items-center gap-3 mt-1.5">
             <span className="text-slate-900 font-bold tracking-tight">
               Kes {(product.finalPrice ?? 0).toLocaleString()}
             </span>
@@ -178,22 +239,22 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             )}
           </div>
 
-          {/* Interactive Bloom Indicator */}
-          <div className="flex items-center gap-4 mt-5 group-hover:gap-8 transition-all duration-700">
-            <div className="h-[1px] w-6 bg-slate-200 group-hover:bg-rose-200" />
+          {/* Interactive Action Indicator */}
+          <div className="flex items-center gap-4 mt-4 group-hover:gap-6 transition-all duration-500">
+            <div className="h-[1px] w-4 bg-slate-200" />
             <a 
               href={whatsappUrl}
               target="_blank"
-              className="text-[9px] font-black uppercase tracking-[0.2em] text-green-500 hover:text-rose-500 transition-colors flex items-center gap-1"
+              className="text-[9px] font-black uppercase tracking-[0.2em] text-green-500 hover:text-slate-900 transition-colors flex items-center gap-1.5"
             >
               <WhatsAppIcon className="w-3 h-3" /> Order Via WhatsApp
             </a>
-            <div className="h-[1px] w-6 bg-slate-200 group-hover:bg-rose-200" />
+            <div className="h-[1px] w-4 bg-slate-200" />
           </div>
         </div>
       </div>
 
-      {/* Flower Customization Drawer / Modal */}
+      {/* Configuration Drawer / Modal */}
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -214,6 +275,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               className="relative w-full max-w-md bg-white rounded-3xl p-8 shadow-2xl border border-slate-100 z-10 overflow-hidden"
             >
               <button 
+                type="button"
                 onClick={() => setIsModalOpen(false)}
                 className="absolute top-6 right-6 p-2 rounded-full text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors"
               >
@@ -221,32 +283,38 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               </button>
 
               <div className="mb-6">
-                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-rose-400 block mb-1">Custom Arrangement</span>
-                <h3 className="text-xl font-serif text-slate-900 italic">{product.name}</h3>
-                <p className="text-sm text-slate-500 mt-1">Select your preferred stem count or wrapping options below.</p>
+                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-slate-400 block mb-1">Product Options</span>
+                <h3 className="text-xl font-bold tracking-tight text-slate-900">{product.name}</h3>
+                <p className="text-sm text-slate-500 mt-1">Select your preferred specifications below.</p>
               </div>
 
-              {/* Render options dynamically mapping to lists or chips */}
+              {/* Render structural options mapped cleanly by categories */}
               <div className="space-y-6 max-h-[40vh] overflow-y-auto pr-1">
-                {product.option?.map((option: any) => (
-                  <div key={option.name} className="flex flex-col gap-2.5">
+                {Object.entries(groupedCategories).map(([categoryName, variants]) => (
+                  <div key={categoryName} className="flex flex-col gap-2.5">
                     <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                      {option.name}
+                      {categoryName}
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {option.values?.map((val: string) => {
-                        const isSelected = selectedOptions[option.name] === val;
+                      {variants.map((variant) => {
+                        const isSelected = selectedOptions[categoryName] === variant.name;
                         return (
                           <button
-                            key={val}
-                            onClick={() => setSelectedOptions(prev => ({ ...prev, [option.name]: val }))}
-                            className={`px-4 py-2 text-xs rounded-xl border transition-all duration-300 font-medium ${
+                            key={variant.name}
+                            type="button"
+                            onClick={() => setSelectedOptions(prev => ({ ...prev, [categoryName]: variant.name }))}
+                            className={`px-4 py-2 text-xs rounded-xl border transition-all duration-300 font-medium flex flex-col items-start ${
                               isSelected 
                                 ? 'bg-slate-900 border-slate-900 text-white shadow-md' 
                                 : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
                             }`}
                           >
-                            {val}
+                            <span>{variant.name}</span>
+                            {variant.extraPrice > 0 && (
+                              <span className={`text-[9px] mt-0.5 font-bold ${isSelected ? 'text-blue-300' : 'text-slate-400'}`}>
+                                +Kes {variant.extraPrice.toLocaleString()}
+                              </span>
+                            )}
                           </button>
                         );
                       })}
@@ -258,15 +326,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               {/* Modal Footer actions */}
               <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between gap-4">
                 <div>
-                  <span className="text-[10px] uppercase font-semibold text-slate-400 block tracking-wider">Total Valuation</span>
-                  <span className="text-lg font-black text-slate-900">Kes {(product.finalPrice ?? 0).toLocaleString()}</span>
+                  <span className="text-[10px] uppercase font-semibold text-slate-400 block tracking-wider">Total Price</span>
+                  <span className="text-lg font-black text-slate-900">Kes {currentTotalPrice.toLocaleString()}</span>
                 </div>
                 
                 <button
+                  type="button"
                   onClick={handleConfirmOptions}
                   className="flex-grow max-w-[200px] bg-slate-900 hover:bg-slate-800 text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg transition-all active:scale-95"
                 >
-                  Confirm Configuration
+                  Confirm Choice
                 </button>
               </div>
             </motion.div>

@@ -2,7 +2,7 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import prisma from "@/server/db/prismadb";
-import { MarketListingForm } from "@/types/typings";
+import { ListingMarketStatus, ListingSystemStatus, ListingTransactionType, MarketListingForm } from "@/types/typings";
 import ProductListWrapper from "./components/ProductListWrapper/ProductListWrapper";
 
 // --- Mock sample products (used when DB has no listings) ---
@@ -23,7 +23,6 @@ const mockProducts: MarketListingForm[] = [
     productCategoryId: "cat_1",
     subCategory: undefined,
     tags: [],
-    option: [],
     size: [],
     weight: [],
     material: [],
@@ -42,6 +41,10 @@ const mockProducts: MarketListingForm[] = [
     paymentOption: "",
     duration: undefined,
     location: null,
+    listingMarketStatus: ListingMarketStatus.AVAILABLE,
+    listingSystemStatus: ListingSystemStatus.DRAFT,
+    listingTransactionType: ListingTransactionType.SALE,
+    option: []
   },
   {
     id: "2",
@@ -59,7 +62,6 @@ const mockProducts: MarketListingForm[] = [
     productCategoryId: "cat_1",
     subCategory: undefined,
     tags: [],
-    option: [],
     size: [],
     weight: [],
     material: [],
@@ -78,6 +80,10 @@ const mockProducts: MarketListingForm[] = [
     paymentOption: "",
     duration: undefined,
     location: null,
+    listingMarketStatus: ListingMarketStatus.AVAILABLE,
+    listingSystemStatus: ListingSystemStatus.DRAFT,
+    listingTransactionType: ListingTransactionType.SALE,
+    option: []
   },
 ];
 
@@ -135,6 +141,7 @@ export default async function ProductListPage({ params, searchParams }: PageProp
         sellingPrice: true,
         images: true,
         productCategoryId: true,
+        option: true
       },
     }),
     prisma.storeCategory.findMany({
@@ -152,6 +159,7 @@ export default async function ProductListPage({ params, searchParams }: PageProp
     sellingPrice: p.sellingPrice || 0,
     images: Array.isArray(p.images) ? p.images : [],
     productCategoryId: p.productCategoryId || '',
+    option: p.option || [],
 
     // Fill in defaults for required fields
     category: "",
@@ -163,7 +171,6 @@ export default async function ProductListPage({ params, searchParams }: PageProp
     status: "ACTIVE",
     subCategory: undefined,
     tags: [],
-    option: [],
     size: [],
     weight: [],
     material: [],

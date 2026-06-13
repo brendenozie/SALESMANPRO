@@ -157,15 +157,15 @@ export default function RethoughtAgrovetHero({
                 <div className="flex items-center gap-3">
                   <span className="h-[2px] w-8 md:w-12 transition-colors duration-500" style={{ backgroundColor: themePrimary }} />
                   <span className="text-xs md:text-sm font-black tracking-[0.25em] uppercase transition-colors duration-500" style={{ color: themePrimary }}>
-                    {currentSlide.type || 'Showcase'}
+                    {currentSlide.badgeText || 'Showcase'}
                   </span>
                 </div>
                 
-                {currentSlide.badgeText && (
+                {/* {currentSlide.badgeText && (
                   <span className="px-3 py-1 text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-full border border-white/20 bg-white/10 backdrop-blur-md">
                     {currentSlide.badgeText}
                   </span>
-                )}
+                )} */}
               </div>
 
               {/* Headline */}

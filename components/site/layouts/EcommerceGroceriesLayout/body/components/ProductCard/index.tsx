@@ -1,8 +1,8 @@
 'use client';
 
 import { MinusIcon, PlusIcon, StarIcon, ShoppingCartIcon, ChatBubbleLeftRightIcon, XMarkIcon } from '@heroicons/react/24/solid';
-import React, { useState, useEffect } from 'react';
-import { MarketListingForm } from '@/types/typings';
+import React, { useState, useEffect, useMemo } from 'react';
+import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -27,25 +27,56 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
   const primary = storeFormData?.themeSettings?.primaryColor || '#16a34a';
 
-  // Grocery option groups can be loaded from your metadata configurations
-  // Examples: weight variations, processing configurations (e.g. cut type)
-  const optionGroups = product.option || product.option || null;
+  // 1. Reconstruct flat variant options array back into categorical structural row records
+  const optionGroups = useMemo(() => {
+    const rawOptions = (product.option || []) as VariantOptionItem[];
+    if (!Array.isArray(rawOptions) || rawOptions.length === 0) return null;
+
+    const groups: Record<string, VariantOptionItem[]> = {};
+    rawOptions.forEach((item) => {
+      if (!groups[item.category]) {
+        groups[item.category] = [];
+      }
+      groups[item.category].push(item);
+    });
+    return groups;
+  }, [product.option]);
+
   const hasOptions = optionGroups && Object.keys(optionGroups).length > 0;
 
-  // Determine current quantity based on option groups mapping strategy
-  const getDisplayQuantity = () => {
+  // 2. Safely parse active variations to determine exact matching price additions
+  const activePrice = useMemo(() => {
+    let basePrice = product.finalPrice ?? 0;
+    const rawOptions = (product.option || []) as VariantOptionItem[];
+
+    Object.entries(selectedOptions).forEach(([category, name]) => {
+      const match = rawOptions.find(v => v.category === category && v.name === name);
+      if (match?.extraPrice) {
+        basePrice += match.extraPrice;
+      }
+    });
+    return basePrice;
+  }, [selectedOptions, product.finalPrice, product.option]);
+
+  // 3. Create predictable composite keys for unique variation line items in cart
+  const generateCartItemId = (options: Record<string, string>) => {
+    if (!options || Object.keys(options).length === 0) return product.id;
+    const sortedOptionsQuery = Object.entries(options)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, val]) => `${key}:${val}`)
+      .join('|');
+    return `${product.id}-${sortedOptionsQuery}`;
+  };
+
+  const quantity = useMemo(() => {
     if (hasOptions) {
-      // Aggregate matching items across variations for abstract card display counters
       return cart
         .filter((item: any) => item.id === product.id)
         .reduce((acc: number, cur: any) => acc + cur.quantity, 0);
     }
     return cart.find((item: any) => item.id === product.id)?.quantity || 0;
-  };
+  }, [cart, hasOptions, product.id]);
 
-  const quantity = getDisplayQuantity();
-
-  // Escape key mapping for modular layout structures
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setIsModalOpen(false);
@@ -55,19 +86,22 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   }, [isModalOpen]);
 
   const handleActionClick = () => {
-    if (hasOptions) {
-      // Reset selected defaults before showing options interface
+    if (hasOptions && optionGroups) {
       const initial: Record<string, string> = {};
-      Object.keys(optionGroups).forEach((key) => {
-        if (optionGroups[key].length === 1) {
-          initial[key] = optionGroups[key][0];
+      Object.entries(optionGroups).forEach(([category, items]) => {
+        if (items.length === 1) {
+          initial[category] = items[0].name;
         }
       });
       setSelectedOptions(initial);
       setErrorMsg('');
       setIsModalOpen(true);
     } else {
-      addToCart(product);
+      addToCart({
+        ...product,
+        cartItemId: product.id,
+        calculatedPrice: product.finalPrice ?? 0
+      });
     }
   };
 
@@ -77,7 +111,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   };
 
   const handleConfirmOptions = () => {
-    // Validate that all specified groupings are handled
+    if (!optionGroups) return;
     const missingKeys = Object.keys(optionGroups).filter(key => !selectedOptions[key]);
     
     if (missingKeys.length > 0) {
@@ -85,10 +119,14 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
       return;
     }
 
-    // Attach chosen configuration parameters to dynamic key mapping structures
+    const uniqueCartItemId = generateCartItemId(selectedOptions);
+
     const customPayload = {
       ...product,
+      id: product.id,
+      cartItemId: uniqueCartItemId,
       selectedOptions,
+      calculatedPrice: activePrice
     };
 
     addToCart(customPayload);
@@ -148,14 +186,16 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
         </div>
 
         {/* Info Wrapper */}
-        <div className="px-6 pb-6 flex flex-col flex-grow">
+        <div className="px-6 pb-6 flex flex-col flex-grow text-gray-900">
           <div className="mb-4">
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-1 text-yellow-400">
                 <StarIcon className="w-3.5 h-3.5" />
                 <span className="text-xs font-bold text-gray-500">4.8</span>
               </div>
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Qty: 1 Unit</span>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                {hasOptions ? `Total Qty: ${quantity}` : 'Qty: 1 Unit'}
+              </span>
             </div>
             
             <Link href={`/groceriesecommerce/products/${product.id}`}>
@@ -209,7 +249,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                     </button>
                     <span className="font-black text-gray-900 text-sm">{quantity}</span>
                     <button 
-                      onClick={() => addToCart(product)}
+                      onClick={() => addToCart({ ...product, cartItemId: product.id, calculatedPrice: product.finalPrice ?? 0 })}
                       className="h-10 w-10 flex items-center justify-center rounded-xl hover:bg-white transition-colors text-gray-600"
                     >
                       <PlusIcon className="w-4 h-4" />
@@ -246,7 +286,6 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
       <AnimatePresence>
         {isModalOpen && optionGroups && (
           <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
-            {/* Backdrop Layer */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -255,7 +294,6 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
 
-            {/* Modal Box */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -277,26 +315,31 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
               {/* Dynamic Group Rendering */}
               <div className="space-y-6 max-h-[40vh] overflow-y-auto pr-1">
-                {Object.entries(optionGroups).map(([groupKey, optionsList]: [string, any]) => (
+                {Object.entries(optionGroups).map(([groupKey, variantItems]) => (
                   <div key={groupKey} className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-wider text-gray-500 block">
                       Choose {groupKey} :
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {optionsList.map((val: string) => {
-                        const isSelected = selectedOptions[groupKey] === val;
+                      {variantItems.map((item) => {
+                        const isSelected = selectedOptions[groupKey] === item.name;
                         return (
                           <button
-                            key={val}
-                            onClick={() => handleOptionSelect(groupKey, val)}
-                            className={`px-4 py-2 text-xs font-bold transition-all border rounded-xl ${
+                            key={item.name}
+                            onClick={() => handleOptionSelect(groupKey, item.name)}
+                            className={`px-4 py-2 text-xs font-bold transition-all border rounded-xl flex items-center gap-1 ${
                               isSelected 
                                 ? 'text-white border-transparent shadow-md scale-105' 
                                 : 'bg-gray-50 border-gray-100 text-gray-600 hover:bg-gray-100'
                             }`}
                             style={{ backgroundColor: isSelected ? primary : undefined }}
                           >
-                            {val}
+                            <span>{item.name}</span>
+                            {item.extraPrice > 0 && (
+                              <span className={`text-[10px] ml-0.5 ${isSelected ? 'text-white/80' : 'text-blue-500'}`}>
+                                (+Kes {item.extraPrice})
+                              </span>
+                            )}
                           </button>
                         );
                       })}
@@ -319,7 +362,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                 <div className="flex flex-col">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Unit Estimate</span>
                   <span className="text-xl font-black text-gray-900">
-                    Kes {(product.finalPrice ?? 0).toLocaleString()}
+                    Kes {activePrice.toLocaleString()}
                   </span>
                 </div>
 

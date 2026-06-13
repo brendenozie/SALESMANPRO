@@ -108,193 +108,232 @@ export default function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <motion.div 
-      whileHover={{ y: -10 }}
-      className="group relative bg-white rounded-[2.5rem] p-4 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(62,39,35,0.15)] border border-stone-100 h-full flex flex-col overflow-hidden"
-    >
-      {/* Image Container */}
-      <div className="relative h-64 w-full rounded-[2rem] overflow-hidden bg-stone-50">
-        <Link href={`/peanutecommerce/products/${product.id}`} className="block h-full w-full">
-          <Image
-            src={images?.[0] || 'https://via.placeholder.com/300'}
-            alt={name}
-            loader={loader}
-            fill
-            className="transition-transform duration-700 group-hover:scale-110 object-cover object-center"
-          />
-        </Link>
-        
-        <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-          {discount && (
-            <div className="bg-[#F3A852] text-[#3E2723] text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">
-              {discount}% Crunch
-            </div>
-          )}
-        </div>
-
-        {/* WhatsApp Float */}
-        <a 
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="absolute top-4 right-4 z-10 p-2.5 bg-white/90 backdrop-blur-md text-[#128C7E] rounded-full shadow-sm transition-all duration-300 hover:scale-110"
-          title="Ask the Roaster"
-        >
-          <WhatsAppIcon className="w-4 h-4" />
-        </a>
-      </div>
-
-      {/* Content Section */}
-      <div className="mt-6 px-2 space-y-1 flex-grow flex flex-col justify-between">
-        <div>
-          <div className="flex justify-between items-center mb-1">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Small Batch</span>
-              <div className="h-1 w-1 rounded-full bg-stone-200" />
-              <a 
-                href={whatsappUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-[9px] font-black text-[#128C7E] uppercase hover:underline transition-colors flex items-center gap-1"
-              >
-                <WhatsAppIcon className="w-3 h-3" /> Order Via WhatsApp
-              </a>
-            </div>
-          </div>
-
-          <Link href={`/peanutecommerce/products/${product.id}`} className="block">
-            <h4 style={{ color: primaryColor }} className="text-lg font-black tracking-tight group-hover:text-[#F3A852] transition-colors line-clamp-2">
-              {name}
-            </h4>
+    <>
+      <motion.div 
+        whileHover={{ y: -10 }}
+        className="group relative bg-white rounded-[2.5rem] p-4 transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(62,39,35,0.15)] border border-stone-100 h-full flex flex-col overflow-hidden"
+      >
+        {/* Image Container */}
+        <div className="relative h-64 w-full rounded-[2rem] overflow-hidden bg-stone-50">
+          <Link href={`/peanutecommerce/products/${product.id}`} className="block h-full w-full">
+            <Image
+              src={images?.[0] || 'https://via.placeholder.com/300'}
+              alt={name}
+              loader={loader}
+              fill
+              className="transition-transform duration-700 group-hover:scale-110 object-cover object-center"
+            />
           </Link>
           
-          <p className="text-xs text-stone-400 font-medium italic mt-0.5">Freshly Roasted • No Added Sugar</p>
-        </div>
-
-        <div className="flex items-center justify-between pt-6 border-t border-stone-50 mt-4">
-          <div className="flex flex-col">
-            <span style={{ color: primaryColor }} className="text-2xl font-black">
-              Kes {calculatedPrices.finalPrice.toLocaleString()}
-            </span>
-            {calculatedPrices.sellingPrice && calculatedPrices.sellingPrice > calculatedPrices.finalPrice && (
-              <span className="text-xs line-through text-stone-300 font-bold">
-                Kes {calculatedPrices.sellingPrice.toLocaleString()}
-              </span>
+          <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+            {discount && (
+              <div className="bg-[#F3A852] text-[#3E2723] text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">
+                {discount}% Crunch
+              </div>
             )}
           </div>
 
-          {/* Dynamic Action Button Toggle Matrix */}
-          <div className="relative">
-            <AnimatePresence mode="wait">
-              {quantity === 0 ? (
-                <motion.button
-                  key="add"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  onClick={handleAddToBag}
-                  style={{ backgroundColor: primaryColor }}
-                  className="px-4 h-12 rounded-2xl text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-lg"
+          {/* WhatsApp Float */}
+          <a 
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute top-4 right-4 z-10 p-2.5 bg-white/90 backdrop-blur-md text-[#128C7E] rounded-full shadow-sm transition-all duration-300 hover:scale-110"
+            title="Ask the Roaster"
+          >
+            <WhatsAppIcon className="w-4 h-4" />
+          </a>
+        </div>
+
+        {/* Content Section */}
+        <div className="mt-6 px-2 space-y-1 flex-grow flex flex-col justify-between">
+          <div>
+            <div className="flex justify-between items-center mb-1">
+              <div className="flex items-center gap-1.5 flex-wrap text-left">
+                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Small Batch</span>
+                <div className="h-1 w-1 rounded-full bg-stone-200" />
+                <a 
+                  href={whatsappUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-[9px] font-black text-[#128C7E] uppercase hover:underline transition-colors flex items-center gap-1"
                 >
-                  <ShoppingCartIcon className="w-4 h-4" />
-                  {hasVariants && !allOptionsSelected ? "Options" : "Add"}
-                </motion.button>
-              ) : (
-                <motion.div
-                  key="qty"
-                  initial={{ width: 48, opacity: 0 }}
-                  animate={{ width: 114, opacity: 1 }}
-                  exit={{ width: 48, opacity: 0 }}
-                  className="h-12 bg-stone-100 rounded-2xl flex items-center justify-between px-1.5 overflow-hidden border border-stone-200"
-                >
-                  <button 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      decreaseQuantity(product.id);
-                    }} 
-                    className="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-stone-700 hover:bg-stone-50 transition-colors shadow-sm"
-                  >
-                    {quantity === 1 ? <TrashIcon className="w-3.5 h-3.5 text-red-500" /> : <MinusIcon className="w-3.5 h-3.5" />}
-                  </button>
-                  <span style={{ color: primaryColor }} className="font-black text-sm w-4 text-center">{quantity}</span>
-                  <button 
-                    onClick={() => handleAddToBag()} 
-                    className="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-stone-700 hover:bg-stone-50 transition-colors shadow-sm"
-                  >
-                    <PlusIcon className="w-3.5 h-3.5" />
-                  </button>
-                </motion.div>
+                  <WhatsAppIcon className="w-3 h-3" /> Order Via WhatsApp
+                </a>
+              </div>
+            </div>
+
+            <Link href={`/peanutecommerce/products/${product.id}`} className="block text-left">
+              <h4 style={{ color: primaryColor }} className="text-lg font-black tracking-tight group-hover:text-[#F3A852] transition-colors line-clamp-2">
+                {name}
+              </h4>
+            </Link>
+            
+            <p className="text-xs text-stone-400 font-medium italic mt-0.5 text-left">Freshly Roasted • No Added Sugar</p>
+          </div>
+
+          <div className="flex items-center justify-between pt-6 border-t border-stone-50 mt-4">
+            <div className="flex flex-col text-left">
+              <span style={{ color: primaryColor }} className="text-2xl font-black">
+                Kes {calculatedPrices.finalPrice.toLocaleString()}
+              </span>
+              {calculatedPrices.sellingPrice && calculatedPrices.sellingPrice > calculatedPrices.finalPrice && (
+                <span className="text-xs line-through text-stone-300 font-bold">
+                  Kes {calculatedPrices.sellingPrice.toLocaleString()}
+                </span>
               )}
-            </AnimatePresence>
+            </div>
+
+            {/* Dynamic Action Button Toggle Matrix */}
+            <div className="relative">
+              <AnimatePresence mode="wait">
+                {quantity === 0 ? (
+                  <motion.button
+                    key="add"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    onClick={handleAddToBag}
+                    style={{ backgroundColor: primaryColor }}
+                    className="px-4 h-12 rounded-2xl text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-lg"
+                  >
+                    <ShoppingCartIcon className="w-4 h-4" />
+                    {hasVariants && !allOptionsSelected ? "Options" : "Add"}
+                  </motion.button>
+                ) : (
+                  <motion.div
+                    key="qty"
+                    initial={{ width: 48, opacity: 0 }}
+                    animate={{ width: 114, opacity: 1 }}
+                    exit={{ width: 48, opacity: 0 }}
+                    className="h-12 bg-stone-100 rounded-2xl flex items-center justify-between px-1.5 overflow-hidden border border-stone-200"
+                  >
+                    <button 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        decreaseQuantity(product.id, selectedOptions);
+                      }} 
+                      className="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-stone-700 hover:bg-stone-50 transition-colors shadow-sm"
+                    >
+                      {quantity === 1 ? <TrashIcon className="w-3.5 h-3.5 text-red-500" /> : <MinusIcon className="w-3.5 h-3.5" />}
+                    </button>
+                    <span style={{ color: primaryColor }} className="font-black text-sm w-4 text-center">{quantity}</span>
+                    <button 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleAddToBag();
+                      }} 
+                      className="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-stone-700 hover:bg-stone-50 transition-colors shadow-sm"
+                    >
+                      <PlusIcon className="w-3.5 h-3.5" />
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* ================= ROASTERY JAR SELECTION OVERLAY DRAWER ================= */}
+      {/* ================= ROASTERY JAR SELECTION OVERLAY MODAL PANEL ================= */}
       <AnimatePresence>
         {isConfiguring && (
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 15 }}
-            className="absolute inset-0 z-20 bg-white/98 backdrop-blur-md flex flex-col justify-end p-5 rounded-[2.5rem] border border-stone-100"
-          >
-            <button
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Dark glass backdrop backdrop layer */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setIsConfiguring(false)}
-              className="absolute top-5 right-5 p-1.5 bg-stone-100 text-stone-700 rounded-full transition-colors hover:bg-stone-200"
+              className="absolute inset-0 bg-stone-900/40 backdrop-blur-md"
+            />
+
+            {/* Portal Overlay dynamic modal display layout */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl p-6 md:p-8 border border-stone-100 flex flex-col z-10 max-h-[85vh] overflow-hidden"
             >
-              <XMarkIcon className="w-4 h-4 stroke-[3]" />
-            </button>
-
-            <div className="w-full space-y-4 pt-2 overflow-y-auto max-h-full [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              <h5 style={{ color: primaryColor }} className="font-black text-center text-base border-b border-stone-100 pb-2">
-                Roastery Configurations
-              </h5>
-              
-              {Object.entries(groupedVariants).map(([category, itemsList]) => (
-                <div key={category} className="space-y-1.5 text-center">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
-                    {category} Selection
-                  </p>
-                  <div className="flex flex-wrap justify-center gap-1.5">
-                    {itemsList.map((variantObj) => {
-                      const isSelected = selectedOptions[category] === variantObj.name;
-                      return (
-                        <button
-                          key={variantObj.name}
-                          type="button"
-                          onClick={() => setSelectedOptions({ ...selectedOptions, [category]: variantObj.name })}
-                          style={isSelected ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
-                          className={`px-3 py-1.5 text-[11px] font-bold rounded-xl border transition-all ${
-                            isSelected 
-                              ? "text-white shadow-sm" 
-                              : "border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100"
-                          }`}
-                        >
-                          {variantObj.name}
-                          {variantObj.extraPrice > 0 && ` (+Kes ${variantObj.extraPrice.toLocaleString()})`}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-
+              {/* Top Dismiss Button */}
               <button
-                disabled={!allOptionsSelected}
-                onClick={() => {
-                  handleAddToBag();
-                  setIsConfiguring(false);
-                }}
-                style={allOptionsSelected ? { backgroundColor: primaryColor } : {}}
-                className="mt-4 w-full py-3.5 bg-stone-300 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all disabled:cursor-not-allowed hover:opacity-90"
+                onClick={() => setIsConfiguring(false)}
+                className="absolute top-5 right-5 p-2 bg-stone-50 text-stone-500 rounded-full transition-colors hover:bg-stone-100 hover:text-stone-800"
               >
-                Confirm Jar Selection
+                <XMarkIcon className="w-4 h-4 stroke-[3]" />
               </button>
-            </div>
-          </motion.div>
+
+              {/* Headline Meta Context block */}
+              <div className="border-b border-stone-100 pb-4 mb-5 text-left">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 block mb-1">
+                  Custom Blend Configurator
+                </span>
+                <h3 style={{ color: primaryColor }} className="text-xl font-black pr-8 leading-snug">
+                  Configure {name}
+                </h3>
+              </div>
+
+              {/* Dynamic Categorized Variant Choice Fields */}
+              <div className="space-y-6 overflow-y-auto pr-1 text-left [scrollbar-width:thin]">
+                {Object.entries(groupedVariants).map(([category, itemsList]) => (
+                  <div key={category} className="space-y-2.5">
+                    <p className="text-[11px] font-black uppercase tracking-wider text-stone-400">
+                      Select {category}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {itemsList.map((variantObj) => {
+                        const isSelected = selectedOptions[category] === variantObj.name;
+                        return (
+                          <button
+                            key={variantObj.name}
+                            type="button"
+                            onClick={() => setSelectedOptions({ ...selectedOptions, [category]: variantObj.name })}
+                            style={isSelected ? { backgroundColor: primaryColor, borderColor: primaryColor } : {}}
+                            className={`px-4 py-2 text-xs rounded-xl border font-bold transition-all ${
+                              isSelected 
+                                ? "text-white shadow-md shadow-stone-900/5" 
+                                : "border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100 hover:border-stone-300"
+                            }`}
+                          >
+                            {variantObj.name}
+                            {variantObj.extraPrice > 0 && ` (+Kes ${variantObj.extraPrice.toLocaleString()})`}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Form Action Controls Base Row */}
+              <div className="mt-6 pt-5 border-t border-stone-100 flex items-center justify-between gap-4">
+                <div className="text-left">
+                  <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest block mb-0.5">
+                    Batch Price
+                  </span>
+                  <span style={{ color: primaryColor }} className="text-2xl font-black">
+                    Kes {calculatedPrices.finalPrice.toLocaleString()}
+                  </span>
+                </div>
+
+                <button
+                  disabled={!allOptionsSelected}
+                  onClick={() => {
+                    handleAddToBag();
+                    setIsConfiguring(false);
+                  }}
+                  style={allOptionsSelected ? { backgroundColor: primaryColor } : {}}
+                  className="px-6 py-3.5 bg-stone-300 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all disabled:cursor-not-allowed hover:opacity-90"
+                >
+                  Confirm Choice
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
-import { MinusIcon, PlusIcon, BoltIcon, XMarkIcon, TrashIcon } from '@heroicons/react/24/outline';
-import React, { useMemo, useState } from 'react';
+import { MinusIcon, PlusIcon, BoltIcon, XMarkIcon, TrashIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
+import React, { useMemo, useState, useEffect } from 'react';
 import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
@@ -41,6 +41,17 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   const hasVariants = Object.keys(groupedVariants).length > 0;
   const allOptionsSelected = Object.keys(groupedVariants).every((cat) => selectedOptions[cat]);
 
+  // Set default configurations on mount if variations are present
+  useEffect(() => {
+    if (hasVariants && Object.keys(selectedOptions).length === 0) {
+      const defaults: Record<string, string> = {};
+      Object.entries(groupedVariants).forEach(([category, items]) => {
+        if (items.length > 0) defaults[category] = items[0].name;
+      });
+      setSelectedOptions(defaults);
+    }
+  }, [groupedVariants, hasVariants, selectedOptions]);
+
   // 2. Computed Pricing Surcharges Block
   const calculatedPrices = useMemo(() => {
     const baseFinalPrice = finalPrice ?? sellingPrice ?? 0;
@@ -60,15 +71,31 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
     };
   }, [selectedOptions, groupedVariants, finalPrice, sellingPrice]);
 
-  // 3. Resolve exact match quantity against context cart items
-  const quantity = cart.find((item: any) => {
-    if (item.id !== product.id) return false;
-    if (hasVariants) {
-      if (!item.selectedOptions) return false;
-      return Object.entries(selectedOptions).every(([cat, val]) => item.selectedOptions[cat] === val);
-    }
-    return true;
-  })?.quantity || 0;
+  // 3. Create a unique Cart ID signature for option selections
+  const currentCartItemId = useMemo(() => {
+    if (!hasVariants) return product.id;
+    const sortedSpecs = Object.entries(selectedOptions)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([cat, val]) => `${cat}:${val}`)
+      .join('|');
+    return sortedSpecs ? `${product.id}-${sortedSpecs}` : product.id;
+  }, [product.id, selectedOptions, hasVariants]);
+
+  // 4. Resolve exact matches in quantity tracking
+  const currentConfigQuantity = useMemo(() => {
+    const match = cart.find((item: any) => {
+      const targetId = item.cartItemId || item.id;
+      return targetId === currentCartItemId;
+    });
+    return match?.quantity || 0;
+  }, [cart, currentCartItemId]);
+
+  // 5. Track general count parameters across all options of this specific product
+  const totalProductQuantity = useMemo(() => {
+    return cart
+      .filter((item: any) => item.id === product.id)
+      .reduce((acc: number, item: any) => acc + (item.quantity || 0), 0);
+  }, [cart, product.id]);
   
   // WhatsApp "Mechanic Support" Config
   const optionsSummary = Object.entries(selectedOptions)
@@ -94,210 +121,285 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
     addToCart({
       ...product,
+      cartItemId: currentCartItemId,
       finalPrice: calculatedPrices.finalPrice,
       sellingPrice: calculatedPrices.sellingPrice || product.sellingPrice,
-      selectedOptions,
+      selectedOptions: { ...selectedOptions },
     });
   };
 
+  const openNewConfigurator = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsSelectingOptions(true);
+  };
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      className="group relative flex flex-col bg-white border border-gray-100 p-5 transition-all duration-500 hover:shadow-[20px_20px_60px_#bebebe,-20px_-20px_60px_#ffffff] hover:-translate-y-2 overflow-hidden"
-    >
-      {/* Tactical Header: ID & WhatsApp */}
-      <div className="flex justify-between items-start mb-4">
-        <span className="text-[9px] font-mono text-gray-400 uppercase tracking-widest">
-          SKU: {product.id.slice(-8).toUpperCase()}
-        </span>
-        <a 
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="p-2 bg-gray-50 rounded-full text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all duration-300 shadow-sm z-10"
-          title="Consult Mechanic"
-        >
-          <WhatsAppIcon className="w-4 h-4" />
-        </a>
-      </div>
-
-      {/* Price Badge - Floating Impact */}
-      <div className="absolute top-16 right-6 z-10 flex flex-col items-end pointer-events-none">
-        <span className="text-2xl font-black italic tracking-tighter text-gray-900 leading-none">
-          Kes {calculatedPrices.finalPrice.toLocaleString()}
-        </span>
-        {calculatedPrices.sellingPrice > calculatedPrices.finalPrice && (
-          <span className="text-[10px] line-through text-red-500 font-bold uppercase tracking-widest mt-1">
-            Kes {calculatedPrices.sellingPrice.toLocaleString()}
-          </span>
-        )}
-      </div>
-
-      {/* Image / Mechanical Backdrop */}
-      <div className="relative aspect-[4/3] w-full mb-6 overflow-hidden bg-[#FBFBFB] rounded-xl border border-gray-50">
-        <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
-             style={{ backgroundImage: `radial-gradient(${primary} 1px, transparent 1px)`, backgroundSize: '24px 24px' }} />
-        
-        <Link href={`/bikeecommerce/products/${product.id}`} className="block h-full w-full">
-          <Image
-            src={imageSrc}
-            alt={name}
-            loader={loader}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-3"
-          />
-        </Link>
-
-        {/* Technical Callout */}
-        <div className="absolute bottom-4 left-4 flex flex-col gap-2">
-           <div className="flex items-center gap-1.5 bg-black/90 backdrop-blur-sm text-[8px] text-white px-2.5 py-1.5 rounded-none font-black uppercase tracking-widest">
-             <BoltIcon className="w-3 h-3 text-yellow-400" /> Pro Grade Components
-           </div>
-        </div>
-      </div>
-
-      {/* Product Info */}
-      <div className="flex flex-col flex-grow">
-        <div className="flex justify-between items-center">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: primary }}>
-            2026 Racing Series
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="group relative flex flex-col bg-white border border-gray-100 p-5 transition-all duration-500 hover:shadow-[20px_20px_60px_#bebebe,-20px_-20px_60px_#ffffff] hover:-translate-y-2 overflow-hidden"
+      >
+        {/* Tactical Header: ID & WhatsApp */}
+        <div className="flex justify-between items-start mb-4">
+          <span className="text-[9px] font-mono text-gray-400 uppercase tracking-widest">
+            SKU: {product.id.slice(-8).toUpperCase()}
           </span>
           <a 
             href={whatsappUrl}
             target="_blank"
-            className="text-[8px] font-bold text-green-500 flex items-center gap-1 hover:text-black transition-colors"
+            rel="noopener noreferrer"
+            className="p-2 bg-gray-50 rounded-full text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all duration-300 shadow-sm z-10"
+            title="Consult Mechanic"
           >
-            <WhatsAppIcon className="w-3 h-3" /> ORDER VIA WHATSAPP
+            <WhatsAppIcon className="w-4 h-4" />
           </a>
         </div>
-        
-        <Link href={`/bikeecommerce/products/${product.id}`}>
-          <h4 className="text-xl font-black italic uppercase tracking-tighter text-gray-900 leading-tight mt-1 group-hover:underline decoration-2" style={{ textDecorationColor: primary }}>
-            {name}
-          </h4>
-        </Link>
 
-        {/* Functional Build Actions Block */}
-        <div className="mt-auto pt-8 flex items-center justify-between">
-          <AnimatePresence mode="wait">
-            {quantity === 0 ? (
-              <motion.button
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                onClick={handleAddToCart}
-                className="flex items-center gap-4 group/btn w-full text-left"
-              >
-                <div 
-                  style={{ '--hover-bg': primary } as React.CSSProperties}
-                  className="w-12 h-12 rounded-full border-2 border-gray-900 flex items-center justify-center transition-all group-hover/btn:border-[var(--hover-bg)] group-hover/btn:bg-[var(--hover-bg)] group-hover/btn:text-white group-hover/btn:scale-110"
-                >
-                  <PlusIcon className="w-6 h-6" />
-                </div>
-                <div className="flex flex-col items-start">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 leading-none">
-                    {hasVariants && !allOptionsSelected ? "Configure Specs" : "Add to Build"}
-                  </span>
-                  <span className="text-[8px] text-gray-400 uppercase mt-1">In Stock • Ready to Ride</span>
-                </div>
-              </motion.button>
-            ) : (
-              <motion.div 
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="flex items-center bg-gray-900 text-white rounded-full p-1.5 w-full justify-between shadow-lg"
-              >
-                <button 
-                  onClick={() => decreaseQuantity(product.id, selectedOptions)} 
-                  className="p-2.5 hover:bg-white/10 rounded-full transition-colors"
-                >
-                  {quantity === 1 ? <TrashIcon className="w-4 h-4 text-red-400" /> : <MinusIcon className="w-4 h-4" />}
-                </button>
-                <span className="font-black text-sm tracking-tighter">QTY: {quantity}</span>
-                <button 
-                  onClick={() => handleAddToCart()} 
-                  className="p-2.5 hover:bg-white/10 rounded-full transition-colors"
-                >
-                  <PlusIcon className="w-4 h-4 text-emerald-400" />
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+        {/* Price Badge - Floating Impact */}
+        <div className="absolute top-16 right-6 z-10 flex flex-col items-end pointer-events-none">
+          <span className="text-2xl font-black italic tracking-tighter text-gray-900 leading-none">
+            Kes {calculatedPrices.finalPrice.toLocaleString()}
+          </span>
+          {calculatedPrices.sellingPrice > calculatedPrices.finalPrice && (
+            <span className="text-[10px] line-through text-red-500 font-bold uppercase tracking-widest mt-1">
+              Kes {calculatedPrices.sellingPrice.toLocaleString()}
+            </span>
+          )}
         </div>
-      </div>
 
-      {/* ================= TACTICAL CONFIGURATION SLIDE MODULE ================= */}
+        {/* Image / Mechanical Backdrop */}
+        <div className="relative aspect-[4/3] w-full mb-6 overflow-hidden bg-[#FBFBFB] rounded-xl border border-gray-50">
+          <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
+               style={{ backgroundImage: `radial-gradient(${primary} 1px, transparent 1px)`, backgroundSize: '24px 24px' }} />
+          
+          <Link href={`/bikeecommerce/products/${product.id}`} className="block h-full w-full">
+            <Image
+              src={imageSrc}
+              alt={name}
+              loader={loader}
+              fill
+              className="object-cover transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-3"
+            />
+          </Link>
+
+          {/* Technical Callout */}
+          <div className="absolute bottom-4 left-4 flex flex-col gap-2">
+             <div className="flex items-center gap-1.5 bg-black/90 backdrop-blur-sm text-[8px] text-white px-2.5 py-1.5 rounded-none font-black uppercase tracking-widest">
+               <BoltIcon className="w-3 h-3 text-yellow-400" /> Pro Grade Components
+             </div>
+          </div>
+        </div>
+
+        {/* Product Info */}
+        <div className="flex flex-col flex-grow">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: primary }}>
+                2026 Racing Series
+              </span>
+              {totalProductQuantity > 0 && (
+                <span className="text-[9px] font-bold px-1.5 py-0.5 bg-emerald-50 text-emerald-600 rounded">
+                  {totalProductQuantity} in Build
+                </span>
+              )}
+            </div>
+            <a 
+              href={whatsappUrl}
+              target="_blank"
+              className="text-[8px] font-bold text-green-500 flex items-center gap-1 hover:text-black transition-colors"
+            >
+              <WhatsAppIcon className="w-3 h-3" /> ORDER VIA WHATSAPP
+            </a>
+          </div>
+          
+          <Link href={`/bikeecommerce/products/${product.id}`}>
+            <h4 className="text-xl font-black italic uppercase tracking-tighter text-gray-900 leading-tight mt-1 group-hover:underline decoration-2" style={{ textDecorationColor: primary }}>
+              {name}
+            </h4>
+          </Link>
+
+          {/* Display active specifications chosen on the card summary details area */}
+          {hasVariants && Object.keys(selectedOptions).length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {Object.entries(selectedOptions).map(([cat, val]) => (
+                <span key={cat} className="text-[8px] font-mono tracking-wider font-bold uppercase bg-slate-50 text-slate-500 border border-slate-100 px-1.5 py-0.5">
+                  {cat}: {val}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Functional Build Actions Block */}
+          <div className="mt-auto pt-6 flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <AnimatePresence mode="wait">
+                {currentConfigQuantity === 0 ? (
+                  <motion.button
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    onClick={handleAddToCart}
+                    className="flex items-center gap-4 group/btn w-full text-left"
+                  >
+                    <div 
+                      style={{ '--hover-bg': primary } as React.CSSProperties}
+                      className="w-12 h-12 rounded-full border-2 border-gray-900 flex items-center justify-center transition-all group-hover/btn:border-[var(--hover-bg)] group-hover/btn:bg-[var(--hover-bg)] group-hover/btn:text-white group-hover/btn:scale-110"
+                    >
+                      <PlusIcon className="w-6 h-6" />
+                    </div>
+                    <div className="flex flex-col items-start">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 leading-none">
+                        {hasVariants && !allOptionsSelected ? "Configure Specs" : "Add to Build"}
+                      </span>
+                      <span className="text-[8px] text-gray-400 uppercase mt-1">In Stock • Ready to Ride</span>
+                    </div>
+                  </motion.button>
+                ) : (
+                  <motion.div 
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="flex items-center bg-gray-900 text-white rounded-full p-1.5 w-full justify-between shadow-lg"
+                  >
+                    <button 
+                      onClick={() => decreaseQuantity(currentCartItemId, selectedOptions)} 
+                      className="p-2.5 hover:bg-white/10 rounded-full transition-colors"
+                    >
+                      {currentConfigQuantity === 1 ? <TrashIcon className="w-4 h-4 text-red-400" /> : <MinusIcon className="w-4 h-4" />}
+                    </button>
+                    <span className="font-black text-sm tracking-tighter">QTY: {currentConfigQuantity}</span>
+                    <button 
+                      onClick={() => handleAddToCart()} 
+                      className="p-2.5 hover:bg-white/10 rounded-full transition-colors"
+                    >
+                      <PlusIcon className="w-4 h-4 text-emerald-400" />
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Customize Another Specification Trigger Option */}
+            {hasVariants && totalProductQuantity > 0 && (
+              <button
+                onClick={openNewConfigurator}
+                className="mt-1 flex items-center justify-center gap-1.5 py-1.5 border border-dashed border-slate-200 text-slate-500 hover:text-gray-900 hover:border-gray-400 text-[9px] font-black tracking-widest uppercase transition-all"
+              >
+                <AdjustmentsHorizontalIcon className="w-3.5 h-3.5" />
+                Customize Another Variant
+              </button>
+            )}
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ================= GLOBAL FIXED SCREEN MODAL MODULE ================= */}
       <AnimatePresence>
         {isSelectingOptions && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="absolute inset-0 z-20 bg-white/FA backdrop-blur-md flex flex-col justify-end p-6 border-t-2 shadow-2xl"
-            style={{ borderTopColor: primary }}
-          >
-            <button
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Dark Backdrop Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setIsSelectingOptions(false)}
-              className="absolute top-4 right-4 p-2 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-none transition-colors"
-            >
-              <XMarkIcon className="w-4 h-4" />
-            </button>
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
 
-            <div className="w-full space-y-4 pt-4 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-h-full">
-              <div className="text-center pb-2 border-b border-gray-100">
-                <span className="text-[9px] font-mono tracking-widest text-gray-400 block uppercase">Custom Build Setup</span>
-                <h5 className="text-sm font-black italic uppercase tracking-tight text-gray-900">{name}</h5>
+            {/* Modal Box Container */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: "spring", duration: 0.5 }}
+              className="relative w-full max-w-lg bg-white shadow-2xl border-t-4 flex flex-col overflow-hidden max-h-[90vh]"
+              style={{ borderTopColor: primary }}
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setIsSelectingOptions(false)}
+                className="absolute top-4 right-4 p-2 bg-gray-100 hover:bg-gray-200 text-gray-900 transition-colors rounded-none z-10"
+              >
+                <XMarkIcon className="w-4 h-4" />
+              </button>
+
+              {/* Header Details */}
+              <div className="p-6 border-b border-gray-100 text-center bg-gray-50/50">
+                <span className="text-[10px] font-mono tracking-widest text-gray-400 block uppercase mb-1">
+                  Custom Mechanical Configuration
+                </span>
+                <h5 className="text-xl font-black italic uppercase tracking-tight text-gray-900">
+                  {name}
+                </h5>
+                <p className="text-sm font-bold mt-2" style={{ color: primary }}>
+                  Running Total: Kes {calculatedPrices.finalPrice.toLocaleString()}
+                </p>
               </div>
 
-              {Object.entries(groupedVariants).map(([category, items]) => (
-                <div key={category} className="space-y-2 text-center">
-                  <p style={{ color: primary }} className="text-[9px] font-black uppercase tracking-wider">
-                    Select {category}
-                  </p>
-                  <div className="flex flex-wrap justify-center gap-1.5">
-                    {items.map((opt) => {
-                      const isSelected = selectedOptions[category] === opt.name;
-                      return (
-                        <button
-                          key={opt.name}
-                          type="button"
-                          onClick={() => setSelectedOptions({ ...selectedOptions, [category]: opt.name })}
-                          style={{ 
-                            borderColor: isSelected ? primary : undefined,
-                            backgroundColor: isSelected ? primary : undefined 
-                          }}
-                          className={`px-3 py-2 text-[10px] font-black tracking-tight uppercase transition-all border rounded-none ${
-                            isSelected 
-                              ? "text-white shadow-md font-bold" 
-                              : "border-gray-200 bg-gray-50 text-gray-800 active:bg-gray-100"
-                          }`}
-                        >
-                          {opt.name}
-                          {opt.extraPrice > 0 && ` (+Kes ${opt.extraPrice.toLocaleString()})`}
-                        </button>
-                      );
-                    })}
+              {/* Scrollable Build Variants */}
+              <div className="p-6 overflow-y-auto space-y-6 flex-grow">
+                {Object.entries(groupedVariants).map(([category, items]) => (
+                  <div key={category} className="space-y-3">
+                    <p className="text-[11px] font-black uppercase tracking-wider text-gray-900 border-l-2 pl-2" style={{ borderColor: primary }}>
+                      Choose {category}
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {items.map((opt) => {
+                        const isSelected = selectedOptions[category] === opt.name;
+                        return (
+                          <button
+                            key={opt.name}
+                            type="button"
+                            onClick={() => setSelectedOptions({ ...selectedOptions, [category]: opt.name })}
+                            style={{ 
+                              borderColor: isSelected ? primary : undefined,
+                              backgroundColor: isSelected ? `${primary}10` : undefined // Subtle tint background when selected
+                            }}
+                            className={`p-3 text-left text-xs font-black tracking-tight uppercase transition-all border flex flex-col justify-center rounded-none relative ${
+                              isSelected 
+                                ? "text-gray-900 font-bold border-2" 
+                                : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 active:bg-gray-100"
+                            }`}
+                          >
+                            <span className="flex items-center justify-between w-full">
+                              <span>{opt.name}</span>
+                              {isSelected && (
+                                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: primary }} />
+                              )}
+                            </span>
+                            {opt.extraPrice > 0 && (
+                              <span className="text-[10px] font-mono text-gray-400 mt-1 normal-case">
+                                + Kes {opt.extraPrice.toLocaleString()}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
 
-              <button
-                disabled={!allOptionsSelected}
-                onClick={() => {
-                  handleAddToCart();
-                  setIsSelectingOptions(false);
-                }}
-                style={{ backgroundColor: allOptionsSelected ? primary : '#9CA3AF' }}
-                className="mt-4 w-full py-3 text-white font-black text-xs uppercase tracking-widest transition-opacity shadow-md rounded-none"
-              >
-                Lock In Specifications
-              </button>
-            </div>
-          </motion.div>
+              {/* Sticky Action Footer */}
+              <div className="p-4 bg-gray-50 border-t border-gray-100">
+                <button
+                  disabled={!allOptionsSelected}
+                  onClick={() => {
+                    handleAddToCart();
+                    setIsSelectingOptions(false);
+                  }}
+                  style={{ backgroundColor: allOptionsSelected ? primary : '#9CA3AF' }}
+                  className="w-full py-3.5 text-white font-black text-sm uppercase tracking-widest transition-opacity shadow-lg rounded-none disabled:cursor-not-allowed"
+                >
+                  {allOptionsSelected ? "Lock In Specifications" : "Select All Options to Proceed"}
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </>
   );
 };
 

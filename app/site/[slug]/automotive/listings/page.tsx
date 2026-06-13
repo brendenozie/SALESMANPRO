@@ -137,6 +137,7 @@ export default async function AutoMarketPage({
     year: p.year ?? null,
     price: p.finalPrice ?? 0,
     mileage: Number(p.mileage ?? 0),
+    option: p.option || [],
     transmission: p.transmission ?? "Automatic",
     fuel: p.fuelType ?? "Unknown",
     type: p.type ?? "",
