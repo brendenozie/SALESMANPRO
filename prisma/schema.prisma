@@ -1061,7 +1061,9 @@ model Product {
   @@index([isFeatured, status])
   @@index([isNewArrival, createdAt])
   @@index([listingMarketStatus, active])
-  @@index([listingSystemStatus])
+  @@index([listingSystemStatus])  
+  @@index([companyId, listingTransactionType, isFeatured, createdAt])
+  @@index([companyId, listingTransactionType, finalPrice])
 }
 
 model Payment {
@@ -2237,17 +2239,8 @@ model marketplaceListings {
   @@index([productCategoryId, status, createdAt])
   @@index([brand, status])
   @@index([locationId, status])
-  @@index([
-    companyId,
-    listingTransactionType,
-    isFeatured,
-    createdAt
-  ])
-  @@index([
-    companyId,
-    listingTransactionType,
-    finalPrice
-  ])
+  @@index([companyId, listingTransactionType, isFeatured, createdAt])
+  @@index([companyId, listingTransactionType, finalPrice])
 }
 
 model ProductReview {
