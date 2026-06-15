@@ -25,7 +25,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
   const { name, images, finalPrice, sellingPrice } = product;
 
-  // 1. Group Premium Horology Options (e.g., Strap Material, Case Size, Dial Color)
+  // 1. Group Premium Horology Options
   const groupedVariants = useMemo(() => {
     const options = (product.option || []) as any[];
     return options.reduce((acc, item) => {
@@ -57,27 +57,43 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
     };
   }, [selectedOptions, groupedVariants, finalPrice, sellingPrice]);
 
-  // 3. Isolated Variant Identifier within Shopping Bag Context
-  const quantity = cart.find((item: any) => {
-    if (item.id !== product.id) return false;
-    if (hasVariants) {
-      if (!item.selectedOptions) return false;
-      return Object.entries(selectedOptions).every(([cat, val]) => item.selectedOptions[cat] === val);
-    }
-    return true;
-  })?.quantity || 0;
+  // 3. Track cumulative quantity of all combined configurations for this product
+  const totalProductQuantity = useMemo(() => {
+    return cart
+      .filter((item: any) => item.id === product.id)
+      .reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
+  }, [cart, product.id]);
 
-  // Global identifier calculation to sync mutations cleanly with the drawer actions
+  // 4. Isolated quantity evaluation for the current unique option selection profile
+  const currentVariantQuantity = useMemo(() => {
+    if (!hasVariants) {
+      return cart.find((item: any) => item.id === product.id)?.quantity || 0;
+    }
+    if (!allOptionsSelected) return 0;
+
+    return cart.find((item: any) => {
+      if (item.id !== product.id || !item.selectedOptions) return false;
+      return Object.keys(groupedVariants).every(
+        (cat) => item.selectedOptions[cat] === selectedOptions[cat]
+      );
+    })?.quantity || 0;
+  }, [cart, product.id, hasVariants, selectedOptions, allOptionsSelected, groupedVariants]);
+
+  // Global identifier tracking calculation to sync mutations smoothly with actions
   const targetSignatureId = useMemo(() => {
     if (hasVariants && Object.keys(selectedOptions).length > 0) {
-      return `${product.id}-${JSON.stringify(selectedOptions)}`;
+      // Sort keys to maintain a perfectly predictable structure signature
+      const sortedOptions = Object.keys(selectedOptions)
+        .sort()
+        .reduce((acc, key) => ({ ...acc, [key]: selectedOptions[key] }), {});
+      return `${product.id}-${JSON.stringify(sortedOptions)}`;
     }
     return product.id;
   }, [product.id, selectedOptions, hasVariants]);
 
   const imageSrc = images?.[0] || 'https://via.placeholder.com/600';
 
-  // 4. Bespoke Concierge WhatsApp Link Configuration
+  // 5. Bespoke Concierge WhatsApp Link Configuration
   const optionsSummary = Object.entries(selectedOptions)
     .map(([cat, val]) => `${cat}: ${val}`)
     .join(', ');
@@ -92,7 +108,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
     e?.preventDefault();
     e?.stopPropagation();
 
-    if (hasVariants && !allOptionsSelected) {
+    if (hasVariants && !isConfiguring) {
       setIsConfiguring(true);
       return;
     }
@@ -147,17 +163,29 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
           {/* Quick Add Overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-black/60 to-transparent z-10">
-            {quantity === 0 ? (
+            {hasVariants ? (
+              /* Prioritize Configuration Modal Access Screen Path if Variants Exist */
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => setIsConfiguring(true)}
+                  className="w-full bg-white text-black py-3 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-black hover:text-white transition-colors"
+                >
+                  <ShoppingBagIcon className="w-4 h-4" /> 
+                  {totalProductQuantity > 0 ? `Configure Options (${totalProductQuantity})` : "Configure Options"}
+                </button>
+              </div>
+            ) : totalProductQuantity === 0 ? (
+              /* Standard Non-Variant View Action */
               <div className="flex flex-col gap-2">
                 <button
                   onClick={handleAddToBag}
                   className="w-full bg-white text-black py-3 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-black hover:text-white transition-colors"
                 >
-                  <ShoppingBagIcon className="w-4 h-4" /> 
-                  {hasVariants && !allOptionsSelected ? "Configure Timepiece" : "Add to Bag"}
+                  <ShoppingBagIcon className="w-4 h-4" /> Add to Bag
                 </button>
               </div>
             ) : (
+              /* Simple Counter Interface for Non-Variant Line Items Only */
               <div className="flex items-center justify-between bg-white p-1">
                 <button 
                   onClick={(e) => {
@@ -167,9 +195,9 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                   }} 
                   className="p-2 hover:bg-gray-100 transition-colors"
                 >
-                  {quantity === 1 ? <TrashIcon className="w-4 h-4 text-red-600" /> : <MinusIcon className="w-4 h-4 text-gray-700" />}
+                  {totalProductQuantity === 1 ? <TrashIcon className="w-4 h-4 text-red-600" /> : <MinusIcon className="w-4 h-4 text-gray-700" />}
                 </button>
-                <span className="font-bold text-sm text-gray-900">{quantity}</span>
+                <span className="font-bold text-sm text-gray-900">{totalProductQuantity}</span>
                 <button 
                   onClick={(e) => {
                     e.preventDefault();
@@ -308,16 +336,45 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                     </span>
                   </div>
 
-                  <button
-                    disabled={!allOptionsSelected}
-                    onClick={() => {
-                      handleAddToBag();
-                      setIsConfiguring(false);
-                    }}
-                    className="px-6 py-3.5 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#c5a059]"
-                  >
-                    Confirm Specifications
-                  </button>
+                  <div className="flex items-center">
+                    {!allOptionsSelected ? (
+                      <button
+                        disabled
+                        className="px-6 py-3.5 bg-neutral-200 text-neutral-400 text-[10px] font-bold uppercase tracking-[0.2em] cursor-not-allowed"
+                      >
+                        Make Selections
+                      </button>
+                    ) : currentVariantQuantity > 0 ? (
+                      /* Integrated Variant Stepper to adjust item quantities matching this identical combination profile */
+                      <div className="flex items-center bg-neutral-50 border border-neutral-200 p-1 rounded-sm">
+                        <button
+                          type="button"
+                          onClick={() => decreaseQuantity(targetSignatureId)}
+                          className="p-2 hover:bg-neutral-200 text-neutral-700 transition-colors"
+                        >
+                          {currentVariantQuantity === 1 ? <TrashIcon className="w-4 h-4 text-red-600" /> : <MinusIcon className="w-4 h-4" />}
+                        </button>
+                        <span className="px-4 text-xs font-bold text-neutral-900 min-w-[2rem] text-center">
+                          {currentVariantQuantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleAddToBag()}
+                          className="p-2 hover:bg-neutral-200 text-neutral-700 transition-colors"
+                        >
+                          <PlusIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      /* Create Fresh Combination Variant Path Trigger */
+                      <button
+                        onClick={() => handleAddToBag()}
+                        className="px-6 py-3.5 bg-neutral-900 text-white text-[10px] font-bold uppercase tracking-[0.2em] transition-all hover:bg-[#c5a059]"
+                      >
+                        Add Combination
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>

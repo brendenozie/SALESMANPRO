@@ -8,6 +8,7 @@ import {
   TagIcon,
   SparklesIcon,
   CurrencyDollarIcon,
+  CalendarDaysIcon
 } from "@heroicons/react/24/outline";
 
 // No changes needed here, the interface is correct for updateField
@@ -48,6 +49,10 @@ const FeatureToggle = ({
 );
 
 const ProductAvailability: React.FC<ProductAvailabilityProps> = ({ formData, setFormData }) => {
+  
+      // Default to "buy" if not set in your ProductForm type yet
+  const listingType = (formData as any).listingTransactionType || "SALE";
+  
   return (
     <section className="p-6 bg-white rounded-2xl shadow-xl border border-gray-200 space-y-8">
       {/* Header */}
@@ -121,6 +126,38 @@ const ProductAvailability: React.FC<ProductAvailabilityProps> = ({ formData, set
           </div>
         )}
       </div> */}
+
+
+        {/* === Buy / Rent Toggle Segmented Control === */}
+        <div className="space-y-2">
+          <label className="block text-gray-700 text-sm font-medium">Listing Intent</label>
+          <div className="flex bg-gray-200/70 p-1 rounded-xl w-full sm:w-72">
+            <button
+              type="button"
+              onClick={() => setFormData("listingTransactionType", "SALE")}
+              className={`flex-1 flex items-center justify-center py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
+                listingType === "SALE"
+                  ? "bg-white shadow-sm text-blue-600"
+                  : "text-gray-500 hover:text-gray-800"
+              }`}
+            >
+              <TagIcon className="w-4 h-4 mr-2" />
+              For Sale
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormData("listingTransactionType", "RENT")}
+              className={`flex-1 flex items-center justify-center py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
+                listingType === "RENT"
+                  ? "bg-white shadow-sm text-blue-600"
+                  : "text-gray-500 hover:text-gray-800"
+              }`}
+            >
+              <CalendarDaysIcon className="w-4 h-4 mr-2" />
+              For Rent
+            </button>
+          </div>
+        </div>
 
       {/* Feature Toggles */}
       <div className="bg-gray-50 p-5 rounded-lg shadow-sm space-y-4">

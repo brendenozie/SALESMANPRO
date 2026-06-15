@@ -1,38 +1,30 @@
 "use client";
 
-import React from "react";
-import useSWR from "swr";
-import { useSearchParams } from "next/navigation";
+import React, { useMemo, useEffect } from "react";
+import useSWR, { preload } from "swr";
+import { useSearchParams, useRouter } from "next/navigation";
 import { createCachedFetcher } from "@/lib/swrCachedFetcher";
+import AutomotiveFeatured from "./AutomotiveFeatured";
 import { MarketListingForm } from "@/types/typings";
-import AutomotiveFeatured from "./AutomotiveFeatured"; // <-- your original UI component
 
 const apiBaseUrl =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-const buildQuery = (companyId: string, params: URLSearchParams) => {
-  const q = new URLSearchParams();
+const buildQuery = (
+  companyId: string,
+  params: URLSearchParams,
+  transactionType: "SALE" | "RENT",
+  cursor?: string
+) => {
+  const q = new URLSearchParams(params.toString());
 
   q.set("companyId", companyId);
+  q.set("flag", "isFeatured");
+  q.set("transactionType", transactionType);
 
-  const filters = [
-    "location",
-    "minPrice",
-    "maxPrice",
-    "fuelType",
-    "transmission",
-    "bodyType",
-    "keywords",
-    "limit",
-    "page",
-  ];
+  if (cursor) q.set("cursor", cursor);
 
-  filters.forEach((key) => {
-    const value = params.get(key);
-    if (value) q.set(key, value);
-  });
-
-  return `${apiBaseUrl}/site/productsByFlag?${q.toString()}&flag=isFeaturedListing`;
+  return `${apiBaseUrl}/site/productsByFlag?${q.toString()}`;
 };
 
 export default function AutomotiveFeaturedListingsWrapper({
@@ -40,33 +32,54 @@ export default function AutomotiveFeaturedListingsWrapper({
 }: {
   companyId: string;
 }) {
+  const router = useRouter();
   const params = useSearchParams();
 
-  const url = buildQuery(companyId, params);
+  const transactionType =
+    (params.get("transactionType") as "SALE" | "RENT") || "SALE";
 
-  const cacheKey = `automotive-featured-${companyId}`;
-  const fallbackKey = `swr-cache:${cacheKey}:${url}`;
-  const fetcher = createCachedFetcher(cacheKey);
+  /* 🔁 Persist tab selection in URL */
+  const setTransactionType = (type: "SALE" | "RENT") => {
+    const next = new URLSearchParams(params.toString());
+    next.set("transactionType", type);
+    router.replace(`?${next.toString()}`, { scroll: false });
+  };
 
-  const fallbackData =
-    typeof window !== "undefined"
-      ? (() => {
-          try {
-            return JSON.parse(localStorage.getItem(fallbackKey) || "null");
-          } catch {
-            return null;
-          }
-        })()
-      : null;
+  const url = useMemo(
+    () => buildQuery(companyId, params, transactionType),
+    [companyId, params, transactionType]
+  );
+
+  const swrKey = [
+    "automotive-featured",
+    companyId,
+    transactionType,
+    params.toString(),
+  ].join(":");
+
+  const fetcher = createCachedFetcher(swrKey);
+
+  /* ⚡ Prefetch RENT listings (SWR-native) */
+  useEffect(() => {
+    if (transactionType === "SALE") {
+      const rentUrl = buildQuery(companyId, params, "RENT");
+      const rentKey = [
+        "automotive-featured",
+        companyId,
+        "RENT",
+        params.toString(),
+      ].join(":");
+
+      preload(rentUrl, createCachedFetcher(rentKey));
+    }
+  }, [transactionType, companyId, params]);
 
   const { data, error, isLoading } = useSWR(url, fetcher, {
-    fallbackData: fallbackData || undefined,
-    revalidateOnFocus: true,
-    dedupingInterval: 30000,
-    refreshInterval: 120000,
+    keepPreviousData: true,
+    dedupingInterval: 30_000,
   });
 
-  const listings: MarketListingForm[] = data?.data || [];
+  const listings: MarketListingForm[] = data?.data ?? [];
 
   return (
     <AutomotiveFeatured
@@ -74,6 +87,8 @@ export default function AutomotiveFeaturedListingsWrapper({
       error={error}
       isLoading={isLoading}
       slug={companyId}
+      transactionType={transactionType}
+      onTransactionChange={setTransactionType}
     />
   );
 }

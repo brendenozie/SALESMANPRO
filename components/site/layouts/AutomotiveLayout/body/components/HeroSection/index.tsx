@@ -58,7 +58,7 @@ export default function LuxuryCommandHero({
 }) {
   const heroSlides = store?.heroSlides?.length ? store.heroSlides : defaultSlides;
   const categories = (store?.StoreCategory ?? []).filter((c) => c.visible ?? true);
-  
+
   const [current, setCurrent] = useState(0);
   const [location, setLocation] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
@@ -69,21 +69,21 @@ export default function LuxuryCommandHero({
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  const springX = useSpring(mouseX, { stiffness: 40, damping: 20 });
-  const springY = useSpring(mouseY, { stiffness: 40, damping: 20 });
+  const springX = useSpring(mouseX, { stiffness: 50, damping: 25 });
+  const springY = useSpring(mouseY, { stiffness: 50, damping: 25 });
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (typeof window !== 'undefined' && window.innerWidth < 768) return;
     const { clientX, clientY } = e;
     const { innerWidth, innerHeight } = window;
-    mouseX.set((clientX / innerWidth - 0.5) * 30);
-    mouseY.set((clientY / innerHeight - 0.5) * 30);
+    mouseX.set((clientX / innerWidth - 0.5) * 40);
+    mouseY.set((clientY / innerHeight - 0.5) * 40);
   };
 
   const nextSlide = useCallback(() => setCurrent((prev) => (prev + 1) % heroSlides.length), [heroSlides.length]);
 
   useEffect(() => {
-    const timer = setInterval(nextSlide, 10000);
+    const timer = setInterval(nextSlide, 8000);
     const handleClickOutside = (e: MouseEvent | TouchEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setActiveDropdown(null);
@@ -91,93 +91,98 @@ export default function LuxuryCommandHero({
     };
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("touchstart", handleClickOutside);
-    return () => { 
-      clearInterval(timer); 
+    return () => {
+      clearInterval(timer);
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("touchstart", handleClickOutside);
     };
   }, [nextSlide]);
 
   return (
-    <section 
+    <section
       onMouseMove={handleMouseMove}
-      // CRITICAL FIX: Changed h-screen to min-h-[100dvh] and removed forced overflow hidden
-      className="relative min-h-[100dvh] w-full bg-white dark:bg-[#050505] selection:bg-blue-500/30 overflow-visible"
+      className="relative min-h-[100dvh] w-full bg-white dark:bg-[#050505] selection:bg-blue-500/30 overflow-visible flex flex-col justify-center"
     >
-      {/* 1. KINETIC BACKGROUND - Fixed position ensures it stays behind even when scrolling */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+      {/* 1. KINETIC BACKGROUND */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
         <AnimatePresence mode="wait">
           <motion.div
             key={current}
-            style={{ x: springX, y: springY, scale: 1.1 }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            style={{ x: springX, y: springY, scale: 1.05 }}
+            initial={{ opacity: 0, scale: 1.1 }}
+            animate={{ opacity: 1, scale: 1.05 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.5 }}
+            transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
             className="absolute inset-0"
           >
             <Image
-              src={heroSlides[current].imageUrl || "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2560"}
+              src={heroSlides[current].imageUrl || defaultSlides[0].imageUrl}
               alt="Hero Background"
               fill
-              className="object-cover brightness-[0.6] dark:brightness-[0.4] saturate-[1.2]"
+              className="object-cover brightness-[0.5] dark:brightness-[0.35] saturate-[1.1]"
               priority
-              loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`} // Optimize image loading
+              loader={({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-white/10 dark:from-[#050505] dark:via-transparent dark:to-black/30" />
+            {/* Elegant vignette overlay */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)] dark:bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]" />
+            <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-transparent to-black/20 dark:from-[#050505] dark:via-transparent dark:to-black/50" />
           </motion.div>
         </AnimatePresence>
       </div>
 
       {/* 2. CONTENT LAYER */}
-      <div className="relative z-10 flex min-h-[100dvh] flex-col items-center justify-center px-4 md:px-6 py-12 md:py-20">
+      <div className="relative z-10 flex flex-col items-center justify-center px-4 md:px-8 py-24 w-full h-full mt-auto">
         
-        <motion.div 
+        {/* Luxury Badge */}
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6 md:mb-8 flex items-center gap-3 rounded-full border border-black/10 dark:border-white/10 bg-white/20 dark:bg-white/5 px-4 py-1.5 backdrop-blur-2xl"
+          transition={{ delay: 0.2, duration: 0.8 }}
+          className="mb-8 flex items-center gap-2.5 rounded-full border border-white/20 bg-white/10 dark:bg-black/20 px-5 py-2 backdrop-blur-xl shadow-lg"
         >
-          <SparklesIcon className="h-3 w-3 md:h-4 md:w-4 text-blue-600 dark:text-blue-400" />
-          <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] text-black/80 dark:text-white/80">
+          <SparklesIcon className="h-4 w-4 text-blue-400" />
+          <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.25em] text-white">
             Exclusive Inventory Access
           </span>
         </motion.div>
 
-        <div className="mb-10 md:mb-16 text-center select-none w-full max-w-5xl">
+        {/* Headline */}
+        <div className="mb-12 md:mb-16 text-center select-none w-full max-w-6xl">
           <AnimatePresence mode="wait">
             <motion.h1
-                key={current}
-                initial={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
-                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                exit={{ opacity: 0, scale: 1.05, filter: "blur(10px)" }}
-                className="text-4xl sm:text-6xl md:text-9xl font-[1000] leading-[0.9] md:leading-[0.85] tracking-tighter text-white italic uppercase drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] whitespace-pre-line"
-              >
-                {heroSlides[current].headline}
-              </motion.h1>
+              key={current}
+              initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, y: -20, filter: "blur(8px)" }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="text-5xl sm:text-7xl md:text-[8rem] font-[900] leading-[0.9] tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-white/90 to-white/50 uppercase drop-shadow-2xl whitespace-pre-line"
+            >
+              {heroSlides[current].headline}
+            </motion.h1>
           </AnimatePresence>
         </div>
 
         {/* 3. THE COMMAND CONSOLE */}
-         {/* 3. THE COMMAND CONSOLE */}
-        <motion.div 
-          ref={containerRef}
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="w-full max-w-7xl"
-        >
-          <div className="flex flex-col md:grid md:grid-cols-5 gap-1 md:gap-2 bg-white/80 dark:bg-black/60 backdrop-blur-3xl p-2 md:p-3 rounded-[2rem] md:rounded-[2.5rem] border border-black/5 dark:border-white/10 shadow-2xl">
+        <motion.div
+            ref={containerRef}
+            initial={{ y: 40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="relative z-[9999] w-full max-w-6xl overflow-visible"
+          >
+          <div className="flex flex-col md:flex-row gap-2 md:gap-0 bg-white/70 dark:bg-[#111]/70 backdrop-blur-2xl p-2 md:p-2 rounded-[2rem] md:rounded-full border border-white/40 dark:border-white/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] ring-1 ring-black/5 dark:ring-white/5">
             
-            <CommandInput 
-              label="Coordinates" 
-              value={location || "Worldwide"} 
-              icon={<MapPinIcon className="h-4 w-4" />}
+            <CommandInput
+              label="Coordinates"
+              value={location || "Worldwide"}
+              icon={<MapPinIcon className="h-5 w-5" />}
               active={activeDropdown === 'loc'}
               onClick={() => setActiveDropdown(activeDropdown === 'loc' ? null : 'loc')}
               isFirst
             >
               <Dropdown isOpen={activeDropdown === 'loc'}>
-                <div className="p-2 border-b border-black/5 dark:border-white/5 mb-1">
-                  <span className="text-[10px] font-bold opacity-50 uppercase ml-3">Trending</span>
+                <div className="p-3 border-b border-black/5 dark:border-white/10 mb-1">
+                  <span className="text-[10px] font-bold text-black/40 dark:text-white/40 uppercase tracking-wider ml-2">Trending</span>
                 </div>
                 {trendingLocations.map((loc, i) => (
                   <button key={i} onClick={() => { setLocation(loc.name); setActiveDropdown(null); }} className="dropdown-item">
@@ -187,10 +192,10 @@ export default function LuxuryCommandHero({
               </Dropdown>
             </CommandInput>
 
-            <CommandInput 
-              label="Collection" 
-              value={selectedCategory?.displayName || "Select Group"} 
-              icon={<CpuChipIcon className="h-4 w-4" />}
+            <CommandInput
+              label="Collection"
+              value={selectedCategory?.displayName || "Select Group"}
+              icon={<CpuChipIcon className="h-5 w-5" />}
               active={activeDropdown === 'cat'}
               onClick={() => setActiveDropdown(activeDropdown === 'cat' ? null : 'cat')}
             >
@@ -203,10 +208,10 @@ export default function LuxuryCommandHero({
               </Dropdown>
             </CommandInput>
 
-            <CommandInput 
-              label="Model Variant" 
-              value={selectedSubcategory?.name || "All Types"} 
-              icon={<AdjustmentsHorizontalIcon className="h-4 w-4" />}
+            <CommandInput
+              label="Model Variant"
+              value={selectedSubcategory?.name || "All Types"}
+              icon={<AdjustmentsHorizontalIcon className="h-5 w-5" />}
               active={activeDropdown === 'sub'}
               disabled={!selectedCategory}
               onClick={() => setActiveDropdown(activeDropdown === 'sub' ? null : 'sub')}
@@ -220,33 +225,35 @@ export default function LuxuryCommandHero({
               </Dropdown>
             </CommandInput>
 
-            <div className="flex flex-col justify-center px-6 md:px-8 py-4 md:py-5 rounded-2xl md:border-l border-black/5 dark:border-white/5 bg-black/5 md:bg-transparent mb-1 md:mb-0">
-              <span className="text-[9px] font-black text-blue-600 dark:text-blue-500 uppercase tracking-widest mb-1">Budget</span>
-              <div className="flex items-center gap-2">
-                <BanknotesIcon className="h-4 w-4 text-black/40 dark:text-white/40" />
-                <input 
-                  type="text" 
+            {/* Budget Input */}
+            <div className="relative flex-1 flex flex-col justify-center px-6 py-4 md:py-0 md:border-l border-black/10 dark:border-white/10 bg-black/5 md:bg-transparent rounded-2xl md:rounded-none group focus-within:bg-blue-50/50 dark:focus-within:bg-white/5 transition-colors">
+              <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-1.5">Budget</span>
+              <div className="flex items-center gap-2.5">
+                <BanknotesIcon className="h-5 w-5 text-black/40 dark:text-white/40 group-focus-within:text-blue-500 transition-colors" />
+                <input
+                  type="number"
                   placeholder="Max USD"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value)}
-                  className="bg-transparent text-sm font-bold text-black dark:text-white outline-none placeholder:text-black/20 dark:placeholder:text-white/10 w-full"
+                  className="bg-transparent text-sm md:text-base font-bold text-black dark:text-white outline-none placeholder:text-black/30 dark:placeholder:text-white/30 w-full"
                 />
               </div>
             </div>
 
-            <button 
+            {/* Execute Button */}
+            <button
               onClick={() => onSearch({
-                location, minPrice: "", maxPrice, 
+                location, minPrice: "", maxPrice,
                 category: selectedCategory?.id, subcategory: selectedSubcategory?.id,
                 vehicleType: "", make: "", model: "", isBuy: false
               })}
-              className="group/btn relative overflow-hidden rounded-2xl md:rounded-3xl bg-blue-600 dark:bg-white text-white dark:text-black transition-all hover:scale-[1.02] active:scale-95 shadow-xl min-h-[60px] md:min-h-0"
+              className="group/btn relative overflow-hidden rounded-[1.5rem] md:rounded-full bg-blue-600 dark:bg-white text-white dark:text-black transition-all hover:scale-[1.02] active:scale-95 shadow-xl mt-2 md:mt-0 ml-0 md:ml-2 w-full md:w-auto flex-shrink-0"
             >
-              <div className="relative z-10 flex items-center justify-center gap-3 py-4 md:py-5 px-4">
-                <MagnifyingGlassIcon className="h-5 w-5 transition-transform group-hover/btn:rotate-12" />
-                <span className="text-xs font-[1000] uppercase tracking-widest">Execute</span>
+              <div className="relative z-10 flex items-center justify-center gap-3 py-5 px-8 h-full">
+                <MagnifyingGlassIcon className="h-5 w-5 transition-transform duration-300 group-hover/btn:rotate-12 group-hover/btn:scale-110" />
+                <span className="text-sm font-[900] uppercase tracking-widest">Execute</span>
               </div>
-              <div className="absolute inset-0 bg-black/20 dark:bg-blue-600/10 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700 ease-in-out" />
             </button>
 
           </div>
@@ -254,40 +261,75 @@ export default function LuxuryCommandHero({
       </div>
 
       <style jsx global>{`
-          .dropdown-item {
-            @apply block w-full text-left px-5 py-4 text-[11px] font-black 
-            text-neutral-700 dark:text-white/70 
-            hover:text-blue-600 dark:hover:text-white 
-            hover:bg-blue-50 dark:hover:bg-white/5 
-            transition-all uppercase tracking-[0.2em] rounded-xl;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-          }
-          .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-          .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-          .custom-scrollbar::-webkit-scrollbar-thumb { @apply bg-blue-500/20 rounded-full; }
-        `}
-      </style>
+        .dropdown-item {
+          @apply block w-full text-left px-5 py-3.5 text-xs font-bold 
+          text-neutral-700 dark:text-white/80 
+          hover:text-blue-600 dark:hover:text-white 
+          hover:bg-blue-50 dark:hover:bg-white/10 
+          transition-colors uppercase tracking-[0.15em] rounded-xl;
+          user-select: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+        /* Elegant scrollbar for dropdowns */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { 
+          @apply bg-black/10 dark:bg-white/20 rounded-full; 
+          border: 2px solid transparent; 
+          background-clip: padding-box; 
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { @apply bg-black/20 dark:bg-white/30; }
+        
+        /* Remove arrows from number input */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        input[type="number"] {
+          -moz-appearance: textfield;
+        }
+      `}</style>
     </section>
   );
 }
 
-// --- SUB-COMPONENTS REMAIN THE SAME ---
-function CommandInput({ label, value, icon, active, disabled, onClick, children, isFirst }: any) {
+// --- STRICTLY TYPED SUB-COMPONENTS ---
+
+interface CommandInputProps {
+  label: string;
+  value: string;
+  icon: React.ReactNode;
+  active: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+  isFirst?: boolean;
+}
+
+function CommandInput({ label, value, icon, active, disabled, onClick, children, isFirst }: CommandInputProps) {
   return (
-    <div className={`relative w-full ${!isFirst && 'md:border-l border-black/5 dark:border-white/5'} mb-1 md:mb-0`}>
-      <button 
+    <div  className={`relative flex-1 w-full overflow-visible ${ !isFirst ? "md:border-l border-black/10 dark:border-white/10" : "" }`}>
+      <button
         disabled={disabled}
         onClick={onClick}
-        className={`w-full h-full flex flex-col justify-center px-6 md:px-8 py-4 md:py-5 rounded-2xl transition-all text-left group
-          ${disabled ? 'opacity-20 cursor-not-allowed' : 'hover:bg-black/5 dark:hover:bg-white/5'}
-          ${active ? 'bg-black/5 dark:bg-white/5 ring-1 ring-blue-500/20' : ''}`}
+        className={`w-full h-full flex flex-col justify-center px-6 py-4 md:py-5 rounded-2xl md:rounded-none transition-all text-left group
+          ${disabled ? 'opacity-30 cursor-not-allowed' : 'hover:bg-black/5 dark:hover:bg-white/5'}
+          ${active ? 'bg-black/5 dark:bg-white/5' : ''}
+          ${isFirst ? 'md:rounded-l-full' : ''}`}
       >
-        <span className="text-[9px] font-black text-blue-600 dark:text-blue-500 uppercase tracking-widest mb-1">{label}</span>
-        <div className="flex items-center gap-2">
-          <span className={`transition-colors ${active ? 'text-blue-500' : 'text-black/40 dark:text-white/40'}`}>{icon}</span>
-          <span className="text-sm font-bold text-black dark:text-white truncate">{value}</span>
-          <ChevronDownIcon className={`h-3 w-3 ml-auto transition-transform duration-300 ${active ? 'rotate-180 text-blue-500' : 'text-black/20 dark:text-white/20'}`} />
+        <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-1.5 transition-colors">{label}</span>
+        <div className="flex items-center gap-2.5">
+          <span className={`transition-colors duration-300 ${active ? 'text-blue-600 dark:text-blue-400' : 'text-black/40 dark:text-white/40'}`}>
+            {icon}
+          </span>
+          <span className="text-sm md:text-base font-bold text-black dark:text-white truncate max-w-[120px] md:max-w-full">
+            {value}
+          </span>
+          <ChevronDownIcon 
+            className={`h-4 w-4 ml-auto transition-transform duration-300 ease-out 
+            ${active ? 'rotate-180 text-blue-600 dark:text-blue-400' : 'text-black/30 dark:text-white/30 group-hover:translate-y-0.5'}`} 
+          />
         </div>
       </button>
       {children}
@@ -295,17 +337,53 @@ function CommandInput({ label, value, icon, active, disabled, onClick, children,
   );
 }
 
-function Dropdown({ children, isOpen }: { children: React.ReactNode; isOpen: boolean }) {
+function Dropdown({
+  children,
+  isOpen,
+}: {
+  children: React.ReactNode;
+  isOpen: boolean;
+}) {
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div 
-          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+        <motion.div
+          initial={{ opacity: 0, y: -10, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 10, scale: 0.95 }}
-          className="absolute top-[calc(100%+8px)] md:top-[calc(100%+16px)] left-0 right-0 md:right-auto md:w-72 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-3xl border border-black/10 dark:border-white/10 rounded-2xl md:rounded-3xl overflow-hidden z-[100] p-2 shadow-2xl"
+          exit={{ opacity: 0, y: -10, scale: 0.98 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          className="
+            absolute
+            left-0
+            right-0
+            top-[calc(100%+8px)]
+            md:right-auto
+            md:w-[320px]
+            md:top-[calc(100%+16px)]
+
+            z-[99999]
+
+            overflow-hidden
+            rounded-2xl
+            md:rounded-3xl
+
+            bg-white/95
+            dark:bg-[#151515]/95
+            backdrop-blur-3xl
+
+            border
+            border-black/10
+            dark:border-white/10
+
+            shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)]
+            ring-1
+            ring-black/5
+            dark:ring-white/5
+
+            p-2.5
+          "
         >
-          <div className="flex flex-col gap-1 max-h-[40vh] md:max-h-[300px] overflow-y-auto custom-scrollbar">
+          <div className="custom-scrollbar flex max-h-[45vh] flex-col gap-1 overflow-y-auto pr-1 md:max-h-[350px]">
             {children}
           </div>
         </motion.div>

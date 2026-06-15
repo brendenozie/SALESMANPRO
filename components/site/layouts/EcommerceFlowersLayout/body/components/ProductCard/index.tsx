@@ -31,11 +31,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#10B981';
   
-  // Explicitly reference flat database array block mapping
   const optionsList = (product.option || []) as VariantOptionItem[];
   const hasOptions = optionsList.length > 0;
 
-  // Group your flat object structure array cleanly by category tracking labels
+  // Group options cleanly by category
   const groupedOptions = useMemo(() => {
     const groups: Record<string, VariantOptionItem[]> = {};
     optionsList.forEach((item) => {
@@ -45,7 +44,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     return groups;
   }, [optionsList]);
 
-  // Track real-time extra pricing adjust surcharges chosen across active categories
+  // Track dynamic price adjustments for selected variants
   const dynamicExtraSurcharge = useMemo(() => {
     let surcharge = 0;
     Object.entries(selectedOptions).forEach(([category, chosenValue]) => {
@@ -59,10 +58,31 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const computedFinalPrice = (product.finalPrice ?? 0) + dynamicExtraSurcharge;
 
-  // Compute aggregated quantities safely matching across instances inside the basket view
-  const totalProductQuantityInCart = cart
-    .filter((item: any) => item.id === product.id)
-    .reduce((acc: number, item: any) => acc + item.quantity, 0);
+  // Aggregate quantity for this core product ID across all variants
+  const totalProductQuantityInCart = useMemo(() => {
+    return cart
+      .filter((item: any) => item.id === product.id)
+      .reduce((acc: number, item: any) => acc + item.quantity, 0);
+  }, [cart, product.id]);
+
+  // Determine payload composition for the current layout state
+  const normalizedPayloadOptions = useMemo(() => {
+    const payload: Record<string, string> = { ...selectedOptions };
+    if (cardMessage.trim()) {
+      payload.message = cardMessage.trim();
+    }
+    return payload;
+  }, [selectedOptions, cardMessage]);
+
+  // Track if the exact variation selection currently chosen already exists in the cart
+  const currentVariantCartItem = useMemo(() => {
+    return cart.find((item: any) => {
+      if (item.id !== product.id) return false;
+      return JSON.stringify(item.selectedOptions || {}) === JSON.stringify(normalizedPayloadOptions);
+    });
+  }, [cart, product.id, normalizedPayloadOptions]);
+
+  const currentVariantQuantity = currentVariantCartItem ? currentVariantCartItem.quantity : 0;
 
   const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
   const message = encodeURIComponent(`Hi! I'm interested in the "${product.name}" bouquet. Do you offer same-day delivery, and can I include a custom handwritten note?`);
@@ -70,7 +90,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const imageSrc = product.images?.[0] || 'https://via.placeholder.com/600x800';
 
-  // Synchronize initial selections cleanly when options populate using categorized first items
+  // Initialize variant options default values
   useEffect(() => {
     if (hasOptions) {
       const initial: Record<string, string> = {};
@@ -92,19 +112,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const handleModalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const payloadOptions: Record<string, string> = { ...selectedOptions };
-    if (cardMessage.trim()) {
-      payloadOptions.message = cardMessage.trim();
-    }
-
-    // Pass custom selections along with recalculated final pricing objects downstream
     addToCart({
       ...product,
-      selectedOptions: payloadOptions,
+      selectedOptions: normalizedPayloadOptions,
       finalPrice: computedFinalPrice
     });
-    setIsModalOpen(false);
   };
 
   return (
@@ -127,7 +139,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             />
           </Link>
           
-          {/* Soft Status Tags */}
+          {/* Status Tags */}
           <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
             {product.sellingPrice! > product.finalPrice! && (
               <div className="bg-rose-50/90 backdrop-blur-md px-3 py-1 rounded-full border border-rose-100 shadow-sm">
@@ -143,7 +155,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </div>
           </div>
 
-          {/* WhatsApp Icon Float */}
+          {/* WhatsApp Action Link */}
           <a 
             href={whatsappUrl}
             target="_blank"
@@ -163,68 +175,65 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 exit={{ opacity: 0 }}
                 className="absolute inset-0 bg-white/10 flex items-center justify-center p-6"
               >
-                {totalProductQuantityInCart === 0 ? (
+                {hasOptions ? (
+                  /* Prioritize the choice modal configuration interface for multi-variant products */
                   <motion.button
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     onClick={(e) => { 
                       e.preventDefault(); 
-                      if (hasOptions) {
-                        setIsModalOpen(true);
-                      } else {
-                        addToCart({ ...product, selectedOptions: {}, finalPrice: product.finalPrice });
-                      }
+                      setIsModalOpen(true);
                     }}
                     className="w-full bg-slate-900 text-white py-4 rounded-xl flex items-center justify-center gap-2 shadow-2xl hover:bg-slate-800 transition-all active:scale-95 cursor-pointer"
                   >
                     <ShoppingBagIcon className="w-5 h-5" />
                     <span className="text-xs font-bold uppercase tracking-widest">
-                      {hasOptions ? 'Select Options' : 'Add to Bag'}
+                      {totalProductQuantityInCart > 0 ? `Configure Options (${totalProductQuantityInCart})` : 'Configure Options'}
                     </span>
                   </motion.button>
                 ) : (
-                  <motion.div 
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    className="w-full bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl flex items-center justify-between p-1.5"
-                  >
-                    <button 
-                      onClick={() => {
-                        const lastConfiguredItem = cart.filter((item: any) => item.id === product.id).pop();
-                        if (lastConfiguredItem) {
-                          const sigId = lastConfiguredItem.selectedOptions && Object.keys(lastConfiguredItem.selectedOptions).length > 0
-                            ? `${lastConfiguredItem.id}-${JSON.stringify(lastConfiguredItem.selectedOptions)}`
-                            : lastConfiguredItem.id;
-                          decreaseQuantity(sigId);
-                        } else {
-                          decreaseQuantity(product.id);
-                        }
-                      }} 
-                      className="p-3 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
+                  /* Standard items use the simplified inline addition/subtraction mechanism directly */
+                  totalProductQuantityInCart === 0 ? (
+                    <motion.button
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      onClick={(e) => { 
+                        e.preventDefault(); 
+                        addToCart({ ...product, selectedOptions: {}, finalPrice: product.finalPrice });
+                      }}
+                      className="w-full bg-slate-900 text-white py-4 rounded-xl flex items-center justify-center gap-2 shadow-2xl hover:bg-slate-800 transition-all active:scale-95 cursor-pointer"
                     >
-                      <MinusIcon className="w-4 h-4 text-slate-600" />
-                    </button>
-                    <span className="font-bold text-slate-900 text-sm">{totalProductQuantityInCart}</span>
-                    <button 
-                      onClick={() => {
-                        if (hasOptions) {
-                          setIsModalOpen(true);
-                        } else {
-                          addToCart({ ...product, selectedOptions: {}, finalPrice: product.finalPrice });
-                        }
-                      }} 
-                      className="p-3 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
+                      <ShoppingBagIcon className="w-5 h-5" />
+                      <span className="text-xs font-bold uppercase tracking-widest">Add to Bag</span>
+                    </motion.button>
+                  ) : (
+                    <motion.div 
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      className="w-full bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl flex items-center justify-between p-1.5"
                     >
-                      <PlusIcon className="w-4 h-4 text-slate-600" />
-                    </button>
-                  </motion.div>
+                      <button 
+                        onClick={() => decreaseQuantity(product.id)} 
+                        className="p-3 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <MinusIcon className="w-4 h-4 text-slate-600" />
+                      </button>
+                      <span className="font-bold text-slate-900 text-sm">{totalProductQuantityInCart}</span>
+                      <button 
+                        onClick={() => addToCart({ ...product, selectedOptions: {}, finalPrice: product.finalPrice })} 
+                        className="p-3 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <PlusIcon className="w-4 h-4 text-slate-600" />
+                      </button>
+                    </motion.div>
+                  )
                 )}
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Details Section */}
+        {/* Product Details Area */}
         <div className="mt-6 flex flex-col items-center text-center">
           <Link href={`/flowersecommerce/products/${product.id}`}>
             <h4 className="text-lg font-serif italic text-slate-900 group-hover:text-rose-500 transition-colors duration-500">
@@ -243,7 +252,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             )}
           </div>
 
-          {/* Interactive Bloom Indicator */}
           <div className="flex items-center gap-4 mt-5 group-hover:gap-8 transition-all duration-700">
             <div className="h-[1px] w-6 bg-slate-200 group-hover:bg-rose-200" />
             <a 
@@ -356,14 +364,48 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   </div>
                 </div>
 
-                {/* Submission CTA Block */}
-                <button
-                  type="submit"
-                  className="w-full bg-slate-900 text-white py-4 rounded-xl flex items-center justify-center gap-2 font-bold uppercase tracking-widest text-xs shadow-xl hover:bg-slate-800 transition-all active:scale-95 cursor-pointer"
-                >
-                  <ShoppingBagIcon className="w-4 h-4" />
-                  Confirm Arrangement Selection
-                </button>
+                {/* Submission & Variation Quantity Control Blocks */}
+                {currentVariantQuantity > 0 ? (
+                  <div className="flex items-center justify-between bg-slate-50 p-1.5 rounded-xl border border-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (currentVariantCartItem) {
+                          const sigId = `${product.id}-${JSON.stringify(currentVariantCartItem.selectedOptions)}`;
+                          decreaseQuantity(sigId);
+                        }
+                      }}
+                      className="p-3 bg-white hover:bg-slate-100 rounded-lg transition-all shadow-sm cursor-pointer text-slate-600"
+                    >
+                      <MinusIcon className="w-4 h-4" />
+                    </button>
+                    <div className="text-center">
+                      <span className="font-bold text-slate-900 text-sm block">{currentVariantQuantity}</span>
+                      <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">This Variant In Bag</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        addToCart({
+                          ...product,
+                          selectedOptions: normalizedPayloadOptions,
+                          finalPrice: computedFinalPrice
+                        });
+                      }}
+                      className="p-3 bg-white hover:bg-slate-100 rounded-lg transition-all shadow-sm cursor-pointer text-slate-600"
+                    >
+                      <PlusIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="submit"
+                    className="w-full bg-slate-900 text-white py-4 rounded-xl flex items-center justify-center gap-2 font-bold uppercase tracking-widest text-xs shadow-xl hover:bg-slate-800 transition-all active:scale-95 cursor-pointer"
+                  >
+                    <ShoppingBagIcon className="w-4 h-4" />
+                    Add This Arrangement Variant
+                  </button>
+                )}
               </form>
             </motion.div>
           </div>

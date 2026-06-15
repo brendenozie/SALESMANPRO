@@ -84,12 +84,22 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
     ? `${product.id}-${Object.entries(selectedOptions).sort(([a], [b]) => a.localeCompare(b)).map(([cat, val]) => `${cat}:${val}`).join('-')}`
     : product.id;
 
-  const quantity = cart.find((item: any) => {
-    const itemKey = item.cartItemId || (item.selectedOptions
-      ? `${item.id}-${Object.entries(item.selectedOptions).sort(([a], [b]) => a.localeCompare(b)).map(([cat, val]) => `${cat}:${val}`).join('-')}`
-      : item.id);
-    return itemKey === currentKeySignature;
-  })?.quantity || 0;
+  // Track quantity for the CURRENT variant configuration state
+  const currentVariantQuantity = useMemo(() => {
+    return cart.find((item: any) => {
+      const itemKey = item.cartItemId || (item.selectedOptions
+        ? `${item.id}-${Object.entries(item.selectedOptions).sort(([a], [b]) => a.localeCompare(b)).map(([cat, val]) => `${cat}:${val}`).join('-')}`
+        : item.id);
+      return itemKey === currentKeySignature;
+    })?.quantity || 0;
+  }, [cart, currentKeySignature]);
+
+  // Calculate global total quantities of this product ID across all variations
+  const totalProductQuantity = useMemo(() => {
+    return cart
+      .filter((item: any) => item.id === product.id)
+      .reduce((sum: number, item: any) => sum + item.quantity, 0);
+  }, [cart, product.id]);
 
   // WhatsApp Showroom Link configuration
   const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
@@ -114,7 +124,6 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
       cartItemId: currentKeySignature,
       selectedOptions: { ...selectedOptions }
     });
-    setIsModalOpen(false);
   };
 
   return (
@@ -162,14 +171,24 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             <WhatsAppIcon className="w-4 h-4" />
           </a>
 
-          {/* Interaction Quick Add Slide-Up Control Overlay */}
+          {/* Interaction Slide-Up Action Bar */}
           <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-            {quantity === 0 ? (
+            {hasOptions ? (
+              /* Prioritize Option Modal Portal when variant options exist */
+              <button
+                onClick={handleOpenSelector}
+                className="w-full bg-white text-black py-4 text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-[#c5a059] hover:text-white transition-all duration-300 shadow-xl"
+              >
+                <ShoppingBagIcon className="w-4 h-4" /> 
+                {totalProductQuantity > 0 ? `Configure Build (${totalProductQuantity} in Bag)` : 'Configure Build'}
+              </button>
+            ) : totalProductQuantity === 0 ? (
+              /* Standard Direct-to-Bag flow if no sub-options exist */
               <button
                 onClick={handleOpenSelector}
                 className="w-full bg-white text-black py-4 text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-[#c5a059] hover:text-white transition-all duration-300"
               >
-                <ShoppingBagIcon className="w-4 h-4" /> {hasOptions ? 'Configure Build' : 'Secure Purchase'}
+                <ShoppingBagIcon className="w-4 h-4" /> Secure Purchase
               </button>
             ) : (
               <div className="flex items-center justify-between bg-white dark:bg-stone-900 p-1 shadow-2xl border border-stone-200 dark:border-stone-800">
@@ -179,15 +198,9 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                 >
                   <MinusIcon className="w-4 h-4" />
                 </button>
-                <span className="font-black text-xs tracking-widest text-stone-900 dark:text-stone-100">BAG: {quantity}</span>
+                <span className="font-black text-xs tracking-widest text-stone-900 dark:text-stone-100">BAG: {totalProductQuantity}</span>
                 <button 
-                  onClick={() => addToCart({
-                    ...product,
-                    finalPrice: currentFinalPrice,
-                    sellingPrice: currentSellingPrice,
-                    cartItemId: currentKeySignature,
-                    selectedOptions: { ...selectedOptions }
-                  })} 
+                  onClick={handleCommitSelection} 
                   className="p-3 text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
                 >
                   <PlusIcon className="w-4 h-4" />
@@ -235,7 +248,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
         </div>
       </motion.div>
 
-      {/* Configuration Customizer Modal Window */}
+      {/* Configuration Customizer Modal Window Workspace */}
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
@@ -310,18 +323,39 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                 ))}
               </div>
 
-              {/* Save Selection and Actions Deck */}
+              {/* Save Selection and Actions Configuration Deck */}
               <div className="border-t border-stone-100 dark:border-stone-900 pt-6 mt-6 space-y-4">
                 <div className="flex items-baseline justify-between">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">Calculated Build Subtotal:</span>
                   <span className="text-xl font-light tracking-wide">Kes {currentFinalPrice.toLocaleString()}</span>
                 </div>
-                <button
-                  onClick={handleCommitSelection}
-                  className="w-full py-4 bg-[#1a1a1a] hover:bg-[#c5a059] dark:bg-stone-900 dark:hover:bg-[#c5a059] text-white font-black uppercase tracking-[0.25em] text-[10px] transition-all shadow-xl active:scale-[0.99]"
-                >
-                  Add Configured Build to Bag
-                </button>
+
+                {currentVariantQuantity === 0 ? (
+                  <button
+                    onClick={handleCommitSelection}
+                    className="w-full py-4 bg-[#1a1a1a] hover:bg-[#c5a059] dark:bg-stone-900 dark:hover:bg-[#c5a059] text-white font-black uppercase tracking-[0.25em] text-[10px] transition-all shadow-xl active:scale-[0.99]"
+                  >
+                    Add Configured Build to Bag
+                  </button>
+                ) : (
+                  <div className="flex items-center justify-between bg-stone-50 dark:bg-stone-900 p-1 border border-stone-200 dark:border-stone-800 w-full shadow-inner">
+                    <button 
+                      onClick={() => decreaseQuantity(currentKeySignature, selectedOptions)} 
+                      className="p-3.5 text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors flex justify-center items-center flex-1"
+                    >
+                      <MinusIcon className="w-4 h-4" />
+                    </button>
+                    <span className="font-black text-[10px] tracking-widest text-stone-900 dark:text-stone-100 px-4 text-center select-none flex-shrink-0">
+                      IN BAG: {currentVariantQuantity}
+                    </span>
+                    <button 
+                      onClick={handleCommitSelection} 
+                      className="p-3.5 text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors flex justify-center items-center flex-1"
+                    >
+                      <PlusIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>

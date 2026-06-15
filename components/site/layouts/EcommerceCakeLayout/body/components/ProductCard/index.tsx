@@ -29,10 +29,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { storeFormData } = useStoreContext();
   
   const primary = storeFormData?.themeSettings?.primaryColor || '#D97706';
-
   const { name, images, finalPrice, sellingPrice } = product;
 
-  // 1. Structural Grouping for Confectionery Metadata
+  // 1. Structural Grouping for Option Variants
   const groupedVariants = useMemo(() => {
     const options = (product.option || []) as VariantOptionItem[];
     return options.reduce((acc, item) => {
@@ -64,17 +63,30 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     };
   }, [selectedOptions, groupedVariants, finalPrice, sellingPrice]);
 
-  // 3. Exact matching conditional checks to handle independent compound key entries
-  const quantity = cart.find((item: any) => {
-    if (item.id !== product.id) return false;
-    if (hasVariants) {
-      if (!item.selectedOptions) return false;
-      return Object.entries(selectedOptions).every(([cat, val]) => item.selectedOptions[cat] === val);
+  // 3. Cart Tracking Matrix Engine
+  // Calculates total overall allocation quantity for standard card layout reporting badges
+  const totalProductQuantity = useMemo(() => {
+    return cart
+      .filter((item: any) => item.id === product.id)
+      .reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
+  }, [cart, product.id]);
+
+  // Calculates precision quantity match for the CURRENT isolated variant option combination selected
+  const currentVariantQuantity = useMemo(() => {
+    if (!hasVariants) {
+      return cart.find((item: any) => item.id === product.id)?.quantity || 0;
     }
-    return true;
-  })?.quantity || 0;
-  
-  // WhatsApp Configuration - Built from item variant parameters
+    if (!allOptionsSelected) return 0;
+
+    return cart.find((item: any) => {
+      if (item.id !== product.id || !item.selectedOptions) return false;
+      return Object.keys(groupedVariants).every(
+        (cat) => item.selectedOptions[cat] === selectedOptions[cat]
+      );
+    })?.quantity || 0;
+  }, [cart, product.id, hasVariants, allOptionsSelected, selectedOptions, groupedVariants]);
+
+  // WhatsApp Configuration Context Engine
   const optionsSummary = Object.entries(selectedOptions)
     .map(([cat, val]) => `${cat}: ${val}`)
     .join(', ');
@@ -91,11 +103,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     
   const imageSrc = images?.[0] || 'https://via.placeholder.com/400';
 
-  const handleAddToCart = (e?: React.MouseEvent) => {
+  const handleAddToCartAction = (e?: React.MouseEvent) => {
     e?.preventDefault();
     e?.stopPropagation();
 
-    if (hasVariants && !allOptionsSelected) {
+    if (hasVariants) {
       setIsSelectingOptions(true);
       return;
     }
@@ -116,7 +128,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         viewport={{ once: true }}
         className="group relative flex flex-col bg-white rounded-2xl transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] overflow-hidden border border-gray-100/50"
       >
-        {/* 1. Image View Window Section */}
+        {/* Image View Window Section */}
         <div className="relative h-80 w-full overflow-hidden bg-gray-50">
           <Link href={`/cakeecommerce/products/${product.id}`} className="block h-full w-full">
             <Image
@@ -129,12 +141,19 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             />
           </Link>
 
-          {/* Minimalist Promotional Labels */}
+          {/* Minimalist Promotional Labels & Matrix Count Indicators */}
           <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
             {discount !== null && (
               <div className="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full shadow-sm border border-orange-50">
                 <span style={{ color: primary }} className="text-[10px] font-black tracking-widest">
                   -{discount}% OFF
+                </span>
+              </div>
+            )}
+            {hasVariants && totalProductQuantity > 0 && (
+              <div style={{ backgroundColor: primary }} className="px-3 py-1 rounded-full shadow-md text-white border border-white/20 backdrop-blur-md">
+                <span className="text-[10px] font-bold tracking-wider">
+                  {totalProductQuantity} IN CART
                 </span>
               </div>
             )}
@@ -151,10 +170,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <WhatsAppIcon className="w-4 h-4" />
           </a>
 
-          {/* Floating Instant Sync Button */}
-          {quantity === 0 && (
+          {/* Floating Action Trigger Button (Launches customized configurations cleanly) */}
+          {(hasVariants || totalProductQuantity === 0) && (
             <button 
-              onClick={handleAddToCart}
+              onClick={handleAddToCartAction}
               style={{ '--hover-bg': primary } as React.CSSProperties}
               className="absolute bottom-4 right-4 p-3 bg-white text-gray-800 rounded-full shadow-xl translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[var(--hover-bg)] hover:text-white"
             >
@@ -163,7 +182,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           )}
         </div>
 
-        {/* 2. Content Info Matrix Grid */}
+        {/* Content Info Matrix Grid */}
         <div className="p-5 flex flex-col flex-grow">
           <div className="flex justify-between items-start mb-2">
             <div className="flex-1">
@@ -193,23 +212,24 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </div>
           </div>
 
-          {/* 3. Pricing Details Frame Block */}
+          {/* Pricing & Cart Action Details Frame Block */}
           <div className="mt-auto pt-4 flex items-center justify-between">
             <div className="flex flex-col leading-tight">
               <span className="text-xl font-black text-gray-900">
-                KSh {calculatedPrices.finalPrice.toLocaleString()}
+                KSh {(hasVariants ? finalPrice ?? 0 : calculatedPrices.finalPrice).toLocaleString()}
               </span>
 
-              {calculatedPrices.sellingPrice && calculatedPrices.sellingPrice > calculatedPrices.finalPrice && (
+              {sellingPrice && sellingPrice > (finalPrice ?? 0) && (
                 <span className="text-xs line-through text-gray-400 font-medium">
-                  KSh {calculatedPrices.sellingPrice.toLocaleString()}
+                  KSh {sellingPrice.toLocaleString()}
                 </span>
               )}
             </div>
 
             <div className="flex items-center">
               <AnimatePresence mode="wait">
-                {quantity > 0 ? (
+                {!hasVariants && totalProductQuantity > 0 ? (
+                  // Native inline counter UI strictly reserved for simple products without custom options
                   <motion.div 
                     initial={{ width: 0, opacity: 0 }}
                     animate={{ width: 'auto', opacity: 1 }}
@@ -225,14 +245,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                       style={{ '--hover-color': primary } as React.CSSProperties}
                       className="p-1.5 text-gray-400 hover:text-[var(--hover-color)] transition-colors"
                     >
-                      {quantity === 1 ? <TrashIcon className="h-4 w-4 text-red-500" /> : <MinusIcon className="h-4 w-4" />}
+                      {totalProductQuantity === 1 ? <TrashIcon className="h-4 w-4 text-red-500" /> : <MinusIcon className="h-4 w-4" />}
                     </button>
-                    <span className="px-3 text-sm font-bold text-gray-800">{quantity}</span>
+                    <span className="px-3 text-sm font-bold text-gray-800">{totalProductQuantity}</span>
                     <button
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        handleAddToCart();
+                        handleAddToCartAction();
                       }}
                       style={{ '--hover-color': primary } as React.CSSProperties}
                       className="p-1.5 text-gray-400 hover:text-[var(--hover-color)] transition-colors"
@@ -241,10 +261,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                     </button>
                   </motion.div>
                 ) : (
+                  // Premium Action Router Button (Launches configuration modal for variable listings)
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={handleAddToCart}
+                    onClick={handleAddToCartAction}
                     style={{ borderColor: primary, color: primary }}
                     className="px-5 py-2 rounded-full border-2 text-xs font-black uppercase tracking-widest transition-all"
                     onMouseEnter={(e) => {
@@ -256,7 +277,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                       e.currentTarget.style.color = primary;
                     }}
                   >
-                    {hasVariants && !allOptionsSelected ? "Customize" : "Add To Cart"}
+                    {hasVariants ? "Customize" : "Add To Cart"}
                   </motion.button>
                 )}
               </AnimatePresence>
@@ -265,11 +286,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </div>
       </motion.div>
 
-      {/* ================= TRUE DIALOG MODAL BACKDROP MODULE ================= */}
+      {/* TRUE DIALOG CONFIGURATION DIALOG MODAL */}
       <AnimatePresence>
         {isSelectingOptions && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Modal Screen Blocker */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -278,7 +298,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               className="absolute inset-0 bg-zinc-950/40 backdrop-blur-sm"
             />
 
-            {/* Modal Box Container */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -286,10 +305,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               transition={{ type: 'spring', duration: 0.5 }}
               className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 flex flex-col z-10"
             >
-              {/* Dynamic Accent Header Bar */}
               <div style={{ backgroundColor: primary }} className="h-1.5 w-full" />
 
-              {/* Close Button Trigger */}
               <button
                 onClick={() => setIsSelectingOptions(false)}
                 className="absolute top-4 right-4 p-2 rounded-full bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-colors border border-gray-100"
@@ -297,7 +314,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 <XMarkIcon className="w-4 h-4" />
               </button>
 
-              {/* Content Panel Frame */}
               <div className="p-6 md:p-8 space-y-6">
                 <div>
                   <span style={{ color: primary }} className="text-[10px] font-black uppercase tracking-widest block mb-1">
@@ -308,8 +324,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   </h3>
                 </div>
 
-                {/* Main Option Choice Loops */}
-                <div className="space-y-6 overflow-y-auto max-h-[60vh] pr-1 [scrollbar-width:thin]">
+                {/* Option Variant Selection Loops */}
+                <div className="space-y-6 overflow-y-auto max-h-[50vh] pr-1 [scrollbar-width:thin]">
                   {Object.entries(groupedVariants).map(([category, items]) => (
                     <div key={category} className="space-y-3">
                       <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
@@ -343,7 +359,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   ))}
                 </div>
 
-                {/* Subtotal Footer Calculator Box */}
+                {/* Intelligent Dynamic Subtotal & Multi-allocation Action Footer */}
                 <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
                   <div className="flex flex-col">
                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Estimated Total</span>
@@ -352,17 +368,50 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                     </span>
                   </div>
 
-                  <button
-                    disabled={!allOptionsSelected}
-                    onClick={() => {
-                      handleAddToCart();
-                      setIsSelectingOptions(false);
-                    }}
-                    style={{ backgroundColor: allOptionsSelected ? primary : undefined }}
-                    className="px-6 py-3 bg-gray-900 text-white rounded-xl font-black text-xs uppercase tracking-widest disabled:opacity-30 disabled:pointer-events-none transition-all shadow-lg active:scale-95"
-                  >
-                    Confirm Order Setup
-                  </button>
+                  <div className="flex items-center">
+                    {allOptionsSelected && currentVariantQuantity > 0 ? (
+                      // Directly display an inline multi-stepper inside the modal for smooth context handling
+                      <div className="flex items-center bg-gray-50 rounded-xl border border-gray-100 p-1">
+                        <button
+                          type="button"
+                          onClick={() => decreaseQuantity(product.id, selectedOptions)}
+                          className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                        >
+                          {currentVariantQuantity === 1 ? <TrashIcon className="h-4 w-4 text-red-500" /> : <MinusIcon className="h-4 w-4" />}
+                        </button>
+                        <span className="px-4 text-sm font-bold text-gray-800">{currentVariantQuantity}</span>
+                        <button
+                          type="button"
+                          onClick={() => addToCart({
+                            ...product,
+                            finalPrice: calculatedPrices.finalPrice,
+                            sellingPrice: calculatedPrices.sellingPrice,
+                            selectedOptions,
+                          })}
+                          className="p-2 text-emerald-600 transition-colors"
+                        >
+                          <PlusIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      // Add new product entries to cart cleanly
+                      <button
+                        disabled={!allOptionsSelected}
+                        onClick={() => {
+                          addToCart({
+                            ...product,
+                            finalPrice: calculatedPrices.finalPrice,
+                            sellingPrice: calculatedPrices.sellingPrice || product.sellingPrice,
+                            selectedOptions,
+                          });
+                        }}
+                        style={{ backgroundColor: allOptionsSelected ? primary : undefined }}
+                        className="px-6 py-3 bg-gray-900 text-white rounded-xl font-black text-xs uppercase tracking-widest disabled:opacity-30 disabled:pointer-events-none transition-all shadow-lg active:scale-95"
+                      >
+                        Add Configuration
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>

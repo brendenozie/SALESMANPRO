@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
-import { MinusIcon, PlusIcon, StarIcon, TrashIcon, ShoppingBagIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { MinusIcon, PlusIcon, StarIcon, TrashIcon, ShoppingBagIcon, XMarkIcon, ShoppingCartIcon } from '@heroicons/react/24/solid';
 import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
@@ -35,19 +35,21 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
 
   // Structure variant configuration array
   const groupedVariants = useMemo(() => {
-    const options = (product.option || []) as VariantOptionItem[];
-    return options.reduce((acc, item) => {
-      if (!item.category) return acc;
-      if (!acc[item.category]) acc[item.category] = [];
-      acc[item.category].push(item);
-      return acc;
-    }, {} as Record<string, VariantOptionItem[]>);
+    return (product.option ?? []).reduce<Record<string, VariantOptionItem[]>>(
+      (acc, item) => {
+        if (!item.category) return acc;
+        (acc[item.category] ??= []).push(item);
+        return acc;
+      },
+      {}
+    );
   }, [product.option]);
 
-  const hasVariants = Object.keys(groupedVariants).length > 0;
-  const allOptionsSelected = Object.keys(groupedVariants).every((cat) => selectedOptions[cat]);
+  const variantCategories = useMemo(() => Object.keys(groupedVariants), [groupedVariants]);
+  const hasVariants = variantCategories.length > 0;
+  const allOptionsSelected = variantCategories.every((category) => selectedOptions[category]);
 
-  // Set initial selections automatically from the variants schema structure
+  // Set initial default selections safely from variants metadata array schema
   useEffect(() => {
     const initialSelections: Record<string, string> = {};
     Object.entries(groupedVariants).forEach(([category, items]) => {
@@ -77,20 +79,35 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
     };
   }, [selectedOptions, groupedVariants, product.finalPrice, product.sellingPrice]);
 
-  // Match current specific configuration combination schema mapping directly inside the global state
-  const quantity = useMemo(() => {
+  // Distinct compound signature string matching current active selections
+  const targetSignatureId = useMemo(() => {
+    if (hasVariants && Object.keys(selectedOptions).length > 0) {
+      return `${product.id}-${JSON.stringify(selectedOptions)}`;
+    }
+    return product.id;
+  }, [product.id, selectedOptions, hasVariants]);
+
+  // Total absolute structural unit quantity of this item overall inside the cart (for badges)
+  const totalProductQuantityInCart = useMemo(() => {
+    return cart
+      .filter((item: any) => item.id === product.id)
+      .reduce((acc: number, item: any) => acc + (item.quantity || 0), 0);
+  }, [cart, product.id]);
+
+  // Quantity count matches only the EXACT combination selected
+  const exactVariantQuantity = useMemo(() => {
     const match = cart.find((item: any) => {
       if (item.id !== product.id) return false;
       if (hasVariants) {
         if (!item.selectedOptions) return false;
-        return Object.entries(selectedOptions).every(([cat, val]) => item.selectedOptions[cat] === val);
+        const itemSignature = `${item.id}-${JSON.stringify(item.selectedOptions)}`;
+        return itemSignature === targetSignatureId;
       }
       return true;
     });
     return match?.quantity || 0;
-  }, [cart, product.id, selectedOptions, hasVariants]);
+  }, [cart, product.id, targetSignatureId, hasVariants]);
 
-  // Dynamic Messaging Engines Config
   const optionsSummary = Object.entries(selectedOptions)
     .map(([cat, val]) => `${cat}: ${val}`)
     .join(', ');
@@ -122,6 +139,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
     });
   };
 
+  const handleDecreaseQuantity = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    decreaseQuantity({
+      id: product.id,
+      selectedOptions: { ...selectedOptions }
+    });
+  };
+
   return (
     <>
       <motion.div
@@ -133,7 +160,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
       >
         {/* Image Container Component Frame */}
         <div className="relative aspect-[4/5] w-full rounded-[2rem] overflow-hidden bg-slate-50 border border-slate-100 mb-6">
-          <Link href={`/agrovetecommerce/products/${product.id}`} className="block w-full h-full">
+          <Link href={`/products/${product.id}`} className="block w-full h-full">
             <Image
               src={product.images?.[0] || FALLBACK_IMAGE_URL}
               alt={product.name}
@@ -141,16 +168,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
               className="object-cover transition-transform duration-700 group-hover:scale-110"
               loader={loader}
             />
-            
-            {/* Direct Action Area Overlay */}
-            {/* <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/10 transition-colors duration-300 flex flex-col items-center justify-center gap-3">
-              <div 
-                style={{ backgroundColor: primary }}
-                className="opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all text-white px-6 py-3 rounded-full font-black text-[10px] uppercase tracking-widest shadow-2xl brightness-95 hover:brightness-110"
-              >
-                View Product
-              </div>
-            </div> */}
           </Link>
 
           {/* Quick Consultation Floating Trigger Action Link */}
@@ -164,6 +181,22 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
             <WhatsAppIcon className="w-5 h-5" />
           </a>
 
+          {/* Total Product Basket Count Pill Indicator Badge */}
+          <AnimatePresence>
+            {totalProductQuantityInCart > 0 && (
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0, opacity: 0 }}
+                className="absolute top-4 right-4 z-10 bg-slate-950 text-white font-mono font-bold text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-xl border border-white/10"
+              >
+                <ShoppingCartIcon className="w-3.5 h-3.5 text-amber-400" />
+                <span>{totalProductQuantityInCart}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Discount Badge */}
           {discount && (
             <div 
               style={{ backgroundColor: primary }}
@@ -177,10 +210,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
         {/* Product Information Detail Card Content */}
         <div className="flex flex-col flex-grow px-2">
           <div className="flex justify-between items-start mb-2">
-            <h4 className="text-lg font-black text-slate-900 tracking-tighter leading-tight group-hover:text-slate-700 transition-colors">
-              {product.name}
-            </h4>
-            <div className="flex items-center gap-1 text-slate-400 text-[10px] font-bold">
+            <div className="flex-1 min-w-0 pr-2">
+              <h4 className="text-lg font-black text-slate-900 tracking-tighter leading-tight group-hover:text-slate-700 transition-colors line-clamp-1">
+                {product.name}
+              </h4>
+              {hasVariants && (
+                <p className="text-[9px] font-black tracking-widest text-emerald-600 uppercase mt-0.5">
+                  Multi-Option Product
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-1 text-slate-400 text-[10px] font-bold mt-1 flex-shrink-0">
               <StarIcon className="w-3 h-3 text-amber-400" />
               4.8
             </div>
@@ -189,79 +229,89 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <span className="text-xl font-mono font-bold text-slate-900 tracking-tighter">
-                KSh {calculatedPrices.finalPrice.toLocaleString()}
+                KSh {(product.finalPrice ?? product.sellingPrice ?? 0).toLocaleString()}
               </span>
-              {calculatedPrices.sellingPrice && calculatedPrices.sellingPrice > calculatedPrices.finalPrice && (
-                <span className="text-xs line-through text-slate-300 font-medium">
-                  KSh {calculatedPrices.sellingPrice.toLocaleString()}
-                </span>
-              )}
             </div>
             
             <button 
               type="button"
               onClick={() => setIsOpenQuickView(true)}
               style={{ color: primary }}
-              className="text-[9px] flex gap-1.5 font-black uppercase underline underline-offset-4 decoration-2 items-center hover:opacity-80 transition-opacity"
+              className="text-[9px] flex gap-1.5 font-black uppercase underline underline-offset-4 decoration-2 items-center hover:opacity-80 transition-opacity whitespace-nowrap"
             >
-              Quick View
+              Configure Options
             </button>
           </div>
 
-          {/* Standard Footer Interactive Action Tray */}
+          {/* Main Display Actions Area Grid Block */}
           <div className="mt-auto">
-            <AnimatePresence mode="wait">
-              {quantity > 0 ? (
-                <motion.div 
-                  key="in-cart"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="flex items-center justify-between bg-slate-900 rounded-2xl p-1 shadow-xl"
-                >
-                  <button 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      decreaseQuantity(product.id);
-                    }}
-                    className="p-3 text-white hover:bg-white/10 rounded-xl transition-colors"
+            {hasVariants ? (
+              // Multi-Variant explicit trigger configurations
+              <button
+                type="button"
+                onClick={() => setIsOpenQuickView(true)}
+                style={{ 
+                  color: primary, 
+                  borderColor: `${primary}20`,
+                  backgroundColor: `${primary}05`
+                }}
+                className="w-full flex items-center justify-center gap-2.5 py-4 border rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-950 hover:text-white hover:border-slate-950 transition-all duration-300 shadow-sm"
+              >
+                <ShoppingBagIcon className="w-4 h-4" />
+                Select Variant Options
+              </button>
+            ) : (
+              // Standard straight non-variant inline behavior block
+              <AnimatePresence mode="wait">
+                {exactVariantQuantity > 0 ? (
+                  <motion.div 
+                    key="standard-cart-controls"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="flex items-center justify-between bg-slate-900 rounded-2xl p-1 shadow-xl"
                   >
-                    {quantity === 1 ? <TrashIcon className="w-4 h-4 text-red-400" /> : <MinusIcon className="w-4 h-4" />}
-                  </button>
-                  <span className="text-white font-black text-sm">{quantity}</span>
-                  <button 
+                    <button 
+                      onClick={handleDecreaseQuantity}
+                      className="p-3 text-white hover:bg-white/10 rounded-xl transition-colors"
+                    >
+                      {exactVariantQuantity === 1 ? <TrashIcon className="w-4 h-4 text-red-400" /> : <MinusIcon className="w-4 h-4" />}
+                    </button>
+                    <span className="text-white font-black text-sm">{exactVariantQuantity}</span>
+                    <button 
+                      onClick={() => handleAddToCart()}
+                      className="p-3 text-white hover:bg-white/10 rounded-xl transition-colors"
+                    >
+                      <PlusIcon className="w-4 h-4 text-emerald-400" />
+                    </button>
+                  </motion.div>
+                ) : (
+                  <motion.button
+                    key="standard-add-button"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => handleAddToCart()}
-                    className="p-3 text-white hover:bg-white/10 rounded-xl transition-colors"
+                    style={{ 
+                      color: primary, 
+                      borderColor: `${primary}15`,
+                      backgroundColor: `${primary}08`
+                    }}
+                    className="w-full flex items-center justify-center gap-3 py-4 border rounded-2xl font-black text-[10px] uppercase tracking-widest hover:text-white transition-all duration-300 shadow-sm"
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = primary;
+                      e.currentTarget.style.color = '#ffffff';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = `${primary}08`;
+                      e.currentTarget.style.color = primary;
+                    }}
                   >
-                    <PlusIcon className="w-4 h-4 text-emerald-400" />
-                  </button>
-                </motion.div>
-              ) : (
-                <motion.button
-                  key="add-btn"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => handleAddToCart()}
-                  style={{ 
-                    color: primary, 
-                    borderColor: `${primary}15`,
-                    backgroundColor: `${primary}08`
-                  }}
-                  className="w-full flex items-center justify-center gap-3 py-4 border rounded-2xl font-black text-[10px] uppercase tracking-widest hover:text-white transition-all duration-300 shadow-sm"
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = primary;
-                    e.currentTarget.style.color = '#ffffff';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = `${primary}08`;
-                    e.currentTarget.style.color = primary;
-                  }}
-                >
-                  <ShoppingBagIcon className="w-4 h-4" />
-                  {hasVariants && !allOptionsSelected ? "Configure Variant" : "Add to Cart"}
-                </motion.button>
-              )}
-            </AnimatePresence>
+                    <ShoppingBagIcon className="w-4 h-4" />
+                    Add to Cart
+                  </motion.button>
+                )}
+              </AnimatePresence>
+            )}
           </div>
         </div>
       </motion.div>
@@ -270,7 +320,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
       <AnimatePresence>
         {isOpenQuickView && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Backdrop Blur effect */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -279,14 +328,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
               className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
             />
 
-            {/* Modal Body Surface container layout */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]"
             >
-              {/* Close Button Component element */}
               <button
                 onClick={() => setIsOpenQuickView(false)}
                 className="absolute top-5 right-5 z-10 p-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-full transition-colors"
@@ -295,7 +342,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
               </button>
 
               <div className="overflow-y-auto p-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden space-y-6">
-                {/* Product Core Descriptive Module Info Layout Header block */}
+                {/* Modal Header */}
                 <div className="flex gap-4 border-b border-slate-100 pb-5">
                   <div className="relative w-24 h-24 rounded-2xl overflow-hidden bg-slate-50 border flex-shrink-0">
                     <Image
@@ -307,10 +354,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
                     />
                   </div>
                   <div className="flex flex-col justify-center">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Quick View Configuration</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Configuration Variant Context</span>
                     <h3 className="text-xl font-black text-slate-900 tracking-tight leading-tight">{product.name}</h3>
                     <div className="mt-2 flex items-baseline gap-2">
-                      <span className="text-lg font-mono font-bold text-slate-900">
+                      <span className="text-xl font-mono font-bold text-slate-900">
                         KSh {calculatedPrices.finalPrice.toLocaleString()}
                       </span>
                       {calculatedPrices.sellingPrice && calculatedPrices.sellingPrice > calculatedPrices.finalPrice && (
@@ -322,7 +369,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
                   </div>
                 </div>
 
-                {/* Unified Map Render loop for configuration parameters list array groups */}
+                {/* Variant Map Selectors */}
                 {hasVariants ? (
                   <div className="space-y-5">
                     {Object.entries(groupedVariants).map(([category, items]) => (
@@ -361,20 +408,45 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
                   <p className="text-xs text-slate-400 text-center py-4">No specific multi-variant selections required for this listing product.</p>
                 )}
 
-                {/* Foot Action Buttons Module Frame block layout */}
+                {/* Foot Action Panel Interface block */}
                 <div className="pt-2 space-y-3">
-                  <button
-                    disabled={hasVariants && !allOptionsSelected}
-                    onClick={() => {
-                      handleAddToCart();
-                      setIsOpenQuickView(false);
-                    }}
-                    style={{ backgroundColor: (hasVariants && !allOptionsSelected) ? undefined : primary }}
-                    className="w-full py-4 bg-slate-950 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest disabled:opacity-30 transition-opacity shadow-lg flex items-center justify-center gap-2"
-                  >
-                    <ShoppingBagIcon className="w-4 h-4" />
-                    Add Configuration To Cart
-                  </button>
+                  {exactVariantQuantity > 0 ? (
+                    // Display granular variant configuration adjustments contextually
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between bg-slate-950 rounded-2xl p-1.5 shadow-lg">
+                        <button 
+                          onClick={handleDecreaseQuantity}
+                          className="p-3.5 text-white hover:bg-white/10 rounded-xl transition-colors"
+                        >
+                          {exactVariantQuantity === 1 ? <TrashIcon className="w-4 h-4 text-red-400" /> : <MinusIcon className="w-4 h-4" />}
+                        </button>
+                        <div className="text-center text-white">
+                          <span className="block font-black text-base">{exactVariantQuantity}</span>
+                          <span className="block text-[8px] uppercase tracking-widest text-zinc-400 font-bold">In Cart</span>
+                        </div>
+                        <button 
+                          onClick={() => handleAddToCart()}
+                          className="p-3.5 text-white hover:bg-white/10 rounded-xl transition-colors"
+                        >
+                          <PlusIcon className="w-4 h-4 text-emerald-400" />
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-center text-slate-400 font-bold tracking-tight">
+                        Adjusting specific allocation for: <span className="text-slate-700 font-black">{optionsSummary || 'Default'}</span>
+                      </p>
+                    </div>
+                  ) : (
+                    // Default Initial State Action Trigger Button inside configuration view
+                    <button
+                      disabled={hasVariants && !allOptionsSelected}
+                      onClick={() => handleAddToCart()}
+                      style={{ backgroundColor: (hasVariants && !allOptionsSelected) ? undefined : primary }}
+                      className="w-full py-4 bg-slate-950 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest disabled:opacity-30 transition-opacity shadow-lg flex items-center justify-center gap-2"
+                    >
+                      <ShoppingBagIcon className="w-4 h-4" />
+                      Add Variant To Cart
+                    </button>
+                  )}
 
                   <a
                     href={whatsappUrl}
@@ -383,7 +455,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
                     className="w-full py-4 border border-slate-200 bg-slate-50 text-slate-800 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-100 transition-colors flex items-center justify-center gap-2"
                   >
                     <WhatsAppIcon className="w-4 h-4 text-[#25D366]" />
-                    Order Direct via WhatsApp
+                    Order Variant via WhatsApp
                   </a>
                 </div>
               </div>

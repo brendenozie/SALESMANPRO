@@ -27,7 +27,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
   const primary = storeFormData?.themeSettings?.primaryColor || '#16a34a';
 
-  // 1. Reconstruct flat variant options array back into categorical structural row records
+  // Reconstruct variant architecture structural categories
   const optionGroups = useMemo(() => {
     const rawOptions = (product.option || []) as VariantOptionItem[];
     if (!Array.isArray(rawOptions) || rawOptions.length === 0) return null;
@@ -44,7 +44,46 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
   const hasOptions = optionGroups && Object.keys(optionGroups).length > 0;
 
-  // 2. Safely parse active variations to determine exact matching price additions
+  // Generate unique sorting key per configuration
+  const generateCartItemId = (options: Record<string, string>) => {
+    if (!options || Object.keys(options).length === 0) return product.id;
+    const sortedOptionsQuery = Object.entries(options)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, val]) => `${key}:${val}`)
+      .join('|');
+    return `${product.id}-${sortedOptionsQuery}`;
+  };
+
+  // Get active variant loadout subsets matching this base product
+  const activeVariantsInCart = useMemo(() => {
+    return cart.filter((item: any) => item.id === product.id);
+  }, [cart, product.id]);
+
+  // Aggregate global product quantities or specific flat item count
+  const totalQuantity = useMemo(() => {
+    if (hasOptions) {
+      return activeVariantsInCart.reduce((acc: number, cur: any) => acc + cur.quantity, 0);
+    }
+    return cart.find((item: any) => item.id === product.id)?.quantity || 0;
+  }, [cart, hasOptions, activeVariantsInCart, product.id]);
+
+  // Track currently formulated combination ID inside the modal
+  const currentUniqueId = useMemo(() => {
+    return generateCartItemId(selectedOptions);
+  }, [selectedOptions]);
+
+  // Verify full multi-option structural completeness
+  const allOptionsSelected = useMemo(() => {
+    if (!optionGroups) return true;
+    return Object.keys(optionGroups).every(key => selectedOptions[key]);
+  }, [optionGroups, selectedOptions]);
+
+  // Extract matched active payload configuration from cart
+  const exactVariantInCart = useMemo(() => {
+    return activeVariantsInCart.find((item: any) => item.cartItemId === currentUniqueId);
+  }, [activeVariantsInCart, currentUniqueId]);
+
+  // Dynamically calculate unit price matching active selections
   const activePrice = useMemo(() => {
     let basePrice = product.finalPrice ?? 0;
     const rawOptions = (product.option || []) as VariantOptionItem[];
@@ -57,25 +96,6 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
     });
     return basePrice;
   }, [selectedOptions, product.finalPrice, product.option]);
-
-  // 3. Create predictable composite keys for unique variation line items in cart
-  const generateCartItemId = (options: Record<string, string>) => {
-    if (!options || Object.keys(options).length === 0) return product.id;
-    const sortedOptionsQuery = Object.entries(options)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, val]) => `${key}:${val}`)
-      .join('|');
-    return `${product.id}-${sortedOptionsQuery}`;
-  };
-
-  const quantity = useMemo(() => {
-    if (hasOptions) {
-      return cart
-        .filter((item: any) => item.id === product.id)
-        .reduce((acc: number, cur: any) => acc + cur.quantity, 0);
-    }
-    return cart.find((item: any) => item.id === product.id)?.quantity || 0;
-  }, [cart, hasOptions, product.id]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -110,27 +130,26 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
     if (errorMsg) setErrorMsg('');
   };
 
-  const handleConfirmOptions = () => {
-    if (!optionGroups) return;
-    const missingKeys = Object.keys(optionGroups).filter(key => !selectedOptions[key]);
+  const executeAddVariant = (forcedPayload?: any) => {
+    if (!optionGroups && !forcedPayload) return;
     
-    if (missingKeys.length > 0) {
-      setErrorMsg(`Please select: ${missingKeys.join(', ')}`);
-      return;
+    if (!forcedPayload) {
+      const missingKeys = Object.keys(optionGroups!).filter(key => !selectedOptions[key]);
+      if (missingKeys.length > 0) {
+        setErrorMsg(`Please select: ${missingKeys.join(', ')}`);
+        return;
+      }
     }
 
-    const uniqueCartItemId = generateCartItemId(selectedOptions);
-
-    const customPayload = {
+    const payload = forcedPayload || {
       ...product,
       id: product.id,
-      cartItemId: uniqueCartItemId,
+      cartItemId: currentUniqueId,
       selectedOptions,
       calculatedPrice: activePrice
     };
 
-    addToCart(customPayload);
-    setIsModalOpen(false);
+    addToCart(payload);
   };
 
   const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
@@ -194,7 +213,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                 <span className="text-xs font-bold text-gray-500">4.8</span>
               </div>
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                {hasOptions ? `Total Qty: ${quantity}` : 'Qty: 1 Unit'}
+                {hasOptions ? `Total Qty: ${totalQuantity}` : 'Qty: 1 Unit'}
               </span>
             </div>
             
@@ -218,10 +237,10 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
               )}
             </div>
 
-            {/* Contextual Action Button */}
+            {/* Contextual Action Trigger */}
             <div className="relative h-12 w-32 flex items-center justify-end">
               <AnimatePresence mode="wait">
-                {quantity === 0 || hasOptions ? (
+                {totalQuantity === 0 || hasOptions ? (
                   <motion.button
                     key="add"
                     initial={{ opacity: 0, scale: 0.8 }}
@@ -231,7 +250,14 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                     className="h-12 w-12 rounded-2xl flex items-center justify-center text-white shadow-lg transition-transform hover:scale-110 active:scale-95"
                     style={{ backgroundColor: primary }}
                   >
-                    <PlusIcon className="w-6 h-6" />
+                    <div className="relative">
+                      <PlusIcon className="w-6 h-6" />
+                      {hasOptions && totalQuantity > 0 && (
+                        <span className="absolute -top-3 -right-3 bg-red-500 text-white text-[9px] w-5 h-5 rounded-full flex items-center justify-center font-black border-2 border-white animate-fade-in">
+                          {totalQuantity}
+                        </span>
+                      )}
+                    </div>
                   </motion.button>
                 ) : (
                   <motion.div
@@ -247,7 +273,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                     >
                       <MinusIcon className="w-4 h-4" />
                     </button>
-                    <span className="font-black text-gray-900 text-sm">{quantity}</span>
+                    <span className="font-black text-gray-900 text-sm">{totalQuantity}</span>
                     <button 
                       onClick={() => addToCart({ ...product, cartItemId: product.id, calculatedPrice: product.finalPrice ?? 0 })}
                       className="h-10 w-10 flex items-center justify-center rounded-xl hover:bg-white transition-colors text-gray-600"
@@ -298,7 +324,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-white rounded-[2.5rem] p-8 shadow-2xl overflow-hidden border border-gray-100 text-gray-900"
+              className="relative w-full max-w-md bg-white rounded-[2.5rem] p-8 shadow-2xl overflow-hidden border border-gray-100 text-gray-900 flex flex-col max-h-[90vh]"
             >
               <button 
                 onClick={() => setIsModalOpen(false)}
@@ -307,14 +333,14 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                 <XMarkIcon className="w-5 h-5" />
               </button>
 
-              <div className="mb-6">
+              <div className="mb-6 flex-shrink-0">
                 <span className="text-[10px] font-bold tracking-widest text-green-600 uppercase">Configuration required</span>
                 <h3 className="text-xl font-black text-gray-900 mt-1">{product.name}</h3>
                 <p className="text-xs text-gray-400 font-medium mt-0.5">Select preferred specification options below</p>
               </div>
 
               {/* Dynamic Group Rendering */}
-              <div className="space-y-6 max-h-[40vh] overflow-y-auto pr-1">
+              <div className="space-y-6 overflow-y-auto pr-1 flex-grow scrollbar-thin">
                 {Object.entries(optionGroups).map(([groupKey, variantItems]) => (
                   <div key={groupKey} className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-wider text-gray-500 block">
@@ -346,19 +372,57 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                     </div>
                   </div>
                 ))}
+
+                {/* Sub-Section: Live Loaded Variant Summary Lists */}
+                {activeVariantsInCart.length > 0 && (
+                  <div className="mt-6 pt-6 border-t border-gray-100 space-y-2.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">
+                      Current Loadout Summary ({totalQuantity})
+                    </span>
+                    <div className="space-y-2">
+                      {activeVariantsInCart.map((item: any) => (
+                        <div key={item.cartItemId} className="flex items-center justify-between bg-gray-50/70 p-3 rounded-2xl border border-gray-100 text-gray-900">
+                          <div className="flex flex-col text-left max-w-[60%]">
+                            <span className="text-xs font-bold text-gray-800 line-clamp-1">
+                              {Object.values(item.selectedOptions || {}).join(' / ')}
+                            </span>
+                            <span className="text-[10px] text-gray-400 font-semibold mt-0.5">
+                              Kes {item.calculatedPrice?.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 bg-white shadow-sm border border-gray-100 rounded-xl p-1">
+                            <button
+                              onClick={() => decreaseQuantity(item.cartItemId)}
+                              className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-50 text-gray-600 transition-colors"
+                            >
+                              <MinusIcon className="w-3 h-3" />
+                            </button>
+                            <span className="text-xs font-black px-1 text-center min-w-[16px] text-gray-900">{item.quantity}</span>
+                            <button
+                              onClick={() => executeAddVariant(item)}
+                              className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-50 text-gray-600 transition-colors"
+                            >
+                              <PlusIcon className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {errorMsg && (
                 <motion.p 
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                  className="mt-4 text-xs font-bold text-red-500"
+                  className="mt-4 text-xs font-bold text-red-500 flex-shrink-0"
                 >
                   {errorMsg}
                 </motion.p>
               )}
 
               {/* Action Button Container */}
-              <div className="mt-8 pt-4 border-t border-gray-50 flex items-center justify-between gap-4">
+              <div className="mt-6 pt-4 border-t border-gray-50 flex items-center justify-between gap-4 flex-shrink-0">
                 <div className="flex flex-col">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Unit Estimate</span>
                   <span className="text-xl font-black text-gray-900">
@@ -366,13 +430,46 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                   </span>
                 </div>
 
-                <button
-                  onClick={handleConfirmOptions}
-                  className="px-6 h-12 rounded-xl text-xs font-black uppercase text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
-                  style={{ backgroundColor: primary }}
-                >
-                  Add Variant to Loadout
-                </button>
+                <AnimatePresence mode="wait">
+                  {allOptionsSelected && exactVariantInCart ? (
+                    <motion.div 
+                      key="variant-stepper"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      className="flex items-center justify-between bg-gray-100 rounded-xl p-1 w-36 h-12"
+                    >
+                      <button 
+                        onClick={() => decreaseQuantity(currentUniqueId)}
+                        className="h-10 w-10 flex items-center justify-center rounded-lg hover:bg-white transition-colors text-gray-600"
+                      >
+                        <MinusIcon className="w-4 h-4" />
+                      </button>
+                      <span className="font-black text-gray-900 text-sm">{exactVariantInCart.quantity}</span>
+                      <button 
+                        onClick={() => executeAddVariant()}
+                        className="h-10 w-10 flex items-center justify-center rounded-lg hover:bg-white transition-colors text-gray-600"
+                      >
+                        <PlusIcon className="w-4 h-4" />
+                      </button>
+                    </motion.div>
+                  ) : (
+                    <motion.button
+                      key="variant-add-btn"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      onClick={() => executeAddVariant()}
+                      disabled={!allOptionsSelected}
+                      className={`px-5 h-12 rounded-xl text-xs font-black uppercase text-white shadow-lg transition-all active:scale-95 ${
+                        allOptionsSelected ? 'hover:scale-105 opacity-100' : 'opacity-50 cursor-not-allowed'
+                      }`}
+                      style={{ backgroundColor: allOptionsSelected ? primary : '#9ca3af' }}
+                    >
+                      Add Variant to Loadout
+                    </motion.button>
+                  )}
+                </AnimatePresence>
               </div>
             </motion.div>
           </div>

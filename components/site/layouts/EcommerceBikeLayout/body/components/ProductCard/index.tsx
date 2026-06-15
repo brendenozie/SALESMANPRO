@@ -11,7 +11,6 @@ import Image from 'next/image';
 
 const loader = ({ src }: { src: string }) => src;
 
-// Custom WhatsApp Icon with a high-performance/racing vibe
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24">
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.72.937 3.658 1.435 5.63 1.435h.008c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
@@ -81,7 +80,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
     return sortedSpecs ? `${product.id}-${sortedSpecs}` : product.id;
   }, [product.id, selectedOptions, hasVariants]);
 
-  // 4. Resolve exact matches in quantity tracking
+  // 4. Resolve exact matches in quantity tracking for the active option configuration
   const currentConfigQuantity = useMemo(() => {
     const match = cart.find((item: any) => {
       const targetId = item.cartItemId || item.id;
@@ -90,14 +89,14 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
     return match?.quantity || 0;
   }, [cart, currentCartItemId]);
 
-  // 5. Track general count parameters across all options of this specific product
+  // 5. Track total aggregated count parameters across all configurations of this product
   const totalProductQuantity = useMemo(() => {
     return cart
       .filter((item: any) => item.id === product.id)
       .reduce((acc: number, item: any) => acc + (item.quantity || 0), 0);
   }, [cart, product.id]);
   
-  // WhatsApp "Mechanic Support" Config
+  // WhatsApp Summary Strings
   const optionsSummary = Object.entries(selectedOptions)
     .map(([cat, val]) => `${cat}: ${val}`)
     .join(', ');
@@ -110,28 +109,29 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
   const imageSrc = images?.[0] || 'https://via.placeholder.com/600';
 
-  const handleAddToCart = (e?: React.MouseEvent) => {
-    e?.preventDefault();
-    e?.stopPropagation();
-
-    if (hasVariants && !allOptionsSelected) {
-      setIsSelectingOptions(true);
-      return;
-    }
-
+  // Base context execution function called cleanly from card or modal execution triggers
+  const executeAddToCart = () => {
     addToCart({
       ...product,
       cartItemId: currentCartItemId,
       finalPrice: calculatedPrices.finalPrice,
       sellingPrice: calculatedPrices.sellingPrice || product.sellingPrice,
-      selectedOptions: { ...selectedOptions },
+      selectedOptions: hasVariants ? { ...selectedOptions } : undefined,
     });
   };
 
-  const openNewConfigurator = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsSelectingOptions(true);
+  // Direct addition pipeline handler for primary interaction button
+  const handleAddToCart = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
+    // Prioritize the modal window if variants exist on the product layout architecture
+    if (hasVariants) {
+      setIsSelectingOptions(true);
+      return;
+    }
+
+    executeAddToCart();
   };
 
   return (
@@ -221,75 +221,81 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             </h4>
           </Link>
 
-          {/* Display active specifications chosen on the card summary details area */}
-          {hasVariants && Object.keys(selectedOptions).length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2">
-              {Object.entries(selectedOptions).map(([cat, val]) => (
-                <span key={cat} className="text-[8px] font-mono tracking-wider font-bold uppercase bg-slate-50 text-slate-500 border border-slate-100 px-1.5 py-0.5">
-                  {cat}: {val}
-                </span>
-              ))}
+          {/* Aggregated build spec logs for variant indicators */}
+          {hasVariants && totalProductQuantity > 0 && (
+            <div className="mt-2 text-[9px] font-mono font-semibold text-gray-500 uppercase tracking-tight">
+              Active Builds configuration running in background setup modules.
             </div>
           )}
 
-          {/* Functional Build Actions Block */}
+          {/* Functional Actions Module: Modal Prioritized */}
           <div className="mt-auto pt-6 flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <AnimatePresence mode="wait">
-                {currentConfigQuantity === 0 ? (
-                  <motion.button
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    onClick={handleAddToCart}
-                    className="flex items-center gap-4 group/btn w-full text-left"
-                  >
-                    <div 
-                      style={{ '--hover-bg': primary } as React.CSSProperties}
-                      className="w-12 h-12 rounded-full border-2 border-gray-900 flex items-center justify-center transition-all group-hover/btn:border-[var(--hover-bg)] group-hover/btn:bg-[var(--hover-bg)] group-hover/btn:text-white group-hover/btn:scale-110"
+              {hasVariants ? (
+                /* Variant Action Mode: Routes into Modal Manager */
+                <button
+                  onClick={() => setIsSelectingOptions(true)}
+                  className="flex items-center justify-between w-full border-2 border-gray-900 hover:bg-gray-900 hover:text-white p-3 font-black text-xs uppercase tracking-widest transition-all rounded-none group/variantBtn"
+                >
+                  <span className="flex items-center gap-2">
+                    <AdjustmentsHorizontalIcon className="w-4 h-4 text-gray-900 group-hover/variantBtn:text-white" />
+                    {totalProductQuantity > 0 ? "Manage Options / Add Variation" : "Configure Specs"}
+                  </span>
+                  {totalProductQuantity > 0 ? (
+                    <span className="bg-gray-900 text-white group-hover/variantBtn:bg-white group-hover/variantBtn:text-gray-900 px-2 py-0.5 text-[9px] font-black tracking-tighter">
+                      {totalProductQuantity} Active
+                    </span>
+                  ) : (
+                    <PlusIcon className="w-4 h-4 transition-transform group-hover/variantBtn:rotate-90" />
+                  )}
+                </button>
+              ) : (
+                /* Standard Action Mode: Inline quantity adjustments for regular standalone items */
+                <AnimatePresence mode="wait">
+                  {currentConfigQuantity === 0 ? (
+                    <motion.button
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      onClick={handleAddToCart}
+                      className="flex items-center gap-4 group/btn w-full text-left"
                     >
-                      <PlusIcon className="w-6 h-6" />
-                    </div>
-                    <div className="flex flex-col items-start">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 leading-none">
-                        {hasVariants && !allOptionsSelected ? "Configure Specs" : "Add to Build"}
-                      </span>
-                      <span className="text-[8px] text-gray-400 uppercase mt-1">In Stock • Ready to Ride</span>
-                    </div>
-                  </motion.button>
-                ) : (
-                  <motion.div 
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="flex items-center bg-gray-900 text-white rounded-full p-1.5 w-full justify-between shadow-lg"
-                  >
-                    <button 
-                      onClick={() => decreaseQuantity(currentCartItemId, selectedOptions)} 
-                      className="p-2.5 hover:bg-white/10 rounded-full transition-colors"
+                      <div 
+                        style={{ '--hover-bg': primary } as React.CSSProperties}
+                        className="w-12 h-12 rounded-full border-2 border-gray-900 flex items-center justify-center transition-all group-hover/btn:border-[var(--hover-bg)] group-hover/btn:bg-[var(--hover-bg)] group-hover/btn:text-white group-hover/btn:scale-110"
+                      >
+                        <PlusIcon className="w-6 h-6" />
+                      </div>
+                      <div className="flex flex-col items-start">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 leading-none">
+                          Add to Build
+                        </span>
+                        <span className="text-[8px] text-gray-400 uppercase mt-1">In Stock • Ready to Ride</span>
+                      </div>
+                    </motion.button>
+                  ) : (
+                    <motion.div 
+                      initial={{ scale: 0.9, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="flex items-center bg-gray-900 text-white rounded-full p-1.5 w-full justify-between shadow-lg"
                     >
-                      {currentConfigQuantity === 1 ? <TrashIcon className="w-4 h-4 text-red-400" /> : <MinusIcon className="w-4 h-4" />}
-                    </button>
-                    <span className="font-black text-sm tracking-tighter">QTY: {currentConfigQuantity}</span>
-                    <button 
-                      onClick={() => handleAddToCart()} 
-                      className="p-2.5 hover:bg-white/10 rounded-full transition-colors"
-                    >
-                      <PlusIcon className="w-4 h-4 text-emerald-400" />
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                      <button 
+                        onClick={() => decreaseQuantity(currentCartItemId, selectedOptions)} 
+                        className="p-2.5 hover:bg-white/10 rounded-full transition-colors"
+                      >
+                        {currentConfigQuantity === 1 ? <TrashIcon className="w-4 h-4 text-red-400" /> : <MinusIcon className="w-4 h-4" />}
+                      </button>
+                      <span className="font-black text-sm tracking-tighter">QTY: {currentConfigQuantity}</span>
+                      <button 
+                        onClick={() => executeAddToCart()} 
+                        className="p-2.5 hover:bg-white/10 rounded-full transition-colors"
+                      >
+                        <PlusIcon className="w-4 h-4 text-emerald-400" />
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              )}
             </div>
-
-            {/* Customize Another Specification Trigger Option */}
-            {hasVariants && totalProductQuantity > 0 && (
-              <button
-                onClick={openNewConfigurator}
-                className="mt-1 flex items-center justify-center gap-1.5 py-1.5 border border-dashed border-slate-200 text-slate-500 hover:text-gray-900 hover:border-gray-400 text-[9px] font-black tracking-widest uppercase transition-all"
-              >
-                <AdjustmentsHorizontalIcon className="w-3.5 h-3.5" />
-                Customize Another Variant
-              </button>
-            )}
           </div>
         </div>
       </motion.div>
@@ -354,7 +360,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                             onClick={() => setSelectedOptions({ ...selectedOptions, [category]: opt.name })}
                             style={{ 
                               borderColor: isSelected ? primary : undefined,
-                              backgroundColor: isSelected ? `${primary}10` : undefined // Subtle tint background when selected
+                              backgroundColor: isSelected ? `${primary}10` : undefined
                             }}
                             className={`p-3 text-left text-xs font-black tracking-tight uppercase transition-all border flex flex-col justify-center rounded-none relative ${
                               isSelected 
@@ -381,19 +387,61 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                 ))}
               </div>
 
-              {/* Sticky Action Footer */}
+              {/* Sticky Action Footer: Manages Addition / Subtraction dynamically for the specified combination */}
               <div className="p-4 bg-gray-50 border-t border-gray-100">
-                <button
-                  disabled={!allOptionsSelected}
-                  onClick={() => {
-                    handleAddToCart();
-                    setIsSelectingOptions(false);
-                  }}
-                  style={{ backgroundColor: allOptionsSelected ? primary : '#9CA3AF' }}
-                  className="w-full py-3.5 text-white font-black text-sm uppercase tracking-widest transition-opacity shadow-lg rounded-none disabled:cursor-not-allowed"
-                >
-                  {allOptionsSelected ? "Lock In Specifications" : "Select All Options to Proceed"}
-                </button>
+                <AnimatePresence mode="wait">
+                  {currentConfigQuantity === 0 ? (
+                    <motion.button
+                      key="add-new-variant"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      disabled={!allOptionsSelected}
+                      onClick={executeAddToCart}
+                      style={{ backgroundColor: allOptionsSelected ? primary : '#9CA3AF' }}
+                      className="w-full py-4 text-white font-black text-xs uppercase tracking-widest transition-opacity shadow-lg rounded-none disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      <PlusIcon className="w-4 h-4" /> Lock In & Add Variant
+                    </motion.button>
+                  ) : (
+                    <motion.div
+                      key="variant-qty-counter"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="flex items-center bg-gray-900 text-white p-1.5 w-full justify-between shadow-xl"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => decreaseQuantity(currentCartItemId, selectedOptions)}
+                        className="p-3 hover:bg-white/10 rounded-none transition-colors"
+                      >
+                        {currentConfigQuantity === 1 ? (
+                          <TrashIcon className="w-4 h-4 text-red-400" />
+                        ) : (
+                          <MinusIcon className="w-4 h-4" />
+                        )}
+                      </button>
+                      
+                      <div className="flex flex-col items-center">
+                        <span className="text-[8px] font-mono uppercase tracking-widest text-gray-400">
+                          Active Variant Quantity
+                        </span>
+                        <span className="font-black text-sm tracking-tight">
+                          {currentConfigQuantity} in Build
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={executeAddToCart}
+                        className="p-3 hover:bg-white/10 rounded-none transition-colors"
+                      >
+                        <PlusIcon className="w-4 h-4 text-emerald-400" />
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </motion.div>
           </div>

@@ -239,13 +239,13 @@ export default function RestaurantDashboardClient({
           <aside className="bg-white p-8 rounded-3xl shadow sticky top-8">
             <h3 className="text-2xl font-black mb-6">Rush Tasks</h3>
 
-            {tasks.length === 0 ? (
+            {tasks && tasks.length === 0 ? (
               <div className="text-center py-12">
                 <CheckCircleIcon className="w-16 h-16 text-green-500 mx-auto opacity-20" />
                 <p className="mt-4 font-bold text-stone-400">Kitchen is clean</p>
               </div>
             ) : (
-              tasks.map((t) => (
+              tasks && tasks.map((t) => (
                 <div
                   key={t.id}
                   className="p-5 bg-red-50 rounded-2xl border-l-4 border-red-500 mb-4"

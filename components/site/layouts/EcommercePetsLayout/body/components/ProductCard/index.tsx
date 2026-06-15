@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { MinusIcon, PlusIcon, StarIcon, ShoppingCartIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { MinusIcon, PlusIcon, StarIcon, ShoppingCartIcon, TrashIcon, XMarkIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/solid';
 import { MarketListingForm } from '@/types/typings';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
@@ -24,7 +24,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   const { storeFormData } = useStoreContext();
   const primary = storeFormData?.themeSettings?.primaryColor || '#0EA5E9';
 
-  // 1. Group Product Options by category (e.g., Bag Size, Formula/Flavor flavor, Pet Size)
+  // 1. Group Product Options by category
   const groupedVariants = useMemo(() => {
     const options = (product.option || []) as any[];
     return options.reduce((acc, item) => {
@@ -56,24 +56,36 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
     };
   }, [selectedOptions, groupedVariants, product.finalPrice, product.sellingPrice]);
 
-  // 3. Match Specific Variant Sets within Global Cart Items Context
-  const quantity = cart.find((item: any) => {
-    if (item.id !== product.id) return false;
-    if (hasVariants) {
-      if (!item.selectedOptions) return false;
-      return Object.entries(selectedOptions).every(([cat, val]) => item.selectedOptions[cat] === val);
-    }
-    return true;
-  })?.quantity || 0;
+  // 3. Track Total quantities across all unique variant sets of this product
+  const totalProductQuantity = useMemo(() => {
+    return cart
+      .filter((item: any) => item.id === product.id)
+      .reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
+  }, [cart, product.id]);
 
-  // 4. Context-Aware WhatsApp Link Builder
+  // 4. Track Quantity of the *currently configured option profile*
+  const currentVariantQuantity = useMemo(() => {
+    if (!hasVariants) {
+      return cart.find((item: any) => item.id === product.id)?.quantity || 0;
+    }
+    if (!allOptionsSelected) return 0;
+    
+    return cart.find((item: any) => {
+      if (item.id !== product.id || !item.selectedOptions) return false;
+      return Object.keys(groupedVariants).every(
+        (cat) => item.selectedOptions[cat] === selectedOptions[cat]
+      );
+    })?.quantity || 0;
+  }, [cart, product.id, hasVariants, selectedOptions, allOptionsSelected, groupedVariants]);
+
+  // 5. WhatsApp Context Builder
   const optionsSummary = Object.entries(selectedOptions)
     .map(([cat, val]) => `${cat}: ${val}`)
     .join(', ');
 
   const whatsappNumber = `${storeFormData?.contactPhone || "254732771353"}`.replace(/\D/g, '');
   const message = encodeURIComponent(
-    `Hi! I'm interested in "${product.name}"${optionsSummary ? ` (${optionsSummary})` : ''} priced at Kes ${calculatedPrices.finalPrice.toLocaleString()} for my pet. Is this profile ideal for my pet's current breed and age?`
+    `Hi! I'm interested in "${product.name}"${optionsSummary ? ` (${optionsSummary})` : ''} priced at Kes ${calculatedPrices.finalPrice.toLocaleString()}. Is this profile ideal for my needs?`
   );
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
@@ -81,11 +93,11 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
     ? Math.round(((product.sellingPrice - product.finalPrice) / product.sellingPrice) * 100) 
     : null;
 
-  const handleAddToCart = (e?: React.MouseEvent) => {
+  const handleActionTrigger = (e?: React.MouseEvent) => {
     e?.preventDefault();
     e?.stopPropagation();
 
-    if (hasVariants && !allOptionsSelected) {
+    if (hasVariants) {
       setIsSelectingOptions(true);
       return;
     }
@@ -94,7 +106,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
       ...product,
       finalPrice: calculatedPrices.finalPrice,
       sellingPrice: calculatedPrices.sellingPrice || product.sellingPrice,
-      selectedOptions,
+      selectedOptions: {},
     });
   };
 
@@ -133,21 +145,21 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             <WhatsAppIcon className="w-5 h-5" />
           </a>
 
-          {/* Floating Quick Add */}
-          {quantity === 0 && (
+          {/* Floating Quick Action Trigger */}
+          {((!hasVariants && currentVariantQuantity === 0) || hasVariants) && (
             <div className="absolute bottom-4 right-4 translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-10">
               <button 
-                onClick={handleAddToCart}
-                className="w-12 h-12 flex items-center justify-center rounded-2xl text-white shadow-xl shadow-blue-200"
+                onClick={handleActionTrigger}
+                className="w-12 h-12 flex items-center justify-center rounded-2xl text-white shadow-xl"
                 style={{ backgroundColor: primary }}
               >
-                <PlusIcon className="w-6 h-6" />
+                {hasVariants ? <AdjustmentsHorizontalIcon className="w-5 h-5" /> : <PlusIcon className="w-6 h-6" />}
               </button>
             </div>
           )}
         </div>
 
-        {/* Content */}
+        {/* Content Area */}
         <div className="p-2 flex flex-col flex-grow">
           <div className="flex justify-between items-start mb-2">
             <Link href={`/petsecommerce/products/${product.id}`}>
@@ -157,7 +169,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             </Link>
           </div>
           
-          <div className="flex items-center justify-between mb-4 text-sm text-slate-500 leading-tight ">
+          <div className="flex items-center justify-between mb-4 text-sm text-slate-500 leading-tight">
             <div className="flex items-center gap-1">
               <StarIcon className="w-3.5 h-3.5 text-amber-400" />
               <span className="text-xs font-bold text-slate-500">4.9</span>
@@ -168,7 +180,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-[9px] font-black text-[#25D366] uppercase tracking-widest hover:underline transition-colors "
+              className="flex items-center gap-1 text-[9px] font-black text-[#25D366] uppercase tracking-widest hover:underline transition-colors"
             >
               <WhatsAppIcon className="w-3 h-3" /> Order Via WhatsApp
             </a>
@@ -176,12 +188,10 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
           <div className="mt-auto pt-4 flex items-center justify-between border-t border-slate-50">
             <div className="flex flex-col leading-tight">
-              {/* The Actual Price */}
               <span className="text-xl font-black text-slate-900">
                 Kes {calculatedPrices.finalPrice.toLocaleString()}
               </span>
 
-              {/* The "Was" Price */}
               {calculatedPrices.sellingPrice && calculatedPrices.sellingPrice > calculatedPrices.finalPrice && (
                 <span className="text-xs text-slate-400 line-through">
                   Kes {calculatedPrices.sellingPrice.toLocaleString()}
@@ -190,7 +200,17 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             </div>
 
             <AnimatePresence mode="wait">
-              {quantity > 0 ? (
+              {hasVariants ? (
+                /* Multi-Variant Priority Action Trigger Layout */
+                <button
+                  onClick={() => setIsSelectingOptions(true)}
+                  className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-700 bg-slate-50 hover:bg-slate-100 px-4 py-2.5 rounded-xl border border-slate-100 transition-all active:scale-95"
+                >
+                  <ShoppingCartIcon className="w-4 h-4" />
+                  {totalProductQuantity > 0 ? `Configure (${totalProductQuantity})` : "Configure"}
+                </button>
+              ) : currentVariantQuantity > 0 ? (
+                /* Standard Non-Variant Quantity Selector Layout */
                 <motion.div 
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -201,18 +221,18 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      decreaseQuantity(product.id, selectedOptions);
+                      decreaseQuantity(product.id, {});
                     }} 
                     className="p-1.5 hover:bg-white rounded-lg transition-colors"
                   >
-                    {quantity === 1 ? <TrashIcon className="w-4 h-4 text-red-500" /> : <MinusIcon className="w-4 h-4 text-slate-600" />}
+                    {currentVariantQuantity === 1 ? <TrashIcon className="w-4 h-4 text-red-500" /> : <MinusIcon className="w-4 h-4 text-slate-600" />}
                   </button>
-                  <span className="px-3 text-sm font-black text-slate-900">{quantity}</span>
+                  <span className="px-3 text-sm font-black text-slate-900">{currentVariantQuantity}</span>
                   <button 
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      handleAddToCart();
+                      handleActionTrigger();
                     }} 
                     className="p-1.5 hover:bg-white rounded-lg transition-colors"
                   >
@@ -220,11 +240,12 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                   </button>
                 </motion.div>
               ) : (
+                /* Default Fallback Button Layout */
                 <button 
-                  onClick={handleAddToCart}
+                  onClick={handleActionTrigger}
                   className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors"
                 >
-                  <ShoppingCartIcon className='w-4 h-4' /> {hasVariants && !allOptionsSelected ? "Configure" : "Add to Cart"}
+                  <ShoppingCartIcon className='w-4 h-4' /> Add to Cart
                 </button>
               )}
             </AnimatePresence>
@@ -232,11 +253,10 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
         </div>
       </motion.div>
 
-      {/* ================= GLOBAL DIALOG MODAL BACKDROP MODULE ================= */}
+      {/* ================= OPTIONS SELECTION MODAL SYSTEM ================= */}
       <AnimatePresence>
         {isSelectingOptions && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Dark Blurred Backdrop Filter */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -245,7 +265,6 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
               className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm"
             />
 
-            {/* Modal Drawer Shell Container */}
             <motion.div
               initial={{ opacity: 0, scale: 0.96, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -253,10 +272,8 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
               transition={{ type: 'spring', duration: 0.45 }}
               className="relative w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100 flex flex-col z-10"
             >
-              {/* Dynamic Theme Color Top-Bar Border */}
               <div style={{ backgroundColor: primary }} className="h-2 w-full" />
 
-              {/* Top Close Button Trigger */}
               <button
                 onClick={() => setIsSelectingOptions(false)}
                 className="absolute top-5 right-5 p-2 bg-slate-50 text-slate-500 rounded-full hover:bg-slate-100 hover:text-slate-800 transition-colors border border-slate-100"
@@ -264,7 +281,6 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                 <XMarkIcon className="w-4 h-4" />
               </button>
 
-              {/* Main Selection Area wrapper */}
               <div className="p-6 md:p-8 space-y-6">
                 <div>
                   <span style={{ color: primary }} className="text-[10px] font-black uppercase tracking-widest block mb-1">
@@ -275,7 +291,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                   </h3>
                 </div>
 
-                {/* Looped Categories Body Frame */}
+                {/* Looped Variant Options Stack */}
                 <div className="space-y-6 overflow-y-auto max-h-[55vh] pr-1 [scrollbar-width:thin]">
                   {Object.entries(groupedVariants).map(([category, items]) => (
                     <div key={category} className="space-y-3">
@@ -296,7 +312,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                               }}
                               className={`px-4 py-2.5 rounded-2xl border text-xs font-bold transition-all ${
                                 isSelected 
-                                  ? "text-white shadow-md shadow-blue-100 scale-[1.02]" 
+                                  ? "text-white shadow-md scale-[1.02]" 
                                   : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100/70 active:scale-95"
                               }`}
                             >
@@ -310,7 +326,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                   ))}
                 </div>
 
-                {/* Sticky Action Footer Container */}
+                {/* Footer Action Interface Panel */}
                 <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-4">
                   <div className="flex flex-col leading-tight">
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Subtotal</span>
@@ -319,17 +335,54 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                     </span>
                   </div>
 
-                  <button
-                    disabled={!allOptionsSelected}
-                    onClick={() => {
-                      handleAddToCart();
-                      setIsSelectingOptions(false);
-                    }}
-                    style={{ backgroundColor: allOptionsSelected ? primary : '#94A3B8' }}
-                    className="px-6 py-3.5 text-white rounded-2xl font-black text-xs uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-lg active:scale-95"
-                  >
-                    Confirm Selection
-                  </button>
+                  <div className="flex items-center">
+                    {!allOptionsSelected ? (
+                      <button
+                        disabled
+                        className="px-6 py-3.5 bg-slate-300 text-white rounded-2xl font-black text-xs uppercase tracking-widest opacity-50 cursor-not-allowed"
+                      >
+                        Make Selections
+                      </button>
+                    ) : currentVariantQuantity > 0 ? (
+                      /* Integrated Variant Stepper to easily allow adding or subtracting similar custom items */
+                      <div className="flex items-center bg-slate-100 rounded-2xl p-1 border border-slate-200/60">
+                        <button
+                          onClick={() => decreaseQuantity(product.id, selectedOptions)}
+                          className="p-2.5 bg-white hover:bg-slate-50 text-slate-800 rounded-xl transition-colors shadow-sm"
+                        >
+                          <MinusIcon className="w-4 h-4 text-slate-700" />
+                        </button>
+                        <span className="px-5 text-sm font-black text-slate-900 min-w-[2.5rem] text-center">
+                          {currentVariantQuantity}
+                        </span>
+                        <button
+                          onClick={() => addToCart({
+                            ...product,
+                            finalPrice: calculatedPrices.finalPrice,
+                            sellingPrice: calculatedPrices.sellingPrice || product.sellingPrice,
+                            selectedOptions,
+                          })}
+                          className="p-2.5 bg-white hover:bg-slate-50 text-slate-800 rounded-xl transition-colors shadow-sm"
+                        >
+                          <PlusIcon className="w-4 h-4 text-emerald-600" />
+                        </button>
+                      </div>
+                    ) : (
+                      /* Fresh Combination Creation Trigger Button */
+                      <button
+                        onClick={() => addToCart({
+                          ...product,
+                          finalPrice: calculatedPrices.finalPrice,
+                          sellingPrice: calculatedPrices.sellingPrice || product.sellingPrice,
+                          selectedOptions,
+                        })}
+                        style={{ backgroundColor: primary }}
+                        className="px-6 py-3.5 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg active:scale-95 hover:opacity-90"
+                      >
+                        Add Combination
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>

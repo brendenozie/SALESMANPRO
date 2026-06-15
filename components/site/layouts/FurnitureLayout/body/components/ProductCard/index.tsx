@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -13,7 +13,9 @@ import {
   ChevronRightIcon,
   SparklesIcon,
   XMarkIcon,
-  EyeIcon
+  EyeIcon,
+  ArrowPathIcon,
+  ShoppingBagIcon
 } from '@heroicons/react/24/outline';
 import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
@@ -52,6 +54,30 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const hasVariants = Object.keys(groupedVariants).length > 0;
   const allOptionsSelected = Object.keys(groupedVariants).every((cat) => selectedOptions[cat]);
 
+  // Track all variants of this specific product currently inside the checkout bag
+  const activeCartConfigurations = useMemo(() => {
+    return cart.filter((item: any) => item.id === product.id && item.selectedOptions);
+  }, [cart, product.id]);
+
+  // Handle auto-initialization of selections upon opening modal layout
+  useEffect(() => {
+    if (isQuickViewOpen && hasVariants) {
+      // Priority 1: Match the first existing setup variant configuration found inside the active cart
+      if (activeCartConfigurations.length > 0) {
+        setSelectedOptions(activeCartConfigurations[0].selectedOptions);
+      } else {
+        // Priority 2: Establish base default option mappings using the first option array elements
+        const initialDefaults: Record<string, string> = {};
+        Object.entries(groupedVariants).forEach(([category, variants]) => {
+          if (variants.length > 0) {
+            initialDefaults[category] = variants[0].name;
+          }
+        });
+        setSelectedOptions(initialDefaults);
+      }
+    }
+  }, [isQuickViewOpen, product.id, hasVariants, groupedVariants, activeCartConfigurations]);
+
   const calculatedPrices = useMemo(() => {
     const baseFinalPrice = product.finalPrice ?? product.sellingPrice ?? 0;
     const baseSellingPrice = product.sellingPrice ?? 0;
@@ -70,14 +96,28 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     };
   }, [selectedOptions, groupedVariants, product.finalPrice, product.sellingPrice]);
 
-  const quantity = cart.find((item: any) => {
-    if (item.id !== product.id) return false;
-    if (hasVariants) {
-      if (!item.selectedOptions) return false;
-      return Object.entries(selectedOptions).every(([cat, val]) => item.selectedOptions[cat] === val);
-    }
-    return true;
-  })?.quantity || 0;
+  const currentVariantQuantity = useMemo(() => {
+    if (hasVariants && !allOptionsSelected) return 0;
+    
+    const matchedItem = cart.find((item: any) => {
+      if (item.id !== product.id) return false;
+      if (hasVariants) {
+        if (!item.selectedOptions) return false;
+        return Object.entries(selectedOptions).every(
+          ([cat, val]) => item.selectedOptions[cat] === val
+        );
+      }
+      return true;
+    });
+
+    return matchedItem ? matchedItem.quantity : 0;
+  }, [cart, product.id, hasVariants, allOptionsSelected, selectedOptions]);
+
+  const totalGlobalQuantity = useMemo(() => {
+    return cart
+      .filter((item: any) => item.id === product.id)
+      .reduce((acc: number, cur: any) => acc + cur.quantity, 0);
+  }, [cart, product.id]);
 
   const optionsSummary = Object.entries(selectedOptions)
     .map(([cat, val]) => `${cat}: ${val}`)
@@ -94,21 +134,40 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       ? Math.round(((product.sellingPrice - product.finalPrice) / product.sellingPrice) * 100)
       : null;
 
-  const handleAddToCart = (e?: React.MouseEvent) => {
-    e?.preventDefault();
-    e?.stopPropagation();
-
-    if (hasVariants && !allOptionsSelected) {
-      setIsQuickViewOpen(true);
-      return;
-    }
-
+  // Direct context cart execution logic (Used inside modal context spaces)
+  const executeAddToCart = () => {
     addToCart({
       ...product,
       finalPrice: calculatedPrices.finalPrice,
       sellingPrice: calculatedPrices.sellingPrice || product.sellingPrice,
       selectedOptions,
     });
+  };
+
+  // Main UI controller wrapper action logic for the entry card element
+  const handleMainAction = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
+    if (hasVariants) {
+      setIsQuickViewOpen(true);
+      return;
+    }
+
+    executeAddToCart();
+  };
+
+  const handleDecreaseQuantity = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    decreaseQuantity(product.id, selectedOptions);
+  };
+
+  const handleOptionChange = (category: string, optionName: string) => {
+    setSelectedOptions((prev) => ({
+      ...prev,
+      [category]: optionName
+    }));
   };
 
   return (
@@ -163,7 +222,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               <EyeIcon className="w-4 h-4" />
             </button>
             
-            {/* Subtle Mobile WhatsApp Float */}
             <a 
               href={whatsappUrl}
               target="_blank"
@@ -177,23 +235,27 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {/* --- DUAL ACTION HUD --- */}
           <div className="absolute inset-x-6 bottom-6 z-20">
             <AnimatePresence mode="wait">
-              {quantity === 0 ? (
+              {hasVariants || currentVariantQuantity === 0 ? (
                 <motion.div 
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: 20, opacity: 0 }}
                   className="flex gap-2 group-hover:opacity-100 transition-all duration-500 lg:opacity-0 md:opacity-100"
                 >
-                  {/* Main Reserve Button */}
                   <button
-                    onClick={() => handleAddToCart()}
-                    className="flex-[3] h-14 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl text-zinc-900 dark:text-white text-[9px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 rounded-2xl shadow-2xl border border-white/20 hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900 transition-all"
+                    onClick={handleMainAction}
+                    className="relative flex-[3] h-14 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl text-zinc-900 dark:text-white text-[9px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 rounded-2xl shadow-2xl border border-white/20 hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900 transition-all"
                   >
                     <PlusIcon className="w-4 h-4" />
-                    {hasVariants && !allOptionsSelected ? "Select Setup" : "Reserve Piece"}
+                    {hasVariants ? "Configure Setup" : "Reserve Piece"}
+
+                    {hasVariants && totalGlobalQuantity > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 text-[9px] font-black shadow-md border border-white/15">
+                        {totalGlobalQuantity}
+                      </span>
+                    )}
                   </button>
 
-                  {/* Desktop Concierge Button */}
                   <a
                     href={whatsappUrl}
                     target="_blank"
@@ -211,20 +273,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   className="flex items-center justify-between bg-white dark:bg-zinc-900 p-1 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-zinc-100 dark:border-zinc-800"
                 >
                   <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      decreaseQuantity(product.id);
-                    }}
+                    onClick={handleDecreaseQuantity}
                     className="p-4 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
                   >
-                    {quantity === 1 ? <TrashIcon className="h-4 w-4 text-red-500" /> : <MinusIcon className="h-4 w-4 text-zinc-400" />}
+                    {currentVariantQuantity === 1 ? <TrashIcon className="h-4 w-4 text-red-500" /> : <MinusIcon className="h-4 w-4 text-zinc-400" />}
                   </button>
                   <div className="flex flex-col items-center">
-                     <span className="text-[10px] font-black dark:text-white">{quantity}</span>
+                     <span className="text-[10px] font-black dark:text-white">{currentVariantQuantity}</span>
                      <span className="text-[7px] font-bold text-zinc-400 uppercase tracking-tighter">In Cart</span>
                   </div>
                   <button
-                    onClick={() => handleAddToCart()}
+                    onClick={handleMainAction}
                     className="p-4 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
                   >
                     <PlusIcon className="h-4 w-4 text-zinc-900 dark:text-white" />
@@ -312,11 +371,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </div>
       </motion.div>
 
-      {/* ================= TRUE QUICKVIEW LIGHTBOX ARCHITECTURAL OVERLAY ================= */}
+      {/* ================= LIGHTBOX OVERLAY ================= */}
       <AnimatePresence>
         {isQuickViewOpen && (
           <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-6">
-            {/* Backdrop Blur */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -325,7 +383,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               className="absolute inset-0 bg-zinc-950/40 backdrop-blur-xl"
             />
 
-            {/* Lightbox Container */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -352,8 +409,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
               {/* Specification Workspace Right */}
               <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col overflow-y-auto no-scrollbar justify-between">
-                <div>
-                  <div className="flex justify-between items-start gap-4 mb-6">
+                <div className="space-y-8">
+                  <div className="flex justify-between items-start gap-4">
                     <div>
                       <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400">
                         {product.brand || 'Handcrafted Studio'}
@@ -364,40 +421,94 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                     </div>
                     <button
                       onClick={() => setIsQuickViewOpen(false)}
-                      className="hidden md:block p-3 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 rounded-full border border-zinc-200/60 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 transition-colors"
+                      className="hidden md:block p-3 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 rounded-full border border-zinc-200/60 dark:border-zinc-800 text-zinc-500 dark:text-white transition-colors"
                     >
                       <XMarkIcon className="w-4 h-4" />
                     </button>
                   </div>
 
-                  <p className="text-zinc-500 dark:text-zinc-400 text-xs leading-relaxed font-light mb-8">
+                  <p className="text-zinc-500 dark:text-zinc-400 text-xs leading-relaxed font-light">
                     {product.description || 'Custom crafted architectural accent piece engineered to provide modern form stability with premium raw textures.'}
                   </p>
 
-                  {/* Variations Form Blocks */}
+                  {/* INTERACTIVE HUD: Variants Already In Bag Switcher */}
+                  {hasVariants && activeCartConfigurations.length > 0 && (
+                    <div className="p-4 rounded-2xl bg-zinc-50/50 dark:bg-zinc-900/30 border border-zinc-100 dark:border-zinc-900/80 space-y-2.5">
+                      <p className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400 flex items-center gap-1.5">
+                        <ShoppingBagIcon className="w-3 h-3" /> Active Configurations In Bag
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {activeCartConfigurations.map((item: any, idx: number) => {
+                          const summaryLabel = Object.values(item.selectedOptions).join(' / ');
+                          const isActiveWorkspaceMatch = Object.entries(item.selectedOptions).every(
+                            ([cat, val]) => selectedOptions[cat] === val
+                          );
+                          
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => setSelectedOptions(item.selectedOptions)}
+                              className={`px-3 py-2 rounded-xl text-[10px] font-bold transition-all flex items-center gap-2 border ${
+                                isActiveWorkspaceMatch
+                                  ? "bg-zinc-900 text-white border-zinc-900 dark:bg-white dark:text-zinc-950 dark:border-white shadow-sm"
+                                  : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300"
+                              }`}
+                            >
+                              <span>{summaryLabel}</span>
+                              <span className={`px-1.5 py-0.5 rounded text-[8px] font-black ${
+                                isActiveWorkspaceMatch 
+                                  ? "bg-white/20 text-white dark:bg-zinc-950/20 dark:text-zinc-950" 
+                                  : "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                              }`}>
+                                {item.quantity}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Variations Option Block Selector */}
                   {hasVariants ? (
                     <div className="space-y-6">
                       {Object.entries(groupedVariants).map(([category, items]) => (
                         <div key={category} className="space-y-2.5">
-                          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
-                            Select {category}
-                          </p>
+                          <div className="flex justify-between items-center">
+                            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
+                              Select {category}
+                            </p>
+                            {selectedOptions[category] && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = { ...selectedOptions };
+                                  delete updated[category];
+                                  setSelectedOptions(updated);
+                                }}
+                                className="text-[9px] font-bold uppercase tracking-wider text-red-400 hover:text-red-500 transition-colors flex items-center gap-1"
+                              >
+                                <ArrowPathIcon className="w-3 h-3" /> Clear
+                              </button>
+                            )}
+                          </div>
                           <div className="flex flex-wrap gap-2">
                             {items.map((opt) => {
                               const isSelected = selectedOptions[category] === opt.name;
                               return (
                                 <button
-                                  key={opt.name}
                                   type="button"
-                                  onClick={() => setSelectedOptions({ ...selectedOptions, [category]: opt.name })}
+                                  key={opt.name}
+                                  onClick={() => handleOptionChange(category, opt.name)}
                                   style={{ 
                                     borderColor: isSelected ? primary : undefined,
                                     backgroundColor: isSelected ? primary : undefined 
                                   }}
-                                  className={`px-4 py-2.5 rounded-xl border text-xs font-bold transition-all ${
+                                  className={`px-4 py-2.5 rounded-xl border text-xs font-bold transition-all duration-300 ${
                                     isSelected 
                                       ? "text-white shadow-md scale-[1.02]" 
-                                      : "border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-zinc-800 dark:text-zinc-200"
+                                      : "border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-zinc-800 dark:text-zinc-200 hover:border-zinc-300 dark:hover:border-zinc-700"
                                   }`}
                                 >
                                   {opt.name}
@@ -417,7 +528,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   )}
                 </div>
 
-                {/* Bottom Checkout Actions Area */}
+                {/* Bottom Checkout Area */}
                 <div className="pt-8 mt-8 border-t border-zinc-100 dark:border-zinc-900 space-y-4">
                   <div className="flex justify-between items-baseline">
                     <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Total Setup Pricing</span>
@@ -427,17 +538,34 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   </div>
 
                   <div className="flex gap-3">
-                    <button
-                      disabled={hasVariants && !allOptionsSelected}
-                      onClick={() => {
-                        handleAddToCart();
-                        setIsQuickViewOpen(false);
-                      }}
-                      style={{ backgroundColor: (hasVariants && !allOptionsSelected) ? undefined : primary }}
-                      className="flex-1 py-4.5 bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 rounded-2xl font-black text-[10px] uppercase tracking-widest disabled:opacity-30 transition-opacity shadow-xl"
-                    >
-                      {hasVariants && !allOptionsSelected ? "Complete Setup Above" : "Add to Architecture Bag"}
-                    </button>
+                    <div className="flex-1 flex gap-3">
+                      {hasVariants && allOptionsSelected && currentVariantQuantity > 0 ? (
+                        <div className="flex-1 h-[60px] flex items-center justify-between bg-zinc-50 dark:bg-zinc-900 px-2 rounded-2xl border border-zinc-100 dark:border-zinc-800/80">
+                          <button
+                            onClick={handleDecreaseQuantity}
+                            className="p-3 rounded-xl hover:bg-white dark:hover:bg-zinc-800 text-zinc-500 transition-colors shadow-sm"
+                          >
+                            {currentVariantQuantity === 1 ? <TrashIcon className="h-4 w-4 text-red-400" /> : <MinusIcon className="h-4 w-4" />}
+                          </button>
+                          <span className="text-xs font-black dark:text-white">{currentVariantQuantity} in bag</span>
+                          <button
+                            onClick={executeAddToCart}
+                            className="p-3 rounded-xl hover:bg-white dark:hover:bg-zinc-800 text-zinc-900 dark:text-white transition-colors shadow-sm"
+                          >
+                            <PlusIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          disabled={hasVariants && !allOptionsSelected}
+                          onClick={executeAddToCart}
+                          style={{ backgroundColor: (hasVariants && !allOptionsSelected) ? undefined : primary }}
+                          className="flex-1 py-5 bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 rounded-2xl font-black text-[10px] uppercase tracking-widest disabled:opacity-30 transition-opacity shadow-xl"
+                        >
+                          {hasVariants && !allOptionsSelected ? "Complete Setup Above" : "Add configuration to Bag"}
+                        </button>
+                      )}
+                    </div>
                     
                     <a
                       href={whatsappUrl}

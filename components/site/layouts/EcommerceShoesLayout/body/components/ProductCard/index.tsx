@@ -9,9 +9,7 @@ import {
   PlusIcon, 
   StarIcon, 
   TrashIcon, 
-  XMarkIcon, 
-  ShoppingBagIcon,
-  ArrowsRightLeftIcon
+  ShoppingBagIcon
 } from '@heroicons/react/24/solid';
 import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
@@ -29,7 +27,19 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 
 export default function ProductCard({ product }: { product: MarketListingForm }) {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
-  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+  
+  // Set up default initial variants from structure arrays if present
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    if (product.option && Array.isArray(product.option)) {
+      product.option.forEach((opt: any) => {
+        if (opt.category && opt.name && !initial[opt.category]) {
+          initial[opt.category] = opt.name;
+        }
+      });
+    }
+    return initial;
+  });
   
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
@@ -46,6 +56,14 @@ export default function ProductCard({ product }: { product: MarketListingForm })
   }, [product.option]);
 
   const hasVariants = Object.keys(groupedVariants).length > 0;
+
+  // Calculates matrix combination signature tokens
+  const currentSignatureId = useMemo(() => {
+    if (selectedOptions && Object.keys(selectedOptions).length > 0) {
+      return `${product.id}-${JSON.stringify(selectedOptions)}`;
+    }
+    return product.id;
+  }, [product.id, selectedOptions]);
 
   const calculatedPrices = useMemo(() => {
     const baseFinalPrice = product.finalPrice ?? product.sellingPrice ?? 0;
@@ -65,14 +83,16 @@ export default function ProductCard({ product }: { product: MarketListingForm })
     };
   }, [selectedOptions, groupedVariants, product.finalPrice, product.sellingPrice]);
 
-  const quantity = cart.find((item: any) => {
-    if (item.id !== product.id) return false;
-    if (hasVariants) {
-      if (!item.selectedOptions) return false;
-      return Object.entries(selectedOptions).every(([cat, val]) => item.selectedOptions[cat] === val);
-    }
-    return true;
-  })?.quantity || 0;
+  // Scans context state matching exactly on the structural variant criteria match
+  const quantity = useMemo(() => {
+    const matchedItem = cart.find((item: any) => {
+      const targetSignature = item.selectedOptions && Object.keys(item.selectedOptions).length > 0
+        ? `${item.id}-${JSON.stringify(item.selectedOptions)}`
+        : item.id;
+      return targetSignature === currentSignatureId;
+    });
+    return matchedItem?.quantity || 0;
+  }, [cart, currentSignatureId]);
 
   const optionsSummary = Object.entries(selectedOptions)
     .map(([cat, val]) => `${cat}: ${val}`)
@@ -118,7 +138,7 @@ export default function ProductCard({ product }: { product: MarketListingForm })
 
         {/* PRODUCT MEDIA CONTAINER */}
         <div className="relative aspect-square w-full overflow-hidden rounded-[1.5rem] bg-zinc-50 dark:bg-zinc-800/30 group">
-          <Link href={`/ecommerceshoes/products/${product.id}`} className="block w-full h-full">
+          <Link href={`/products/${product.id}`} className="block w-full h-full">
             <Image
               src={(product.images?.[0] as any)?.url || product.images?.[0] || 'https://via.placeholder.com/600'}
               alt={product.name}
@@ -175,7 +195,7 @@ export default function ProductCard({ product }: { product: MarketListingForm })
                   <div className="flex items-center gap-1 w-full justify-between">
                     <motion.button 
                       whileTap={{ scale: 0.9 }}
-                      onClick={() => decreaseQuantity(product.id)} 
+                      onClick={() => decreaseQuantity(currentSignatureId)} 
                       className="p-2.5 bg-white dark:bg-zinc-700 rounded-lg shadow-sm border border-zinc-100 dark:border-zinc-600 flex items-center justify-center min-w-[36px]"
                     >
                       {quantity === 1 ? (
@@ -188,7 +208,7 @@ export default function ProductCard({ product }: { product: MarketListingForm })
                     <div className="flex flex-col items-center">
                       <span className="text-xs font-black text-zinc-900 dark:text-white">{quantity}</span>
                       {optionsSummary && (
-                        <span className="text-[7px] font-extrabold uppercase text-zinc-400 max-w-[120px] truncate tracking-tight">
+                        <span className="text-[7px] font-extrabold uppercase text-zinc-400 max-w-[120px] truncate tracking-tight px-1 text-center">
                           {optionsSummary}
                         </span>
                       )}
@@ -216,21 +236,22 @@ export default function ProductCard({ product }: { product: MarketListingForm })
                 </motion.button>
               )}
             </AnimatePresence>
+            
             <motion.a 
-                whileTap={{ scale: 0.9 }}
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-3 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md rounded-xl shadow-md text-[#25D366] border border-zinc-100 dark:border-zinc-700 block flex items-center justify-center"
-                aria-label="Inquire via WhatsApp"
-              >
-                <WhatsAppIcon className="w-4 h-4 sm:w-5 h-5" />
-              </motion.a>
+              whileTap={{ scale: 0.9 }}
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-3 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md rounded-xl shadow-md text-[#25D366] border border-zinc-100 dark:border-zinc-700 block flex items-center justify-center"
+              aria-label="Inquire via WhatsApp"
+            >
+              <WhatsAppIcon className="w-4 h-4 sm:w-5 h-5" />
+            </motion.a>
           </div>
         </div>
       </motion.div>
 
-      {/* QUICK VIEW SLIDE POD MODAL */}
+      {/* QUICK VIEW MODAL */}
       <QuickViewModal 
         isOpen={isQuickViewOpen}
         onClose={() => setIsQuickViewOpen(false)}

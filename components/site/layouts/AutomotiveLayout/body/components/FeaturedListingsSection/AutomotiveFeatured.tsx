@@ -155,14 +155,18 @@ export default function AutomotiveFeatured({
   listings,
   isLoading,
   error,
-  slug
+  slug,
+  transactionType,
+  onTransactionChange,
 }: {
   listings: MarketListingForm[];
   isLoading: boolean;
   error: any;
   slug: string;
+  transactionType: "SALE" | "RENT";
+  onTransactionChange: (type: "SALE" | "RENT") => void;
 }) {
-  const [activeTab, setActiveTab] = useState<"sale" | "rent">("sale");
+  // const [activeTab, setActiveTab] = useState<"sale" | "rent">("sale");
 
   // Logic to filter listings. 
   // NOTE: Assuming your data might have a 'type' or 'category'. 
@@ -181,6 +185,14 @@ export default function AutomotiveFeatured({
       </section>
     );
   }
+
+  {isLoading && (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <VehicleCardSkeleton key={i} />
+      ))}
+    </div>
+  )}
 
   return (
     <section className="py-24 bg-gray-50 dark:bg-gray-950 relative overflow-hidden">
@@ -210,13 +222,13 @@ export default function AutomotiveFeatured({
              {(["sale", "rent"] as const).map((tab) => (
                 <button
                     key={tab}
-                    onClick={() => setActiveTab(tab)}
+                        onClick={() => onTransactionChange(tab)}
                     className={clsx(
                         "relative z-10 px-6 py-2.5 text-sm font-bold capitalize transition-colors duration-200 rounded-full",
-                        activeTab === tab ? "text-white" : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                        transactionType === tab ? "text-white" : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                     )}
                 >
-                    {activeTab === tab && (
+                    {transactionType === tab && (
                         <motion.div
                             layoutId="activeTabIndicator"
                             className="absolute inset-0 bg-blue-600 rounded-full shadow-md"
@@ -262,5 +274,20 @@ export default function AutomotiveFeatured({
 
       </div>
     </section>
+  );
+}
+
+function VehicleCardSkeleton() {
+  return (
+    <div className="animate-pulse bg-white dark:bg-gray-800 rounded-3xl p-4 h-[420px]">
+      <div className="h-48 bg-gray-200 dark:bg-gray-700 rounded-xl mb-4" />
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2" />
+      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-4" />
+      <div className="grid grid-cols-3 gap-2">
+        <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded" />
+        <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded" />
+        <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded" />
+      </div>
+    </div>
   );
 }

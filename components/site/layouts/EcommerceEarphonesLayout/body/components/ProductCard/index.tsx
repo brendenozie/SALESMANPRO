@@ -85,15 +85,25 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     return sortedSpecs ? `${product.id}-${sortedSpecs}` : product.id;
   }, [product.id, selectedOptions]);
 
-  // Find target matches inside global state using fallback signatures
-  const cartItemMatch = useMemo(() => {
-    return cart.find((item: any) => {
-      if (item.cartItemId) return item.cartItemId === currentConfigUniqueSignature;
-      return item.id === product.id;
-    });
-  }, [cart, currentConfigUniqueSignature, product.id]);
+  // Find dynamic cart match strictly based on the configured structural signature
+  const currentVariantQuantity = useMemo(() => {
+    const match = cart.find((item: any) => item.cartItemId === currentConfigUniqueSignature);
+    return match?.quantity || 0;
+  }, [cart, currentConfigUniqueSignature]);
 
-  const quantity = cartItemMatch?.quantity || 0;
+  // Calculate the total global quantity of this product across all variant configurations combined
+  const totalProductQuantityInCart = useMemo(() => {
+    return cart
+      .filter((item: any) => item.id === product.id)
+      .reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
+  }, [cart, product.id]);
+
+  // Fallback signature match for non-variant item cards
+  const standardCartItemMatch = useMemo(() => {
+    return cart.find((item: any) => item.id === product.id && (!item.selectedOptions || Object.keys(item.selectedOptions).length === 0));
+  }, [cart, product.id]);
+
+  const standardQuantity = standardCartItemMatch?.quantity || 0;
 
   const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
   const message = encodeURIComponent(`Hi! I'm interested in the "${product.name}". Is it currently available in stock, and what are the delivery timelines?`);
@@ -123,7 +133,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       calculatedPrice: currentTotalPrice
     };
     addToCart(customizedProduct);
-    setIsModalOpen(false);
   };
 
   return (
@@ -182,7 +191,29 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 exit={{ opacity: 0 }}
                 className="absolute inset-0 bg-black/10 flex items-center justify-center p-6"
               >
-                {quantity === 0 ? (
+                {!hasOptions && standardQuantity > 0 ? (
+                  /* Standard Quantity adjustments for variant-less items */
+                  <motion.div 
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    className="w-full bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl flex items-center justify-between p-1.5"
+                  >
+                    <button 
+                      onClick={() => decreaseQuantity(product.id)} 
+                      className="p-3 hover:bg-slate-50 rounded-lg transition-colors"
+                    >
+                      <MinusIcon className="w-4 h-4 text-slate-600" />
+                    </button>
+                    <span className="font-bold text-slate-900 text-sm">{standardQuantity}</span>
+                    <button 
+                      onClick={handleAddClick} 
+                      className="p-3 hover:bg-slate-50 rounded-lg transition-colors"
+                    >
+                      <PlusIcon className="w-4 h-4 text-slate-600" />
+                    </button>
+                  </motion.div>
+                ) : (
+                  /* Call to Action Button. Routes through modal prioritization if product has options */
                   <motion.button
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -191,29 +222,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   >
                     <ShoppingBagIcon className="w-5 h-5" />
                     <span className="text-xs font-bold uppercase tracking-widest">
-                      {hasOptions ? 'Configure' : 'Add to Bag'}
+                      {hasOptions 
+                        ? totalProductQuantityInCart > 0 
+                          ? `Configure (${totalProductQuantityInCart})` 
+                          : 'Configure'
+                        : 'Add to Bag'
+                      }
                     </span>
                   </motion.button>
-                ) : (
-                  <motion.div 
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    className="w-full bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl flex items-center justify-between p-1.5"
-                  >
-                    <button 
-                      onClick={() => decreaseQuantity(cartItemMatch?.cartItemId || product.id)} 
-                      className="p-3 hover:bg-slate-50 rounded-lg transition-colors"
-                    >
-                      <MinusIcon className="w-4 h-4 text-slate-600" />
-                    </button>
-                    <span className="font-bold text-slate-900 text-sm">{quantity}</span>
-                    <button 
-                      onClick={handleAddClick} 
-                      className="p-3 hover:bg-slate-50 rounded-lg transition-colors"
-                    >
-                      <PlusIcon className="w-4 h-4 text-slate-600" />
-                    </button>
-                  </motion.div>
                 )}
               </motion.div>
             )}
@@ -323,20 +339,42 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 ))}
               </div>
 
-              {/* Modal Footer actions */}
+              {/* Modal Footer Actions - Prioritizes option selection quantities */}
               <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between gap-4">
                 <div>
                   <span className="text-[10px] uppercase font-semibold text-slate-400 block tracking-wider">Total Price</span>
                   <span className="text-lg font-black text-slate-900">Kes {currentTotalPrice.toLocaleString()}</span>
                 </div>
                 
-                <button
-                  type="button"
-                  onClick={handleConfirmOptions}
-                  className="flex-grow max-w-[200px] bg-slate-900 hover:bg-slate-800 text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg transition-all active:scale-95"
-                >
-                  Confirm Choice
-                </button>
+                {currentVariantQuantity === 0 ? (
+                  <button
+                    type="button"
+                    onClick={handleConfirmOptions}
+                    className="flex-grow max-w-[200px] bg-slate-900 hover:bg-slate-800 text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg transition-all active:scale-95"
+                  >
+                    Add to Bag
+                  </button>
+                ) : (
+                  <div className="flex items-center bg-slate-100 rounded-xl p-1 gap-3 border border-slate-200/60 flex-grow max-w-[200px] justify-between">
+                    <button
+                      type="button"
+                      onClick={() => decreaseQuantity(currentConfigUniqueSignature)}
+                      className="p-2.5 hover:bg-white rounded-lg transition-all shadow-sm active:scale-90"
+                    >
+                      <MinusIcon className="w-3.5 h-3.5 text-slate-600" />
+                    </button>
+                    <span className="font-bold text-slate-900 text-sm min-w-[24px] text-center">
+                      {currentVariantQuantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleConfirmOptions}
+                      className="p-2.5 hover:bg-white rounded-lg transition-all shadow-sm active:scale-90"
+                    >
+                      <PlusIcon className="w-3.5 h-3.5 text-slate-600" />
+                    </button>
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>

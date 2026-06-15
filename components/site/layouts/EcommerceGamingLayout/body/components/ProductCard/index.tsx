@@ -76,11 +76,10 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
   const { name, images, finalPrice, sellingPrice } = product;
   
-  // Cast and group flat option collection safely
   const optionsList = (product.option || []) as VariantOptionItem[];
   const hasOptions = optionsList.length > 0;
 
-  // Group options by their categorical key tags safely
+  // Group options by category key tags safely
   const groupedOptions = useMemo(() => {
     const groups: Record<string, VariantOptionItem[]> = {};
     optionsList.forEach((item) => {
@@ -90,12 +89,27 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
     return groups;
   }, [optionsList]);
 
-  // Compute live aggregate quantities for core tracking ID
-  const totalProductQuantityInCart = cart
-    .filter((item: any) => item.id === product.id)
-    .reduce((acc: number, item: any) => acc + item.quantity, 0);
+  // Compute live aggregate quantities for core tracking ID (all mutations combined)
+  const totalProductQuantityInCart = useMemo(() => {
+    return cart
+      .filter((item: any) => item.id === product.id)
+      .reduce((acc: number, item: any) => acc + (item.quantity || 0), 0);
+  }, [cart, product.id]);
 
-  // Dynamic tactical calculations for pricing matrix adjustments
+  // Compute live quantities specifically matching the currently selected dynamic option profile matrix
+  const currentVariantQuantity = useMemo(() => {
+    if (!hasOptions) return totalProductQuantityInCart;
+    
+    const matchedItem = cart.find((item: any) => {
+      if (item.id !== product.id || !item.selectedOptions) return false;
+      return Object.keys(groupedOptions).every(
+        (cat) => String(item.selectedOptions[cat]).trim().toUpperCase() === String(selectedOptions[cat]).trim().toUpperCase()
+      );
+    });
+    return matchedItem?.quantity || 0;
+  }, [cart, product.id, hasOptions, selectedOptions, groupedOptions, totalProductQuantityInCart]);
+
+  // Dynamic calculations for pricing matrix adjustments
   const liveExtraSurcharge = useMemo(() => {
     let surcharge = 0;
     Object.entries(selectedOptions).forEach(([cat, selectedName]) => {
@@ -109,7 +123,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
   const adjustedFinalPrice = (finalPrice ?? 0) + liveExtraSurcharge;
 
-  const whatsappNumber = `${storeFormData?.contactPhone || "254732 771 353"}`;
+  const whatsappNumber = `${storeFormData?.contactPhone || "254732771353"}`.replace(/\D/g, '');
   const message = encodeURIComponent(`SYSTEM_INQUIRY: I'm looking at the "${name}". Can you confirm specs?`);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
@@ -118,7 +132,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
   const imageSrc = images?.[0] || 'https://via.placeholder.com/300';
 
-  // Automatically anchor initial value indexes upon card updates
+  // Automatically anchor initial default parameters upon initialization
   useEffect(() => {
     if (hasOptions) {
       const initialOptions: Record<string, string> = {};
@@ -147,13 +161,29 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   };
 
   const handleModalConfirm = () => {
-    // Pack configuration properties along with updated pricing values out to global context states
     addToCart({ 
       ...product, 
       selectedOptions,
       finalPrice: adjustedFinalPrice 
     });
     setIsModalOpen(false);
+  };
+
+  // Explicit dynamic reduction engine for targeting variant signatures accurately inside the modal context
+  const handleDecreaseVariant = () => {
+    const matchedItem = cart.find((item: any) => {
+      if (item.id !== product.id || !item.selectedOptions) return false;
+      return Object.keys(groupedOptions).every(
+        (cat) => String(item.selectedOptions[cat]).toUpperCase() === String(selectedOptions[cat]).toUpperCase()
+      );
+    });
+    
+    if (matchedItem) {
+      const targetSig = matchedItem.selectedOptions && Object.keys(matchedItem.selectedOptions).length > 0
+        ? `${matchedItem.id}-${JSON.stringify(matchedItem.selectedOptions)}`
+        : matchedItem.id;
+      decreaseQuantity(targetSig);
+    }
   };
 
   return (
@@ -217,18 +247,19 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
           {/* Core Controls Block */}
           <div className="mt-auto">
             <AnimatePresence mode="wait">
-              {totalProductQuantityInCart > 0 ? (
+              {hasOptions ? (
+                /* Prioritize layout modal flow completely when variant options are present to prevent ambiguous adjustments */
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="w-full py-2.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black font-mono text-xs font-bold uppercase tracking-wider hover:bg-red-600 hover:text-white dark:hover:bg-red-600 transition-colors cursor-pointer"
+                >
+                  {totalProductQuantityInCart > 0 ? `CONFIGURE MODS (${totalProductQuantityInCart})` : 'CONFIGURE MODS'}
+                </button>
+              ) : totalProductQuantityInCart > 0 ? (
+                /* Standard linear slider controls ONLY for baseline products that contain no attributes variants */
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center bg-zinc-100 dark:bg-black border border-zinc-200 dark:border-white/10 p-1">
                   <button
-                    onClick={() => {
-                      const lastInstance = cart.filter((item: any) => item.id === product.id).pop();
-                      if (lastInstance) {
-                        const targetSig = lastInstance.selectedOptions && Object.keys(lastInstance.selectedOptions).length > 0
-                          ? `${lastInstance.id}-${JSON.stringify(lastInstance.selectedOptions)}`
-                          : lastInstance.id;
-                        decreaseQuantity(targetSig);
-                      }
-                    }}
+                    onClick={() => decreaseQuantity(product.id)}
                     className="p-2 text-zinc-500 hover:text-red-500 transition-colors"
                   >
                     {totalProductQuantityInCart === 1 ? <TrashIcon className="h-3.5 w-3.5" /> : <MinusIcon className="h-3.5 w-3.5" />}
@@ -236,7 +267,10 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                   <div className="flex-1 text-center font-mono text-xs font-bold text-zinc-900 dark:text-white">
                     {totalProductQuantityInCart} EQUIPED
                   </div>
-                  <button onClick={handleEquipClick} className="p-2 text-zinc-500 hover:text-red-500 transition-colors">
+                  <button 
+                    onClick={handleEquipClick} 
+                    className="p-2 text-zinc-500 hover:text-red-500 transition-colors"
+                  >
                     <PlusIcon className="h-3.5 w-3.5" />
                   </button>
                 </motion.div>
@@ -245,7 +279,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                   onClick={handleEquipClick}
                   className="w-full py-2.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black font-mono text-xs font-bold uppercase tracking-wider hover:bg-red-600 hover:text-white dark:hover:bg-red-600 transition-colors cursor-pointer"
                 >
-                  {hasOptions ? 'CONFIGURE MODS' : 'EQUIP ITEM'}
+                  EQUIP ITEM
                 </button>
               )}
             </AnimatePresence>
@@ -265,7 +299,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
               exit={{ scale: 0.98, opacity: 0 }}
               className="relative w-full max-w-2xl bg-zinc-900 border border-zinc-800 text-white shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-5 z-10 rounded-sm"
             >
-              {/* Left Side: Dynamic Hologram Preview Block */}
+              {/* Left Side: Dynamic Preview Block */}
               <div className="md:col-span-2 bg-zinc-950/50 border-b md:border-b-0 md:border-r border-zinc-800 p-6 flex flex-col justify-between items-center text-center">
                 <span className="text-[9px] font-mono tracking-widest text-zinc-500 uppercase self-start">
                   // VISUAL_LOADOUT
@@ -316,19 +350,46 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                 </div>
 
                 {/* Confirm Matrix Submission Action Deck */}
-                <div className="grid grid-cols-2 gap-2 pt-4 border-t border-zinc-800/80 mt-4 bg-zinc-900">
+                <div className="flex items-center justify-between gap-2 pt-4 border-t border-zinc-800/80 mt-4 bg-zinc-900 w-full">
                   <Link
                     href={`/gamingecommerce/products/${product.id}`}
-                    className="py-2.5 bg-zinc-800 hover:bg-zinc-700/80 text-zinc-400 hover:text-white font-mono text-[11px] font-bold uppercase text-center tracking-wider transition-colors"
+                    className="flex-1 py-2.5 bg-zinc-800 hover:bg-zinc-700/80 text-zinc-400 hover:text-white font-mono text-[11px] font-bold uppercase text-center tracking-wider transition-colors"
                   >
                     FULL SPECS
                   </Link>
-                  <button
-                    onClick={handleModalConfirm}
-                    className="py-2.5 bg-red-600 hover:bg-red-500 text-white font-mono text-[11px] font-black uppercase tracking-wider transition-colors cursor-pointer shadow-[0_4px_10px_rgba(220,38,38,0.2)]"
-                  >
-                    LOCK & EQUIP
-                  </button>
+                  
+                  <div className="flex-1 min-h-[38px] flex">
+                    {currentVariantQuantity > 0 ? (
+                      /* Isolated Configuration Increment Stepper inside Modal context */
+                      <div className="w-full bg-zinc-950 border border-zinc-800 flex items-center justify-between p-1 px-3 rounded-sm">
+                        <button
+                          type="button"
+                          onClick={handleDecreaseVariant}
+                          className="text-zinc-500 hover:text-red-500 transition-colors p-1"
+                        >
+                          {currentVariantQuantity === 1 ? <TrashIcon className="h-3.5 w-3.5 text-red-500" /> : <MinusIcon className="h-3.5 w-3.5" />}
+                        </button>
+                        <span className="text-xs font-mono font-black text-white px-2">
+                          {currentVariantQuantity} READY
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => addToCart({ ...product, selectedOptions, finalPrice: adjustedFinalPrice })}
+                          className="text-zinc-500 hover:text-red-500 transition-colors p-1"
+                        >
+                          <PlusIcon className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      /* Add a completely new configuration modification layout to cart array */
+                      <button
+                        onClick={handleModalConfirm}
+                        className="w-full py-2.5 bg-red-600 hover:bg-red-500 text-white font-mono text-[11px] font-black uppercase tracking-wider transition-colors cursor-pointer shadow-[0_4px_10px_rgba(220,38,38,0.2)]"
+                      >
+                        ADD TO CART
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>

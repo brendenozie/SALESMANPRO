@@ -1051,10 +1051,14 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/pos`,
       icon: ClipboardDocumentListIcon,
     },
+    
     {
-      label: "Menu",
-      href: `/admin/${adminSlug}/menu`,
+      label: "Products",
       icon: ClipboardDocumentListIcon,
+      subItems: [
+        { label: "Browse Catalog", href: `/admin/${adminSlug}/inventory` },
+        { label: "Market List", href: `/admin/${adminSlug}/mymarketplace` },
+      ],
     },
     {
       label: "Clients",
