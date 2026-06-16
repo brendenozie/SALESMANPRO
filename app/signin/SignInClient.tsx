@@ -205,7 +205,7 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
                     onClick={() => handleSocialSignIn(prov.id)}
                   >
                     <IconComponent className="mr-3 h-5 w-5" />
-                    Sign up with {prov.name}
+                    Sign in with {prov.name}
                   </button>
                 );
               })}

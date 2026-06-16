@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { StarIcon, ArrowRightIcon, ShoppingBagIcon, MinusIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { ArrowRightIcon, ShoppingBagIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/solid';
 import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import useSWR from 'swr';
 import { createCachedFetcher } from '@/lib/swrCachedFetcher';
@@ -16,7 +16,7 @@ import QuickViewModal from '../QuickViewModal';
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
+  `${src}?w=${width}?q=${quality || 75}`;
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24">
@@ -25,8 +25,8 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 );
 
 const productVariants = {
-  initial: { y: 30, opacity: 0 },
-  animate: { y: 0, opacity: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+  initial: { y: 40, opacity: 0 },
+  animate: { y: 0, opacity: 1, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] } },
 };
 
 const ProductGridItem = ({
@@ -45,13 +45,12 @@ const ProductGridItem = ({
   contactPhone: string;
 }) => {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
-  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
-
+  
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
-
   const primaryColor = storeFormData?.themeSettings?.primaryColor || primary;
 
+  // Group options by their category (e.g., Size, Color)
   const groupedVariants = useMemo(() => {
     const options = (product.option || []) as VariantOptionItem[];
     return options.reduce((acc, item) => {
@@ -61,8 +60,20 @@ const ProductGridItem = ({
     }, {} as Record<string, VariantOptionItem[]>);
   }, [product.option]);
 
+  // Set the first item of each variant category as the fallback default state configuration
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(() => {
+    const fallbacks: Record<string, string> = {};
+    Object.entries(groupedVariants).forEach(([category, variants]) => {
+      if (variants.length > 0) {
+        fallbacks[category] = variants[0].name;
+      }
+    });
+    return fallbacks;
+  });
+
   const hasVariants = Object.keys(groupedVariants).length > 0;
 
+  // Price calculation engine updating dynamically based on local variation choices
   const calculatedPrices = useMemo(() => {
     const baseFinalPrice = product.finalPrice ?? product.sellingPrice ?? 0;
     const baseSellingPrice = product.sellingPrice ?? 0;
@@ -81,6 +92,7 @@ const ProductGridItem = ({
     };
   }, [selectedOptions, groupedVariants, product.finalPrice, product.sellingPrice]);
 
+  // Read context state mapping to the exactly chosen attributes configuration combinations
   const quantity = cart.find((item: any) => {
     if (item.id !== product.id) return false;
     if (hasVariants) {
@@ -118,31 +130,40 @@ const ProductGridItem = ({
     });
   };
 
+  const handleDecreaseQuantity = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    
+    // Fallback if global application layer expects single parameter strings
+    decreaseQuantity(product.id, selectedOptions);
+  };
+
   return (
     <>
       <motion.div
         variants={productVariants}
-        className={`group relative flex flex-col bg-white dark:bg-[#0c0c0c] rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 transition-all duration-500 ${
+        className={`group relative flex flex-col bg-white dark:bg-zinc-900/40 dark:backdrop-blur-md rounded-[2rem] border border-zinc-100 dark:border-zinc-800/60 overflow-hidden shadow-sm hover:shadow-2xl hover:border-zinc-200 dark:hover:border-zinc-700 transition-all duration-500 min-h-[580px] ${
           isFeatured ? "md:col-span-2" : ""
         }`}
       >
-        {/* ================= IMAGE NAVIGATION ZONE ================= */}
+        {/* ================= IMAGE AREA ================= */}
         <div 
-          className="relative block w-full overflow-hidden rounded-t-[2.5rem]"
-          style={{ height: isFeatured ? "480px" : "320px" }}
+          className="relative block w-full overflow-hidden bg-zinc-50 dark:bg-zinc-950 transition-colors duration-500"
+          style={{ height: isFeatured ? "360px" : "280px" }}
         >
-          <Link href={`/${slug}/products/${product.id}`} className="absolute inset-0 w-full h-full block">
+          <Link href={`/ecommerceshoes/products/${product.id}`} className="absolute inset-0 w-full h-full block">
             <Image
               src={imageSrc}
               alt={product.name}
               fill
               loader={loader}
-              className="object-cover transition-transform duration-1000 group-hover:scale-110 group-hover:-rotate-3"
+              className="object-cover object-center transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105"
             />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 dark:group-hover:bg-black/20 transition-colors duration-500" />
           </Link>
 
-          {/* PRIORITY QUICK VIEW / OPTIONS OVERLAY BAR */}
-          <div className="absolute inset-x-0 bottom-6 flex justify-center z-20 px-6 transform md:opacity-0 md:translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+          {/* QUICK VIEW BUTTON */}
+          <div className="absolute inset-x-0 bottom-4 flex justify-center z-20 px-4 transform opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto">
             <button
               onClick={(e) => {
                 e.preventDefault();
@@ -150,116 +171,158 @@ const ProductGridItem = ({
                 setIsQuickViewOpen(true);
               }}
               style={{ backgroundColor: primaryColor }}
-              className="w-full py-3.5 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-2xl flex items-center justify-center gap-2 active:scale-95 transition-transform"
+              className="w-full max-w-[180px] py-2.5 text-white rounded-xl font-bold text-[12px] tracking-wider shadow-xl flex items-center justify-center gap-2 hover:scale-[1.03] active:scale-95 transition-all duration-200"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
               Quick View
             </button>
           </div>
-        </div>
 
-        {/* ================= WHATSAPP FLOAT ================= */}
-        <a
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="absolute top-6 right-6 z-20 p-3 bg-[#25D366] text-white rounded-2xl shadow-xl hover:scale-110 transition-transform"
-        >
-          <WhatsAppIcon className="w-5 h-5" />
-        </a>
+          {/* WHATSAPP BADGE */}
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="absolute top-4 right-4 z-20 p-2.5 bg-[#25D366] text-white rounded-xl shadow-lg hover:scale-110 active:scale-95 transition-transform duration-200"
+          >
+            <WhatsAppIcon className="w-5 h-5" />
+          </a>
 
-        {/* ================= BADGES ================= */}
-        <div className="absolute top-6 left-6 z-20 flex flex-col gap-2">
-          {product.isNewArrival && (
-            <span className="bg-zinc-900 text-white text-[10px] font-black px-3 py-1 rounded-full">
-              New
-            </span>
-          )}
-
-          {product.isDiscounted && product.sellingPrice && (
-            <span className="bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-full">
-              -{Math.round(((product.sellingPrice - (product.finalPrice || 0)) / product.sellingPrice) * 100)}%
-            </span>
-          )}
-        </div>
-
-        {/* ================= DETAILS ================= */}
-        <div className="p-8 flex flex-col flex-grow">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
-                {product.category?.name || "Premium Item"}
-              </p>
-              <h4 className="text-xl font-black text-zinc-900 dark:text-white">
-                {product.name}
-              </h4>
-            </div>
-
-          </div>
-
-          <div className="mt-4">
-            <span className="text-2xl font-black text-zinc-900 dark:text-white">
-              KES {calculatedPrices.finalPrice.toLocaleString()}
-            </span>
-
-            {product.isDiscounted && calculatedPrices.sellingPrice && (
-              <span className="ml-2 text-sm line-through text-zinc-400">
-                KES {calculatedPrices.sellingPrice.toLocaleString()}
+          {/* BADGES */}
+          <div className="absolute top-4 left-4 z-20 flex flex-col gap-1.5">
+            {product.isNewArrival && (
+              <span className="bg-zinc-900/90 dark:bg-white/90 backdrop-blur-md text-white dark:text-zinc-900 text-[10px] font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider shadow-sm">
+                New
+              </span>
+            )}
+            {product.isDiscounted && product.sellingPrice && (
+              <span className="bg-rose-500/90 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-lg tracking-wide shadow-sm">
+                -{Math.round(((product.sellingPrice - (product.finalPrice || 0)) / product.sellingPrice) * 100)}%
               </span>
             )}
           </div>
+        </div>
 
-          {/* ================= ACTIONS ================= */}
-          <div className="mt-6">
+        {/* ================= DETAILS, INLINE OPTIONS & PRICING ================= */}
+        <div className="p-6 flex flex-col flex-grow justify-between bg-white dark:bg-zinc-900/60">
+          <div>
+            <div className="flex justify-between items-baseline gap-2 mb-1">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+                {product.category?.name || "Premium Item"}
+              </p>
+              
+              {/* Reactive Subtotal Price Indicator */}
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-xl font-extrabold text-zinc-900 dark:text-white">
+                  KES {calculatedPrices.finalPrice.toLocaleString()}
+                </span>
+                {product.isDiscounted && calculatedPrices.sellingPrice && (
+                  <span className="text-xs line-through text-zinc-400 dark:text-zinc-500">
+                    KES {calculatedPrices.sellingPrice.toLocaleString()}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <h4 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors duration-200 line-clamp-1 mb-4">
+              {product.name}
+            </h4>
+
+            {/* ================= DYNAMIC VARIANT CHIP CONTROLS ================= */}
+            {hasVariants && (
+              <div className="space-y-3 pt-2 border-t border-zinc-100 dark:border-zinc-800/80">
+                {Object.entries(groupedVariants).map(([category, items]) => (
+                  <div key={category} className="flex flex-col gap-1.5">
+                    <span className="text-[10px] uppercase font-semibold tracking-wider text-zinc-400 dark:text-zinc-500">
+                      Select {category}:
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {items.map((item) => {
+                        const isSelected = selectedOptions[category] === item.name;
+                        return (
+                          <button
+                            key={item.name}
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setSelectedOptions(prev => ({
+                                ...prev,
+                                [category]: item.name
+                              }));
+                            }}
+                            style={{
+                              borderColor: isSelected ? primaryColor : undefined,
+                              backgroundColor: isSelected ? `${primaryColor}10` : undefined,
+                              color: isSelected ? primaryColor : undefined
+                            }}
+                            className={`px-2.5 py-1 text-xs font-bold rounded-lg border transition-all duration-200 ${
+                              isSelected
+                                ? 'border-2'
+                                : 'bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700'
+                            }`}
+                          >
+                            {item.name}
+                            {item.extraPrice ? ` (+${item.extraPrice})` : ''}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ================= BUTTONS ACTION LAYER ================= */}
+          <div className="mt-5 pt-3 border-t border-zinc-50 dark:border-zinc-800/40">
             <AnimatePresence mode="wait">
               {quantity > 0 ? (
-                <div className="flex items-center justify-between bg-zinc-100 dark:bg-zinc-800 p-2 rounded-2xl">
+                <motion.div 
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
+                  className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-950 p-1.5 rounded-xl border border-zinc-100 dark:border-zinc-800"
+                >
                   <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      decreaseQuantity(product.id);
-                    }}
-                    className="p-3 bg-white dark:bg-zinc-700 rounded-xl shadow-sm border border-zinc-200/40 dark:border-zinc-600"
+                    onClick={handleDecreaseQuantity}
+                    className="p-2.5 bg-white dark:bg-zinc-900 rounded-lg shadow-sm hover:bg-rose-50 dark:hover:bg-rose-950/30 hover:text-rose-500 text-zinc-600 dark:text-zinc-300 transition-colors"
                   >
                     <MinusIcon className="w-4 h-4" />
                   </button>
 
                   <div className="flex flex-col items-center">
-                    <span className="font-black text-zinc-900 dark:text-white">{quantity}</span>
-                    {optionsSummary && (
-                      <span className="text-[8px] font-black text-zinc-400 max-w-[140px] truncate uppercase tracking-tight">
-                        {optionsSummary}
-                      </span>
-                    )}
+                    <span className="font-extrabold text-sm text-zinc-900 dark:text-white">
+                      {quantity} in Cart
+                    </span>
+                    <span className="text-[9px] font-medium text-zinc-400 dark:text-zinc-500 max-w-[150px] truncate uppercase">
+                      {optionsSummary || 'Standard config'}
+                    </span>
                   </div>
 
                   <button
                     onClick={() => handleAddToCart()}
-                    className="p-3 bg-white dark:bg-zinc-700 rounded-xl shadow-sm border border-zinc-200/40 dark:border-zinc-600"
+                    className="p-2.5 bg-white dark:bg-zinc-900 rounded-lg shadow-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
                   >
                     <PlusIcon className="w-4 h-4" />
                   </button>
-                </div>
+                </motion.div>
               ) : (
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setIsQuickViewOpen(true)}
+                    onClick={() => handleAddToCart()}
                     style={{ backgroundColor: primaryColor }}
-                    className="flex-[4] flex items-center justify-center gap-2 py-4 text-white rounded-[1.5rem] font-black tracking-wide text-xs uppercase shadow-md transition-all active:brightness-95"
+                    className="flex-[4] flex items-center justify-center gap-2 py-3.5 text-white rounded-xl font-bold tracking-wide text-xs uppercase shadow-md hover:brightness-110 active:brightness-95 transition-all duration-200"
                   >
                     <ShoppingBagIcon className="w-4 h-4" />
-                    Quick View
+                    Add Selected Variant
                   </button>
 
                   <a
                     href={whatsappUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 flex items-center justify-center bg-[#25D366] text-white rounded-[1.5rem] shadow-md hover:scale-[1.03] transition-transform"
+                    className="flex-1 flex items-center justify-center bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-950 dark:hover:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-800 text-[#25D366] rounded-xl transition-all duration-200"
                   >
                     <WhatsAppIcon className="w-5 h-5" />
                   </a>
@@ -270,7 +333,6 @@ const ProductGridItem = ({
         </div>
       </motion.div>
 
-      {/* ================= QUICK VIEW MODAL LAYER ================= */}
       <QuickViewModal 
         isOpen={isQuickViewOpen}
         onClose={() => setIsQuickViewOpen(false)}
@@ -297,41 +359,49 @@ export default function PopularProducts({ id, themeSettings, marketplaceListings
 
   if (isLoading && !productsToShow.length) {
     return (
-      <section className="py-20 bg-zinc-50 dark:bg-zinc-950">
+      <section className="py-24 bg-zinc-50 dark:bg-zinc-950">
         <div className="max-w-7xl mx-auto px-6"><SkeletonGrid count={5} /></div>
       </section>
     );
   }
 
   return (
-    <section className="py-32 bg-zinc-50 dark:bg-zinc-950 transition-colors duration-500 overflow-hidden">
+    <section className="py-24 md:py-32 bg-zinc-50 dark:bg-zinc-950 transition-colors duration-500 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative">
-        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 -translate-y-1/3 translate-x-1/3 w-[500px] h-[500px] bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-[400px] h-[400px] bg-rose-500/5 dark:bg-rose-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 relative z-10">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm mb-6">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800 shadow-sm mb-5">
                <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primary }} />
-               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Trending Now</span>
+               <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-zinc-500 dark:text-zinc-400">Trending Now</span>
             </div>
-            <h2 className="text-5xl md:text-7xl font-black text-zinc-900 dark:text-white leading-[0.9] tracking-tighter">
+            <h2 className="text-4xl md:text-6xl font-black text-zinc-900 dark:text-white leading-[1.05] tracking-tight">
               DRIP OR <br /><span style={{ color: primary }}>DROWN.</span>
             </h2>
-            <p className="mt-8 text-zinc-500 dark:text-zinc-400 text-lg font-medium leading-relaxed">
+            <p className="mt-5 text-zinc-500 dark:text-zinc-400 text-base md:text-lg font-medium max-w-xl leading-relaxed">
               Curated street essentials designed for those who walk different. Hand-picked quality, certified original.
             </p>
           </div>
-          <Link href={`/${slug}/products?companyId=${id}&flag=isFeatured`} className="group flex items-center gap-4 font-black text-xs uppercase tracking-[0.3em] dark:text-white">
-             Browse All <div className="w-12 h-12 rounded-full border border-zinc-200 dark:border-zinc-800 flex items-center justify-center group-hover:bg-zinc-900 group-hover:text-white transition-all"><ArrowRightIcon className="w-4 h-4" /></div>
+          
+          <Link 
+            href={`/ecommerceshoes/products?companyId=${id}&flag=isFeatured`} 
+            className="group inline-flex items-center gap-3 font-bold text-xs uppercase tracking-[0.2em] text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white transition-colors"
+          >
+             Browse All 
+             <div className="w-11 h-11 rounded-xl border border-zinc-200 dark:border-zinc-800 flex items-center justify-center group-hover:bg-zinc-900 dark:group-hover:bg-white dark:group-hover:text-zinc-950 group-hover:text-white transition-all duration-300">
+               <ArrowRightIcon className="w-4 h-4" />
+             </div>
           </Link>
         </div>
 
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12"
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 lg:gap-8 relative z-10"
           initial="initial"
           whileInView="animate"
-          viewport={{ once: true, amount: 0.1 }}
-          variants={{ animate: { transition: { staggerChildren: 0.15 } } }}
+          viewport={{ once: true, amount: 0.05 }}
+          variants={{ animate: { transition: { staggerChildren: 0.1 } } }}
         >
           {productsToShow.slice(0, 5).map((product, index) => (
             <ProductGridItem

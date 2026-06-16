@@ -138,7 +138,7 @@ export default function ProductCard({ product }: { product: MarketListingForm })
 
         {/* PRODUCT MEDIA CONTAINER */}
         <div className="relative aspect-square w-full overflow-hidden rounded-[1.5rem] bg-zinc-50 dark:bg-zinc-800/30 group">
-          <Link href={`/products/${product.id}`} className="block w-full h-full">
+          <Link href={`/ecommerceshoes/products/${product.id}`} className="block w-full h-full">
             <Image
               src={(product.images?.[0] as any)?.url || product.images?.[0] || 'https://via.placeholder.com/600'}
               alt={product.name}
