@@ -8,25 +8,20 @@ import { StoreForm } from '@/types/typings';
 
 // Above-the-fold components - statically imported for LCP performance
 import Hero from './components/HeroSection';
+import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
 
-// Pristine Loading Skeleton - Soft, airy, and branded
-const SectionSkeleton = () => (
-  <div className="max-w-7xl mx-auto px-6 py-24">
-    <div className="h-[500px] w-full animate-pulse bg-slate-50 dark:bg-white/5 rounded-[4rem] border border-slate-100 dark:border-white/5" />
-  </div>
-);
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // Dynamically import sections with heavy logic or animations
-const FeaturesSection = dynamic<any>(() => import('./components/FeaturesSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const StyleGallerySection = dynamic<any>(() => import('./components/StyleGallerySection'), { loading: () => <SectionSkeleton />, ssr: false });
-const BenefitsSection = dynamic(() => import('./components/BenefitsSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const PricingAndStatsSection = dynamic(() => import('./components/PricingAndStatsSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const MassageFeatures = dynamic(() => import('./components/MessagesSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const TestimonialsSection = dynamic(() => import('./components/TestimonialsSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const CtaSection = dynamic(() => import('./components/CtaSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const FAQsSection = dynamic(() => import('./components/FAQsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const FeaturesSection = dynamic<any>(() => import('./components/FeaturesSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const StyleGallerySection = dynamic<any>(() => import('./components/StyleGallerySection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const BenefitsSection = dynamic(() => import('./components/BenefitsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const PricingAndStatsSection = dynamic(() => import('./components/PricingAndStatsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const MassageFeatures = dynamic(() => import('./components/MessagesSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const TestimonialsSection = dynamic(() => import('./components/TestimonialsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const CtaSection = dynamic(() => import('./components/CtaSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const FAQsSection = dynamic(() => import('./components/FAQsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 

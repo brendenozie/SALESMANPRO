@@ -10,18 +10,19 @@ import { StoreForm } from '@/types/typings';
 // Above-the-fold components - statically imported
 import Hero from './components/HeroSection';
 
+import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
 // Loading skeleton
-const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
+
 const  apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // Dynamically import below-the-fold components
-const FeaturesSection = dynamic<any>(() => import('./components/FeaturesSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const BenefitsSection = dynamic(() => import('./components/BenefitsSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const PricingAndStatsSection = dynamic(() => import('./components/PricingAndStatsSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const MassageFeatures = dynamic(() => import('./components/MessagesSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const TestimonialsSection = dynamic(() => import('./components/TestimonialsSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const CtaSection = dynamic(() => import('./components/CtaSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const FAQsSection = dynamic(() => import('./components/FAQsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const FeaturesSection = dynamic<any>(() => import('./components/FeaturesSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const BenefitsSection = dynamic(() => import('./components/BenefitsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const PricingAndStatsSection = dynamic(() => import('./components/PricingAndStatsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const MassageFeatures = dynamic(() => import('./components/MessagesSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const TestimonialsSection = dynamic(() => import('./components/TestimonialsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const CtaSection = dynamic(() => import('./components/CtaSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const FAQsSection = dynamic(() => import('./components/FAQsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
 
 // Generic fetcher
 const fetcher = (url: string) => fetch(url).then(res => res.json());

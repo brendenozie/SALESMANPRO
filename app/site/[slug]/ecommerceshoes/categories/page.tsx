@@ -115,7 +115,7 @@ function ShoeCategoryCard({ cat, storeSlug }: { cat: IStoreCategory; storeSlug: 
   const categoryName = cat.displayName || "Performance";
 
   return (
-    <Link href={`/${storeSlug}/products?category=${cat.id}`} className="group block h-[400px] relative overflow-hidden bg-slate-100 dark:bg-gray-900 rounded-3xl">
+    <Link href={`/ecommerceshoes/products?category=${cat.id}`} className="group block h-[400px] relative overflow-hidden bg-slate-100 dark:bg-gray-900 rounded-3xl">
       
       {/* Image with zoom and slight rotation effect */}
       <div className="absolute inset-0 transition-transform duration-700 ease-out group-hover:scale-110 group-hover:rotate-2">

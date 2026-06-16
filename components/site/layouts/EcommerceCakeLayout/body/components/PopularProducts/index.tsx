@@ -48,7 +48,7 @@ export default function DailyBestSells({ id }: { id: string }) {
   if (error || !data?.data?.length) return null;
 
   return (
-    <section className="py-24 bg-[#FCFAF7] overflow-hidden">
+    <section className="py-24 bg-[#FCFAF7] dark:bg-[#050505] overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         
         {/* Header Section */}
@@ -65,7 +65,7 @@ export default function DailyBestSells({ id }: { id: string }) {
             <motion.span 
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
-              className="text-amber-600 font-bold uppercase tracking-[0.3em] text-[10px] md:text-xs mb-3 block"
+              className="text-amber-600 dark:text-amber-400 font-bold uppercase tracking-[0.3em] text-[10px] md:text-xs mb-3 block"
             >
               Fresh From The Oven
             </motion.span>
@@ -75,7 +75,7 @@ export default function DailyBestSells({ id }: { id: string }) {
               whileInView={{ opacity: 1, y: 0 }}
               className="text-4xl md:text-6xl font-bold tracking-tighter text-gray-900 leading-none"
             >
-              Daily <span className="italic font-serif font-light text-amber-700">Best Sells</span>
+              Daily <span className="italic font-serif font-light text-amber-700 dark:text-amber-400">Best Sells</span>
             </motion.h2>
           </div>
 
@@ -83,22 +83,22 @@ export default function DailyBestSells({ id }: { id: string }) {
           <div className="hidden md:flex items-center gap-4">
             <button 
               onClick={() => (window.location.href = '/cakeecommerce/products?flag=isOnOffer')}
-              className="mr-4 text-xs font-black uppercase tracking-widest border-b-2 border-amber-500 pb-1 hover:text-amber-600 transition-all"
+              className="mr-4 text-xs font-black uppercase tracking-widest border-b-2 border-amber-500 pb-1 hover:text-amber-600 transition-all dark:hover:text-amber-400 dark:text-gray-200 dark:border-amber-400"
             >
               View All
             </button>
             <div className="flex gap-2">
               <button 
                 onClick={() => sliderRef.current?.slickPrev()}
-                className="p-3 rounded-full border border-gray-200 hover:bg-white hover:shadow-lg transition-all"
+                className="p-3 rounded-full border border-gray-200 hover:bg-white hover:shadow-lg transition-all dark:border-gray-600 dark:hover:bg-gray-600"
               >
-                <ChevronLeftIcon className="w-5 h-5 text-gray-900" />
+                <ChevronLeftIcon className="w-5 h-5 text-gray-900 dark:text-gray-300" />
               </button>
               <button 
                 onClick={() => sliderRef.current?.slickNext()}
-                className="p-3 rounded-full border border-gray-200 hover:bg-white hover:shadow-lg transition-all"
+                className="p-3 rounded-full border border-gray-200 hover:bg-white hover:shadow-lg transition-all dark:border-gray-600 dark:hover:bg-gray-600"
               >
-                <ChevronRightIcon className="w-5 h-5 text-gray-900" />
+                <ChevronRightIcon className="w-5 h-5 text-gray-900 dark:text-gray-300" />
               </button>
             </div>
           </div>

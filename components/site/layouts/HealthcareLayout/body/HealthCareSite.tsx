@@ -13,17 +13,17 @@ import HealthcareHero from './components/HeroSection';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 // Loading skeleton
-const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
+import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
 
 // Dynamically import below-the-fold components
-const AboutSection = dynamic(() => import('./components/AboutSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const MedicalServicesSection = dynamic(() => import('./components/MedicalServicesSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const HealthTipsSection = dynamic(() => import('./components/HealthTipsSections'), { loading: () => <SectionSkeleton />, ssr: false });
-const DoctorsSection = dynamic(() => import('./components/DoctorsSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const PatientSection = dynamic(() => import('./components/PatientSections'), { loading: () => <SectionSkeleton />, ssr: false });
-const FAQsSection = dynamic(() => import('./components/FAQsSections'), { loading: () => <SectionSkeleton />, ssr: false });
-const ContactSection = dynamic(() => import('./components/ContactSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const CTASection = dynamic(() => import('./components/CTASection'), { loading: () => <SectionSkeleton />, ssr: false });
+const AboutSection = dynamic(() => import('./components/AboutSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const MedicalServicesSection = dynamic(() => import('./components/MedicalServicesSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const HealthTipsSection = dynamic(() => import('./components/HealthTipsSections'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const DoctorsSection = dynamic(() => import('./components/DoctorsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const PatientSection = dynamic(() => import('./components/PatientSections'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const FAQsSection = dynamic(() => import('./components/FAQsSections'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const ContactSection = dynamic(() => import('./components/ContactSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const CTASection = dynamic(() => import('./components/CTASection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
 
 // --- Sample Data (for when storeFormData is empty or specific fields are missing) ---
 const defaultStoreName = "Harmony Health Clinic";

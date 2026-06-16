@@ -8,19 +8,20 @@ import { StoreForm } from "@/types/typings";
 // Above-the-fold components - statically imported
 import HeroSection from "./components/HeroSection";
 import GlassInfoCardsSection from "./components/GlassInfoCardsSection";
+import { SkeletonGrid } from "./components/SkeletonGrid/SkeletonGrid";
 
 // Loading skeleton
-const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
+
 const  apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // Dynamically import below-the-fold components
-const SchoolSection = dynamic(() => import('./components/SchoolSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const MainCoursesSection = dynamic(() => import('./components/MainCoursesSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const AboutSection = dynamic(() => import('./components/AboutSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const TestimonialsSection = dynamic(() => import('./components/TestimonialsSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const PopularBlogsSection = dynamic(() => import('./components/PopularBlogsSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const CtaSection = dynamic(() => import('./components/CtaSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const FAQSection = dynamic(() => import('./components/FAQSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const SchoolSection = dynamic(() => import('./components/SchoolSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const MainCoursesSection = dynamic(() => import('./components/MainCoursesSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const AboutSection = dynamic(() => import('./components/AboutSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const TestimonialsSection = dynamic(() => import('./components/TestimonialsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const PopularBlogsSection = dynamic(() => import('./components/PopularBlogsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const CtaSection = dynamic(() => import('./components/CtaSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const FAQSection = dynamic(() => import('./components/FAQSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
 
 // Generic fetcher
 const fetcher = (url: string) => fetch(url).then(res => res.json());

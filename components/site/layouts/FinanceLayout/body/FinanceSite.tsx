@@ -12,17 +12,17 @@ import HeroSection from "./components/heroSection";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 // Loading skeleton
-const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
+import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
 
 // Dynamically import below-the-fold components
-const PracticeAreasSection = dynamic(() => import('./components/PracticeAreasSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const WhyChooseUsSection = dynamic(() => import('./components/WhyChooseUsSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const CaseStudiesTestimonials = dynamic(() => import('./components/CaseStudiesTestimonialsSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const ProcessWorkflowSection = dynamic(() => import('./components/ProcessWorkflowSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const MeetOurExperts = dynamic(() => import('./components/MeetOurExperts'), { loading: () => <SectionSkeleton />, ssr: false });
-const ConsultationPackagesSection = dynamic(() => import('./components/ConsultationPackagesSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const FAQSection = dynamic(() => import('./components/FAQSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const ContactSection = dynamic(() => import('./components/ContactSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const PracticeAreasSection = dynamic(() => import('./components/PracticeAreasSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const WhyChooseUsSection = dynamic(() => import('./components/WhyChooseUsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const CaseStudiesTestimonials = dynamic(() => import('./components/CaseStudiesTestimonialsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const ProcessWorkflowSection = dynamic(() => import('./components/ProcessWorkflowSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const MeetOurExperts = dynamic(() => import('./components/MeetOurExperts'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const ConsultationPackagesSection = dynamic(() => import('./components/ConsultationPackagesSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const FAQSection = dynamic(() => import('./components/FAQSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const ContactSection = dynamic(() => import('./components/ContactSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
 
 // --- Global Theme Colors (for Navbar and Footer consistency) ---
 const darkBackground = "#0A192F"; // Main background for sections, navbar, footer

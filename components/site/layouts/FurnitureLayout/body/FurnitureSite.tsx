@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import useSWR from 'swr';
 import HeroSlider from './components/HeroSlider';
-import { StoreForm, MarketListingForm } from '@/types/typings';
+import { StoreForm, MarketListingForm, ListingMarketStatus, ListingSystemStatus, ListingTransactionType } from '@/types/typings';
 
 // Above-the-fold components - statically imported
 import CategorySection from './components/CategorySection';
@@ -12,20 +12,20 @@ import USPSlider from './components/USPSlider';
 import RoomSection from './components/RoomSection';
 
 // Loading skeleton
-const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
+import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
 
 // 🧠 Dynamically import client-side sections (with skeleton fallback)
-const DynamicPopularProducts = dynamic(() => import('./components/PopularProducts'), { loading: () => <SectionSkeleton />, ssr: false,});
-const DynamicDailyBestSells = dynamic(() => import('./components/DailyBestSells'), { loading: () => <SectionSkeleton />,  ssr: false,});
-const DynamicTrending = dynamic(() => import('./components/Trending'), { loading: () => <SectionSkeleton />, ssr: false });
-const PromoSection = dynamic(() => import('./components/PromoSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const WeeklyProducts = dynamic(() => import('./components/WeeklyProducts'), { loading: () => <SectionSkeleton />, ssr: false });
-const SecondPromoSection = dynamic(() => import('./components/SecondPromoSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const AllProducts = dynamic(() => import('./components/AllProducts'), { loading: () => <SectionSkeleton />, ssr: false });
-const MetricsSection = dynamic(() => import('./components/MetricsSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const AwardsSection = dynamic(() => import('./components/AwardsSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const TestimonialsSection = dynamic(() => import('./components/TestimonialsSection/TestimonialsSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const NewsletterSection = dynamic(() => import('./components/NewsletterSection/NewsletterSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const DynamicPopularProducts = dynamic(() => import('./components/PopularProducts'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false,});
+const DynamicDailyBestSells = dynamic(() => import('./components/DailyBestSells'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>,  ssr: false,});
+const DynamicTrending = dynamic(() => import('./components/Trending'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const PromoSection = dynamic(() => import('./components/PromoSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const WeeklyProducts = dynamic(() => import('./components/WeeklyProducts'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const SecondPromoSection = dynamic(() => import('./components/SecondPromoSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const AllProducts = dynamic(() => import('./components/AllProducts'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const MetricsSection = dynamic(() => import('./components/MetricsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const AwardsSection = dynamic(() => import('./components/AwardsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const TestimonialsSection = dynamic(() => import('./components/TestimonialsSection/TestimonialsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
+const NewsletterSection = dynamic(() => import('./components/NewsletterSection/NewsletterSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
 
 type EcommerceSiteProps = {
   pageData: StoreForm;
@@ -80,7 +80,10 @@ const MOCK_FURNITURE: MarketListingForm[] = [
     location: {},
     duration: null,
     buyingPrice: 0,
-    bookingSlots: undefined
+    bookingSlots: undefined,
+    listingMarketStatus: ListingMarketStatus.AVAILABLE,
+    listingSystemStatus: ListingSystemStatus.DRAFT,
+    listingTransactionType: ListingTransactionType.SALE
   },
   {
     id: 'f2',
@@ -120,7 +123,10 @@ const MOCK_FURNITURE: MarketListingForm[] = [
     location: {},
     duration: null,
     buyingPrice: 0,
-    bookingSlots: undefined
+    bookingSlots: undefined,
+    listingMarketStatus: ListingMarketStatus.AVAILABLE,
+    listingSystemStatus: ListingSystemStatus.DRAFT,
+    listingTransactionType: ListingTransactionType.SALE
   },
   {
     id: 'f3',
@@ -160,7 +166,10 @@ const MOCK_FURNITURE: MarketListingForm[] = [
     location: {},
     duration: null,
     buyingPrice: 0,
-    bookingSlots: undefined
+    bookingSlots: undefined,
+    listingMarketStatus: ListingMarketStatus.AVAILABLE,
+    listingSystemStatus: ListingSystemStatus.DRAFT,
+    listingTransactionType: ListingTransactionType.SALE
   }
 ];
 

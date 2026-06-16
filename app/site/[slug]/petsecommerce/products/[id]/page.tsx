@@ -82,14 +82,14 @@ const normalizeImages = (images: any): string[] => {
 
   // Pass only necessary props to the client component (smaller bundle)
   return (
-    <div>
+    <div className='bg-slate-50 dark:bg-slate-900'>
       {/* ProductDetail is a client component, defined below */}
       <ProductDetail
         product={productForClient}
         related={relatedForClient}
       />
 
-      <NewsletterSection />
+      <NewsletterSection  className='bg-slate-50 dark:bg-slate-900'/>
     </div>
   );
 }
