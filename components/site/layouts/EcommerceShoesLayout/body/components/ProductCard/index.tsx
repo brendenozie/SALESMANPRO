@@ -28,7 +28,6 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 export default function ProductCard({ product }: { product: MarketListingForm }) {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   
-  // Set up default initial variants from structure arrays if present
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
     if (product.option && Array.isArray(product.option)) {
@@ -57,7 +56,6 @@ export default function ProductCard({ product }: { product: MarketListingForm })
 
   const hasVariants = Object.keys(groupedVariants).length > 0;
 
-  // Calculates matrix combination signature tokens
   const currentSignatureId = useMemo(() => {
     if (selectedOptions && Object.keys(selectedOptions).length > 0) {
       return `${product.id}-${JSON.stringify(selectedOptions)}`;
@@ -83,7 +81,6 @@ export default function ProductCard({ product }: { product: MarketListingForm })
     };
   }, [selectedOptions, groupedVariants, product.finalPrice, product.sellingPrice]);
 
-  // Scans context state matching exactly on the structural variant criteria match
   const quantity = useMemo(() => {
     const matchedItem = cart.find((item: any) => {
       const targetSignature = item.selectedOptions && Object.keys(item.selectedOptions).length > 0
@@ -104,14 +101,29 @@ export default function ProductCard({ product }: { product: MarketListingForm })
   );
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
-  const handleAddToCart = (e?: React.MouseEvent) => {
-    e?.preventDefault(); 
-    addToCart({ 
-      ...product, 
-      finalPrice: calculatedPrices.finalPrice, 
-      sellingPrice: calculatedPrices.sellingPrice || product.sellingPrice,
-      selectedOptions 
-    });
+  const handleIncreaseAction = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (hasVariants) {
+      setIsQuickViewOpen(true);
+    } else {
+      addToCart({ 
+        ...product, 
+        finalPrice: calculatedPrices.finalPrice, 
+        sellingPrice: calculatedPrices.sellingPrice || product.sellingPrice,
+        selectedOptions 
+      });
+    }
+  };
+
+  const handleDecreaseAction = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (hasVariants) {
+      setIsQuickViewOpen(true);
+    } else {
+      decreaseQuantity(currentSignatureId);
+    }
   };
 
   return (
@@ -122,7 +134,6 @@ export default function ProductCard({ product }: { product: MarketListingForm })
         transition={{ duration: 0.4 }}
         className="relative flex flex-col bg-white dark:bg-zinc-900 rounded-[2rem] p-3 sm:p-4 border border-zinc-100 dark:border-zinc-800 shadow-sm transition-all duration-300 md:hover:shadow-xl md:hover:shadow-black/[0.04]"
       >
-        {/* BADGE PRODUCT DATA TAGS */}
         <div className="absolute top-5 left-5 z-20 flex flex-col gap-1.5 pointer-events-none">
           {product.isNewArrival && (
             <span className="bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm">
@@ -136,7 +147,6 @@ export default function ProductCard({ product }: { product: MarketListingForm })
           )}
         </div>
 
-        {/* PRODUCT MEDIA CONTAINER */}
         <div className="relative aspect-square w-full overflow-hidden rounded-[1.5rem] bg-zinc-50 dark:bg-zinc-800/30 group">
           <Link href={`/ecommerceshoes/products/${product.id}`} className="block w-full h-full">
             <Image
@@ -151,7 +161,6 @@ export default function ProductCard({ product }: { product: MarketListingForm })
           </Link>
         </div>
 
-        {/* METRIC DESCRIPTIVE BLOCK */}
         <div className="pt-4 px-1 pb-1 flex flex-col flex-grow">
           <div className="flex justify-between items-start gap-2">
             <div className="flex-1 min-w-0">
@@ -169,7 +178,6 @@ export default function ProductCard({ product }: { product: MarketListingForm })
             </div>
           </div>
 
-          {/* PRICING CONTROL INTERFACE */}
           <div className="mt-auto pt-3 flex items-baseline gap-2">
             <span className="text-base sm:text-lg font-black text-zinc-950 dark:text-white">
               KES {calculatedPrices.finalPrice.toLocaleString()}
@@ -181,7 +189,6 @@ export default function ProductCard({ product }: { product: MarketListingForm })
             )}
           </div>
 
-          {/* TRANSACTION ACTION CONTROLLER */}
           <div className="mt-4 flex gap-2">
             <AnimatePresence mode="wait">
               {quantity > 0 ? (
@@ -195,20 +202,22 @@ export default function ProductCard({ product }: { product: MarketListingForm })
                   <div className="flex items-center gap-1 w-full justify-between">
                     <motion.button 
                       whileTap={{ scale: 0.9 }}
-                      onClick={() => decreaseQuantity(currentSignatureId)} 
+                      onClick={handleDecreaseAction} 
                       className="p-2.5 bg-white dark:bg-zinc-700 rounded-lg shadow-sm border border-zinc-100 dark:border-zinc-600 flex items-center justify-center min-w-[36px]"
                     >
-                      {quantity === 1 ? (
+                      {quantity === 1 && !hasVariants ? (
                         <TrashIcon className="h-3.5 w-3.5 text-red-500" />
                       ) : (
                         <MinusIcon className="h-3.5 w-3.5 text-zinc-900 dark:text-white" />
                       )}
                     </motion.button>
                     
-                    <div className="flex flex-col items-center">
-                      <span className="text-xs font-black text-zinc-900 dark:text-white">{quantity}</span>
+                    <div className="flex flex-col items-center mx-2 max-w-[120px] overflow-hidden">
+                      <span className="text-xs font-black text-zinc-900 dark:text-white">
+                        {quantity} {hasVariants ? 'Selected' : ''}
+                      </span>
                       {optionsSummary && (
-                        <span className="text-[7px] font-extrabold uppercase text-zinc-400 max-w-[120px] truncate tracking-tight px-1 text-center">
+                        <span className="text-[7px] font-extrabold uppercase text-zinc-400 truncate tracking-tight text-center block w-full">
                           {optionsSummary}
                         </span>
                       )}
@@ -216,7 +225,7 @@ export default function ProductCard({ product }: { product: MarketListingForm })
                     
                     <motion.button 
                       whileTap={{ scale: 0.9 }}
-                      onClick={() => handleAddToCart()} 
+                      onClick={handleIncreaseAction} 
                       className="p-2.5 bg-white dark:bg-zinc-700 rounded-lg shadow-sm border border-zinc-100 dark:border-zinc-600 flex items-center justify-center min-w-[36px]"
                     >
                       <PlusIcon className="h-3.5 w-3.5 text-zinc-900 dark:text-white" />
@@ -232,7 +241,7 @@ export default function ProductCard({ product }: { product: MarketListingForm })
                   className="flex-1 flex items-center justify-center gap-2 py-3 text-white rounded-xl font-black text-[11px] uppercase tracking-wider shadow-md transition-shadow active:brightness-90"
                 >
                   <ShoppingBagIcon className="w-3.5 h-3.5" />
-                  Quick View
+                  {hasVariants ? 'Choose Options' : 'Add To Cart'}
                 </motion.button>
               )}
             </AnimatePresence>
@@ -251,7 +260,6 @@ export default function ProductCard({ product }: { product: MarketListingForm })
         </div>
       </motion.div>
 
-      {/* QUICK VIEW MODAL */}
       <QuickViewModal 
         isOpen={isQuickViewOpen}
         onClose={() => setIsQuickViewOpen(false)}
