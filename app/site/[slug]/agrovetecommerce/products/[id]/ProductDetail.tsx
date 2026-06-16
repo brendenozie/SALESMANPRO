@@ -192,7 +192,7 @@ export function ProductDetail({
                   mainIndex === idx ? 'border-emerald-600 shadow-md scale-105' : 'border-transparent bg-white'
                 }`}
               >
-                <Image src={img.url} alt="thumb" loader={loader} fill className="object-cover p-2" />
+                <Image src={img.url || img} alt="thumb" loader={loader} fill className="object-cover p-2" />
               </button>
             ))}
           </div>

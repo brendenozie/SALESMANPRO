@@ -167,7 +167,7 @@ export function ProductDetail({
                       : 'opacity-60 dark:opacity-40 hover:opacity-100 border-stone-200 dark:border-stone-800'
                   }`}
                 >
-                  <Image src={img.url} alt="Architectural thumbnail perspective" loader={loader} fill className="object-cover" />
+                  <Image src={img.url || img} alt="Architectural thumbnail perspective" loader={loader} fill className="object-cover" />
                 </button>
               ))}
             </div>

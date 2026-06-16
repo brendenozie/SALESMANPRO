@@ -98,7 +98,7 @@ export function ProductDetail({
                   mainIndex === idx ? 'border-teal-500 scale-105 shadow-xl' : 'border-transparent opacity-40 hover:opacity-100'
                 }`}
               >
-                <Image src={img.url} alt="thumbnail" loader={loader} fill className="object-cover" />
+                <Image src={img.url || img} alt="thumbnail" loader={loader} fill className="object-cover" />
               </button>
             ))}
           </div>

@@ -207,7 +207,7 @@ export function ProductDetail({
                       : 'opacity-50 grayscale hover:grayscale-0 hover:opacity-100'
                   }`}
                 >
-                  <Image src={img.url} alt="thumb" fill className="object-cover" loader={loader} />
+                  <Image src={img.url || img} alt="thumb" fill className="object-cover" loader={loader} />
                 </button>
               ))}
             </div>

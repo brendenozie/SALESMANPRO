@@ -138,7 +138,7 @@ function ProductDetail({ product, related, storeData }: {
                 style={idx === mainIndex ? { borderColor: primary, boxShadow: `0 0 0 4px ${primary}` } : {}} // Dynamic ring color
               >
                 <Image
-                  src={img.url || 'https://via.placeholder.com/96x96?text=No+Image'}
+                  src={img.url || img || 'https://via.placeholder.com/96x96?text=No+Image'}
                   alt={`${product.name}-${idx}`}
                   fill
                   sizes="96px"

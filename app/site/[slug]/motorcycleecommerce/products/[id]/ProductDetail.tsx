@@ -110,7 +110,7 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
                     idx === mainIndex ? 'border-orange-500 scale-105 shadow-[0_0_20px_rgba(249,115,22,0.3)]' : 'border-zinc-800 opacity-40'
                   }`}
                 >
-                  <Image src={img.url} alt="thumbnail" fill className="object-cover" loader={loader} />
+                  <Image src={img.url || img} alt="thumbnail" fill className="object-cover" loader={loader} />
                 </button>
               ))}
             </div>

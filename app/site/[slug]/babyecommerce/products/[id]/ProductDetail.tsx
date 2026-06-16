@@ -112,7 +112,7 @@ export function ProductDetail({
     })?.quantity || 0;
   }, [cart, currentCartItemId]);
 
-    const currentImages = product.images?.length ? product.images : ['https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80'];
+  const currentImages = product.images?.length ? product.images : ['https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80'];
 
   const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex] || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80';
 
@@ -188,7 +188,7 @@ export function ProductDetail({
                   mainIndex === idx ? 'border-pink-300 scale-110 shadow-lg' : 'border-transparent bg-white opacity-60'
                 }`}
               >
-                <Image src={img.url} alt="thumb" loader={loader} fill className="object-cover p-2" />
+                <Image src={img.url || img} alt="thumb" loader={loader} fill className="object-cover p-2" />
               </button>
             ))}
           </div>

@@ -228,7 +228,7 @@ export function ProductDetail({
                       : 'opacity-60 dark:opacity-40 hover:opacity-100 border-zinc-200 dark:border-zinc-800'
                   }`}
                 >
-                  <Image src={img.url} alt="Lookbook context frame" loader={loader} fill className="object-cover object-top" />
+                  <Image src={img.url || img} alt="Lookbook context frame" loader={loader} fill className="object-cover object-top" />
                 </button>
               ))}
             </div>

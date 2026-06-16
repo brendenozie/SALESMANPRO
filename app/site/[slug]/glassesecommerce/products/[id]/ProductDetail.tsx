@@ -224,7 +224,7 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
                       mainIndex === i ? 'border-zinc-900 dark:border-white scale-110 shadow-lg' : 'border-transparent opacity-40 grayscale hover:grayscale-0 hover:opacity-100'
                     }`}
                   >
-                    <Image src={img.url} alt="colorway" fill className="object-cover" loader={loader} />
+                    <Image src={img.url || img} alt="colorway" fill className="object-cover" loader={loader} />
                   </button>
                 ))}
               </div>
