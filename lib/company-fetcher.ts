@@ -5,6 +5,31 @@ import prisma from "@/server/db/prismadb";
 // Define the valid strategies to ensure type safety across the file
 type FetchStrategy = "lean" | "page";
 
+function getIncludeForCategory(category: string) {
+  switch (category) {
+    case "ecommerce":
+      return {
+        marketplaceListings: true,
+        promotions: true,
+      };
+
+    case "healthcare":
+      return {
+        Doctor: true,
+        services: true,
+      };
+
+    case "education":
+      return {
+        educators: true,
+        courses: true,
+      };
+
+    default:
+      return {};
+  }
+}
+
 const INCLUDE_MAP = {
   lean: leanShellInclude(),
   page: pageDataInclude(),
