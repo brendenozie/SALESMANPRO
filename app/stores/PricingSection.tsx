@@ -415,7 +415,8 @@ export default function PricingSection({ companyId, email, category, onSubscript
                                 : "text-slate-400 hover:text-slate-600"
                             }`}
                           >
-                            Card / Bank
+                            Card / Bank 
+                            
                           </button>
                           <button
                             onClick={() => setPaymentMethod("MPESA")}
