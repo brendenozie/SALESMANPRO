@@ -10,8 +10,12 @@ import {
   ShoppingBagIcon, 
   HandThumbUpIcon, 
   ShieldCheckIcon,
-  SparklesIcon,
-  FaceSmileIcon
+  AdjustmentsHorizontalIcon,
+  CheckIcon,
+  WrenchScrewdriverIcon,
+  BoltIcon,
+  CpuChipIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon, PlusIcon, MinusIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
 import { useStateContext } from '@/contexts/ContextProvider';
@@ -20,6 +24,13 @@ import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/comp
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
+
+// Fallback industrial option definitions if product.option array is empty in MongoDB
+const DEFAULT_HARDWARE_OPTIONS = [
+  { category: 'Grade & Build', name: 'Standard Carbon Steel', extraPrice: 0 },
+  { category: 'Grade & Build', name: 'Pro-Series Reinforced Alloy', extraPrice: 1850 },
+  { category: 'Grade & Build', name: 'Industrial Titanium Coated', extraPrice: 4200 },
+];
 
 export function ProductDetail({
   product,
@@ -31,183 +42,318 @@ export function ProductDetail({
   const { addToCart, decreaseQuantity, cart } = useStateContext();
   const [mainIndex, setMainIndex] = useState(0);
 
-  // Soft Baby Palette
-  const primaryPink = '#F9A8D4'; // Soft Rose
-  const primaryBlue = '#BAE6FD'; // Sky Blue
-  const accentLavender = '#E8E8FF';
+  // Parse structured configuration options from database or use precision hardware fallbacks
+  const availableOptions = useMemo(() => {
+    return (product.option && product.option.length > 0) 
+      ? (product.option as any[]) 
+      : DEFAULT_HARDWARE_OPTIONS;
+  }, [product.option]);
 
-  const quantity = useMemo(() => cart.find((c: any) => c.id === product.id)?.quantity || 0, [cart, product.id]);
+  // Tracks the active variation combination selected by the user
+  const [selectedOption, setSelectedOption] = useState(availableOptions[0]);
+
+  // Computes active variant quantity in cart using a composite match key
+  const currentVariantQuantity = useMemo(() => {
+    return cart.find((item: any) => 
+      item.id === product.id && 
+      item.selectedOption?.name === selectedOption?.name
+    )?.quantity || 0;
+  }, [cart, product.id, selectedOption]);
+
+  // Filters out all instances/variations of this specific base product inside the cart
+  const stagedProductVariants = useMemo(() => {
+    return cart.filter((item: any) => item.id === product.id);
+  }, [cart, product.id]);
+
   const currentImages = (product.images as any[])?.length ? product.images : [{ url: '/placeholder.png' }];
-  const currentImage = currentImages[mainIndex]?.url;
+  const currentImage = currentImages[mainIndex]?.url || '/placeholder.png';
+
+  // Dynamic price evaluation factoring the specific variant selection modifier
+  const basePrice = product.finalPrice || product.sellingPrice || 0;
+  const variantTotalPrice = basePrice + (selectedOption?.extraPrice || 0);
+
+  // Encapsulates a distinct composite payload for mutation/addition handling in context layer
+  const variantPayload = {
+    ...product,
+    selectedOption,
+    customCartId: `${product.id}-${selectedOption?.name.replace(/\s+/g, '-').toLowerCase()}`
+  };
 
   return (
-    <div className="bg-[#FAF9F6] text-[#4A4A4A] min-h-screen pb-20 font-sans">
+    <div className="bg-[#F8FAFC] text-slate-800 min-h-screen pb-20 font-sans antialiased">
       <Head>
-        <title>{product.name} | Gentle Care for Your Little One</title>
+        <title>{product.name} | Premium Industrial & Hardware Solutions</title>
       </Head>
 
-      {/* --- FLOATING BREADCRUMB --- */}
+      {/* --- PREMIUM FLOATING BREADCRUMB --- */}
       <nav className="max-w-7xl mx-auto px-4 pt-10">
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/50 backdrop-blur-md rounded-full border border-pink-100 text-[11px] font-bold uppercase tracking-widest text-pink-400">
-          <span>Nursery</span> <span className="text-pink-200">/</span> 
-          <span>{product.productCategory?.name || 'Essential'}</span> <span className="text-pink-200">/</span>
-          <span className="text-slate-400">{product.name}</span>
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900/[0.02] backdrop-blur-md rounded-xl border border-slate-200/60 text-[10px] font-black uppercase tracking-widest text-slate-500">
+          <span>Hardware & Tools</span> <span className="text-slate-300">/</span> 
+          <span>{product.productCategory?.name || 'Equipment'}</span> <span className="text-slate-300">/</span>
+          <span className="text-amber-600">{product.name}</span>
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
+      <main className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
         
-        {/* LEFT: THE GALLERY (Col 1-7) */}
-        <div className="lg:col-span-7 space-y-6">
-          <div className="relative aspect-square rounded-[3rem] overflow-hidden bg-white shadow-[0_20px_50px_rgba(249,168,212,0.15)] border-4 border-white group">
+        {/* LEFT: STUDIO SHOWCASE GALLERY (Col 1-7) */}
+        <div className="lg:col-span-7 space-y-5">
+          <div className="relative aspect-square rounded-3xl overflow-hidden bg-white border border-slate-200/80 shadow-[0_4px_30px_rgba(0,0,0,0.02)] group flex items-center justify-center">
             <AnimatePresence mode="wait">
               <motion.div
                 key={mainIndex}
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                className="w-full h-full p-12"
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="w-full h-full p-12 relative flex items-center justify-center"
               >
                 <Image
                   src={currentImage}
                   alt={product.name}
                   loader={loader}
                   fill
-                  className="object-contain"
+                  className="object-contain p-4"
                   priority
                 />
               </motion.div>
             </AnimatePresence>
             
-            <button className="absolute top-8 right-8 p-3 bg-white/80 backdrop-blur-md rounded-full shadow-sm hover:text-pink-500 transition-colors">
-              <HeartIcon className="h-6 w-6" />
+            <button className="absolute top-6 right-6 p-3 bg-white/90 backdrop-blur-md rounded-xl border border-slate-100 shadow-sm hover:text-amber-500 transition-colors z-10">
+              <HeartIcon className="h-5 w-5" />
             </button>
           </div>
 
-          {/* Thumbnails */}
-          <div className="flex justify-center gap-4 overflow-x-auto py-2">
-            {currentImages.map((img, idx) => (
+          {/* Precision Navigation Thumbnails */}
+          <div className="flex gap-3 overflow-x-auto py-1">
+            {currentImages.map((img: any, idx: number) => (
               <button
                 key={idx}
                 onClick={() => setMainIndex(idx)}
-                className={`relative w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all duration-300 ${
-                  mainIndex === idx ? 'border-pink-300 scale-110 shadow-lg' : 'border-transparent bg-white opacity-60'
+                className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 bg-white transition-all duration-200 flex-shrink-0 ${
+                  mainIndex === idx ? 'border-slate-800 scale-105 shadow-md' : 'border-slate-200/60 opacity-70 hover:opacity-100'
                 }`}
               >
-                <Image src={img.url} alt="thumb" loader={loader} fill className="object-cover p-2" />
+                <Image src={img.url || img} alt="thumb" loader={loader} fill className="object-cover p-1.5" />
               </button>
             ))}
           </div>
         </div>
 
-        {/* RIGHT: THE DETAILS (Col 8-12) */}
-        <div className="lg:col-span-5 space-y-8 lg:pt-6">
-          <div className="space-y-3">
+        {/* RIGHT: SPECIFICATION & VARIANT MATRIX (Col 8-12) */}
+        <div className="lg:col-span-5 space-y-6">
+          <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <div className="flex text-yellow-400">
-                {[...Array(5)].map((_, i) => <StarIcon key={i} className="h-4 w-4" />)}
+              <div className="flex text-amber-500">
+                {[...Array(5)].map((_, i) => <StarIcon key={i} className="h-3.5 w-3.5" />)}
               </div>
-              <span className="text-xs font-bold text-slate-400">(120+ Happy Parents)</span>
+              <span className="text-[11px] font-bold text-slate-400 tracking-wide uppercase">(4.9/5 • 180+ Verified Trades)</span>
             </div>
             
-            <h1 className="text-4xl md:text-5xl font-black text-slate-800 leading-[1.1]">
+            <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight">
               {product.name}
             </h1>
 
-            <div className="flex items-center gap-4 pt-2">
-              <span className="text-4xl font-black text-pink-400">
-                KES {product.finalPrice?.toLocaleString()}
+            <div className="flex items-center gap-3 pt-1">
+              <span className="text-3xl font-black text-slate-900 tracking-tight">
+                KES {variantTotalPrice.toLocaleString()}
               </span>
               {product.sellingPrice > (product.finalPrice || 0) && (
-                <span className="px-3 py-1 bg-blue-100 text-blue-500 rounded-full text-[10px] font-black uppercase">
+                <span className="px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-md text-[10px] font-black tracking-wider uppercase">
                   Save KES {(product.sellingPrice - (product.finalPrice || 0)).toLocaleString()}
                 </span>
               )}
             </div>
           </div>
 
-          <p className="text-slate-500 text-lg leading-relaxed italic">
-            "Designed with love and safety in mind. Made from 100% hypoallergenic materials to keep your little one cozy and happy all day long."
-          </p>
+          {product.description && (
+            <p className="text-slate-500 text-sm leading-relaxed font-medium">
+              {product.description}
+            </p>
+          )}
 
-          {/* --- TRUST BENTO GRID --- */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* RUGGED BENTO SELECTION PICKER */}
+          <section className="space-y-2.5 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+            <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-slate-400">
+              <div className="flex items-center gap-1.5">
+                <AdjustmentsHorizontalIcon className="w-4 h-4 text-slate-500" />
+                <span>Configure Component Variant</span>
+              </div>
+              <span className="text-amber-600 font-bold">Options Available</span>
+            </div>
+            
+            <div className="space-y-2">
+              {availableOptions.map((opt: any, index: number) => {
+                const isSelected = selectedOption?.name === opt.name;
+                const specificQty = cart.find((item: any) => 
+                  item.id === product.id && 
+                  item.selectedOption?.name === opt.name
+                )?.quantity || 0;
+
+                return (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedOption(opt)}
+                    className={`w-full flex items-center justify-between p-3.5 rounded-xl border text-left transition-all ${
+                      isSelected
+                        ? 'border-slate-800 bg-slate-900/[0.01] ring-1 ring-slate-800 shadow-sm'
+                        : 'border-slate-200 bg-slate-50/50 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-0.5 rounded-md border ${isSelected ? 'bg-slate-900 border-slate-900 text-white' : 'border-slate-300 text-transparent'}`}>
+                        <CheckIcon className="w-3 h-3 stroke-[3]" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-slate-800">{opt.name}</span>
+                          {specificQty > 0 && (
+                            <span className="bg-slate-800 text-white text-[9px] font-black px-2 py-0.5 rounded-full">
+                              {specificQty} in kit
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tight">{opt.category || 'Specification'}</span>
+                      </div>
+                    </div>
+                    <span className="text-xs font-black text-slate-900">
+                      {opt.extraPrice === 0 ? 'Base Pricing' : `+KES ${opt.extraPrice.toLocaleString()}`}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* DYNAMIC STAGED MIX OVERVIEW (Shows assorted item configurations concurrently) */}
+          <AnimatePresence>
+            {stagedProductVariants.length > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                className="p-4 bg-slate-900 text-slate-100 rounded-2xl space-y-3 shadow-inner"
+              >
+                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  <span className="flex items-center gap-1"><ArrowPathIcon className="w-3 h-3 animate-spin text-amber-500" /> Current Manifest Mix</span>
+                  <span className="text-amber-500 font-black">{stagedProductVariants.length} Active Config(s)</span>
+                </div>
+                <div className="space-y-1.5 max-h-[140px] overflow-y-auto pr-1 custom-scrollbar">
+                  {stagedProductVariants.map((item: any, idx: number) => (
+                    <div key={idx} className="flex items-center justify-between bg-slate-800 p-2.5 rounded-lg border border-slate-700/60 text-xs">
+                      <span className="font-medium text-slate-200 tracking-wide">{item.selectedOption?.name}</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-slate-400 font-black text-[11px]">Qty: {item.quantity}</span>
+                        <div className="flex items-center gap-1 bg-slate-950 p-0.5 rounded border border-slate-700">
+                          <button 
+                            onClick={() => decreaseQuantity(item)}
+                            className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                          >
+                            <MinusIcon className="w-3 h-3 stroke-[2.5]" />
+                          </button>
+                          <button 
+                            onClick={() => addToCart(item)}
+                            className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                          >
+                            <PlusIcon className="w-3 h-3 stroke-[2.5]" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* --- INDUSTRIAL SPEC BADGES BENTO --- */}
+          <div className="grid grid-cols-2 gap-3">
             {[
-              { label: 'Non-Toxic', icon: ShieldCheckIcon, color: 'bg-green-50 text-green-600' },
-              { label: 'Ultra Soft', icon: SparklesIcon, color: 'bg-purple-50 text-purple-600' },
-              { label: 'Mom Approved', icon: FaceSmileIcon, color: 'bg-blue-50 text-blue-600' },
-              { label: 'Easy Clean', icon: HandThumbUpIcon, color: 'bg-orange-50 text-orange-600' },
+              { label: 'Industrial Grade', icon: WrenchScrewdriverIcon, style: 'bg-slate-100 border border-slate-200 text-slate-700' },
+              { label: 'Heavy Duty', icon: BoltIcon, style: 'bg-slate-100 border border-slate-200 text-slate-700' },
+              { label: 'Contractor Certified', icon: ShieldCheckIcon, style: 'bg-slate-100 border border-slate-200 text-slate-700' },
+              { label: 'Laser Precise', icon: CpuChipIcon, style: 'bg-slate-100 border border-slate-200 text-slate-700' },
             ].map((item, i) => (
-              <div key={i} className={`${item.color} p-4 rounded-[2rem] flex flex-col items-center justify-center text-center gap-2 border-b-4 border-black/5`}>
-                <item.icon className="h-6 w-6" />
-                <span className="text-[10px] font-black uppercase tracking-widest">{item.label}</span>
+              <div key={i} className={`${item.style} p-3 rounded-xl flex items-center gap-3`}>
+                <item.icon className="h-5 w-5 opacity-80 flex-shrink-0" />
+                <span className="text-[10px] font-black uppercase tracking-wider">{item.label}</span>
               </div>
             ))}
           </div>
 
-          {/* --- CTA AREA --- */}
-          <div className="pt-4 space-y-6">
-            {quantity > 0 ? (
-              <div className="flex items-center justify-between bg-white p-3 rounded-[2.5rem] shadow-xl shadow-pink-100 border border-pink-50">
-                <motion.button whileTap={{ scale: 0.9 }} onClick={() => decreaseQuantity(product.id)} className="h-14 w-14 flex items-center justify-center bg-slate-50 rounded-full text-slate-400 hover:text-pink-500 transition-colors">
-                  <MinusIcon className="h-6 w-6" />
+          {/* --- TRANSACTION CTA HUB --- */}
+          <div className="pt-2 space-y-4">
+            {currentVariantQuantity > 0 ? (
+              <div className="flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-300 shadow-sm">
+                <motion.button 
+                  whileTap={{ scale: 0.97 }} 
+                  onClick={() => decreaseQuantity(variantPayload)} 
+                  className="h-12 w-12 flex items-center justify-center bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-600 transition-colors"
+                >
+                  <MinusIcon className="h-5 w-5 stroke-[2.5]" />
                 </motion.button>
-                <span className="text-2xl font-black text-slate-800">{quantity}</span>
-                <motion.button whileTap={{ scale: 0.9 }} onClick={() => addToCart(product)} className="h-14 w-14 flex items-center justify-center bg-pink-100 rounded-full text-pink-500 hover:bg-pink-200 transition-colors">
-                  <PlusIcon className="h-6 w-6" />
+                <div className="text-center">
+                  <span className="text-lg font-black text-slate-900 block leading-none">{currentVariantQuantity}</span>
+                  <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1 block">Active Assembly Qty</span>
+                </div>
+                <motion.button 
+                  whileTap={{ scale: 0.97 }} 
+                  onClick={() => addToCart(variantPayload)} 
+                  className="h-12 w-12 flex items-center justify-center bg-slate-900 hover:bg-slate-800 rounded-lg text-white transition-colors"
+                >
+                  <PlusIcon className="h-5 w-5 stroke-[2.5]" />
                 </motion.button>
               </div>
             ) : (
               <motion.button
-                whileHover={{ y: -4, shadow: "0 20px 25px -5px rgb(249 168 214 / 0.4)" }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => addToCart(product)}
-                className="w-full h-20 bg-gradient-to-r from-pink-300 to-pink-400 text-white rounded-[2.5rem] flex items-center justify-center gap-4 text-xl font-black shadow-2xl shadow-pink-200"
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={() => addToCart(variantPayload)}
+                className="w-full h-16 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl flex items-center justify-center gap-3 text-sm font-black uppercase tracking-wider shadow-md shadow-amber-500/10 transition-all"
               >
-                <ShoppingBagIcon className="h-7 w-7" />
-                Add to Nursery
+                <ShoppingBagIcon className="h-5 w-5" />
+                Add Variation to Order
               </motion.button>
             )}
             
-            <div className="flex items-center justify-center gap-6">
-              <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-tight">
-                <CheckCircleIcon className="h-4 w-4 text-blue-400" />
-                Free Delivery
+            <div className="flex items-center justify-center gap-5 pt-1">
+              <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                <CheckCircleIcon className="h-4 w-4 text-emerald-600" />
+                Next-Day Site Delivery
               </div>
-              <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-tight">
-                <CheckCircleIcon className="h-4 w-4 text-blue-400" />
-                7-Day Returns
+              <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                <CheckCircleIcon className="h-4 w-4 text-emerald-600" />
+                Warranty Backed
               </div>
             </div>
           </div>
         </div>
       </main>
 
-      {/* --- CUTE FOOTER SECTION --- */}
-      <section className="max-w-5xl mx-auto px-4 mt-24">
-        <div className="bg-blue-50 rounded-[4rem] p-12 text-center space-y-6 relative overflow-hidden">
-          <div className="absolute -top-10 -left-10 w-40 h-40 bg-white/40 rounded-full blur-3xl" />
-          <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-pink-200/40 rounded-full blur-3xl" />
+      {/* --- INDUSTRIAL ASSURANCE BANNER --- */}
+      <section className="max-w-7xl mx-auto px-4 mt-20">
+        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-10 text-center space-y-4 relative overflow-hidden shadow-xl">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/[0.03] rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-slate-800/[0.4] rounded-full blur-2xl pointer-events-none" />
           
-          <SparklesIcon className="h-12 w-12 text-blue-300 mx-auto" />
-          <h2 className="text-3xl font-black text-slate-800">Only the best for your bundle of joy</h2>
-          <p className="max-w-xl mx-auto text-slate-500 font-medium">
-            Every product in the Baby Duka is hand-picked by our team of pediatric experts and parents to ensure ultimate comfort and safety.
+          <WrenchScrewdriverIcon className="h-10 w-10 text-amber-500 mx-auto" />
+          <h2 className="text-2xl font-black text-white tracking-tight">Built for Ultimate Field Performance</h2>
+          <p className="max-w-2xl mx-auto text-slate-400 text-xs leading-relaxed font-medium">
+            Every technical component sourced for the Hardware Duka conforms directly to global industrial deployment standards. Secure premium equipment accompanied by valid merchant verification frameworks.
           </p>
-          <div className="pt-4">
-             <button className="px-8 py-4 bg-white text-blue-500 rounded-full font-black shadow-sm hover:shadow-md transition-all">
-                View Safety Certifications
+          <div className="pt-2">
+             <button className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 rounded-xl text-xs font-bold transition-all tracking-wider uppercase">
+                Download Technical Specifications
              </button>
           </div>
         </div>
       </section>
 
-
       <WhatsAppInquiry 
-        productName={product.name}
-        productPrice={product.finalPrice || product.sellingPrice || 0}
-        productUrl={window.location.href}
-        phoneNumber = "254712345678"
+        productName={`${product.name} (${selectedOption?.name})`}
+        productPrice={variantTotalPrice}
+        productUrl={typeof window !== 'undefined' ? window.location.href : ''}
+        phoneNumber="254712345678"
       />
     </div>
   );

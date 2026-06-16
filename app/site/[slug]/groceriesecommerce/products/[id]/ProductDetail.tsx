@@ -14,6 +14,12 @@ import {
   ClockIcon,
   MapPinIcon
 } from '@heroicons/react/24/solid';
+import { 
+  SparklesIcon, 
+  AdjustmentsHorizontalIcon,
+  CheckIcon,
+  ChevronRightIcon
+} from '@heroicons/react/24/outline';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { MarketListingForm } from '@/types/typings';
 
@@ -23,16 +29,57 @@ import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/comp
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
+// Fallback configuration options if product.option is not supplied from MongoDB
+const DEFAULT_GROWER_OPTIONS = [
+  { category: 'Preparation', name: 'Standard Pack', extraPrice: 0 },
+  { category: 'Preparation', name: 'Pre-washed & Chopped', extraPrice: 150 },
+  { category: 'Preparation', name: 'Organic Certified', extraPrice: 300 },
+];
+
 export function ProductDetail({ product, related }: { product: MarketListingForm; related: MarketListingForm[] }) {
   const { addToCart, decreaseQuantity, cart } = useStateContext();
   const [mainIndex, setMainIndex] = useState(0);
 
-  const primary = '#059669'; // Emerald 600 (Fresh Green)
-  const accent = '#F59E0B'; // Amber 500 (Harvest Gold)
+  // Extract structured options from the schema model, fallback if undefined
+  const availableOptions = useMemo(() => {
+    return (product.option && product.option.length > 0) 
+      ? (product.option as any[]) 
+      : DEFAULT_GROWER_OPTIONS;
+  }, [product.option]);
 
-  const quantity = useMemo(() => cart.find((c: any) => c.id === product.id)?.quantity || 0, [cart, product.id]);
+  // Set initial selected variant config state
+  const [selectedOption, setSelectedOption] = useState(availableOptions[0]);
+
+  const primary = '#059669'; // Emerald 600
+  const accent = '#F59E0B'; // Amber 500
+
+  // Identify state quantity for this unique composite variant combination
+  const currentVariantQuantity = useMemo(() => {
+    return cart.find((item: any) => 
+      item.id === product.id && 
+      item.selectedOption?.name === selectedOption?.name
+    )?.quantity || 0;
+  }, [cart, product.id, selectedOption]);
+
+  // Track all variants of this single base item currently sitting inside the user's cart
+  const stagedProductVariants = useMemo(() => {
+    return cart.filter((item: any) => item.id === product.id);
+  }, [cart, product.id]);
+
   const currentImages = (product.images as any[])?.length ? product.images : [{ url: '/placeholder-food.png' }];
   const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex];
+
+  // Calculate distinct configuration price string
+  const basePrice = product.finalPrice || product.sellingPrice || 0;
+  const variantTotalPrice = basePrice + (selectedOption?.extraPrice || 0);
+
+  // Generate unique payload containing custom fingerprint signatures for cart verification
+  const variantPayload = {
+    ...product,
+    selectedOption,
+    // Formulates a clean index string matching standard multi-tenant cart layouts
+    customCartId: `${product.id}-${selectedOption?.name.replace(/\s+/g, '-').toLowerCase()}`
+  };
 
   return (
     <div className="min-h-screen bg-[#FCFDFB] dark:bg-[#0A0C0B] text-slate-900 dark:text-slate-100 font-sans">
@@ -91,7 +138,7 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
           <div className="lg:col-span-6 xl:col-span-5 space-y-8">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <span className="px-3 py-1 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-bold rounded-lg tracking-wide">
+                <span className="px-3 py-1 bg-emerald-50/60 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-bold rounded-lg tracking-wide">
                   {product.productCategory?.name || 'Fresh Produce'}
                 </span>
                 <span className="flex items-center gap-1 text-xs font-medium text-slate-500">
@@ -107,9 +154,9 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
               <div className="flex items-center gap-6">
                 <div className="flex flex-col">
                   <span className="text-4xl font-black text-emerald-600 dark:text-emerald-400">
-                    KSh {product.finalPrice?.toLocaleString()}
+                    KSh {variantTotalPrice.toLocaleString()}
                   </span>
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Price per KG / Unit</span>
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Price per Selected Customization</span>
                 </div>
                 {product.sellingPrice > product.finalPrice && (
                   <div className="px-3 py-2 bg-rose-500 text-white rounded-2xl text-sm font-black shadow-lg shadow-rose-500/20">
@@ -133,6 +180,100 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
               </div>
             </div>
 
+            {/* DYNAMIC VARIANT VARIATION OPTIONS SELECTOR */}
+            <section className="space-y-4">
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                <AdjustmentsHorizontalIcon className="w-4 h-4" />
+                <span>Select Product Variation</span>
+              </div>
+              <div className="grid grid-cols-1 gap-2.5">
+                {availableOptions.map((opt: any, index: number) => {
+                  const specificOptionQty = cart.find((item: any) => 
+                    item.id === product.id && 
+                    item.selectedOption?.name === opt.name
+                  )?.quantity || 0;
+
+                  const isSelected = selectedOption?.name === opt.name;
+
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedOption(opt)}
+                      className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 ${
+                        isSelected
+                          ? 'border-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20 ring-1 ring-emerald-600'
+                          : 'border-slate-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-slate-300 dark:hover:border-zinc-700'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 text-left">
+                        <div className={`p-1.5 rounded-lg ${isSelected ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-zinc-800 text-slate-500'}`}>
+                          <CheckIcon className={`w-3 h-3 transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0'}`} />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold">{opt.name}</span>
+                            {specificOptionQty > 0 && (
+                              <span className="bg-emerald-600 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">
+                                {specificOptionQty} staged
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-slate-400 font-medium">{opt.category || 'Variant Option'}</span>
+                        </div>
+                      </div>
+                      <span className="text-xs font-black tracking-tight text-emerald-600 dark:text-emerald-400">
+                        {opt.extraPrice === 0 ? 'Base Price' : `+KSh ${opt.extraPrice}`}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* STAGED LISTING MATRIX - COMPONENT VIEW FOR MULTIPLE DISTINCT VARIATIONS */}
+            <AnimatePresence>
+              {stagedProductVariants.length > 0 && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="p-5 bg-slate-50 dark:bg-zinc-900/40 border border-slate-100 dark:border-zinc-800/80 rounded-[2rem] space-y-3"
+                >
+                  <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    <span>Staged Configurations</span>
+                    <span className="text-emerald-600 font-black">{stagedProductVariants.length} Unique Configs</span>
+                  </div>
+                  <div className="space-y-2 max-h-[150px] overflow-y-auto pr-1">
+                    {stagedProductVariants.map((item: any, idx: number) => (
+                      <div key={idx} className="flex items-center justify-between bg-white dark:bg-zinc-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800/60 text-xs shadow-sm">
+                        <div className="flex items-center gap-2">
+                          <SparklesIcon className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+                          <span className="font-bold">{item.selectedOption?.name || 'Standard Setup'}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-slate-400 font-bold">Qty: {item.quantity}</span>
+                          <div className="flex items-center gap-1">
+                            <button 
+                              onClick={() => decreaseQuantity(item)}
+                              className="p-1 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 rounded transition-colors"
+                            >
+                              <MinusIcon className="w-3 h-3 text-slate-500" />
+                            </button>
+                            <button 
+                              onClick={() => addToCart(item)}
+                              className="p-1 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 rounded transition-colors"
+                            >
+                              <PlusIcon className="w-3 h-3 text-slate-500" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <div className="prose prose-slate dark:prose-invert">
               <p className="text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
                 {product.description || "Hand-picked and sourced directly from sustainable local farms to ensure peak nutritional value and taste for your kitchen."}
@@ -142,25 +283,33 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
             {/* ACTION FOOTER */}
             <div className="p-6 bg-emerald-50 dark:bg-zinc-900/80 backdrop-blur-xl rounded-[2.5rem] border border-emerald-100 dark:border-emerald-900/30">
               <div className="flex items-center gap-6">
-                {quantity > 0 ? (
-                  <div className="flex items-center gap-6 bg-white dark:bg-zinc-800 p-2 rounded-2xl border border-emerald-200 shadow-sm">
-                    <button onClick={() => decreaseQuantity(product.id)} className="p-3 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors">
-                      <MinusIcon className="w-6 h-6" />
+                {currentVariantQuantity > 0 ? (
+                  <div className="flex-1 flex items-center justify-between bg-white dark:bg-zinc-800 p-2 rounded-2xl border border-emerald-200 shadow-sm h-[60px]">
+                    <button 
+                      onClick={() => decreaseQuantity(variantPayload)} 
+                      className="p-3 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors"
+                    >
+                      <MinusIcon className="w-5 h-5" />
                     </button>
-                    <span className="text-2xl font-black min-w-[1.5rem] text-center">{quantity}</span>
-                    <button onClick={() => addToCart(product)} className="p-3 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors">
-                      <PlusIcon className="w-6 h-6" />
+                    <span className="text-lg font-black text-center tracking-wide">
+                      {currentVariantQuantity} Selected Variant
+                    </span>
+                    <button 
+                      onClick={() => addToCart(variantPayload)} 
+                      className="p-3 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors"
+                    >
+                      <PlusIcon className="w-5 h-5" />
                     </button>
                   </div>
                 ) : (
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => addToCart(product)}
+                    onClick={() => addToCart(variantPayload)}
                     className="flex-1 py-5 bg-emerald-600 text-white rounded-3xl font-black text-sm uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-3"
                   >
                     <ShoppingBagIcon className="w-5 h-5" />
-                    Add to Basket
+                    Add Configuration To Basket
                   </motion.button>
                 )}
               </div>
@@ -194,10 +343,10 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
       </section>
 
       <WhatsAppInquiry 
-        productName={product.name}
-        productPrice={product.finalPrice || product.sellingPrice || 0}
-        productUrl={window.location.href}
-        phoneNumber = "254712345678"
+        productName={`${product.name} (${selectedOption?.name})`}
+        productPrice={variantTotalPrice}
+        productUrl={typeof window !== 'undefined' ? window.location.href : ''}
+        phoneNumber="254712345678"
       />
     </div>
   );

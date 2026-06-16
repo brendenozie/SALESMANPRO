@@ -25,15 +25,79 @@ import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/comp
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
+interface OptionStructure {
+  category: string;
+  name: string;
+  extraPrice: number;
+}
+
 export function ProductDetail({ product, related }: { product: MarketListingForm; related: MarketListingForm[] }) {
   const { addToCart, decreaseQuantity, cart } = useStateContext();
   const [mainIndex, setMainIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('intel');
 
-  const primary = '#10B981'; // Gamin Duka Emerald
-  
-  const quantity = useMemo(() => cart.find((c: any) => c.id === product.id)?.quantity || 0, [cart, product.id]);
+  // --- OPTION VARIANT MANAGEMENT ---
+  // Group generic unstructured or structured Json options by category
+  const groupedOptions = useMemo(() => {
+    const groups: Record<string, OptionStructure[]> = {};
+    if (Array.isArray(product.option)) {
+      product.option.forEach((opt: any) => {
+        if (opt && opt.category) {
+          if (!groups[opt.category]) groups[opt.category] = [];
+          groups[opt.category].push(opt as OptionStructure);
+        }
+      });
+    }
+    return groups;
+  }, [product.option]);
+
+  // Track selected variants by their category key
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, OptionStructure>>(() => {
+    const initial: Record<string, OptionStructure> = {};
+    Object.keys(groupedOptions).forEach((category) => {
+      if (groupedOptions[category].length > 0) {
+        initial[category] = groupedOptions[category][0]; // Default to first available option
+      }
+    });
+    return initial;
+  });
+
+  // Calculate dynamic variant signature/ID for precise isolation inside the cart array
+  const variantCartId = useMemo(() => {
+    const sortedOptionSignatures = Object.keys(selectedOptions)
+      .sort()
+      .map((cat) => `${cat}:${selectedOptions[cat].name}`);
+    
+    return sortedOptionSignatures.length > 0
+      ? `${product.id}_${sortedOptionSignatures.join('|')}`
+      : product.id;
+  }, [product.id, selectedOptions]);
+
+  // Compute calculated pricing for the active selection
+  const currentVariantPrice = useMemo(() => {
+    const basePrice = product.finalPrice || product.sellingPrice || 0;
+    const extraPriceSum = Object.values(selectedOptions).reduce((sum, opt) => sum + (opt.extraPrice || 0), 0);
+    return basePrice + extraPriceSum;
+  }, [product.finalPrice, product.sellingPrice, selectedOptions]);
+
+  // Resolve current configuration quantity accurately from state context
+  const quantity = useMemo(() => {
+    return cart.find((c: any) => c.id === variantCartId)?.quantity || 0;
+  }, [cart, variantCartId]);
+
+  // Construct the custom payload for deploy action execution
+  const cartPayload = useMemo(() => {
+    return {
+      ...product,
+      id: variantCartId, // Intercepts item parsing by swapping ID with variant configuration identity
+      baseProductId: product.id,
+      name: `${product.name} (${Object.values(selectedOptions).map(o => o.name).join(', ')})`,
+      finalPrice: currentVariantPrice,
+      selectedOptions: Object.values(selectedOptions),
+    };
+  }, [product, variantCartId, selectedOptions, currentVariantPrice]);
+
   const currentImages = (product.images as any[]) || [{ url: '/placeholder.png' }];
   const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex];
 
@@ -90,7 +154,7 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
               </button>
             </div>
 
-            {/* Thumbnail Navigation - Tactical Strip */}
+            {/* Thumbnail Navigation */}
             <div className="flex gap-4 p-2 bg-zinc-900/30 backdrop-blur-md rounded-[2rem] border border-white/5 overflow-x-auto no-scrollbar">
               {currentImages.map((img, idx) => (
                 <button
@@ -125,16 +189,61 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
               </h1>
 
               <div className="flex items-center gap-6">
-                <div className="text-4xl font-black text-emerald-500">
-                  KSh {product.finalPrice?.toLocaleString()}
-                </div>
-                {product.sellingPrice > (product.finalPrice || 0) && (
+                <motion.div 
+                  key={currentVariantPrice}
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-4xl font-black text-emerald-500"
+                >
+                  KSh {currentVariantPrice.toLocaleString()}
+                </motion.div>
+                {product.sellingPrice > currentVariantPrice && (
                   <div className="text-xl text-zinc-600 line-through font-bold">
                     {product.sellingPrice?.toLocaleString()}
                   </div>
                 )}
               </div>
             </header>
+
+            {/* --- VARIANT OPTION CHIPS (BENTO LAYOUT STYLE) --- */}
+            {Object.keys(groupedOptions).length > 0 && (
+              <div className="space-y-6 p-6 bg-zinc-900/20 backdrop-blur-md rounded-[2rem] border border-white/5">
+                {Object.keys(groupedOptions).map((category) => (
+                  <div key={category} className="space-y-3">
+                    <span className="text-[10px] font-black tracking-widest text-zinc-500 uppercase block">
+                      Select {category}
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {groupedOptions[category].map((opt) => {
+                        const isSelected = selectedOptions[category]?.name === opt.name;
+                        return (
+                          <motion.button
+                            key={opt.name}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => setSelectedOptions(prev => ({ ...prev, [category]: opt }))}
+                            className={`px-4 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 border ${
+                              isSelected
+                                ? 'bg-emerald-500 text-black border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.2)]'
+                                : 'bg-zinc-900/60 text-zinc-400 border-white/5 hover:border-white/10 hover:text-white'
+                            }`}
+                          >
+                            <span>{opt.name}</span>
+                            {opt.extraPrice > 0 && (
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+                                isSelected ? 'bg-black/20 text-black' : 'bg-white/5 text-emerald-500'
+                              }`}>
+                                +KSh {opt.extraPrice.toLocaleString()}
+                              </span>
+                            )}
+                          </motion.button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* ACTION CARD */}
             <div className="p-8 bg-gradient-to-br from-zinc-900 to-black rounded-[2.5rem] border border-white/10 shadow-2xl space-y-8">
@@ -159,11 +268,18 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
                 
                 <div className="flex gap-4">
                   <div className="flex items-center bg-zinc-800/50 rounded-2xl border border-white/10 p-1">
-                    <button onClick={() => decreaseQuantity(product.id)} className="p-4 hover:bg-white/5 rounded-xl transition-colors">
+                    <button 
+                      onClick={() => decreaseQuantity(variantCartId)} 
+                      disabled={quantity === 0}
+                      className="p-4 hover:bg-white/5 rounded-xl transition-colors disabled:opacity-20"
+                    >
                       <MinusIcon className="w-5 h-5 text-zinc-400" />
                     </button>
                     <span className="px-6 font-black text-xl">{quantity || 1}</span>
-                    <button onClick={() => addToCart(product)} className="p-4 hover:bg-white/5 rounded-xl transition-colors">
+                    <button 
+                      onClick={() => addToCart(cartPayload)} 
+                      className="p-4 hover:bg-white/5 rounded-xl transition-colors"
+                    >
                       <PlusIcon className="w-5 h-5 text-emerald-500" />
                     </button>
                   </div>
@@ -171,11 +287,11 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
                   <motion.button
                     whileHover={{ scale: 1.02, boxShadow: '0 0 40px rgba(16,185,129,0.3)' }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => addToCart(product)}
+                    onClick={() => addToCart(cartPayload)}
                     className="flex-1 bg-emerald-500 text-black rounded-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 group"
                   >
                     <ShoppingBagIcon className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                    Deploy to Cart
+                    Deploy Config to Cart
                   </motion.button>
                 </div>
               </div>
@@ -212,7 +328,7 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
                     exit={{ opacity: 0, y: -10 }}
                   >
                     {activeTab === 'intel' ? (
-                      <p>{product.description || "High-bandwidth interface designed for zero-latency execution. Features advanced thermal management and custom Gamin Duka architecture."}</p>
+                      <p>{product.description || "High-bandwidth interface designed for zero-latency execution. Features advanced thermal management and custom architecture."}</p>
                     ) : (
                       <div className="grid grid-cols-2 gap-y-4">
                         <div className="flex flex-col"><span className="text-[10px] font-black uppercase text-zinc-600">Protocol</span><span className="text-zinc-200">G-DUKA v2.4</span></div>
@@ -267,10 +383,10 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
       </AnimatePresence>
 
       <WhatsAppInquiry 
-        productName={product.name}
-        productPrice={product.finalPrice || product.sellingPrice || 0}
-        productUrl={window.location.href}
-        phoneNumber = "254712345678"
+        productName={cartPayload.name}
+        productPrice={currentVariantPrice}
+        productUrl={typeof window !== 'undefined' ? window.location.href : ''}
+        phoneNumber="254712345678"
       />
     </div>
   );

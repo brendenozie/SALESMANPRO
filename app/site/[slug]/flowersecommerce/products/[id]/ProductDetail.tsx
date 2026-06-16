@@ -1,7 +1,6 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 'use client';
 
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -30,6 +29,14 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
   const { addToCart, decreaseQuantity, cart } = useStateContext();
   const [mainIndex, setMainIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [productUrl, setProductUrl] = useState('');
+
+  // Safeguard window access for SSR environment
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setProductUrl(window.location.href);
+    }
+  }, []);
 
   const primary = '#EC4899'; // Rose Pink
   const accent = '#10B981'; // Stem Green
@@ -38,14 +45,14 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
   const currentImages = (product.images as any[]) || [{ url: '/placeholder.png' }];
   const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex];
 
-  // Existing states
+  // Arrangement customizations
   const [size, setSize] = useState<'standard' | 'deluxe' | 'premium'>('standard');
   const [includeVase, setIncludeVase] = useState(false);
   
   // Dynamic Pricing Logic
   const sizeMultipliers = { standard: 1, deluxe: 1.5, premium: 2.2 };
   const vasePrice = 1500;
-  const basePrice = product.finalPrice || 0;
+  const basePrice = product.finalPrice || product.sellingPrice || 0;
   const currentTotalPrice = (basePrice * sizeMultipliers[size]) + (includeVase ? vasePrice : 0);
 
   const sizes = [
@@ -143,7 +150,7 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
 
               <div className="flex items-center gap-4">
                 <div className="text-4xl font-light tracking-tighter text-zinc-900 dark:text-zinc-100">
-                  KSh {product.finalPrice?.toLocaleString()}
+                  KSh {currentTotalPrice?.toLocaleString()}
                 </div>
                 <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-800" />
                 <div className="flex items-center gap-1">
@@ -154,61 +161,60 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
             </header>
 
             {/* 1. PREMIUM SIZE SELECTOR */}
-        <div className="space-y-4">
-          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 flex items-center gap-2">
-            <SparklesIcon className="w-3 h-3" /> Select Arrangement Size
-          </label>
-          <div className="grid grid-cols-3 gap-3">
-            {sizes.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => setSize(s.id as any)}
-                className={`relative p-4 rounded-2xl border-2 transition-all duration-300 text-left ${
-                  size === s.id 
-                    ? 'border-pink-400 bg-pink-50/50 dark:bg-pink-900/10 shadow-lg' 
-                    : 'border-zinc-100 dark:border-zinc-800 hover:border-pink-200'
+            <div className="space-y-4">
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 flex items-center gap-2">
+                <SparklesIcon className="w-3 h-3" /> Select Arrangement Size
+              </label>
+              <div className="grid grid-cols-3 gap-3">
+                {sizes.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => setSize(s.id as any)}
+                    className={`relative p-4 rounded-2xl border-2 transition-all duration-300 text-left ${
+                      size === s.id 
+                        ? 'border-pink-400 bg-pink-50/50 dark:bg-pink-900/10 shadow-lg' 
+                        : 'border-zinc-100 dark:border-zinc-800 hover:border-pink-200'
+                    }`}
+                  >
+                    {size === s.id && (
+                      <motion.div layoutId="check" className="absolute top-2 right-2">
+                        <CheckCircleIcon className="w-4 h-4 text-pink-500" />
+                      </motion.div>
+                    )}
+                    <p className={`text-[10px] font-black uppercase tracking-widest ${size === s.id ? 'text-pink-600' : 'text-zinc-400'}`}>
+                      {s.label}
+                    </p>
+                    <p className="text-[9px] font-medium text-zinc-500 mt-1">{s.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 2. THE VASE CROSS-SELL (BENTO STYLE) */}
+            <motion.div 
+              animate={{ borderColor: includeVase ? '#F472B6' : 'rgba(0,0,0,0.05)' }}
+              className="p-5 bg-white dark:bg-zinc-900 border-2 rounded-[2.5rem] shadow-xl shadow-pink-500/5 flex items-center justify-between gap-6"
+            >
+              <div className="flex items-center gap-4">
+                <div className="relative w-16 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-2xl overflow-hidden flex-shrink-0">
+                   <div className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-zinc-400 uppercase">Glass Vase</div>
+                </div>
+                <div>
+                  <h4 className="text-xs font-black uppercase tracking-widest">Crystal Glass Vase</h4>
+                  <p className="text-[10px] text-zinc-500">+ KSh {vasePrice.toLocaleString()}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIncludeVase(!includeVase)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                  includeVase 
+                    ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/30' 
+                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600'
                 }`}
               >
-                {size === s.id && (
-                  <motion.div layoutId="check" className="absolute top-2 right-2">
-                    <CheckCircleIcon className="w-4 h-4 text-pink-500" />
-                  </motion.div>
-                )}
-                <p className={`text-[10px] font-black uppercase tracking-widest ${size === s.id ? 'text-pink-600' : 'text-zinc-400'}`}>
-                  {s.label}
-                </p>
-                <p className="text-[9px] font-medium text-zinc-500 mt-1">{s.desc}</p>
+                {includeVase ? 'Added' : <><PlusCircleIcon className="w-4 h-4" /> Add</>}
               </button>
-            ))}
-          </div>
-        </div>
-
-        {/* 2. THE VASE CROSS-SELL (BENTO STYLE) */}
-        <motion.div 
-          animate={{ borderColor: includeVase ? '#F472B6' : 'rgba(0,0,0,0.05)' }}
-          className="p-5 bg-white dark:bg-zinc-900 border-2 rounded-[2.5rem] shadow-xl shadow-pink-500/5 flex items-center justify-between gap-6"
-        >
-          <div className="flex items-center gap-4">
-            <div className="relative w-16 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-2xl overflow-hidden flex-shrink-0">
-               {/* Replace with actual vase image */}
-               <div className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-zinc-400 uppercase">Glass Vase</div>
-            </div>
-            <div>
-              <h4 className="text-xs font-black uppercase tracking-widest">Crystal Glass Vase</h4>
-              <p className="text-[10px] text-zinc-500">+ KSh {vasePrice.toLocaleString()}</p>
-            </div>
-          </div>
-          <button 
-            onClick={() => setIncludeVase(!includeVase)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-              includeVase 
-                ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/30' 
-                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600'
-            }`}
-          >
-            {includeVase ? 'Added' : <><PlusCircleIcon className="w-4 h-4" /> Add</>}
-          </button>
-        </motion.div>
+            </motion.div>
 
             {/* GIFTING HUB BENTO */}
             <div className="p-8 bg-pink-50/50 dark:bg-zinc-900/50 rounded-[2.5rem] border border-pink-100 dark:border-zinc-800 space-y-8">
@@ -237,7 +243,7 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
                 <motion.button
                   whileHover={{ y: -4, shadow: '0 20px 40px rgba(236,72,153,0.2)' }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => addToCart(product)}
+                  onClick={() => addToCart({ ...product, price: currentTotalPrice })}
                   className="flex-1 bg-pink-500 hover:bg-pink-400 text-white rounded-2xl font-bold text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-colors py-4 shadow-xl shadow-pink-500/20"
                 >
                   <ShoppingBagIcon className="w-5 h-5" />
@@ -285,7 +291,7 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
       <section className="bg-pink-50/30 dark:bg-zinc-900/30 py-24 border-t border-pink-100 dark:border-zinc-900">
         <div className="max-w-7xl mx-auto px-6 text-center mb-16">
           <h2 className="text-[10px] font-black text-pink-500 uppercase tracking-[0.5em] mb-4">Complete the Surprise</h2>
-          <h3 className="text-4xl font-serif italic italic tracking-tight">Pairs Beautifully With</h3>
+          <h3 className="text-4xl font-serif italic tracking-tight">Pairs Beautifully With</h3>
         </div>
         <div className="max-w-7xl mx-auto px-6 overflow-x-auto no-scrollbar pb-8">
           <div className="flex gap-8 min-w-max">
@@ -317,9 +323,9 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
 
       <WhatsAppInquiry 
         productName={product.name}
-        productPrice={product.finalPrice || product.sellingPrice || 0}
-        productUrl={window.location.href}
-        phoneNumber = "254712345678"
+        productPrice={currentTotalPrice}
+        productUrl={productUrl}
+        phoneNumber="254712345678"
       />
     </div>
   );

@@ -13,7 +13,10 @@ import {
   FireIcon,
   CheckBadgeIcon,
   ScaleIcon,
-  ClockIcon
+  ClockIcon,
+  AdjustmentsHorizontalIcon,
+  CheckIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { PlusIcon, MinusIcon } from '@heroicons/react/24/solid';
 import { useStateContext } from '@/contexts/ContextProvider';
@@ -26,6 +29,13 @@ type ImageObj = { url: string };
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
+// Theme-appropriate options fallback if product.option is empty in the database
+const DEFAULT_MEAT_OPTIONS = [
+  { category: 'Cut Selection', name: 'Standard 500g Fresh Cut', extraPrice: 0 },
+  { category: 'Cut Selection', name: 'Premium 1kg Master Butcher Cut', extraPrice: 1200 },
+  { category: 'Cut Selection', name: 'Aged 2kg Family Reserve Slab', extraPrice: 3100 },
+];
+
 export function ProductDetail({
   product,
   related,
@@ -36,9 +46,45 @@ export function ProductDetail({
   const { addToCart, decreaseQuantity, cart } = useStateContext();
   const [mainIndex, setMainIndex] = useState(0);
 
-  const quantity = useMemo(() => cart.find((c: any) => c.id === product.id)?.quantity || 0, [cart, product.id]);
+  // Safe normalization for flexible option data sets
+  const availableOptions = useMemo(() => {
+    return (product.option && product.option.length > 0) 
+      ? (product.option as any[]) 
+      : DEFAULT_MEAT_OPTIONS;
+  }, [product.option]);
+
+  // Track the active variant choice selection
+  const [selectedOption, setSelectedOption] = useState(availableOptions[0]);
+
+  // Find quantity for the specific option variation currently selected
+  const currentVariantQuantity = useMemo(() => {
+    return cart.find((item: any) => 
+      item.id === product.id && 
+      item.selectedOption?.name === selectedOption?.name
+    )?.quantity || 0;
+  }, [cart, product.id, selectedOption]);
+
+  // Gather all variants belonging to this base product model inside the global cart
+  const stagedProductVariants = useMemo(() => {
+    return cart.filter((item: any) => item.id === product.id);
+  }, [cart, product.id]);
+
   const currentImages = (product.images as ImageObj[])?.length ? (product.images as ImageObj[]) : [{ url: '/placeholder.png' }];
-  const currentImage = currentImages[mainIndex]?.url;
+  const currentImage = currentImages[mainIndex]?.url || '/placeholder.png';
+
+  // Dynamic pricing calculation reflecting variant add-on costs
+  const basePrice = product.finalPrice || product.sellingPrice || 0;
+  const variantTotalPrice = basePrice + (selectedOption?.extraPrice || 0);
+
+  // Structural proxy payload combining base data with variant metadata for precise mutations
+  const variantPayload = useMemo(() => {
+    return {
+      ...product,
+      selectedOption,
+      // unique fingerprint string ensuring separate line items in downstream actions
+      customCartId: `${product.id}-${selectedOption?.name.replace(/\s+/g, '-').toLowerCase() || 'default'}`
+    };
+  }, [product, selectedOption]);
 
   return (
     <div className="bg-white dark:bg-[#080808] text-stone-900 dark:text-stone-100 min-h-screen pb-20 relative overflow-hidden pt-32 transition-colors duration-500">
@@ -83,10 +129,8 @@ export function ProductDetail({
               </motion.div>
             </AnimatePresence>
             
-            {/* Dark Overlay Gradient for text readability if needed */}
             <div className="absolute inset-0 bg-gradient-to-t from-stone-950/40 via-transparent to-transparent opacity-60" />
 
-            {/* Sale Badge */}
             {product.sellingPrice > (product.finalPrice || 0) && (
               <div className="absolute top-8 left-8 bg-red-600 text-white px-6 py-2 rounded-2xl text-xs font-black shadow-xl shadow-red-900/40 tracking-widest uppercase">
                 Limited Offer
@@ -106,13 +150,13 @@ export function ProductDetail({
                     : 'border-stone-200 dark:border-white/5 bg-stone-100 dark:bg-stone-900'
                 }`}
               >
-                <Image src={img.url} alt="thumb" loader={loader} fill className="object-cover" />
+                <Image src={img.url || (img as any)} alt="thumb" loader={loader} fill className="object-cover" />
               </button>
             ))}
           </div>
         </div>
 
-        {/* RIGHT: PRODUCT INFO */}
+        {/* RIGHT: PRODUCT INFO & VARIANT CONFIGURATION */}
         <div className="lg:col-span-5 space-y-10">
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-stone-100 dark:bg-stone-900 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] text-stone-500 border border-stone-200 dark:border-white/5">
@@ -124,9 +168,9 @@ export function ProductDetail({
             </h1>
             <div className="flex items-baseline gap-4">
               <div className="text-4xl font-black text-red-600 tracking-tighter">
-                KES {(product.finalPrice || 0).toLocaleString()}
+                KES {variantTotalPrice.toLocaleString()}
               </div>
-              {product.sellingPrice > (product.finalPrice || 0) && (
+              {product.sellingPrice && product.sellingPrice > variantTotalPrice && (
                 <span className="text-xl line-through text-stone-300 dark:text-stone-700 font-bold">
                    KES {product.sellingPrice.toLocaleString()}
                 </span>
@@ -143,8 +187,8 @@ export function ProductDetail({
             {[
               { label: 'Maturity', val: '21 Days Aged', icon: ClockIcon },
               { label: 'Cut Type', val: 'Primal Cut', icon: FireIcon },
-              { label: 'Avg Weight', val: 'Per 500g', icon: ScaleIcon },
-              { label: 'Sourcing', val: 'Local Farms', icon: ShieldCheckIcon },
+              { label: 'Avg Weight', val: selectedOption?.name || 'Per 500g', icon: ScaleIcon },
+              { label: 'Sourcing', val: product.brand || 'Local Farms', icon: ShieldCheckIcon },
             ].map((spec, i) => (
               <div key={i} className="bg-stone-50 dark:bg-stone-900/50 p-5 rounded-[2rem] border border-stone-200 dark:border-white/5 flex items-center gap-4 transition-colors hover:border-red-600/20">
                 <div className="p-3 bg-white dark:bg-stone-800 rounded-xl shadow-sm text-red-600">
@@ -152,33 +196,139 @@ export function ProductDetail({
                 </div>
                 <div>
                   <p className="text-[9px] uppercase font-black text-stone-400 tracking-widest leading-none mb-1">{spec.label}</p>
-                  <p className="text-sm font-black text-stone-900 dark:text-white uppercase tracking-tighter">{spec.val}</p>
+                  <p className="text-sm font-black text-stone-900 dark:text-white uppercase tracking-tighter truncate max-w-[140px]">{spec.val}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* --- ACTION BAR --- */}
-          <div className="pt-8 space-y-6">
-            {quantity > 0 ? (
-              <div className="flex items-center justify-between bg-stone-100 dark:bg-stone-900 p-3 rounded-3xl border border-stone-200 dark:border-white/5 shadow-inner">
-                <button onClick={() => decreaseQuantity(product.id)} className="h-14 w-14 flex items-center justify-center bg-white dark:bg-stone-800 rounded-2xl shadow-sm hover:text-red-600 transition-all active:scale-95">
-                  <MinusIcon className="h-6 w-6" />
+          {/* --- BENTO VARIANT CHIP SELECTOR --- */}
+          <section className="space-y-3 bg-stone-50 dark:bg-stone-900/40 p-6 rounded-[2.5rem] border border-stone-200 dark:border-white/5">
+            <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-stone-400">
+              <div className="flex items-center gap-2">
+                <AdjustmentsHorizontalIcon className="w-4 h-4 text-red-600" />
+                <span>Configure Cut & Weight Variant</span>
+              </div>
+              <span className="text-red-600">Options Matrix</span>
+            </div>
+            
+            <div className="space-y-2.5">
+              {availableOptions.map((opt: any, index: number) => {
+                const isSelected = selectedOption?.name === opt.name;
+                const allocationQty = cart.find((item: any) => 
+                  item.id === product.id && 
+                  item.selectedOption?.name === opt.name
+                )?.quantity || 0;
+
+                return (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedOption(opt)}
+                    className={`w-full flex items-center justify-between p-4 rounded-2xl border text-left transition-all ${
+                      isSelected
+                        ? 'border-red-600 bg-red-50/10 dark:bg-red-950/10 ring-1 ring-red-600'
+                        : 'border-stone-200 dark:border-white/5 bg-white dark:bg-stone-900/60 hover:border-red-600/30'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-0.5 rounded-full border ${isSelected ? 'bg-red-600 border-red-600 text-white' : 'border-stone-300 dark:border-stone-700 text-transparent'}`}>
+                        <CheckIcon className="w-3 h-3 stroke-[3]" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-stone-800 dark:text-stone-200">{opt.name}</span>
+                          {allocationQty > 0 && (
+                            <span className="bg-red-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full">
+                              {allocationQty} Active
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[9px] text-stone-400 font-bold uppercase tracking-tight">{opt.category || 'Specification'}</span>
+                      </div>
+                    </div>
+                    <span className="text-sm font-black text-stone-900 dark:text-white">
+                      {opt.extraPrice === 0 ? 'Base Tier' : `+KES ${opt.extraPrice.toLocaleString()}`}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* --- STAGED SELECTION MIX OVERVIEW --- */}
+          <AnimatePresence>
+            {stagedProductVariants.length > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="p-5 bg-stone-950 text-stone-100 rounded-[2rem] space-y-3 border border-white/5 shadow-xl"
+              >
+                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-stone-400">
+                  <span className="flex items-center gap-1.5">
+                    <ArrowPathIcon className="w-3.5 h-3.5 animate-spin text-red-500" /> 
+                    Current Order Manifest Allocation
+                  </span>
+                  <span className="text-red-500 font-black">{stagedProductVariants.length} Active Configurations</span>
+                </div>
+                <div className="space-y-2 max-h-[140px] overflow-y-auto pr-1">
+                  {stagedProductVariants.map((item: any, idx: number) => (
+                    <div key={idx} className="flex items-center justify-between bg-stone-900 p-3 rounded-xl border border-stone-800 text-xs">
+                      <span className="font-medium text-stone-300">{item.selectedOption?.name}</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-stone-400 font-black text-[10px]">Packs: {item.quantity}</span>
+                        <div className="flex items-center gap-1 bg-stone-950 p-0.5 rounded-lg border border-stone-800">
+                          <button 
+                            onClick={() => decreaseQuantity(item)}
+                            className="p-1 text-stone-400 hover:text-white hover:bg-stone-800 rounded transition-colors"
+                          >
+                            <MinusIcon className="w-3.5 h-3.5" />
+                          </button>
+                          <button 
+                            onClick={() => addToCart(item)}
+                            className="p-1 text-stone-400 hover:text-white hover:bg-stone-800 rounded transition-colors"
+                          >
+                            <PlusIcon className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* --- ACTION CONTROLS HUB --- */}
+          <div className="pt-4 space-y-6">
+            {currentVariantQuantity > 0 ? (
+              <div className="flex items-center justify-between bg-stone-100 dark:bg-stone-900 p-2 rounded-[2rem] border border-stone-200 dark:border-white/5 shadow-inner">
+                <button 
+                  onClick={() => decreaseQuantity(variantPayload)} 
+                  className="h-14 w-14 flex items-center justify-center bg-white dark:bg-stone-800 rounded-2xl shadow-sm hover:text-red-600 transition-all active:scale-95 text-stone-700 dark:text-stone-300"
+                >
+                  <MinusIcon className="h-5 w-5" />
                 </button>
-                <span className="text-xl font-black text-stone-900 dark:text-white uppercase tracking-tighter">{quantity} Packs Selected</span>
-                <button onClick={() => addToCart(product)} className="h-14 w-14 flex items-center justify-center bg-white dark:bg-stone-800 rounded-2xl shadow-sm hover:text-red-600 transition-all active:scale-95">
-                  <PlusIcon className="h-6 w-6" />
+                <div className="text-center">
+                  <span className="text-lg font-black text-stone-900 dark:text-white block tracking-tighter">{currentVariantQuantity} Packs</span>
+                  <span className="text-[8px] font-black uppercase text-stone-400 tracking-widest block">Active Configuration Cut</span>
+                </div>
+                <button 
+                  onClick={() => addToCart(variantPayload)} 
+                  className="h-14 w-14 flex items-center justify-center bg-white dark:bg-stone-800 rounded-2xl shadow-sm hover:text-red-600 transition-all active:scale-95 text-stone-700 dark:text-stone-300"
+                >
+                  <PlusIcon className="h-5 w-5" />
                 </button>
               </div>
             ) : (
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => addToCart(product)}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={() => addToCart(variantPayload)}
                 className="w-full h-20 bg-red-600 text-white rounded-[2rem] flex items-center justify-center gap-4 text-sm font-black tracking-[0.3em] shadow-2xl shadow-red-900/30 hover:bg-red-700 transition-all uppercase"
               >
                 <ShoppingBagIcon className="h-6 w-6" />
-                Add to Order
+                Add Selection to Order
               </motion.button>
             )}
             
@@ -225,10 +375,10 @@ export function ProductDetail({
       </section>
 
       <WhatsAppInquiry 
-        productName={product.name}
-        productPrice={product.finalPrice || product.sellingPrice || 0}
-        productUrl={window.location.href}
-        phoneNumber = "254712345678"
+        productName={`${product.name} (${selectedOption?.name})`}
+        productPrice={variantTotalPrice}
+        productUrl={typeof window !== 'undefined' ? window.location.href : ''}
+        phoneNumber="254712345678"
       />
     </div>
   );

@@ -12,7 +12,9 @@ import {
   ChevronRightIcon, 
   SparklesIcon,
   GlobeAltIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  PlusIcon,
+  MinusIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { useStateContext } from '@/contexts/ContextProvider';
@@ -21,6 +23,12 @@ import ProductCard from '@/components/site/layouts/FashionLayout/body/components
 import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
 type ImageObj = { url: string };
+
+interface StructuredOption {
+  category: string;
+  name: string;
+  extraPrice?: number;
+}
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -32,11 +40,11 @@ export function ProductDetail({
   product: MarketListingForm;
   related: MarketListingForm[];
 }) {
-  const { addToCart } = useStateContext();
+  const { addToCart, decreaseQuantity, cart } = useStateContext();
   const [mainIndex, setMainIndex] = useState(0);
-  const [selectedSize, setSelectedSize] = useState('M');
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [currentUrl, setCurrentUrl] = useState('');
+  const [validationError, setValidationError] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -45,11 +53,109 @@ export function ProductDetail({
 
   const highlightColor = '#E5FF00'; // Electric Neon Lime
 
+  // 1. Group Multi-Variant Options Dynamically by Category
+  const groupedOptions = useMemo(() => {
+    const groups: Record<string, StructuredOption[]> = {};
+    
+    // Attempt parsing from the primary flexible JSON option array
+    if (Array.isArray(product.option) && product.option.length > 0) {
+      product.option.forEach((opt: any) => {
+        const casted = opt as StructuredOption;
+        if (casted && casted.category) {
+          if (!groups[casted.category]) groups[casted.category] = [];
+          groups[casted.category].push(casted);
+        }
+      });
+    } 
+    
+    // Fallback to model fields if primary option JSON array is empty
+    if (Object.keys(groups).length === 0) {
+      if (Array.isArray(product.size) && product.size.length > 0) {
+        groups['Size'] = product.size.map(s => ({ category: 'Size', name: s, extraPrice: 0 }));
+      }
+      if (Array.isArray(product.color) && product.color.length > 0) {
+        groups['Color'] = product.color.map(c => ({ category: 'Color', name: c, extraPrice: 0 }));
+      }
+    }
+
+    return groups;
+  }, [product.option, product.size, product.color]);
+
+  // 2. Active Compound Configuration Fingerprint State
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, StructuredOption>>({});
+
+  // Auto-initialize options configuration with first entries to reduce friction
+  useEffect(() => {
+    const initialSelections: Record<string, StructuredOption> = {};
+    Object.entries(groupedOptions).forEach(([category, options]) => {
+      if (options.length > 0) {
+        initialSelections[category] = options[0];
+      }
+    });
+    setSelectedOptions(initialSelections);
+  }, [groupedOptions]);
+
+  // 3. Dynamic Compound Price Calculator (Base Price + Premium Option Surcharges)
+  const dynamicPrices = useMemo(() => {
+    const baseSellingPrice = product.sellingPrice || 0;
+    const baseFinalPrice = product.finalPrice ?? baseSellingPrice;
+    
+    const totalExtraPrice = Object.values(selectedOptions).reduce((acc, curr) => {
+      return acc + (curr.extraPrice || 0);
+    }, 0);
+
+    return {
+      finalPrice: baseFinalPrice + totalExtraPrice,
+      sellingPrice: baseSellingPrice + totalExtraPrice
+    };
+  }, [product.finalPrice, product.sellingPrice, selectedOptions]);
+
+  // 4. Cart Identification Sync Engine (Deep Signature Lookup)
+  const matchingCartItem = useMemo(() => {
+    return cart.find((item: any) => {
+      if (item.id !== product.id) return false;
+      
+      const itemOptions = item.selectedOptions || {};
+      const targetCategories = Object.keys(groupedOptions);
+      
+      // Enforce full matching signature parity across all option keys
+      return targetCategories.every(key => itemOptions[key]?.name === selectedOptions[key]?.name);
+    });
+  }, [cart, product.id, selectedOptions, groupedOptions]);
+
+  const quantity = matchingCartItem?.quantity || 0;
+
   const currentImages = (product.images)?.length 
-    ? (product.images) 
+    ? (product.images as ImageObj[]) 
     : [{ url: 'https://via.placeholder.com/400x600' }];
   
   const currentImage = currentImages[mainIndex]?.url;
+
+  const handleVariantQuantityIncrement = () => {
+    const requiredCategoriesCount = Object.keys(groupedOptions).length;
+    const selectedCategoriesCount = Object.keys(selectedOptions).length;
+
+    if (selectedCategoriesCount < requiredCategoriesCount) {
+      setValidationError('Please configure all variants before adding to bag.');
+      return;
+    }
+
+    setValidationError(null);
+    
+    // Push item signature directly down to the shared application state context
+    addToCart({ 
+      ...product, 
+      sellingPrice: dynamicPrices.sellingPrice,
+      finalPrice: dynamicPrices.finalPrice,
+      selectedOptions // Injected straight into item signature space
+    });
+  };
+
+  const handleVariantQuantityDecrement = () => {
+    if (matchingCartItem) {
+      decreaseQuantity(matchingCartItem.cartId || matchingCartItem.id); 
+    }
+  };
 
   const handleScrollRelated = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
@@ -72,11 +178,10 @@ export function ProductDetail({
         {/* --- EDITORIAL WORKSPACE LAYOUT --- */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-14">
           
-          {/* LEFT STAGE: THE ATELIER VISUAL CANVAS (Col 1-7) */}
+          {/* LEFT STAGE: VISUAL CANVAS */}
           <div className="lg:col-span-7 space-y-4">
             <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-900 shadow-sm transition-colors duration-300">
               
-              {/* Context Floating Metadata Badges */}
               <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
                 <span className="backdrop-blur-md bg-white/80 dark:bg-zinc-950/80 text-zinc-900 dark:text-zinc-50 text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border border-zinc-200/50 dark:border-zinc-800/50 flex items-center gap-1.5 shadow-sm">
                   <SparklesIcon className="h-3 w-3 text-amber-500 animate-pulse" />
@@ -105,7 +210,6 @@ export function ProductDetail({
                 </motion.div>
               </AnimatePresence>
               
-              {/* Modern Minimal Digital Counter Pips */}
               <div className="absolute bottom-6 right-6 backdrop-blur-md bg-zinc-950/70 text-white text-[10px] font-mono tracking-widest px-3 py-1.5 rounded-md border border-white/10 select-none z-20">
                 {(mainIndex + 1).toString().padStart(2, '0')} / {currentImages.length.toString().padStart(2, '0')}
               </div>
@@ -129,10 +233,9 @@ export function ProductDetail({
             </div>
           </div>
 
-          {/* RIGHT STAGE: METRIC ENGINE & CURATION TOOLS (Col 8-12) */}
+          {/* RIGHT STAGE: METRIC ENGINE & VARIANT BALANCER */}
           <div className="lg:col-span-5 lg:sticky lg:top-8 h-fit space-y-6 lg:pl-4">
             
-            {/* Core Identification Matrix */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-400 dark:text-zinc-500">
@@ -150,11 +253,11 @@ export function ProductDetail({
               
               <div className="flex items-baseline gap-4 pt-1">
                 <span className="text-2xl sm:text-3xl font-bold tracking-tighter text-zinc-950 dark:text-zinc-50">
-                  KES {(product.finalPrice ?? product.sellingPrice ?? 0).toLocaleString()}
+                  KES {dynamicPrices.finalPrice.toLocaleString()}
                 </span>
-                {product.sellingPrice > (product.finalPrice || 0) && (
+                {dynamicPrices.sellingPrice > dynamicPrices.finalPrice && (
                   <span className="text-sm line-through text-zinc-400 dark:text-zinc-500 font-bold">
-                    KES {product.sellingPrice.toLocaleString()}
+                    KES {dynamicPrices.sellingPrice.toLocaleString()}
                   </span>
                 )}
               </div>
@@ -162,51 +265,93 @@ export function ProductDetail({
 
             <div className="h-px bg-zinc-100 dark:bg-zinc-900 w-full transition-colors duration-300" />
 
-            {/* Premium Size Atelier Matrix */}
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <label className="text-[11px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">Size Mapping</label>
-                <button className="text-[10px] font-bold underline tracking-wider text-zinc-400 hover:text-zinc-950 dark:hover:text-white transition-colors">Measurements Grid</button>
-              </div>
-              
-              <div className="grid grid-cols-4 gap-2.5">
-                {['S', 'M', 'L', 'XL'].map((size) => {
-                  const active = selectedSize === size;
-                  return (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`h-14 flex flex-col items-center justify-center rounded-xl border font-bold text-sm transition-all relative overflow-hidden ${
-                        active 
-                          ? 'bg-zinc-950 text-white border-zinc-950 dark:bg-zinc-50 dark:text-zinc-950 dark:border-white shadow-md' 
-                          : 'bg-white dark:bg-zinc-950/40 text-zinc-900 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600'
-                      }`}
-                    >
-                      <span>{size}</span>
-                      {active && (
-                        <div 
-                          className="absolute bottom-0 left-0 right-0 h-[3px]" 
-                          style={{ backgroundColor: highlightColor }}
-                        />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+            {/* DYNAMIC MULTI-VARIANT ATTRIBUTE SPECIFICATION GRID */}
+            <div className="space-y-5">
+              {validationError && (
+                <p className="text-[11px] font-bold text-red-500 dark:text-red-400 uppercase tracking-wider animate-pulse">
+                  {validationError}
+                </p>
+              )}
+
+              {Object.entries(groupedOptions).map(([category, options]) => (
+                <div key={category} className="space-y-2.5">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[11px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                      {category} Selection
+                    </label>
+                  </div>
+                  
+                  <div className="grid grid-cols-4 gap-2.5">
+                    {options.map((opt) => {
+                      const isActive = selectedOptions[category]?.name === opt.name;
+                      return (
+                        <button
+                          key={opt.name}
+                          onClick={() => {
+                            setSelectedOptions(prev => ({ ...prev, [category]: opt }));
+                            setValidationError(null);
+                          }}
+                          className={`min-h-[3.5rem] py-2 px-1 flex flex-col items-center justify-center rounded-xl border text-xs font-bold transition-all relative overflow-hidden ${
+                            isActive 
+                              ? 'bg-zinc-950 text-white border-zinc-950 dark:bg-zinc-50 dark:text-zinc-950 dark:border-white shadow-md' 
+                              : 'bg-white dark:bg-zinc-950/40 text-zinc-900 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600'
+                          }`}
+                        >
+                          <span className="truncate max-w-full px-1">{opt.name}</span>
+                          {opt.extraPrice && opt.extraPrice > 0 ? (
+                            <span className={`text-[8px] font-medium mt-0.5 ${isActive ? 'text-zinc-300 dark:text-zinc-600' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                              +KES {opt.extraPrice}
+                            </span>
+                          ) : null}
+                          {isActive && (
+                            <div 
+                              className="absolute bottom-0 left-0 right-0 h-[3px]" 
+                              style={{ backgroundColor: highlightColor }}
+                            />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Desktop Action Workspace */}
             <div className="hidden sm:flex flex-col gap-3 pt-2">
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                onClick={() => addToCart({ ...product, selectedSize })}
-                className="w-full h-16 bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950 rounded-2xl flex items-center justify-center gap-3 font-black uppercase text-xs tracking-[0.2em] group shadow-xl transition-colors hover:bg-zinc-800 dark:hover:opacity-90"
-              >
-                <ShoppingBagIcon className="h-4 w-4 transition-transform group-hover:rotate-6" />
-                Add to Luxury Bag
-                <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-              </motion.button>
+              {quantity > 0 ? (
+                <div className="flex items-center justify-between p-2 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 transition-colors duration-300">
+                  <button 
+                    onClick={handleVariantQuantityDecrement} 
+                    className="p-3 bg-white dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 shadow-sm transition-colors rounded-xl text-zinc-500"
+                  >
+                    <MinusIcon className="h-5 w-5" />
+                  </button>
+                  <div className="flex flex-col items-center text-center px-4 max-w-[60%]">
+                    <span className="text-xl font-black text-zinc-950 dark:text-zinc-50">{quantity}</span>
+                    <span className="text-[9px] font-bold uppercase text-zinc-400 tracking-wider truncate max-w-full">
+                      In Bag ({Object.values(selectedOptions).map(o => o.name).join(' / ')})
+                    </span>
+                  </div>
+                  <button 
+                    onClick={handleVariantQuantityIncrement} 
+                    className="p-3 bg-white dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 shadow-sm transition-colors rounded-xl text-zinc-950 dark:text-white"
+                  >
+                    <PlusIcon className="h-5 w-5" />
+                  </button>
+                </div>
+              ) : (
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  onClick={handleVariantQuantityIncrement}
+                  className="w-full h-16 bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950 rounded-2xl flex items-center justify-center gap-3 font-black uppercase text-xs tracking-[0.2em] group shadow-xl transition-colors hover:bg-zinc-800 dark:hover:opacity-90"
+                >
+                  <ShoppingBagIcon className="h-4 w-4 transition-transform group-hover:rotate-6" />
+                  Add to Luxury Bag
+                  <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                </motion.button>
+              )}
               
               <button 
                 onClick={() => setIsWishlisted(!isWishlisted)}
@@ -282,7 +427,7 @@ export function ProductDetail({
         )}
       </div>
 
-      {/* --- LIGHT/DARK INTUITIVE MOBILE ACTION BOTTOM OVERLAY TRAY --- */}
+      {/* --- MOBILE ACTION BOTTOM OVERLAY TRAY --- */}
       <div className="sm:hidden fixed bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-zinc-950/80 backdrop-blur-xl border-t border-zinc-200/60 dark:border-zinc-900 z-50 shadow-[0_-8px_30px_rgba(0,0,0,0.05)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.4)] flex gap-3 items-center transition-colors duration-300">
         <button 
           onClick={() => setIsWishlisted(!isWishlisted)}
@@ -295,20 +440,37 @@ export function ProductDetail({
           <HeartIcon className={`h-5 w-5 ${isWishlisted ? 'fill-current text-red-600' : ''}`} />
         </button>
         
-        <button
-          onClick={() => addToCart({ ...product, selectedSize })}
-          className="flex-1 h-14 bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950 rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-all"
-        >
-          <ShoppingBagIcon className="h-4 w-4" />
-          Bag Size {selectedSize}
-        </button>
+        {quantity > 0 ? (
+          <div className="flex-1 flex items-center justify-between p-1 bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+            <button onClick={handleVariantQuantityDecrement} className="p-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-500 rounded-lg">
+              <MinusIcon className="h-4 w-4" />
+            </button>
+            <div className="text-center truncate px-2">
+              <span className="text-sm font-black block leading-none text-zinc-950 dark:text-zinc-50">{quantity}</span>
+              <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-tight block mt-1 truncate">
+                {Object.values(selectedOptions).map(o => o.name).join('/')}
+              </span>
+            </div>
+            <button onClick={handleVariantQuantityIncrement} className="p-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-950 dark:text-white rounded-lg">
+              <PlusIcon className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={handleVariantQuantityIncrement}
+            className="flex-1 h-14 bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950 rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-all"
+          >
+            <ShoppingBagIcon className="h-4 w-4" />
+            Bag Options
+          </button>
+        )}
       </div>
 
-      {/* Hydration-safe dynamically updated WhatsApp Inquiry Engine */}
+      {/* WhatsApp Inquiry Engine */}
       {currentUrl && (
         <WhatsAppInquiry 
-          productName={product.name}
-          productPrice={product.finalPrice || product.sellingPrice || 0}
+          productName={`${product.name} (${Object.values(selectedOptions).map(o => o.name).join(' / ')})`}
+          productPrice={dynamicPrices.finalPrice}
           productUrl={currentUrl}
           phoneNumber="254712345678"
         />

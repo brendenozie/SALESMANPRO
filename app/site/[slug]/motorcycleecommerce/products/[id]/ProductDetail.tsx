@@ -21,7 +21,7 @@ import {
   WrenchIcon 
 } from '@heroicons/react/24/outline';
 import { useStateContext } from '@/contexts/ContextProvider';
-import ProductCard from '@/components/site/layouts/EcommerceLayout/body/components/ProductCard';
+// import ProductCard from '@/components/site/layouts/EcommerceMotorcycleLayout/body/components/ProductCard';
 import { MarketListingForm } from '@/types/typings';
 import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 

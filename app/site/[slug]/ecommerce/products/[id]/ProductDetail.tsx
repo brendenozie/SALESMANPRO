@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
@@ -19,6 +20,12 @@ import ProductCard from '@/components/site/layouts/EcommerceLayout/body/componen
 import { MarketListingForm } from '@/types/typings';
 import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
+interface VariantOption {
+  category: string;
+  name: string;
+  extraPrice?: number;
+}
+
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
@@ -26,23 +33,112 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
   const { addToCart, decreaseQuantity, cart } = useStateContext();
   const [mainIndex, setMainIndex] = useState(0);
   const [currentUrl, setCurrentUrl] = useState('');
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+  const [mounted, setMounted] = useState(false);
   
-  // Safely extract window location after client mount to prevent Next.js SSR hydration errors
+  // Safely extract window location and set mount state to prevent Next.js SSR hydration errors
   useEffect(() => {
     setCurrentUrl(window.location.href);
+    setMounted(true);
   }, []);
 
-  const quantity = useMemo(() => cart.find((c: any) => c.id === product.id)?.quantity || 0, [cart, product.id]);
+  // 1. Safely parse and normalize product options from Prisma schema structure
+  const normalizedOptions = useMemo<VariantOption[]>(() => {
+    if (!product.option) return [];
+    if (typeof product.option === 'string') {
+      try {
+        return JSON.parse(product.option);
+      } catch {
+        return [];
+      }
+    }
+    return product.option as unknown as VariantOption[];
+  }, [product.option]);
+
+  // 2. Group available options by their category labels (e.g., Size, Color)
+  const groupedOptions = useMemo(() => {
+    const groups: Record<string, VariantOption[]> = {};
+    normalizedOptions.forEach((opt) => {
+      if (!groups[opt.category]) groups[opt.category] = [];
+      groups[opt.category].push(opt);
+    });
+    return groups;
+  }, [normalizedOptions]);
+
+  // 3. Automatically select the first option of each category as a default configuration
+  useEffect(() => {
+    const initialSelection: Record<string, string> = {};
+    Object.entries(groupedOptions).forEach(([category, options]) => {
+      if (options.length > 0) {
+        initialSelection[category] = options[0].name;
+      }
+    });
+    setSelectedOptions(initialSelection);
+  }, [groupedOptions]);
+
+  // 4. Calculate live dynamic price adjustments based on selected attributes
+  const livePriceSurcharge = useMemo(() => {
+    let extra = 0;
+    Object.entries(selectedOptions).forEach(([category, selectedValue]) => {
+      const match = normalizedOptions.find(
+        (o) => o.category === category && o.name === selectedValue
+      );
+      if (match?.extraPrice) extra += match.extraPrice;
+    });
+    return extra;
+  }, [selectedOptions, normalizedOptions]);
+
+  const liveFinalPrice = (product.finalPrice || product.sellingPrice || 0) + livePriceSurcharge;
+  const liveSellingPrice = (product.sellingPrice || 0) + livePriceSurcharge;
+
+  // 5. Generate a unique identity key representing this specific selection combination
+  const currentCartItemId = useMemo(() => {
+    const optionSignature = Object.entries(selectedOptions)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([cat, val]) => `${cat}:${val}`)
+      .join('-');
+    return optionSignature ? `${product.id}-${optionSignature}` : product.id;
+  }, [product.id, selectedOptions]);
+
+  // 6. Look up line-item counts tied explicitly to this current variations match pattern
+  const activeVariantQuantity = useMemo(() => {
+    return cart.find((item: any) => {
+      const itemSignature = item.cartItemId || (item.selectedOptions
+        ? `${item.id}-${Object.entries(item.selectedOptions).sort(([a], [b]) => a.localeCompare(b)).map(([cat, val]) => `${cat}:${val}`).join('-')}`
+        : item.id);
+      return itemSignature === currentCartItemId;
+    })?.quantity || 0;
+  }, [cart, currentCartItemId]);
+
   const currentImages = product.images?.length ? product.images : ['https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80'];
   const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex] || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80';
 
-  const handleAddToCart = () => addToCart({ ...product, finalPrice: product.finalPrice ?? product.sellingPrice });
+  // 7. Context mutations forwarding custom compound objects downstream
+  const handleAddToCart = () => {
+    addToCart({
+      ...product,
+      finalPrice: liveFinalPrice,
+      sellingPrice: liveSellingPrice,
+      cartItemId: currentCartItemId,
+      selectedOptions: { ...selectedOptions },
+    });
+  };
 
-  // Calculate dynamic discount metrics
-  const hasDiscount = product.sellingPrice > (product.finalPrice || 0);
+  const handleDecreaseQuantity = () => {
+    if (typeof decreaseQuantity === 'function') {
+      decreaseQuantity(currentCartItemId, selectedOptions);
+    }
+  };
+
+  const hasDiscount = liveSellingPrice > liveFinalPrice;
   const discountPercentage = hasDiscount 
-    ? Math.round(((product.sellingPrice - (product.finalPrice || 0)) / product.sellingPrice) * 100)
+    ? Math.round(((liveSellingPrice - liveFinalPrice) / liveSellingPrice) * 100)
     : 0;
+
+  // Render a clean fallback string formatting active items for messaging integrations
+  const variantTextString = Object.entries(selectedOptions)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join(', ');
 
   return (
     <div className="bg-slate-50 dark:bg-zinc-950 min-h-screen pb-32 transition-colors duration-300">
@@ -80,7 +176,6 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
           
           {/* PHOTO INTERACTIVE LAB MATRIX */}
           <div className="lg:col-span-7 w-full">
-            {/* Aspect control shifts dynamically from fluid screen bounds on mobile devices up to balanced shapes on desktop layout */}
             <div className="relative aspect-square sm:aspect-[4/5] sm:rounded-[2rem] lg:rounded-[2.5rem] overflow-hidden bg-white dark:bg-zinc-900 shadow-md sm:shadow-xl transition-colors">
               <AnimatePresence mode="wait">
                 <motion.div
@@ -161,14 +256,50 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
               </div>
             </header>
 
+            {/* DYNAMIC VARIATION CHOICE MATRIX */}
+            {Object.keys(groupedOptions).length > 0 && (
+              <div className="p-6 sm:p-8 bg-white dark:bg-zinc-900 rounded-3xl border border-slate-100 dark:border-zinc-800/80 shadow-sm space-y-6">
+                {Object.entries(groupedOptions).map(([category, options]) => (
+                  <div key={category} className="space-y-3">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500 block">
+                      Choose {category}
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {options.map((opt) => {
+                        const isSelected = selectedOptions[category] === opt.name;
+                        return (
+                          <button
+                            key={opt.name}
+                            onClick={() => setSelectedOptions(prev => ({ ...prev, [category]: opt.name }))}
+                            className={`px-4 py-3 rounded-xl text-xs font-bold border transition-all duration-200 ${
+                              isSelected
+                                ? 'bg-slate-950 dark:bg-white text-white dark:text-zinc-950 border-transparent shadow-sm scale-[1.02]'
+                                : 'bg-slate-50 dark:bg-zinc-800/50 text-slate-600 dark:text-zinc-300 border-slate-200/60 dark:border-zinc-700/60 hover:border-emerald-500'
+                            }`}
+                          >
+                            <span className="mr-1">{opt.name}</span>
+                            {opt.extraPrice && opt.extraPrice > 0 ? (
+                              <span className={`text-[10px] font-medium ${isSelected ? 'text-emerald-400' : 'text-slate-400'}`}>
+                                (+KES {opt.extraPrice})
+                              </span>
+                            ) : null}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div className="p-6 sm:p-8 bg-white dark:bg-zinc-900 rounded-3xl shadow-sm border border-slate-100 dark:border-zinc-800/80 space-y-6">
               <div className="flex items-baseline gap-3">
-                <span className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-                  KES {product.finalPrice?.toLocaleString()}
+                <span className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white tabular-nums">
+                  KES {liveFinalPrice.toLocaleString()}
                 </span>
                 {hasDiscount && (
-                  <span className="text-lg line-through text-slate-400 font-bold">
-                    {product.sellingPrice.toLocaleString()}
+                  <span className="text-lg line-through text-slate-400 font-bold tabular-nums">
+                    {liveSellingPrice.toLocaleString()}
                   </span>
                 )}
               </div>
@@ -191,12 +322,15 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
 
               {/* DESKTOP EXCLUSIVE ACTION PANEL CONTROL MODULE */}
               <div className="pt-4 hidden sm:block">
-                {quantity > 0 ? (
+                {activeVariantQuantity > 0 ? (
                   <div className="flex items-center justify-between p-1.5 bg-slate-100 dark:bg-zinc-800 rounded-2xl border border-slate-200/40 dark:border-zinc-700/40">
-                    <motion.button whileTap={{ scale: 0.95 }} onClick={() => decreaseQuantity(product.id)} className="w-12 h-12 rounded-xl bg-white dark:bg-zinc-700 text-slate-800 dark:text-white flex items-center justify-center shadow-sm">
+                    <motion.button whileTap={{ scale: 0.95 }} onClick={handleDecreaseQuantity} className="w-12 h-12 rounded-xl bg-white dark:bg-zinc-700 text-slate-800 dark:text-white flex items-center justify-center shadow-sm">
                       <MinusIcon className="w-5 h-5" />
                     </motion.button>
-                    <span className="text-xl font-black text-slate-900 dark:text-white">{quantity}</span>
+                    <div className="text-center">
+                      <span className="text-xl font-black text-slate-900 dark:text-white block tabular-nums">{activeVariantQuantity}</span>
+                      <span className="text-[8px] font-black tracking-widest uppercase text-slate-400 dark:text-zinc-500">Selected Option</span>
+                    </div>
                     <motion.button whileTap={{ scale: 0.95 }} onClick={handleAddToCart} className="w-12 h-12 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-md">
                       <PlusIcon className="w-5 h-5" />
                     </motion.button>
@@ -209,7 +343,7 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
                     className="w-full py-4.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black uppercase text-xs tracking-widest shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-3 transition-colors group"
                   >
                     <ShoppingBagIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    Add to Cart
+                    Add Configuration to Cart
                   </motion.button>
                 )}
               </div>
@@ -230,7 +364,6 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
               </button>
             </div>
             
-            {/* Clean responsive scrolling row layout for smaller viewports expanding into structured grid maps on desktops */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
               {related.slice(0, 4).map(r => (
                 <ProductCard key={r.id} product={r as any} />
@@ -245,21 +378,22 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
         <div className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-zinc-800 rounded-2xl p-3 shadow-2xl flex items-center justify-between gap-4">
           <div className="pl-2 shrink-0">
             <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-zinc-500">Total Price</p>
-            <p className="text-lg font-black text-slate-950 dark:text-white">KES {((quantity || 1) * (product.finalPrice || product.sellingPrice || 0)).toLocaleString()}</p>
+            <p className="text-lg font-black text-slate-950 dark:text-white tabular-nums">
+              KES {((activeVariantQuantity || 1) * liveFinalPrice).toLocaleString()}
+            </p>
           </div>
           
           <div className="flex-1 max-w-[200px]">
-            {quantity > 0 ? (
-              /* SMART TRANSFORMATION: Inline quantity configuration hub directly on the floating banner overlay */
+            {activeVariantQuantity > 0 ? (
               <div className="flex items-center justify-between bg-slate-100 dark:bg-zinc-800 rounded-xl p-1 border border-slate-200/50 dark:border-zinc-700/50">
                 <button 
-                  onClick={() => decreaseQuantity(product.id)} 
+                  onClick={handleDecreaseQuantity} 
                   className="w-10 h-10 rounded-lg bg-white dark:bg-zinc-700 text-slate-800 dark:text-white flex items-center justify-center shadow-xs active:scale-90 transition-transform"
                   aria-label="Decrease item quantity"
                 >
                   <MinusIcon className="w-4 h-4" />
                 </button>
-                <span className="text-base font-black text-slate-900 dark:text-white">{quantity}</span>
+                <span className="text-base font-black text-slate-900 dark:text-white tabular-nums">{activeVariantQuantity}</span>
                 <button 
                   onClick={handleAddToCart} 
                   className="w-10 h-10 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-sm active:scale-90 transition-transform"
@@ -274,17 +408,17 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
                 className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3.5 px-4 rounded-xl font-black uppercase text-[11px] tracking-wider shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
               >
                 <ShoppingBagIcon className="w-4 h-4" />
-                Add To Cart
+                Add Config
               </button>
             )}
           </div>
         </div>
       </div>
 
-      {currentUrl && (
+      {mounted && currentUrl && (
         <WhatsAppInquiry 
-          productName={product.name}
-          productPrice={product.finalPrice || product.sellingPrice || 0}
+          productName={`${product.name} ${variantTextString ? `(${variantTextString})` : ''}`}
+          productPrice={liveFinalPrice}
           productUrl={currentUrl}
           phoneNumber="254712345678"
         />

@@ -1,12 +1,12 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 'use client';
 
-import React, { useMemo, useState, useRef, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StarIcon, PlusIcon, MinusIcon, ShoppingBagIcon, SparklesIcon, ShareIcon, HeartIcon } from '@heroicons/react/24/solid';
-import { ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ChevronRightIcon, XMarkIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { useStateContext } from '@/contexts/ContextProvider';
 import ProductCard from '@/components/site/layouts/EcommerceCakeLayout/body/components/ProductCard';
 import { MarketListingForm } from '@/types/typings';
@@ -14,16 +14,14 @@ import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/comp
 
 type ImageObj = { url: string };
 
+interface VariantOption {
+  category: string;
+  name: string;
+  extraPrice?: number;
+}
+
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
-
-// Custom theme colors for Cake Duka
-const CAKE_THEME = {
-  primary: '#D4AF37', // Gold
-  secondary: '#3D2B1F', // Deep Cocoa
-  accent: '#E91E63', // Raspberry
-  cream: '#FFFDF5'
-};
 
 export function ProductDetail({
   product,
@@ -35,11 +33,103 @@ export function ProductDetail({
   const { addToCart, decreaseQuantity, cart } = useStateContext();
   const [mainIndex, setMainIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [mainLoaded, setMainLoaded] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+  const [mounted, setMounted] = useState(false);
 
-  const quantity = useMemo(() => cart.find((c: any) => c.id === product.id)?.quantity || 0, [cart, product.id]);
-  const currentImages = (product.images as ImageObj[])?.length ? (product.images as ImageObj[]) : [{ url: '/placeholder-image.png' }];
-  const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex];
+  // Guard window/hydration bounds Safely
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // 1. Safely normalize unstructured Json[] data from Prisma schema
+  const productOptions = useMemo<VariantOption[]>(() => {
+    if (!product.option) return [];
+    if (typeof product.option === 'string') {
+      try {
+        return JSON.parse(product.option);
+      } catch {
+        return [];
+      }
+    }
+    return product.option as unknown as VariantOption[];
+  }, [product.option]);
+
+  // 2. Group flat options array by category names dynamically
+  const groupedOptions = useMemo(() => {
+    const groups: Record<string, VariantOption[]> = {};
+    productOptions.forEach((opt) => {
+      if (!groups[opt.category]) groups[opt.category] = [];
+      groups[opt.category].push(opt);
+    });
+    return groups;
+  }, [productOptions]);
+
+  // 3. Pre-populate default configurations on mount
+  useEffect(() => {
+    const initialSelection: Record<string, string> = {};
+    Object.entries(groupedOptions).forEach(([category, options]) => {
+      if (options.length > 0) {
+        initialSelection[category] = options[0].name;
+      }
+    });
+    setSelectedOptions(initialSelection);
+  }, [groupedOptions]);
+
+  // 4. Sum price surcharges derived from current active configuration selections
+  const variantSurcharge = useMemo(() => {
+    let extra = 0;
+    Object.entries(selectedOptions).forEach(([category, chosenValue]) => {
+      const match = productOptions.find(
+        (o) => o.category === category && o.name === chosenValue
+      );
+      if (match?.extraPrice) extra += match.extraPrice;
+    });
+    return extra;
+  }, [selectedOptions, productOptions]);
+
+  const liveFinalPrice = (product.finalPrice || 0) + variantSurcharge;
+  const liveSellingPrice = (product.sellingPrice || 0) + variantSurcharge;
+
+  // 5. Generate a unique key signature matching the chosen attributes
+  const currentCartItemId = useMemo(() => {
+    const sortedString = Object.entries(selectedOptions)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([cat, val]) => `${cat}:${val}`)
+      .join('-');
+    return sortedString ? `${product.id}-${sortedString}` : product.id;
+  }, [product.id, selectedOptions]);
+
+  // 6. Look up line-item counts tied to this exact dynamic configuration
+  const activeVariantQuantity = useMemo(() => {
+    return cart.find((item: any) => {
+      const signature = item.cartItemId || (item.selectedOptions
+        ? `${item.id}-${Object.entries(item.selectedOptions).sort(([a], [b]) => a.localeCompare(b)).map(([cat, val]) => `${cat}:${val}`).join('-')}`
+        : item.id);
+      return signature === currentCartItemId;
+    })?.quantity || 0;
+  }, [cart, currentCartItemId]);
+
+  const currentImages = (product.images as ImageObj[])?.length 
+    ? (product.images as ImageObj[]) 
+    : [{ url: '/placeholder-image.png' }];
+  const currentImage = currentImages[mainIndex]?.url || (currentImages[mainIndex] as unknown as string);
+
+  // Context mutations passing configuration records directly downstream
+  const handleAddItem = () => {
+    addToCart({
+      ...product,
+      finalPrice: liveFinalPrice,
+      sellingPrice: liveSellingPrice,
+      cartItemId: currentCartItemId,
+      selectedOptions: { ...selectedOptions },
+    });
+  };
+
+  const handleSubtractItem = () => {
+    if (typeof decreaseQuantity === 'function') {
+      decreaseQuantity(currentCartItemId, selectedOptions);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FFFDF5] text-[#3D2B1F] selection:bg-[#D4AF37] selection:text-white">
@@ -61,10 +151,9 @@ export function ProductDetail({
       <main className="max-w-7xl mx-auto px-4 py-12 lg:py-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
           
-          {/* LEFT: PREMIUM GALLERY (Span 7) */}
+          {/* LEFT: PREMIUM GALLERY */}
           <div className="lg:col-span-7 space-y-8">
             <div className="relative group">
-              {/* Background Glow */}
               <div className="absolute inset-0 bg-[#D4AF37] opacity-10 blur-[100px] rounded-full" />
               
               <motion.div 
@@ -88,16 +177,14 @@ export function ProductDetail({
                       fill
                       className="object-cover"
                       priority
-                      onLoadingComplete={() => setMainLoaded(true)}
                     />
                   </motion.div>
                 </AnimatePresence>
 
-                {/* Overlays */}
                 <div className="absolute top-8 left-8 flex flex-col gap-3">
-                  {product.finalPrice && product.sellingPrice && product.sellingPrice > product.finalPrice && (
+                  {liveSellingPrice > liveFinalPrice && (
                     <div className="bg-[#E91E63] text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tighter">
-                      Save {Math.round(((product.sellingPrice - product.finalPrice) / product.sellingPrice) * 100)}%
+                      Save {Math.round(((liveSellingPrice - liveFinalPrice) / liveSellingPrice) * 100)}%
                     </div>
                   )}
                   <div className="bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-stone-100">
@@ -116,8 +203,8 @@ export function ProductDetail({
                   onClick={() => setMainIndex(idx)}
                   className={`relative w-24 h-24 rounded-2xl overflow-hidden transition-all duration-500 flex-shrink-0 ${
                     idx === mainIndex 
-                    ? 'ring-2 ring-[#D4AF37] ring-offset-4 scale-110 shadow-xl' 
-                    : 'opacity-50 grayscale hover:grayscale-0 hover:opacity-100'
+                      ? 'ring-2 ring-[#D4AF37] ring-offset-4 scale-110 shadow-xl' 
+                      : 'opacity-50 grayscale hover:grayscale-0 hover:opacity-100'
                   }`}
                 >
                   <Image src={img.url} alt="thumb" fill className="object-cover" loader={loader} />
@@ -126,20 +213,20 @@ export function ProductDetail({
             </div>
           </div>
 
-          {/* RIGHT: CONTENT (Span 5) */}
-          <div className="lg:col-span-5 flex flex-col justify-center space-y-10">
+          {/* RIGHT: CONTENT & OPTION VARIATION SELECTION */}
+          <div className="lg:col-span-5 flex flex-col justify-center space-y-8">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-[#D4AF37] font-sans font-bold text-xs uppercase tracking-[0.3em]">
                   {product.productCategory?.name || 'Luxury Collection'}
                 </span>
                 <div className="flex gap-2">
-                   <button className="p-3 bg-white rounded-full border border-stone-100 hover:text-[#E91E63] transition-colors shadow-sm">
-                      <HeartIcon className="h-4 w-4" />
-                   </button>
-                   <button className="p-3 bg-white rounded-full border border-stone-100 hover:text-[#D4AF37] transition-colors shadow-sm">
-                      <ShareIcon className="h-4 w-4" />
-                   </button>
+                  <button className="p-3 bg-white rounded-full border border-stone-100 hover:text-[#E91E63] transition-colors shadow-sm">
+                    <HeartIcon className="h-4 w-4" />
+                  </button>
+                  <button className="p-3 bg-white rounded-full border border-stone-100 hover:text-[#D4AF37] transition-colors shadow-sm">
+                    <ShareIcon className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
               
@@ -157,52 +244,97 @@ export function ProductDetail({
               </div>
             </div>
 
-            <div className="bg-white rounded-[2.5rem] p-8 shadow-[0_20px_50px_-10px_rgba(61,43,31,0.05)] border border-stone-100">
-               <div className="flex items-baseline gap-4 mb-8">
-                  <span className="text-5xl font-black tracking-tighter text-[#3D2B1F]">
-                    KSh {product.finalPrice?.toLocaleString()}
+            <div className="bg-white rounded-[2.5rem] p-8 shadow-[0_20px_50px_-10px_rgba(61,43,31,0.05)] border border-stone-100 space-y-8">
+              <div className="flex items-baseline gap-4">
+                <span className="text-5xl font-black tracking-tighter text-[#3D2B1F] tabular-nums">
+                  KSh {liveFinalPrice.toLocaleString()}
+                </span>
+                {liveSellingPrice > liveFinalPrice && (
+                  <span className="text-xl text-stone-300 line-through decoration-[#E91E63] tabular-nums">
+                    {liveSellingPrice.toLocaleString()}
                   </span>
-                  {product.sellingPrice && product.sellingPrice > (product.finalPrice || 0) && (
-                    <span className="text-xl text-stone-300 line-through decoration-[#E91E63]">
-                      {product.sellingPrice.toLocaleString()}
-                    </span>
-                  )}
-               </div>
+                )}
+              </div>
 
-               <p className="text-stone-500 font-serif italic text-lg leading-relaxed mb-10">
-                 {product.description || "A symphony of flavors handcrafted with the finest Kenyan ingredients. Perfect for celebrations that demand the extraordinary."}
-               </p>
+              <p className="text-stone-500 font-serif italic text-lg leading-relaxed">
+                {product.description || "A symphony of flavors handcrafted with the finest Kenyan ingredients. Perfect for celebrations that demand the extraordinary."}
+              </p>
 
-               {/* Interaction Block */}
-               <div className="space-y-4">
-                  {quantity > 0 ? (
-                    <div className="flex items-center bg-stone-50 rounded-3xl p-2 border border-stone-100">
-                      <button onClick={() => decreaseQuantity(product.id)} className="w-16 h-16 flex items-center justify-center bg-white rounded-2xl shadow-sm text-[#3D2B1F] hover:bg-[#3D2B1F] hover:text-white transition-all">
-                        <MinusIcon className="h-6 w-6" />
-                      </button>
-                      <div className="flex-1 text-center font-black text-2xl">{quantity}</div>
-                      <button onClick={addToCart} className="w-16 h-16 flex items-center justify-center bg-white rounded-2xl shadow-sm text-[#3D2B1F] hover:bg-[#3D2B1F] hover:text-white transition-all">
-                        <PlusIcon className="h-6 w-6" />
-                      </button>
+              {/* DYNAMIC VARIANT OPTION GRID */}
+              {Object.keys(groupedOptions).length > 0 && (
+                <div className="space-y-6 pt-2 border-t border-stone-100">
+                  {Object.entries(groupedOptions).map(([category, options]) => (
+                    <div key={category} className="space-y-3">
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 block">
+                        Select {category}
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {options.map((opt) => {
+                          const isSelected = selectedOptions[category] === opt.name;
+                          return (
+                            <button
+                              key={opt.name}
+                              onClick={() => setSelectedOptions(prev => ({ ...prev, [category]: opt.name }))}
+                              className={`px-5 py-3 rounded-2xl text-xs font-bold transition-all border duration-200 ${
+                                isSelected
+                                  ? 'bg-[#3D2B1F] text-white border-transparent shadow-md'
+                                  : 'bg-stone-50/60 text-stone-600 border-stone-200/60 hover:border-[#D4AF37] hover:bg-white'
+                              }`}
+                            >
+                              <span className="mr-1">{opt.name}</span>
+                              {opt.extraPrice && opt.extraPrice > 0 ? (
+                                <span className={`text-[10px] font-medium ${isSelected ? 'text-[#D4AF37]' : 'text-stone-400'}`}>
+                                  (+KSh {opt.extraPrice})
+                                </span>
+                              ) : null}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-                  ) : (
-                    <motion.button
-                      whileHover={{ scale: 1.02, translateY: -4 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={addToCart}
-                      className="w-full py-6 bg-[#3D2B1F] text-white rounded-[2rem] font-black font-sans uppercase tracking-widest flex items-center justify-center gap-4 shadow-2xl shadow-[#3D2B1F]/30 hover:bg-black transition-all"
+                  ))}
+                </div>
+              )}
+
+              {/* INTERACTION BLOCK */}
+              <div className="space-y-4 pt-4">
+                {activeVariantQuantity > 0 ? (
+                  <div className="flex items-center bg-stone-50 rounded-3xl p-2 border border-stone-100">
+                    <button 
+                      onClick={handleSubtractItem} 
+                      className="w-16 h-16 flex items-center justify-center bg-white rounded-2xl shadow-sm text-[#3D2B1F] hover:bg-[#3D2B1F] hover:text-white transition-all"
                     >
-                      <ShoppingBagIcon className="h-5 w-5 text-[#D4AF37]" />
-                      Reserve Your Cake
-                    </motion.button>
-                  )}
-                  
-                  <div className="flex items-center justify-center gap-6 pt-4 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">
-                    <span className="flex items-center gap-2 italic underline underline-offset-4 decoration-[#D4AF37]">Next Day Delivery</span>
-                    <span>•</span>
-                    <span className="flex items-center gap-2 italic">100% Halal</span>
+                      <MinusIcon className="h-6 w-6" />
+                    </button>
+                    <div className="flex-1 text-center font-black text-2xl tabular-nums">
+                      {activeVariantQuantity}
+                      <span className="block text-[9px] uppercase tracking-widest font-black text-[#D4AF37] mt-0.5">This Variant</span>
+                    </div>
+                    <button 
+                      onClick={handleAddItem} 
+                      className="w-16 h-16 flex items-center justify-center bg-white rounded-2xl shadow-sm text-[#3D2B1F] hover:bg-[#3D2B1F] hover:text-white transition-all"
+                    >
+                      <PlusIcon className="h-6 w-6" />
+                    </button>
                   </div>
-               </div>
+                ) : (
+                  <motion.button
+                    whileHover={{ scale: 1.02, translateY: -4 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleAddItem}
+                    className="w-full py-6 bg-[#3D2B1F] text-white rounded-[2rem] font-black font-sans uppercase tracking-widest flex items-center justify-center gap-4 shadow-2xl shadow-[#3D2B1F]/30 hover:bg-black transition-all"
+                  >
+                    <ShoppingBagIcon className="h-5 w-5 text-[#D4AF37]" />
+                    Add Variation to Cart
+                  </motion.button>
+                )}
+                
+                <div className="flex items-center justify-center gap-6 pt-4 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">
+                  <span className="flex items-center gap-2 italic underline underline-offset-4 decoration-[#D4AF37]">Next Day Delivery</span>
+                  <span>•</span>
+                  <span className="flex items-center gap-2 italic">100% Halal</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -245,18 +377,20 @@ export function ProductDetail({
               animate={{ scale: 1, opacity: 1 }}
               className="relative max-w-5xl w-full aspect-square"
             >
-              <Image src={currentImage || 'https://images.unsplash.com/photo-1559526324-402053c3f8e7?ixlib=rb-4.0.0&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&q=80'} alt="lightbox" fill className="object-contain" loader={() => currentImage} />
+              <Image src={currentImage} alt="lightbox" fill className="object-contain" loader={() => currentImage} />
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
       
-                <WhatsAppInquiry 
-                  productName={product.name}
-                  productPrice={product.finalPrice || product.sellingPrice || 0}
-                  productUrl={window.location.href}
-                  phoneNumber = "254712345678"
-                />
+      {mounted && (
+        <WhatsAppInquiry 
+          productName={`${product.name} (${Object.entries(selectedOptions).map(([k, v]) => `${k}: ${v}`).join(', ') || 'Standard Layout'})`}
+          productPrice={liveFinalPrice}
+          productUrl={window.location.href}
+          phoneNumber="254712345678"
+        />
+      )}
     </div>
   );
 }

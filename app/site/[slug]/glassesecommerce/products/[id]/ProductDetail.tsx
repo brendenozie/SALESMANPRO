@@ -35,9 +35,28 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
   const [showSpecs, setShowSpecs] = useState(false);
   const [selectedLens, setSelectedLens] = useState(LENS_OPTIONS[0]);
 
-  const quantity = useMemo(() => cart.find((c: any) => c.id === product.id)?.quantity || 0, [cart, product.id]);
+  // Track quantity for the currently active variant combination
+  const currentVariantQuantity = useMemo(() => {
+    return cart.find(
+      (item: any) => item.id === product.id && item.selectedLens?.id === selectedLens.id
+    )?.quantity || 0;
+  }, [cart, product.id, selectedLens.id]);
+
+  // Aggregate all configurations of this product currently in the selection list
+  const activeProductVariants = useMemo(() => {
+    return cart.filter((item: any) => item.id === product.id);
+  }, [cart, product.id]);
+
   const currentImages = (product.images as any[])?.length ? product.images : [{ url: '/placeholder-image.png' }];
   const totalPrice = (product.finalPrice || 0) + selectedLens.price;
+
+  // Build a distinct payload ensuring mutation checks read both properties
+  const variantPayload = {
+    ...product,
+    selectedLens,
+    // Add a unique identifier combining properties if context requires a fallback match key
+    customCartId: `${product.id}-${selectedLens.id}`
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0a] transition-colors duration-500 font-sans">
@@ -150,36 +169,50 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
                 <InformationCircleIcon className="w-4 h-4 text-zinc-300" />
               </div>
               <div className="space-y-3">
-                {LENS_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.id}
-                    onClick={() => setSelectedLens(opt)}
-                    className={`w-full group relative flex items-center p-5 rounded-[2rem] border transition-all duration-500 overflow-hidden ${
-                      selectedLens.id === opt.id 
-                      ? 'border-zinc-900 dark:border-white bg-zinc-900 dark:bg-white text-white dark:text-black shadow-xl shadow-zinc-200 dark:shadow-none translate-x-2' 
-                      : 'border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 hover:border-zinc-300 dark:hover:border-zinc-700'
-                    }`}
-                  >
-                    <div className={`p-2.5 rounded-2xl mr-4 transition-colors ${selectedLens.id === opt.id ? 'bg-white/10 dark:bg-black/10' : 'bg-white dark:bg-zinc-800 shadow-sm'}`}>
-                      {opt.icon}
-                    </div>
-                    <div className="flex-1 text-left">
-                      <p className="text-sm font-bold tracking-tight">{opt.name}</p>
-                      <p className={`text-[10px] font-medium leading-relaxed ${selectedLens.id === opt.id ? 'text-zinc-300 dark:text-zinc-500' : 'text-zinc-500'}`}>
-                        {opt.description}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <span className="text-xs font-black tracking-tighter">{opt.price === 0 ? 'INCL' : `+${opt.price}`}</span>
-                      {selectedLens.id === opt.id && <CheckIcon className="w-4 h-4" />}
-                    </div>
-                  </button>
-                ))}
+                {LENS_OPTIONS.map((opt) => {
+                  // Figure out if this specific option has been chosen already
+                  const optionQty = cart.find(
+                    (item: any) => item.id === product.id && item.selectedLens?.id === opt.id
+                  )?.quantity || 0;
+
+                  return (
+                    <button
+                      key={opt.id}
+                      onClick={() => setSelectedLens(opt)}
+                      className={`w-full group relative flex items-center p-5 rounded-[2rem] border transition-all duration-500 overflow-hidden ${
+                        selectedLens.id === opt.id 
+                        ? 'border-zinc-900 dark:border-white bg-zinc-900 dark:bg-white text-white dark:text-black shadow-xl shadow-zinc-200 dark:shadow-none translate-x-2' 
+                        : 'border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 hover:border-zinc-300 dark:hover:border-zinc-700'
+                      }`}
+                    >
+                      <div className={`p-2.5 rounded-2xl mr-4 transition-colors ${selectedLens.id === opt.id ? 'bg-white/10 dark:bg-black/10' : 'bg-white dark:bg-zinc-800 shadow-sm'}`}>
+                        {opt.icon}
+                      </div>
+                      <div className="flex-1 text-left">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-bold tracking-tight">{opt.name}</p>
+                          {optionQty > 0 && (
+                            <span className={`text-[9px] px-2 py-0.5 rounded-full font-black tracking-wide ${selectedLens.id === opt.id ? 'bg-white text-black' : 'bg-zinc-900 text-white dark:bg-white dark:text-black'}`}>
+                              {optionQty} Added
+                            </span>
+                          )}
+                        </div>
+                        <p className={`text-[10px] font-medium leading-relaxed ${selectedLens.id === opt.id ? 'text-zinc-300 dark:text-zinc-500' : 'text-zinc-500'}`}>
+                          {opt.description}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="text-xs font-black tracking-tighter">{opt.price === 0 ? 'INCL' : `+${opt.price}`}</span>
+                        {selectedLens.id === opt.id && <CheckIcon className="w-4 h-4" />}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </section>
 
             {/* CURATED FRAME COLOR */}
-            <section className="mb-16">
+            <section className="mb-12">
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-6">02. Frame Finish</h3>
               <div className="flex gap-4">
                 {currentImages.map((img: any, i: number) => (
@@ -196,19 +229,81 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
               </div>
             </section>
 
+            {/* SHOWCASE ACTIVE CONFIGURATIONS FOR THIS PRODUCT */}
+            <AnimatePresence>
+              {activeProductVariants.length > 0 && (
+                <motion.section 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="mb-12 p-5 bg-zinc-50 dark:bg-zinc-900/40 rounded-[2rem] border border-zinc-100 dark:border-zinc-800/60"
+                >
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-4 flex items-center justify-between">
+                    <span>Staged Configurations</span>
+                    <span className="text-blue-500 font-bold">{activeProductVariants.length} Active</span>
+                  </h3>
+                  <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                    {activeProductVariants.map((item: any, idx: number) => (
+                      <div key={idx} className="flex items-center justify-between text-xs bg-white dark:bg-zinc-900 p-3 rounded-xl border border-zinc-100 dark:border-zinc-800">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-blue-500" />
+                          <span className="font-medium dark:text-zinc-200">{item.selectedLens?.name || 'Base Config'}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-zinc-400 font-bold">Qty: {item.quantity}</span>
+                          <div className="flex gap-1">
+                            <button 
+                              onClick={() => decreaseQuantity(item)}
+                              className="p-1 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 rounded-md transition-colors"
+                            >
+                              <MinusIcon className="w-3 h-3 text-zinc-600 dark:text-zinc-400" />
+                            </button>
+                            <button 
+                              onClick={() => addToCart(item)}
+                              className="p-1 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 rounded-md transition-colors"
+                            >
+                              <PlusIcon className="w-3 h-3 text-zinc-600 dark:text-zinc-400" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.section>
+              )}
+            </AnimatePresence>
+
             {/* FLOATING ACTION AREA */}
             <footer className="sticky bottom-8 lg:static">
               <div className="p-2 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-100 dark:border-zinc-800 rounded-[2.5rem] shadow-2xl lg:shadow-none lg:bg-transparent lg:border-none lg:p-0">
                 <div className="flex gap-3">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => addToCart({ ...product, selectedLens })}
-                    className="flex-[4] h-16 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-[2rem] font-black uppercase text-[10px] tracking-[0.2em] flex items-center justify-center gap-3"
-                  >
-                    <ShoppingBagIcon className="w-5 h-5" />
-                    Reserve My Pair
-                  </motion.button>
+                  {currentVariantQuantity > 0 ? (
+                    <div className="flex-[4] h-16 bg-zinc-950 dark:bg-white text-white dark:text-black rounded-[2rem] flex items-center justify-between px-6 font-black uppercase text-[10px] tracking-[0.2em] shadow-xl">
+                      <button 
+                        onClick={() => decreaseQuantity(variantPayload)}
+                        className="w-10 h-10 rounded-full bg-white/10 dark:bg-black/5 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+                      >
+                        <MinusIcon className="w-4 h-4" />
+                      </button>
+                      <span className="text-sm tracking-widest">{currentVariantQuantity} Staged Pair{currentVariantQuantity > 1 ? 's' : ''}</span>
+                      <button 
+                        onClick={() => addToCart(variantPayload)}
+                        className="w-10 h-10 rounded-full bg-white/10 dark:bg-black/5 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+                      >
+                        <PlusIcon className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => addToCart(variantPayload)}
+                      className="flex-[4] h-16 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-[2rem] font-black uppercase text-[10px] tracking-[0.2em] flex items-center justify-center gap-3"
+                    >
+                      <ShoppingBagIcon className="w-5 h-5" />
+                      Reserve Configuration
+                    </motion.button>
+                  )}
                   
                   <button className="flex-1 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-[2rem] flex items-center justify-center group">
                     <EyeIcon className="w-6 h-6 text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
@@ -248,13 +343,12 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
         </div>
       </section>
 
-      
-                <WhatsAppInquiry 
-                  productName={product.name}
-                  productPrice={product.finalPrice || product.sellingPrice || 0}
-                  productUrl={window.location.href}
-                  phoneNumber = "254712345678"
-                />
+      <WhatsAppInquiry 
+        productName={`${product.name} (${selectedLens.name})`}
+        productPrice={totalPrice}
+        productUrl={typeof window !== 'undefined' ? window.location.href : ''}
+        phoneNumber="254712345678"
+      />
     </div>
   );
 }

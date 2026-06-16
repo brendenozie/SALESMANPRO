@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 'use client';
 
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,20 +19,115 @@ import { MarketListingForm } from '@/types/typings';
 import ProductCard from '@/components/site/layouts/EcommerceEarphonesLayout/body/components/ProductCard';
 import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
+type ImageObj = { url: string };
+
+interface VariantOption {
+  category: string;
+  name: string;
+  extraPrice?: number;
+}
+
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
 export function ProductDetail({ product, related }: { product: MarketListingForm; related: MarketListingForm[] }) {
   const { addToCart, decreaseQuantity, cart } = useStateContext();
   const [mainIndex, setMainIndex] = useState(0);
-  const [mainLoaded, setMainLoaded] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+  const [mounted, setMounted] = useState(false);
 
-  const primary = '#10B981'; // Emerald 500
-  const secondary = '#3B82F6'; // Blue 500
+  // Prevent window hydration boundary mismatches safely
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  const quantity = useMemo(() => cart.find((c: any) => c.id === product.id)?.quantity || 0, [cart, product.id]);
-  const currentImages = (product.images as any[])?.length ? product.images : [{ url: '/placeholder.png' }];
-  const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex] || '/placeholder.png';
+  // 1. Safely handle JSON arrays or structures from Prisma raw data
+  const normalizedOptions = useMemo<VariantOption[]>(() => {
+    if (!product.option) return [];
+    if (typeof product.option === 'string') {
+      try {
+        return JSON.parse(product.option);
+      } catch {
+        return [];
+      }
+    }
+    return product.option as unknown as VariantOption[];
+  }, [product.option]);
+
+  // 2. Classify option arrays into dynamic categorical groups
+  const groupedOptions = useMemo(() => {
+    const groups: Record<string, VariantOption[]> = {};
+    normalizedOptions.forEach((opt) => {
+      if (!groups[opt.category]) groups[opt.category] = [];
+      groups[opt.category].push(opt);
+    });
+    return groups;
+  }, [normalizedOptions]);
+
+  // 3. Set default configuration combinations based on the first variations available
+  useEffect(() => {
+    const initialSelection: Record<string, string> = {};
+    Object.entries(groupedOptions).forEach(([category, options]) => {
+      if (options.length > 0) {
+        initialSelection[category] = options[0].name;
+      }
+    });
+    setSelectedOptions(initialSelection);
+  }, [groupedOptions]);
+
+  // 4. Calculate dynamic price adjustments from active variants
+  const livePriceSurcharge = useMemo(() => {
+    let extra = 0;
+    Object.entries(selectedOptions).forEach(([category, selectedValue]) => {
+      const match = normalizedOptions.find(
+        (o) => o.category === category && o.name === selectedValue
+      );
+      if (match?.extraPrice) extra += match.extraPrice;
+    });
+    return extra;
+  }, [selectedOptions, normalizedOptions]);
+
+  const liveFinalPrice = (product.finalPrice || 0) + livePriceSurcharge;
+  const liveSellingPrice = (product.sellingPrice || 0) + livePriceSurcharge;
+
+  // 5. Generate a unique key identifier matching this specific product configuration
+  const currentCartItemId = useMemo(() => {
+    const optionSignature = Object.entries(selectedOptions)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([cat, val]) => `${cat}:${val}`)
+      .join('-');
+    return optionSignature ? `${product.id}-${optionSignature}` : product.id;
+  }, [product.id, selectedOptions]);
+
+  // 6. Look up line-item counts tied directly to this exact configuration key
+  const activeVariantQuantity = useMemo(() => {
+    return cart.find((item: any) => {
+      const signature = item.cartItemId || (item.selectedOptions
+        ? `${item.id}-${Object.entries(item.selectedOptions).sort(([a], [b]) => a.localeCompare(b)).map(([cat, val]) => `${cat}:${val}`).join('-')}`
+        : item.id);
+      return signature === currentCartItemId;
+    })?.quantity || 0;
+  }, [cart, currentCartItemId]);
+
+  const currentImages = (product.images as ImageObj[])?.length ? (product.images as ImageObj[]) : [{ url: '/placeholder.png' }];
+  const currentImage = currentImages[mainIndex]?.url || (currentImages[mainIndex] as unknown as string) || '/placeholder.png';
+
+  // State mutations passing configuration objects downstream to the central context
+  const handleAddItem = () => {
+    addToCart({
+      ...product,
+      finalPrice: liveFinalPrice,
+      sellingPrice: liveSellingPrice,
+      cartItemId: currentCartItemId,
+      selectedOptions: { ...selectedOptions },
+    });
+  };
+
+  const handleSubtractItem = () => {
+    if (typeof decreaseQuantity === 'function') {
+      decreaseQuantity(currentCartItemId, selectedOptions);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#050505] text-zinc-900 dark:text-zinc-100 font-sans selection:bg-emerald-500/30 ">
@@ -56,7 +151,6 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
           {/* LEFT: STUDIO VIEWPORT */}
           <div className="lg:col-span-7 space-y-6">
             <div className="relative aspect-square md:aspect-[4/3] bg-white dark:bg-zinc-900 rounded-[2.5rem] overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-2xl group">
-              {/* Dynamic Glow Background */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2/3 h-2/3 bg-emerald-500/10 blur-[120px] rounded-full" />
               
               <AnimatePresence mode="wait">
@@ -74,7 +168,7 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
                     loader={loader}
                     fill
                     className="object-contain p-8 md:p-16 drop-shadow-[0_20px_50px_rgba(0,0,0,0.15)]"
-                    onLoadingComplete={() => setMainLoaded(true)}
+                    priority
                   />
                 </motion.div>
               </AnimatePresence>
@@ -115,16 +209,52 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
               </h1>
               
               <div className="flex items-baseline gap-4 mt-6">
-                <span className="text-5xl font-black text-emerald-500 tracking-tighter">
-                  KSh {product.finalPrice?.toLocaleString()}
+                <span className="text-5xl font-black text-emerald-500 tracking-tighter tabular-nums">
+                  KSh {liveFinalPrice.toLocaleString()}
                 </span>
-                {product.sellingPrice > (product.finalPrice || 0) && (
-                  <span className="text-xl line-through text-zinc-400 font-medium">
-                    KSh {product.sellingPrice?.toLocaleString()}
+                {liveSellingPrice > liveFinalPrice && (
+                  <span className="text-xl line-through text-zinc-400 font-medium tabular-nums">
+                    KSh {liveSellingPrice.toLocaleString()}
                   </span>
                 )}
               </div>
             </div>
+
+            {/* DYNAMIC VARIANT OPTION CHOICE CELLS */}
+            {Object.keys(groupedOptions).length > 0 && (
+              <div className="p-8 bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-6">
+                {Object.entries(groupedOptions).map(([category, options]) => (
+                  <div key={category} className="space-y-3">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 block">
+                      Choose {category}
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {options.map((opt) => {
+                        const isSelected = selectedOptions[category] === opt.name;
+                        return (
+                          <button
+                            key={opt.name}
+                            onClick={() => setSelectedOptions(prev => ({ ...prev, [category]: opt.name }))}
+                            className={`px-4 py-3 rounded-xl text-xs font-bold transition-all border duration-200 ${
+                              isSelected
+                                ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-transparent shadow-md'
+                                : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:border-emerald-500'
+                            }`}
+                          >
+                            <span className="mr-1">{opt.name}</span>
+                            {opt.extraPrice && opt.extraPrice > 0 ? (
+                              <span className={`text-[10px] font-medium ${isSelected ? 'text-emerald-400' : 'text-zinc-400'}`}>
+                                (+KSh {opt.extraPrice})
+                              </span>
+                            ) : null}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Description Bento Cell */}
             <div className="p-8 bg-zinc-50 dark:bg-zinc-900/50 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800">
@@ -148,13 +278,16 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
             {/* CTA ACTION CENTER */}
             <div className="p-8 bg-zinc-900 dark:bg-emerald-500 rounded-[2.5rem] shadow-2xl shadow-emerald-500/20">
               <div className="flex items-center justify-between gap-6">
-                {quantity > 0 ? (
+                {activeVariantQuantity > 0 ? (
                   <div className="flex-1 flex items-center justify-between bg-white/10 backdrop-blur-md rounded-2xl p-2 border border-white/10">
-                    <button onClick={() => decreaseQuantity(product.id)} className="p-4 hover:bg-white/10 rounded-xl transition-colors">
+                    <button onClick={handleSubtractItem} className="p-4 hover:bg-white/10 rounded-xl transition-colors">
                       <MinusIcon className="w-6 h-6 text-white" />
                     </button>
-                    <span className="text-xl font-black text-white">{quantity}</span>
-                    <button onClick={() => addToCart(product)} className="p-4 hover:bg-white/10 rounded-xl transition-colors">
+                    <div className="text-center font-black text-white">
+                      <span className="text-xl block leading-none tabular-nums">{activeVariantQuantity}</span>
+                      <span className="text-[8px] uppercase tracking-widest text-white/60 mt-0.5 block font-black">This Configuration</span>
+                    </div>
+                    <button onClick={handleAddItem} className="p-4 hover:bg-white/10 rounded-xl transition-colors">
                       <PlusIcon className="w-6 h-6 text-white" />
                     </button>
                   </div>
@@ -162,11 +295,11 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => addToCart(product)}
-                    className="w-full py-6 bg-white text-zinc-900 dark:text-zinc-900 rounded-[2rem] font-black text-sm uppercase tracking-[0.2em] flex items-center justify-center gap-3 shadow-xl"
+                    onClick={handleAddItem}
+                    className="w-full py-6 bg-white text-zinc-900 rounded-[2rem] font-black text-sm uppercase tracking-[0.2em] flex items-center justify-center gap-3 shadow-xl"
                   >
-                    <ShoppingBagIcon className="w-5 h-5" />
-                    Add to Cart
+                    <ShoppingBagIcon className="w-5 h-5 text-emerald-500 dark:text-zinc-900" />
+                    Add Configuration To Cart
                   </motion.button>
                 )}
               </div>
@@ -176,24 +309,28 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
             </div>
           </div>
         </div>
-      </main>
 
-      {/* FOOTER RELATED SECTION (Minimal & Clean) */}
-      <section className="max-w-7xl mx-auto px-4 py-20 border-t border-zinc-200 dark:border-zinc-800">
-        <h2 className="text-2xl font-black mb-10">Complete your setup</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {related?.slice(0, 4).map((item) => (
-            <ProductCard product={item} />
-          ))}
-        </div>
-      </section>
+        {/* FOOTER RELATED SECTION */}
+        {related?.length > 0 && (
+          <section className="max-w-7xl mx-auto px-4 py-20 border-t border-zinc-200 dark:border-zinc-800 mt-20">
+            <h2 className="text-2xl font-black mb-10">Complete your setup</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {related.slice(0, 4).map((item) => (
+                <ProductCard key={item.id} product={item} />
+              ))}
+            </div>
+          </section>
+        )}
+      </main>
       
-      <WhatsAppInquiry 
-        productName={product.name}
-        productPrice={product.finalPrice || product.sellingPrice || 0}
-        productUrl={window.location.href}
-        phoneNumber = "254712345678"
-      />
+      {mounted && (
+        <WhatsAppInquiry 
+          productName={`${product.name} (${Object.entries(selectedOptions).map(([key, value]) => `${key}: ${value}`).join(', ') || 'Default Configuration'})`}
+          productPrice={liveFinalPrice}
+          productUrl={window.location.href}
+          phoneNumber="254712345678"
+        />
+      )}
     </div>
   );
 }
