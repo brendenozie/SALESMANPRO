@@ -66,7 +66,8 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
     return cart.filter((item: any) => item.id === product.id);
   }, [cart, product.id]);
 
-  const currentImages = (product.images as any[])?.length ? product.images : [{ url: '/placeholder-food.png' }];
+    const currentImages = product.images?.length ? product.images : ['https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80'];
+
   const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex];
 
   // Calculate distinct configuration price string

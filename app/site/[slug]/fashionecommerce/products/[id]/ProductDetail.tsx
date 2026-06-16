@@ -129,7 +129,8 @@ export function ProductDetail({
     ? (product.images as ImageObj[]) 
     : [{ url: 'https://via.placeholder.com/400x600' }];
   
-  const currentImage = currentImages[mainIndex]?.url;
+    const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex] || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80';
+
 
   const handleVariantQuantityIncrement = () => {
     const requiredCategoriesCount = Object.keys(groupedOptions).length;

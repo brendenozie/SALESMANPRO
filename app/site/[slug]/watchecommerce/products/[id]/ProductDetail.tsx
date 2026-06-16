@@ -84,7 +84,8 @@ export function ProductDetail({
     };
   }, [product, selectedOption]);
 
-  const currentImages = (product.images as ImageObj[])?.length ? (product.images as ImageObj[]) : [{ url: '/placeholder-image.png' }];
+  const currentImages = product.images?.length ? product.images : ['https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80'];
+
   const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex] || 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91';
 
   return (

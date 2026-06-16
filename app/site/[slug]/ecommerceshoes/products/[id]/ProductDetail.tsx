@@ -118,11 +118,13 @@ export default function ProductDetail({
 
   const quantity = matchingCartItem?.quantity || 0;
 
-  const currentImages = (product.images as ImageObj[])?.length 
-    ? (product.images as ImageObj[]) 
-    : [{ url: 'https://via.placeholder.com/600' }];
+  // const currentImages = (product.images)?.length 
+  //   ? (product.images) 
+  //   : [{'https://via.placeholder.com/600'];
     
-  const currentImage = currentImages[mainIndex]?.url;
+    const currentImages = product.images?.length ? product.images : ['https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80'];
+  const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex] || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80';
+
 
   const handleVariantQuantityIncrement = () => {
     const totalRequiredCategories = Object.keys(groupedOptions).length;
@@ -223,7 +225,7 @@ export default function ProductDetail({
                     : 'opacity-50 hover:opacity-100'
                 }`}
               >
-                <Image src={img.url} alt="Thumbnail context" loader={loader} fill className="object-cover" />
+                <Image src={img.url || img } alt="Thumbnail context" loader={loader} fill className="object-cover" />
               </button>
             ))}
           </div>

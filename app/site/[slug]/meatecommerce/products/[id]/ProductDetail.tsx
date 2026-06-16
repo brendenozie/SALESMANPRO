@@ -69,8 +69,9 @@ export function ProductDetail({
     return cart.filter((item: any) => item.id === product.id);
   }, [cart, product.id]);
 
-  const currentImages = (product.images as ImageObj[])?.length ? (product.images as ImageObj[]) : [{ url: '/placeholder.png' }];
-  const currentImage = currentImages[mainIndex]?.url || '/placeholder.png';
+    const currentImages = product.images?.length ? product.images : ['https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80'];
+
+  const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex] || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80';
 
   // Dynamic pricing calculation reflecting variant add-on costs
   const basePrice = product.finalPrice || product.sellingPrice || 0;

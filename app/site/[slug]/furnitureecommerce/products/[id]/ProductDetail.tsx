@@ -106,8 +106,10 @@ export function ProductDetail({
     decreaseQuantity(variationCartId);
   };
 
-  const currentImages = (product.images as ImageObj[])?.length ? (product.images as ImageObj[]) : [{ url: '/placeholder-image.png' }];
-  const currentImage = currentImages[mainIndex]?.url;
+      const currentImages = product.images?.length ? product.images : ['https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80'];
+
+    const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex] || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80';
+
 
   return (
     <div className="bg-[#fafaf9] dark:bg-stone-950 text-[#1c1917] dark:text-stone-100 min-h-screen font-sans selection:bg-stone-700 dark:selection:bg-stone-300 selection:text-white dark:selection:text-stone-950 antialiased transition-colors duration-300 pb-24 sm:pb-12">

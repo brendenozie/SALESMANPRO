@@ -36,8 +36,10 @@ export function ProductDetail({
   const [mainIndex, setMainIndex] = useState(0);
 
   const quantity = useMemo(() => cart.find((c: any) => c.id === product.id)?.quantity || 0, [cart, product.id]);
-  const currentImages = (product.images as any[])?.length ? product.images : [{ url: '/placeholder.png' }];
-  const currentImage = currentImages[mainIndex]?.url;
+    const currentImages = product.images?.length ? product.images : ['https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80'];
+
+    const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex] || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80';
+
 
   return (
     <div className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen pb-20 font-sans transition-colors duration-300">

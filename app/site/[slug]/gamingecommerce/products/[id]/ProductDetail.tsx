@@ -98,8 +98,9 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
     };
   }, [product, variantCartId, selectedOptions, currentVariantPrice]);
 
-  const currentImages = (product.images as any[]) || [{ url: '/placeholder.png' }];
-  const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex];
+    const currentImages = product.images?.length ? product.images : ['https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80'];
+
+  const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex] ||  ['https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80'];
 
   return (
     <div className="min-h-screen bg-[#030303] text-zinc-100 selection:bg-emerald-500/30 overflow-x-hidden">

@@ -160,7 +160,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
       >
         {/* Image Container Component Frame */}
         <div className="relative aspect-[4/5] w-full rounded-[2rem] overflow-hidden bg-slate-50 border border-slate-100 mb-6">
-          <Link href={`/products/${product.id}`} className="block w-full h-full">
+          <Link href={`/agrovetecommerce/products/${product.id}`} className="block w-full h-full">
             <Image
               src={product.images?.[0] || FALLBACK_IMAGE_URL}
               alt={product.name}

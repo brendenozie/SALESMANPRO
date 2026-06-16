@@ -31,8 +31,10 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
   const dark = '#09090B'; // Zinc 950
 
   const quantity = useMemo(() => cart.find((c: any) => c.id === product.id)?.quantity || 0, [cart, product.id]);
-  const currentImages = (product.images as any[])?.length ? product.images : [{ url: '/placeholder-bike.png' }];
-  const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex] || '/placeholder-bike.png';
+  const  currentImages = product.images?.length ? product.images : ['https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80'];
+
+  const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex] || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80';
+
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#050505] text-zinc-900 dark:text-zinc-100 selection:bg-red-500 selection:text-white">

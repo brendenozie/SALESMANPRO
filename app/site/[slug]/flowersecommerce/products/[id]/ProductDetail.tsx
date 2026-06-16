@@ -42,8 +42,9 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
   const accent = '#10B981'; // Stem Green
 
   const quantity = useMemo(() => cart.find((c: any) => c.id === product.id)?.quantity || 0, [cart, product.id]);
-  const currentImages = (product.images as any[]) || [{ url: '/placeholder.png' }];
-  const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex];
+    const currentImages = product.images?.length ? product.images : ['https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80'];
+
+  const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex] || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80';
 
   // Arrangement customizations
   const [size, setSize] = useState<'standard' | 'deluxe' | 'premium'>('standard');

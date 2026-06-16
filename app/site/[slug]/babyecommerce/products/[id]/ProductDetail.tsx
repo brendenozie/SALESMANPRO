@@ -112,8 +112,9 @@ export function ProductDetail({
     })?.quantity || 0;
   }, [cart, currentCartItemId]);
 
-  const currentImages = (product.images as any[])?.length ? product.images : [{ url: '/placeholder.png' }];
-  const currentImage = currentImages[mainIndex]?.url;
+    const currentImages = product.images?.length ? product.images : ['https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80'];
+
+  const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex] || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80';
 
   // Interceptors to pass complete line-item configuration payloads
   const handleAddItem = () => {

@@ -35,8 +35,10 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
 
   const accentColor = '#F97316'; // Heavy Hazard Orange
   const quantity = useMemo(() => cart.find((c: any) => c.id === product.id)?.quantity || 0, [cart, product.id]);
-  const currentImages = (product.images as any[])?.length ? product.images : [{ url: '/placeholder-moto.png' }];
-  const currentImage = currentImages[mainIndex]?.url;
+    const currentImages = product.images?.length ? product.images : ['https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80'];
+
+    const currentImage = currentImages[mainIndex]?.url || currentImages[mainIndex] || 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80';
+
 
   const [deposit, setDeposit] = useState((product.finalPrice || 0) * 0.3);
   const [months, setMonths] = useState(18);
