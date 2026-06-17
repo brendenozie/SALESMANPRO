@@ -24,6 +24,7 @@ export async function createOrder(data: any) {
     delivery,
     shippingMethod,
     companyId,
+    idempotencyKey,
   } = data;
 
   return await prisma.customerOrder.create({
@@ -39,7 +40,7 @@ export async function createOrder(data: any) {
       deliveryStatus,
       delivery: delivery ?? false,
       paymentOption,
-      paymentStatus: "PENDING",
+      paymentStatus: "INITIATED",
       totalPrice,
       totalTax: totalTax ?? 0,
       totalDiscount: totalDiscount ?? 0,
@@ -51,13 +52,14 @@ export async function createOrder(data: any) {
       notes,
       status,
       orderSource: "WEBSITE",
+      idempotencyKey,
 
       items: {
         create: items.map((item: any) => ({
           marketplaceListingId: item.marketplaceListingId,
           quantity: item.quantity,
           price: item.price,
-          date: item.date || null, 
+          date: item.date || null,
           timeSlot: item.timeSlot || null,
         })),
       },

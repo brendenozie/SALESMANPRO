@@ -105,6 +105,7 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
   const [discountRate, setDiscountRate] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+  const idempotencyKey = useMemo(() => `order-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -221,8 +222,7 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
     setSubmitError('');
 
     try {
-      const payload = {
-        
+      const payload = {        
         consumerId: session?.user?.id,
         companyId: storeFormData?.id,
         name: billing.name,
@@ -240,11 +240,13 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
         delivery: shipping.method !== 'AT SHOP',
         totalPrice: parseFloat(total.toFixed(2)),
         paymentData: {
-          cardNumber: (payment.cardNumber || '').replace(/\s/g, ''),
-          cardExpiry: payment.cardExpiry,
-          cvv: payment.cvv,
+          // cardNumber: (payment.cardNumber || '').replace(/\s/g, ''),
+          // cardExpiry: payment.cardExpiry,
+          // cvv: payment.cvv,
           mpesaPhone: payment.mpesaPhone,
         },
+        initialUrl: `${window.location.origin}`,
+        idempotencyKey: idempotencyKey,
       };
 
       const res = await fetch(`/api/shop/orders`, {

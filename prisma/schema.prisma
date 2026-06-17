@@ -1061,7 +1061,7 @@ model Product {
   @@index([isFeatured, status])
   @@index([isNewArrival, createdAt])
   @@index([listingMarketStatus, active])
-  @@index([listingSystemStatus])  
+  @@index([listingSystemStatus])
   @@index([companyId, listingTransactionType, isFeatured, createdAt])
   @@index([companyId, listingTransactionType, finalPrice])
 }
@@ -1129,6 +1129,7 @@ model PropertyType {
 
 enum PaymentStatus {
   PENDING
+  INITIATED
   COMPLETED
   FAILED
   REFUNDED
@@ -2620,6 +2621,7 @@ model CustomerOrder {
   updatedAt             DateTime?   @updatedAt
   deletedAt             DateTime?
   Payment               Payment[]
+  idempotencyKey        String? // Unique key for idempotent order creation
 
   Company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId
@@ -2638,6 +2640,12 @@ model CustomerOrder {
   @@index([companyId])
   @@index([status])
   @@index([email])
+  @@index([paymentStatus])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@index([orderSource])
+  @@index([deliveryId])
+  @@index([idempotencyKey])
 }
 
 model OrderItem {

@@ -47,9 +47,20 @@ const orderSchema = z.object({
   mpesaPhone: z.string().optional(),
   consumerId: z.string().min(1),
   paymentOption: z
-    .enum(["cod", "pickupatshop", "mpesa", "card", "paystack", "ghuba", "stripe", "paypal"])
+    .enum([
+      "cod",
+      "pickupatshop",
+      "mpesa",
+      "card",
+      "paystack",
+      "ghuba",
+      "stripe",
+      "paypal",
+    ])
     .default("cod"),
-  items: z.array(orderItemSchema).min(1, "Order must contain at least one item"),
+  items: z
+    .array(orderItemSchema)
+    .min(1, "Order must contain at least one item"),
   trackingNumber: z.string().optional(),
   totalPrice: z.number().positive(),
   totalFinalPrice: z.number().optional(),
@@ -57,6 +68,8 @@ const orderSchema = z.object({
   shippingMethod: z.string().optional(),
   companyId: z.string().min(1, "Company ID is required"),
   paymentData: z.record(z.string(), z.any()).optional(),
+  initialUrl: z.string().url().optional(), // Optional initial URL for payment gateways that support it
+  idempotencyKey: z.string().uuid().optional(),
 });
 
 // ---------------------------
@@ -84,6 +97,16 @@ export const POST = withApiHandler(
         return formatResponse(false, null, `Validation failed: ${errorMessages}`, 400);
       }
 
+      if(parsed.data.idempotencyKey) {
+        const existingOrder = await prisma.customerOrder.findFirst({
+          where: { idempotencyKey: parsed.data.idempotencyKey },
+        });
+
+        if (existingOrder) {
+          return formatResponse(false, null, 'Order with this idempotency key already exists', 409);
+        }
+      }
+
       const data = parsed.data;
       const trackingNumber = data.trackingNumber ?? generateTrackingNumber();
 
@@ -102,10 +125,11 @@ export const POST = withApiHandler(
         phone: data.phone,
         promoCode: data.paymentData?.promoCode ?? undefined,
         trackingNumber,
-        deliveryStatus: "Order Placed",
+        deliveryStatus: "Pending",
         delivery: false,
         notes: data.paymentData?.notes ?? undefined,
         companyId: data.companyId,
+        idempotencyKey: data.idempotencyKey,
       });
 
       // 2. Retrieve Tenant Payment Configurations
