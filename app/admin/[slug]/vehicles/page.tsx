@@ -165,6 +165,10 @@ export default function VehicleManagementPage() {
     fetchVehicles();
   }, [fetchVehicles]);
 
+  const refreshData = useCallback(() => {
+    fetchVehicles();
+  }, [fetchVehicles]);
+
   // --- CRUD Operations ---
   const handleSaveVehicle = useCallback((vehicleToSave: MarketListingForm) => {
     setVehicles(prevVehicles => {
@@ -525,8 +529,9 @@ export default function VehicleManagementPage() {
           categories={categories ?? []}
           companyId={companyId?.toString() || ''}
           locations={locations ?? []}
-          marketListItem={selectedVehicle}
-          // onSave={handleSaveVehicle}
+          marketListItem={selectedVehicle} 
+          refreshInventory={refreshData}        
+            // onSave={handleSaveVehicle}
         />
       )}
 

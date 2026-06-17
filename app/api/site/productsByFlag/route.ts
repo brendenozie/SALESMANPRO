@@ -16,7 +16,7 @@ const CORS_HEADERS = {
 function withCors(
   json: any,
   status = 200,
-  extraHeaders: Record<string, string> = {}
+  extraHeaders: Record<string, string> = {},
 ) {
   return new NextResponse(JSON.stringify(json), {
     status,
@@ -45,7 +45,7 @@ const flagMap: Record<string, any> = {
 };
 
 /* ---------------------------------------------
-   Cached Query (PURE FUNCTION)
+   Cached Query (FIXED: Uses serialized string instead of URLSearchParams object)
 ---------------------------------------------- */
 const getProductsByFlag = unstable_cache(
   async ({
@@ -53,80 +53,134 @@ const getProductsByFlag = unstable_cache(
     flag,
     limit,
     page,
-    searchParams,
+    queryString,
   }: {
     companyId: string;
     flag: string;
     limit: number;
     page: number;
-    searchParams: URLSearchParams;
+    queryString: string;
   }) => {
     const skip = (page - 1) * limit;
+    const searchParams = new URLSearchParams(queryString);
 
-    const where: any = {
-      companyId,
-      status: "ACTIVE",
-      showOnGhuba: true,
-      ghubaStatus: "APPROVED",
-      ...(flagMap[flag] || {}),
+    // Core base filters
+    const buildWhereClause = (includeTransactionType = true) => {
+      const where: any = {
+        companyId,
+        // status: "ACTIVE",
+        // showOnGhuba: true,
+        // ghubaStatus: "APPROVED",
+        ...(flagMap[flag] || {}),
+      };
+
+      /* ---------- Transaction Type Filter with Fallback capability ---------- */
+      const transactionType = searchParams.get("transactionType");
+      if (
+        includeTransactionType &&
+        transactionType &&
+        ["SALE", "RENT"].includes(transactionType)
+      ) {
+        where.listingTransactionType = transactionType;
+      }
+
+      const fuelType = searchParams.get("fuelType");
+      if (fuelType) where.fuelType = fuelType;
+
+      const transmission = searchParams.get("transmission");
+      if (transmission) where.transmission = transmission;
+
+      const minPrice = Number(searchParams.get("minPrice"));
+      const maxPrice = Number(searchParams.get("maxPrice"));
+
+      if (!isNaN(minPrice) || !isNaN(maxPrice)) {
+        where.finalPrice = {};
+        if (!isNaN(minPrice)) where.finalPrice.gte = minPrice;
+        if (!isNaN(maxPrice)) where.finalPrice.lte = maxPrice;
+      }
+
+      const keywords = searchParams.get("keywords");
+      if (keywords) {
+        where.OR = [
+          { name: { contains: keywords, mode: "insensitive" } },
+          { brand: { contains: keywords, mode: "insensitive" } },
+          { make: { contains: keywords, mode: "insensitive" } },
+        ];
+      }
+
+      return where;
     };
 
-    /* ---------- Filters ---------- */
-    // const transactionType = searchParams.get("transactionType");
-    // if (transactionType && ["SALE", "RENT"].includes(transactionType)) {
-    //   where.listingTransactionType = transactionType;
-    // }
+    // const selectFields = {
+    //   id: true,
+    //   name: true,
+    //   description: true,
+    //   sellingPrice: true,
+    //   finalPrice: true,
+    //   brand: true,
+    //   images: true,
+    //   isFeatured: true,
+    //   isOnOffer: true,
+    //   isDiscounted: true,
+    //   isFlashDeal: true,
+    //   isNewArrival: true,
+    //   providerRating: true,
+    //   option: true,
+    // };
+    
+    const selectFields = {
+      id: true,
+      name: true,
+      description: true,
+      sellingPrice: true,
+      finalPrice: true,
+      brand: true,
+      images: true,
+      isFeatured: true,
+      isOnOffer: true,
+      isDiscounted: true,
+      isFlashDeal: true,
+      isNewArrival: true,
+      providerRating: true,
+      option: true,
 
-    const fuelType = searchParams.get("fuelType");
-    if (fuelType) where.fuelType = fuelType;
+      // --- Automotive Specific Additions ---
+      listingTransactionType: true, // Crucial for frontend verification
+      make: true,
+      year: true,
+      mileage: true,
+      transmission: true,
+      fuelType: true,
+      locationName: true, // Or location { select: { name: true } } if using relations
+    };
 
-    const transmission = searchParams.get("transmission");
-    if (transmission) where.transmission = transmission;
-
-    const minPrice = Number(searchParams.get("minPrice"));
-    const maxPrice = Number(searchParams.get("maxPrice"));
-
-    if (!isNaN(minPrice) || !isNaN(maxPrice)) {
-      where.finalPrice = {};
-      if (!isNaN(minPrice)) where.finalPrice.gte = minPrice;
-      if (!isNaN(maxPrice)) where.finalPrice.lte = maxPrice;
-    }
-
-    const keywords = searchParams.get("keywords");
-    if (keywords) {
-      where.OR = [
-        { name: { contains: keywords, mode: "insensitive" } },
-        { brand: { contains: keywords, mode: "insensitive" } },
-        { make: { contains: keywords, mode: "insensitive" } },
-      ];
-    }
-
-    /* ---------- Query ---------- */
-    const [items, total] = await Promise.all([
+    // 1st Attempt: Search with the transactionType status
+    let where = buildWhereClause(true);
+    let [items, total] = await Promise.all([
       prisma.marketplaceListings.findMany({
         where,
         take: limit,
         skip,
         orderBy: { createdAt: "desc" },
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          sellingPrice: true,
-          finalPrice: true,
-          brand: true,
-          images: true,
-          isFeatured: true,
-          isOnOffer: true,
-          isDiscounted: true,
-          isFlashDeal: true,
-          isNewArrival: true,
-          providerRating: true,
-          option: true,
-        },
+        select: selectFields,
       }),
       prisma.marketplaceListings.count({ where }),
     ]);
+
+    // 2nd Attempt Fallback: If no strict buy/rent status items match, show whatever is available
+    if (items.length === 0) {
+      where = buildWhereClause(false); // builds where clause ignoring transactionType
+      [items, total] = await Promise.all([
+        prisma.marketplaceListings.findMany({
+          where,
+          take: limit,
+          skip,
+          orderBy: { createdAt: "desc" },
+          select: selectFields,
+        }),
+        prisma.marketplaceListings.count({ where }),
+      ]);
+    }
 
     return {
       data: items,
@@ -142,7 +196,7 @@ const getProductsByFlag = unstable_cache(
   {
     revalidate: 60,
     tags: ["products-by-flag"],
-  }
+  },
 );
 
 /* ---------------------------------------------
@@ -161,9 +215,10 @@ export async function GET(request: Request) {
     const limit = Math.min(Number(searchParams.get("limit") || 8), 50);
     const page = Math.max(Number(searchParams.get("page") || 1), 1);
 
-    /* ---------- External Cache ---------- */
-    const cacheKey = `shop:products:${companyId}:${flag}:${page}:${limit}:${searchParams.toString()}`;
+    const queryString = searchParams.toString();
+    const cacheKey = `shop:products:${companyId}:${flag}:${page}:${limit}:${queryString}`;
 
+    // External Cache check
     const cached = await cacheGet(cacheKey);
     if (cached) return withCors(cached);
 
@@ -172,7 +227,7 @@ export async function GET(request: Request) {
       flag,
       limit,
       page,
-      searchParams,
+      queryString, // passing safe string instead of object instance
     });
 
     await cacheSet(cacheKey, result, 300);
@@ -184,7 +239,7 @@ export async function GET(request: Request) {
     console.error("Products fetch error:", error);
     return withCors(
       { error: "Failed to load products", detail: error.message },
-      500
+      500,
     );
   }
 }
