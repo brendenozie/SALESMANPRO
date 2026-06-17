@@ -8,9 +8,23 @@ import { initiatePaystackPayment as initiateGhubaPayment } from "@/lib/payments/
 import { initiateStripePaymentIntent } from "@/lib/paymentsv2/stripe";
 import { createPaypalOrder } from "@/lib/paymentsv2/paypal";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 export async function POST(req: Request) {
+  let body: any;
+
   try {
-    const body = await req.json();
+    body = await req.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid or missing request body" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    // const body = await req.json();
     const { eventId, buyer, tickets, paymentMethod, companyId } = body;
 
     // 1. Core payload validations
