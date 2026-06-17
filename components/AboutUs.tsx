@@ -127,7 +127,7 @@ export default function AboutUs() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
-          className="space-y-8 order-2 lg:order-1"
+          className="space-y-8 order-1 lg:order-2"
         >
           <motion.h2
             variants={itemVariants}
@@ -194,7 +194,7 @@ export default function AboutUs() {
           onMouseLeave={handleMouseLeave}
           style={{ perspective: "1200px" }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative flex justify-center items-center order-1 lg:order-2"
+          className="relative flex justify-center items-center order-2 lg:order-1"
         >
           <motion.div
             className="relative w-full max-w-md lg:max-w-lg"

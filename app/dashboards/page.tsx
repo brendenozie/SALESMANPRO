@@ -146,7 +146,7 @@ export default function WelcomePage() {
       color: "text-purple-600 dark:text-purple-400",
       bg: "bg-purple-50 dark:bg-purple-950/30",
       border: "hover:border-purple-500/30",
-      href: "/#",
+      href: "#",
     },
     {
       title: "System Config",
@@ -155,7 +155,7 @@ export default function WelcomePage() {
       color: "text-amber-600 dark:text-amber-400",
       bg: "bg-amber-50 dark:bg-amber-950/30",
       border: "hover:border-amber-500/30",
-      href: "/#",
+      href: "#",
     },
   ];
 
