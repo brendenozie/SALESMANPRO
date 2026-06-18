@@ -150,7 +150,7 @@ export const POST = withApiHandler(
           break;
         }
         case "paystack": {
-          paymentResponse = await initiatePaystackPayment(orderDb, data.email, cfg.credentials);
+          paymentResponse = await initiatePaystackPayment(orderDb, data.email, cfg.credentials, "");
           break;
         }
         case "ghuba": {

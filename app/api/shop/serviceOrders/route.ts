@@ -160,7 +160,7 @@ export async function POST(req: Request) {
         break;
       }
       case "paystack":
-        paymentResponse = await initiatePaystackPayment(orderDb, data.email, cfg.credentials);
+        paymentResponse = await initiatePaystackPayment(orderDb, data.email, cfg.credentials, "");
         break;
       case "ghuba":
         // paymentResponse = await initiateGhubaPayment(orderDb, cfg.credentials);
