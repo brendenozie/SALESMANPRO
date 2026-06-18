@@ -27,7 +27,7 @@ export async function POST(req: Request, { params }: { params: { gateway: string
         return NextResponse.json({ success: true, provider: "mpesa", response: resp });
       }
       case "paystack": {
-        const resp = await initiatePaystackPayment(order, email, cfg.credentials);
+        const resp = await initiatePaystackPayment(order, email, cfg.credentials, "");
         return NextResponse.json({ success: true, provider: "paystack", response: resp });
       }
       case "stripe": {
