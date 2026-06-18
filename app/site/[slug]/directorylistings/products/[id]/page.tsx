@@ -26,7 +26,7 @@ export default async function ProductPage({ params }: PageProps) {
   const { slug, productId } = await params;
 
   // Fetch store data
-  const rawStore = = await findCompanyCached(slug, "lean");
+  const rawStore = await findCompanyCached(slug, "lean");
   if (!rawStore) notFound();
 
   // Fetch product and related items
