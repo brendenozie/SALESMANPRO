@@ -1,5 +1,4 @@
 // app/[slug]/products/[productId]/page.tsx
-"use client";
 
 import React from 'react';
 import { notFound } from 'next/navigation';
