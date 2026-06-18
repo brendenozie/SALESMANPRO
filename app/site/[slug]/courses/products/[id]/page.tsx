@@ -1,6 +1,4 @@
 // app/[slug]/products/[productId]/page.tsx
-"use client";
-
 import React from 'react';
 import { notFound } from 'next/navigation';
 import prisma from '@/server/db/prismadb'; // This import is for server-side
