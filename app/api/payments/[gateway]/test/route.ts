@@ -3,9 +3,27 @@ import { NextResponse } from "next/server";
 import { getCompanyPaymentConfig } from "@/lib/paymentsv2/index";
 import { getCompanyPaymentConfig as _noop } from "@/lib/paymentsv2/index"; // keep import lint happy
 
-export async function POST(req: Request, { params }: { params: { gateway: string } }) {
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export async function POST(
+  req: Request,
+  { params }: { params: { gateway: string } },
+) {
+  let body: any;
+
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json(
+      { success: false, error: "Invalid or missing request body" },
+      { status: 400 },
+    );
+  }
+// export async function POST(req: Request, { params }: { params: { gateway: string } }) {
   const { gateway } = params;
-  const body = await req.json().catch(() => ({}));
+//   const body = await req.json().catch(() => ({}));
   const companyId = body.companyId;
 
   try {
