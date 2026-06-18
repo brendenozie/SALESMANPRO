@@ -1,11 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CheckCircleIcon, SparklesIcon, RocketLaunchIcon, CubeTransparentIcon, ClockIcon } from '@heroicons/react/24/solid';
+import { CheckIcon, SparklesIcon, RocketLaunchIcon, CubeIcon, CalendarIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PricingTier } from '@/types/typings';
 
-// Placeholder for default pricing plans (reusing the existing structure)
 const defaultPricingPlans: Array<{
   name: string;
   price: number;
@@ -14,7 +13,7 @@ const defaultPricingPlans: Array<{
   isFeatured: boolean;
   frequency: 'Monthly' | 'Yearly' | 'One-time';
   badge?: string;
-  icon: React.ReactNode;
+  icon: React.ComponentType<{ className?: string }>;
 }> = [
   {
     name: 'Standard',
@@ -23,7 +22,7 @@ const defaultPricingPlans: Array<{
     features: ['Dusting & Wiping Surfaces', 'Vacuuming & Mopping Floors', 'Bathroom Sanitization', 'Kitchen Countertop Wipe Down'],
     isFeatured: false,
     frequency: 'Monthly',
-    icon: <CubeTransparentIcon />,
+    icon: CubeIcon,
   },
   {
     name: 'Deep Clean Pro',
@@ -33,7 +32,7 @@ const defaultPricingPlans: Array<{
     isFeatured: true,
     frequency: 'Monthly',
     badge: 'Best Value',
-    icon: <SparklesIcon />,
+    icon: SparklesIcon,
   },
   {
     name: 'Move-In/Out',
@@ -42,226 +41,253 @@ const defaultPricingPlans: Array<{
     features: ['Deep Clean Pro Features', 'Inside Cabinets & Drawers', 'Grout Cleaning', 'Post-Construction Cleanup (light)', '24/7 Support'],
     isFeatured: false,
     frequency: 'One-time',
-    icon: <RocketLaunchIcon />,
+    icon: RocketLaunchIcon,
   },
 ];
 
 interface PricingSectionProps {
   pricingTiers?: PricingTier[];
-  themeSettings?: any;
+  themeSettings?: {
+    primaryColor?: string;
+    secondaryColor?: string;
+  };
 }
 
 export default function PricingSectionLight({ pricingTiers, themeSettings }: PricingSectionProps) {
-  const [billingCycle, setBillingCycle] = useState<'Monthly' | 'Yearly' | 'One-time'>('Monthly');
-
-  // --- THEME COLORS ---
-  const primaryColor = themeSettings?.primaryColor || '#4CAF50'; 
+  const primaryColor = themeSettings?.primaryColor || '#4CAF50';
   const secondaryColor = themeSettings?.secondaryColor || '#FFC107';
 
   const allPlans = pricingTiers && pricingTiers.length > 0 ? pricingTiers : defaultPricingPlans;
 
-  const availableCycles = Array.from(new Set(allPlans.map(p => p.frequency).filter(Boolean))) as ('Monthly' | 'Yearly' | 'One-time')[];
+  // Extract valid frequencies
+  const availableCycles = Array.from(
+    new Set(allPlans.map((p) => p.frequency).filter(Boolean))
+  ) as ('Monthly' | 'Yearly' | 'One-time')[];
 
-  const currentPricingPlans = allPlans.filter(
-    (plan) => plan.frequency === billingCycle || (!plan.frequency && billingCycle === 'One-time') || (!plan.frequency && billingCycle === 'Monthly') || (!plan.frequency && billingCycle === 'Yearly') || billingCycle === 'One-time'
+  // Set initial state safely based on what cycles actually exist
+  const [billingCycle, setBillingCycle] = useState<'Monthly' | 'Yearly' | 'One-time'>(
+    availableCycles.includes('Monthly') ? 'Monthly' : availableCycles[0] || 'Monthly'
   );
 
-  // --- ANIMATION VARIANTS (Adapted for light mode shadows/elevation) ---
-  const sectionVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut", staggerChildren: 0.1 } },
-  };
+  // Filter current plans securely
+  const currentPricingPlans = allPlans.filter((plan) => {
+    if (!plan.frequency) return billingCycle === 'Monthly';
+    return plan.frequency === billingCycle;
+  });
 
-  const cardVariants = {
-    hidden: { opacity: 0, scale: 0.95 },
-    visible: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 100, damping: 15 } },
-    hover: { y: -8, boxShadow: "0 25px 50px rgba(0,0,0,0.15)" }, // Lighter shadow for light mode
-  };
-
-  const PricingCard = ({ plan, index }: { plan: PricingTier | typeof defaultPricingPlans[0], index: number }) => {
-    const resolvedIcon = (plan as any).icon ?? <CubeTransparentIcon />;
-
-    return (
-      <motion.div
-        key={plan.name || index}
-        className={`relative p-8 rounded-3xl shadow-lg transition-all duration-300 flex flex-col h-full 
-          ${plan.isFeatured
-            ? 'bg-gray-50 text-gray-900 border-4 border-transparent z-20'
-            : 'bg-white text-gray-900 border border-gray-200 z-10'
-          }`}
-        variants={cardVariants}
-        whileHover="hover"
-        viewport={{ once: true }}
-      >
-          {/* --- FEATURED CARD PRISM EFFECT (Primary color background, white card) --- */}
-          {plan.isFeatured && (
-            <div
-              className="absolute inset-0 rounded-3xl -z-10"
-              // Dynamic Gradient Border (Prism Effect)
-              style={{ 
-                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, 
-                padding: '3px',
-              }}
-            >
-              <div className="absolute inset-0 bg-white rounded-[calc(1.5rem-2px)]" /> 
-            </div>
-          )}
-            
-          {/* Badge */}
-          {plan.isFeatured && (
-            <div
-              className="absolute -top-4 left-1/2 transform -translate-x-1/2 px-5 py-2 rounded-full font-bold text-sm uppercase tracking-wide shadow-md"
-              style={{ backgroundColor: primaryColor, color: 'white' }}
-            >
-              {plan.badge || 'Most Popular'}
-            </div>
-          )}
-
-          {/* Top Section: Icon, Name, Description */}
-          <div className="flex flex-col items-center mb-6">
-            <div
-              className={`w-16 h-16 mx-auto mb-4 rounded-xl flex items-center justify-center p-3`}
-              style={{ backgroundColor: plan.isFeatured ? secondaryColor : primaryColor }}
-            >
-              <div className="w-8 h-8 text-white">
-                {resolvedIcon}
-              </div>
-            </div>
-
-            <h3 className="text-3xl font-extrabold mb-1">{plan.name}</h3>
-            <p className={`text-center text-sm ${plan.isFeatured ? 'text-gray-500' : 'text-gray-500'}`}>
-              {plan.description || "A flexible plan designed to meet your specific needs."}
-            </p>
-          </div>
-
-          {/* Price */}
-          <div className="text-center mb-8">
-            <p className="text-6xl font-black mb-1 text-gray-900">
-              {plan.price.toFixed(0)}
-            </p>
-            <span className="text-lg font-semibold uppercase tracking-wider text-gray-500">
-              {plan.frequency ? `/ ${plan.frequency}` : '/ service'}
-            </span>
-          </div>
-
-          <div className="h-px w-full mx-auto mb-8 bg-gray-200" />
-
-          {/* Features List */}
-          <ul className="mt-2 space-y-4 text-left w-full flex-grow text-gray-700">
-            <AnimatePresence mode="wait">
-              {plan.features?.map((feature, i) => (
-                <motion.li 
-                  key={i} 
-                  className="flex items-start gap-3"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.3, delay: i * 0.05 }}
-                >
-                  <CheckCircleIcon
-                    className={`w-6 h-6 flex-shrink-0 mt-0.5`}
-                    style={{ color: primaryColor }}
-                  />
-                  <span>{feature}</span>
-                </motion.li>
-              ))}
-            </AnimatePresence>
-          </ul>
-
-          {/* Button */}
-          <button
-            className={`mt-12 px-8 py-4 w-full rounded-full text-lg font-bold shadow-xl transition-all duration-300 transform hover:scale-[1.03] focus:outline-none focus:ring-4 focus:ring-opacity-50  `}
-            style={{
-              backgroundColor: plan.isFeatured ? primaryColor : secondaryColor,
-              '--tw-ring-color': primaryColor,
-              'color': plan.isFeatured ? 'white' : 'black',
-            } as React.CSSProperties}
-          >
-            Select Plan
-          </button>
-      </motion.div>
-    );
+  // Dynamic Hex transparency helpers
+  const hexToRgba = (hex: string, alpha: number) => {
+    const cleanHex = hex.replace('#', '');
+    const r = parseInt(cleanHex.substring(0, 2), 16);
+    const g = parseInt(cleanHex.substring(2, 4), 16);
+    const b = parseInt(cleanHex.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   };
 
   return (
-    <section 
-      id="packages" 
-      className="bg-white py-20 lg:py-32 px-4 text-center text-gray-900 relative overflow-hidden"
-    >
-      {/* Subtle Background Element (Very light, almost white) */}
+    <section id="packages" className="relative bg-slate-50 dark:bg-slate-900 py-24 lg:py-32 px-4 overflow-hidden">
+      {/* Background Ambient Spotlights */}
       <div 
-        className="absolute top-0 left-0 w-full h-[300px] opacity-10"
-        style={{ background: `linear-gradient(135deg, ${primaryColor}10 0%, #fff 70%)` }}
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] pointer-events-none opacity-30 blur-[120px] -z-10"
+        style={{
+          background: `radial-gradient(100% 100% at 50% 0%, ${hexToRgba(primaryColor, 0.15)} 0%, transparent 80%)`
+        }}
+      />
+      <div 
+        className="absolute bottom-0 right-0 w-[400px] h-[400px] pointer-events-none opacity-20 blur-[100px] -z-10"
+        style={{
+          background: `radial-gradient(circle, ${hexToRgba(secondaryColor, 0.2)} 0%, transparent 70%)`
+        }}
       />
 
-      <motion.div
-        className="max-w-7xl mx-auto relative z-10"
-        initial="hidden"
-        whileInView="visible"
-        variants={sectionVariants}
-        viewport={{ once: true, amount: 0.3 }}
-      >
+      <div className="max-w-7xl mx-auto relative z-10">
         {/* --- HEADER --- */}
-        <motion.h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4" variants={sectionVariants}>
-          Choose Your <span >Perfect Plan</span>
-        </motion.h2>
-        <motion.p className="text-lg sm:text-xl text-gray-600 mb-12 max-w-2xl mx-auto" variants={sectionVariants}>
-          Select the frequency and package that brings the most value to your space.
-        </motion.p>
-        
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-semibold tracking-wider uppercase mb-4"
+            style={{ borderColor: hexToRgba(primaryColor, 0.3), color: primaryColor, backgroundColor: hexToRgba(primaryColor, 0.05) }}
+          >
+            <SparklesIcon className="w-3.5 h-3.5" /> Pricing Plans
+          </motion.div>
+          
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mb-4"
+          >
+            Transparent plans for <span className="bg-clip-text text-transparent" style={{ backgroundColor: primaryColor }}>every space</span>
+          </motion.h2>
+          
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="text-lg text-slate-600 max-w-2xl mx-auto"
+          >
+            Choose the cleaning frequency and scope that aligns perfectly with your lifestyle. No hidden layout extras.
+          </motion.p>
+        </div>
+
         {/* --- TOGGLE BUTTONS --- */}
         {availableCycles.length > 1 && (
-          <div className="flex justify-center mb-16" >
-            <motion.div
-              className="relative inline-flex p-1 rounded-full bg-gray-200 shadow-inner"
-              variants={sectionVariants}
-            >
-              <AnimatePresence mode="wait">
-                {availableCycles.map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => setBillingCycle(option)}
-                    className={`px-6 py-3 rounded-full font-bold transition-colors duration-300 relative z-10 text-base ${
-                      billingCycle === option
-                        ? 'text-gray-900'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    {billingCycle === option && (
-                      <motion.span
-                        layoutId="bubble"
-                        className="absolute inset-0 rounded-full"
-                        style={{ backgroundColor: secondaryColor }}
-                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                      />
-                    )}
-                    <span className="relative">{option}</span>
-                  </button>
-                ))}
-              </AnimatePresence>
-            </motion.div>
-        </div>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="flex justify-center mb-16"
+          >
+            <div className="inline-flex items-center p-1.5 rounded-2xl bg-white border border-slate-200 shadow-sm relative">
+              {availableCycles.map((option) => (
+                <button
+                  key={option}
+                  onClick={() => setBillingCycle(option)}
+                  className={`px-6 py-2.5 rounded-xl font-bold transition-colors duration-300 relative text-sm tracking-wide ${
+                    billingCycle === option ? 'text-white' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {billingCycle === option && (
+                    <motion.span
+                      layoutId="activeCycleBg"
+                      className="absolute inset-0 rounded-xl shadow-md -z-10"
+                      style={{ backgroundColor: primaryColor }}
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                  {option}
+                </button>
+              ))}
+            </div>
+          </motion.div>
         )}
 
         {/* --- PRICING CARDS GRID --- */}
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 items-stretch">
-          <AnimatePresence mode="wait">
-            {currentPricingPlans.map((plan, index) => (
-              <PricingCard key={plan.name} plan={plan} index={index} />
-            ))}
-            {currentPricingPlans.length === 0 && (
-              <motion.p 
-                className="col-span-full text-center text-gray-500 text-xl py-10"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                <ClockIcon className="w-6 h-6 inline-block mr-2" /> No plans available for the {billingCycle} cycle. Please try a different frequency.
-              </motion.p>
-            )}
+        <motion.div 
+          layout
+          className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 items-stretch justify-center"
+        >
+          <AnimatePresence mode="popLayout">
+            {currentPricingPlans.map((plan, index) => {
+              const IconComponent = (plan as any).icon || CubeIcon;
+
+              return (
+                <motion.div
+                  layout
+                  key={plan.name}
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                  whileHover={{ y: -8, boxShadow: '0 30px 60px -15px rgba(0,0,0,0.08)' }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                  className={`relative p-8 rounded-3xl bg-white flex flex-col h-full border border-slate-200/80 transition-shadow duration-300 ${
+                    plan.isFeatured ? 'shadow-xl' : 'shadow-sm'
+                  }`}
+                >
+                  {/* Premium Prism Border Layer for Featured Card */}
+                  {plan.isFeatured && (
+                    <div
+                      className="absolute inset-0 rounded-3xl -z-10 pointer-events-none"
+                      style={{
+                        padding: '2px',
+                        background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                        mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                        WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                        maskComposite: 'exclude',
+                        WebkitMaskComposite: 'xor',
+                      }}
+                    />
+                  )}
+
+                  {/* Asymmetric Elegant Badge */}
+                  {plan.isFeatured && (
+                    <span
+                      className="absolute -top-3 right-6 px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest text-white shadow-sm"
+                      style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
+                    >
+                      {plan.badge || 'Popular'}
+                    </span>
+                  )}
+
+                  {/* Top Header Layer */}
+                  <div className="mb-6 flex items-start justify-between gap-4">
+                    <div>
+                      <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight mb-1.5">{plan.name}</h3>
+                      <p className="text-slate-500 text-sm leading-relaxed min-h-[40px]">
+                        {plan.description || 'A highly tailored strategy meeting all structural specifications.'}
+                      </p>
+                    </div>
+                    <div
+                      className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: hexToRgba(plan.isFeatured ? primaryColor : secondaryColor, 0.12) }}
+                    >
+                      <IconComponent className="w-6 h-6" style={{ color: plan.isFeatured ? primaryColor : '#D9A000' }} />
+                    </div>
+                  </div>
+
+                  {/* Price Section */}
+                  <div className="mb-6 flex items-baseline gap-1">
+                    <span className="text-5xl font-black tracking-tight text-slate-900">
+                      ${plan.price.toFixed(0)}
+                    </span>
+                    <span className="text-sm font-semibold text-slate-400 uppercase tracking-wider ml-1">
+                      {plan.frequency ? `/ ${plan.frequency.toLowerCase()}` : '/ service'}
+                    </span>
+                  </div>
+
+                  <div className="h-px w-full bg-slate-100 mb-6" />
+
+                  {/* Features List */}
+                  <ul className="space-y-3.5 text-left flex-grow text-slate-600 text-sm">
+                    {plan.features?.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <div 
+                          className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                          style={{ backgroundColor: hexToRgba(primaryColor, 0.1) }}
+                        >
+                          <CheckIcon className="w-3.5 h-3.5 stroke-[3]" style={{ color: primaryColor }} />
+                        </div>
+                        <span className="leading-normal font-medium text-slate-600">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Premium Action Button */}
+                  <button
+                    className="mt-8 px-6 py-3.5 w-full rounded-2xl font-bold text-sm tracking-wide shadow-sm transition-all duration-200 transform active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 border"
+                    style={{
+                      backgroundColor: plan.isFeatured ? primaryColor : 'transparent',
+                      color: plan.isFeatured ? '#fff' : '#0F172A',
+                      borderColor: plan.isFeatured ? 'transparent' : '#E2E8F0',
+                      '--tw-ring-color': primaryColor,
+                    } as React.CSSProperties}
+                  >
+                    Get Started Now
+                  </button>
+                </motion.div>
+              );
+            })}
           </AnimatePresence>
-        </div>
-      </motion.div>
+
+          {/* Empty Fallback State */}
+          {currentPricingPlans.length === 0 && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="col-span-full text-center text-slate-500 py-16 bg-white rounded-3xl border border-dashed border-slate-200"
+            >
+              <CalendarIcon className="w-8 h-8 text-slate-300 mx-auto mb-3" />
+              <p className="font-semibold text-slate-700">No options found</p>
+              <p className="text-sm text-slate-400 mt-1">There are no packages assigned to the {billingCycle} tier.</p>
+            </motion.div>
+          )}
+        </motion.div>
+      </div>
     </section>
   );
 }
