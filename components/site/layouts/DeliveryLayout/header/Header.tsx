@@ -27,13 +27,13 @@ const imageLoader = ({ src, width, quality }: { src: string; width: number; qual
   `${src}?w=${width}&q=${quality || 75}`;
 
 const navLinks = [
-    { name: "Home", hasSub: true },
-    { name: "About", hasSub: true },
-    { name: "Services", hasSub: true },
-    { name: "Network", hasSub: true },
-    { name: "Blog", hasSub: true },
-    { name: "Contact Us", hasSub: true },
-  ];
+  { name: "Home", hasSub: true },
+  { name: "About", hasSub: true },
+  { name: "Services", hasSub: true },
+  { name: "Network", hasSub: true },
+  { name: "Blog", hasSub: true },
+  { name: "Contact Us", hasSub: true },
+];
 
 export default function Navbar() {
   const { cart } = useStateContext();
@@ -73,10 +73,10 @@ export default function Navbar() {
   }, [storeFormData, slug]);
 
   return (
-    <header className={`w-full font-sans sticky top-0 z-50 transition-all ${scrolled ? 'shadow-lg' : ''}`}>
+    <header className={`w-full font-sans sticky top-0 z-50 bg-white transition-all ${scrolled ? 'shadow-lg' : ''}`}>
       {/* 1. TOP BAR (DESKTOP) */}
       <div className="bg-[#111111] text-white text-[12px] py-2.5 px-6 hidden lg:block border-b border-white/5">
-        <div className=" flex justify-between items-center">
+        <div className="flex justify-between items-center">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2 group cursor-default">
               <PhoneIcon className="text-orange-500 h-3.5 w-3.5" />
@@ -107,13 +107,13 @@ export default function Navbar() {
       </div>
 
       {/* 2. MAIN NAVIGATION */}
-      <nav className="bg-white border-b border-gray-100">
-        <div className="flex items-center justify-between h-20 lg:h-24">
+      <nav className="bg-white border-b border-gray-100 h-20 lg:h-24 w-full">
+        <div className="flex items-stretch justify-between h-full w-full">
           
           {/* SLANTED BRANDING BOX */}
           <Link
             href="/"
-            className="relative h-full flex items-center bg-gradient-to-r from-[#f7941d] to-[#e07d10] pl-4 pr-12 sm:pl-6 sm:pr-16 lg:pl-10 lg:pr-24 text-white shrink-0 group overflow-hidden transition-all duration-500 ease-in-out select-none min-w-0"
+            className="relative flex items-center bg-gradient-to-r from-[#f7941d] to-[#e07d10] pl-4 pr-12 sm:pl-6 sm:pr-16 lg:pl-10 lg:pr-24 text-white shrink-0 group overflow-hidden transition-all duration-500 ease-in-out select-none min-w-0"
             style={{ clipPath: 'polygon(0 0, 100% 0, 85% 100%, 0% 100%)' }}
           >
             {/* Premium Hover Glow Effect */}
@@ -126,11 +126,13 @@ export default function Navbar() {
               
               {/* Logo Icon Container */}
               {logoUrl && (
-                <div className="relative w-12 h-8 sm:w-20 sm:h-12 md:w-28 md:h-14 lg:w-32 lg:h-16 flex items-center justify-center filter drop-shadow-md transition-transform duration-300 group-hover:rotate-[-2deg] shrink-0">
+                <div className="relative w-12 h-8 sm:w-20 sm:h-12 md:w-28 md:h-14 lg:w-32 lg:h-16 shrink-0 filter drop-shadow-md transition-transform duration-300 group-hover:rotate-[-2deg]">
                   <Image 
                     src={logoUrl} 
                     alt={name || 'Logo'} 
                     fill 
+                    priority
+                    sizes="(max-width: 640px) 48px, (max-width: 768px) 80px, (max-width: 1024px) 112px, 128px"
                     loader={imageLoader} 
                     className="object-contain" 
                   />
@@ -150,7 +152,7 @@ export default function Navbar() {
           </Link>
 
           {/* DESKTOP NAV LINKS */}
-          <div className="hidden lg:flex flex-grow justify-center px-4">
+          <div className="hidden lg:flex items-center flex-grow justify-center px-4">
             <ul className="flex items-center gap-7">
               {dynamicNavLinks.map((link) => (
                 <li key={link.id}>
