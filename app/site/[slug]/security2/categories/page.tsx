@@ -29,7 +29,7 @@ const imageLoader = ({ src, width, quality }: { src: string; width: number; qual
 const CategoryCard = ({ cat, storeSlug }: { cat: IStoreCategory, storeSlug: string }) => {
     const hasImage = cat.icon && cat.icon.startsWith('http');
     const categoryName = cat.displayName || cat.category?.name || 'Unknown Category';
-    const linkHref = `/site/${storeSlug}/ecommerce/products?category=${cat.id}`;
+    const linkHref = `/security/products?category=${cat.id}`;
     
     // Choose a placeholder/default icon if no image is available
     const defaultIcon = cat.icon || '📦'; 

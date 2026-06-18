@@ -58,7 +58,7 @@ function CategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; index: n
 
   return (
     <motion.div variants={itemVariants} className="group h-full">
-      <Link href={`/site/${storeSlug}/agrovetecommerce/products?category=${cat.id}`} className="block h-full">
+      <Link href={`/agrovetecommerce/products?category=${cat.id}`} className="block h-full">
         <div className="relative h-[420px] w-full overflow-hidden rounded-[2.5rem] bg-white border border-slate-100 transition-all duration-500 group-hover:shadow-2xl group-hover:-translate-y-2">
           <div className="h-3/5 w-full relative overflow-hidden">
             <Image
@@ -99,7 +99,7 @@ function SubcategoryTile({ sub, index, storeSlug }: { sub: ISubcategory; index: 
 
   return (
     <motion.div variants={itemVariants}>
-      <Link href={`/site/${storeSlug}/agrovetecommerce/products?subcategory=${sub.id}`}>
+      <Link href={`/agrovetecommerce/products?subcategory=${sub.id}`}>
         <div className={`group flex items-center gap-5 p-6 rounded-[2rem] bg-white border border-slate-100 transition-all hover:bg-slate-50 ${theme.border} hover:shadow-md`}>
           <div className={`h-14 w-14 flex items-center justify-center rounded-2xl ${theme.bg} ${theme.accent} group-hover:scale-110 transition-transform`}>
             {icon}

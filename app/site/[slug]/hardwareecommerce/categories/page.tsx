@@ -61,7 +61,7 @@ function BabyCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; inde
 
   return (
     <motion.div variants={itemVariants} className="group h-full">
-      <Link href={`/site/${storeSlug}/babyecommerce/products?category=${cat.id}`} className="block h-full">
+      <Link href={`/babyecommerce/products?category=${cat.id}`} className="block h-full">
         <div className={`relative h-[440px] w-full overflow-hidden rounded-[3rem] bg-white border-4 border-white transition-all duration-500 hover:shadow-2xl ${theme.shadow} hover:-rotate-1`}>
           
           {/* Image with Soft Mask */}
@@ -102,7 +102,7 @@ function BabySubTile({ sub, index, storeSlug }: { sub: ISubcategory; index: numb
 
   return (
     <motion.div variants={itemVariants}>
-      <Link href={`/site/${storeSlug}/babyecommerce/products?subcategory=${sub.id}`}>
+      <Link href={`/babyecommerce/products?subcategory=${sub.id}`}>
         <div className={`group flex flex-col items-center gap-4 p-8 rounded-[3rem] bg-white border-2 border-transparent transition-all hover:bg-white ${theme.border} hover:shadow-xl`}>
           <div className={`h-20 w-20 flex items-center justify-center rounded-full ${theme.bg} ${theme.accent} group-hover:bounce transition-all shadow-inner`}>
             {icon}

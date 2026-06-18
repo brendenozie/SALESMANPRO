@@ -53,7 +53,7 @@ function CourseCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; in
 
   return (
     <motion.div variants={cardVariants} className="group relative">
-      <Link href={`/site/${storeSlug}/courses/products?category=${cat.id}`} className="block">
+      <Link href={`/courses/products?category=${cat.id}`} className="block">
         <div className={`relative h-[520px] w-full overflow-hidden bg-white rounded-[2rem] border-2 ${theme.border} transition-all duration-500 hover:shadow-2xl hover:-translate-y-2`}>
           
           {/* Status Badge: Live Lessons */}

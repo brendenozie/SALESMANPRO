@@ -54,7 +54,7 @@ function AutoCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; inde
 
   return (
     <motion.div variants={cardVariants} className="group relative">
-      <Link href={`/site/${storeSlug}/automotive/products?category=${cat.id}`} className="block">
+      <Link href={`/automotive/products?category=${cat.id}`} className="block">
         <div className="relative h-[550px] w-full overflow-hidden rounded-br-[5rem] bg-stone-900 shadow-2xl transition-all duration-700 group-hover:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.6)]">
           
           {/* Main Visual */}

@@ -3,6 +3,7 @@ import React from "react";
 import { notFound } from "next/navigation";
 import prisma from "@/server/db/prismadb";
 import EventListWrapper from "./components/EventListWrapper/EventListWrapper";
+import { findCompanyCached } from "@/lib/company-fetcher";
 
 // --- Mock sample events (used when DB has no items yet) ---
 const mockEvents = [
@@ -51,7 +52,7 @@ export default async function EventListPage({ params, searchParams }: PageProps)
   const searchParamsResolved = await searchParams;
 
   // Ensure targeted company tenant profile exists
-  const company = await prisma.company.findUnique({ where: { slug } });
+  const company = await findCompanyCached(slug, "lean");
   if (!company) notFound();
 
   // Extract parameters sent from current navigation status state

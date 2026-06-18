@@ -107,7 +107,7 @@ function FurnitureCategoryCard({ cat, storeSlug }: { cat: IStoreCategory; storeS
 
   return (
     <Link 
-      href={`/${storeSlug}/furnitureecommerce/products?category=${cat.id}`} 
+      href={`/furnitureecommerce/products?category=${cat.id}`} 
       className="group relative h-full w-full block overflow-hidden rounded-xl bg-white dark:bg-[#151515] border border-slate-100 dark:border-gray-800 shadow-sm hover:shadow-2xl transition-all duration-500"
     >
       {/* Background Image with subtle parallax-ish zoom */}

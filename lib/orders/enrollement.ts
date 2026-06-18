@@ -167,7 +167,8 @@ export async function checkoutAndEnrollStudent({
           await initiatePaystackPayment(
             order,
             email,
-            cfg.credentials
+            cfg.credentials,
+            ""
           );
         break;
 

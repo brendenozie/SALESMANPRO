@@ -52,7 +52,7 @@ function GamingCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; in
 
   return (
     <motion.div variants={itemVariants} className="group relative">
-      <Link href={`/site/${storeSlug}/ecommerce/products?category=${cat.id}`} className="block">
+      <Link href={`/ecommerce/products?category=${cat.id}`} className="block">
         <div className={`relative h-[500px] w-full overflow-hidden rounded-[1.5rem] bg-slate-900 border border-white/5 transition-all duration-500 ${theme.border} ${theme.glow} hover:bg-slate-800/50`}>
           
           {/* Scanline Effect Overlay */}

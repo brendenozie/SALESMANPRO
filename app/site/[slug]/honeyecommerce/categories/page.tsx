@@ -54,7 +54,7 @@ function HoneyCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; ind
 
   return (
     <motion.div variants={itemVariants} className="group relative">
-      <Link href={`/site/${storeSlug}/ecommerce/products?category=${cat.id}`} className="block">
+      <Link href={`/ecommerce/products?category=${cat.id}`} className="block">
         <div className="relative h-[500px] w-full overflow-hidden rounded-[2.5rem] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 transition-all duration-700 hover:shadow-2xl hover:shadow-amber-500/10">
           
           {/* Image with Liquid Zoom */}
@@ -157,7 +157,7 @@ export default function HoneyCategoriesPage() {
                 <p className="text-sm text-amber-100 font-medium mb-8">Every jar supports local Kenyan beekeepers and protects our vital ecosystems.</p>
               </div>
 
-              <Link href="/impact" className="relative z-10 inline-flex items-center gap-3 bg-white text-amber-600 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-amber-50 transition-colors">
+              <Link href="/about" className="relative z-10 inline-flex items-center gap-3 bg-white text-amber-600 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-amber-50 transition-colors">
                 Our Impact <ShoppingBagIcon className="w-4 h-4" />
               </Link>
           </motion.div>

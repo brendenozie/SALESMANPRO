@@ -54,7 +54,7 @@ function FitnessCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; i
 
   return (
     <motion.div variants={cardVariants} className="group relative perspective-1000">
-      <Link href={`/site/${storeSlug}/ecommerce/products?category=${cat.id}`} className="block">
+      <Link href={`/ecommerce/products?category=${cat.id}`} className="block">
         <div className="relative h-[600px] w-full overflow-hidden rounded-[2rem] bg-stone-900 border border-white/5 transition-all duration-700 group-hover:border-[#DFFF00]/30 group-hover:shadow-[0_0_80px_-20px_rgba(223,255,0,0.15)]">
           
           {/* Main Visual */}

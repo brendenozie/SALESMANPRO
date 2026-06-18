@@ -54,7 +54,7 @@ function FlowerCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; in
 
   return (
     <motion.div variants={itemVariants} className="group relative">
-      <Link href={`/site/${storeSlug}/flowersecommerce/products?category=${cat.id}`} className="block">
+      <Link href={`/flowersecommerce/products?category=${cat.id}`} className="block">
         <div className="relative h-[600px] w-full overflow-hidden rounded-[4rem] bg-white border border-rose-50 transition-all duration-1000 group-hover:shadow-[0_40px_80px_-20px_rgba(251,113,133,0.15)] group-hover:-translate-y-4">
           
           {/* Subtle Grainy Paper Texture Overlay */}

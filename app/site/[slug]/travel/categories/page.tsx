@@ -54,7 +54,7 @@ function TravelCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; in
 
   return (
     <motion.div variants={cardVariants} className="group relative">
-      <Link href={`/site/${storeSlug}/travel/products?category=${cat.id}`} className="block">
+      <Link href={`/travel/products?category=${cat.id}`} className="block">
         <div className="relative h-[650px] w-full overflow-hidden rounded-[3rem] bg-stone-200 transition-all duration-1000 group-hover:shadow-[0_50px_100px_-30px_rgba(0,0,0,0.3)]">
           
           {/* Main Visual */}

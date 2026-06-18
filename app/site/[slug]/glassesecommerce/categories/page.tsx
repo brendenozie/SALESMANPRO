@@ -52,7 +52,7 @@ function GlassesCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; i
 
   return (
     <motion.div variants={itemVariants} className="group relative">
-      <Link href={`/site/${storeSlug}/glassesecommerce/products?category=${cat.id}`} className="block">
+      <Link href={`/glassesecommerce/products?category=${cat.id}`} className="block">
         <div className="relative h-[550px] w-full overflow-hidden rounded-[2rem] bg-white border border-slate-100 transition-all duration-700 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)]">
           
           {/* Main Visual: Refractive Lens Effect */}

@@ -53,7 +53,7 @@ function RestaurantCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory
 
   return (
     <motion.div variants={cardVariants} className="group relative">
-      <Link href={`/site/${storeSlug}/restaurent/products?category=${cat.id}`} className="block">
+      <Link href={`/restaurent/products?category=${cat.id}`} className="block">
         <div className="relative h-[600px] w-full overflow-hidden rounded-[3rem] bg-stone-900 shadow-2xl transition-all duration-700 group-hover:-translate-y-4">
           
           {/* Background Image with Parallax-like feel */}

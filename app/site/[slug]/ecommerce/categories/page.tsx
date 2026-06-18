@@ -115,7 +115,7 @@ function CategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; index: n
 
   return (
     <motion.div variants={itemVariants} className="group h-full">
-      <Link href={`/${storeSlug}/ecommerce/products?category=${cat.id}`} className="block h-full">
+      <Link href={`/ecommerce/products?category=${cat.id}`} className="block h-full">
         <div className="relative h-[450px] overflow-hidden rounded-[2.5rem] bg-white dark:bg-gray-900 border border-slate-100 dark:border-gray-800 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-indigo-500/10 group-hover:-translate-y-2">
           
           {/* Image / Icon Section */}

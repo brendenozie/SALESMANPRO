@@ -46,7 +46,7 @@ function MediaCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; ind
       transition={{ duration: 0.8, delay: index * 0.1 }}
       className="group relative"
     >
-      <Link href={`/site/${storeSlug}/media/products?category=${cat.id}`} className="block">
+      <Link href={`/media/products?category=${cat.id}`} className="block">
         <div className="relative h-[600px] w-full overflow-hidden rounded-[2.5rem] bg-stone-100 dark:bg-stone-900 transition-all duration-700 group-hover:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)]">
           
           {/* Main Visual with Zoom Effect */}

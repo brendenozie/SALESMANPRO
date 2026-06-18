@@ -35,7 +35,7 @@ export default function CategoriesPage() {
               {categories.map((cat) => (
                 <Link
                   key={cat.id}
-                  href={`/site/${storeSlug}/ecommerce/products?category=${cat.id}`}
+                  href={`/ecommerce/products?category=${cat.id}`}
                   className="group block bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300"
                 >
                   <div className="relative h-48 w-full">

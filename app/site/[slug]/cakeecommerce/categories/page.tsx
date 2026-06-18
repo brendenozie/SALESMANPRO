@@ -60,7 +60,7 @@ function CakeCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; inde
 
   return (
     <motion.div variants={itemVariants} className="group h-full">
-      <Link href={`/site/${storeSlug}/ecommerce/products?category=${cat.id}`} className="block h-full">
+      <Link href={`/ecommerce/products?category=${cat.id}`} className="block h-full">
         <div className="relative h-[480px] w-full overflow-hidden rounded-[2.5rem] bg-white shadow-sm transition-all duration-700 hover:shadow-2xl hover:-translate-y-3">
           
           {/* Zooming Image Layer */}
@@ -103,7 +103,7 @@ function CakeSubTile({ sub, index, storeSlug }: { sub: ISubcategory; index: numb
 
   return (
     <motion.div variants={itemVariants}>
-      <Link href={`/site/${storeSlug}/ecommerce/products?subcategory=${sub.id}`}>
+      <Link href={`/ecommerce/products?subcategory=${sub.id}`}>
         <div className={`group relative p-8 rounded-[2rem] bg-white border border-slate-100 overflow-hidden transition-all hover:shadow-xl`}>
           {/* Subtle Background Pattern */}
           <div className={`absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity`}>

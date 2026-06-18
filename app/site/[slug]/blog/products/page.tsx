@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Section from '@/components/site/Section/Section';
 import ProductGrid from '@/components/site/productGrid/ProductGrid';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 type Category = { id: string; name: string };
 type Product = { id: string; name: string; price: number; imageUrl: string; slug?: string };
@@ -32,7 +33,7 @@ export default async function ProductListPage({ params, searchParams }: PageProp
   const categoryId = category || undefined;
   const sortOption = sort || 'newest';
   // Ensure store exists
-  const baseCompany = await prisma.company.findUnique({ where: { slug } });
+  const baseCompany = await findCompanyCached(slug, "lean");
   if (!baseCompany) notFound();
 
   // Build filters

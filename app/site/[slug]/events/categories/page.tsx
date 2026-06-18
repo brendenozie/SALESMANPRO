@@ -55,7 +55,7 @@ function EventCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; ind
 
   return (
     <motion.div variants={cardVariants} className="group perspective-1000">
-      <Link href={`/site/${storeSlug}/events/products?category=${cat.id}`} className="block">
+      <Link href={`/events/products?category=${cat.id}`} className="block">
         <div className="relative h-[550px] w-full overflow-hidden rounded-[2.5rem] bg-stone-900 border border-white/5 transition-all duration-500 group-hover:border-white/20 group-hover:shadow-[0_30px_100px_-20px_rgba(0,0,0,0.8)]">
           
           {/* Dynamic Image with Glitch/Overlay effect */}

@@ -111,7 +111,7 @@ function FashionCategoryCard({ cat, storeSlug, index, isLarge }: { cat: IStoreCa
   const categoryName = cat.displayName || "Unlabeled";
 
   return (
-    <Link href={`/${storeSlug}/fashionecommerce/products?category=${cat.id}`} className="group block">
+    <Link href={`/fashionecommerce/products?category=${cat.id}`} className="group block">
       <div className="relative flex flex-col gap-6">
         
         {/* Image Container with "Photo Frame" feel */}

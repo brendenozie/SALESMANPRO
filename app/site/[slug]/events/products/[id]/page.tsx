@@ -5,6 +5,7 @@ import prisma from '@/server/db/prismadb';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
 import { StoreForm, IEvent } from '@/types/typings';
 import EventDetailClient from './EventDetailClient';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 interface PageProps {
   params: Promise<{ slug: string; productId: string }>;
@@ -16,7 +17,7 @@ export default async function EventDetailPage({ params }: PageProps) {
   const { slug, productId } = await params;
 
   // 1. Fetch company tenant instance
-  const company = await prisma.company.findUnique({ where: { slug } });
+  const company = await findCompanyCached(slug, "lean");
   if (!company) notFound();
 
   // 2. Fetch targeted event record matching parameter conditions

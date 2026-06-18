@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import prisma from "@/server/db/prismadb";
 import { ListingMarketStatus, ListingSystemStatus, ListingTransactionType, MarketListingForm } from "@/types/typings";
 import ProductListWrapper from "./components/ProductListWrapper/ProductListWrapper";
+import { findCompanyCached } from "@/lib/company-fetcher";
 
 // --- Mock sample products (used when DB has no listings) ---
 const mockProducts: MarketListingForm[] = [
@@ -105,8 +106,9 @@ export default async function ProductListPage({ params, searchParams }: PageProp
   const { slug } = await params; 
   const searchParamsResolved = await searchParams;
 
-  // Ensure store exists
-  const company = await prisma.company.findUnique({ where: { slug } });
+  // Ensure store exists  
+  const company = await findCompanyCached(slug, "lean");
+  
   if (!company) notFound();
 
   // Extract filters

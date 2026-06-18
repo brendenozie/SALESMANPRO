@@ -53,7 +53,7 @@ function MotoCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; inde
 
   return (
     <motion.div variants={cardVariants} className="group relative">
-      <Link href={`/site/${storeSlug}/motorcycleecommerce/products?category=${cat.id}`} className="block">
+      <Link href={`/motorcycleecommerce/products?category=${cat.id}`} className="block">
         <div className={`relative h-[500px] w-full overflow-hidden bg-zinc-900 rounded-3xl border ${theme.border} transition-all duration-500 hover:shadow-[0_0_50px_rgba(249,115,22,0.1)]`}>
           
           {/* Background Heat Haze Effect (CSS Mesh Gradient) */}

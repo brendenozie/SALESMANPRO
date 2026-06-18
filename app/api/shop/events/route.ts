@@ -87,27 +87,10 @@ function generateTrackingNumber() {
 // ---------------------------
 // POST: CREATE SERVICE ORDER
 // ---------------------------
-
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
-export async function POST(
-  req: Request,
-  { params }: { params: { gateway: string } },
-) {
-  let incoming: any;
-
+export async function POST(req: Request) {
   try {
-    incoming = await req.json();
-  } catch {
-    return NextResponse.json(
-      { success: false, error: "Invalid or missing request body" },
-      { status: 400 },
-    );
-  }
-  
-  try {
-    // const incoming = await req.json();
+    
+    const incoming = await req.json();
 
     // Transform incoming → expected schema
     const merged = {
@@ -126,15 +109,15 @@ export async function POST(
           timeSlot: incoming.appointment?.timeSlot,
           quantity: 1,
           price: incoming.price,
-          serviceNotes: incoming.serviceName,
-        },
+          serviceNotes: incoming.serviceName
+        }
       ],
 
       paymentData: {
         promoCode: incoming.promoCode || null,
         locationType: incoming.appointment?.locationType,
-        provider: incoming.appointment?.provider,
-      },
+        provider: incoming.appointment?.provider
+      }
     };
     const parsed = serviceOrderSchema.safeParse(merged);
 
@@ -171,45 +154,27 @@ export async function POST(
 
     switch (data.paymentOption) {
       case "mpesa": {
-        const phoneNumber =
-          data.paymentData?.mpesaPhone ?? data.mpesaPhone ?? data.phone;
-        if (!phoneNumber)
-          return withCors(
-            { success: false, error: "mpesaPhone required" },
-            400,
-          );
-        paymentResponse = await initiateMpesaPayment(
-          orderDb,
-          phoneNumber,
-          cfg.credentials,
-        );
+        const phoneNumber = data.paymentData?.mpesaPhone ?? data.mpesaPhone ?? data.phone;
+        if (!phoneNumber) return withCors({ success: false, error: "mpesaPhone required" }, 400);
+        paymentResponse = await initiateMpesaPayment(orderDb, phoneNumber, cfg.credentials);
         break;
       }
       case "paystack":
-        paymentResponse = await initiatePaystackPayment(
-          orderDb,
-          data.email,
-          cfg.credentials,
-        );
+        paymentResponse = await initiatePaystackPayment(orderDb, data.email, cfg.credentials);
         break;
       case "ghuba":
         // paymentResponse = await initiateGhubaPayment(orderDb, cfg.credentials);
         paymentResponse = await initiateGhubaPayment(orderDb, data.email);
         break;
       case "stripe":
-        paymentResponse = await initiateStripePaymentIntent(
-          orderDb,
-          cfg.credentials,
-        );
+        paymentResponse = await initiateStripePaymentIntent(orderDb, cfg.credentials);
         break;
       case "paypal":
         paymentResponse = await createPaypalOrder(orderDb, cfg.credentials);
         break;
       case "cod":
       case "pickupatshop":
-        paymentResponse = {
-          message: "Payment on delivery or pickup confirmed.",
-        };
+        paymentResponse = { message: "Payment on delivery or pickup confirmed." };
         await prisma.customerOrder.update({
           where: { id: orderDb.id },
           data: { paymentStatus: "PENDING" },
@@ -225,17 +190,11 @@ export async function POST(
         order: orderDb,
         trackingNumber,
         paymentResponse,
-        authorizationUrl:
-          paymentResponse?.data?.authorization_url ??
-          paymentResponse?.authorization_url ??
-          null,
+        authorizationUrl: paymentResponse?.data?.authorization_url ?? paymentResponse?.authorization_url ?? null,
       },
     });
   } catch (err: any) {
     console.error("Service order creation failed:", err);
-    return withCors(
-      { success: false, error: err?.message ?? String(err) },
-      500,
-    );
+    return withCors({ success: false, error: err?.message ?? String(err) }, 500);
   }
 }

@@ -53,7 +53,7 @@ function GroceryCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; i
 
   return (
     <motion.div variants={itemVariants} className="group relative">
-      <Link href={`/site/${storeSlug}/groceriesecommerce/products?category=${cat.id}`} className="block">
+      <Link href={`/groceriesecommerce/products?category=${cat.id}`} className="block">
         <div className="relative h-[550px] w-full overflow-hidden rounded-[3rem] bg-white border border-stone-100 transition-all duration-700 hover:shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)]">
           
           {/* Natural Sun-Flare Overlay */}

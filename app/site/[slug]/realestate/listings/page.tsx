@@ -3,6 +3,9 @@ import { loadStore } from "@/lib/loadStore";
 import ListingsClient from "./ListingsClient";
 import { Prisma } from "@prisma/client";
 import HeroSectionWrapper from "./HeroSectionWrapper";
+import { findCompanyCached } from "@/lib/company-fetcher";
+
+import { notFound } from 'next/navigation';
 
 export const dynamic = "force-dynamic";
 
@@ -15,8 +18,11 @@ interface ProductListPageProps {
 export default async function ProductListPage({ params, searchParams, }: ProductListPageProps) {
 
   const { slug } = params;
-  const { raw: store } = await loadStore(slug);
-  const companyId = store.id;
+  const baseCompany = await findCompanyCached(slug, "lean");
+
+  if (!baseCompany) notFound();
+  
+  const companyId = baseCompany.id;
 
   // 1. Parse Search Params (already have this, but let's ensure types)
   const page = parseInt(searchParams.page || "1", 10);

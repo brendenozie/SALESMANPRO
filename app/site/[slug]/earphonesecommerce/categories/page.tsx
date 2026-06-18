@@ -52,7 +52,7 @@ function AudioCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; ind
 
   return (
     <motion.div variants={itemVariants} className="group relative">
-      <Link href={`/site/${storeSlug}/earphonesecommerce/products?category=${cat.id}`} className="block">
+      <Link href={`/earphonesecommerce/products?category=${cat.id}`} className="block">
         <div className={`relative h-[580px] w-full overflow-hidden rounded-[2.5rem] bg-slate-900 border border-white/5 transition-all duration-700 ${theme.border} ${theme.glow}`}>
           
           {/* Waveform Decorative Background */}

@@ -59,7 +59,7 @@ function WatchCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; ind
 
   return (
     <motion.div variants={itemVariants} className="group relative h-[550px] overflow-hidden rounded-[1rem]">
-      <Link href={`/site/${storeSlug}/watchecommerce/products?category=${cat.id}`} className="block h-full">
+      <Link href={`/watchecommerce/products?category=${cat.id}`} className="block h-full">
         {/* Background Image with Zoom */}
         <Image
           src={cat.image || (cat.icon?.startsWith('http') ? cat.icon : FALLBACK_WATCH_IMAGE)}
@@ -100,7 +100,7 @@ function WatchSubTile({ sub, index, storeSlug }: { sub: ISubcategory; index: num
 
   return (
     <motion.div variants={itemVariants}>
-      <Link href={`/site/${storeSlug}/watchecommerce/products?subcategory=${sub.id}`} >
+      <Link href={`/watchecommerce/products?subcategory=${sub.id}`} >
         <div className={`group p-8 bg-slate-900 border border-white/5 rounded-2xl hover:border-white/20 transition-all ${theme.glow}`}>
           <div className={`w-12 h-12 rounded-full border ${theme.border} ${theme.accent} flex items-center justify-center mb-6 group-hover:scale-110 transition-all`}>
             {icon}
@@ -184,7 +184,7 @@ export default function WatchCategoriesPage() {
                 <div className="relative z-10">
                   <h4 className="text-3xl font-light uppercase mb-4">Service & <br /> Restoral</h4>
                   <p className="text-xs text-slate-500 mb-8 leading-relaxed">Our master watchmakers provide full mechanical overhauls and cosmetic restoration.</p>
-                  <Link href="/watchecommerce/service" className="inline-flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-amber-500 hover:text-white transition-colors">
+                  <Link href="/watchecommerce/products" className="inline-flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-amber-500 hover:text-white transition-colors">
                     Book Service <ArrowUpRightIcon className="w-4 h-4" />
                   </Link>
                 </div>

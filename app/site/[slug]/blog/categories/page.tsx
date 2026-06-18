@@ -55,7 +55,7 @@ function BlogCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; inde
       variants={cardVariants} 
       className={`group relative ${isLarge ? 'md:col-span-2' : 'md:col-span-1'}`}
     >
-      <Link href={`/site/${storeSlug}/blog/products?category=${cat.id}`} className="block h-full">
+      <Link href={`/blog/products?category=${cat.id}`} className="block h-full">
         <div className="relative h-[500px] w-full overflow-hidden bg-white group-hover:bg-stone-50 transition-colors duration-500 flex flex-col">
           
           {/* Magazine Cover Visual */}

@@ -4,6 +4,10 @@ import ListingsClient from "./ListingsClient";
 // import HeroSection from "./HeroSection";
 import { Prisma } from "@prisma/client";
 import HeroSection from "./HeroSection";
+import { findCompanyCached } from "@/lib/company-fetcher";
+
+import { notFound } from 'next/navigation';
+// import notFound from "@/app/not-found";
 
 export const dynamic = "force-dynamic";
 
@@ -19,8 +23,11 @@ export default async function ProductListPage({
   const { slug } = params;
   
   // 1. Load Tenant Data
-  const { raw: store } = await loadStore(slug);
-  const companyId = store.id;
+  const baseCompany = await findCompanyCached(slug, "lean");
+
+  if (!baseCompany) notFound();
+
+  const companyId = baseCompany.id;
 
   // 2. Parse Search Params
   const page = parseInt(searchParams.page || "1", 10);

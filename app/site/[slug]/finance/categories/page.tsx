@@ -54,7 +54,7 @@ function FinanceCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; i
 
   return (
     <motion.div variants={cardVariants} className="group h-full">
-      <Link href={`/site/${storeSlug}/finance/products?category=${cat.id}`} className="block h-full">
+      <Link href={`/finance/products?category=${cat.id}`} className="block h-full">
         <div className="relative h-full bg-white border border-stone-200 rounded-[1.5rem] overflow-hidden transition-all duration-700 hover:shadow-[0_40px_100px_-30px_rgba(0,0,0,0.1)] hover:-translate-y-2">
           
           {/* Top Decorative Pinstripe */}

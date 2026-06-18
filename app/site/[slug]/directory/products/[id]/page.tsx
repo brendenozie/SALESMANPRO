@@ -13,6 +13,7 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import { StoreForm, MarketListingForm } from '@/types/typings'; // Import relevant types
 import ProductCard from '@/components/site/layouts/EcommerceLayout/body/components/ProductCard';
 import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
+import { findCompanyCached } from '@/lib/company-fetcher';
 
 interface PageProps {
   params: Promise<{ slug: string; productId: string }>;
@@ -25,7 +26,7 @@ export default async function ProductPage({ params }: PageProps) {
   const { slug, productId } = await params;
 
   // Fetch store data
-  const rawStore = await prisma.company.findUnique({ where: { slug } });
+  const rawStore = = await findCompanyCached(slug, "lean");
   if (!rawStore) notFound();
 
   // Fetch product and related items

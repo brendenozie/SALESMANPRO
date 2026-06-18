@@ -85,26 +85,9 @@ function generateTrackingNumber() {
 // ---------------------------
 // POST: CREATE SERVICE ORDER
 // ---------------------------
-
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
-export async function POST(
-  req: Request,
-  { params }: { params: { gateway: string } },
-) {
-  let incoming : any;
-
+export async function POST(req: Request) {
   try {
-    incoming = await req.json();
-  } catch {
-    return NextResponse.json(
-      { success: false, error: "Invalid or missing request body" },
-      { status: 400 },
-    );
-  }
-
-  try{
+    const incoming = await req.json();
 
     // Safe defensive data merging with fallbacks supporting structured or flat checkouts
     const merged = {

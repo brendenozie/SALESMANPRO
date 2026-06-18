@@ -53,7 +53,7 @@ function EstateCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; in
 
   return (
     <motion.div variants={cardVariants} className="group cursor-pointer">
-      <Link href={`/site/${storeSlug}/realestate/products?category=${cat.id}`} className="block">
+      <Link href={`/realestate/products?category=${cat.id}`} className="block">
         <div className="relative h-[700px] w-full overflow-hidden rounded-[1rem] bg-stone-100 shadow-sm transition-all duration-700 group-hover:shadow-2xl group-hover:shadow-stone-900/10">
           
           {/* Main Visual */}

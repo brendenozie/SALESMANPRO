@@ -61,7 +61,7 @@ function PetCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; index
 
   return (
     <motion.div variants={itemVariants} className="group h-full">
-      <Link href={`/site/${storeSlug}/petsecommerce/products?category=${cat.id}`} className="block h-full">
+      <Link href={`/petsecommerce/products?category=${cat.id}`} className="block h-full">
         <div className={`relative h-[460px] w-full overflow-hidden rounded-[2rem] bg-white transition-all duration-500 hover:shadow-2xl ${theme.shadow} hover:-translate-y-2`}>
           
           {/* Angled Image Container */}
@@ -110,7 +110,7 @@ function PetSubTile({ sub, index, storeSlug }: { sub: ISubcategory; index: numbe
 
   return (
     <motion.div variants={itemVariants}>
-      <Link href={`/site/${storeSlug}/petsecommerce/products?subcategory=${sub.id}`}>
+      <Link href={`/petsecommerce/products?subcategory=${sub.id}`}>
         <div className={`group relative p-6 rounded-[1.5rem] bg-white border border-slate-100 transition-all hover:bg-slate-50 ${theme.border} hover:shadow-lg`}>
           <div className="flex items-center gap-5">
             <div className={`h-14 w-14 flex items-center justify-center rounded-2xl ${theme.bg} ${theme.accent} group-hover:rotate-12 transition-transform`}>
@@ -213,7 +213,7 @@ export default function PetsDukaCategoriesPage() {
               <h4 className="text-3xl font-black leading-tight relative z-10">Ask our <br /> <span className="text-emerald-400">Pet Experts.</span></h4>
               <div className="relative z-10">
                 <p className="text-sm text-slate-400 mb-6 font-medium">Get personalized advice on nutrition and wellness.</p>
-                <Link href="/consult" className="font-black text-xs uppercase tracking-widest text-emerald-400 flex items-center gap-2 group-hover:text-white transition-colors">
+                <Link href="/petsecommerce/products" className="font-black text-xs uppercase tracking-widest text-emerald-400 flex items-center gap-2 group-hover:text-white transition-colors">
                   Talk to a Vet <ChevronRightIcon className="w-4 h-4" />
                 </Link>
               </div>

@@ -1,6 +1,8 @@
 import prisma from '@/server/db/prismadb';
 import { loadStore } from '@/lib/loadStore';
 import ProductsClient from './ProductsClient';
+import { findCompanyCached } from '@/lib/company-fetcher';
+import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,9 +11,11 @@ export default async function ProductListPage({ params, searchParams }: {
   searchParams: { [key: string]: string | undefined };
 }) {
   const { slug } = params;
-  const { raw } = await loadStore(slug);
+  const company = await findCompanyCached(slug, "lean");
 
-  const companyId = raw.id;
+  if(!company)   notFound();
+
+  const companyId = company.id;
 
   // get categories + initial products
   const pageSize = 12;

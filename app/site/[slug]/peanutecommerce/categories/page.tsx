@@ -52,7 +52,7 @@ function PeanutCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; in
 
   return (
     <motion.div variants={itemVariants} className="group">
-      <Link href={`/site/${storeSlug}/ecommerce/products?category=${cat.id}`} className="block">
+      <Link href={`/peanutecommerce/products?category=${cat.id}`} className="block">
         <div className={`relative h-[520px] rounded-[3rem] bg-white overflow-hidden transition-all duration-500 border border-stone-100 hover:shadow-2xl ${theme.shadow} hover:-translate-y-2`}>
           
           {/* Texture Overlay (Burlap/Grain) */}
@@ -164,7 +164,7 @@ export default function PeanutsCategoriesPage() {
                 <p className="text-sm text-stone-400 font-medium">We track every batch back to the individual farm. Supporting Kenyan growers, one crunch at a time.</p>
               </div>
 
-              <Link href="/farms" className="inline-flex items-center gap-3 font-black text-[10px] uppercase tracking-[0.3em] text-amber-500 hover:text-white transition-colors mt-12">
+              <Link href="/peanutecommerce/products" className="inline-flex items-center gap-3 font-black text-[10px] uppercase tracking-[0.3em] text-amber-500 hover:text-white transition-colors mt-12">
                 Learn About Our Farms <ArrowLongRightIcon className="w-5 h-5" />
               </Link>
           </motion.div>

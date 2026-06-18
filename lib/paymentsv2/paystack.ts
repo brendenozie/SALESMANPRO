@@ -5,7 +5,7 @@ export async function initiatePaystackPayment(
   order: any,
   customerEmail: string,
   credentials: { secretKey?: string; baseUrl?: string; callbackUrl?: string },
-  // initialUrl: string,
+  initialUrl: string,
 ) {
   const secret = credentials?.secretKey ?? process.env.PAYSTACK_SECRET_KEY;
   const baseUrl =
@@ -15,9 +15,6 @@ export async function initiatePaystackPayment(
   const callbackUrl =
     credentials?.callbackUrl ??
     `${process.env.NEXT_PUBLIC_BASE_URL}/payments/paystack/callback`; //process.env.PAYSTACK_CALLBACK_URL;
-  // const initialUrl =
-  //   credentials?.initialUrl ??
-  //   `${process.env.NEXT_PUBLIC_BASE_URL}/payments/paystack/initial`; //process.env.PAYSTACK_INITIAL_URL;
 
   if (!secret) throw new Error("Paystack secret key missing");
 

@@ -54,7 +54,7 @@ function BikeCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; inde
 
   return (
     <motion.div variants={itemVariants} className="group relative">
-      <Link href={`/site/${storeSlug}/bikeecommerce/products?category=${cat.id}`} className="block">
+      <Link href={`/bikeecommerce/products?category=${cat.id}`} className="block">
         <div className={`relative h-[650px] w-full overflow-hidden bg-white border-l-8 border-slate-100 transition-all duration-500 ${theme.border} group-hover:border-l-[16px]`}>
           
           {/* Subtle Speed Lines Pattern */}

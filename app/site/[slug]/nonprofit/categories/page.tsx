@@ -53,7 +53,7 @@ function NPCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; index:
 
   return (
     <motion.div variants={cardVariants} className="group">
-      <Link href={`/site/${storeSlug}/nonprofit/products?category=${cat.id}`} className="block">
+      <Link href={`/nonprofit/products?category=${cat.id}`} className="block">
         <div className="bg-white rounded-[3rem] p-4 pb-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.03)] border border-stone-100 transition-all duration-700 hover:shadow-2xl hover:shadow-orange-900/5 group-hover:-translate-y-3">
           
           {/* Visual: The Human Element */}

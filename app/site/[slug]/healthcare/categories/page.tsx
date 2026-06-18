@@ -54,7 +54,7 @@ function HealthCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; in
 
   return (
     <motion.div variants={cardVariants} className="group">
-      <Link href={`/site/${storeSlug}/healthcare/products?category=${cat.id}`} className="block h-full">
+      <Link href={`/healthcare/products?category=${cat.id}`} className="block h-full">
         <div className="relative h-full bg-white rounded-[3rem] p-4 border border-stone-100 shadow-sm transition-all duration-700 group-hover:shadow-[0_40px_80px_-20px_rgba(20,80,80,0.1)] group-hover:border-teal-100">
           
           {/* Image Container with Soft Mask */}

@@ -52,7 +52,7 @@ function ServiceCategoryCard({ cat, index, storeSlug }: { cat: IStoreCategory; i
 
   return (
     <motion.div variants={cardVariants} className="group relative">
-      <Link href={`/site/${storeSlug}/ecommerce/products?category=${cat.id}`} className="block">
+      <Link href={`/service-provider/products?category=${cat.id}`} className="block">
         <div className={`relative h-[480px] w-full overflow-hidden bg-white rounded-[2.5rem] border ${theme.border} transition-all duration-500 hover:shadow-2xl ${theme.glow}`}>
           
           {/* Availability Pulse */}
