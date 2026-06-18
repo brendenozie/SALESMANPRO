@@ -89,7 +89,7 @@ function SubcategoryPill({ sub, index }: { sub: ISubcategory; index: number }) {
 
 function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
   const [imgError, setImgError] = useState(false);
-  const catSlug = safeSlug(cat.categoryId || cat.displayName || cat.id);
+  const catSlug = safeSlug(cat.category?.id || cat.categoryId || cat.displayName || cat.id);
   const imageUrl = imgError ? FALLBACK_IMAGE_URL : ( cat.category?.image || FALLBACK_IMAGE_URL);
   const icon = resolveGamingStyle(index);
 
@@ -102,7 +102,7 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
 
         <Image
           src={imageUrl}
-          alt={cat.displayName || "htttps://source.unsplash.com/random/800x600/?technology"}
+          alt={cat.displayName || "technology"}
           fill
           loader={customLoader}
           onError={() => setImgError(true)}

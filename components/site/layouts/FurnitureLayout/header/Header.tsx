@@ -103,24 +103,24 @@ export default function Header() {
   return (
     <>
       <header
-        className={`fixed top-0 w-full z-50 px-4 md:px-10 transition-all duration-500 ${
-          scrolled ? 'pt-4' : 'pt-8'
+        className={`fixed top-0 left-0 w-full z-50 px-3 sm:px-4 md:px-10 transition-all duration-500 ${
+          scrolled ? 'pt-3 md:pt-4' : 'pt-5 md:pt-8'
         }`}
       >
         <div
           className={`max-w-[1600px] mx-auto rounded-2xl md:rounded-full border border-white/20 shadow-2xl overflow-hidden transition-all duration-500 ${
             scrolled
-              ? 'bg-white/80 dark:bg-zinc-900/80 backdrop-blur-2xl py-3 px-6'
-              : 'bg-white/40 dark:bg-black/20 backdrop-blur-md py-5 px-10'
+              ? 'bg-white/80 dark:bg-zinc-900/80 backdrop-blur-2xl py-2.5 px-4 md:py-3 md:px-6'
+              : 'bg-white/40 dark:bg-black/20 backdrop-blur-md py-4 px-4 md:py-5 md:px-10'
           }`}
         >
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             {/* LOGO */}
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 rounded-lg bg-zinc-900 dark:bg-white flex items-center justify-center transition-transform duration-500 group-hover:rotate-90">
-                <div className="w-2 h-2 rounded-full bg-white dark:bg-zinc-900" />
+            <Link href="/" className="flex items-center gap-2 group min-w-0 flex-shrink-0">
+              <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-zinc-900 dark:bg-white flex items-center justify-center transition-transform duration-500 group-hover:rotate-90 flex-shrink-0">
+                <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-white dark:bg-zinc-900" />
               </div>
-              <span className="text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">
+              <span className="text-lg md:text-xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white truncate">
                 {storeFormData?.name || 'HABITAT'}
               </span>
             </Link>
@@ -142,7 +142,7 @@ export default function Header() {
             </nav>
 
             {/* UTILITIES */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
               <button className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900/5 dark:bg-white/5 hover:border-zinc-200 dark:hover:border-zinc-700 transition-all">
                 <MagnifyingGlassIcon className="w-4 h-4 text-zinc-500" />
                 <span className="text-[10px] font-bold uppercase text-zinc-400">
@@ -150,7 +150,7 @@ export default function Header() {
                 </span>
               </button>
 
-              <div className="hidden md:block w-px h-6 bg-zinc-300 dark:bg-zinc-700 mx-2" />
+              <div className="hidden md:block w-px h-6 bg-zinc-300 dark:bg-zinc-700 mx-1" />
 
               <button
                 onClick={handleUserAction}
@@ -162,16 +162,16 @@ export default function Header() {
               {/* CART */}
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="relative flex items-center gap-3 px-4 py-2 bg-zinc-900 dark:bg-white rounded-full active:scale-95 transition-transform"
+                className="relative flex items-center gap-1.5 sm:gap-3 px-3 py-2 sm:px-4 bg-zinc-900 dark:bg-white rounded-full active:scale-95 transition-transform"
               >
                 <ShoppingBagIcon className="w-4 h-4 text-white dark:text-zinc-900" />
                 <span className="text-[10px] font-black uppercase tracking-widest text-white dark:text-zinc-900">
-                  Cart ({cart.length})
+                  <span className="hidden sm:inline">Cart </span>({cart.length})
                 </span>
               </button>
 
               <button
-                className="lg:hidden p-2 ml-2"
+                className="lg:hidden p-2"
                 onClick={() => setMobileMenuOpen(true)}
               >
                 <Bars2Icon className="w-6 h-6 text-zinc-900 dark:text-white" />
@@ -188,21 +188,21 @@ export default function Header() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-[60] bg-white dark:bg-zinc-950 p-10 flex flex-col lg:hidden"
+            className="fixed inset-0 z-[60] bg-white dark:bg-zinc-950 p-6 md:p-10 flex flex-col lg:hidden overflow-y-auto"
           >
-            <div className="flex justify-between items-center mb-20">
+            <div className="flex justify-between items-center mb-12 md:mb-20">
               <span className="text-xs font-black tracking-[0.3em] text-zinc-400 uppercase">
                 // Navigation
               </span>
               <button
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-4 border rounded-full"
+                className="p-3 md:p-4 border rounded-full"
               >
                 <XMarkIcon className="w-6 h-6" />
               </button>
             </div>
 
-            <nav className="flex flex-col gap-8">
+            <nav className="flex flex-col gap-6 md:gap-8">
               {navLinks.map((link, i) => (
                 <motion.div
                   key={link.id}
@@ -213,7 +213,7 @@ export default function Header() {
                   <Link
                     href={link.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="text-5xl font-light uppercase tracking-tighter hover:italic"
+                    className="text-3xl sm:text-4xl md:text-5xl font-light uppercase tracking-tighter hover:italic break-words"
                   >
                     {link.label}
                   </Link>

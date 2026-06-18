@@ -307,7 +307,7 @@ export default function Header() {
 
               <div className="flex-grow overflow-y-auto p-4">
                 <Link
-                  href="/babyecommerce/products?filter=hot-deals"
+                  href="/babyecommerce/products"
                   onClick={() => setIsDrawerOpen(false)}
                   className="flex items-center space-x-3 p-3 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-600 font-bold mb-4"
                 >

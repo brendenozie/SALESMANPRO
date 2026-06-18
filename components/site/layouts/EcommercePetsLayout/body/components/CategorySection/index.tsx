@@ -133,7 +133,7 @@ export default function CategoriesSection({ store }: { store: StoreForm | null }
           {categoriesToShow.map((cat, idx) => {
              const theme = resolveCategoryTheme(idx);
              return (
-               <Link key={cat.id || idx} href={`/petsecommerce/products?category=${safeSlug(cat.categoryId || cat.category?.id || cat.displayName || cat.category?.name)}`} className="flex-shrink-0 group">
+               <Link key={cat.id || idx} href={`/petsecommerce/products?category=${safeSlug(cat.category?.id || cat.categoryId || cat.displayName || cat.category?.name)}`} className="flex-shrink-0 group">
                  <div className={`relative w-64 md:w-80 aspect-[4/5] rounded-[3.5rem] ${theme.bg} transition-all duration-700 group-hover:shadow-2xl group-hover:-translate-y-4 border-2 border-transparent group-hover:border-white overflow-hidden flex flex-col items-center justify-center p-10`}>
                     <div className="relative w-40 h-40 mb-8 rounded-full transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-6">
                       <Image 

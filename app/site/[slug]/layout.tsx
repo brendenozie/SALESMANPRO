@@ -86,7 +86,7 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
 
   return (
     <StoreContextProvider initialStore={storeFormData} userRole="ADMIN" userId={userId}>
-      <div className="bg-black dark:bg-gray-900 text-gray-800 dark:text-gray-200 w-full mx-auto">
+      <div className="bg-slate-50 dark:bg-gray-900 w-full mx-auto text-gray-900 dark:text-gray-100">
         <LayoutComponent params={{ storeFormData }}>
           {/* Suspense handles streaming UI cleanly while the lower page data mounts */}
           <Suspense fallback={<LoadingSpinner />}>

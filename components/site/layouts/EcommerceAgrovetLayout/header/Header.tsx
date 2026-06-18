@@ -44,9 +44,8 @@ export default function AgrovetHeader() {
 
   const navLinks = [
     { label: 'Home', href: `/` },
-    { label: 'Seeds', href: `/agrovetecommerce/products?cat=seeds` },
-    { label: 'Animal Health', href: `/agrovetecommerce/products?cat=livestock` },
-    { label: 'Consultancy', href: `/agrovetecommerce/services` },
+    { label: 'Seeds', href: `/agrovetecommerce/products` },
+    { label: 'Consultancy', href: `/agrovetecommerce/about` },
   ];
 
   const handleGoogleSignIn = () => {

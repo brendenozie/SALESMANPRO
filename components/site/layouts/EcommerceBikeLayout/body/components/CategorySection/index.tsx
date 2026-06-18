@@ -107,7 +107,7 @@ export default function WatchCategorySection({ StoreCategory, themeSettings }: W
         >
           {categoriesToShow.map((cat, idx) => (
             <motion.div key={cat.id || idx} variants={itemVariants}>
-              <Link href={`category=${cat.categoryId || cat.category?.id || cat.displayName?.toLowerCase()}`}>
+              <Link href={`category=${cat.category?.id || cat.categoryId || cat.displayName?.toLowerCase()}`}>
               {/* cat.slug || */}
                 <div className="group relative bg-slate-50 border border-transparent hover:border-slate-200 hover:bg-white p-8 h-full flex flex-col items-center text-center transition-all duration-500">
                   {/* Icon with circular "Lens" effect */}

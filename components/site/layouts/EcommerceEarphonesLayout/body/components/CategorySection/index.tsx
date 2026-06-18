@@ -114,7 +114,7 @@ function CategoryPortal({ cat, index }: { cat: IStoreCategory; index: number }) 
       className="relative h-[500px] w-full group cursor-pointer"
     >
       <Link
-        href={`/earphonesecommerce/products?category=${cat.categoryId || cat.displayName}`}
+        href={`/earphonesecommerce/products?category=${cat.category?.id || cat.categoryId || cat.displayName}`}
         className="block h-full w-full"
       >
         <div

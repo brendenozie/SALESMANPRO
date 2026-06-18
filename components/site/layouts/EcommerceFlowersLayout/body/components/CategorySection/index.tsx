@@ -55,7 +55,7 @@ function CategoryCard({
   index: number;
 }) {
   const [isHovered, setIsHovered] = useState(false);
-  const catSlug = safeSlug(cat.categoryId || cat.category?.id || cat.displayName || "category");
+  const catSlug = safeSlug(cat.category?.id || cat.categoryId || cat.displayName || "category");
   const imageUrl = FALLBACK_IMAGE_URL; //cat.imageUrl || cat.image || 
 
   // Varied heights for a masonry feel

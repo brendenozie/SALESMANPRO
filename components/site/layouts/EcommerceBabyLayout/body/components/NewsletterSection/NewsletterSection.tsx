@@ -13,7 +13,7 @@ import {
   HeartIcon
 } from '@heroicons/react/24/solid';
 
-export default function NewsletterSection() {
+export default function NewsletterSection({className}: {className?: string}) {
   const { storeFormData } = useStoreContext();
   const primary = storeFormData?.themeSettings?.primaryColor || '#F472B6';
   const secondary = storeFormData?.themeSettings?.secondaryColor || '#3B82F6';
@@ -48,7 +48,7 @@ export default function NewsletterSection() {
 
   return (
     <section 
-      className="relative py-28 px-6 overflow-hidden cursor-none"
+      className={`relative py-28 px-6 overflow-hidden cursor-none ${className || ''}`}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
       onMouseMove={handleMouseMove}

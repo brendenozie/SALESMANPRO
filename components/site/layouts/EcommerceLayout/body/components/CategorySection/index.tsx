@@ -58,7 +58,7 @@ const itemVariants: Variants = {
 
 function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
   const { theme } = resolveRetailStyle(index);
-  const catSlug = safeSlug(cat.displayName || `category-${index}`);
+  const catSlug = safeSlug(cat.categoryId || cat.category?.id || cat.displayName || `category-${index}`);
   const subCount = cat.subcategories?.filter((s) => s.visible).length || 0;
 
   return (

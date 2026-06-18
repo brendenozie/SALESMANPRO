@@ -90,7 +90,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       <MetricsSection coreValues={CoreValues} />
       <AwardsSection awards={awards} />
       {testimonialsData?.data && <TestimonialsSection testimonials={testimonialsData.data} />}
-      <NewsletterSection />
+      <NewsletterSection className="py-20 bg-gray-50 dark:bg-gray-900" />
     </div>
   );
 }
