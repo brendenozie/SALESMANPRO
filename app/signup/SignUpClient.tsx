@@ -1,71 +1,101 @@
 "use client";
 
-import { signIn } from "next-auth/react"; 
-import { useState, useMemo } from "react";
+import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useMemo } from "react";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-// --- PLACEHOLDER ICONS (Reused for consistent styling) ---
+// --- Heroicons ---
 const MailIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-);
-const LockIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-);
-const Loader2 = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
-);
-const UserIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-);
-const AlertTriangle = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-9-15-9 15z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+  </svg>
 );
 
-// We define a simple icon mapping for common providers.
+const LockIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+  </svg>
+);
+
+const LoaderIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+  </svg>
+);
+
+const UserIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+  </svg>
+);
+
+const AlertTriangle = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3Z" />
+  </svg>
+);
+
+// Define icon mapping for common providers
 const ProviderIcons: Record<string, (props: React.SVGProps<SVGSVGElement>) => JSX.Element> = {
-    google: (props: React.SVGProps<SVGSVGElement>) => (
-        <svg {...props} width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M22.0001 12.5714C22.0001 11.7857 21.9287 11.0001 21.7858 10.2857H12.0001V14.1429H17.4287C17.2144 15.2857 16.5001 16.2143 15.5001 16.8572L15.5715 17.3572L18.7858 19.7857L19.0001 19.8572C20.8572 18.2857 22.0001 15.9286 22.0001 12.5714Z" fill="#4285F4"/><path d="M12 22C14.7143 22 17.0715 21.0714 18.7858 19.7857L15.5001 16.8572C14.5001 17.5 13.2144 17.9286 12 17.9286C9.35721 17.9286 7.14289 16.1429 6.35721 13.6429L6.28578 13.7143L3.07146 16.0714L3.00003 16.1429C4.64289 19.4286 8.00003 22 12 22Z" fill="#34A853"/><path d="M6.35721 13.6429C6.00007 12.7143 6.00007 11.6429 6.35721 10.7143L6.35721 10.6429L3.07146 8.28571L3.00003 8.35714C1.85718 10.5714 1.85718 13.1429 3.00003 15.3572L6.35721 13.6429Z" fill="#FBBC05"/><path d="M12 6.14286C13.8572 6.14286 15.0715 6.92857 15.8572 7.71429L19 4.5C17.0715 2.85714 14.7143 2 12 2C8.00003 2 4.64289 4.57143 3.00003 7.85714L6.35721 10.2143C7.14289 7.71429 9.35721 5.92857 12 5.92857V6.14286Z" fill="#EA4335"/></svg>
-    ),
-    github: (props: React.SVGProps<SVGSVGElement>) => (
-      <svg {...props} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3.2-1 3.2-4.2 3.2-5.7 0-.7-.2-1.2-.5-1.7 1.5-.2 1.5-1 1.5-3s-.9-2.7-1.7-3.2c-.3-.2-.7-.3-1.1-.3-1.6 0-3.3 1-4.2 2.7-.4.6-.6 1.3-.6 2.2 0 1.5.5 3.5 1 5.4 1 2 2.5 3.7 4.2 4.5v3.2"/></svg>
-    ),
-    // Add more providers as needed
+  google: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg {...props} width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M22.0001 12.5714C22.0001 11.7857 21.9287 11.0001 21.7858 10.2857H12.0001V14.1429H17.4287C17.2144 15.2857 16.5001 16.2143 15.5001 16.8572L15.5715 17.3572L18.7858 19.7857L19.0001 19.8572C20.8572 18.2857 22.0001 15.9286 22.0001 12.5714Z" fill="#4285F4"/><path d="M12 22C14.7143 22 17.0715 21.0714 18.7858 19.7857L15.5001 16.8572C14.5001 17.5 13.2144 17.9286 12 17.9286C9.35721 17.9286 7.14289 16.1429 6.35721 13.6429L6.28578 13.7143L3.07146 16.0714L3.00003 16.1429C4.64289 19.4286 8.00003 22 12 22Z" fill="#34A853"/><path d="M6.35721 13.6429C6.00007 12.7143 6.00007 11.6429 6.35721 10.7143L6.35721 10.6429L3.07146 8.28571L3.00003 8.35714C1.85718 10.5714 1.85718 13.1429 3.00003 15.3572L6.35721 13.6429Z" fill="#FBBC05"/><path d="M12 6.14286C13.8572 6.14286 15.0715 6.92857 15.8572 7.71429L19 4.5C17.0715 2.85714 14.7143 2 12 2C8.00003 2 4.64289 4.57143 3.00003 7.85714L6.35721 10.2143C7.14289 7.71429 9.35721 5.92857 12 5.92857V6.14286Z" fill="#EA4335"/></svg>
+  ),
+  github: (props: React.SVGProps<SVGSVGElement>) => (
+    <svg {...props} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3.2-1 3.2-4.2 3.2-5.7 0-.7-.2-1.2-.5-1.7 1.5-.2 1.5-1 1.5-3s-.9-2.7-1.7-3.2c-.3-.2-.7-.3-1.1-.3-1.6 0-3.3 1-4.2 2.7-.4.6-.6 1.3-.6 2.2 0 1.5.5 3.5 1 5.4 1 2 2.5 3.7 4.2 4.5v3.2"/></svg>
+  ),
 };
 
+// --- types ---
 export type Provider = { id: string; name: string };
 
-// Custom Input Field Component for visual appeal (identical to SignInClient)
-const InputField = ({ label, name, type, icon: Icon, value, onChange, placeholder }: { label: string; name: string; type: string; icon: React.FC<React.SVGProps<SVGSVGElement>>; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; placeholder: string; }) => (
-    <div>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        {label}
-      </label>
-      <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Icon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-        </div>
-        <input
-          id={name}
-          name={name}
-          type={type}
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          required
-          className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-xl shadow-inner
-                     focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition duration-150 ease-in-out"
-        />
+const InputField = ({
+  label,
+  name,
+  type,
+  icon: Icon,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  name: string;
+  type: string;
+  icon: React.FC<React.SVGProps<SVGSVGElement>>;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholder: string;
+}) => (
+  <div>
+    <label
+      htmlFor={name}
+      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+    >
+      {label}
+    </label>
+    <div className="relative">
+      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <Icon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
       </div>
+      <input
+        id={name}
+        name={name}
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        required
+        className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-xl shadow-inner focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition duration-150 ease-in-out"
+      />
     </div>
+  </div>
 );
-
 
 export default function SignUpClient({ providers }: { providers: Provider[] }) {
   const params = useSearchParams();
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  
+  // Track the specific provider that is loading
+  const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState({ 
     name: "", 
@@ -88,28 +118,23 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
   const registerUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setIsLoading(true);
+    setLoadingProvider("credentials");
 
     // Basic Validation
     if (!data.name || !data.email || !data.password || !data.confirmPassword) {
       setError("Please fill in all required fields.");
-      setIsLoading(false);
+      setLoadingProvider(null);
       return;
     }
     if (data.password !== data.confirmPassword) {
       setError("Passwords do not match. Please check them.");
-      setIsLoading(false);
+      setLoadingProvider(null);
       return;
     }
 
-    if (!data.name || !data.email || !data.password || !data.confirmPassword)
-      return setError("Please fill in all required fields."), setIsLoading(false);
-    if (data.password !== data.confirmPassword)
-      return setError("Passwords do not match."), setIsLoading(false);
-
     try {
       // Replace this with actual API request (to your backend)
-      const res = await fetch(`${apiBaseUrl}/register`, {
+      const res = await fetch(`/api/register`, { // Adjust to your actual apiBaseUrl if needed
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -118,15 +143,9 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
 
       if (!res.ok) throw new Error(json.message || "Registration failed");
 
-      // router.push("/signin?registered=true");
       localStorage.setItem("callbackUrl", callbackUrl);
-      // ✅ Automatically sign in the user
-      // await signIn("credentials", {
-      //   redirect: true,
-      //   callbackUrl: callbackUrl,
-      //   email: data.email,
-      //   password: data.password,
-      // });
+      
+      // Automatically sign in the user
       await signIn("credentials-email-password", {
         redirect: true,
         callbackUrl: encodeURIComponent(callbackUrl),
@@ -134,33 +153,29 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
         password: data.password,
       });
 
-
-      // if (loginRes?.error) {
-      //   alert("Registered but failed to auto-login");
-      // } else {
-      //   // ✅ Redirect after successful auto-login
-      //   router.push("/dashboards");
-      // }
     } catch (err: any) {
       setError(err.message || "Something went wrong.");
-    } finally {
-      setIsLoading(false);
+      setLoadingProvider(null);
     }
   };
 
   const handleSocialSignUp = async (providerId: string) => {
-    setError(null);
-    setIsLoading(true);
-    // Use signIn with the provider for sign-up/link accounts
-    localStorage.setItem("callbackUrl", callbackUrl);
-    await signIn(providerId, { redirect: true, callbackUrl: encodeURIComponent(callbackUrl), });
+    try {
+      setError(null);
+      setLoadingProvider(providerId);
+      localStorage.setItem("callbackUrl", callbackUrl);
+      await signIn(providerId, { redirect: true, callbackUrl: encodeURIComponent(callbackUrl) });
+    } catch (err) {
+      console.error(err);
+      setError("Sign-Up failed. Please check your connection and try again.");
+      setLoadingProvider(null);
+    }
   };
   
   // Update function helper
   const updateData = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setData((d) => ({ ...d, [field]: e.target.value }));
   }
-
 
   return (
     // Reuses the visually engaging background from the sign-in page
@@ -194,17 +209,24 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
               .filter(prov => prov.id === "google") // 👈 show only Google
               .map((prov) => {
                 const IconComponent = ProviderIcons[prov.id.toLowerCase()] || UserIcon;
+                const isThisLoading = loadingProvider === prov.id;
 
                 return (
                   <button
                     key={prov.id}
-                    className="w-full flex items-center justify-center py-3 px-4 border border-gray-300 dark:border-gray-700 
+                    disabled={loadingProvider !== null}
+                    className={`w-full flex items-center justify-center py-3 px-4 border border-gray-300 dark:border-gray-700 
                               rounded-xl shadow-md font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 
-                              hover:shadow-lg transition duration-300 ease-in-out transform hover:bg-gray-50 dark:hover:bg-gray-600"
+                              transition duration-300 ease-in-out transform 
+                              ${loadingProvider !== null ? "opacity-60 cursor-not-allowed" : "hover:shadow-lg hover:bg-gray-50 dark:hover:bg-gray-600"}`}
                     onClick={() => handleSocialSignUp(prov.id)}
                   >
-                    <IconComponent className="mr-3 h-5 w-5" />
-                    Sign up with {prov.name}
+                    {isThisLoading ? (
+                      <LoaderIcon className="mr-3 h-5 w-5 animate-spin" />
+                    ) : (
+                      <IconComponent className="mr-3 h-5 w-5" />
+                    )}
+                    {isThisLoading ? `Signing up with ${prov.name}...` : `Sign up with ${prov.name}`}
                   </button>
                 );
               })}
@@ -276,17 +298,19 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={loadingProvider !== null}
               className={`w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-lg 
                           text-base font-semibold text-white transition duration-300 ease-in-out transform hover:scale-[1.01]
-                          ${isLoading
-                            ? "bg-yellow-400 cursor-wait"
-                            : "bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-4 focus:ring-yellow-300 dark:focus:ring-yellow-700"
+                          ${loadingProvider === "credentials"
+                            ? "bg-yellow-400 cursor-wait opacity-80"
+                            : loadingProvider !== null
+                              ? "bg-yellow-500 opacity-60 cursor-not-allowed"
+                              : "bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-4 focus:ring-yellow-300 dark:focus:ring-yellow-700"
                           }`}
             >
-              {isLoading ? (
+              {loadingProvider === "credentials" ? (
                   <>
-                      <Loader2 className="h-5 w-5 mr-2" />
+                      <LoaderIcon className="h-5 w-5 mr-2 animate-spin" />
                       Creating Account...
                   </>
               ) : (
