@@ -372,7 +372,7 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
       const HUB_URL = "https://salesmanpro.site";
       const AUTH_HOST = new URL(baseUrl).hostname;
 
-       // 🚫 Logout must NEVER go through handover
+      // 🚫 Logout must NEVER go through handover
       if (url.includes("/logout")) {
         return url.startsWith("/") ? `${baseUrl}${url}` : url;
       }
@@ -538,6 +538,9 @@ export const authOptions = (reqHost?: string): NextAuthOptions => ({
         sameSite: "lax", // this is the default, but we set it explicitly for clarity
         path: "/",
         secure: process.env.NODE_ENV === "production",
+        // 🚀 THE FIX: You MUST explicitly declare maxAge here when overriding cookies,
+        // otherwise Android treats it as a session-only cookie and kills it on exit.
+        maxAge: 30 * 24 * 60 * 60, // 30 days in seconds
       },
     },
   },
