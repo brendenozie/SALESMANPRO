@@ -7,8 +7,8 @@ import { useSession, signOut } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
 
 // --- Icons (Enhanced with generic wrapper for consistency) ---
-const IconWrapper = ({ children, className = "w-6 h-6" }: { children: React.ReactNode, className?: string }) => (
-  <div className={`${className} transition-transform duration-200`}>{children}</div>
+const IconWrapper = ({ children, className = "w-5 h-5" }: { children: React.ReactNode, className?: string }) => (
+  <div className={`${className} transition-transform duration-200 flex items-center justify-center`}>{children}</div>
 );
 
 const Bars3Icon = () => (
@@ -45,7 +45,7 @@ const Header = () => {
   const user = session?.user as { role?: string; name?: string; image?: string } | undefined;
 
   // --- Store Data ---
-  const { slug, name, logoUrl, themeSettings } = storeFormData || {
+  const { name, logoUrl, themeSettings } = storeFormData || {
     slug: 'my-blog',
     name: 'GLOBAL INSIGHTS',
     logoUrl: 'https://placehold.co/40x40/EF4444/FFFFFF?text=GI',
@@ -53,7 +53,6 @@ const Header = () => {
   };
 
   const primary = themeSettings?.primaryColor || '#f97316';
-  const secondary = themeSettings?.secondaryColor || '#3b82f6';
 
   // --- UI State ---
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -62,14 +61,19 @@ const Header = () => {
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll);
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  // Close mobile menu on path changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
   // --- Navigation Items ---
   const navItems = [
     { label: 'Home', href: `/` },
-    { label: 'Blog', href: `/blog/products` },
+    { label: 'Blog', href: `/blog/listings` },
     { label: 'About', href: `/blog/about` },
     { label: 'Contact', href: `/blog/contact` },
   ];
@@ -81,7 +85,7 @@ const Header = () => {
     else router.push(`/blog/profile`);
   };
 
-  const handleSignOut = () => signOut({ redirect: true, callbackUrl: `${window.location.origin || window.location.href || "/"}` });
+  const handleSignOut = () => signOut({ redirect: true, callbackUrl: "/" });
 
   const handleGoogleSignIn = () => {
     const authUrl = new URL('https://auth.salesmanpro.site/signin');
@@ -100,49 +104,43 @@ const Header = () => {
       <motion.header
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${
+        transition={{ type: 'spring', stiffness: 120, damping: 22 }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b ${
           scrolled
-            ? 'bg-slate-950/70 backdrop-blur-xl border-white/5 py-3 shadow-[0_4px_30px_rgba(0,0,0,0.1)]'
-            : 'bg-transparent border-transparent py-6'
+            ? 'bg-slate-900 border-slate-800 py-3.5 shadow-md'
+            : 'bg-slate-950 border-transparent py-5'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           
           {/* ===== LEFT: LOGO ===== */}
-          <motion.div
-            className="flex items-center gap-3 cursor-pointer z-50"
+          <div
+            className="flex items-center gap-3 cursor-pointer select-none"
             onClick={() => router.push(`/`)}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.95 }}
           >
-            <div className="relative group">
+            <div className="relative">
               {logoUrl ? (
-                <div className="relative rounded-full overflow-hidden ring-2 ring-white/10 group-hover:ring-white/30 transition-all">
-                   <img src={logoUrl} alt={name} width={42} height={42} className="object-cover h-20 w-32" />
-                   <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="h-9 w-9 rounded-lg overflow-hidden border border-slate-700 bg-slate-800 flex items-center justify-center">
+                  <img src={logoUrl} alt={name} className="h-full w-full object-contain" />
                 </div>
               ) : (
                 <div 
-                  className="w-10 h-10 rounded-full flex items-center justify-center shadow-lg"
-                  style={{ background: `linear-gradient(135deg, ${primary}, ${secondary})` }}
+                  className="w-9 h-9 rounded-lg flex items-center justify-center border border-slate-700"
+                  style={{ backgroundColor: primary }}
                 >
-                  <span className="text-white font-bold text-lg">{name.charAt(0)}</span>
+                  <span className="text-white font-bold text-sm">{name.charAt(0)}</span>
                 </div>
               )}
             </div>
             
-            <span
-              className="text-xl font-bold tracking-tight hidden sm:block"
-              style={{ color: '#fff' }}
-            >
+            <span className="text-lg font-semibold tracking-tight text-white hidden sm:block">
               {name}
             </span>
-          </motion.div>
+          </div>
 
-          {/* ===== CENTER: DESKTOP NAV (THE ISLAND) ===== */}
-          <nav className="hidden md:flex items-center bg-white/5 backdrop-blur-md rounded-full px-2 py-1.5 border border-white/5 shadow-sm">
-            <ul className="flex items-center gap-1">
+          {/* ===== CENTER: DESKTOP NAV ===== */}
+          <nav className="hidden md:block">
+            <ul className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-full p-1">
               {navItems.map(({ label, href }) => {
                 const isActive = pathname === href;
                 return (
@@ -151,8 +149,8 @@ const Header = () => {
                       href={href}
                       onMouseEnter={() => setHoveredNav(label)}
                       onMouseLeave={() => setHoveredNav(null)}
-                      className={`relative z-10 px-5 py-2 text-sm font-medium transition-colors duration-300 ${
-                         isActive ? 'text-white' : 'text-gray-400 hover:text-white'
+                      className={`relative z-10 block px-4 py-1.5 text-xs font-medium transition-colors duration-200 rounded-full ${
+                        isActive ? 'text-white' : 'text-slate-400 hover:text-white'
                       }`}
                     >
                       {label}
@@ -162,20 +160,17 @@ const Header = () => {
                     {hoveredNav === label && (
                       <motion.div
                         layoutId="nav-pill"
-                        className="absolute inset-0 rounded-full bg-white/10"
+                        className="absolute inset-0 rounded-full bg-slate-800 border border-slate-700"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                        transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
                       />
                     )}
                     
-                    {/* Active Indicator Dot */}
+                    {/* Active State (Static when not hovered) */}
                     {isActive && !hoveredNav && (
-                      <motion.div 
-                        layoutId="nav-pill"
-                        className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"
-                      />
+                      <div className="absolute inset-0 rounded-full bg-slate-800/60 border border-slate-700/50" />
                     )}
                   </li>
                 );
@@ -184,63 +179,53 @@ const Header = () => {
           </nav>
 
           {/* ===== RIGHT: ACTIONS ===== */}
-          <div className="flex items-center gap-4">
-            {/* Search */}
+          <div className="flex items-center gap-3">
+            {/* Search Button */}
             <motion.button
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              whileTap={{ scale: 0.9 }}
-              className="text-gray-400 hover:text-white transition-colors"
+              whileTap={{ scale: 0.95 }}
+              className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg border border-transparent hover:border-slate-700 transition-all"
               aria-label="Search"
             >
               <IconWrapper><MagnifyingGlassIcon /></IconWrapper>
             </motion.button>
 
-            {/* User / CTA */}
+            {/* Profile / Auth Trigger */}
             <div className="hidden md:block">
               {user ? (
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <button onClick={handleUserAction} className="relative group">
-                    {user.image ? (
-                       <img src={user.image} alt="Profile" className="w-9 h-9 rounded-full border border-gray-700 group-hover:border-white/50 transition-colors" />
-                    ) : (
-                      <div className="p-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-gray-300 hover:text-white transition-all">
-                        <IconWrapper className="w-5 h-5"><UserIcon /></IconWrapper>
-                      </div>
-                    )}
-                  </button>
-                </motion.div>
+                <button 
+                  onClick={handleUserAction} 
+                  className="flex items-center gap-2 p-1 pr-3 rounded-full bg-slate-900 border border-slate-800 hover:border-slate-700 transition-colors"
+                >
+                  {user.image ? (
+                     <img src={user.image} alt="Profile" className="w-7 h-7 rounded-full object-cover" />
+                  ) : (
+                    <div className="p-1 rounded-full bg-slate-800 text-slate-300">
+                      <IconWrapper className="w-4 h-4"><UserIcon /></IconWrapper>
+                    </div>
+                  )}
+                  <span className="text-xs font-medium text-slate-300 group-hover:text-white max-w-[100px] truncate">
+                    {user.name?.split(' ')[0] || 'Account'}
+                  </span>
+                </button>
               ) : (
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                <button
                   onClick={handleGoogleSignIn}
-                  className="px-5 py-2 rounded-full text-sm font-semibold text-white shadow-lg hover:shadow-xl transition-all"
-                  style={{ 
-                    background: `linear-gradient(90deg, ${primary}, ${secondary})`,
-                    boxShadow: `0 0 15px ${primary}40` // 40 = opacity
-                  }}
+                  className="px-4 py-2 rounded-lg text-xs font-semibold text-white transition-all hover:brightness-110"
+                  style={{ backgroundColor: primary }}
                 >
                   Log In
-                </motion.button>
+                </button>
               )}
             </div>
 
-             {/* Mobile Menu Toggle */}
-             <div className="md:hidden z-50">
-               {mobileMenuOpen ? (
-                 // Using a separate close button in the overlay, 
-                 // but this ensures the toggle button area remains interactive if needed
-                 <div /> 
-               ) : (
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setMobileMenuOpen(true)}
-                  className="text-gray-200 p-1"
-                >
-                  <IconWrapper className="w-7 h-7"><Bars3Icon /></IconWrapper>
-                </motion.button>
-               )}
-             </div>
+            {/* Mobile Menu Hamburger */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="md:hidden p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg border border-transparent transition-all"
+              aria-label="Open menu"
+            >
+              <IconWrapper className="w-5 h-5"><Bars3Icon /></IconWrapper>
+            </button>
           </div>
         </div>
       </motion.header>
@@ -249,100 +234,89 @@ const Header = () => {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.2 } }}
-            className="fixed inset-0 z-[60] bg-slate-950/95 backdrop-blur-2xl md:hidden flex flex-col"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[100] bg-slate-950 md:hidden flex flex-col"
           >
-            {/* Menu Header */}
-            <div className="px-6 py-6 flex justify-between items-center border-b border-white/10">
-              <span className="text-xl font-bold text-white tracking-wide">{name}</span>
-              <motion.button 
-                whileTap={{ rotate: 90, scale: 0.8 }}
+            {/* Overlay Title bar */}
+            <div className="px-4 py-5 flex justify-between items-center border-b border-slate-800 bg-slate-900">
+              <span className="text-base font-semibold text-white tracking-tight">{name}</span>
+              <button 
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-2 rounded-full bg-white/5 text-gray-400 hover:text-white"
+                className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-white"
               >
                 <IconWrapper><XMarkIcon /></IconWrapper>
-              </motion.button>
+              </button>
             </div>
 
-            {/* Menu Links Staggered */}
-            <motion.div 
-              className="flex-1 flex flex-col justify-center px-8 space-y-6"
-              initial="hidden"
-              animate="show"
-              variants={{
-                hidden: { opacity: 0 },
-                show: {
-                  opacity: 1,
-                  transition: { staggerChildren: 0.1, delayChildren: 0.1 }
-                }
-              }}
-            >
-              {navItems.map(({ label, href }) => (
-                <motion.a
-                  key={label}
-                  href={href}
-                  variants={{
-                    hidden: { opacity: 0, x: -20 },
-                    show: { opacity: 1, x: 0 }
-                  }}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-500 hover:to-white transition-all duration-300"
-                >
-                  {label}
-                </motion.a>
-              ))}
-            </motion.div>
+            {/* Mobile Stack links */}
+            <div className="flex-1 overflow-y-auto px-4 py-6 space-y-2">
+              {navItems.map(({ label, href }) => {
+                const isActive = pathname === href;
+                return (
+                  <a
+                    key={label}
+                    href={href}
+                    className={`block w-full px-4 py-3 rounded-xl text-lg font-medium transition-colors ${
+                      isActive 
+                        ? 'bg-slate-900 text-white border-l-2' 
+                        : 'text-slate-400 hover:text-white hover:bg-slate-900/50'
+                    }`}
+                    style={{ borderLeftColor: isActive ? primary : 'transparent' }}
+                  >
+                    {label}
+                  </a>
+                );
+              })}
+            </div>
 
-            {/* Menu Footer / Auth */}
-            <motion.div 
-              className="p-8 border-t border-white/10 bg-white/5"
-              initial={{ y: 50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-            >
+            {/* Mobile Interactive Tray / Context Block */}
+            <div className="p-4 border-t border-slate-800 bg-slate-900">
               {user ? (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4 mb-4">
-                     {user.image && <img src={user.image} alt="User" className="w-12 h-12 rounded-full" />}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 px-2 py-1">
+                     {user.image && <img src={user.image} alt="User" className="w-10 h-10 rounded-full border border-slate-700" />}
                      <div>
-                       <p className="text-white font-medium">{user.name || 'User'}</p>
-                       <p className="text-xs text-gray-400 uppercase tracking-wider">{user.role || 'Member'}</p>
+                       <p className="text-sm font-semibold text-white">{user.name || 'User'}</p>
+                       <p className="text-xs text-slate-400 tracking-wider font-medium uppercase">{user.role || 'Member'}</p>
                      </div>
                   </div>
-                  <button
-                    onClick={() => { setMobileMenuOpen(false); handleUserAction(); }}
-                    className="w-full py-3.5 rounded-xl font-semibold text-white shadow-lg"
-                    style={{ background: primary }}
-                  >
-                    Dashboard
-                  </button>
-                  <button
-                  onClick={() => { setMobileMenuOpen(false); handleSignOut(); }}
-                    className="w-full py-3.5 text-gray-400 font-medium hover:text-white transition-colors"
-                  >
-                    Sign Out
-                  </button>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={handleUserAction}
+                      className="py-3 rounded-xl text-xs font-semibold text-white text-center hover:brightness-110 transition-all"
+                      style={{ backgroundColor: primary }}
+                    >
+                      Dashboard
+                    </button>
+                    <button
+                      onClick={handleSignOut}
+                      className="py-3 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-300 font-semibold text-center hover:bg-slate-700 transition-colors"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <button
-                    onClick={() => { setMobileMenuOpen(false); handleGoogleSignIn(); }}
-                    className="py-3.5 rounded-xl border border-white/10 bg-white/5 text-white font-semibold hover:bg-white/10 transition-all"
+                    onClick={handleGoogleSignIn}
+                    className="py-3 rounded-xl border border-slate-700 bg-slate-800 text-slate-200 text-xs font-semibold hover:bg-slate-700 transition-all"
                   >
                     Log In
                   </button>
                   <button
-                    onClick={() => { setMobileMenuOpen(false); handleGoogleSignUp(); }}
-                    className="py-3.5 rounded-xl text-white font-semibold shadow-lg"
-                    style={{ background: `linear-gradient(135deg, ${primary}, ${secondary})` }}
+                    onClick={handleGoogleSignUp}
+                    className="py-3 rounded-xl text-white text-xs font-semibold hover:brightness-110 transition-all"
+                    style={{ backgroundColor: primary }}
                   >
                     Sign Up
                   </button>
                 </div>
               )}
-            </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,17 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Bar } from "react-chartjs-2";
 import toast, { Toaster } from "react-hot-toast";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
 import {
   UsersIcon,
   PencilSquareIcon,
@@ -28,24 +18,12 @@ import {
   MapPinIcon,
   IdentificationIcon,
   PhotoIcon,
-  UserCircleIcon, // Using a standard icon for a clean placeholder
+  UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import Modal from "@/components/Modal"; // Assuming you have a generic Modal component
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
-
-// ✨ Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
-
-// Define nested types for User and Company as they will be included by Prisma
 export type UserForWriter = {
   id: string;
   name: string | null;
@@ -57,7 +35,6 @@ export type CompanyForWriter = {
   name: string;
 };
 
-// ✨ Updated Writer type to reflect the full structure from the API
 export type Writer = {
   id: string;
   userId: string;
@@ -78,14 +55,13 @@ export type Writer = {
   password?: string;
 };
 
-// ✨ Props for the client component
 interface ClientProps {
   writersData: Writer[];
   companyId: string;
 }
 
 // -----------------------------------------------------------------------------
-// Helper Components (REFINED)
+// Helper Components
 // -----------------------------------------------------------------------------
 
 const SummaryCard: React.FC<{
@@ -96,36 +72,32 @@ const SummaryCard: React.FC<{
   hoverClass: string;
 }> = ({ title, value, icon: Icon, gradientClass, hoverClass }) => (
   <div
-    className={`p-6 rounded-2xl shadow-xl border border-gray-700
-                text-white flex flex-col justify-between h-40
-                transition-all duration-500 ease-in-out ${gradientClass} ${hoverClass}`}
+    className={`p-6 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50
+                text-white flex flex-col justify-between h-36
+                transition-all duration-300 ease-in-out ${gradientClass} ${hoverClass}`}
   >
     <div className="flex items-center justify-between">
-      <h2 className="text-sm font-semibold uppercase opacity-80 tracking-wider">{title}</h2>
-      <Icon className="h-7 w-7 opacity-70" />
+      <h2 className="text-xs font-bold uppercase opacity-90 tracking-wider">{title}</h2>
+      <Icon className="h-6 w-6 opacity-80" />
     </div>
-    <p className="text-5xl font-extrabold text-right drop-shadow-md">
+    <p className="text-4xl font-extrabold text-right drop-shadow-sm">
       {value}
     </p>
   </div>
 );
 
-// REFINED WriterCard with Profile Picture and clearer layout
 const WriterCard: React.FC<{
   writer: Writer;
   onEdit: (writer: Writer) => void;
   onDelete: (id: string) => void;
 }> = ({ writer, onEdit, onDelete }) => {
   const handleCopyCode = () => {
-    // Check if the writer object and loginCode exist before copying
     if (writer.loginCode) {
-        // Fallback or modern clipboard API usage can be implemented here,
-        // but sticking to the original implementation's core concept:
-        navigator.clipboard.writeText(writer.loginCode).then(() => {
-          toast.success("Login code copied!");
-        }).catch(() => {
-          toast.error("Failed to copy code.");
-        });
+      navigator.clipboard.writeText(writer.loginCode).then(() => {
+        toast.success("Login code copied!");
+      }).catch(() => {
+        toast.error("Failed to copy code.");
+      });
     }
   };
 
@@ -135,13 +107,13 @@ const WriterCard: React.FC<{
 
   const statusColor =
     writer.status === 'Active'
-      ? 'text-green-400 bg-green-900/40'
+      ? 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-900/30 border border-green-200 dark:border-green-800'
       : writer.status === 'On Leave'
-      ? 'text-yellow-400 bg-yellow-900/40'
-      : 'text-red-400 bg-red-900/40';
+      ? 'text-yellow-600 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800'
+      : 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/30 border border-red-200 dark:border-red-800';
 
   return (
-    <div className="relative bg-gray-800 p-6 rounded-2xl shadow-2xl border-t-4 border-indigo-500/80 hover:border-indigo-400 transition-all duration-500 ease-in-out transform hover:scale-[1.02]">
+    <div className="relative bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm dark:shadow-xl border border-gray-100 dark:border-gray-700/80 transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-md dark:hover:shadow-2xl">
       
       {/* Header & Status */}
       <div className="flex items-start justify-between mb-4">
@@ -149,95 +121,90 @@ const WriterCard: React.FC<{
           <img 
             src={writer.profilePicture} 
             alt={`${writer.user.name}'s profile`} 
-            className="w-16 h-16 rounded-full object-cover border-4 border-indigo-500 shadow-lg"
+            className="w-14 h-14 rounded-full object-cover border-2 border-indigo-500 shadow-sm"
           />
         ) : (
-          <UserCircleIcon className="w-16 h-16 text-indigo-400 bg-gray-700 rounded-full p-1" />
+          <UserCircleIcon className="w-14 h-14 text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-gray-700 rounded-full p-1" />
         )}
-        <span 
-          className={`px-3 py-1 text-xs font-bold rounded-full capitalize ${statusColor}`}
-        >
+        <span className={`px-2.5 py-1 text-xs font-semibold rounded-full capitalize ${statusColor}`}>
           {writer.status}
         </span>
       </div>
 
       {/* Basic Info */}
-      <div className="pb-4 border-b border-gray-700/60">
-        <h3 className="text-2xl font-extrabold text-indigo-300 mb-1 truncate">
+      <div className="pb-3 border-b border-gray-100 dark:border-gray-700/60">
+        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-0.5 truncate">
           {writer.user.name || 'Anonymous Writer'}
         </h3>
-        <p className="text-sm text-gray-400 flex items-center truncate">
-            <IdentificationIcon className="h-4 w-4 mr-2" />
-            {writer.user.email}
+        <p className="text-xs text-gray-400 dark:text-gray-400 flex items-center truncate">
+          <IdentificationIcon className="h-3.5 w-3.5 mr-1.5 text-gray-400" />
+          {writer.user.email}
         </p>
       </div>
 
       {/* Performance Metrics Grid */}
-      <div className="grid grid-cols-2 gap-y-3 gap-x-4 my-5 text-sm">
+      <div className="grid grid-cols-2 gap-y-3 gap-x-4 my-4 text-xs">
         <div className="flex flex-col">
-          <span className="text-gray-400 font-medium flex items-center">
-            <BookOpenIcon className="h-4 w-4 mr-2 text-indigo-400" />Total Articles:
+          <span className="text-gray-400 dark:text-gray-400 font-medium flex items-center mb-0.5">
+            <BookOpenIcon className="h-3.5 w-3.5 mr-1 text-indigo-500 dark:text-indigo-400" />Total Articles
           </span>
-          <span className="text-xl font-bold text-white">
+          <span className="text-lg font-bold text-gray-900 dark:text-white">
             {writer.totalArticles}
           </span>
         </div>
         <div className="flex flex-col">
-          <span className="text-gray-400 font-medium flex items-center">
-            <CalendarDaysIcon className="h-4 w-4 mr-2 text-yellow-400" />Articles This Month:
+          <span className="text-gray-400 dark:text-gray-400 font-medium flex items-center mb-0.5">
+            <CalendarDaysIcon className="h-3.5 w-3.5 mr-1 text-emerald-500 dark:text-emerald-400" />This Month
           </span>
-          <span className="text-xl font-bold text-yellow-400">
+          <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
             {writer.articlesThisMonth}
           </span>
         </div>
         <div className="col-span-2 flex flex-col">
-          <span className="text-gray-400 font-medium flex items-center">
-            <CalendarDaysIcon className="h-4 w-4 mr-2 text-green-400" />Last Article:
+          <span className="text-gray-400 dark:text-gray-400 font-medium flex items-center mb-0.5">
+            <CalendarDaysIcon className="h-3.5 w-3.5 mr-1 text-gray-400" />Last Contribution
           </span>
-          <span className="text-md font-bold text-gray-300">
+          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
             {formattedLastArticleDate}
           </span>
         </div>
       </div>
       
-      {/* Login Code & Copy Button */}
-      <div className="p-3 bg-gray-700/50 rounded-lg flex items-center justify-between mt-4">
-        <div className="flex items-center">
-          <KeyIcon className="h-5 w-5 text-red-400 mr-3 flex-shrink-0" />
-          <span className="text-gray-200 font-mono text-base tracking-widest truncate">
+      {/* Login Code Container */}
+      <div className="p-2.5 bg-gray-50 dark:bg-gray-700/40 rounded-xl flex items-center justify-between mt-4 border border-gray-100 dark:border-transparent">
+        <div className="flex items-center min-w-0">
+          <KeyIcon className="h-4 w-4 text-rose-500 dark:text-rose-400 mr-2.5 flex-shrink-0" />
+          <span className="text-gray-700 dark:text-gray-300 font-mono text-sm tracking-wider truncate">
             {writer.loginCode}
           </span>
         </div>
         <button
           onClick={handleCopyCode}
-          className="p-2 text-gray-400 hover:text-indigo-300 hover:bg-gray-600 rounded-md transition duration-200 flex-shrink-0"
+          className="p-1.5 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-300 hover:bg-white dark:hover:bg-gray-600 rounded-md transition duration-150 flex-shrink-0 shadow-sm border border-transparent dark:border-none"
           aria-label="Copy login code"
         >
-          <ClipboardDocumentIcon className="h-5 w-5" />
+          <ClipboardDocumentIcon className="h-4 w-4" />
         </button>
       </div>
 
-      {/* Actions */}
-      <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-700/60">
+      {/* Form Action Controls */}
+      <div className="flex justify-end space-x-2 mt-5 pt-3 border-t border-gray-100 dark:border-gray-700/60">
         <button
-          className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition font-semibold text-sm"
+          className="flex items-center px-3.5 py-1.5 bg-gray-50 dark:bg-gray-700 hover:bg-indigo-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 hover:text-indigo-600 rounded-lg transition font-medium text-xs border border-gray-200 dark:border-transparent"
           onClick={() => onEdit(writer)}
         >
-          <PencilSquareIcon className="h-5 w-5 mr-1" /> Edit
+          <PencilSquareIcon className="h-3.5 w-3.5 mr-1" /> Edit
         </button>
         <button
-          className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg shadow-md hover:bg-red-700 transition font-semibold text-sm"
+          className="flex items-center px-3.5 py-1.5 bg-rose-50 dark:bg-red-950/40 hover:bg-rose-100 text-rose-600 dark:text-red-400 rounded-lg transition font-medium text-xs border border-rose-100 dark:border-transparent"
           onClick={() => onDelete(writer.id)}
         >
-          <TrashIcon className="h-5 w-5 mr-1" /> Delete
+          <TrashIcon className="h-3.5 w-3.5 mr-1" /> Delete
         </button>
       </div>
     </div>
   );
 };
-
-
-// REFINED Modal Components (Style only changes)
 
 const AddEditWriterModal: React.FC<{
   isOpen: boolean;
@@ -246,18 +213,15 @@ const AddEditWriterModal: React.FC<{
   onSave: (writer: Partial<Writer>) => void;
   isSubmitting: boolean;
 }> = ({ isOpen, onClose, writer, onSave, isSubmitting }) => {
-  // formData now holds all top-level fields needed for the API call
   const [formData, setFormData] = useState<Partial<Writer & { name?: string; email?: string }>>({});
 
   React.useEffect(() => {
-    // Initialize form data with existing writer data or empty strings
     setFormData(
       writer
         ? {
             ...writer,
-            name: writer.user.name || "", // Pull name from nested user
-            email: writer.user.email || "", // Pull email from nested user
-            // Ensure date is in YYYY-MM-DD format for input type="date"
+            name: writer.user.name || "",
+            email: writer.user.email || "",
             lastArticleDate: writer.lastArticleDate ? new Date(writer.lastArticleDate).toISOString().split('T')[0] : '',
           }
         : {
@@ -270,8 +234,8 @@ const AddEditWriterModal: React.FC<{
             profilePicture: "",
             totalArticles: 0,
             articlesThisMonth: 0,
-            lastArticleDate: '', // Initialize as empty string for date input
-            status: 'Active', // Default status as per schema
+            lastArticleDate: '',
+            status: 'Active',
           }
     );
   }, [writer, isOpen]);
@@ -288,8 +252,8 @@ const AddEditWriterModal: React.FC<{
 
   return (
     <Modal title={''} isOpen={isOpen} onClose={onClose}>
-      <div className="bg-gray-800 text-gray-100 p-8 rounded-xl shadow-2xl w-full max-w-lg mx-auto border-t-4 border-indigo-500">
-        <h2 className="text-3xl font-bold text-indigo-400 mb-6 text-center">
+      <div className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 p-8 rounded-2xl shadow-2xl w-full max-w-lg mx-auto border border-gray-100 dark:border-gray-700">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
           {writer ? "Edit Writer Details" : "Onboard New Writer"}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -327,7 +291,7 @@ const AddEditWriterModal: React.FC<{
               name="phone" 
               value={formData.phone || ""} 
               onChange={handleChange} 
-              placeholder="Phone Number (Optional)" 
+              placeholder="Phone Number" 
               Icon={PhoneIcon}
             />
             <InputWithIcon 
@@ -335,7 +299,7 @@ const AddEditWriterModal: React.FC<{
               name="address" 
               value={formData.address || ""} 
               onChange={handleChange} 
-              placeholder="Address (Optional)" 
+              placeholder="Address" 
               Icon={MapPinIcon}
             />
           </div>
@@ -352,11 +316,11 @@ const AddEditWriterModal: React.FC<{
             name="profilePicture" 
             value={formData.profilePicture || ""} 
             onChange={handleChange} 
-            placeholder="Profile Picture URL (Optional)" 
+            placeholder="Profile Picture URL" 
             Icon={PhotoIcon}
           />
 
-          <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-700">
+          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100 dark:border-gray-700">
             <InputWithIcon 
               type="number" 
               name="totalArticles" 
@@ -376,24 +340,24 @@ const AddEditWriterModal: React.FC<{
               min="0"
             />
             <div className="col-span-1">
-              <label htmlFor="lastArticleDate" className="block text-gray-400 text-sm font-semibold mb-1">Last Article Date</label>
+              <label htmlFor="lastArticleDate" className="block text-gray-400 text-xs font-semibold mb-1">Last Article Date</label>
               <input
                 type="date"
                 name="lastArticleDate"
                 id="lastArticleDate"
                 value={formData.lastArticleDate || ''}
                 onChange={handleChange}
-                className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-indigo-500"
+                className="w-full p-2.5 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white text-sm outline-none"
               />
             </div>
             <div className="col-span-1">
-              <label htmlFor="status" className="block text-gray-400 text-sm font-semibold mb-1">Status</label>
+              <label htmlFor="status" className="block text-gray-400 text-xs font-semibold mb-1">Status</label>
               <select
                 name="status"
                 id="status"
                 value={formData.status || 'Active'}
                 onChange={handleChange}
-                className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-indigo-500"
+                className="w-full p-2.5 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white text-sm outline-none"
                 required
               >
                 <option value="Active">Active</option>
@@ -402,32 +366,22 @@ const AddEditWriterModal: React.FC<{
               </select>
             </div>
           </div>
-          
-          {writer && (
-            <div className="pt-4">
-              <label className="block text-gray-400 text-sm font-semibold mb-2">Current Login Code</label>
-              <div className="flex items-center w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-gray-300 cursor-not-allowed font-mono">
-                <KeyIcon className="h-5 w-5 mr-3 text-red-400" />
-                <span className="truncate">{writer.loginCode || "N/A"}</span>
-              </div>
-            </div>
-          )}
 
-          <div className="flex justify-end space-x-4 pt-6 border-t border-gray-700/60">
+          <div className="flex justify-end space-x-3 pt-6 border-t border-gray-100 dark:border-gray-700">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-3 bg-gray-600 text-white rounded-lg shadow-md hover:bg-gray-700 transition font-semibold"
+              className="px-5 py-2.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-250 text-gray-700 dark:text-white rounded-xl transition font-semibold text-sm"
               disabled={isSubmitting}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition font-semibold flex items-center disabled:bg-indigo-400 disabled:cursor-wait"
+              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition font-semibold text-sm flex items-center disabled:bg-indigo-400"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Saving..." : <><CheckCircleIcon className="h-5 w-5 mr-2" /> {writer ? "Save Changes" : "Add Writer"}</>}
+              {isSubmitting ? "Saving..." : <><CheckCircleIcon className="h-4 w-4 mr-1.5" /> {writer ? "Save Changes" : "Add Writer"}</>}
             </button>
           </div>
         </form>
@@ -436,30 +390,26 @@ const AddEditWriterModal: React.FC<{
   );
 };
 
-
-// NEW: Input Field with Icon for better visual appeal in modal
 const InputWithIcon: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { Icon: React.ElementType }> = ({ Icon, className, ...props }) => (
   <div className={`relative ${className}`}>
-    <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
+    <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
     <input
       {...props}
-      className="w-full p-3 pl-10 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+      className="w-full p-2.5 pl-9 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 text-sm outline-none transition focus:border-indigo-500 dark:focus:border-indigo-500"
     />
   </div>
 );
 
-// NEW: Text Area with Icon
 const TextAreaWithIcon: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { Icon: React.ElementType }> = ({ Icon, ...props }) => (
   <div className="relative">
-    <Icon className="absolute left-3 top-3 h-5 w-5 text-gray-500" />
+    <Icon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
     <textarea
       {...props}
       rows={3}
-      className="w-full p-3 pl-10 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-y transition"
+      className="w-full p-2.5 pl-9 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 text-sm outline-none resize-none transition focus:border-indigo-500 dark:focus:border-indigo-500"
     />
   </div>
 );
-
 
 const DeleteConfirmationModal: React.FC<{
   isOpen: boolean;
@@ -468,16 +418,16 @@ const DeleteConfirmationModal: React.FC<{
   writerName: string;
 }> = ({ isOpen, onClose, onConfirm, writerName }) => (
   <Modal title="" isOpen={isOpen} onClose={onClose}>
-    <div className="bg-gray-800 text-gray-100 p-8 rounded-xl shadow-2xl w-full max-w-sm mx-auto text-center border-t-4 border-red-500">
-      <ExclamationTriangleIcon className="h-20 w-20 text-red-500 mx-auto mb-6 animate-pulse" />
-      <h2 className="text-2xl font-bold text-red-400 mb-4">Confirm Deletion</h2>
-      <p className="text-lg text-gray-300 mb-7">
-        Are you sure you want to delete writer <span className="font-bold text-white">"{writerName}"</span>? This action cannot be undone.
+    <div className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 p-6 rounded-2xl shadow-2xl w-full max-w-sm mx-auto text-center border border-gray-100 dark:border-gray-700">
+      <ExclamationTriangleIcon className="h-14 w-14 text-rose-500 mx-auto mb-4" />
+      <h2 className="text-xl font-bold text-gray-950 dark:text-white mb-2">Remove Content Creator</h2>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+        Are you sure you want to drop <span className="font-semibold text-gray-900 dark:text-white">"{writerName}"</span>? This step is permanent.
       </p>
-      <div className="flex justify-center space-x-5">
-        <button onClick={onClose} className="px-6 py-3 bg-gray-600 text-white rounded-lg shadow-md hover:bg-gray-700 transition font-semibold">Cancel</button>
-        <button onClick={onConfirm} className="px-6 py-3 bg-red-600 text-white rounded-lg shadow-md hover:bg-red-700 transition font-semibold flex items-center">
-          <TrashIcon className="h-5 w-5 mr-2" /> Permanently Delete
+      <div className="flex justify-center space-x-3">
+        <button onClick={onClose} className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-white rounded-xl transition font-medium text-sm">Cancel</button>
+        <button onClick={onConfirm} className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl transition font-medium text-sm flex items-center">
+          <TrashIcon className="h-4 w-4 mr-1.5" /> Delete Account
         </button>
       </div>
     </div>
@@ -485,23 +435,20 @@ const DeleteConfirmationModal: React.FC<{
 );
 
 // -----------------------------------------------------------------------------
-// Main WritersClient Component (REFINED)
+// Main WritersClient Component
 // -----------------------------------------------------------------------------
 const WritersClient: React.FC<ClientProps> = ({ writersData, companyId }) => {
-  // ✨ State Management (Unchanged)
   const [writers, setWriters] = useState<Writer[]>(writersData);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const itemsPerPage = 6;
 
-  // Modals state (Unchanged)
   const [showAddEditModal, setShowAddEditModal] = useState(false);
   const [editingWriter, setEditingWriter] = useState<Writer | null>(null);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [writerToDelete, setWriterToDelete] = useState<string | null>(null);
 
-  // ✨ Memoized calculations (Unchanged)
   const filteredWriters = useMemo(() => {
     return writers.filter((writer) =>
       writer.user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -521,7 +468,6 @@ const WritersClient: React.FC<ClientProps> = ({ writersData, companyId }) => {
     );
   }, [writers]);
 
-  // Pagination logic (Unchanged)
   const totalPages = Math.ceil(filteredWriters.length / itemsPerPage);
   const paginatedWriters = useMemo(() => {
     const indexOfLastItem = currentPage * itemsPerPage;
@@ -529,33 +475,6 @@ const WritersClient: React.FC<ClientProps> = ({ writersData, companyId }) => {
     return filteredWriters.slice(indexOfFirstItem, indexOfLastItem);
   }, [filteredWriters, currentPage, itemsPerPage]);
 
-  // Chart data (Unchanged)
-  const chartData = useMemo(() => ({
-    labels: filteredWriters.map((writer) => writer.user.name || writer.user.email),
-    datasets: [
-      {
-        label: "Total Articles",
-        data: filteredWriters.map((writer) => writer.totalArticles),
-        backgroundColor: "rgba(79, 70, 229, 0.8)", // Indigo
-        borderColor: "#4F46E5",
-        borderWidth: 1,
-        borderRadius: 5,
-      },
-      {
-        label: "Articles This Month",
-        data: filteredWriters.map((writer) => writer.articlesThisMonth),
-        backgroundColor: "rgba(34, 197, 94, 0.8)", // Green
-        borderColor: "#22C55E",
-        borderWidth: 1,
-        borderRadius: 5,
-      },
-    ],
-  }), [filteredWriters]);
-
-  // ✨ API Operations (Unchanged)
-  // ... (Keep existing API operation functions: handleAddWriter, handleEditWriter, handleSaveWriter, handleDeleteWriter, confirmDeleteWriter)
-
-  // NOTE: For brevity, the API functions are omitted in this response as they were only style-related.
   const handleAddWriter = () => {
     setEditingWriter(null);
     setShowAddEditModal(true);
@@ -568,7 +487,7 @@ const WritersClient: React.FC<ClientProps> = ({ writersData, companyId }) => {
 
   const handleSaveWriter = async (formData: Partial<Writer & { name?: string; email?: string }>) => {
     setIsSubmitting(true);
-    const toastId = toast.loading(editingWriter ? 'Updating writer...' : 'Adding writer...');
+    const toastId = toast.loading(editingWriter ? 'Updating roster...' : 'Onboarding creator...');
 
     try {
       const endpoint = editingWriter ? `${apiBaseUrl}/admin/writers/${editingWriter.id}` : `${apiBaseUrl}/admin/writers`;
@@ -598,16 +517,14 @@ const WritersClient: React.FC<ClientProps> = ({ writersData, companyId }) => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || `Failed to ${editingWriter ? 'update' : 'add'} writer.`);
+        throw new Error(errorData.message || 'Roster update failed.');
       }
 
-      // Re-fetch logic (simplified, assuming this route hits the same data endpoint)
       const freshDataRes = await fetch(`${apiBaseUrl}/admin/writers?companyId=${companyId}`, { next: { revalidate: 60 } });
       const updatedWriters: Writer[] = await freshDataRes.json();
       
       setWriters(updatedWriters);
-
-      toast.success(editingWriter ? 'Writer updated successfully! 🚀' : 'Writer added successfully! 🎉', { id: toastId });
+      toast.success(editingWriter ? 'Writer detailed altered.' : 'New talent synced! 🚀', { id: toastId });
       setShowAddEditModal(false);
     } catch (error: any) {
       toast.error(error.message, { id: toastId });
@@ -624,13 +541,13 @@ const WritersClient: React.FC<ClientProps> = ({ writersData, companyId }) => {
   const confirmDeleteWriter = async () => {
     if (!writerToDelete) return;
     setIsSubmitting(true);
-    const toastId = toast.loading('Deleting writer...');
+    const toastId = toast.loading('Removing credentials...');
 
     try {
       const response = await fetch(`${apiBaseUrl}/admin/writers/${writerToDelete}`, { method: 'DELETE' });
-      if (!response.ok) throw new Error('Failed to delete writer.');
+      if (!response.ok) throw new Error('Could not detach writer identity.');
       setWriters(writers.filter((w) => w.id !== writerToDelete));
-      toast.success('Writer deleted successfully! 🗑️', { id: toastId });
+      toast.success('Roster profile removed.', { id: toastId });
       setShowDeleteConfirmModal(false);
     } catch (error: any) {
       toast.error(error.message, { id: toastId });
@@ -640,148 +557,81 @@ const WritersClient: React.FC<ClientProps> = ({ writersData, companyId }) => {
     }
   };
 
-
   return (
-    <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-gray-900 min-h-screen text-gray-100">
+    <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100 transition-colors duration-200">
       <Toaster position="top-center" reverseOrder={false} />
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-6xl mx-auto">
 
-        {/* Header and Call to Action */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-16 border-b border-gray-700/60 pb-8">
-          <h1 className="text-5xl lg:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-500 mb-6 md:mb-0 drop-shadow-xl text-center md:text-left">
-            Content Creator Hub ✍️
+        {/* Header Element */}
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-10 border-b border-gray-200/60 dark:border-gray-700/60 pb-6 gap-4">
+          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+            Writers & Roster Management
           </h1>
-          <button onClick={handleAddWriter} className="flex items-center px-8 py-4 bg-green-500 text-gray-900 rounded-xl shadow-2xl hover:bg-green-400 transition-all duration-300 transform hover:scale-[1.03] text-lg font-bold border border-green-300">
-            <PlusCircleIcon className="h-7 w-7 mr-3 text-gray-900" /> Add New Writer
+          <button onClick={handleAddWriter} className="flex items-center px-4 py-2.5 bg-indigo-600 text-white rounded-xl shadow-md hover:bg-indigo-700 transition-all font-semibold text-sm">
+            <PlusCircleIcon className="h-5 w-5 mr-1.5" /> Onboard Creator
           </button>
         </div>
 
-        {/* Search Bar */}
-        <div className="mb-12">
-          <div className="relative w-full max-w-xl mx-auto">
+        {/* Filter Input UI */}
+        <div className="mb-10">
+          <div className="relative w-full max-w-md">
             <input
               type="text"
-              placeholder="Search writers by name or email..."
+              placeholder="Search by name or email..."
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full p-4 pl-14 rounded-full bg-gray-800 text-gray-200 border border-gray-700 focus:ring-4 focus:ring-indigo-500/50 focus:border-indigo-500 shadow-xl transition-all duration-300 placeholder-gray-500"
+              className="w-full p-3 pl-11 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm shadow-sm outline-none"
             />
-            <UsersIcon className="absolute left-5 top-1/2 -translate-y-1/2 h-6 w-6 text-indigo-400" />
+            <UsersIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm("")}
-                className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-300 transition"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
               >
-                <XMarkIcon className="h-6 w-6" />
+                <XMarkIcon className="h-4 w-4" />
               </button>
             )}
           </div>
         </div>
-        
-        {/* --- */}
 
-        {/* Summary Section (Enhanced) */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold text-gray-100 mb-6">Performance Snapshot</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Overview Row */}
+        <section className="mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             <SummaryCard 
-              title="Total Writers" 
+              title="Active Rosters" 
               value={totalWriters} 
               icon={UsersIcon} 
-              gradientClass="bg-gradient-to-br from-indigo-700 to-indigo-900"
-              hoverClass="hover:ring-4 hover:ring-indigo-500/50"
+              gradientClass="bg-gradient-to-br from-indigo-600 to-indigo-700 dark:from-indigo-900/60 dark:to-indigo-950/40"
+              hoverClass="hover:shadow-indigo-500/5 dark:hover:shadow-none"
             />
             <SummaryCard 
-              title="Overall Articles" 
+              title="Combined Ledger" 
               value={totalArticlesOverall} 
               icon={BookOpenIcon} 
-              gradientClass="bg-gradient-to-br from-green-700 to-green-900"
-              hoverClass="hover:ring-4 hover:ring-green-500/50"
+              gradientClass="bg-gradient-to-br from-slate-700 to-slate-800 dark:from-gray-800 dark:to-gray-800/50"
+              hoverClass="hover:shadow-slate-500/5 dark:hover:shadow-none"
             />
             <SummaryCard 
-              title="Articles This Month" 
+              title="Volume This Month" 
               value={articlesThisMonthOverall} 
               icon={CalendarDaysIcon} 
-              gradientClass="bg-gradient-to-br from-yellow-700 to-yellow-900"
-              hoverClass="hover:ring-4 hover:ring-yellow-500/50"
+              gradientClass="bg-gradient-to-br from-emerald-600 to-emerald-700 dark:from-emerald-950/40 dark:to-emerald-950/20"
+              hoverClass="hover:shadow-emerald-500/5 dark:hover:shadow-none"
             />
           </div>
         </section>
 
-        {/* --- */}
-
-        {/* Chart Section (Enhanced) */}
-        <section className="mb-16">
-          <div className="bg-gray-800 p-8 rounded-2xl shadow-2xl flex flex-col border border-gray-700">
-            <h2 className="text-3xl font-bold text-gray-100 mb-6 border-b border-gray-700 pb-4">Monthly Article Output by Writer</h2>
-            <div style={{ height: '450px' }}>
-              <Bar
-                data={chartData}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: { 
-                    legend: { 
-                      position: "top" as const, 
-                      labels: { color: "#ddd", font: { size: 14 } } 
-                    },
-                    tooltip: {
-                      titleFont: { weight: 'bold', size: 16 },
-                      bodyFont: { size: 14 },
-                      backgroundColor: 'rgba(31, 41, 55, 0.9)', // gray-800 with opacity
-                      boxPadding: 8
-                    }
-                  },
-                  scales: {
-                    x: {
-                      title: {
-                          display: true,
-                          text: 'Writers',
-                          color: '#aaa',
-                          font: { size: 14 }
-                      },
-                      ticks: { color: "#ddd" },
-                      grid: { color: "#444" }
-                    },
-                    y: {
-                      title: {
-                          display: true,
-                          text: 'Number of Articles',
-                          color: '#aaa',
-                          font: { size: 14 }
-                      },
-                      ticks: { color: "#ddd" },
-                      grid: { color: "#444" }
-                    }
-                  }
-                }}
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* --- */}
-
-        {/* Writers List */}
-        <section className="mb-12">
-          <h2 className="text-3xl font-bold text-gray-100 mb-8 border-b border-gray-700 pb-4">Writer Profiles</h2>
+        {/* Core Profile Profiles UI Matrix */}
+        <section className="mb-10">
           {paginatedWriters.length === 0 ? (
-            <div className="bg-gray-800 p-16 rounded-2xl shadow-2xl text-center border-2 border-dashed border-gray-700">
-              <p className="text-2xl text-gray-400 font-semibold mb-4">No writers found. 😔</p>
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm("")}
-                  className="mt-6 px-6 py-3 bg-indigo-600 text-white rounded-lg shadow-xl hover:bg-indigo-700 transition font-semibold"
-                >
-                  Clear Search
-                </button>
-              )}
+            <div className="bg-white dark:bg-gray-800/50 p-12 rounded-2xl text-center border border-dashed border-gray-200 dark:border-gray-700">
+              <p className="text-lg text-gray-400 dark:text-gray-500 font-medium">No results match your lookup logic.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {paginatedWriters.map((writer) => (
                 <WriterCard key={writer.id} writer={writer} onEdit={handleEditWriter} onDelete={handleDeleteWriter} />
               ))}
@@ -789,31 +639,28 @@ const WritersClient: React.FC<ClientProps> = ({ writersData, companyId }) => {
           )}
         </section>
 
-        {/* --- */}
-
-        {/* Pagination Controls */}
+        {/* Dynamic Pager Components */}
         {totalPages > 1 && (
-          <div className="flex justify-center items-center space-x-6 mt-12">
+          <div className="flex justify-center items-center space-x-3 mt-10">
             <button
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => p - 1)}
-              className="px-6 py-3 bg-gray-700 rounded-full text-white font-semibold shadow-lg hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition disabled:opacity-40 text-xs shadow-sm"
             >
-              &larr; Previous Page
+              Back
             </button>
-            <span className="px-5 py-2 bg-indigo-600 text-white rounded-full font-extrabold text-lg shadow-xl">{`${currentPage} / ${totalPages}`}</span>
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">{`Page ${currentPage} of ${totalPages}`}</span>
             <button
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((p) => p + 1)}
-              className="px-6 py-3 bg-gray-700 rounded-full text-white font-semibold shadow-lg hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition disabled:opacity-40 text-xs shadow-sm"
             >
-              Next Page &rarr;
+              Next
             </button>
           </div>
         )}
       </div>
 
-      {/* Modals */}
       <AddEditWriterModal
         isOpen={showAddEditModal}
         onClose={() => setShowAddEditModal(false)}

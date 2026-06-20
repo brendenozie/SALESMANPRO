@@ -1,125 +1,146 @@
-// File: components/site/Footer.tsx
 'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import {
-  EnvelopeIcon,
-  ArrowRightIcon,
-} from '@heroicons/react/24/outline';
-import { FaceSmileIcon } from '@heroicons/react/24/solid';
+import { EnvelopeIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
 
 export default function Footer() {
-  const { storeFormData } = useStoreContext();
-  const { name, slug, description, socialLinks } = storeFormData || {
-    slug: 'my-blog',
+  const { storeFormData } = useStoreContext() || {};
+  const { name, description, socialLinks, themeSettings } = storeFormData || {
     name: 'GLOBAL INSIGHTS',
     description: '',
-    socialLinks:[]
+    socialLinks: [],
+    themeSettings: null
   };
+  
   const [email, setEmail] = useState('');
+
+  const primaryColor = themeSettings?.primaryColor || "#f97316";
 
   const navItems = [
     { label: 'Home', href: `/` },
-    { label: 'Blog', href: `/blog/products` },
+    { label: 'Blog', href: `/blog/listings` },
     { label: 'About', href: `/blog/about` },
     { label: 'Contact', href: `/blog/contact` },
   ];
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
-    // Placeholder: integrate real subscription logic here
-    alert(`Thanks for subscribing: ${email}`);
+    console.log(`Pipeline subscription request logged for node: ${email}`);
     setEmail('');
   };
 
   return (
-    <footer className="bg-gray-900 text-gray-300 pt-16 pb-8">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-10 border-b border-gray-700 pb-12">
-        {/* About */}
-        <div>
-          <h3 className="text-xl font-semibold text-white mb-4">About {name}</h3>
-          <p className="text-sm leading-relaxed text-gray-400">
-            {description ||
-              'Delivering quality insights and content to keep you informed and inspired. Stay connected for more updates.'}
-          </p>
-        </div>
+    <footer className="w-full bg-slate-950 text-slate-400 pt-24 pb-12 px-4 sm:px-6 lg:px-8 border-t border-slate-900 font-sans relative">
+      <div className="max-w-7xl mx-auto">
+        
+        {/* ===== STRUCTURAL COLUMNS MATRIX ===== */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-16 pb-16 border-b border-slate-900">
+          
+          {/* Column 1: Core Platform Profile (4/12 Span) */}
+          <div className="md:col-span-5 flex flex-col items-start">
+            <h3 className="text-sm font-bold tracking-wider text-white uppercase mb-4">
+              About {name}
+            </h3>
+            <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
+              {description ||
+                'Delivering quality high-density insights, architecture reviews, and production-ready system patterns to keep your platform optimized.'}
+            </p>
+          </div>
 
-        {/* Quick Links */}
-        <div>
-          <h3 className="text-xl font-semibold text-white mb-4">Quick Links</h3>
-          <ul className="space-y-2 text-sm">
-            {navItems.map((item) => (
-              <li key={item.label}>
-                <Link href={item.href} className="hover:text-white transition-colors">{item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Newsletter & Social */}
-        <div>
-          <h3 className="text-xl font-semibold text-white mb-4">Stay in the Loop</h3>
-          <form onSubmit={handleSubscribe} className="flex flex-col space-y-4">
-            <div className="relative">
-              <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
-              <input
-                type="email"
-                placeholder="Your email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full bg-gray-800 text-gray-200 placeholder-gray-500 pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-              />
-            </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              className="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 px-6 py-2 rounded-lg text-white font-semibold shadow-lg transition"
-            >
-              Subscribe
-              <ArrowRightIcon className="h-5 w-5 ml-2" />
-            </motion.button>
-          </form>
-
-          {socialLinks.length > 0 && (
-            <>
-              <h3 className="text-xl font-semibold text-white mt-8 mb-4">Follow Us</h3>
-              <div className="flex space-x-4">
-                {socialLinks.map((link:any) => (
-                  <motion.a
-                    key={link.channel}
-                    whileHover={{ scale: 1.1 }}
-                    href={link.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="bg-gray-800 hover:bg-gray-700 p-2 rounded-full text-gray-400 hover:text-white transition"
+          {/* Column 2: Explicit Navigation Links (3/12 Span) */}
+          <div className="md:col-span-3 flex flex-col items-start">
+            <h3 className="text-sm font-bold tracking-wider text-white uppercase mb-4">
+              Index Tree
+            </h3>
+            <ul className="space-y-2.5 text-xs">
+              {navItems.map((item) => (
+                <li key={item.label}>
+                  <Link 
+                    href={item.href} 
+                    className="hover:text-white transition-colors tracking-wide font-medium"
                   >
-                    <FaceSmileIcon className="h-5 w-5" />
-                  </motion.a>
-                ))}
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 3: Ingestion Pipeline & Channel Links (4/12 Span) */}
+          <div className="md:col-span-4 flex flex-col items-start">
+            <h3 className="text-sm font-bold tracking-wider text-white uppercase mb-4">
+              Data Subscription
+            </h3>
+            <form onSubmit={handleSubscribe} className="flex flex-col w-full gap-2 mb-6">
+              <div className="relative w-full">
+                <EnvelopeIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-600 pointer-events-none" />
+                <input
+                  type="email"
+                  placeholder="Enter secure email token"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full h-10 bg-slate-950 text-slate-200 placeholder-slate-600 pl-10 pr-4 text-xs border border-slate-800 rounded focus:outline-none focus:border-slate-700 transition-colors"
+                />
               </div>
-            </>
-          )}
+              <button
+                type="submit"
+                className="w-full h-10 bg-slate-900 hover:bg-slate-850 text-white font-semibold text-xs uppercase tracking-wider border border-slate-800 rounded flex items-center justify-center gap-2 transition-colors active:scale-[0.99]"
+              >
+                Connect Endpoint
+                <ArrowRightIcon className="h-3.5 w-3.5 text-slate-400" />
+              </button>
+            </form>
+
+            {/* Platform Node Integrations (Social Vectors) */}
+            {Array.isArray(socialLinks) && socialLinks.length > 0 && (
+              <div className="w-full">
+                <div className="text-[10px] font-mono tracking-widest text-slate-600 uppercase mb-3">
+                  External Channels
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {socialLinks.map((link: any, index: number) => (
+                    <a
+                      key={link.channel || index}
+                      href={link.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="h-8 px-3 rounded border border-slate-900 bg-slate-950 hover:border-slate-800 text-xs font-mono text-slate-400 hover:text-white flex items-center justify-center transition-colors"
+                    >
+                      {link.channel ? link.channel.toUpperCase() : 'NODE'}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
         </div>
+
+        {/* ===== METADATA ATTRIBUTION GRID ROW ===== */}
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-[11px] font-mono text-slate-600 tracking-wide order-2 sm:order-1">
+            &copy; {new Date().getFullYear()} {name.toUpperCase()}. DATA ENGINE SECURED.
+          </div>
+          
+          <div className="flex items-center gap-2 px-3 h-7 border border-slate-900 bg-slate-950 rounded text-center order-1 sm:order-2">
+            <span className="text-[9px] font-mono tracking-widest text-slate-500 uppercase">
+              Powered by
+            </span>
+            <a 
+              href="https://salesmanpro.site" 
+              className="text-[9px] font-bold tracking-wider uppercase transition-colors"
+              style={{ color: primaryColor }}
+            >
+              SalesmanPro.site
+            </a>
+          </div>
+        </div>
+
       </div>
-
-      <div className="mt-8 text-center text-sm text-gray-500">
-        &copy; {new Date().getFullYear()} {name}. All rights reserved.
-      </div>
-
-      <div className="flex items-center gap-1.5 px-4 py-2 mt-8 border border-stone-800/50 rounded-full bg-stone-900/50 backdrop-blur-sm text-center mx-auto w-max">
-        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Powered by</span>
-        <a 
-          href="https://salesmanpro.site" 
-          className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-700 transition-colors"
-        >
-          SalesmanPro.site
-        </a>
-    </div>
-
     </footer>
   );
 }

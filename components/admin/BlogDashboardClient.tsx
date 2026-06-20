@@ -134,35 +134,36 @@ export default function BlogDashboardClient({
   metrics,
   tasks,
   charts,
+  slug,
 }: Props) {
   const cards = [
     {
       title: "Library",
-      value: metrics.totalPosts,
+      value: metrics?.totalPosts || 0,
       icon: PencilSquareIcon,
       accent: "text-teal-600",
     },
     {
       title: "Taxonomy",
-      value: metrics.totalCategories,
+      value: metrics?.totalCategories || 0,
       icon: FolderOpenIcon,
       accent: "text-blue-600",
     },
     {
       title: "Audience",
-      value: metrics.subscribers.toLocaleString(),
+      value: metrics?.subscribers?.toLocaleString() || "0",
       icon: UserGroupIcon,
       accent: "text-indigo-600",
     },
     {
       title: "Reach",
-      value: metrics.monthlyViews.toLocaleString(),
+      value: metrics?.monthlyViews?.toLocaleString() || "0",
       icon: EyeIcon,
       accent: "text-amber-600",
     },
     {
       title: "Pipeline",
-      value: metrics.scheduledPosts,
+      value: metrics?.scheduledPosts || 0,
       icon: CalendarDaysIcon,
       accent: "text-rose-600",
     },
@@ -181,9 +182,14 @@ export default function BlogDashboardClient({
               Manage content velocity and audience growth.
             </p>
           </div>
-          <button className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold shadow-2xl hover:bg-teal-700 transition flex items-center gap-2">
+          {/* <button 
+          onClick={() => {
+            // Navigate to post creation page
+            window.location.href = `/admin/${slug}/blogs`;
+          }}
+          className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold shadow-2xl hover:bg-teal-700 transition flex items-center gap-2">
             <PencilSquareIcon className="w-5 h-5" /> New Masterpiece
-          </button>
+          </button> */}
         </header>
 
         {/* Metrics */}
@@ -220,8 +226,8 @@ export default function BlogDashboardClient({
                 Readers over Time
               </h3>
               <TrafficChart
-                labels={charts.trafficOverview.labels}
-                values={charts.trafficOverview.values}
+                labels={charts?.trafficOverview?.labels || []}
+                values={charts?.trafficOverview?.values || []}
               />
             </div>
 
@@ -231,9 +237,9 @@ export default function BlogDashboardClient({
                 Interaction Density
               </h3>
               <EngagementChart
-                labels={charts.engagementMetrics.labels}
-                likes={charts.engagementMetrics.likes}
-                comments={charts.engagementMetrics.comments}
+                labels={charts?.engagementMetrics?.labels || []}
+                likes={charts?.engagementMetrics?.likes || 0}
+                comments={charts?.engagementMetrics?.comments || 0}
               />
             </div>
           </div>
@@ -247,13 +253,13 @@ export default function BlogDashboardClient({
               </div>
 
               <div className="space-y-4">
-                {tasks.length === 0 && (
+                {tasks?.length === 0 && (
                   <p className="text-slate-400 italic text-sm">
                     Queue is empty.
                   </p>
                 )}
 
-                {tasks.map((task) => (
+                {tasks?.map((task) => (
                   <div
                     key={task.id}
                     className="p-4 bg-white/5 rounded-2xl border border-white/10"

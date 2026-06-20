@@ -1,20 +1,22 @@
 "use client";
 
+import React, { useState, useMemo } from "react";
+import { 
+  PlusIcon, 
+  MagnifyingGlassIcon, 
+  XMarkIcon,
+  PlayIcon,
+  PencilSquareIcon,
+  TrashIcon,
+  MusicalNoteIcon,
+  ClockIcon,
+  CalendarDaysIcon,
+  SparklesIcon
+} from "@heroicons/react/24/outline";
 import AddToPodcastModal from "@/components/AddToPodcastModal";
 import PodcastDeleteModal from "@/components/PodcastDeleteModal";
 import { IStoreCategory } from "@/types/typings";
-import React, { useState } from "react";
 
-// Define the Category type to match the API and Prisma schema
-type Category = {
-  _id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  imageUrl?: string;
-};
-
-// Define the Podcast type for the client side
 type Podcast = {
   _id: string;
   creatorId: string;
@@ -26,9 +28,9 @@ type Podcast = {
   duration: number;
   episodeNumber: number;
   releaseDate: string;
-  categories: string; // Array of category _ids
-  companyId: string; // Assuming this is the creatorId for filtering
-  tags: string[]; // Array of tag _ids (or names, depending on your Tag model)
+  categories: string; // Stored as comma separated or string ID
+  companyId: string; 
+  tags: string[]; 
   coverImageUrl: string;
   isFeatured: boolean;
   createdAt: string;
@@ -38,229 +40,238 @@ type Podcast = {
 interface ClientProps {
   companyId: string;
   podcastsData: Podcast[];
-  categoriesData: IStoreCategory[]; // Using the corrected Category type
+  categoriesData: IStoreCategory[]; 
 }
 
 export default function PodcastsClient({
   companyId,
   categoriesData,
-  podcastsData,
+  podcastsData = [],
 }: ClientProps) {
-  // State for modal visibility + selected podcast
   const [showDeletePodcastModal, setShowDeletePodcastModal] = useState(false);
   const [showAddEditPodcastModal, setShowAddEditPodcastModal] = useState(false);
   const [selectedPodcast, setSelectedPodcast] = useState<Podcast | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleSuccess = () => {
-    // A more robust way to refresh data would be to re-fetch it from the API
-    // or update the state directly if the API returns the updated list.
-    // For this example, a full page reload is used for simplicity.
     window.location.reload();
   };
 
+  // Live filter computed optimization
+  const filteredPodcasts = useMemo(() => {
+    return podcastsData.filter((podcast) =>
+      podcast.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      podcast.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [podcastsData, searchTerm]);
+
+  // Quick Stats Computations
+  const stats = useMemo(() => {
+    return {
+      totalEpisodes: podcastsData.length,
+      featuredCount: podcastsData.filter(p => p.isFeatured).length
+    };
+  }, [podcastsData]);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 p-8 font-inter">
-      {/* Main Container */}
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        {/* Header Section */}
-        <div className="text-center mb-16">
-          <h1 className="text-6xl font-extrabold text-gray-900 tracking-tight leading-tight mb-4 drop-shadow-lg">
-            Your Podcast Hub
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Effortlessly manage, edit, and curate your podcast episodes.
-          </p>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        
+        {/* Header Hero Section */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-200 dark:border-slate-800 pb-8 mb-10 gap-6">
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+              Audio & Podcast Hub 🎙️
+            </h1>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 max-w-xl">
+              Effortlessly publish episodes, organize themes, track releases, and curate standout featured audio blocks.
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              setSelectedPodcast(null);
+              setShowAddEditPodcastModal(true);
+            }}
+            className="inline-flex items-center self-start md:self-auto px-5 py-3 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-semibold rounded-xl shadow-md transition duration-200 text-sm tracking-wide"
+          >
+            <PlusIcon className="h-5 w-5 mr-2 stroke-[2.5]" />
+            Add New Episode
+          </button>
         </div>
 
-        {/* Podcasts Management Card */}
-        <div className="bg-white border border-gray-200 rounded-3xl shadow-2xl p-8 md:p-12 transform transition-all duration-500 hover:shadow-3xl hover:scale-[1.005]">
-          <div className="flex flex-col sm:flex-row justify-between items-center mb-10">
-            <h2 className="text-4xl font-bold text-gray-800 mb-6 sm:mb-0">All Episodes</h2>
-            <button
-              onClick={() => {
-                setSelectedPodcast(null); // Clear selected podcast for "Add New"
-                setShowAddEditPodcastModal(true);
-              }}
-              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-700 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center space-x-2"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
+        {/* Search and Filters Strip */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div className="relative w-full max-w-md">
+            <input
+              type="text"
+              placeholder="Search episode title or content..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full p-3 pl-11 pr-10 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm outline-none shadow-sm transition"
+            />
+            <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500" />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
-              <span>Add New Podcast</span>
-            </button>
+                <XMarkIcon className="h-4 w-4" />
+              </button>
+            )}
           </div>
+          
+          {/* Performance Snapshot Badges */}
+          <div className="flex items-center space-x-3 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            <span className="px-3 py-1.5 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200/60 dark:border-slate-800">
+              Total Clips: <strong className="text-slate-900 dark:text-white ml-0.5">{stats.totalEpisodes}</strong>
+            </span>
+            {stats.featuredCount > 0 && (
+              <span className="px-3 py-1.5 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 rounded-lg border border-amber-200/40 dark:border-amber-900/40 flex items-center">
+                <SparklesIcon className="h-3.5 w-3.5 mr-1 text-amber-500 fill-amber-500/10" />
+                Featured: <strong className="ml-1">{stats.featuredCount}</strong>
+              </span>
+            )}
+          </div>
+        </div>
 
-          {/* Podcast Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {podcastsData && podcastsData.length > 0 ? (
-              podcastsData.map((podcast) => (
+        {/* Main Grid View */}
+        {filteredPodcasts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredPodcasts.map((podcast) => {
+              const formattedDuration = `${Math.floor(podcast.duration / 60)}m ${podcast.duration % 60}s`;
+              const formattedDate = new Date(podcast.releaseDate).toLocaleDateString(undefined, { 
+                month: 'short', day: 'numeric', year: 'numeric' 
+              });
+
+              return (
                 <div
                   key={podcast._id}
-                  className="relative bg-white border border-gray-100 rounded-2xl shadow-lg overflow-hidden transition transform hover:scale-102 hover:shadow-xl duration-300 group"
+                  className="group relative flex flex-col bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-sm hover:shadow-md dark:hover:shadow-2xl overflow-hidden transition-all duration-300 transform hover:-translate-y-1"
                 >
-                  {/* Cover Image */}
-                  <div className="relative w-full h-48 bg-gray-200 overflow-hidden">
+                  {/* Cover Artwork Window */}
+                  <div className="relative aspect-video w-full bg-slate-100 dark:bg-slate-800 overflow-hidden border-b border-slate-100 dark:border-slate-800/60">
                     <img
-                      src={podcast.coverImageUrl || `https://placehold.co/400x400/A78BFA/FFFFFF?text=Podcast+Cover`}
+                      src={podcast.coverImageUrl || `https://placehold.co/600x400/6366F1/FFFFFF?text=Audio+Track`}
                       alt={podcast.title}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       onError={(e) => {
-                        e.currentTarget.src = `https://placehold.co/400x400/A78BFA/FFFFFF?text=Podcast+Cover`;
+                        e.currentTarget.src = `https://placehold.co/600x400/6366F1/FFFFFF?text=Audio+Track`;
                       }}
                     />
-                    {/* Featured Badge */}
+                    
+                    {/* Badge Overlay conditionally handled */}
                     {podcast.isFeatured && (
-                      <span className="absolute top-3 left-3 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-full shadow-md">
+                      <span className="absolute top-3 left-3 inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase bg-amber-500 text-white shadow-sm">
+                        <SparklesIcon className="h-3 w-3 mr-1 fill-white" />
                         Featured
                       </span>
                     )}
-                    {/* Play Button Overlay (Optional, for visual appeal) */}
-                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <button className="p-3 bg-white rounded-full text-blue-600 shadow-xl transform scale-0 group-hover:scale-100 transition-transform duration-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-                        </svg>
-                      </button>
+
+                    {/* Fast Play/Preview Blur Overlay */}
+                    <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      <div className="p-3 bg-white/95 dark:bg-slate-900/95 rounded-full text-indigo-600 dark:text-indigo-400 shadow-xl transform scale-75 group-hover:scale-100 transition-transform duration-300">
+                        <PlayIcon className="h-6 w-6 fill-current" />
+                      </div>
                     </div>
                   </div>
 
-                  {/* Podcast Details */}
-                  <div className="p-6 flex flex-col flex-grow">
-                    <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2 leading-tight group-hover:text-blue-700 transition-colors duration-200">
+                  {/* Creative Content Shell */}
+                  <div className="p-5 flex flex-col flex-grow">
+                    
+                    {/* Category Labeling Row */}
+                    <div className="flex flex-wrap gap-1.5 mb-2.5">
+                      {categoriesData && categoriesData.length > 0 && (() => {
+                        // Safe normalization handling array loops
+                        const normalizedCategories = podcast.categories?.split(",") || [];
+                        return normalizedCategories.map((catId) => {
+                          const category = categoriesData.find((c) => (c._id || c.id) === catId.trim());
+                          return category ? (
+                            <span
+                              key={catId}
+                              className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40"
+                            >
+                              {category.name || category.displayName}
+                            </span>
+                          ) : null;
+                        });
+                      })()}
+                    </div>
+
+                    <h3 className="text-lg font-bold text-slate-950 dark:text-slate-50 line-clamp-1 mb-1.5 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                       {podcast.title}
                     </h3>
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-3">
-                      {podcast.description}
+                    
+                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-4">
+                      {podcast.description || "No customized audio summary details provided for this publication."}
                     </p>
 
-                    <div className="text-xs text-gray-500 mb-4 space-y-1">
-                      <p className="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 0 012 2v10m-6 0a2 2 0 002 2h2a2 0 002-2m0 0V5a2 2 0 012-2h2a2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                        Episode: {podcast.episodeNumber}
-                      </p>
-                      <p className="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Duration: {Math.floor(podcast.duration / 60)}m{" "}
-                        {podcast.duration % 60}s
-                      </p>
-                      <p className="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        Release: {new Date(podcast.releaseDate).toLocaleDateString()}
-                      </p>
+                    {/* Metadata Metadata Rows */}
+                    <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800/60 space-y-2 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center"><MusicalNoteIcon className="h-3.5 w-3.5 mr-1.5 text-slate-400" /> Episode No.</span>
+                        <span className="text-slate-800 dark:text-slate-200 font-bold">{podcast.episodeNumber || "N/A"}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center"><ClockIcon className="h-3.5 w-3.5 mr-1.5 text-slate-400" /> Play Duration</span>
+                        <span className="text-slate-800 dark:text-slate-200">{formattedDuration}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center"><CalendarDaysIcon className="h-3.5 w-3.5 mr-1.5 text-slate-400" /> Sync Release</span>
+                        <span className="text-slate-800 dark:text-slate-200">{formattedDate}</span>
+                      </div>
                     </div>
 
-                    {/* Categories Badges */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {/* {podcast.categories.map((catId) => {
-                        const category = categoriesData.find((c) => c.id === catId);
-                        return category ? (
-                          <span
-                            key={catId}
-                            className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                          >
-                            {category.displayName}
-                          </span>
-                        ) : null;
-                      })} */}
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex justify-between mt-auto pt-4 border-t border-gray-100 space-x-3">
+                    {/* Actions Panel */}
+                    <div className="flex space-x-2 mt-5 pt-3 border-t border-slate-100 dark:border-slate-800/40">
                       <button
                         onClick={() => {
                           setSelectedPodcast(podcast);
                           setShowAddEditPodcastModal(true);
                         }}
-                        className="flex-1 px-4 py-2 rounded-lg bg-indigo-500 text-white font-medium text-sm transition-all duration-300 ease-in-out hover:bg-indigo-600 shadow-md hover:shadow-lg flex items-center justify-center space-x-2"
+                        className="flex-1 inline-flex justify-center items-center py-2 px-3 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-transparent hover:bg-slate-100 dark:hover:bg-slate-700 transition"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        <span>Edit</span>
+                        <PencilSquareIcon className="h-3.5 w-3.5 mr-1" /> Edit
                       </button>
-
                       <button
                         onClick={() => {
                           setSelectedPodcast(podcast);
                           setShowDeletePodcastModal(true);
                         }}
-                        className="flex-1 px-4 py-2 rounded-lg bg-red-500 text-white font-medium text-sm transition-all duration-300 ease-in-out hover:bg-red-600 shadow-md hover:shadow-lg flex items-center justify-center space-x-2"
+                        className="inline-flex justify-center items-center p-2 rounded-xl text-xs font-semibold bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-transparent hover:bg-rose-100 dark:hover:bg-rose-900/30 transition"
+                        title="Delete Episode"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                        <span>Delete</span>
+                        <TrashIcon className="h-4 w-4" />
                       </button>
                     </div>
                   </div>
                 </div>
-              ))
-            ) : (
-              /* Engaging Empty State */
-              <div className="col-span-full bg-gray-50 rounded-2xl p-12 text-center shadow-inner border border-dashed border-gray-300">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="mx-auto h-24 w-24 text-gray-400 mb-6 animate-pulse"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-                <p className="text-2xl font-semibold text-gray-700 mb-4">
-                  No Podcasts Yet!
-                </p>
-                <p className="text-lg text-gray-500 mb-8">
-                  It looks a little quiet in here. Start by adding your first captivating episode.
-                </p>
-                <button
-                  onClick={() => {
-                    setSelectedPodcast(null);
-                    setShowAddEditPodcastModal(true);
-                  }}
-                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center mx-auto space-x-2"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    />
-                  </svg>
-                  <span>Add Your First Podcast</span>
-                </button>
-              </div>
-            )}
+              );
+            })}
           </div>
-        </div>
+        ) : (
+          /* Intuitive Elegant Empty State Layout */
+          <div className="max-w-md mx-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center shadow-sm my-12">
+            <div className="p-4 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-5">
+              <MusicalNoteIcon className="h-8 w-8 stroke-[1.8]" />
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">No Records Available</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
+              {searchTerm ? "No audio publications currently correlate with your chosen keyword queries." : "Your catalog index is clean. Onboard and schedule your media parameters directly down below."}
+            </p>
+            <button
+              onClick={() => {
+                setSelectedPodcast(null);
+                setShowAddEditPodcastModal(true);
+              }}
+              className="w-full inline-flex justify-center items-center py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs transition"
+            >
+              <PlusIcon className="h-4 w-4 mr-1.5 stroke-[2.5]" /> Add First Episode
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* ========== Modals ========== */}
+      {/* Roster Target Management Operations Modals Container */}
       {showDeletePodcastModal && selectedPodcast && (
         <PodcastDeleteModal
           showModal={showDeletePodcastModal}

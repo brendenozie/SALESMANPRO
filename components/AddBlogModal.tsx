@@ -13,6 +13,8 @@ import {
   TagIcon,
   MagnifyingGlassIcon,
   SparklesIcon,
+  LockClosedIcon,
+  KeyIcon,
 } from "@heroicons/react/24/outline";
 import dynamic from "next/dynamic";
 import CategoryPicker from "./CategoryPicker";
@@ -123,7 +125,6 @@ export default function AddEditBlogModal({
     setMounted(true);
   }, []);
 
-
   // 1. Find the parent category first to avoid duplicate searches and crashes
   const initialCategory = categoriesData.find(
     (c) => c.displayName === initialData.category || c.id === initialData.category
@@ -144,6 +145,8 @@ export default function AddEditBlogModal({
     excerpt: initialData.excerpt || "",
     content: initialData.content || "",
     isFeature: initialData.isFeature || false,
+    requiresSubscription: initialData.requiresSubscription || false,
+    subscriptionTier: initialData.subscriptionTier || "premium",
     status: initialData.status || "DRAFT",
     categories: initialData.categories || [],
     tags: initialData.tags || [],
@@ -222,6 +225,8 @@ export default function AddEditBlogModal({
         excerpt: formData.excerpt,
         content: formData.content,
         isFeature: formData.isFeature,
+        requiresSubscription: formData.requiresSubscription,
+        subscriptionTier: formData.requiresSubscription ? formData.subscriptionTier : "free",
         status: formData.status,
         categories: formData.category?.displayName ? [formData.category.displayName] : [],
         tags: formData.tags,
@@ -400,39 +405,88 @@ export default function AddEditBlogModal({
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-6 p-5 bg-indigo-50/50 dark:bg-indigo-500/5 border border-indigo-100 dark:border-indigo-500/20 rounded-xl">
-                    <label className="flex items-center gap-3 cursor-pointer group">
-                      <div className="relative flex items-center justify-center">
-                        <input
-                          type="checkbox"
-                          name="isFeature"
-                          checked={formData.isFeature}
+                  {/* Multi-Row Configuration Controls */}
+                  <div className="flex flex-col gap-4 p-5 bg-indigo-50/50 dark:bg-indigo-500/5 border border-indigo-100 dark:border-indigo-500/20 rounded-xl space-y-2">
+                    {/* General Post Feature and Status Row */}
+                    <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between">
+                      <label className="flex items-center gap-3 cursor-pointer group">
+                        <div className="relative flex items-center justify-center">
+                          <input
+                            type="checkbox"
+                            name="isFeature"
+                            checked={formData.isFeature}
+                            onChange={handleChange}
+                            className="peer sr-only"
+                          />
+                          <div className="w-12 h-6 bg-gray-300 dark:bg-gray-600 rounded-full peer-checked:bg-indigo-600 transition-colors duration-300"></div>
+                          <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-6"></div>
+                        </div>
+                        <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                          Feature this post
+                        </span>
+                      </label>
+
+                      <div className="h-6 w-px bg-indigo-200 dark:bg-indigo-500/20 hidden sm:block"></div>
+
+                      <label className="flex items-center gap-3">
+                        <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Publish Status:</span>
+                        <select
+                          name="status"
+                          value={formData.status}
                           onChange={handleChange}
-                          className="peer sr-only"
-                        />
-                        <div className="w-12 h-6 bg-gray-300 dark:bg-gray-600 rounded-full peer-checked:bg-indigo-600 transition-colors duration-300"></div>
-                        <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-6"></div>
-                      </div>
-                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                        Feature this post
-                      </span>
-                    </label>
+                          className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 outline-none text-gray-800 dark:text-gray-200"
+                        >
+                          <option value="DRAFT">Draft</option>
+                          <option value="PUBLISHED">Published</option>
+                          <option value="ARCHIVED">Archived</option>
+                        </select>
+                      </label>
+                    </div>
 
-                    <div className="h-6 w-px bg-indigo-200 dark:bg-indigo-500/20 hidden sm:block"></div>
+                    <div className="h-px w-full bg-indigo-100 dark:bg-indigo-500/20"></div>
 
-                    <label className="flex items-center gap-3">
-                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Publish Status:</span>
-                      <select
-                        name="status"
-                        value={formData.status}
-                        onChange={handleChange}
-                        className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 outline-none text-gray-800 dark:text-gray-200"
-                      >
-                        <option value="DRAFT">Draft</option>
-                        <option value="PUBLISHED">Published</option>
-                        <option value="ARCHIVED">Archived</option>
-                      </select>
-                    </label>
+                    {/* Paywall Access Config Row */}
+                    <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between pt-1">
+                      <label className="flex items-center gap-3 cursor-pointer group">
+                        <div className="relative flex items-center justify-center">
+                          <input
+                            type="checkbox"
+                            name="requiresSubscription"
+                            checked={formData.requiresSubscription}
+                            onChange={handleChange}
+                            className="peer sr-only"
+                          />
+                          <div className="w-12 h-6 bg-gray-300 dark:bg-gray-600 rounded-full peer-checked:bg-amber-500 transition-colors duration-300"></div>
+                          <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 peer-checked:translate-x-6"></div>
+                        </div>
+                        <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors flex items-center gap-1.5">
+                          <LockClosedIcon className="h-4 w-4 text-amber-500" />
+                          Requires Subscription Paywall
+                        </span>
+                      </label>
+
+                      {formData.requiresSubscription && (
+                        <motion.div 
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="flex items-center gap-3 w-full sm:w-auto justify-end"
+                        >
+                          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                            <KeyIcon className="h-4 w-4 text-gray-400" /> Tier Required:
+                          </span>
+                          <select
+                            name="subscriptionTier"
+                            value={formData.subscriptionTier}
+                            onChange={handleChange}
+                            className="bg-white dark:bg-gray-800 border border-amber-300 dark:border-amber-500/30 text-sm font-medium rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-amber-500 outline-none text-amber-900 dark:text-amber-300"
+                          >
+                            <option value="premium">Premium Access</option>
+                            <option value="gold">Gold Elite Tier</option>
+                            <option value="enterprise">Enterprise Team</option>
+                          </select>
+                        </motion.div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
@@ -542,6 +596,20 @@ export default function AddEditBlogModal({
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-500/20 dark:text-indigo-300 uppercase">
                             {formData.status}
                           </span>
+                        </dd>
+                      </div>
+                      <div className="col-span-2 sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Access Policy</dt>
+                        <dd className="mt-1">
+                          {formData.requiresSubscription ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 uppercase">
+                              <LockClosedIcon className="h-3.5 w-3.5" /> Paywall ({formData.subscriptionTier})
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 uppercase">
+                              Free Access
+                            </span>
+                          )}
                         </dd>
                       </div>
                       <div className="col-span-2 sm:col-span-1">
