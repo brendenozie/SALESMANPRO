@@ -259,7 +259,7 @@ export default function AssignmentsPageClient({
 
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-4 md:p-8 font-sans antialiased text-slate-900">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8 font-sans antialiased text-slate-900">
       
       {/* Header Section */}
       <div className="max-w-7xl mx-auto space-y-8">

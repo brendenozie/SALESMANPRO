@@ -49,7 +49,7 @@ async function getEducators(request: Request) {
         select: {
           classesScheduled: true,
           Exam: true,
-          CourseMaterial: true,
+          // CourseMaterial: true,
           AttendanceRecord: true,
           createdDiscussionTopics: true,
           uploadedMaterials: true,
@@ -90,7 +90,7 @@ async function getEducators(request: Request) {
     totalCoursesTaught: educator._count.CourseEducatorAssignment,
     totalClassesScheduled: educator._count.classesScheduled,
     totalExamsCreated: educator._count.Exam,
-    totalMaterialsUploaded: educator._count.CourseMaterial,
+    totalMaterialsUploaded: 0, // educator._count.CourseMaterial,
     totalAttendanceRecords: educator._count.AttendanceRecord,
     totalDiscussionTopics: educator._count.createdDiscussionTopics,
     totalUploadedMaterials: educator._count.uploadedMaterials,

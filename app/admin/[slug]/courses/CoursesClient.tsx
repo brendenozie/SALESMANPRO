@@ -383,7 +383,7 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
               className="block w-full py-2.5 px-4 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
             >
               <option value="All">All Departments</option>
-              {departments.map(dept => (
+              {departments && departments?.length > 0 && departments?.map(dept => (
                 <option key={dept.id} value={dept.id}>{dept.name}</option>
               ))}
             </select>
@@ -395,7 +395,7 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
               className="block w-full py-2.5 px-4 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
             >
               <option value="All">All Academic Levels</option>
-              {academicLevels.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(level => (
+              {academicLevels && academicLevels?.length > 0 && academicLevels?.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(level => (
                 <option key={level.id} value={level.id}>{level.name}</option>
               ))}
             </select>

@@ -18,113 +18,113 @@ const generateSampleCoursesData = (companyId: string): {
   sampleAcademicLevels: AcademicLevelOption[];
 } => {
   const academicLevels: AcademicLevelOption[] = [
-    { id: 'AL001', name: 'Playgroup', sortOrder: 1 },
-    { id: 'AL002', name: 'Kindergarten', sortOrder: 2 },
-    { id: 'AL003', name: 'Grade 1', sortOrder: 3 },
-    { id: 'AL004', name: 'Grade 7', sortOrder: 7 },
-    { id: 'AL005', name: 'Grade 8', sortOrder: 8 },
-    { id: 'AL006', name: 'Grade 9', sortOrder: 9 },
-    { id: 'AL007', name: 'High School - Freshman', sortOrder: 10 },
-    { id: 'AL008', name: 'University - Year 1', sortOrder: 15 },
+    // { id: 'AL001', name: 'Playgroup', sortOrder: 1 },
+    // { id: 'AL002', name: 'Kindergarten', sortOrder: 2 },
+    // { id: 'AL003', name: 'Grade 1', sortOrder: 3 },
+    // { id: 'AL004', name: 'Grade 7', sortOrder: 7 },
+    // { id: 'AL005', name: 'Grade 8', sortOrder: 8 },
+    // { id: 'AL006', name: 'Grade 9', sortOrder: 9 },
+    // { id: 'AL007', name: 'High School - Freshman', sortOrder: 10 },
+    // { id: 'AL008', name: 'University - Year 1', sortOrder: 15 },
   ];
 
   const educators: EducatorOption[] = [
-    { id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com' },
-    { id: 'EDU002', name: 'Mrs. Jane Smith', email: 'jane.smith@school.com' },
-    { id: 'EDU003', name: 'Dr. Emily White', email: 'emily.white@school.com' },
+    // { id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com' },
+    // { id: 'EDU002', name: 'Mrs. Jane Smith', email: 'jane.smith@school.com' },
+    // { id: 'EDU003', name: 'Dr. Emily White', email: 'emily.white@school.com' },
   ];
 
   const departments: DepartmentOption[] = [
-    { id: 'D001', name: 'Mathematics' },
-    { id: 'D002', name: 'English' },
-    { id: 'D003', name: 'Science' },
-    { id: 'D004', name: 'History' },
-    { id: 'D005', name: 'Computer Science' },
+    // { id: 'D001', name: 'Mathematics' },
+    // { id: 'D002', name: 'English' },
+    // { id: 'D003', name: 'Science' },
+    // { id: 'D004', name: 'History' },
+    // { id: 'D005', name: 'Computer Science' },
   ];
 
   const courses: CourseType[] = [
-    {
-      id: 'CRS001',
-      title: 'Algebra II',
-      description: 'Foundational course in algebraic concepts, including linear equations, inequalities, and functions.',
-      imageUrl: 'https://placehold.co/100x100/ADD8E6/00008B?text=Alg',
-      code: 'MATH101', // NEW
-      credits: 3, // NEW
-      rating: 4.5,
-      totalLessons: 45,
-      studentsEnrolled: 120,
-      companyId: companyId,
-      departmentId: 'D001',
-      departmentName: 'Mathematics',
-      academicLevels: [{ id: 'AL006', name: 'Grade 9' }],
-      educators: [{ id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com', roleInCourse: 'Lead Instructor' }], // NEW: educators array
-      createdAt: new Date('2023-01-15').toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: 'CRS002',
-      title: 'Literary Analysis',
-      description: 'Exploration of various literary genres and critical analysis techniques, focusing on classic and contemporary works.',
-      imageUrl: 'https://placehold.co/100x100/FFB6C1/A52A2A?text=Lit',
-      code: 'ENG201', // NEW
-      credits: 3, // NEW
-      rating: 4.7,
-      totalLessons: 45,
-      studentsEnrolled: 95,
-      companyId: companyId,
-      departmentId: 'D002',
-      departmentName: 'English',
-      academicLevels: [{ id: 'AL007', name: 'High School - Freshman' }],
-      educators: [{ id: 'EDU002', name: 'Mrs. Jane Smith', email: 'jane.smith@school.com', roleInCourse: 'Lead Instructor' }], // NEW: educators array
-      createdAt: new Date('2023-02-01').toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: 'CRS003',
-      title: 'Introduction to Programming',
-      description: 'Fundamentals of programming logic and Python, covering basic data structures and algorithms.',
-      imageUrl: 'https://placehold.co/100x100/98FB98/006400?text=Code',
-      code: 'CS101', // NEW
-      credits: 4, // NEW
-      totalLessons: 45,
-      rating: 4.8,
-      studentsEnrolled: 150,
-      companyId: companyId,
-      departmentId: 'D005',
-      departmentName: 'Computer Science',
-      academicLevels: [
-        { id: 'AL006', name: 'Grade 9' },
-        { id: 'AL007', name: 'High School - Freshman' },
-      ],
-      educators: [
-        { id: 'EDU003', name: 'Dr. Emily White', email: 'emily.white@school.com', roleInCourse: 'Lead Instructor' },
-        { id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com', roleInCourse: 'Assistant' },
-      ], // NEW: multiple educators
-      createdAt: new Date('2023-03-10').toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: 'CRS004',
-      title: 'Elementary Science',
-      description: 'Basic scientific concepts for younger students, including nature, simple experiments, and the environment.',
-      imageUrl: 'https://placehold.co/100x100/B0E0E6/4682B4?text=Sci',
-      code: 'SCI100', // NEW
-      credits: 2, // NEW
-      rating: 4.2,
-      totalLessons: 45,
-      studentsEnrolled: 80,
-      companyId: companyId,
-      departmentId: 'D003',
-      departmentName: 'Science',
-      academicLevels: [
-        { id: 'AL001', name: 'Playgroup' },
-        { id: 'AL002', name: 'Kindergarten' },
-        { id: 'AL003', name: 'Grade 1' },
-      ],
-      educators: [{ id: 'EDU003', name: 'Dr. Emily White', email: 'emily.white@school.com', roleInCourse: 'Lead Instructor' }], // NEW: educators array
-      createdAt: new Date('2023-04-05').toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
+    // {
+    //   id: 'CRS001',
+    //   title: 'Algebra II',
+    //   description: 'Foundational course in algebraic concepts, including linear equations, inequalities, and functions.',
+    //   imageUrl: 'https://placehold.co/100x100/ADD8E6/00008B?text=Alg',
+    //   code: 'MATH101', // NEW
+    //   credits: 3, // NEW
+    //   rating: 4.5,
+    //   totalLessons: 45,
+    //   studentsEnrolled: 120,
+    //   companyId: companyId,
+    //   departmentId: 'D001',
+    //   departmentName: 'Mathematics',
+    //   academicLevels: [{ id: 'AL006', name: 'Grade 9' }],
+    //   educators: [{ id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com', roleInCourse: 'Lead Instructor' }], // NEW: educators array
+    //   createdAt: new Date('2023-01-15').toISOString(),
+    //   updatedAt: new Date().toISOString(),
+    // },
+    // {
+    //   id: 'CRS002',
+    //   title: 'Literary Analysis',
+    //   description: 'Exploration of various literary genres and critical analysis techniques, focusing on classic and contemporary works.',
+    //   imageUrl: 'https://placehold.co/100x100/FFB6C1/A52A2A?text=Lit',
+    //   code: 'ENG201', // NEW
+    //   credits: 3, // NEW
+    //   rating: 4.7,
+    //   totalLessons: 45,
+    //   studentsEnrolled: 95,
+    //   companyId: companyId,
+    //   departmentId: 'D002',
+    //   departmentName: 'English',
+    //   academicLevels: [{ id: 'AL007', name: 'High School - Freshman' }],
+    //   educators: [{ id: 'EDU002', name: 'Mrs. Jane Smith', email: 'jane.smith@school.com', roleInCourse: 'Lead Instructor' }], // NEW: educators array
+    //   createdAt: new Date('2023-02-01').toISOString(),
+    //   updatedAt: new Date().toISOString(),
+    // },
+    // {
+    //   id: 'CRS003',
+    //   title: 'Introduction to Programming',
+    //   description: 'Fundamentals of programming logic and Python, covering basic data structures and algorithms.',
+    //   imageUrl: 'https://placehold.co/100x100/98FB98/006400?text=Code',
+    //   code: 'CS101', // NEW
+    //   credits: 4, // NEW
+    //   totalLessons: 45,
+    //   rating: 4.8,
+    //   studentsEnrolled: 150,
+    //   companyId: companyId,
+    //   departmentId: 'D005',
+    //   departmentName: 'Computer Science',
+    //   academicLevels: [
+    //     { id: 'AL006', name: 'Grade 9' },
+    //     { id: 'AL007', name: 'High School - Freshman' },
+    //   ],
+    //   educators: [
+    //     { id: 'EDU003', name: 'Dr. Emily White', email: 'emily.white@school.com', roleInCourse: 'Lead Instructor' },
+    //     { id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com', roleInCourse: 'Assistant' },
+    //   ], // NEW: multiple educators
+    //   createdAt: new Date('2023-03-10').toISOString(),
+    //   updatedAt: new Date().toISOString(),
+    // },
+    // {
+    //   id: 'CRS004',
+    //   title: 'Elementary Science',
+    //   description: 'Basic scientific concepts for younger students, including nature, simple experiments, and the environment.',
+    //   imageUrl: 'https://placehold.co/100x100/B0E0E6/4682B4?text=Sci',
+    //   code: 'SCI100', // NEW
+    //   credits: 2, // NEW
+    //   rating: 4.2,
+    //   totalLessons: 45,
+    //   studentsEnrolled: 80,
+    //   companyId: companyId,
+    //   departmentId: 'D003',
+    //   departmentName: 'Science',
+    //   academicLevels: [
+    //     { id: 'AL001', name: 'Playgroup' },
+    //     { id: 'AL002', name: 'Kindergarten' },
+    //     { id: 'AL003', name: 'Grade 1' },
+    //   ],
+    //   educators: [{ id: 'EDU003', name: 'Dr. Emily White', email: 'emily.white@school.com', roleInCourse: 'Lead Instructor' }], // NEW: educators array
+    //   createdAt: new Date('2023-04-05').toISOString(),
+    //   updatedAt: new Date().toISOString(),
+    // },
   ];
 
   return { sampleCourses: courses, sampleEducators: educators, sampleDepartments: departments, sampleAcademicLevels: academicLevels };

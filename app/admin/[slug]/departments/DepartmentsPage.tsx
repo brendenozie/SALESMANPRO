@@ -99,36 +99,36 @@ export default function DepartmentsPage({ initialDepartments, possibleHeads, com
 
   // Sample Data (Fallback for when API data is not available or empty)
   const sampleDepartmentsDataFallback: DepartmentData[] = [
-    {
-      id: 'D001',
-      name: 'Mathematics Department',
-      head: { id: 'user_mock_1', name: 'Mr. John Doe', email: 'john.doe@example.com' },
-      description: 'Responsible for all mathematics curriculum and instruction from Grade 7 to 12.',
-      educatorCount: 5, // Sample count
-      courseCount: 12,  // Sample count
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: 'D002',
-      name: 'English Department',
-      head: { id: 'user_mock_2', name: 'Mrs. Jane Smith', email: 'jane.smith@example.com' },
-      description: 'Focuses on language arts, literature, and communication skills.',
-      educatorCount: 7,
-      courseCount: 15,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: 'D003',
-      name: 'Science Department',
-      head: { id: 'user_mock_3', name: 'Ms. Emily White', email: 'emily.white@example.com' },
-      description: 'Covers Biology, Chemistry, and Physics curricula.',
-      educatorCount: 6,
-      courseCount: 10,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
+    // {
+    //   id: 'D001',
+    //   name: 'Mathematics Department',
+    //   head: { id: 'user_mock_1', name: 'Mr. John Doe', email: 'john.doe@example.com' },
+    //   description: 'Responsible for all mathematics curriculum and instruction from Grade 7 to 12.',
+    //   educatorCount: 5, // Sample count
+    //   courseCount: 12,  // Sample count
+    //   createdAt: new Date().toISOString(),
+    //   updatedAt: new Date().toISOString(),
+    // },
+    // {
+    //   id: 'D002',
+    //   name: 'English Department',
+    //   head: { id: 'user_mock_2', name: 'Mrs. Jane Smith', email: 'jane.smith@example.com' },
+    //   description: 'Focuses on language arts, literature, and communication skills.',
+    //   educatorCount: 7,
+    //   courseCount: 15,
+    //   createdAt: new Date().toISOString(),
+    //   updatedAt: new Date().toISOString(),
+    // },
+    // {
+    //   id: 'D003',
+    //   name: 'Science Department',
+    //   head: { id: 'user_mock_3', name: 'Ms. Emily White', email: 'emily.white@example.com' },
+    //   description: 'Covers Biology, Chemistry, and Physics curricula.',
+    //   educatorCount: 6,
+    //   courseCount: 10,
+    //   createdAt: new Date().toISOString(),
+    //   updatedAt: new Date().toISOString(),
+    // },
   ];
 
 
