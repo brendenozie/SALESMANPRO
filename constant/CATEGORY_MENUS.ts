@@ -1038,7 +1038,59 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: TicketIcon,
     },
   ],
-
+  "Company Portfolio": [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    {
+      label: "Categories",
+      href: `/admin/${adminSlug}/categories`,
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      label: "Services",
+      href: `/admin/${adminSlug}/services`,
+      icon: WrenchScrewdriverIcon,
+    },
+    {
+      label: "Projects",
+      href: `/admin/${adminSlug}/projects`,
+      icon: PresentationChartBarIcon,
+    },
+    {
+      label: "Clients",
+      href: `/admin/${adminSlug}/consumers`,
+      icon: UsersIcon,
+    },
+    {
+      label: "Transport",
+      href: `/admin/${adminSlug}/transport`,
+      icon: HomeIcon,
+    },
+    {
+      label: "Gallery",
+      href: `/admin/${adminSlug}/gallery`,
+      icon: PhotoIcon,
+    },
+    {
+      label: "blogs",
+      href: `/admin/${adminSlug}/blogs`,
+      icon: WrenchScrewdriverIcon,
+    },
+    {
+      label: "Reports",
+      href: `/admin/${adminSlug}/reports`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Messages",
+      href: `/admin/${adminSlug}/messages`,
+      icon: ChatBubbleBottomCenterTextIcon,
+    },
+    {
+      label: "Settings",
+      href: `/admin/${adminSlug}/settings`,
+      icon: Cog6ToothIcon,
+    },
+  ],
   "Restaurant & Food Delivery": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     {
@@ -1051,7 +1103,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       href: `/admin/${adminSlug}/pos`,
       icon: ClipboardDocumentListIcon,
     },
-    
+
     {
       label: "Products",
       icon: ClipboardDocumentListIcon,
@@ -2061,7 +2113,10 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
           href: `/admin/${adminSlug}/property-maintenance-requests`,
         },
         { label: "Visitors", href: `/admin/${adminSlug}/property-visitors` },
-        { label: "Fee Management", href: `/admin/${adminSlug}/property-fee-management` },
+        {
+          label: "Fee Management",
+          href: `/admin/${adminSlug}/property-fee-management`,
+        },
         // { label: "Inventory", href: `/admin/${adminSlug}/property-inventory` },
         { label: "Staff", href: `/admin/${adminSlug}/property-staff` },
         { label: "Reports", href: `/admin/${adminSlug}/property-reports` },
@@ -2081,7 +2136,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Offers & Contracts",
       href: `/admin/${adminSlug}/properties-offers`,
       icon: DocumentTextIcon,
-    }, 
+    },
     // Manage offers, sales agreements, and contracts
     //   Properties
     //   ├─ All Properties

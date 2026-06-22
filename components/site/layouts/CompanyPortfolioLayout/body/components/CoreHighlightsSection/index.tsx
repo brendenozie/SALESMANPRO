@@ -1,0 +1,214 @@
+"use client";
+
+import React from 'react';
+import { motion } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
+import {
+  GlobeAltIcon,
+  ShieldCheckIcon,
+  TruckIcon,
+  CircleStackIcon,
+  CubeIcon,
+  ChartBarIcon,
+  ArrowRightIcon
+} from '@heroicons/react/24/outline';
+
+// --- TYPES ---
+interface Pillar {
+  id: string;
+  title: string;
+  description: string;
+  Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  accentClass: string; // Tailored color themes for individual cards
+  bgGlowClass: string;
+}
+
+// --- PILLARS CONFIGURATION ---
+const corporatePillars: Pillar[] = [
+  {
+    id: 'pillar-1',
+    title: 'Precious Metals Liquidity',
+    description:
+      'Streamlined gold purchasing pipelines combining robust regional sourcing protocols with secure, verified tier-1 assay compliance.',
+    Icon: CircleStackIcon,
+    accentClass: 'text-amber-500 border-amber-500/30 group-hover:border-amber-400',
+    bgGlowClass: 'from-amber-500/10 to-transparent',
+  },
+  {
+    id: 'pillar-2',
+    title: 'Industrial Cathode Supply',
+    description:
+      'High-grade copper cathode distribution frameworks built to meet scaling international manufacturing and industrial infrastructure demands.',
+    Icon: CubeIcon,
+    accentClass: 'text-orange-500 border-orange-500/30 group-hover:border-orange-400',
+    bgGlowClass: 'from-orange-500/10 to-transparent',
+  },
+  {
+    id: 'pillar-3',
+    title: 'Logistics & Security Precision',
+    description:
+      'End-to-end global supply chain execution featuring locked transit networks, strict multi-modal freight management, and risk-managed clearing.',
+    Icon: TruckIcon,
+    accentClass: 'text-zinc-400 border-zinc-700 group-hover:border-zinc-500',
+    bgGlowClass: 'from-zinc-500/10 to-transparent',
+  },
+  {
+    id: 'pillar-4',
+    title: 'Rigorous Compliance Frameworks',
+    description:
+      'Uncompromising alignment with global AML, sourcing transparencies, and international trading standards to guarantee institutional-grade safety.',
+    Icon: ShieldCheckIcon,
+    accentClass: 'text-emerald-500 border-emerald-500/30 group-hover:border-emerald-400',
+    bgGlowClass: 'from-emerald-500/10 to-transparent',
+  },
+  {
+    id: 'pillar-5',
+    title: 'Risk-Controlled Execution',
+    description:
+      'Sophisticated market structural positioning and operational hedging parameters built to protect value and absorb international volatility.',
+    Icon: ChartBarIcon,
+    accentClass: 'text-blue-500 border-blue-500/30 group-hover:border-blue-400',
+    bgGlowClass: 'from-blue-500/10 to-transparent',
+  },
+  {
+    id: 'pillar-6',
+    title: 'Global Demand Optimization',
+    description:
+      'Connecting regional extraction strongholds directly to high-liquidity international nodes, forging continuous commercial utility.',
+    Icon: GlobeAltIcon,
+    accentClass: 'text-indigo-500 border-indigo-500/30 group-hover:border-indigo-400',
+    bgGlowClass: 'from-indigo-500/10 to-transparent',
+  },
+];
+
+// --- FRAMER MOTION VARIANTS ---
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08 },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+export default function CorporatePillarsSection() {
+  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.15 });
+
+  return (
+    <section
+      id="operations"
+      className="py-24 md:py-36 bg-zinc-950 text-white relative overflow-hidden"
+    >
+      {/* Premium Ambient Background Pattern */}
+      <div className="absolute inset-0 z-0 opacity-30 pointer-events-none">
+        <div 
+          className="absolute inset-0" 
+          style={{ 
+            backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0)', 
+            backgroundSize: '32px 32px' 
+          }} 
+        />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-amber-500/5 blur-[140px] rounded-full mix-blend-screen" />
+        <div className="absolute bottom-1/4 left-1/4 w-[600px] h-[250px] bg-zinc-500/10 blur-[120px] rounded-full mix-blend-screen" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+        
+        {/* Institutional Header Section */}
+        <div className="max-w-4xl mb-20 md:mb-28">
+          <motion.p
+            initial={{ opacity: 0, x: -20 }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.5 }}
+            className="text-xs uppercase tracking-[0.25em] text-amber-500 font-bold mb-4"
+          >
+            Grey Trading Limited &bull; Operational Architecture
+          </motion.p>
+          
+          <motion.h2 
+            initial={{ opacity: 0, y: 30 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-zinc-100 leading-[1.1]"
+          >
+            At the intersection of <span className="text-zinc-400 font-normal italic">global demand</span> and trusted supply.
+          </motion.h2>
+          
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : {}}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="mt-6 text-lg sm:text-xl text-zinc-400 max-w-3xl font-light leading-relaxed"
+          >
+            We manage sophisticated trading channels for refined and industrial metals, combining 
+            regional sourcing access with institutional compliance, structural security, and cross-border execution precision.
+          </motion.p>
+        </div>
+
+        {/* Pillars Grid */}
+        <motion.div
+          ref={ref}
+          variants={containerVariants}
+          initial="hidden"
+          animate={inView ? 'visible' : 'hidden'}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          {corporatePillars.map((pillar) => {
+            const IconComponent = pillar.Icon;
+            return (
+              <motion.div
+                key={pillar.id}
+                variants={cardVariants}
+                className="group relative bg-zinc-900/40 backdrop-blur-sm border p-8 rounded-2xl transition-all duration-500 hover:bg-zinc-900/80 hover:-translate-y-1 flex flex-col justify-between h-full"
+                style={{ borderColor: 'rgba(63, 63, 70, 0.4)' }} 
+              >
+                {/* Dynamic Metallic Glow Backing */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${pillar.bgGlowClass} opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-2xl pointer-events-none`} />
+
+                <div>
+                  {/* Icon Frame */}
+                  <div className={`w-12 h-12 mb-8 flex items-center justify-center rounded-xl bg-zinc-900 border border-zinc-800 transition-all duration-300 ${pillar.accentClass}`}>
+                    <IconComponent className="w-6 h-6 transition-transform duration-500 group-hover:scale-110" />
+                  </div>
+
+                  {/* Title & Description */}
+                  <h3 className="text-xl font-bold text-zinc-100 mb-3 tracking-tight group-hover:text-white transition-colors duration-300">
+                    {pillar.title}
+                  </h3>
+                  <p className="text-zinc-400 text-sm leading-relaxed font-light group-hover:text-zinc-300 transition-colors duration-300">
+                    {pillar.description}
+                  </p>
+                </div>
+
+                {/* Subtle Action Link Indicator */}
+                <div className="mt-8 pt-4 border-t border-zinc-800/60 flex items-center text-xs font-semibold text-zinc-500 group-hover:text-amber-500 transition-colors duration-300">
+                  <span className="tracking-wider uppercase">Review Controls</span>
+                  <ArrowRightIcon className="w-3 h-3 ml-2 transform group-hover:translate-x-1 transition-transform" />
+                </div>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+
+        {/* Secondary Institutional CTA */}
+        <div className="mt-20 text-center">
+          {/* <a
+            href="#compliance"
+            className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-zinc-100 text-zinc-950 text-sm font-bold tracking-wider uppercase hover:bg-white shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
+          >
+            Access Trade Desk & Compliance Portals
+            <ArrowRightIcon className="w-4 h-4 text-zinc-950" />
+          </a> */}
+        </div>
+      </div>
+    </section>
+  );
+}

@@ -742,5 +742,33 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Other",
   ],
 
+  "Company Portfolio": [
+    "Company Portfolio",
+    "Portfolio & Personal Branding",
+    "Company Services",
+    "Services",
+  ],
+
+  "Company Profile": [
+    "Company Profile",
+    "Portfolio & Personal Branding",
+    "Company Services",
+    "Services",
+  ],
+
+  "Company Website": [
+    "Company Website",
+    "Portfolio & Personal Branding",
+    "Company Services",
+    "Services",
+  ],
+
+  "Business Portfolio": [
+    "Business Portfolio",
+    "Company Services",
+    "Portfolio & Personal Branding",
+    "Services",
+  ],
+
   Other: [],
 };

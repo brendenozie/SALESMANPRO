@@ -133,6 +133,7 @@ export const folderMap: Record<string, string> = {
   default: "DefaultLayout",
   other: "DefaultLayout",
   "general-purpose-site": "DefaultLayout",
+  "company-portfolio": "CompanyPortfolioLayout",
 };
 
 // ✅ Reverse Map (auto-aligned)
@@ -188,6 +189,7 @@ export const siteComponentNameMap: Record<string, string> = {
   FurnitureLayout: "FurnitureSite",
   FashionLayout: "FashionSite",
   DefaultLayout: "DefaultSite",
+  CompanyPortfolioLayout: "CompanyPortfolioSite",
 };
 
 // ✅ Core Resolver

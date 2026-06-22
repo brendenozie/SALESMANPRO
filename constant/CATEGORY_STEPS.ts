@@ -183,6 +183,8 @@ export const CATEGORY_STEPS: Record<string, number[]> = {
 
   "Security Consulting": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
 
+  "Company Portfolio": [1, 2, 7, 8, 9, 10, 12, 11],
+
   Agrovet: [1, 2, 7, 8, 9, 10, 12, 11],
 
   "Baby Store": [1, 2, 3, 7, 8, 9, 10, 12, 11],

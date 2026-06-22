@@ -179,6 +179,12 @@ const DrycleaningBookingsLayout = dynamic(
     ),
 );
 
+const CompanyPortfolioLayout = dynamic(
+    () => import(
+      "@/components/site/layouts/CompanyPortfolioLayout/CompanyPortfolioLayout"
+    ),
+  );
+
 import { ReactNode } from "react";
 import { StoreForm } from "../../../types/typings";
 
@@ -294,6 +300,7 @@ const categoryHeaderFooterLayoutMap: Record<
 
   "barbershop": BarbershopBookingsLayout,
   "drycleaning": DrycleaningBookingsLayout,
+  "company portfolio": CompanyPortfolioLayout,
 
   other: DefaultLayout,
   Other: DefaultLayout,

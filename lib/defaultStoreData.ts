@@ -7382,6 +7382,138 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       ],
     },
 
+    "Company Portfolio": withOverrides({
+      tagline: "**Showcasing Our Success** and Expertise",
+      description: "Explore our company portfolio to see our successful projects, satisfied clients, and the impact we've made in our industry.",
+        socialLinks: [
+          {
+            channel: SocialChannel.TWITTER,
+            url: "https://twitter.com/companyportfolio",
+          },
+          {
+            channel: SocialChannel.FACEBOOK,
+            url: "https://facebook.com/companyportfolio",
+          },
+          {
+            channel: SocialChannel.LINKEDIN,
+            url: "https://linkedin.com/companyportfolio",
+          },
+        ],
+        faqs: [
+          {
+            question: "What industries do you serve?",
+            answer:
+              "We serve a wide range of industries including technology, healthcare, finance, and retail. Contact us for specific case studies.",
+            order: 1,
+          },
+        ],
+        testimonials: [
+          {
+            authorName: "Sarah L.",
+            quote:
+              "The company portfolio showcased their expertise and the successful projects they have completed. It gave me confidence in their capabilities!",
+            rating: 5,
+          },
+        ],
+        heroSlides: [
+          {
+            imageUrl: getSampleImageUrl("company-portfolio"),
+            headline: "Our Success Stories",
+            subline:
+              "Discover our successful projects and satisfied clients in our company portfolio.",
+            ctaText: "Explore Portfolio",
+            ctaLink: "/portfolio",
+            id: "",
+            companyId: "",
+            price: null,
+            productImageUrl: null,
+            badgeText: "Success Stories",
+            endsAt: null,
+            order: 0,
+            iconKey: null,
+            backgroundColor: null,
+            textColor: null,
+            videoLink: null,
+            type: "image",
+            stats: [{
+              label: "Over 100 successful projects with a 98% client satisfaction rate!",
+              value: null,
+            }]
+          },
+        ],
+        metrics: [
+          { label: "Successful Projects", value: 100 },
+          { label: "Satisfied Clients", value: 50 },
+          { label: "Industry Expertise", value: 5 },
+        ],
+        seo: {
+          id: "",
+          title:
+            "Company Portfolio | Showcasing Our Success and Expertise",
+          description:
+            "Explore our company portfolio to see our successful projects, satisfied clients, and the impact we've made in our industry. Discover how we can help your business succeed.",
+          keywords: [
+            "company portfolio",
+            "successful projects",
+            "satisfied clients",
+            "industry expertise",
+            "case studies",
+          ],
+        },
+        stats: [
+          { label: "Successful Projects", value: 100 },
+          { label: "Satisfied Clients", value: 50 },
+          { label: "Industry Expertise", value: 5 },
+        ],
+        awards: [
+          { name: "Best Company Portfolio 2024", iconUrl: "/icons/award.svg" },
+          { name: "Top 10 Portfolios 2024", iconUrl: "/icons/award.svg" },
+        ],
+        policies: [
+          {
+            type: PolicyType.CANCELLATION,
+            content:
+              "N/A - This is a portfolio showcase. Contact us for inquiries about our services.",
+          },
+          {
+            type: PolicyType.PRIVACY,
+            content:
+              "We respect your privacy. Any inquiries made through our portfolio will be handled confidentially.",
+          }
+        ],
+        promotions: [
+          {
+            title: "Free Consultation",
+            description:
+              "Contact us today to schedule a free consultation and learn how we can help your business succeed.",
+            ctaText: "Schedule Now",
+            ctaLink: "/contact",
+            companyId: "",
+            perks: [{ id: "", label: "Free Consultation", icon: "StarIcon" }],
+            trustLogos: [],
+          },
+        ],
+
+        sectionSubtitle: "Discover Our Expertise and Success",
+        sectionTitle: "Company Portfolio",
+        sectionDescription:
+          "Explore our company portfolio to see our successful projects, satisfied clients, and the impact we've made in our industry. Learn how we can help your business succeed.",
+        partnerLogos: [
+          {
+            src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
+            alt: "Brand A",
+          },
+          {
+            src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
+            alt: "Brand B",
+          },
+          {
+            src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
+            alt: "Brand C",
+          },
+        ],
+    }),
+
     // --- Remaining Stubbed Categories ---
     Other: withOverrides({
       tagline: "Tailored Solutions for Your Unique Idea",
