@@ -396,7 +396,7 @@ async function handleDelete(
   const { id } = params;
 
   let listing:
-    | { company?: { slug?: string | null | undefined } | null | undefined }
+    | { company?: { slug?: string | null | undefined; id?: string | null | undefined } | null | undefined }
     | null
     | undefined = {};
   await prisma.$transaction(async (tx) => {
@@ -406,6 +406,7 @@ async function handleDelete(
     });
   });
   await revalidateCompanyCache(listing?.company?.slug || "");
+  await revalidateCompanyCache(listing?.company?.id || "");
 
   return formatResponse(
     true,
