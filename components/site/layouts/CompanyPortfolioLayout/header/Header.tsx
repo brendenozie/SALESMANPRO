@@ -114,10 +114,10 @@ export default function Navbar() {
 
       {/* 2. CORE SYSTEM NAVIGATION */}
       <nav className="h-20 lg:h-24 w-full">
-        <div className="flex items-stretch justify-between h-full w-full max-w-[1600px] mx-auto px-6">
+        <div className="flex items-stretch justify-between h-full w-full max-w-[1600px] mx-auto px-6 gap-4">
           
-          {/* PREMIUM BRAND NODES */}
-          <Link href="/" className="flex items-center gap-4 group shrink-0 select-none min-w-0">
+          {/* PREMIUM BRAND NODES - FIXED MOBILE OVERFLOW */}
+          <Link href="/" className="flex items-center gap-3 sm:gap-4 group shrink min-w-0 select-none">
             {logoUrl && (
               <div className="relative w-10 h-10 md:w-12 md:h-12 shrink-0 border border-zinc-800 bg-zinc-900/40 rounded-lg p-1.5 overflow-hidden transition-all duration-300 group-hover:border-zinc-700">
                 <Image 
@@ -132,11 +132,11 @@ export default function Navbar() {
               </div>
             )}
 
-            <div className="flex flex-col justify-center min-w-0">
-              <span className="text-base sm:text-lg font-black tracking-wider uppercase text-zinc-100 leading-none group-hover:text-white transition-colors truncate">
+            <div className="flex flex-col justify-center min-w-0 flex-1">
+              <span className="text-sm sm:text-base md:text-lg font-black tracking-wider uppercase text-zinc-100 leading-none group-hover:text-white transition-colors truncate block">
                 {name || 'Grey Trading'}
               </span>
-              <span className="text-[9px] font-mono uppercase tracking-[0.18em] text-zinc-500 mt-1 block leading-none truncate">
+              <span className="hidden sm:block text-[9px] font-mono uppercase tracking-[0.18em] text-zinc-500 mt-1 leading-none truncate">
                 {tagline || 'Risk Infrastructure'}
               </span>
             </div>
@@ -192,7 +192,7 @@ export default function Navbar() {
 
             <button 
               onClick={() => setIsMenuOpen(true)} 
-              className="lg:hidden p-2 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50 border border-transparent hover:border-zinc-800 rounded-lg transition-all"
+              className="lg:hidden p-2 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/50 border border-transparent hover:border-zinc-800 rounded-lg transition-all shrink-0"
             >
               <Bars3Icon className="w-6 h-6" />
             </button>
@@ -219,14 +219,15 @@ export default function Navbar() {
               transition={{ type: 'spring', damping: 30, stiffness: 220 }} 
               className="fixed right-0 top-0 h-full w-[85%] max-w-xs bg-zinc-950 border-l border-zinc-900 z-[70] shadow-2xl flex flex-col font-sans"
             >
-              <div className="p-6 flex justify-between items-center border-b border-zinc-900 bg-zinc-900/20">
-                <div className="flex flex-col">
-                  <span className="text-base font-black tracking-wider text-zinc-100 uppercase leading-none">{name || 'Grey Trading'}</span>
+              {/* FIXED DRAWER HEADER FOR LONG NAMES */}
+              <div className="p-6 flex justify-between items-center border-b border-zinc-900 bg-zinc-900/20 gap-4">
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="text-sm font-black tracking-wider text-zinc-100 uppercase leading-none truncate block">{name || 'Grey Trading'}</span>
                   <span className="text-[9px] font-mono text-zinc-500 tracking-widest mt-1">SYS_NAVIGATION</span>
                 </div>
                 <button 
                   onClick={() => setIsMenuOpen(false)} 
-                  className="p-2 border border-zinc-800 bg-zinc-900/40 text-zinc-400 rounded-md hover:text-zinc-200 transition-transform"
+                  className="p-2 border border-zinc-800 bg-zinc-900/40 text-zinc-400 rounded-md hover:text-zinc-200 transition-transform shrink-0"
                 >
                   <XMarkIcon className="w-4 h-4" />
                 </button>

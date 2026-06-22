@@ -79,10 +79,10 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
           className="absolute inset-0 z-0"
         >
           {/* Subtle uniform ambient dim to protect highlights */}
-          <div className="absolute inset-0 bg-zinc-950/30 z-10" />
+          <div className="absolute inset-0 bg-zinc-950/10 z-10" />
           
           {/* Targeted Left Vignette: Deep shadows behind text, feathering out to reveal full image color & detail on the right */}
-          <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/80 via-40% to-transparent z-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/50 via-40% to-transparent z-10" />
           <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent z-10" />
           
           <Image

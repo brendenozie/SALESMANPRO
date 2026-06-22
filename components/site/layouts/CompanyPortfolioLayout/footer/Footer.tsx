@@ -28,6 +28,7 @@ export default function Footer() {
     contactEmail,
     contactPhone,
     socialLinks = [],
+    address = "Lusingeti Road, Number 31, Industrial Area, Nairobi",
   } = storeFormData || {};
 
   return (
@@ -73,11 +74,11 @@ export default function Footer() {
             </h4>
             <ul className="space-y-4 text-slate-400 text-sm font-medium">
               {[
-                { label: "About Us", href: "/logistics/about" },
-                { label: "Global Tracking", href: "/logistics/track" },
-                { label: "Help Center", href: "/logistics/help" },
-                { label: "Privacy Policy", href: "/logistics/privacy" },
-                { label: "Terms of Service", href: "/logistics/terms" }
+                { label: "About Us", href: "/companyprofile/about" },
+                { label: "Global Tracking", href: "/companyprofile/track" },
+                { label: "Help Center", href: "/companyprofile/help" },
+                { label: "Privacy Policy", href: "/companyprofile/privacy" },
+                { label: "Terms of Service", href: "/companyprofile/terms" }
               ].map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className="hover:text-orange-500 transition-colors flex items-center gap-2 group">
@@ -100,7 +101,7 @@ export default function Footer() {
                 <div className="w-10 h-10 rounded-lg bg-slate-900 border border-white/5 flex items-center justify-center shrink-0 group-hover:border-orange-500/50 transition-colors">
                   <MapPinIcon className="w-5 h-5 text-orange-600" />
                 </div>
-                <span className="group-hover:text-slate-200 transition-colors">Lusingeti Road, Number 31,<br />Industrial Area, Nairobi</span>
+                <span className="group-hover:text-slate-200 transition-colors">{address}</span>
               </li>
               {contactPhone && (
                 <li className="flex gap-4 group">
@@ -151,9 +152,9 @@ export default function Footer() {
             © {new Date().getFullYear()} {name} Solutions Inc. All Rights Reserved.
           </p>
           <div className="flex gap-8 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
-            <Link href="/logistics/faq" className="hover:text-white transition-colors">FAQ</Link>
-            <Link href="/logistics/sitemap.xml" className="hover:text-white transition-colors">Sitemap</Link>
-            <Link href="/logistics/support" className="hover:text-white transition-colors">Support</Link>
+            <Link href="/companyprofile/faq" className="hover:text-white transition-colors">FAQ</Link>
+            <Link href="/companyprofile/sitemap.xml" className="hover:text-white transition-colors">Sitemap</Link>
+            <Link href="/companyprofile/support" className="hover:text-white transition-colors">Support</Link>
           </div>
         </div>
       </div>
