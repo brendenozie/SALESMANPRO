@@ -130,13 +130,13 @@ const fallbackIntelFaqs: FAQ[] = [
   },
 ];
 
-export default function FAQSection() {
-  const { storeFormData } = useStoreContext();
+export default function FAQSection({pagedata}: {pagedata: any}) {
+  // const { storeFormData } = useStoreContext();
 
-  const systemAccent = storeFormData?.themeSettings?.primaryColor || '#F59E0B'; // Amber Core Node
+  const systemAccent = pagedata?.themeSettings?.primaryColor || '#F59E0B'; // Amber Core Node
 
-  const faqsToRender = storeFormData?.faqs && Array.isArray(storeFormData?.faqs) && storeFormData.faqs.length > 0
-    ? [...storeFormData.faqs].sort((a, b) => (a.order || 0) - (b.order || 0))
+  const faqsToRender = pagedata?.faqs && Array.isArray(pagedata?.faqs) && pagedata.faqs.length > 0
+    ? [...pagedata.faqs].sort((a, b) => (a.order || 0) - (b.order || 0))
     : fallbackIntelFaqs;
 
   return (

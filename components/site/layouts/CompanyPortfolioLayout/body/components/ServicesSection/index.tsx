@@ -24,12 +24,12 @@ interface ServiceItem {
 }
 
 interface GreyServicesSectionProps {
-  services?: ServiceItem[];
+  services?: any[];
   storeSlug: string;
 }
 
 // Premier default services built directly for Grey Trading Limited's operational matrix
-const defaultServices: ServiceItem[] = [
+const defaultServices: any[] = [
   {
     id: 'svc-1',
     name: 'Gold Procurement & Primary Refining Sourcing',
@@ -155,8 +155,8 @@ export default function GreyServicesSection({ services = defaultServices, storeS
                 {/* Wide Panoramic Image Showcase */}
                 <div className="relative h-60 sm:h-72 w-full overflow-hidden border-b border-zinc-900">
                   <Image
-                    src={svc.imageUrl}
-                    alt={svc.name}
+                    src={svc.imageUrl || svc.images?.[0] || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2070&auto=format&fit=crop'}
+                    alt={svc.name || 'Service Image'}
                     fill
                     className="object-cover transition-transform duration-1000 ease-out grayscale-[30%] group-hover:scale-105 group-hover:grayscale-0"
                     sizes="(max-width: 1024px) 100vw, 50vw"
@@ -185,7 +185,7 @@ export default function GreyServicesSection({ services = defaultServices, storeS
                   {/* Operational Technical Spec Flags */}
                   <div className="pt-4 border-t border-zinc-900/80">
                     <div className="flex flex-wrap gap-2">
-                      {svc.specs.map((spec, i) => (
+                      {svc.specs && svc.specs?.length > 0 && svc.specs?.map((spec, i) => (
                         <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-zinc-900/80 border border-zinc-800 text-zinc-300 text-xs font-medium">
                           <span className="w-1 h-1 rounded-full bg-amber-500" />
                           {spec}
@@ -197,7 +197,7 @@ export default function GreyServicesSection({ services = defaultServices, storeS
                   {/* Primary Call to Action Footer */}
                   <div className="pt-4 flex justify-between items-center">
                     <button 
-                      onClick={() => router.push(`/${storeSlug}/service/${svc.slug}`)}
+                      onClick={() => router.push(`/companyprofile/services/${svc.id}`)}
                       className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-400 group-hover:text-amber-300 transition-colors"
                     >
                       Initialize Allocation Pipeline

@@ -43,33 +43,33 @@ export default function CompanyPortfolioSite({ pageData, companyId }: { pageData
         <HeroSection heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} />
 
         {/* Core Highlights / Impact Areas */}
-        <CoreHighlightsSection />
+        <CoreHighlightsSection pagedata={pageData} />
 
-        <GreyServicesSection services={pageData.services} storeSlug='' />
+        <GreyServicesSection services={pageData.marketplaceListings} storeSlug='' />
 
         {/* About Us Spotlight */}
-        <AboutUsSpotlight />
+        <AboutUsSpotlight pagedata={pageData} />
 
         {/* Our Programs / Featured Causes */}
         {/* <ProgramsCausesSection /> */}
 
         {/* Impact Stats */}
-        <ImpactStatsSection />
+        <ImpactStatsSection pagedata={pageData} />
 
         {/* Events & Updates - Render when data is ready */}
         {/* {eventsData?.data && <EventsUpdatesSection />} */}
 
         {/* News - Render when data is ready */}
-        {blogsData?.data && <NewsSection />}
+        {blogsData?.data && <NewsSection pagedata={pageData} />}
 
         {/* Testimonials & News - Render when data is ready */}
-        {testimonialsData?.data && <TestimonialsNewsSection />}
+        {testimonialsData?.data && <TestimonialsNewsSection pagedata={pageData} />}
 
         {/* Call to Action - Bold */}
         <CtaBoldSection />
 
         {/* FAQs - Render when data is ready */}
-        {faqsData?.data && <FAQSection />}
+        {faqsData?.data && <FAQSection pagedata={pageData} />}
       </main>
   );
 }

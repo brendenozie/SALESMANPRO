@@ -92,6 +92,7 @@ export const CATEGORY_STEPS: Record<string, number[]> = {
 
   // — Services flow —
   Services: [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
+  "Company Services": [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
   Cleaning: [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
   Drycleaning: [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
   Plumbing: [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],

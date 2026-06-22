@@ -18,7 +18,7 @@ interface Pillar {
   id: string;
   title: string;
   description: string;
-  Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  Icon: React.ElementType<React.SVGProps<SVGSVGElement>>;
   accentClass: string; // Tailored color themes for individual cards
   bgGlowClass: string;
 }
@@ -99,8 +99,15 @@ const cardVariants = {
   },
 };
 
-export default function CorporatePillarsSection() {
+export default function CorporatePillarsSection({pagedata}: {pagedata: any}) {
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.15 });
+  const companyName = pagedata?.companyName || "Trading Limited"; // Fallback to a default name if not provided
+  const companyDescription = pagedata?.companyDescription || "We manage sophisticated trading channels for refined and industrial metals, combining regional sourcing access with institutional compliance, structural security, and cross-border execution precision."; // Fallback description
+  const companyTagline = pagedata?.companyTagline || "At the intersection of global demand and trusted supply."; // Fallback tagline
+
+  const featuresToRender = pagedata?.coreValues?.length > 0
+    ? pagedata.coreValues.sort((a: any, b: any) => a.order - b.order)
+    : corporatePillars; // Use mock data if no dynamic data is provided
 
   return (
     <section
@@ -130,7 +137,7 @@ export default function CorporatePillarsSection() {
             transition={{ duration: 0.5 }}
             className="text-xs uppercase tracking-[0.25em] text-amber-500 font-bold mb-4"
           >
-            Grey Trading Limited &bull; Operational Architecture
+            {companyName || "Trading Limited"} &bull; Operational Architecture
           </motion.p>
           
           <motion.h2 
@@ -139,7 +146,7 @@ export default function CorporatePillarsSection() {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-zinc-100 leading-[1.1]"
           >
-            At the intersection of <span className="text-zinc-400 font-normal italic">global demand</span> and trusted supply.
+            {companyTagline}
           </motion.h2>
           
           <motion.p 
@@ -148,8 +155,7 @@ export default function CorporatePillarsSection() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="mt-6 text-lg sm:text-xl text-zinc-400 max-w-3xl font-light leading-relaxed"
           >
-            We manage sophisticated trading channels for refined and industrial metals, combining 
-            regional sourcing access with institutional compliance, structural security, and cross-border execution precision.
+            {companyDescription}
           </motion.p>
         </div>
 
@@ -161,7 +167,7 @@ export default function CorporatePillarsSection() {
           animate={inView ? 'visible' : 'hidden'}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          {corporatePillars.map((pillar) => {
+          {featuresToRender.map((pillar : { id: string; Icon: React.ComponentType; title: string; description: string }) => {
             const IconComponent = pillar.Icon;
             return (
               <motion.div

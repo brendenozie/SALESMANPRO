@@ -48,9 +48,9 @@ const NewsletterSection = dynamic(() => import('./components/NewsletterSection/N
 const features = [
   {
     id: 1,
-    title: '10 minute grocery now',
+    title: '10 minute now',
     description:
-      'Get your order delivered to your doorstep at the earliest from FreshCart pickup stores near you.',
+      'Get your order delivered to your doorstep at the near you.',
     icon: ClockIcon,
   },
   {

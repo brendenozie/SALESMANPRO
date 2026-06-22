@@ -83,9 +83,13 @@ const MetricCard = ({ metric }: { metric: any }) => {
 };
 
 // --- MAIN PROFILE COMPONENT ---
-export default function CorporateProfileSection() {
+export default function CorporateProfileSection({pagedata}: {pagedata: any}) {
+
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.15 });
-  const metricsToRender = enterpriseData.metrics.sort((a, b) => a.order - b.order);
+
+  // const metricsToRender = pagedata.metrics ? pagedata.metrics : enterpriseData.metrics;
+  
+  const metricsToRender = enterpriseData.metrics;
 
   return (
     <section id="corporate-profile" className="py-24 md:py-36 bg-zinc-950 text-white font-sans overflow-hidden relative">
@@ -174,8 +178,8 @@ export default function CorporateProfileSection() {
           animate={inView ? "visible" : "hidden"}
           className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-24 pt-12 border-t border-zinc-900"
         >
-          {metricsToRender.map((metric) => (
-            <MetricCard key={metric.id} metric={metric} />
+          {metricsToRender.map((metric : any, index: number) => (
+            <MetricCard key={`${metric.id}-${index}`} metric={metric} />
           ))}
         </motion.div>
 

@@ -108,14 +108,14 @@ const VerificationCard = ({ ver, primaryColor }: { ver: typeof mockVerifications
 
 // --- MAIN SECTION COMPONENT ---
 
-export default function App() {
-    const { storeFormData } = useStoreContext();
+export default function App({pagedata}: {pagedata: any}) {
+    // const { storeFormData } = useStoreContext();
     const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 });
 
-    const primaryColor = storeFormData?.themeSettings?.primaryColor || accentAmber;
-    const organizationSlug = storeFormData?.slug || 'grey-trading';
+    const primaryColor = pagedata?.themeSettings?.primaryColor || accentAmber;
+    const organizationSlug = pagedata?.slug || 'grey-trading';
 
-    const allVerifications = storeFormData?.testimonials || mockVerifications;
+    const allVerifications = pagedata?.testimonials || mockVerifications;
     const verificationsToRender = (allVerifications.length >= 3 
         ? allVerifications.slice(0, 3) 
         : allVerifications)
@@ -157,7 +157,7 @@ export default function App() {
                         animate={inView ? "show" : "hidden"}
                         className={`grid grid-cols-1 md:grid-cols-2 ${verificationsToRender.length >= 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-2 lg:max-w-4xl lg:mx-auto'} gap-6`}
                     >
-                        {verificationsToRender.map((ver) => (
+                        {verificationsToRender.map((ver:any) => (
                             <VerificationCard
                                 key={ver.id}
                                 ver={ver}
@@ -189,7 +189,7 @@ export default function App() {
                         </div>
                     </div>
                     
-                    <motion.a
+                    {/* <motion.a
                         href={`/${organizationSlug}/onboarding`}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
@@ -197,7 +197,7 @@ export default function App() {
                     >
                         Initialize Onboarding
                         <ArrowRightIcon className="w-4 h-4 text-zinc-500" />
-                    </motion.a>
+                    </motion.a> */}
                 </motion.div>
 
             </div>

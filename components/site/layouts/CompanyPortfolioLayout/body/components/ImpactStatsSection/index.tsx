@@ -106,7 +106,7 @@ const MetricTile = ({ metric }: { metric: typeof performanceMetrics[0] }) => {
 };
 
 // --- MAIN PERFORMANCE SECTION ---
-export default function PerformanceMetricsDashboard() {
+export default function PerformanceMetricsDashboard({pagedata}: {pagedata: any}) {
   const [ref, inView] = useInView({ 
     triggerOnce: true, 
     threshold: 0.1 

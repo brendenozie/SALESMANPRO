@@ -138,14 +138,14 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
 };
 
-export default function NewsSection() {
-  const { storeFormData } = useStoreContext();
+export default function NewsSection({pagedata}: {pagedata: any}) {
+  // const { storeFormData } = useStoreContext();
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 });
 
-  const intelToRender = storeFormData?.blogs && Array.isArray(storeFormData?.blogs) && storeFormData.blogs.length > 0
-    ? storeFormData.blogs
+  const intelToRender = pagedata?.blogs && Array.isArray(pagedata?.blogs) && pagedata.blogs.length > 0
+    ? pagedata.blogs
     : fallbackIntelBriefs;
-  const organizationSlug = storeFormData?.slug || 'grey-trading';
+  const organizationSlug = pagedata?.slug || 'grey-trading';
 
   return (
     <section id="news" className="py-24 md:py-36 bg-zinc-950 text-white font-sans relative overflow-hidden">
@@ -232,7 +232,7 @@ export default function NewsSection() {
 
               {/* Action Vector Footers */}
               <div className="px-6 md:px-8 pb-6 pt-2">
-                <Link 
+                {/* <Link 
                   href={`/${organizationSlug}/blog/${brief.slug}`} 
                   onClick={(e) => { 
                     e.preventDefault(); 
@@ -242,7 +242,7 @@ export default function NewsSection() {
                 >
                   Access Intelligence
                   <ArrowRightIcon className="w-3.5 h-3.5 text-zinc-500 group-hover/link:translate-x-1 group-hover/link:text-amber-500 transition-all" />
-                </Link>
+                </Link> */}
               </div>
 
             </motion.div>
@@ -251,13 +251,13 @@ export default function NewsSection() {
 
         {/* Centered Institutional Core CTA */}
         <div className="mt-16 flex justify-center">
-          <Link 
+          {/* <Link 
             href={`/${organizationSlug}/blog`} 
             className="inline-flex items-center gap-3 border border-zinc-800 bg-zinc-900/20 hover:bg-zinc-900/50 hover:border-zinc-700 text-zinc-200 hover:text-white font-bold py-3.5 px-8 rounded-xl text-xs tracking-wider uppercase transition-all duration-300 shadow-lg"
           >
             Review Full Intelligence Hub
             <ArrowRightIcon className="w-4 h-4 text-zinc-500" />
-          </Link>
+          </Link> */}
         </div>
 
       </div>
