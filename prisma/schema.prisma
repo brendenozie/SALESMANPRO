@@ -3027,9 +3027,9 @@ model HeadTeacher {
 
 // Parent Profile Model (one-to-one with User, one-to-many with Student)
 model Parent {
-  id     String @id @default(auto()) @map("_id") @db.ObjectId
-  userId String @unique @db.ObjectId // Link to User model
-  user   User   @relation(name: "parent", fields: [userId], references: [id])
+  id     String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId String? @unique @db.ObjectId // Link to User model
+  user   User?   @relation(name: "parent", fields: [userId], references: [id])
 
   loginCode String @unique // Unique generated number for parent login
 

@@ -2,36 +2,40 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
-  CalendarDaysIcon, // General calendar icon
-  SparklesIcon, // For general events
-  PlusCircleIcon, // For add event
-  PencilIcon, // For edit
-  MagnifyingGlassIcon, // For search
-  TrashIcon, // For delete
-  TagIcon, // For event type
-  ClockIcon, // For time
-  MapPinIcon, // For location
-  ArrowLeftIcon, // For calendar navigation
-  ArrowRightIcon, // For calendar navigation
-  XMarkIcon, // For closing modals/errors
-  CheckCircleIcon, // For scheduled/completed status
-  ExclamationTriangleIcon, // For postponed/cancelled status
-  LinkIcon, // For online meeting link
-  CurrencyDollarIcon, // For paid events
-  ArrowPathIcon, // For student/parent
+  CalendarDaysIcon,
+  SparklesIcon,
+  PlusCircleIcon,
+  PencilIcon,
+  MagnifyingGlassIcon,
+  TrashIcon,
+  TagIcon,
+  ClockIcon,
+  MapPinIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  XMarkIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  LinkIcon,
+  CurrencyDollarIcon,
+  ArrowPathIcon,
+  FolderOpenIcon,
+  AdjustmentsHorizontalIcon,
+  UserGroupIcon,
+  GlobeAltIcon
 } from '@heroicons/react/24/outline';
 import EventFormModal from './EventFormModal';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-// --- Type Definitions (Aligned with Event API Response) ---
+// --- Type Definitions ---
 export type EventData = {
   id: string;
   title: string;
   summary: string | null;
   description: string | null;
-  startDateTime: string; // ISO string
-  endDateTime: string | null; // ISO string
+  startDateTime: string; 
+  endDateTime: string | null; 
   location: string | null;
   onlineMeetingLink: string | null;
   imageUrl: string | null;
@@ -61,7 +65,6 @@ export type EventData = {
   updatedAt: string;
 };
 
-// Types for Audience Selection Dropdowns
 export type AcademicLevelOption = { id: string; name: string };
 export type CourseOption = { id: string; title: string };
 export type EducatorOption = { id: string; name: string; email: string };
@@ -82,13 +85,12 @@ interface AdminEventsPageProps {
   companyId: string;
 }
 
-// Helper to get month name
+// --- Helper Functions ---
 const getMonthName = (date: Date | string) => new Date(date).toLocaleString('en-US', { month: 'long', year: 'numeric' });
 
-// Helper to check if a date has an event
 const hasEventOnDate = (dateString: string, events: EventData[]) => {
   const targetDate = new Date(dateString);
-  targetDate.setHours(0, 0, 0, 0); // Normalize to start of day
+  targetDate.setHours(0, 0, 0, 0);
 
   return events.some(event => {
     const eventStart = new Date(event.startDateTime);
@@ -99,7 +101,6 @@ const hasEventOnDate = (dateString: string, events: EventData[]) => {
     return targetDate >= eventStart && targetDate <= eventEnd;
   });
 };
-
 
 // --- Main AdminEventsPage Component ---
 export default function AdminEventsPage({
@@ -114,23 +115,23 @@ export default function AdminEventsPage({
   companyId,
 }: AdminEventsPageProps) {
   const [events, setEvents] = useState<EventData[]>(initialEvents);
-  const [currentMonth, setCurrentMonth] = useState(new Date()); // Date object for calendar navigation
+  const [currentMonth, setCurrentMonth] = useState(new Date()); 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('All');
   const [filterAudience, setFilterAudience] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventData | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // For API operations
+  const [isLoading, setIsLoading] = useState(false); 
   const [error, setError] = useState<string | null>(null);
 
   const today = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
+    weekday: 'short',
+    month: 'short',
     day: 'numeric',
+    year: 'numeric'
   });
 
-  // Fetch events from API
   const fetchEvents = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -141,37 +142,33 @@ export default function AdminEventsPage({
       });
       if (res.ok) {
         const data: EventData[] = (await res.json()).data.data;
-        setEvents(data.sort((a, b) => new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime())); // Sort by upcoming
+        setEvents(data.sort((a, b) => new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime())); 
       } else {
         const errorData = await res.json();
-        setError(errorData.message || "Failed to fetch events.");
+        setError(errorData.message || "Failed to fetch institution timelines.");
       }
     } catch (err: any) {
-      setError(err.message || "Network error fetching events.");
+      setError(err.message || "Network exception encountered.");
     } finally {
       setIsLoading(false);
     }
   }, [companyId]);
 
   useEffect(() => {
-    // Only fetch if initial data is empty (meaning server fetch failed or was empty)
     if (initialEvents.length === 0 && !isLoading && !error) {
       fetchEvents();
     }
   }, [initialEvents, isLoading, error, fetchEvents]);
 
-
-  // Calculate calendar days for the current month view
   const calendarDays = useMemo(() => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
 
-    const startDayIndex = firstDayOfMonth.getDay(); // 0 for Sunday, 1 for Monday etc.
+    const startDayIndex = firstDayOfMonth.getDay(); 
     const days = [];
 
-    // Add days from previous month to fill the first week
     for (let i = startDayIndex; i > 0; i--) {
       const prevMonthDay = new Date(year, month, 1 - i);
       days.push({
@@ -182,7 +179,6 @@ export default function AdminEventsPage({
       });
     }
 
-    // Add days of the current month
     for (let i = 1; i <= lastDayOfMonth.getDate(); i++) {
       const day = new Date(year, month, i);
       const isToday = day.toDateString() === new Date().toDateString();
@@ -194,8 +190,7 @@ export default function AdminEventsPage({
       });
     }
 
-    // Add days from next month to fill the last week
-    const remainingDays = 42 - days.length; // Ensure 6 rows (6*7=42 days)
+    const remainingDays = 42 - days.length; 
     for (let i = 1; i <= remainingDays; i++) {
       const nextMonthDay = new Date(year, month + 1, i);
       days.push({
@@ -212,7 +207,6 @@ export default function AdminEventsPage({
   const uniqueAudiences = useMemo(() => Array.from(new Set(events.map(e => e.audience))).sort(), [events]);
   const uniqueStatuses = useMemo(() => Array.from(new Set(events.map(e => e.eventStatus))).sort(), [events]);
 
-
   const filteredEvents = useMemo(() => {
     return events.filter(event => {
       const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -226,21 +220,18 @@ export default function AdminEventsPage({
       const matchesStatus = filterStatus === 'All' || event.eventStatus === filterStatus;
 
       return matchesSearch && matchesType && matchesAudience && matchesStatus;
-    }).sort((a, b) => new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime()); // Sort by upcoming
+    }).sort((a, b) => new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime()); 
   }, [events, searchTerm, filterType, filterAudience, filterStatus]);
 
   const upcomingEvents = filteredEvents.filter(event =>
     new Date(event.endDateTime || event.startDateTime) >= new Date() &&
     new Date(event.startDateTime).getMonth() === currentMonth.getMonth() &&
     new Date(event.startDateTime).getFullYear() === currentMonth.getFullYear()
-  ).slice(0, 5); // Show top 5 upcoming for current month
+  ).slice(0, 5); 
 
-
-  // Event handlers
   const handleSaveEvent = async (eventData: Omit<EventData, 'organizerName' | 'organizerEmail' | 'companyName' | 'createdAt' | 'updatedAt'>) => {
     setIsLoading(true);
     setError(null);
-
     const method = eventData.id ? 'PATCH' : 'POST';
     const url = eventData.id ? `${apiBaseUrl}/events/${eventData.id}` : `${apiBaseUrl}/events`;
 
@@ -253,22 +244,22 @@ export default function AdminEventsPage({
       });
 
       if (res.ok) {
-        await fetchEvents(); // Re-fetch all events to update the list
+        await fetchEvents(); 
         setShowFormModal(false);
         setEditingEvent(null);
       } else {
         const errorData = await res.json();
-        setError(errorData.message || `Failed to ${method === 'POST' ? 'create' : 'update'} event.`);
+        setError(errorData.message || `Failed to ${method === 'POST' ? 'create' : 'update'} core event slate.`);
       }
     } catch (err: any) {
-      setError(err.message || `Network error ${method === 'POST' ? 'creating' : 'updating'} event.`);
+      setError(err.message || "Network layout exception.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDeleteEvent = async (eventId: string) => {
-    if (!confirm("Are you sure you want to delete this event? This action cannot be undone.")) { // Replace with custom modal
+    if (!confirm("Are you sure you want to completely erase this event entry? All associated registration and layout records will be cleared.")) {
       return;
     }
 
@@ -284,10 +275,10 @@ export default function AdminEventsPage({
         await fetchEvents();
       } else {
         const errorData = await res.json();
-        setError(errorData.message || "Failed to delete event.");
+        setError(errorData.message || "Failed entry removal pipeline.");
       }
     } catch (err: any) {
-      setError(err.message || "Network error deleting event.");
+      setError(err.message || "Operational communication framework failure.");
     } finally {
       setIsLoading(false);
     }
@@ -299,7 +290,7 @@ export default function AdminEventsPage({
     try {
       const res = await fetch(`${apiBaseUrl}/events/${eventId}`, {
         method: 'PATCH',
-          credentials: 'include',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ eventStatus: newStatus }),
       });
@@ -308,10 +299,10 @@ export default function AdminEventsPage({
         await fetchEvents();
       } else {
         const errorData = await res.json();
-        setError(errorData.message || "Failed to update event status.");
+        setError(errorData.message || "Failed status state transition.");
       }
     } catch (err: any) {
-      setError(err.message || "Network error updating event status.");
+      setError(err.message || "State machine mutation error.");
     } finally {
       setIsLoading(false);
     }
@@ -322,408 +313,397 @@ export default function AdminEventsPage({
     setCurrentMonth(newDate);
   };
 
-  // Helper for status badge color
   const getStatusColor = (status: EventData['eventStatus']) => {
     switch (status) {
-      case 'SCHEDULED': return 'bg-green-100 text-green-800';
-      case 'COMPLETED': return 'bg-blue-100 text-blue-800';
-      case 'POSTPONED': return 'bg-yellow-100 text-yellow-800';
-      case 'CANCELLED': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'SCHEDULED': return 'bg-emerald-50 text-emerald-700 border border-emerald-100';
+      case 'COMPLETED': return 'bg-blue-50 text-blue-700 border border-blue-100';
+      case 'POSTPONED': return 'bg-amber-50 text-amber-700 border border-amber-100';
+      case 'CANCELLED': return 'bg-rose-50 text-rose-700 border border-rose-100';
+      default: return 'bg-slate-50 text-slate-700 border border-slate-100';
     }
   };
 
-
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gray-50 min-h-screen font-sans">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="p-6 lg:p-10 space-y-8 bg-slate-50 dark:bg-slate-900 min-h-screen font-sans antialiased selection:bg-indigo-500/10">
+      
+      {/* Modern Top Hub Navigation & Branding */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/60 pb-6">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-            School Calendar & Events
-            <span className="ml-2 text-teal-600 text-base sm:text-xl">🗓️</span>
+          <div className="flex items-center gap-2 text-xs font-semibold text-indigo-600 uppercase tracking-widest">
+            <span>Enterprise Infrastructure</span>
+            <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+            <span>Comms Cluster</span>
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight mt-1 sm:text-3xl">
+            Institutional Calendar Engine
           </h1>
-          <p className="text-sm text-gray-600 mt-1">Manage and publish all school-wide events and holidays.</p>
         </div>
-        <div className="bg-white text-gray-700 px-4 py-2 rounded-lg shadow-sm border border-gray-200 text-sm font-medium flex items-center gap-2">
-          <CalendarDaysIcon className="h-5 w-5 text-gray-500" />
-          <span>{today}</span>
+
+        <div className="flex items-center gap-3 self-start md:self-auto">
+          <div className="bg-white px-3.5 py-1.5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-2 text-xs font-medium text-slate-600">
+            <CalendarDaysIcon className="h-4 w-4 text-indigo-500" />
+            <span>{today}</span>
+          </div>
+          <button
+            onClick={() => { setEditingEvent(null); setShowFormModal(true); setError(null); }}
+            className="flex items-center gap-1.5 px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-xl shadow-sm hover:bg-slate-800 active:scale-95 transition-all duration-150"
+          >
+            <PlusCircleIcon className="h-4 w-4" />
+            <span>Schedule Activity</span>
+          </button>
         </div>
       </div>
 
-      {/* Overview Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-blue-50">
-          <div className="flex items-center mb-3">
-            <div className="p-2 bg-white rounded-full shadow-sm mr-3">
-              <SparklesIcon className="h-7 w-7 text-blue-600" />
+      {/* Analytics Operational Metrics */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: 'Event Register Space', val: events.length, color: 'text-blue-600', icon: SparklesIcon, bg: 'bg-blue-50/50' },
+          { label: 'Active Schedules', val: events.filter(e => e.eventStatus === 'SCHEDULED' && new Date(e.endDateTime || e.startDateTime) >= new Date()).length, color: 'text-emerald-600', icon: CheckCircleIcon, bg: 'bg-emerald-50/50' },
+          { label: 'Exceptions Pipeline', val: events.filter(e => e.eventStatus === 'POSTPONED' || e.eventStatus === 'CANCELLED').length, color: 'text-amber-600', icon: ExclamationTriangleIcon, bg: 'bg-amber-50/50' },
+          { label: 'Categorization Modules', val: uniqueEventTypes.length, color: 'text-purple-600', icon: TagIcon, bg: 'bg-purple-50/50', layoutType: 'types' }
+        ].map((c, i) => (
+          <div key={i} className="bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-between shadow-sm/50">
+            <div className="space-y-1 overflow-hidden">
+              <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">{c.label}</span>
+              {c.layoutType === 'types' ? (
+                <div className="flex gap-1 overflow-x-auto no-scrollbar pt-1">
+                  {uniqueEventTypes.slice(0, 2).map(t => (
+                    <span key={t} className="text-[9px] font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-md uppercase tracking-wide whitespace-nowrap">
+                      {t.slice(0, 5)}
+                    </span>
+                  ))}
+                  {uniqueEventTypes.length > 2 && <span className="text-[9px] font-bold text-slate-400 self-center">+{uniqueEventTypes.length - 2}</span>}
+                </div>
+              ) : (
+                <h4 className="text-xl font-bold text-slate-900">{c.val}</h4>
+              )}
             </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Events</p>
-              <h2 className="text-3xl font-bold text-gray-800">{events.length}</h2>
-            </div>
-          </div>
-        </div>
-        <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-green-50">
-          <div className="flex items-center mb-3">
-            <div className="p-2 bg-white rounded-full shadow-sm mr-3">
-              <CheckCircleIcon className="h-7 w-7 text-green-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Scheduled Events</p>
-              <h2 className="text-3xl font-bold text-gray-800">{events.filter(e => e.eventStatus === 'SCHEDULED' && new Date(e.endDateTime || e.startDateTime) >= new Date()).length}</h2>
-            </div>
-          </div>
-        </div>
-        <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-yellow-50">
-          <div className="flex items-center mb-3">
-            <div className="p-2 bg-white rounded-full shadow-sm mr-3">
-              <ExclamationTriangleIcon className="h-7 w-7 text-yellow-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Postponed/Cancelled</p>
-              <h2 className="text-3xl font-bold text-gray-800">{events.filter(e => e.eventStatus === 'POSTPONED' || e.eventStatus === 'CANCELLED').length}</h2>
+            <div className={`p-2.5 rounded-xl ${c.bg} border border-transparent flex-shrink-0 ml-2`}>
+              <c.icon className={`h-5 w-5 ${c.color}`} />
             </div>
           </div>
-        </div>
-        <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-purple-50">
-          <div className="flex items-center mb-3">
-            <div className="p-2 bg-white rounded-full shadow-sm mr-3">
-              <TagIcon className="h-7 w-7 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Unique Event Types</p>
-              <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
-                {uniqueEventTypes.map(type => (
-                  <span key={type} className="text-xs font-semibold bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full">
-                    {type.replace(/_/g, ' ')}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* Calendar View and Upcoming Events */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Calendar Grid */}
-        <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+      {/* Structural Interactive Calendar & Activity Split-Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Modern Interface Calendar Card Matrix */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm/50 lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={() => navigateMonth(-1)}
-              className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition"
-              title="Previous Month"
+              className="p-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors"
+              title="Previous Operations Cycle"
             >
-              <ArrowLeftIcon className="h-5 w-5 text-gray-600" />
+              <ArrowLeftIcon className="h-4 w-4" />
             </button>
-            <h2 className="text-xl font-bold text-gray-800">{getMonthName(currentMonth)}</h2>
+            <h2 className="text-sm font-bold text-slate-800 tracking-tight">{getMonthName(currentMonth)}</h2>
             <button
               onClick={() => navigateMonth(1)}
-              className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition"
-              title="Next Month"
+              className="p-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors"
+              title="Next Operations Cycle"
             >
-              <ArrowRightIcon className="h-5 w-5 text-gray-600" />
+              <ArrowRightIcon className="h-4 w-4" />
             </button>
           </div>
 
-          <div className="grid grid-cols-7 text-center text-sm font-medium text-gray-600 gap-1 mb-2">
+          <div className="grid grid-cols-7 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider gap-1 mb-2">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} className="py-2">{day}</div>
+              <div key={day} className="py-1">{day}</div>
             ))}
           </div>
-          <div className="grid grid-cols-7 text-center gap-1">
+
+          <div className="grid grid-cols-7 text-center gap-1.5">
             {calendarDays.map((day, index) => (
               <div
                 key={index}
-                className={`py-2 rounded-md transition-colors
-                  ${day.isCurrentMonth ? 'text-gray-900' : 'text-gray-400'}
-                  ${day.isToday ? 'bg-indigo-100 font-bold border border-indigo-300' : 'hover:bg-gray-50'}
-                  ${day.hasEvent ? 'bg-blue-100 border border-blue-300 font-semibold' : ''}
+                className={`py-2.5 text-xs rounded-xl relative flex flex-col items-center justify-center transition-all duration-150 font-medium
+                  ${day.isCurrentMonth ? 'text-slate-800' : 'text-slate-300'}
+                  ${day.isToday ? 'bg-indigo-600 font-bold text-white shadow-md shadow-indigo-600/10 ring-2 ring-indigo-600/20' : 'hover:bg-slate-50'}
+                  ${day.hasEvent && !day.isToday ? 'bg-slate-50 border border-slate-200/80 font-semibold text-indigo-600' : ''}
                 `}
-                title={day.hasEvent ? `Events on ${new Date(day.date).toLocaleDateString()}` : ''}
+                title={day.hasEvent ? `Allocated activity layers on date.` : ''}
               >
-                {new Date(day.date).getDate()}
+                <span>{new Date(day.date).getDate()}</span>
+                {day.hasEvent && (
+                  <span className={`w-1 h-1 rounded-full absolute bottom-1.5 ${day.isToday ? 'bg-white' : 'bg-indigo-500'}`}></span>
+                )}
               </div>
             ))}
           </div>
-          <p className="text-xs text-gray-500 mt-4 text-center">
-            <span className="inline-block w-3 h-3 rounded-full bg-indigo-100 border border-indigo-300 mr-1"></span> Today
-            <span className="inline-block w-3 h-3 rounded-full bg-blue-100 border border-blue-300 ml-3 mr-1"></span> Event Day
-          </p>
+
+          <div className="flex items-center justify-center gap-4 text-[11px] text-slate-500 mt-5 pt-4 border-t border-slate-100">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
+              <span>Current Server Frame</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-slate-100 border border-slate-200"></span>
+              <span>Allocated Operations Frame</span>
+            </div>
+          </div>
         </div>
 
-        {/* Upcoming Events List */}
-        <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
-          <h3 className="text-xl font-semibold mb-5 text-gray-800 flex items-center gap-2">
-            <CalendarDaysIcon className="h-5 w-5 text-purple-500" /> Upcoming Events This Month
-          </h3>
-          <ul className="space-y-3 text-sm text-gray-700">
-            {upcomingEvents.length > 0 ? (
-              upcomingEvents.map((event) => (
-                <li key={event.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                  <div className="flex-shrink-0">
-                    <CalendarDaysIcon className="h-5 w-5 text-gray-500" />
-                  </div>
-                  <div className="flex-grow">
-                    <p className="font-semibold text-gray-800">{event.title}</p>
-                    <p className="text-xs text-gray-600 flex items-center gap-1">
-                      <ClockIcon className="h-4 w-4" /> {new Date(event.startDateTime).toLocaleDateString()}
-                      {event.endDateTime && ` - ${new Date(event.endDateTime).toLocaleDateString()}`}
-                      {new Date(event.startDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      {event.endDateTime && ` - ${new Date(event.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
-                    </p>
-                    <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                      <MapPinIcon className="h-4 w-4" /> {event.location || 'Online'}
-                      <span className="ml-2 px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-xs">{event.eventType.replace(/_/g, ' ')}</span>
-                    </p>                  </div>
-                </li>
-              ))
-            ) : (
-              <li className="text-center text-gray-500 py-4">No upcoming events this month.</li>
-            )}
-          </ul>
-          {/* You might want a "View All Events" link here that navigates to the filtered table below */}
+        {/* Dynamic Sidebar - Inline Event Feed */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm/50 flex flex-col justify-between">
+          <div>
+            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <ClockIcon className="h-4 w-4 text-purple-500" /> Active Timeline Metrics
+            </h3>
+            <ul className="space-y-3">
+              {upcomingEvents.length > 0 ? (
+                upcomingEvents.map((event) => (
+                  <li key={event.id} className="p-3 bg-slate-50/70 border border-slate-100 rounded-xl space-y-2 hover:border-slate-200/80 transition-colors">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="font-semibold text-xs text-slate-900 leading-snug line-clamp-1">{event.title}</p>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider bg-slate-200/60 text-slate-700 flex-shrink-0">
+                        {event.eventType}
+                      </span>
+                    </div>
+                    <div className="space-y-0.5 text-[10px] text-slate-500">
+                      <div className="flex items-center gap-1">
+                        <CalendarDaysIcon className="h-3 w-3 text-slate-400" />
+                        <span>{new Date(event.startDateTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <MapPinIcon className="h-3 w-3 text-slate-400" />
+                        <span className="truncate max-w-[180px]">{event.location || 'Distributed Node (Online)'}</span>
+                      </div>
+                    </div>
+                  </li>
+                ))
+              ) : (
+                <div className="text-center py-10 text-slate-400 space-y-1.5">
+                  <FolderOpenIcon className="h-6 w-6 mx-auto text-slate-300" />
+                  <p className="text-[11px]">No immediate lifecycle modifications required.</p>
+                </div>
+              )}
+            </ul>
+          </div>
+          <div className="text-[10px] text-slate-400 text-center pt-4 border-t border-slate-100/60 mt-4">
+            Monitoring current month operations sequence logs.
+          </div>
         </div>
       </div>
 
-      {/* Events List Section */}
-      <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-          <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <SparklesIcon className="h-5 w-5 text-indigo-500" /> All Events
-          </h3>
-          <button
-            onClick={() => { setEditingEvent(null); setShowFormModal(true); setError(null); }} // Clear editing state for new
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm
-                       hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            <PlusCircleIcon className="h-5 w-5" /> Create New Event
-          </button>
+      {/* Main Aggregation Data Stream Table */}
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        
+        {/* Dynamic Controls Header Group */}
+        <div className="p-5 border-b border-slate-100 bg-slate-50/30 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AdjustmentsHorizontalIcon className="h-4 w-4 text-slate-400" />
+              <h3 className="text-sm font-semibold text-slate-800">Operational Log Registers</h3>
+            </div>
+          </div>
+
+          {/* Precision Layout Dropdowns Matrix */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+            <div className="lg:col-span-2 relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search index arrays dynamically..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-200 rounded-xl bg-white focus:outline-none focus:border-indigo-500 placeholder:text-slate-400"
+              />
+            </div>
+
+            {[
+              { val: filterType, set: setFilterType, opt: uniqueEventTypes, lbl: 'Types' },
+              { val: filterAudience, set: setFilterAudience, opt: uniqueAudiences, lbl: 'Audiences' },
+              { val: filterStatus, set: setFilterStatus, opt: uniqueStatuses, lbl: 'Statuses' }
+            ].map((f, i) => (
+              <select
+                key={i} value={f.val} onChange={(e) => f.set(e.target.value)}
+                className="w-full px-2.5 py-1.5 text-xs border border-slate-200 rounded-xl bg-white focus:outline-none focus:border-indigo-500 text-slate-700"
+              >
+                <option value="All">All {f.lbl}</option>
+                {f.opt.map(o => (
+                  <option key={o} value={o}>{o.replace(/_/g, ' ')}</option>
+                ))}
+              </select>
+            ))}
+          </div>
         </div>
 
-        {/* Loading and Error Indicators */}
+        {/* Local Scope Pipeline Feedback */}
         {isLoading && (
-          <div className="flex items-center justify-center py-4 text-blue-700 font-medium text-lg">
-            <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Loading events...
+          <div className="flex items-center justify-center py-10 text-slate-500 text-xs gap-2">
+            <ArrowPathIcon className="animate-spin h-4 w-4 text-indigo-500" />
+            <span>Synchronizing database sequence streams...</span>
           </div>
         )}
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-xl relative shadow-md mb-6 flex items-center justify-between">
-            <div>
-              <strong className="font-bold">Error!</strong>
-              <span className="block sm:inline ml-2">{error}</span>
-            </div>
-            <button onClick={() => setError(null)} className="text-red-500 hover:text-red-800 focus:outline-none">
-              <XMarkIcon className="h-6 w-6" />
-            </button>
+          <div className="m-5 bg-rose-50 border border-rose-100 text-rose-800 p-3.5 rounded-xl flex items-center justify-between text-xs">
+            <span>{error}</span>
+            <button onClick={() => setError(null)} className="text-rose-400 hover:text-rose-600"><XMarkIcon className="h-4 w-4" /></button>
           </div>
         )}
 
-        {/* Search and Filter */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="relative col-span-full md:col-span-1">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search by title, description, or location..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500
-                         focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div>
-          <div>
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="All">All Types</option>
-              {uniqueEventTypes.map(type => (
-                <option key={type} value={type}>{type.replace(/_/g, ' ')}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <select
-              value={filterAudience}
-              onChange={(e) => setFilterAudience(e.target.value)}
-              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="All">All Audiences</option>
-              {uniqueAudiences.map(audience => (
-                <option key={audience} value={audience}>{audience.replace(/_/g, ' ')}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="All">All Statuses</option>
-              {uniqueStatuses.map(status => (
-                <option key={status} value={status}>{status.replace(/_/g, ' ')}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Events Table */}
+        {/* High-Fidelity Multi-Tenant Tabular Display Interface */}
         <div className="overflow-x-auto">
-          {filteredEvents.length === 0 && !isLoading && (
-            <div className="text-center py-10 text-gray-500">
-              No events found matching your criteria.
+          {!isLoading && filteredEvents.length === 0 ? (
+            <div className="text-center py-12 text-slate-400 space-y-2">
+              <FolderOpenIcon className="h-8 w-8 mx-auto text-slate-300" />
+              <p className="text-xs font-medium">No system entries correspond to the applied target parameters.</p>
             </div>
-          )}
-          {filteredEvents.length > 0 && (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event Title</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Audience</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th scope="col" className="relative px-6 py-3">
-                    <span className="sr-only">Actions</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredEvents.map((event) => (
-                  <tr key={event.id}>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                      <div>
-                        {event.title}
-                        <p className="text-xs text-gray-500 mt-1">{event.summary}</p>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(event.startDateTime).toLocaleDateString()}
-                      {event.endDateTime && ` - ${new Date(event.endDateTime).toLocaleDateString()}`}
-                      <br />
-                      <span className="text-xs text-gray-600">
-                        {new Date(event.startDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        {event.endDateTime && ` - ${new Date(event.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex items-center gap-1">
-                        <MapPinIcon className="h-4 w-4 text-gray-400" />
-                        {event.location || 'Online'}
-                      </div>
-                      {event.onlineMeetingLink && (
-                        <a href={event.onlineMeetingLink} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline text-xs flex items-center gap-1 mt-1">
-                          <LinkIcon className="h-3 w-3" /> Meeting Link
-                        </a>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-xs font-semibold">
-                        {event.eventType.replace(/_/g, ' ')}
-                      </span>
-                      {event.isPaid && (
-                        <span className="ml-1 px-2 py-0.5 rounded-full bg-green-100 text-green-800 text-xs font-semibold flex items-center gap-1">
-                          <CurrencyDollarIcon className="h-3 w-3" /> {event.price?.toFixed(2)}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 text-xs font-semibold">
-                        {event.audience.replace(/_/g, ' ')}
-                      </span>
-                      {/* Display specific targets if audience is not ALL */}
-                      {event.audience === 'ACADEMIC_LEVEL' && event.targetAcademicLevelIds.length > 0 && (
-                          <p className="text-xs text-gray-400 mt-1">
-                              ({event.targetAcademicLevelIds.map(id => allAcademicLevels.find(al => al.id === id)?.name || id).join(', ')})
-                          </p>
-                      )}
-                      {event.audience === 'COURSE' && event.targetCourseIds.length > 0 && (
-                          <p className="text-xs text-gray-400 mt-1">
-                              ({event.targetCourseIds.map(id => allCourses.find(c => c.id === id)?.title || id).join(', ')})
-                          </p>
-                      )}
-                      {event.audience === 'EDUCATOR' && event.targetEducatorIds.length > 0 && (
-                          <p className="text-xs text-gray-400 mt-1">
-                              ({event.targetEducatorIds.map(id => allEducators.find(e => e.id === id)?.name || id).join(', ')})
-                          </p>
-                      )}
-                      {event.audience === 'STUDENT' && event.targetStudentIds.length > 0 && (
-                          <p className="text-xs text-gray-400 mt-1">
-                              ({event.targetStudentIds.map(id => allStudents.find(s => s.id === id)?.name || id).join(', ')})
-                          </p>
-                      )}
-                      {event.audience === 'DEPARTMENT' && event.targetDepartmentIds.length > 0 && (
-                          <p className="text-xs text-gray-400 mt-1">
-                              ({event.targetDepartmentIds.map(id => allDepartments.find(d => d.id === id)?.name || id).join(', ')})
-                          </p>
-                      )}
-                      {event.audience === 'PARENT' && event.targetParentIds.length > 0 && (
-                          <p className="text-xs text-gray-400 mt-1">
-                              ({event.targetParentIds.map(id => allParents.find(p => p.id === id)?.name || id).join(', ')})
-                          </p>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(event.eventStatus)}`}>
-                        {event.eventStatus.replace(/_/g, ' ')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
-                        <button
-                          onClick={() => { setEditingEvent(event); setShowFormModal(true); setError(null); }}
-                          className="text-indigo-600 hover:text-indigo-900 flex items-center"
-                          title="Edit Event"
-                        >
-                          <PencilIcon className="h-4 w-4" />
-                        </button>
-                        {event.eventStatus === 'SCHEDULED' && (
-                          <button
-                            onClick={() => updateEventStatus(event.id, 'CANCELLED')}
-                            className="text-red-600 hover:text-red-800 flex items-center"
-                            title="Cancel Event"
-                          >
-                            <XMarkIcon className="h-4 w-4" />
-                          </button>
-                        )}
-                        {(event.eventStatus === 'POSTPONED' || event.eventStatus === 'CANCELLED') && (
-                          <button
-                            onClick={() => updateEventStatus(event.id, 'SCHEDULED')}
-                            className="text-green-600 hover:text-green-800 flex items-center"
-                            title="Reschedule Event"
-                          >
-                            <ArrowPathIcon className="h-4 w-4" />
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleDeleteEvent(event.id)}
-                          className="text-gray-400 hover:text-gray-600 flex items-center"
-                          title="Delete Event"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
+          ) : (
+            !isLoading && (
+              <table className="w-full border-collapse text-left">
+                <thead>
+                  <tr className="border-b border-slate-100 bg-slate-50/40 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                    <th className="px-5 py-3">Event Parameters Scope</th>
+                    <th className="px-5 py-3">Execution Sequence Timeline</th>
+                    <th className="px-5 py-3">Location/Access Address</th>
+                    <th className="px-5 py-3">Classification</th>
+                    <th className="px-5 py-3">Target Audience Group</th>
+                    <th className="px-5 py-3">Status Matrix</th>
+                    <th className="px-5 py-3 text-right">Actions Dashboard</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs text-slate-600">
+                  {filteredEvents.map((event) => (
+                    <tr key={event.id} className="hover:bg-slate-50/60 transition-colors group">
+                      <td className="px-5 py-3.5 max-w-xs">
+                        <div className="font-semibold text-slate-900 truncate">{event.title}</div>
+                        {event.summary && <div className="text-slate-400 text-[11px] truncate mt-0.5">{event.summary}</div>}
+                      </td>
+
+                      <td className="px-5 py-3.5 whitespace-nowrap">
+                        <div className="font-medium text-slate-800">{new Date(event.startDateTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                        <div className="text-[10px] text-slate-400 flex items-center gap-0.5 mt-0.5">
+                          <ClockIcon className="h-3 w-3" />
+                          <span>
+                            {new Date(event.startDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {event.endDateTime && ` - ${new Date(event.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="px-5 py-3.5 max-w-[180px]">
+                        <div className="flex items-center gap-1 text-slate-700 truncate">
+                          <MapPinIcon className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
+                          <span>{event.location || 'Distributed Network Node'}</span>
+                        </div>
+                        {event.onlineMeetingLink && (
+                          <a href={event.onlineMeetingLink} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 text-[10px] flex items-center gap-0.5 mt-1 font-medium transition-colors">
+                            <GlobeAltIcon className="h-3 w-3" /> Secure Gateway Link
+                          </a>
+                        )}
+                      </td>
+
+                      <td className="px-5 py-3.5 whitespace-nowrap">
+                        <div className="flex flex-col gap-1 items-start">
+                          <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold tracking-wide uppercase bg-slate-100 text-slate-700">
+                            {event.eventType}
+                          </span>
+                          {event.isPaid && (
+                            <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 flex items-center gap-0.5">
+                              <CurrencyDollarIcon className="h-3 w-3" /> {event.price?.toFixed(2)}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      <td className="px-5 py-3.5 max-w-[160px]">
+                        <div className="flex items-center gap-1">
+                          <UserGroupIcon className="h-3.5 w-3.5 text-slate-400" />
+                          <span className="font-medium text-slate-800">{event.audience.replace(/_/g, ' ')}</span>
+                        </div>
+                        
+                        {/* Inline Nested Loop Arrays Parser */}
+                        {event.audience === 'ACADEMIC_LEVEL' && event.targetAcademicLevelIds.length > 0 && (
+                          <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                            ({event.targetAcademicLevelIds.map(id => allAcademicLevels.find(al => al.id === id)?.name || id).join(', ')})
+                          </p>
+                        )}
+                        {event.audience === 'COURSE' && event.targetCourseIds.length > 0 && (
+                          <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                            ({event.targetCourseIds.map(id => allCourses.find(c => c.id === id)?.title || id).join(', ')})
+                          </p>
+                        )}
+                        {event.audience === 'EDUCATOR' && event.targetOrganizerIds?.length > 0 && (
+                          <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                            ({event.targetEducatorIds.map(id => allEducators.find(e => e.id === id)?.name || id).join(', ')})
+                          </p>
+                        )}
+                        {event.audience === 'STUDENT' && event.targetStudentIds.length > 0 && (
+                          <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                            ({event.targetStudentIds.map(id => allStudents.find(s => s.id === id)?.name || id).join(', ')})
+                          </p>
+                        )}
+                        {event.audience === 'DEPARTMENT' && event.targetDepartmentIds.length > 0 && (
+                          <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                            ({event.targetDepartmentIds.map(id => allDepartments.find(d => d.id === id)?.name || id).join(', ')})
+                          </p>
+                        )}
+                        {event.audience === 'PARENT' && event.targetParentIds.length > 0 && (
+                          <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                            ({event.targetParentIds.map(id => allParents.find(p => p.id === id)?.name || id).join(', ')})
+                          </p>
+                        )}
+                      </td>
+
+                      <td className="px-5 py-3.5 whitespace-nowrap">
+                        <span className={`px-2 py-0.5 text-[10px] leading-5 font-bold rounded-md uppercase tracking-wide ${getStatusColor(event.eventStatus)}`}>
+                          {event.eventStatus}
+                        </span>
+                      </td>
+
+                      <td className="px-5 py-3.5 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1">
+                          
+                          {/* Sequential Operations Interchanges */}
+                          {event.eventStatus === 'SCHEDULED' && (
+                            <button
+                              onClick={() => updateEventStatus(event.id, 'CANCELLED')}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                              title="Interrupt/Halt Blueprint Sequence"
+                            >
+                              <XMarkIcon className="h-4 w-4" />
+                            </button>
+                          )}
+                          {(event.eventStatus === 'POSTPONED' || event.eventStatus === 'CANCELLED') && (
+                            <button
+                              onClick={() => updateEventStatus(event.id, 'SCHEDULED')}
+                              className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                              title="Re-inject Matrix Blueprint Schedule"
+                            >
+                              <ArrowPathIcon className="h-4 w-4" />
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() => { setEditingEvent(event); setShowFormModal(true); setError(null); }}
+                            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                            title="Edit Metric Configurations"
+                          >
+                            <PencilIcon className="h-3.5 w-3.5" />
+                          </button>
+                          
+                          <button
+                            onClick={() => handleDeleteEvent(event.id)}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                            title="Erase Cluster Record Permanent"
+                          >
+                            <TrashIcon className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )
           )}
         </div>
       </div>
 
-      {/* Modals */}
+      {/* Synchronized Custom Form Modal Component Layer */}
       {showFormModal && (
         <EventFormModal
           eventData={editingEvent}

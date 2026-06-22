@@ -1,32 +1,33 @@
 'use client';
 
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
-  CalendarDaysIcon, // For date
-  ClipboardDocumentCheckIcon, // Main icon for exams
-  MagnifyingGlassIcon, // For search
-  UsersIcon, // For teachers/students count
-  BookOpenIcon, // For class icon
-  ChartBarIcon, // For results/progress
-  ExclamationTriangleIcon, // For upcoming/due soon
-  PencilIcon, // For edit
-  TrashIcon, // For delete
-  PlusCircleIcon, // For add exam
-  TrophyIcon, // For average score
-  ClockIcon, // For time
-  MapPinIcon, // For location
-  CheckCircleIcon, // For published results
-  GlobeAltIcon, // For online exams
+  CalendarDaysIcon,
+  ClipboardDocumentCheckIcon,
+  MagnifyingGlassIcon,
+  UsersIcon,
+  BookOpenIcon,
+  ChartBarIcon,
+  ExclamationTriangleIcon,
+  PencilIcon,
+  TrashIcon,
+  PlusCircleIcon,
+  TrophyIcon,
+  ClockIcon,
+  MapPinIcon,
+  CheckCircleIcon,
+  GlobeAltIcon,
   XMarkIcon,
-  FolderOpenIcon, // For closing modals/errors
+  FolderOpenIcon,
+  AdjustmentsHorizontalIcon
 } from '@heroicons/react/24/outline';
-import Link from 'next/link'; // For linking to exam questions page
+import Link from 'next/link';
 import { ClassRoomOption } from '../students/StudentsClient';
 import { AcademicYear } from '../academic-years/page';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-// --- Type Definitions (Aligned with Exam API Response) ---
+// --- Type Definitions ---
 export type ExamData = {
   id: string;
   title: string;
@@ -34,18 +35,18 @@ export type ExamData = {
   courseId: string;
   courseTitle: string;
   examCategoryId: string | null;
-  course:{ id: string; title: string; academicLevels: { id: string; name: string; sortOrder?: number }[] };
+  course: { id: string; title: string; academicLevels: { id: string; name: string; sortOrder?: number }[] };
   courseAcademicLevels: { id: string; name: string; sortOrder?: number }[];
   classroomId: string | null;
   classroom: { id: string; name: string; academicLevelId: string } | null;
   academicYearId: string | null;
   termId: string | null;
-  date: string; // YYYY-MM-DD
-  startTime: string | null; // HH:MM
-  endTime: string | null; // HH:MM
+  date: string; 
+  startTime: string | null; 
+  endTime: string | null; 
   location: string | null;
   notes: string | null;
-  type: 'QUIZ' | 'UNIT_TEST' | 'MIDTERM' | 'FINAL' | 'ASSIGNMENT_BASED' | 'PRACTICE' | 'OTHER'; // Enum type
+  type: 'QUIZ' | 'UNIT_TEST' | 'MIDTERM' | 'FINAL' | 'ASSIGNMENT_BASED' | 'PRACTICE' | 'OTHER'; 
   totalPoints: number;
   isPublished: boolean;
   createdByEducatorId: string;
@@ -54,8 +55,8 @@ export type ExamData = {
   isOnline: boolean;
   durationMinutes: number | null;
   autoGrade: boolean;
-  totalQuestions: number; // From _count.questions
-  totalSubmissions: number; // From _count.submissions
+  totalQuestions: number; 
+  totalSubmissions: number; 
   companyId: string;
   createdAt: string;
   updatedAt: string;
@@ -84,7 +85,7 @@ interface AdminExamsOverviewPageProps {
   initialExams: ExamData[];
   allCourses: CourseOption[];
   allEducators: EducatorOption[];
-  allAcademicLevels: AcademicLevelOption[]; // Passed but not directly used in this component's logic, mainly for CourseOption types
+  allAcademicLevels: AcademicLevelOption[]; 
   allClassRooms: ClassRoomOption[];
   companyId: string;
   activeAcademicYearId: string | null;
@@ -92,9 +93,8 @@ interface AdminExamsOverviewPageProps {
   academicYears: AcademicYear[];
 }
 
-// --- Exam Form Modal Component ---
 type ExamFormModalProps = {
-  examData: ExamData | null; // Null for new exam
+  examData: ExamData | null;
   onClose: () => void;
   onSave: (data: Omit<ExamData, 'courseTitle' | 'courseAcademicLevels' | 'createdByEducatorName' | 'createdByEducatorEmail' | 'totalQuestions' | 'totalSubmissions' | 'createdAt' | 'updatedAt'>) => void;
   allExamCategories: { id: string; name: string; description: string; companyId: string }[];
@@ -110,7 +110,10 @@ type ExamFormModalProps = {
   resetError: () => void;
 };
 
-const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave, allExamCategories, allCourses, allEducators, allClassRooms, companyId, isLoading, error, resetError, academicYears, activeAcademicYearId, activeTermId }) => {
+const ExamFormModal: React.FC<ExamFormModalProps> = ({ 
+  examData, onClose, onSave, allExamCategories, allCourses, allEducators, 
+  allClassRooms, companyId, isLoading, error, resetError, activeAcademicYearId, activeTermId 
+}) => {
   const [formData, setFormData] = useState<Omit<ExamData, 'courseTitle' | 'courseAcademicLevels' | 'createdByEducatorName' | 'createdByEducatorEmail' | 'totalQuestions' | 'totalSubmissions' | 'createdAt' | 'updatedAt'>>(
     examData ? {
       ...examData,
@@ -123,8 +126,8 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave
       description: null,
       courseId: '',
       examCategoryId: null,
-      date: new Date().toISOString().split('T')[0], // YYYY-MM-DD
-      course:{ id: '', title: '', academicLevels: [] },
+      date: new Date().toISOString().split('T')[0],
+      course: { id: '', title: '', academicLevels: [] },
       classroomId: null,
       classroom: null,
       startTime: null,
@@ -144,9 +147,7 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave
     }
   );
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -156,26 +157,23 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    resetError(); // Clear any previous errors
+    resetError();
 
-    // Basic client-side validation for required fields
     if (!formData.title || !formData.courseId || !formData.date || !formData.createdByEducatorId || !formData.type || formData.totalPoints === null) {
-      alert("Please fill all required fields: Title, Course, Date, Created By Educator, Type, and Total Points.");
+      alert("Please fill all required fields: Title, Course, Date, Educator, Type, and Total Points.");
       return;
     }
 
-    // Validate time formats if provided
-    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/; // HH:MM (24-hour)
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
     if (formData.startTime && !timeRegex.test(formData.startTime)) {
-        alert("Start Time must be in HH:MM (24-hour) format.");
+        alert("Start Time must be in HH:MM format.");
         return;
     }
     if (formData.endTime && !timeRegex.test(formData.endTime)) {
-        alert("End Time must be in HH:MM (24-hour) format.");
+        alert("End Time must be in HH:MM format.");
         return;
     }
 
-    // Validate start time before end time
     if (formData.startTime && formData.endTime) {
         const start = new Date(`1970-01-01T${formData.startTime}:00Z`);
         const end = new Date(`1970-01-01T${formData.endTime}:00Z`);
@@ -191,62 +189,63 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave
   const isEdit = !!examData;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-lg transform transition-all duration-300 scale-100 opacity-100 relative max-h-[90vh] overflow-y-auto">
-        {/* Close Button */}
+    <div className="fixed inset-0 bg-slate-900 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-300">
+      <div className="bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 shadow-2xl p-6 w-full max-w-xl relative max-h-[90vh] overflow-y-auto ring-1 ring-black/5 animate-in fade-in-50 zoom-in-95 duration-150">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-2 rounded-full transition-colors duration-200"
-          title="Close"
+          className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1.5 rounded-xl hover:bg-slate-100 transition-colors"
         >
-          <XMarkIcon className="h-6 w-6" />
+          <XMarkIcon className="h-5 w-5" />
         </button>
 
-        <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b pb-4 border-gray-200">
-          {isEdit ? `Edit Exam: ${examData?.title}` : 'Add New Exam'}
-        </h2>
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold text-slate-900">
+            {isEdit ? 'Update Assessment Details' : 'Configure New Assessment'}
+          </h2>
+          <p className="text-xs text-slate-500 mt-1">Fill out the performance guidelines and schedules below.</p>
+        </div>
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative mb-4 flex items-center justify-between">
-            <span className="block sm:inline">{error}</span>
-            <button onClick={resetError} className="text-red-500 hover:text-red-800 focus:outline-none">
-              <XMarkIcon className="h-5 w-5" />
+          <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl mb-6 flex items-center justify-between text-sm">
+            <span>{error}</span>
+            <button onClick={resetError} className="text-rose-500 hover:text-rose-800">
+              <XMarkIcon className="h-4 w-4" />
             </button>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">Exam Title <span className="text-red-500">*</span></label>
-              <input type="text" name="title" id="title" value={formData.title} onChange={handleChange} required
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-1">
+            <label htmlFor="title" className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Exam Title <span className="text-rose-500">*</span></label>
+            <input type="text" name="title" id="title" value={formData.title} onChange={handleChange} required
+              className="block w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 transition-colors bg-slate-50/50" />
+          </div>
 
-            <div className="md:col-span-2">
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-              <textarea name="description" id="description" value={formData.description || ''} onChange={handleChange} rows={2}
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base"></textarea>
-            </div>
+          <div className="space-y-1">
+            <label htmlFor="description" className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Description</label>
+            <textarea name="description" id="description" value={formData.description || ''} onChange={handleChange} rows={2}
+              className="block w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 transition-colors bg-slate-50/50" />
+          </div>
 
-            <div>
-              <label htmlFor="examCategoryId" className="block text-sm font-medium text-gray-700 mb-1">Exam Category</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label htmlFor="examCategoryId" className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Exam Category</label>
               <select name="examCategoryId" id="examCategoryId" value={formData.examCategoryId || ''} onChange={handleChange}
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white"
+                className="block w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 bg-white transition-colors"
               >
-                <option value="">-- Select Exam Category --</option>
+                <option value="">Select Category</option>
                 {allExamCategories.map(category => (
                   <option key={category.id} value={category.id}>{category.name}</option>
                 ))}
               </select>
             </div>
 
-            <div>
-              <label htmlFor="courseId" className="block text-sm font-medium text-gray-700 mb-1">Course <span className="text-red-500">*</span></label>
+            <div className="space-y-1">
+              <label htmlFor="courseId" className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Course <span className="text-rose-500">*</span></label>
               <select name="courseId" id="courseId" value={formData.courseId} onChange={handleChange} required
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white"
+                className="block w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 bg-white transition-colors"
               >
-                <option value="">-- Select Course --</option>
+                <option value="">Select Course</option>
                 {allCourses.map(course => (
                   <option key={course.id} value={course.id}>
                     {course.title} ({course.academicLevels.map(al => al.name).join(', ')})
@@ -255,140 +254,122 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave
               </select>
             </div>
 
-            <div>
-              <label htmlFor="createdByEducatorId" className="block text-sm font-medium text-gray-700 mb-1">Created By Educator <span className="text-red-500">*</span></label>
+            <div className="space-y-1">
+              <label htmlFor="createdByEducatorId" className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Assigned Educator <span className="text-rose-500">*</span></label>
               <select name="createdByEducatorId" id="createdByEducatorId" value={formData.createdByEducatorId} onChange={handleChange} required
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white"
+                className="block w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 bg-white transition-colors"
               >
-                <option value="">-- Select Educator --</option>
-                {allEducators.length > 0 && allEducators.map(educator => (
-                  <option key={educator.id} value={educator.id}>{educator.name} ({educator.email})</option>
+                <option value="">Select Instructor</option>
+                {allEducators.map(educator => (
+                  <option key={educator.id} value={educator.id}>{educator.name}</option>
                 ))}
               </select>
             </div>
 
-            <div>
-              <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">Date <span className="text-red-500">*</span></label>
+            <div className="space-y-1">
+              <label htmlFor="date" className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Assessment Date <span className="text-rose-500">*</span></label>
               <input type="date" name="date" id="date" value={formData.date} onChange={handleChange} required
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
+                className="block w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 transition-colors" />
             </div>
 
-            <div>
-              <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">Exam Type <span className="text-red-500">*</span></label>
+            <div className="space-y-1">
+              <label htmlFor="type" className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Evaluation Profile <span className="text-rose-500">*</span></label>
               <select name="type" id="type" value={formData.type} onChange={handleChange} required
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white"
+                className="block w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 bg-white transition-colors"
               >
-                <option value="">-- Select Type --</option>
                 <option value="QUIZ">Quiz</option>
                 <option value="UNIT_TEST">Unit Test</option>
                 <option value="MIDTERM">Midterm</option>
-                <option value="FINAL">Final</option>
+                <option value="FINAL">Final Examination</option>
                 <option value="ASSIGNMENT_BASED">Assignment Based</option>
-                <option value="PRACTICE">Practice</option>
+                <option value="PRACTICE">Practice Session</option>
                 <option value="OTHER">Other</option>
               </select>
             </div>
 
-            <div>
-              <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 mb-1">Start Time (HH:MM)</label>
-              <input type="text" name="startTime" id="startTime" value={formData.startTime || ''} onChange={handleChange} placeholder="e.g., 09:00"
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <label htmlFor="startTime" className="text-[11px] font-semibold text-slate-700 uppercase tracking-wider">Start (HH:MM)</label>
+                <input type="text" name="startTime" id="startTime" value={formData.startTime || ''} onChange={handleChange} placeholder="09:00"
+                  className="block w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600" />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="endTime" className="text-[11px] font-semibold text-slate-700 uppercase tracking-wider">End (HH:MM)</label>
+                <input type="text" name="endTime" id="endTime" value={formData.endTime || ''} onChange={handleChange} placeholder="10:30"
+                  className="block w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600" />
+              </div>
             </div>
 
-            <div>
-              <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 mb-1">End Time (HH:MM)</label>
-              <input type="text" name="endTime" id="endTime" value={formData.endTime || ''} onChange={handleChange} placeholder="e.g., 10:30"
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
-            </div>
-
-            <div className='md:col-span-2'>
-              <label htmlFor="classroomId" className="block text-sm font-medium text-gray-700 mb-1">Class Room <span className="text-gray-500">(Optional)</span></label>
-              <select name="classroomId" id="classroomId" value={formData.classroomId || ''} onChange={handleChange} required
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white"
+            <div className="space-y-1">
+              <label htmlFor="classroomId" className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Target Classroom</label>
+              <select name="classroomId" id="classroomId" value={formData.classroomId || ''} onChange={handleChange}
+                className="block w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 bg-white transition-colors"
               >
-                <option value="">-- Select Class Room --</option>
-                {allClassRooms.length > 0 && allClassRooms.map(classRoom => (
+                <option value="">Universal / Standalone</option>
+                {allClassRooms.map(classRoom => (
                   <option key={classRoom.id} value={classRoom.id}>{classRoom.name}</option>
                 ))}
               </select>
             </div>
 
-            <div className="md:col-span-2">
-              <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-              <input type="text" name="location" id="location" value={formData.location || ''} onChange={handleChange} placeholder="e.g., School Hall A / Online"
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
+            <div className="space-y-1">
+              <label htmlFor="location" className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Facility Venue</label>
+              <input type="text" name="location" id="location" value={formData.location || ''} onChange={handleChange} placeholder="e.g., Block B Hall / Remote"
+                className="block w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600" />
             </div>
 
-            <div>
-              <label htmlFor="totalPoints" className="block text-sm font-medium text-gray-700 mb-1">Total Points <span className="text-red-500">*</span></label>
+            <div className="space-y-1">
+              <label htmlFor="totalPoints" className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Max Points <span className="text-rose-500">*</span></label>
               <input type="number" name="totalPoints" id="totalPoints" value={formData.totalPoints} onChange={handleChange} min="0" required
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
+                className="block w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600" />
             </div>
 
-            <div className='md:col-span-2'>
-              <label htmlFor="durationMinutes" className="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)</label>
-              <input type="number" name="durationMinutes" id="durationMinutes" value={formData.durationMinutes || ''} onChange={handleChange} min="1"
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
+            <div className="space-y-1">
+              <label htmlFor="durationMinutes" className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Duration (Mins)</label>
+              <input type="number" name="durationMinutes" id="durationMinutes" value={formData.durationMinutes || ''} onChange={handleChange} min="1" placeholder="Untimed"
+                className="block w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600" />
             </div>
+          </div>
 
-            <div className="md:col-span-2">
-              <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">Notes (Instructions for Students)</label>
-              <textarea name="notes" id="notes" value={formData.notes || ''} onChange={handleChange} rows={2}
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base"></textarea>
-            </div>
-
-            {/* Online Exam Specific Fields */}
-            <div className="md:col-span-2 flex items-center mt-4">
+          <div className="space-y-3 bg-slate-50/70 p-4 rounded-xl border border-slate-100">
+            <div className="flex items-center justify-between">
+              <label htmlFor="isOnline" className="text-sm font-medium text-slate-800">Deliver Electronically (Online Test)</label>
               <input type="checkbox" name="isOnline" id="isOnline" checked={formData.isOnline} onChange={handleChange}
-                className="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" />
-              <label htmlFor="isOnline" className="ml-2 block text-base font-medium text-gray-700">Is Online Exam?</label>
+                className="h-4 w-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-600" />
             </div>
 
             {formData.isOnline && (
-              <>
-                <div>
-                  <label htmlFor="autoGrade" className="block text-sm font-medium text-gray-700 mb-1">Auto-Grade?</label>
-                  <div className="flex items-center h-full">
-                    <input type="checkbox" name="autoGrade" id="autoGrade" checked={formData.autoGrade} onChange={handleChange}
-                      className="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" />
-                    <label htmlFor="autoGrade" className="ml-2 block text-base font-medium text-gray-700">Enable Auto-Grading</label>
-                  </div>
-                </div>
-              </>
+              <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 animate-in fade-in-40 duration-100">
+                <label htmlFor="autoGrade" className="text-xs font-medium text-slate-600">Automate Submissions Matrix Grading</label>
+                <input type="checkbox" name="autoGrade" id="autoGrade" checked={formData.autoGrade} onChange={handleChange}
+                  className="h-4 w-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-600" />
+              </div>
             )}
 
             {isEdit && (
-              <div className="md:col-span-2 flex items-center mt-4">
+              <div className="flex items-center justify-between pt-2 border-t border-slate-200/60">
+                <label htmlFor="isPublished" className="text-sm font-medium text-slate-800">Publish Transcripts to Students</label>
                 <input type="checkbox" name="isPublished" id="isPublished" checked={formData.isPublished} onChange={handleChange}
-                  className="h-5 w-5 text-green-600 border-gray-300 rounded focus:ring-green-500" />
-                <label htmlFor="isPublished" className="ml-2 block text-base font-medium text-gray-700">Publish Results to Students</label>
+                  className="h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500" />
               </div>
             )}
           </div>
 
-          <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
+          <div className="flex justify-end gap-2.5 pt-4 border-t border-slate-100">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-3 border border-gray-300 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="px-4 py-2 border border-slate-200 text-sm font-medium text-slate-700 rounded-xl hover:bg-slate-50 transition-colors"
               disabled={isLoading}
             >
-              Cancel
+              Discard
             </button>
             <button
               type="submit"
-              className="px-6 py-3 bg-indigo-600 border border-transparent rounded-lg text-base font-medium text-white shadow-md hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex items-center justify-center gap-2"
+              className="px-4 py-2 bg-slate-900 text-sm font-medium text-white rounded-xl shadow-sm hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
               disabled={isLoading}
             >
-              {isLoading ? (
-                <>
-                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Saving...
-                </>
-              ) : (isEdit ? 'Save Changes' : 'Add Exam')}
+              {isLoading ? 'Processing...' : isEdit ? 'Apply Changes' : 'Create Exam'}
             </button>
           </div>
         </form>
@@ -397,33 +378,35 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave
   );
 };
 
-
 // --- Main AdminExamsOverviewPage Component ---
-export default function AdminExamsOverviewPage({ initialExamCategories, initialExams, allCourses, allEducators, allClassRooms, companyId, activeAcademicYearId, activeTermId, academicYears }: AdminExamsOverviewPageProps) {
+export default function AdminExamsOverviewPage({ 
+  initialExamCategories, initialExams, allCourses, allEducators, allClassRooms, 
+  companyId, activeAcademicYearId, activeTermId, academicYears 
+}: AdminExamsOverviewPageProps) {
   const [exams, setExams] = useState<ExamData[]>(initialExams);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterExamCategory, setFilterExamCategory] = useState('All');
-  const [filterCourse, setFilterCourse] = useState('All'); // Changed from filterClass
+  const [filterCourse, setFilterCourse] = useState('All'); 
   const [filterClass, setFilterClass] = useState('All');
-  const [filterEducator, setFilterEducator] = useState('All'); // Changed from filterTeacher
+  const [filterEducator, setFilterEducator] = useState('All'); 
   const [filterType, setFilterType] = useState('All');
-  const [filterStatus, setFilterStatus] = useState('All'); // Upcoming, Completed
+  const [filterStatus, setFilterStatus] = useState('All'); 
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingExam, setEditingExam] = useState<ExamData | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // For API operations
+  const [isLoading, setIsLoading] = useState(false); 
   const [error, setError] = useState<string | null>(null);
 
   const [selectedYear, setSelectedYear] = useState(activeAcademicYearId);
   const [selectedTerm, setSelectedTerm] = useState(activeTermId);
-  const [academicYearOptions, setAcademicYearOptions] = useState(academicYears);
+  const [academicYearOptions] = useState(academicYears);
 
   const today = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
+    weekday: 'short',
+    month: 'short',
     day: 'numeric',
+    year: 'numeric'
   });
 
-  // Fetch exams from API
   const fetchExams = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -437,60 +420,44 @@ export default function AdminExamsOverviewPage({ initialExamCategories, initialE
         setExams(data);
       } else {
         const errorData = await res.json();
-        setError(errorData.message || "Failed to fetch exams.");
+        setError(errorData.message || "Failed to fetch operational logs.");
       }
     } catch (err: any) {
-      setError(err.message || "Network error fetching exams.");
+      setError(err.message || "Network exception encountered.");
     } finally {
       setIsLoading(false);
     }
   }, [companyId]);
 
-  // useEffect(() => {
-  //   // Only fetch if initial data is empty (meaning server fetch failed or was empty)
-  //   if (initialExams.length === 0 && !isLoading && !error) {
-  //     fetchExams();
-  //   }
-  // }, [initialExams, isLoading, error, fetchExams]);
-
-
-  const uniqueExamTypes = useMemo(() => Array.from(exams && exams.length > 0 ? new Set(exams.map(e => e.type)) : []).sort(), [exams]);
+  const uniqueExamTypes = useMemo(() => Array.from(exams?.length > 0 ? new Set(exams.map(e => e.type)) : []).sort(), [exams]);
   const uniqueStatuses = useMemo(() => {
     const statuses = new Set<string>();
-    // Determine status based on current date vs exam date
-    exams && exams.length > 0 &&
+    if (exams?.length > 0) {
       exams.forEach(exam => {
         const examDate = new Date(exam.date);
         const now = new Date();
-        now.setHours(0, 0, 0, 0); // Normalize 'now' to start of day
-
-        if (examDate.getTime() < now.getTime()) {
-          statuses.add('Completed');
-        } else {
-          statuses.add('Upcoming');
-        }
-      }); 
+        now.setHours(0, 0, 0, 0);
+        statuses.add(examDate.getTime() < now.getTime() ? 'Completed' : 'Upcoming');
+      });
+    }
     return Array.from(statuses).sort();
   }, [exams]);
 
-
   const filteredExams = useMemo(() => {
-    return exams && exams.length > 0 ? exams.filter(exam => {
+    return exams?.length > 0 ? exams.filter(exam => {
       const matchesSearch = exam.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             exam.courseTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             exam.createdByEducatorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            (exam.location || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            (exam.classroom ? exam.classroom.name.toLowerCase().includes(searchTerm.toLowerCase()) : false);
+                            (exam.location || '').toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesCourse = filterCourse === 'All' || exam.courseId === filterCourse;
       const matchesClass = filterClass === 'All' || exam.classroomId === filterClass;
       const matchesEducator = filterEducator === 'All' || exam.createdByEducatorId === filterEducator;
       const matchesType = filterType === 'All' || exam.type === filterType;
       const matchesCategory = filterExamCategory === 'All' || exam.examCategoryId === filterExamCategory;
-      const matchesYear = selectedYear === 'All' || exam.academicYearId === selectedYear;
-      const matchesTerm = selectedTerm === 'All' || exam.termId === selectedTerm;
+      const matchesYear = !selectedYear || selectedYear === 'All' || exam.academicYearId === selectedYear;
+      const matchesTerm = !selectedTerm || selectedTerm === 'All' || exam.termId === selectedTerm;
 
-      // Determine dynamic status for filtering
       const examDate = new Date(exam.date);
       const now = new Date();
       now.setHours(0, 0, 0, 0);
@@ -499,7 +466,6 @@ export default function AdminExamsOverviewPage({ initialExamCategories, initialE
 
       return matchesSearch && matchesCourse && matchesClass && matchesEducator && matchesType && matchesCategory && matchesStatus && matchesYear && matchesTerm;
     }).sort((a, b) => {
-      // Sort upcoming exams first by date (ascending), then completed exams by date (descending)
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
       const now = new Date().setHours(0,0,0,0);
@@ -509,70 +475,29 @@ export default function AdminExamsOverviewPage({ initialExamCategories, initialE
 
       if (statusA === 'Upcoming' && statusB !== 'Upcoming') return -1;
       if (statusA !== 'Upcoming' && statusB === 'Upcoming') return 1;
-
-      // If both are upcoming, sort ascending by date
-      if (statusA === 'Upcoming' && statusB === 'Upcoming') {
-        return dateA - dateB;
-      }
-      // If both are completed, sort descending by date
-      if (statusA === 'Completed' && statusB === 'Completed') {
-        return dateB - dateA;
-      }
-      return 0; // Should not reach here if logic is sound
+      return statusA === 'Upcoming' ? dateA - dateB : dateB - dateA;
     }) : [];
   }, [exams, searchTerm, filterCourse, filterClass, filterEducator, filterType, filterExamCategory, filterStatus, selectedYear, selectedTerm]);
 
+  const stats = useMemo(() => {
+    const total = exams?.length || 0;
+    const now = new Date().setHours(0,0,0,0);
+    const upcoming = exams?.filter(e => new Date(e.date).getTime() >= now).length || 0;
+    const completed = exams?.filter(e => new Date(e.date).getTime() < now).length || 0;
+    
+    const gradedExams = exams?.filter(e => new Date(e.date).getTime() < now && e.totalSubmissions > 0) || [];
+    let scoreAverage = 'N/A';
+    if (gradedExams.length > 0) {
+      const totalPoints = gradedExams.reduce((sum, exam) => sum + exam.totalPoints, 0);
+      scoreAverage = `${(totalPoints / gradedExams.length).toFixed(0)} pts`;
+    }
 
-  // Calculate overview stats
-  const totalExams = exams && exams.length > 0 ? exams.length : 0;
-  const upcomingExamsCount = exams && exams.length > 0 ? exams.filter(e => new Date(e.date).getTime() >= new Date().setHours(0,0,0,0)).length : 0;
-  const completedExamsCount = exams && exams.length > 0 ? exams.filter(e => new Date(e.date).getTime() < new Date().setHours(0,0,0,0)).length : 0;
-  const resultsPublishedCount = exams && exams.length > 0 ? exams.filter(e => e.isPublished).length : 0;
-
-  // Calculate overall average score for completed exams where results are published
-  // NOTE: This average score is a placeholder. In a real app, you'd fetch actual student scores
-  // from ExamSubmission records and calculate the average.
-  const overallSchoolExamAverage = useMemo(() => {
-    const gradedExamsWithScores = exams && exams.length > 0 ? exams.filter(e => new Date(e.date).getTime() < new Date().setHours(0,0,0,0) && e.totalSubmissions > 0) : [];
-    if (gradedExamsWithScores.length === 0) return 'N/A';
-
-    // This is a simplified average. A true average would sum up all student scores
-    // and divide by total students across all exams.
-    // For now, we'll just average the `totalPoints` as a proxy for "average performance potential"
-    // or you'd need `averageScore` field in ExamData from API if pre-calculated.
-    const totalPossiblePoints = gradedExamsWithScores.reduce((sum, exam) => sum + exam.totalPoints, 0);
-    return totalPossiblePoints > 0 ? (totalPossiblePoints / gradedExamsWithScores.length).toFixed(1) + ' pts (avg. potential)' : 'N/A';
+    return { total, upcoming, completed, scoreAverage };
   }, [exams]);
 
-
-  // Helper for status badge colors (dynamic based on current date)
-  const getExamStatusColor = (examDateString: string) => {
-    const examDate = new Date(examDateString);
-    const now = new Date();
-    now.setHours(0, 0, 0, 0); // Normalize 'now' to start of day
-
-    if (examDate.getTime() < now.getTime()) {
-      return 'bg-green-100 text-green-800'; // Completed
-    } else {
-      return 'bg-blue-100 text-blue-800'; // Upcoming
-    }
-  };
-
-  // Helper for grade color based on average score (if available)
-  const getGradeColor = (score: number | null) => {
-    if (score === null) return 'bg-gray-100 text-gray-800';
-    if (score >= 90) return 'bg-green-100 text-green-800';
-    if (score >= 75) return 'bg-blue-100 text-blue-800';
-    if (score >= 60) return 'bg-yellow-100 text-yellow-800';
-    if (score >= 40) return 'bg-orange-100 text-orange-800';
-    return 'bg-red-100 text-red-800';
-  };
-
-  // API Call handlers
   const handleSaveExam = async (examData: Omit<ExamData, 'courseTitle' | 'courseAcademicLevels' | 'createdByEducatorName' | 'createdByEducatorEmail' | 'totalQuestions' | 'totalSubmissions' | 'createdAt' | 'updatedAt'>) => {
     setIsLoading(true);
     setError(null);
-
     const isEdit = !!examData.id;
     const method = isEdit ? 'PATCH' : 'POST';
     const url = isEdit ? `${apiBaseUrl}/admin/exams/${examData.id}` : `${apiBaseUrl}/admin/exams`;
@@ -586,25 +511,24 @@ export default function AdminExamsOverviewPage({ initialExamCategories, initialE
       });
 
       if (res.ok) {
-        await fetchExams(); // Re-fetch all exams to update the list
+        await fetchExams();
         setShowFormModal(false);
         setEditingExam(null);
       } else {
         const errorData = await res.json();
-        setError(errorData.message || `Failed to ${isEdit ? 'update' : 'add'} exam.`);
+        setError(errorData.message || "Failed execution constraints.");
       }
     } catch (err: any) {
-      setError(err.message || `Network error ${isEdit ? 'updating' : 'adding'} exam.`);
+      setError(err.message || "Network layout disruption.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDeleteExam = async (examId: string) => {
-    if (!confirm("Are you sure you want to delete this exam? This action cannot be undone.")) { // Replace with custom modal
+    if (!confirm("Are you sure you want to completely erase this evaluation? All relative analytics metrics will be detached.")) {
       return;
     }
-
     setIsLoading(true);
     setError(null);
     try {
@@ -612,15 +536,14 @@ export default function AdminExamsOverviewPage({ initialExamCategories, initialE
         credentials: 'include',
         method: 'DELETE',
       });
-
       if (res.ok) {
         await fetchExams();
       } else {
         const errorData = await res.json();
-        setError(errorData.message || "Failed to delete exam.");
+        setError(errorData.message || "Failed deletion framework routine.");
       }
     } catch (err: any) {
-      setError(err.message || "Network error deleting exam.");
+      setError(err.message || "Operational exception occurred.");
     } finally {
       setIsLoading(false);
     }
@@ -636,356 +559,272 @@ export default function AdminExamsOverviewPage({ initialExamCategories, initialE
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isPublished: !currentStatus }),
       });
-
       if (res.ok) {
         await fetchExams();
       } else {
-        const errorData = await res.json();
-        setError(errorData.message || "Failed to update publish status.");
+        setError("Failed execution metrics publishing adjust.");
       }
     } catch (err: any) {
-      setError(err.message || "Network error updating publish status.");
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
   };
 
-
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gray-50 min-h-screen font-sans">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="p-6 lg:p-10 space-y-8 bg-slate-50/60 dark:bg-slate-900 min-h-screen font-sans antialiased selection:bg-indigo-500/10">
+      
+      {/* Dynamic Command Navbar */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/60 pb-6">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-            Exams Management
-            <span className="ml-2 text-teal-600 text-base sm:text-xl">📊</span>
+          <div className="flex items-center gap-2 text-xs font-semibold text-indigo-600 uppercase tracking-widest">
+            <span>Academic Control Center</span>
+            <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+            <span>Assessments</span>
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight mt-1 sm:text-3xl">
+            Examination Registers
           </h1>
-          <p className="text-sm text-gray-600 mt-1">Oversee and manage all school examinations.</p>
         </div>
-        <div className="bg-white text-gray-700 px-4 py-2 rounded-lg shadow-sm border border-gray-200 text-sm font-medium flex items-center gap-2">
-          <CalendarDaysIcon className="h-5 w-5 text-gray-500" />
-          <span>{today}</span>
-        </div>
-      </div>
 
-      {/* Overview Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-blue-50">
-          <div className="flex items-center mb-3">
-            <div className="p-2 bg-white rounded-full shadow-sm mr-3">
-              <ClipboardDocumentCheckIcon className="h-7 w-7 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Exams</p>
-              <h2 className="text-3xl font-bold text-gray-800">{totalExams}</h2>
-            </div>
+        <div className="flex items-center gap-3 self-start md:self-auto">
+          <div className="bg-white px-3.5 py-1.5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-2 text-xs font-medium text-slate-600">
+            <CalendarDaysIcon className="h-4 w-4 text-indigo-500" />
+            <span>{today}</span>
           </div>
-        </div>
-        <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-yellow-50">
-          <div className="flex items-center mb-3">
-            <div className="p-2 bg-white rounded-full shadow-sm mr-3">
-              <ExclamationTriangleIcon className="h-7 w-7 text-yellow-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Upcoming Exams</p>
-              <h2 className="text-3xl font-bold text-gray-800">{upcomingExamsCount}</h2>
-            </div>
-          </div>
-        </div>
-        <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-green-50">
-          <div className="flex items-center mb-3">
-            <div className="p-2 bg-white rounded-full shadow-sm mr-3">
-              <ChartBarIcon className="h-7 w-7 text-green-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Completed Exams</p>
-              <h2 className="text-3xl font-bold text-gray-800">{completedExamsCount}</h2>
-            </div>
-          </div>
-        </div>
-        <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-purple-50">
-          <div className="flex items-center mb-3">
-            <div className="p-2 bg-white rounded-full shadow-sm mr-3">
-              <TrophyIcon className="h-7 w-7 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Overall Average</p>
-              <h2 className="text-3xl font-bold text-gray-800">{overallSchoolExamAverage}</h2>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* All Exams List Section */}
-      <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-          <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <ClipboardDocumentCheckIcon className="h-5 w-5 text-indigo-500" /> All School Exams
-          </h3>
           <button
-            onClick={() => { setEditingExam(null); setShowFormModal(true); setError(null); }} // Clear editing state for new
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm
-                       hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            onClick={() => { setEditingExam(null); setShowFormModal(true); setError(null); }}
+            className="flex items-center gap-1.5 px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-xl shadow-sm hover:bg-slate-800 active:scale-95 transition-all duration-150"
           >
-            <PlusCircleIcon className="h-5 w-5" /> Add New Exam
+            <PlusCircleIcon className="h-4 w-4" /> 
+            <span>Create Assessment</span>
           </button>
         </div>
+      </div>
 
-        {/* Loading and Error Indicators */}
-        {isLoading && (
-          <div className="flex items-center justify-center py-4 text-blue-700 font-medium text-lg">
-            <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Loading exams...
-          </div>
-        )}
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-xl relative shadow-md mb-6 flex items-center justify-between">
-            <div>
-              <strong className="font-bold">Error!</strong>
-              <span className="block sm:inline ml-2">{error}</span>
+      {/* Analytics Matrix Overview Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: 'Evaluation Space', val: stats.total, color: 'text-blue-600', icon: ClipboardDocumentCheckIcon, bg: 'bg-blue-50/50' },
+          { label: 'Upcoming Slates', val: stats.upcoming, color: 'text-amber-600', icon: ExclamationTriangleIcon, bg: 'bg-amber-50/50' },
+          { label: 'Concluded Audits', val: stats.completed, color: 'text-emerald-600', icon: CheckCircleIcon, bg: 'bg-emerald-50/50' },
+          { label: 'Baseline Target', val: stats.scoreAverage, color: 'text-purple-600', icon: TrophyIcon, bg: 'bg-purple-50/50' }
+        ].map((c, i) => (
+          <div key={i} className="bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-between shadow-sm/50">
+            <div className="space-y-1">
+              <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">{c.label}</span>
+              <h4 className="text-xl font-bold text-slate-900">{c.val}</h4>
             </div>
-            <button onClick={() => setError(null)} className="text-red-500 hover:text-red-800 focus:outline-none">
-              <XMarkIcon className="h-6 w-6" />
-            </button>
+            <div className={`p-2.5 rounded-xl ${c.bg} border border-transparent`}>
+              <c.icon className={`h-5 w-5 ${c.color}`} />
+            </div>
           </div>
-        )}
+        ))}
+      </div>
 
-        {/* Search and Filter */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="relative flex-grow">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+      {/* Operational List Dashboard */}
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        
+        {/* Sub-header Filter Action Controls */}
+        <div className="p-5 border-b border-slate-100 bg-slate-50/30 space-y-4">
+          <div className="flex items-center gap-2">
+            <AdjustmentsHorizontalIcon className="h-4 w-4 text-slate-400" />
+            <h3 className="text-sm font-semibold text-slate-800">Operational Aggregation Layout</h3>
+          </div>
+
+          {/* Clean Segment Filters Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2.5">
+            <div className="md:col-span-2 relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search index context..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-200 rounded-xl bg-white focus:outline-none focus:border-indigo-500 placeholder:text-slate-400"
+              />
             </div>
-            <input
-              type="text"
-              placeholder="Search by exam name, course, or educator..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500
-                         focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div>
-          <div className="flex-shrink-0">
+            
+            {[
+              { val: filterExamCategory, set: setFilterExamCategory, opt: initialExamCategories, lbl: 'Categories' },
+              { val: selectedYear || 'All', set: (v: string) => { setSelectedYear(v); }, opt: academicYearOptions, lbl: 'Years' },
+              { val: filterCourse, set: setFilterCourse, opt: allCourses, lbl: 'Courses', useTitle: true },
+              { val: filterClass, set: setFilterClass, opt: allClassRooms, lbl: 'Classrooms' },
+              { val: filterEducator, set: setFilterEducator, opt: allEducators, lbl: 'Educators' }
+            ].map((f, i) => (
+              <select
+                key={i} value={f.val} onChange={(e) => f.set(e.target.value)}
+                className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-xl bg-white focus:outline-none focus:border-indigo-500 text-slate-700"
+              >
+                <option value="All">All {f.lbl}</option>
+                {f && f.opt && f.opt.map((o: any) => (
+                  <option key={o.id} value={o.id}>{f.useTitle ? o.title : o.name}</option>
+                ))}
+              </select>
+            ))}
+
             <select
-              value={filterExamCategory}
-              onChange={(e) => setFilterExamCategory(e.target.value)}
-              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              value={filterType} onChange={(e) => setFilterType(e.target.value)}
+              className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-xl bg-white focus:outline-none focus:border-indigo-500 text-slate-700"
             >
-              <option value="All">All Categories</option>
-              {initialExamCategories.map(category => (
-                <option key={category.id} value={category.id}>{category.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex-shrink-0">
-            <select
-              value={selectedYear||'All'}
-              onChange={(e) => {
-                setSelectedYear(e.target.value);
-                setSelectedTerm('All'); // Reset term selection when year changes
-              }}
-              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="All">All Academic Years</option>
-              {academicYearOptions.map(year => (
-                <option key={year.id} value={year.id}>{year.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex-shrink-0">
-            <select
-              value={selectedTerm||'All'}
-              onChange={(e) => setSelectedTerm(e.target.value)}
-              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="All">All Terms</option>
-              {academicYearOptions.find(year => year.id === selectedYear)?.terms.map(term => (
-                <option key={term.id} value={term.id}>{term.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex-shrink-0">
-            <select
-              value={filterCourse}
-              onChange={(e) => setFilterCourse(e.target.value)}
-              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="All">All Courses</option>
-              {allCourses.map(course => (
-                <option key={course.id} value={course.id}>{course.title}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex-shrink-0">
-            <select
-              value={filterClass}
-              onChange={(e) => setFilterClass(e.target.value)}
-              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="All">All Classes</option>
-              {allClassRooms.map(classRoom => (
-                <option key={classRoom.id} value={classRoom.id}>{classRoom.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex-shrink-0">
-            <select
-              value={filterEducator}
-              onChange={(e) => setFilterEducator(e.target.value)}
-              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="All">All Educators</option>
-              {allEducators.length > 0 && allEducators.map(educator => (
-                <option key={educator.id} value={educator.id}>{educator.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex-shrink-0">
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="All">All Types</option>
-              {uniqueExamTypes.map(type => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex-shrink-0">
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="All">All Statuses</option>
-              {uniqueStatuses.map(status => (
-                <option key={status} value={status}>{status}</option>
-              ))}
+              <option value="All">All Frameworks</option>
+              {uniqueExamTypes.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
         </div>
 
-        {/* Exams Table */}
+        {/* Runtime Notifications Container */}
+        {error && (
+          <div className="m-5 bg-rose-50 border border-rose-100 text-rose-800 p-3.5 rounded-xl flex items-center justify-between text-xs">
+            <span>{error}</span>
+            <button onClick={() => setError(null)} className="text-rose-400 hover:text-rose-600"><XMarkIcon className="h-4 w-4" /></button>
+          </div>
+        )}
+
+        {/* High-Performance Micro-Data Sheet Table Layout */}
         <div className="overflow-x-auto">
-          {filteredExams.length === 0 && !isLoading && (
-            <div className="text-center py-10 text-gray-500">
-              No exams found matching your criteria.
+          {filteredExams.length === 0 ? (
+            <div className="text-center py-12 text-slate-400 space-y-2">
+              <FolderOpenIcon className="h-8 w-8 mx-auto text-slate-300" />
+              <p className="text-xs font-medium">No matching assessments discovered within this sector scope.</p>
             </div>
-          )}
-          {filteredExams.length > 0 && (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Exam Name</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course (Educator)</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classroom</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Online</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ques. / Sub.</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Results</th>
-                  <th scope="col" className="relative px-6 py-3">
-                    <span className="sr-only">Actions</span>
-                  </th>
+          ) : (
+            <table className="w-full border-collapse text-left">
+              <thead>
+                <tr className="border-b border-slate-100 bg-slate-50/40 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                  <th className="px-5 py-3">Audit Registry Label</th>
+                  <th className="px-5 py-3">Instructor Matrix</th>
+                  <th className="px-5 py-3">Location Venue</th>
+                  <th className="px-5 py-3">Schedule Slot</th>
+                  <th className="px-5 py-3 text-center">Digital Delivery</th>
+                  <th className="px-5 py-3 text-center">Quantities</th>
+                  <th className="px-5 py-3">Publication</th>
+                  <th className="px-5 py-3 text-right">Actions Panel Interface</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredExams.map((exam) => (
-                  <tr key={exam.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{exam.title}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {exam.courseTitle} <br />
-                      <span className="text-xs text-gray-400">({exam.createdByEducatorName})</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {exam.classroom ? exam.classroom.name : 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(exam.date).toLocaleDateString()} <br />
-                      <span className="text-xs text-gray-400">
-                        {exam.startTime && exam.endTime ? `${exam.startTime} - ${exam.endTime}` : (exam.startTime || 'N/A')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex items-center gap-1">
-                        <MapPinIcon className="h-4 w-4 text-gray-400" /> {exam.location || 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800`}>
+              <tbody className="divide-y divide-slate-100 text-xs text-slate-600">
+                {filteredExams.map((exam) => {
+                  const isConcluded = new Date(exam.date).getTime() < new Date().setHours(0,0,0,0);
+                  return (
+                    <tr key={exam.id} className="hover:bg-slate-50/60 transition-colors group">
+                      <td className="px-5 py-3.5">
+                        <div className="font-semibold text-slate-900">{exam.title}</div>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold tracking-wide uppercase bg-slate-100 text-slate-700">
                             {exam.type}
-                        </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                        {exam.isOnline ? <GlobeAltIcon className="h-5 w-5 text-green-500 mx-auto" title="Online Exam" /> : <span className="text-gray-400">--</span>}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <span className="font-semibold">{exam.totalQuestions}</span> Q / <span className="font-semibold">{exam.totalSubmissions}</span> S
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <button
-                            onClick={() => toggleResultsPublished(exam.id, exam.isPublished)}
-                            className={`flex items-center gap-1 text-xs font-medium
-                                ${exam.isPublished ? 'text-green-600 hover:text-green-800' : 'text-gray-500 hover:text-gray-700'}`}
-                            title={exam.isPublished ? 'Results Published' : 'Publish Results'}
-                        >
-                            {exam.isPublished ? <CheckCircleIcon className="h-4 w-4" /> : <ClockIcon className="h-4 w-4" />}
-                            {exam.isPublished ? 'Published' : 'Unpublished'}
-                        </button>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
-                        {exam.isOnline && (
-                          <div className="flex flex-col items-center">
-                            <Link href={`/admin/${companyId}/exams/${exam.id}/questions`}
-                                className="text-blue-600 hover:text-blue-900 flex items-center"
-                                title="Manage Questions"
-                            >
-                                <BookOpenIcon className="h-4 w-4" />
-                            </Link>
-                            <Link href={`/admin/${companyId}/exams/${exam.id}/submissions`}
-                                className="text-teal-600 hover:text-teal-900 flex items-center mt-1"
-                                title="View Submissions"
-                            >
-                                <FolderOpenIcon className="h-4 w-4" />
-                            </Link>
-                          </div>
+                          </span>
+                          <span className={`w-1.5 h-1.5 rounded-full ${isConcluded ? 'bg-emerald-500' : 'bg-amber-400'}`}></span>
+                        </div>
+                      </td>
+
+                      <td className="px-5 py-3.5">
+                        <div className="font-medium text-slate-800">{exam.courseTitle}</div>
+                        <div className="text-slate-400 text-[10px]">{exam.createdByEducatorName}</div>
+                      </td>
+
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-1 text-slate-700">
+                          <MapPinIcon className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
+                          <span className="truncate max-w-[120px]">{exam.location || exam.classroom?.name || 'Universal'}</span>
+                        </div>
+                      </td>
+
+                      <td className="px-5 py-3.5 whitespace-nowrap">
+                        <div className="font-medium text-slate-800">{new Date(exam.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
+                        <div className="text-[10px] text-slate-400 flex items-center gap-0.5 mt-0.5">
+                          <ClockIcon className="h-3 w-3" />
+                          <span>{exam.startTime ? `${exam.startTime} - ${exam.endTime}` : 'Variable Schedule'}</span>
+                        </div>
+                      </td>
+
+                      <td className="px-5 py-3.5 text-center">
+                        {exam.isOnline ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                            <GlobeAltIcon className="h-3 w-3" /> Online
+                          </span>
+                        ) : (
+                          <span className="text-slate-300 text-[10px]">—</span>
                         )}
-                        <Link 
-                          href={`/admin/${companyId}/exams/${exam.id}/grades?courseId=${exam.courseId}&classroomId=${exam.classroomId || ''}&educatorId=${exam.createdByEducatorId}&academicYearId=${exam.academicYearId}&termId=${exam.termId}`}
-                          className="flex items-center gap-2 px-3 py-2 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition-colors"
-                        >
-                          <UsersIcon className="h-5 w-5" />
-                          <span>Manage Grades</span>
-                        </Link>
+                      </td>
+
+                      <td className="px-5 py-3.5 text-center whitespace-nowrap">
+                        <span className="font-bold text-slate-800">{exam.totalQuestions}</span>
+                        <span className="text-slate-400"> Q</span>
+                        <span className="mx-1 text-slate-300">|</span>
+                        <span className="font-bold text-slate-800">{exam.totalSubmissions}</span>
+                        <span className="text-slate-400"> S</span>
+                      </td>
+
+                      <td className="px-5 py-3.5">
                         <button
-                          onClick={() => { setEditingExam(exam); setShowFormModal(true); setError(null); }}
-                          className="text-indigo-600 hover:text-indigo-900 flex items-center"
-                          title="Edit Exam"
+                          onClick={() => toggleResultsPublished(exam.id, exam.isPublished)}
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold transition-colors
+                            ${exam.isPublished 
+                              ? 'bg-indigo-50 text-indigo-700 border border-indigo-100 hover:bg-indigo-100' 
+                              : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
                         >
-                          <PencilIcon className="h-4 w-4" />
+                          {exam.isPublished ? 'Published' : 'Draft Access'}
                         </button>
-                        <button
-                          onClick={() => handleDeleteExam(exam.id)}
-                          className="text-red-600 hover:text-red-900 flex items-center"
-                          title="Delete Exam"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+
+                      <td className="px-5 py-3.5 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          
+                          {/* Module Route Hubs */}
+                          {exam.isOnline && (
+                            <div className="flex items-center gap-1 border-r border-slate-200/60 pr-1 mr-1">
+                              <Link 
+                                href={`/admin/${companyId}/exams/${exam.id}/questions`}
+                                className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-colors"
+                                title="Configure Evaluation Tasks"
+                              >
+                                <BookOpenIcon className="h-4 w-4" />
+                              </Link>
+                              <Link 
+                                href={`/admin/${companyId}/exams/${exam.id}/submissions`}
+                                className="p-1.5 text-slate-500 hover:text-emerald-600 hover:bg-slate-100 rounded-lg transition-colors"
+                                title="Analyze Interactive Submissions"
+                              >
+                                <FolderOpenIcon className="h-4 w-4" />
+                              </Link>
+                            </div>
+                          )}
+
+                          <Link 
+                            href={`/admin/${companyId}/exams/${exam.id}/grades?courseId=${exam.courseId}&classroomId=${exam.classroomId || ''}&educatorId=${exam.createdByEducatorId}&academicYearId=${exam.academicYearId}&termId=${exam.termId}`}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 text-slate-700 transition-colors"
+                          >
+                            <UsersIcon className="h-3.5 w-3.5 text-slate-500" />
+                            <span>Grades Matrix</span>
+                          </Link>
+
+                          <button
+                            onClick={() => { setEditingExam(exam); setShowFormModal(true); setError(null); }}
+                            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                            title="Edit Core Metrics"
+                          >
+                            <PencilIcon className="h-3.5 w-3.5" />
+                          </button>
+                          
+                          <button
+                            onClick={() => handleDeleteExam(exam.id)}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                            title="Erase Log"
+                          >
+                            <TrashIcon className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
         </div>
       </div>
 
-      {/* Exam Form Modal */}
+      {/* Modular Form Dialog Overlay */}
       {showFormModal && (
         <ExamFormModal
           examData={editingExam}
@@ -995,11 +834,9 @@ export default function AdminExamsOverviewPage({ initialExamCategories, initialE
           allCourses={allCourses}
           allClassRooms={allClassRooms}
           allEducators={allEducators}
-          
           academicYears={academicYearOptions}
           activeAcademicYearId={activeAcademicYearId}
           activeTermId={activeTermId}
-  
           companyId={companyId}
           isLoading={isLoading}
           error={error}
