@@ -63,23 +63,26 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
   if (slides.length === 0) return null;
 
   const currentSlide = slides[current];
+  const systemAccent = themeSettings?.primaryColor || '#F59E0B';
 
   return (
     <section id="home" className="relative min-h-[90vh] md:min-h-screen w-full flex items-center overflow-hidden bg-zinc-950">
       
-      {/* BACKGROUND IMAGE WITH CINEMATIC SLIDE ANIMATION */}
+      {/* BACKGROUND IMAGE WITH BALANCED VIGNETTE */}
       <AnimatePresence initial={false} custom={direction}>
         <motion.div
           key={`bg-${current}`}
-          initial={{ opacity: 0, scale: 1.05 }}
+          initial={{ opacity: 0, scale: 1.03 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
           className="absolute inset-0 z-0"
         >
-          {/* Institutional Grayscale & Depth Layering */}
-          <div className="absolute inset-0 bg-zinc-950/70 z-10 mix-blend-multiply" />
-          <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/40 to-transparent z-10" />
+          {/* Subtle uniform ambient dim to protect highlights */}
+          <div className="absolute inset-0 bg-zinc-950/30 z-10" />
+          
+          {/* Targeted Left Vignette: Deep shadows behind text, feathering out to reveal full image color & detail on the right */}
+          <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/80 via-40% to-transparent z-10" />
           <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent z-10" />
           
           <Image
@@ -88,7 +91,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
             loader={loader}
             fill
             priority
-            className="object-cover object-right lg:object-center grayscale opacity-60 mix-blend-luminosity"
+            className="object-cover object-right lg:object-center opacity-90 brightness-95 contrast-[1.02] transition-all duration-700"
           />
         </motion.div>
       </AnimatePresence>
@@ -111,10 +114,10 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center gap-3 text-zinc-100"
             >
-              <div className="p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-amber-500 shadow-inner">
+              <div className="p-2 bg-zinc-900 border border-zinc-800 rounded-lg shadow-inner" style={{ color: systemAccent }}>
                 <GlobeAmericasIcon className="h-4 w-4" />
               </div>
-              <span className="text-xs font-bold uppercase tracking-[0.25em] text-amber-500">
+              <span className="text-xs font-bold uppercase tracking-[0.25em]" style={{ color: systemAccent }}>
                 {currentSlide.badgeText || "Global Physical Execution"}
               </span>
             </motion.div>
@@ -148,7 +151,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
               variants={fadeUp}
               initial="initial"
               animate="animate"
-              className="text-zinc-400 text-base md:text-lg max-w-xl leading-relaxed font-light border-l border-zinc-800 pl-6 text-justify"
+              className="text-zinc-300 text-base md:text-lg max-w-xl leading-relaxed font-light border-l border-zinc-800 pl-6 text-justify"
             >
               {currentSlide.subline}
             </motion.p>
@@ -170,8 +173,8 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
               
               {currentSlide.videoLink && (
                 <div className="flex items-center justify-center sm:justify-start gap-4 group cursor-pointer py-2 px-4 rounded-xl hover:bg-zinc-900/30 transition-colors duration-300">
-                  <div className="h-11 w-11 rounded-xl border border-zinc-800 bg-zinc-900/50 flex items-center justify-center text-zinc-400 group-hover:text-amber-500 group-hover:border-zinc-700 relative transition-all">
-                    <PlayIcon className="h-4 w-4 fill-current ml-0.5" />
+                  <div className="h-11 w-11 rounded-xl border border-zinc-800 bg-zinc-900/50 flex items-center justify-center text-zinc-400 group-hover:border-zinc-700 relative transition-all" style={{ '--hover-color': systemAccent } as React.CSSProperties}>
+                    <PlayIcon className="h-4 w-4 fill-current ml-0.5 group-hover:text-amber-500 transition-colors" />
                   </div>
                   <div className="flex flex-col items-start">
                     <span className="text-zinc-200 font-bold text-xs uppercase tracking-wider">Operational</span>
@@ -188,7 +191,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
       {slides.length > 1 && (
         <div className="absolute bottom-10 right-6 lg:right-12 flex items-center gap-6 z-30">
           <div className="flex items-center gap-3 font-mono text-xs tracking-widest text-zinc-500">
-            <span className="text-amber-500 font-bold">[0{current + 1}]</span>
+            <span className="font-bold" style={{ color: systemAccent }}>[0{current + 1}]</span>
             <div className="w-8 h-[1px] bg-zinc-800" />
             <span>0{slides.length}</span>
           </div>

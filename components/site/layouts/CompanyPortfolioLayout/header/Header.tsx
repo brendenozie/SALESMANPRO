@@ -43,7 +43,7 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  const { slug, name, tagline, logoUrl, socialLinks = [], themeSettings = {} } = storeFormData || {};
+  const { slug, name, tagline, logoUrl, contactEmail, contactPhone, socialLinks = [], themeSettings = {} } = storeFormData || {};
   
   // Adaptive High-Contrast Core Accents
   const systemAccent = themeSettings?.primaryColor || '#F59E0B'; // Amber Core Node
@@ -86,19 +86,19 @@ export default function Navbar() {
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2 group cursor-default">
               <PhoneIcon className="h-3.5 w-3.5 transition-colors" style={{ color: systemAccent }} />
-              <span>TERMINAL_COMM: <span className="text-zinc-200 group-hover:text-white transition-colors">SUPPORT DESK</span></span>
+              <span>PHONE: <span className="text-zinc-200 group-hover:text-white transition-colors">{contactPhone || '+1 (555) 123-4567'}</span></span>
             </div>
             <div className="h-3 w-[1px] bg-zinc-800" />
             <div className="flex items-center gap-2 group cursor-default">
               <EnvelopeIcon className="h-3.5 w-3.5 transition-colors" style={{ color: systemAccent }} />
-              <span>ENCRYPTED_FEED: <span className="text-zinc-200 group-hover:text-white transition-colors">ops@{slug || 'grey-trading'}.com</span></span>
+              <span>EMAIL: <span className="text-zinc-200 group-hover:text-white transition-colors">{contactEmail || `info@aurum-precious-trading-limited.com`}</span></span>
             </div>
           </div>
 
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-1.5 cursor-pointer hover:text-white transition-colors">
               <GlobeAltIcon className="h-3.5 w-3.5" style={{ color: systemAccent }} />
-              <span className="tracking-widest uppercase text-[10px]">SYS_LOC // ENG</span>
+              <span className="tracking-widest uppercase text-[10px]">ENG</span>
             </div>
             <div className="h-3 w-[1px] bg-zinc-800" />
             <div className="flex items-center gap-4">
