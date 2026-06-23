@@ -758,7 +758,22 @@ export default function ProductMarketModal({
   }, []);
 
   // dynamic steps
-  const categoryKey = (formData.category as any)?.displayName?.trim?.() || (formData.category as any)?.name || "";
+  // const categoryKey = (formData.category as any)?.displayName?.trim?.() || (formData.category as any)?.name || "";
+  const categoryKey = useMemo(() => {
+                        const categoryName =
+                          (formData.category as any)?.displayName?.trim?.() ||
+                          (formData.category as any)?.name ||
+                          "";
+
+                        // For Cars, use the selected subcategory name
+                        if (categoryName.toLowerCase() === "cars") {
+                          return formData.subCategoryName || categoryName;
+                        }
+
+                        return categoryName;
+                      }, [formData.category, formData.subCategoryName]);
+
+  // const stepsForCategory = useMemo(() => CATEGORY_STEPS[categoryKey] || [1, 2, 3],  [categoryKey]);
   const stepsForCategory = useMemo(() => CATEGORY_STEPS[categoryKey] || [1, 2, 3], [categoryKey]);
   const lastStepIndex = stepsForCategory.length;
   const isFirstStep = step === 1;
@@ -817,6 +832,7 @@ export default function ProductMarketModal({
       updateField("productCategoryId", (cat as any)?.categoryId || "");
       updateField("subCategory", (cat as any)?.subcategories || {});
       updateField("subCategoryName", "");
+      
     },
     [updateField]
   );

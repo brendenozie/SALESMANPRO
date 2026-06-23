@@ -96,7 +96,21 @@ export default function AdminLayout({ children, params }: {
 
   // --- All variables and state for the full layout (with navigation) ---
   const companyId: string = storeFormData?.id || '6964daeff4ad17d959b72413';// 'default-company-id';
-  const categoryType = storeFormData?.category ? capitalize(storeFormData.category) : "Other";
+
+  // const categoryType = storeFormData?.category ? capitalize(storeFormData.category) : "Other";
+  
+  const categoryType = useMemo(() => {
+  const category = storeFormData?.category;
+
+  if (!category) return "Other";
+
+  if (category.toLowerCase() === "automotive") {
+    return capitalize(storeFormData?.variant || "Other");
+  }
+
+  return capitalize(category);
+}, [storeFormData?.category, storeFormData?.variant]);
+
   const menus = getCategoryMenus(companyId,userRole);
   const menuItems = getMenuItemsFor(userRole, categoryType, menus);
 

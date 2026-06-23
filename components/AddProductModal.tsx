@@ -625,7 +625,21 @@ export default function AddProductModal({
   }, [product, restore, setFormData, setToast]);
 
   // Advanced Mode: Dynamic steps based on category
-  const categoryKey = formData.category?.displayName?.trim() || '';
+  // const categoryKey = formData.category?.displayName?.trim() || '';
+  const categoryKey = useMemo(() => {
+                          const categoryName =
+                            (formData.category as any)?.displayName?.trim?.() ||
+                            (formData.category as any)?.name ||
+                            "";
+  
+                          // For Cars, use the selected subcategory name
+                          if (categoryName.toLowerCase() === "cars") {
+                            return formData.subCategoryName || categoryName;
+                          }
+  
+                          return categoryName;
+                        }, [formData.category, formData.subCategoryName]);
+                        
   const stepsForCategory = useMemo(() => CATEGORY_STEPS[categoryKey] || [1, 2, 3], [categoryKey]);
   const lastStepIndex = stepsForCategory.length;
   const isFirstStep = step === 1;

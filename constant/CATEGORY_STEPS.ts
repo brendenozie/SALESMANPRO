@@ -84,11 +84,111 @@ export const CATEGORY_STEPS: Record<string, number[]> = {
 
   // — Automotive & tools flow —
   Automotive: [1, 3, 4, 5, 7, 8, 10, 12, 14, 11],
-  "Automotive Accessories": [1, 3, 4, 5, 7, 8, 10, 12, 14, 11],
+  "Automotive Accessories": [1, 2, 3, 7, 8, 9, 10, 12, 11],
   Cars: [1, 3, 4, 5, 8, 10, 12, 14, 11], //7,
-  "Car Accessories": [1, 3, 4, 5, 7, 8, 10, 12, 14, 11],
-  Tools: [1, 3, 4, 5, 7, 8, 10, 12, 14, 11],
-  Hardware: [1, 3, 4, 5, 7, 8, 10, 12, 14, 11],
+  "Car Accessories": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Tools: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+  Hardware: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  Motorcycles: [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "Electric Vehicles": [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "Performance Parts": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Car Care": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Charging Stations": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Car Tires & Wheels": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Car Audio & Navigation": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Car Interior Accessories": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Car Exterior Accessories": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Safety & Emergency Equipment": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Car Fluids & Oils": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Luxury Cars": [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "Off-road Vehicles": [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "Classic & Vintage Cars": [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "Used Cars": [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "Salvage Vehicles": [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "New Cars": [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "Pickup Trucks": [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "Commercial Vehicles": [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "Sports Cars": [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  Vans: [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "delivery trucks": [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  buses: [1, 3, 4, 5, 8, 10, 12, 14, 11],
+
+  "Car Rental & Leasing": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Vehicle Auctions": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Car Insurance Services": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Car Batteries": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Power Systems": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Car Lighting": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  Bulbs: [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Dash Cams": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Vehicle Cameras": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Vehicle Security": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Tracking Systems": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Diagnostic Tools": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Vehicle Electronics": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Auto Tools": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Truck Parts & Accessories": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "RV & Camper Accessories": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Convertible & Sunroof Accessories": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Windshield Wipers & Washers": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Steering Wheels & Pedal Accessories": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Seat Covers & Floor Mats": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Vehicle Wraps & Decals": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Towing Equipment & Trailers": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Exhaust Systems & Mufflers": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Transmission & Drivetrain Components": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Cooling Systems & Radiators": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Suspension & Steering Components": [1, 2, 3, 7, 8, 9, 10, 12, 11],
+
+  "Engine Parts & Mounts": [1, 2, 3, 7, 8, 9, 10, 12, 11],
 
   // — Services flow —
   Services: [1, 2, 7, 15, 16, 17, 8, 9, 10, 12, 11],
