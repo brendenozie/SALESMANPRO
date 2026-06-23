@@ -1,20 +1,9 @@
 // File: app/signin/page.tsx
-import { getProviders, type ClientSafeProvider } from "next-auth/react";
-import { redirect } from "next/navigation";
+
 import SignUpClient from "./SignUpClient";
 
-export const dynamic = "force-dynamic";
-
 export default async function SignInPage() {
-  // const session = await getAuthSession();
-  // if (session) {
-  //   redirect("/");
-  // }
-
-  const raw = await getProviders();
-  const providers: ClientSafeProvider[] = raw ? Object.values(raw) : [];
-
-  return <SignUpClient providers={providers} />;
+  return <SignUpClient />;
 }
 
 export const metadata = {

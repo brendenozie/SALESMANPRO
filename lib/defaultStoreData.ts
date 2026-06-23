@@ -6976,6 +6976,133 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       ],
     }),
 
+    "Automotive Store" : withOverrides({
+      tagline: "**Drive Your Passion** with Our Automotive Selection",
+      description:
+        "Explore our wide range of automotive products and accessories, carefully curated to enhance your driving experience and keep your vehicle in top condition.",
+      socialLinks: [
+        {
+          channel: SocialChannel.INSTAGRAM,
+          url: "https://insta.com/automotivestore",
+        },
+      ],
+      faqs: [
+        {
+          question: "Do you offer automotive repairs?",
+          answer:
+            "Yes, we provide repair services for various automotive needs. Contact us for more details.",
+          order: 1,
+        },
+      ],
+      testimonials: [
+        {
+          authorName: "John D.",
+          quote:
+            "The quality of their automotive products is exceptional. I always find what I need for my car!",
+          rating: 5,
+        },
+      ],
+      heroSlides: [
+        {
+          imageUrl: getSampleImageUrl("automotive-store"),
+          headline: "New Arrivals for Every Car Enthusiast",
+          subline:
+            "Discover our latest collection of automotive products and accessories.",
+          ctaText: "Shop Now",
+          ctaLink: "/shop",
+          id: "",
+          companyId: "",
+          price: null,
+          productImageUrl: null,
+          badgeText: "New Arrivals",
+          endsAt: null,
+          order: 0,
+          iconKey: null,
+          backgroundColor: null,
+          textColor: null,
+          videoLink: null,
+          type: "image",
+          stats: [{
+            label: "Over 1,000 automotive products available with a 95% customer satisfaction rate!",
+            value: null,
+          }]
+        },
+      ],
+      metrics: [
+        { label: "Automotive Products", value: 1000 },
+        { label: "Satisfied Customers", value: 1500 },
+        { label: "Repair Services", value: 1 },
+      ],
+      seo: {
+        id: "",
+        title: "Automotive Store | Drive Your Passion with Our Automotive Selection",
+        description:
+          "Explore our wide range of automotive products and accessories, carefully curated to enhance your driving experience and keep your vehicle in top condition. Shop now and find the perfect products for your car.",
+        keywords: [
+          "automotive store",
+          "car accessories",
+          "automotive repairs",
+          "vehicle maintenance",
+          "new automotive products",
+        ],
+      },
+      stats: [
+        { label: "Automotive Products", value: 1000 },
+        { label: "Satisfied Customers", value: 1500 },
+        { label: "Repair Services", value: "Yes" },
+      ],
+      awards: [
+        { name: "Best Automotive Store 2024", iconUrl: "/icons/award.svg" },
+        { name: "Top 30 Retailers 2024", iconUrl: "/icons/award.svg" },
+      ],
+      policies: [
+        {
+          type: PolicyType.CANCELLATION,
+          content:
+            "Returns accepted within 30 days. Repair services are non-refundable.",
+        },
+      ],
+      promotions: [
+        {
+          title: "Summer Automotive Sale",
+          description:
+            "Get 15% off all automotive products during our Summer Sale. Upgrade your car for less!",
+          ctaText: "Shop Now",
+          ctaLink: "/sale",
+          companyId: "",
+          perks: [{ id: "", label: "15% Off", icon: "StarIcon" }],
+          trustLogos: [],
+        },
+      ],
+
+      sectionSubtitle: "Enhance Your Driving Experience",
+      sectionTitle: "Automotive Store",
+      sectionDescription:
+        "Explore our wide range of automotive products and accessories, carefully curated to enhance your driving experience and keep your vehicle in top condition.",
+      partnerLogos: [
+        {
+          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
+          alt: "Brand A",
+        },
+        {
+          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
+          alt: "Brand B",
+        },
+        {
+          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
+          alt: "Brand C",
+        },
+        {
+          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
+          alt: "Brand D",
+        },
+        {
+          src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000",
+          alt: "Brand E",
+        },
+      ],
+    }),
+
     "Book Store": withOverrides({
       tagline: "**Discover Your Next Read** with Our Curated Selection",
       description:

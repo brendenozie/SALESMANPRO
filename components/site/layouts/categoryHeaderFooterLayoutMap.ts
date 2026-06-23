@@ -185,6 +185,13 @@ const CompanyPortfolioLayout = dynamic(
     ),
   );
 
+const EcommerceAccessoriesLayout = dynamic(
+  () =>
+    import(
+      "@/components/site/layouts/EcommerceAccessoriesLayout/EcommerceAccessoriesLayout"
+    ),
+);
+
 import { ReactNode } from "react";
 import { StoreForm } from "../../../types/typings";
 
@@ -298,9 +305,10 @@ const categoryHeaderFooterLayoutMap: Record<
 
   "delivery & logistics": DeliveryLayout,
 
-  "barbershop": BarbershopBookingsLayout,
-  "drycleaning": DrycleaningBookingsLayout,
+  barbershop: BarbershopBookingsLayout,
+  drycleaning: DrycleaningBookingsLayout,
   "company portfolio": CompanyPortfolioLayout,
+  "automotive store": EcommerceAccessoriesLayout,
 
   other: DefaultLayout,
   Other: DefaultLayout,
