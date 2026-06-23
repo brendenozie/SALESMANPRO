@@ -16,7 +16,7 @@ export interface HeroSliderProps {
   themeSettings: any;
 }
 
-export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProps) {
+export default function HeroSlider({ heroSlides, themeSettings, name }: HeroSliderProps) {
   // 1. Data Handling & Fallbacks
   const slides = useMemo(() => {
     if (!heroSlides || heroSlides.length === 0) return [];
@@ -87,7 +87,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
           
           <Image
             src={currentSlide.imageUrl || '/fallback-logistics.jpg'}
-            alt="Grey Trading Commodity Operations"
+            alt={name || "Trading Commodity Operations"}
             loader={loader}
             fill
             priority
@@ -217,7 +217,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
 
       {/* STRUCTURAL ASSET ANCHOR */}
       <div className="absolute left-6 bottom-12 hidden lg:flex flex-col gap-6 text-zinc-600 z-30">
-        <span className="vertical-text tracking-[0.3em] text-[9px] font-bold uppercase mb-2">Grey Trading Limited</span>
+        <span className="vertical-text tracking-[0.3em] text-[9px] font-bold uppercase mb-2">{name || "Trading Limited"}</span>
         <div className="w-[1px] h-16 bg-zinc-800 mx-auto" />
       </div>
 

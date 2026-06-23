@@ -13,7 +13,7 @@ import {
 
 // --- INSTITUTIONAL LEDGER CONFIGURATION ---
 const sectionTitle = "Institutional Volume & Performance";
-const firmName = "Grey Trading Limited"; 
+const firmName = "Trading Limited"; 
 
 const performanceMetrics = [
   { 
@@ -138,7 +138,7 @@ export default function PerformanceMetricsDashboard({pagedata}: {pagedata: any})
           
           <div className="lg:col-span-7 lg:border-l lg:border-zinc-900 lg:pl-10">
             <p className="text-zinc-400 text-sm md:text-base font-light leading-relaxed text-justify">
-              The continuous scale of our processing network relies entirely upon automated compliance checking, multi-asset security vaults, and precision timing. These verified ledgers map the continuous operational throughput generated under the direction of **{firmName}**.
+              The continuous scale of our processing network relies entirely upon automated compliance checking, multi-asset security vaults, and precision timing. These verified ledgers map the continuous operational throughput generated under the direction of **{pagedata.name || firmName}**.
             </p>
           </div>
         </div>

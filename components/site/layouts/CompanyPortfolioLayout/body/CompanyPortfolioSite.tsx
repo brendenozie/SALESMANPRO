@@ -40,7 +40,7 @@ export default function CompanyPortfolioSite({ pageData, companyId }: { pageData
   return (
       <main className="min-h-screen bg-gray-100 font-sans">
         {/* Hero Section - Render immediately */}
-        <HeroSection heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} />
+        <HeroSection heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} name={pageData.name} />
 
         {/* Core Highlights / Impact Areas */}
         <CoreHighlightsSection pagedata={pageData} />
@@ -66,7 +66,7 @@ export default function CompanyPortfolioSite({ pageData, companyId }: { pageData
         {testimonialsData?.data && <TestimonialsNewsSection pagedata={pageData} />}
 
         {/* Call to Action - Bold */}
-        <CtaBoldSection />
+        <CtaBoldSection pagedata={pageData} />
 
         {/* FAQs - Render when data is ready */}
         {faqsData?.data && <FAQSection pagedata={pageData} />}

@@ -23,18 +23,16 @@ export type StoreForm = {
   themeSettings?: ThemeSettings;
 };
 
-export default function CtaBoldSection() {
-  const { storeFormData } = useStoreContext();
-
+export default function CtaBoldSection({ pagedata }: { pagedata: any }) {
   // Institutional system colors mapped to premium dark specs
-  const systemAccent = storeFormData?.themeSettings?.primaryColor || '#F59E0B'; // Amber Node Accent
-  const organizationSlug = storeFormData?.slug || 'grey-trading';
+  const systemAccent = pagedata?.themeSettings?.primaryColor || '#F59E0B'; // Amber Node Accent
+  const organizationSlug = pagedata?.slug || 'grey-trading';
 
   // Transformed corporate copy matrix with definitive rollbacks
   const ctaTitle = 'Optimize Capital Velocity & Corridor Throughput';
-  const ctaSubtitle = 'Establish a dedicated clearance endpoint. Interface directly with Grey Trading Limited\'s multi-sovereign clearing desks and automated physical risk architectures.';
+  const ctaSubtitle = `Establish a dedicated clearance endpoint. Interface directly with ${pagedata?.name || 'Trading Limited'}\'s multi-sovereign clearing desks and automated physical risk architectures.`;
   const ctaButtonLabel = 'Request Terminal Connection';
-  const ctaButtonHref = `/${organizationSlug}/onboarding`;
+  const ctaButtonHref = `/companyprofile/onboarding`;
 
   return (
     <section
