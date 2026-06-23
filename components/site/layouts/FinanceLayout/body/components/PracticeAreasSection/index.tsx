@@ -1,127 +1,141 @@
 "use client";
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MarketListingForm } from '@/types/typings';
 
-// --- ICONS ---
-const PlusIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-  </svg>
-);
-
-const ArrowUpRightIcon = ({ className }: { className?: string }) => (
+// --- MINIMAL PROFESSIONAL ICONS ---
+const ElegantArrowIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={className}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
   </svg>
 );
 
-const StarIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
+const BalanceScaleIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v17.25m0-17.25a3.75 3.75 0 1 1-7.5 0M12 3a3.75 3.75 0 1 0 7.5 0M1 8.25h22m-1.5 0a3.75 3.75 0 0 1-7.5 0m7.5 0a3.75 3.75 0 0 0-7.5 0M3.75 8.25a3.75 3.75 0 0 1 7.5 0m-7.5 0a3.75 3.75 0 0 0 7.5 0M5.25 21h13.5" />
   </svg>
 );
 
-// --- MOCK DATA ---
-const mockData = {
-  marketplaceListings: [
-    {
-      id: "1",
-      name: "Corporate Law",
-      description: "Mergers, acquisitions, and compliance.",
-      finalPrice: 500,
-      images: [{ url: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80" }],
-      rating: 4.9,
-    },
-    {
-      id: "2",
-      name: "Financial Advisory",
-      description: "Wealth management and capital growth.",
-      finalPrice: 850,
-      images: [{ url: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80" }],
-      rating: 5.0,
-    },
-    {
-      id: "3",
-      name: "IP Protection",
-      description: "Patent filing and trademark security.",
-      finalPrice: 720,
-      images: [{ url: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=800&q=80" }],
-      rating: 4.8,
-    },
-  ],
-};
+// --- INSTITUTIONAL ECOSYSTEM DATA ---
+const defaultListings = [
+  {
+    id: "firm-1",
+    name: "Corporate Law Matrix",
+    description: "High-stakes strategic mergers, global acquisitions, structured compliance frameworks, and comprehensive international cross-border asset orchestration.",
+    finalPrice: 1500,
+    images: [{ url: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80" }],
+    tag: "Tier-1 Advisory",
+    metrics: "98.4% Advisory Success Rate"
+  },
+  {
+    id: "firm-2",
+    name: "Financial Architecture",
+    description: "Bespoke wealth engineering, institutional deployment metrics, precise corporate tax structures, and strategic risk-mitigated asset allocations.",
+    finalPrice: 2450,
+    images: [{ url: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80" }],
+    tag: "Capital Strategy",
+    metrics: "$2.4B Combined Assets Managed"
+  },
+  {
+    id: "firm-3",
+    name: "IP Sovereignty Infrastructure",
+    description: "Defensive patent orchestration, worldwide trademark protection protocols, technological estate custody, and aggressive global enforcement strategies.",
+    finalPrice: 1820,
+    images: [{ url: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=800&q=80" }],
+    tag: "Asset Security",
+    metrics: "420+ International Patents Retained"
+  },
+];
 
-// --- ANIMATION VARIANTS ---
+// --- ORCHESTRATION ANIMATIONS ---
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.1 },
+    transition: { staggerChildren: 0.08, delayChildren: 0.02 },
   },
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, scale: 0.9, y: 20 },
+  hidden: { opacity: 0, y: 20 },
   visible: { 
     opacity: 1, 
-    scale: 1, 
     y: 0, 
-    transition: { type: "spring", stiffness: 300, damping: 25 } 
+    transition: { type: "spring", stiffness: 110, damping: 20 } 
   },
 };
 
 interface PracticeAreasSectionProps {
-  themeSettings?: any;
+  themeSettings?: {
+    primaryColor?: string;
+    accentColor?: string;
+  } | null;
   marketplaceListings?: MarketListingForm[] | null;
 }
 
 export default function PracticeAreasAppSection({ themeSettings, marketplaceListings }: PracticeAreasSectionProps) {
-  const listings = marketplaceListings?.length ? marketplaceListings : mockData.marketplaceListings;
+  const listings = marketplaceListings?.length ? marketplaceListings : defaultListings;
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
+  const activeAccent = themeSettings?.accentColor || "#2563EB"; 
+
+  const formatPrice = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
   return (
-    <section className="py-24 sm:py-32 bg-slate-50/50 font-sans relative overflow-hidden">
+    <section className="py-24 lg:py-36 bg-white text-slate-800 font-sans relative overflow-hidden">
       
-      {/* --- APP-LIKE BACKGROUND --- */}
-      <div className="absolute inset-0 pointer-events-none">
-         <div className="absolute top-[-10%] right-[-5%] w-[30rem] h-[30rem] bg-blue-100/50 rounded-full blur-[80px]" />
-         <div className="absolute bottom-[-10%] left-[-5%] w-[30rem] h-[30rem] bg-indigo-100/50 rounded-full blur-[80px]" />
+      {/* Soft Premium Architectural Light Underlay */}
+      <div className="absolute inset-0 pointer-events-none z-0 opacity-40">
+        <div className="absolute top-[-10%] right-[-5%] w-[45rem] h-[45rem] bg-slate-50 rounded-full blur-[130px] mix-blend-multiply" />
+        <div className="absolute bottom-[-5%] left-[-10%] w-[40rem] h-[40rem] bg-slate-50 rounded-full blur-[120px] mix-blend-multiply" />
+        <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:32px_32px]" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        {/* --- HEADER (iOS Style) --- */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+        {/* --- EDITORIAL HEADER SECTION --- */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 lg:mb-24 pb-8 border-b border-slate-100 gap-6">
           <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            className="max-w-xl"
           >
-            <span className="text-blue-600 font-bold tracking-wide uppercase text-xs mb-2 block">
-              Service Catalog
-            </span>
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
-              Find Your Solution
+            <div className="flex items-center gap-2 text-slate-400 font-mono text-xs font-bold uppercase tracking-[0.25em] mb-3">
+              <BalanceScaleIcon className="w-4 h-4 text-slate-500" /> Practice Overview
+            </div>
+            <h2 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight leading-[1.15]">
+              Institutional Solutions <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-slate-500 font-bold">
+                Engineered for Longevity
+              </span>
             </h2>
           </motion.div>
 
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="text-sm font-bold text-slate-500 hover:text-blue-600 flex items-center gap-2 bg-white px-5 py-2.5 rounded-full shadow-sm border border-slate-200 transition-colors"
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            className="self-start md:self-end text-xs font-mono font-bold uppercase tracking-wider text-slate-800 flex items-center gap-3 bg-white px-5 py-3.5 rounded-xl shadow-md shadow-slate-100/80 border border-slate-100 transition-all group"
           >
-            View All Services <ArrowUpRightIcon className="w-4 h-4" />
+            All Practice Areas
+            <ElegantArrowIcon className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300" />
           </motion.button>
         </div>
 
-        {/* --- WIDGET GRID --- */}
+        {/* --- INTUITIVE EDITORIAL GRID --- */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.1 }}
-          className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+          viewport={{ once: true, amount: 0.02 }}
+          className="grid gap-8 grid-cols-1 lg:grid-cols-3 items-stretch"
         >
           {listings.map((listing: any) => {
             const isHovered = hoveredId === listing.id;
@@ -132,69 +146,71 @@ export default function PracticeAreasAppSection({ themeSettings, marketplaceList
                 variants={cardVariants}
                 onMouseEnter={() => setHoveredId(listing.id)}
                 onMouseLeave={() => setHoveredId(null)}
-                className="group relative bg-white p-3 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] transition-all duration-300 cursor-pointer"
+                className={`group flex flex-col justify-between bg-white border rounded-3xl p-5 transition-all duration-300 min-h-[480px] ${
+                  isHovered 
+                    ? "border-slate-200 shadow-2xl shadow-slate-200/60 -translate-y-1" 
+                    : "border-slate-100 shadow-xl shadow-slate-100/40"
+                }`}
               >
                 
-                {/* --- WIDGET IMAGE (Inset) --- */}
-                <div className="relative h-64 rounded-[2rem] overflow-hidden">
+                {/* FRAMED IMAGE STAGE */}
+                <div className="relative w-full h-56 rounded-2xl overflow-hidden flex-shrink-0 bg-slate-50 border border-slate-100">
                   <img 
-                    src={listing.images?.[0]?.url || "https://via.placeholder.com/600"} 
+                    src={listing.images?.[0]?.url || "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=800&q=80"} 
                     alt={listing.name}
-                    className="w-full h-full object-cover transform transition-transform duration-700 ease-out group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-700 opacity-95 group-hover:opacity-100 group-hover:scale-[1.03]"
                   />
                   
-                  {/* Glass Overlay Gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
+                  {/* Clean Shadow Vignette Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/20 via-transparent to-transparent pointer-events-none" />
 
-                  {/* Top Badges */}
-                  <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
-                    <div className="bg-white/90 backdrop-blur-md text-xs font-bold px-3 py-1.5 rounded-full shadow-sm text-slate-800 flex items-center gap-1">
-                      <StarIcon className="w-3 h-3 text-yellow-500" /> {listing.rating || '5.0'}
-                    </div>
-                    <div className="bg-black/30 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/20">
-                      {listing.finalPrice}
+                  {/* Clean Text-Driven Label Badges */}
+                  <div className="absolute top-4 left-4 right-4 flex justify-between items-center pointer-events-none">
+                    {listing.tag && (
+                      <span className="text-[10px] font-mono tracking-widest uppercase bg-white/95 border border-slate-100 px-2.5 py-1 rounded-md shadow-sm text-slate-800 font-bold">
+                        {listing.tag}
+                      </span>
+                    )}
+                    <div className="bg-slate-900 text-white text-[11px] font-mono font-bold px-2.5 py-1 rounded-md shadow-md">
+                      {formatPrice(listing.finalPrice || 1000)}
                     </div>
                   </div>
 
-                  {/* Floating Action Button (FAB) */}
-                  <motion.div 
-                    className="absolute bottom-4 right-4 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg z-20 text-slate-900"
-                    animate={{ 
-                      scale: isHovered ? 1.1 : 1,
-                      rotate: isHovered ? 90 : 0 
-                    }}
-                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                  >
-                    {isHovered ? (
-                      <ArrowUpRightIcon className="w-5 h-5 text-blue-600" />
-                    ) : (
-                      <PlusIcon className="w-6 h-6" />
-                    )}
-                  </motion.div>
+                  {/* Minimal Framed Call-to-Action Node */}
+                  <div className="absolute bottom-4 right-4 z-10">
+                    <motion.div 
+                      className="w-10 h-10 rounded-xl flex items-center justify-center border bg-white shadow-md text-slate-800"
+                      animate={{ 
+                        backgroundColor: isHovered ? activeAccent : "#FFFFFF",
+                        borderColor: isHovered ? activeAccent : "#F1F5F9",
+                        color: isHovered ? "#FFFFFF" : "#0F172A"
+                      }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <ElegantArrowIcon className="w-4 h-4" />
+                    </motion.div>
+                  </div>
                 </div>
 
-                {/* --- WIDGET CONTENT --- */}
-                <div className="px-4 pt-5 pb-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                {/* --- PRACTICE DATA BLOCK --- */}
+                <div className="pt-6 px-1 flex flex-col justify-between flex-grow">
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors duration-300">
                       {listing.name}
                     </h3>
+                    <p className="mt-2.5 text-slate-600 text-sm leading-relaxed font-normal line-clamp-3">
+                      {listing.description}
+                    </p>
                   </div>
-                  <p className="text-sm text-slate-500 line-clamp-2 font-medium leading-relaxed">
-                    {listing.description}
-                  </p>
                   
-                  {/* Progress Bar / Status Indicator (Visual Flair) */}
-                  <div className="mt-6 flex items-center gap-3">
-                    <div className="h-1.5 flex-grow bg-slate-100 rounded-full overflow-hidden">
-                      <motion.div 
-                        className="h-full bg-blue-500 rounded-full"
-                        initial={{ width: "0%" }}
-                        whileInView={{ width: "35%" }}
-                        transition={{ delay: 0.5, duration: 1 }}
-                      />
-                    </div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Popular</span>
+                  {/* Firm Accountability Footer */}
+                  <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-slate-400 text-xs font-mono font-bold">
+                    <span>
+                      {listing.metrics || "Institutional Audit Verified"}
+                    </span>
+                    <span className="text-slate-900 text-[11px] font-bold uppercase tracking-wider group-hover:text-blue-600 transition-colors duration-300">
+                      Initiate Consultation &rarr;
+                    </span>
                   </div>
                 </div>
 

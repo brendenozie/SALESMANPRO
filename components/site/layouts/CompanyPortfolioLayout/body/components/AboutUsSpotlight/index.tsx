@@ -14,9 +14,9 @@ import {
 
 // --- INSTITUTIONAL PROFILE DATA ---
 const enterpriseData = {
-  name: 'Grey Trading Limited',
+  name: 'Auram Limited',
   tagline: 'Risk-Insulated Physical Commodity Execution',
-  profileNarrative: "Grey Trading Limited operates at the absolute intersection of localized primary extraction and structured global market demand. We handle downstream logistics, validation, and multi-market delivery of refined metals through deeply integrated, compliance-locked clearings. By reinforcing regional supplier relationships with tier-1 international execution protocols, we insulate both sides of the trade ledger from structural market volatility.",
+  profileNarrative: "Auram Limited operates at the absolute intersection of localized primary extraction and structured global market demand. We handle downstream logistics, validation, and multi-market delivery of refined metals through deeply integrated, compliance-locked clearings. By reinforcing regional supplier relationships with tier-1 international execution protocols, we insulate both sides of the trade ledger from structural market volatility.",
   
   // High-fidelity asset image focusing on industrial refining/bulk logistics architecture
   profileImageUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop', 
@@ -115,7 +115,7 @@ export default function CorporateProfileSection({pagedata}: {pagedata: any}) {
             
             <div className="absolute inset-0 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl">
               <Image
-                src={enterpriseData.profileImageUrl}
+                src={pagedata.bannerUrl || enterpriseData.profileImageUrl}
                 alt="Institutional trading desk operations tracking bulk commodities markets"
                 fill
                 className="w-full h-full object-cover grayscale opacity-80 mix-blend-luminosity transform hover:scale-102 transition-transform duration-700"
@@ -148,7 +148,7 @@ export default function CorporateProfileSection({pagedata}: {pagedata: any}) {
             </h2>
             
             <p className="text-zinc-400 text-base md:text-lg font-light leading-relaxed mb-10 text-justify">
-              {enterpriseData.profileNarrative}
+              {pagedata.description || enterpriseData.profileNarrative}
             </p>
 
             <div className="flex flex-wrap gap-4">

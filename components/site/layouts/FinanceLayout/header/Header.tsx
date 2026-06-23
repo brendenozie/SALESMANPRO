@@ -10,17 +10,14 @@ import {
   Bars3BottomLeftIcon,
   XMarkIcon,
   MagnifyingGlassIcon,
-  UserIcon,
 } from "@heroicons/react/24/outline";
 import { useSession, signOut } from "next-auth/react";
 import { useStateContext } from "@/contexts/ContextProvider";
 import { useStoreContext } from "@/contexts/StoreContext";
 
-// Image loader
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-// Debounce
 function debounce<T extends (...args: any[]) => void>(func: T, delay: number) {
   let timeout: NodeJS.Timeout;
   return function (this: ThisParameterType<T>, ...args: Parameters<T>) {
@@ -34,11 +31,9 @@ export default function FinanceHeader() {
   const { cart } = useStateContext();
   const { storeFormData } = useStoreContext();
 
-  // --- AUTH ---
   const { data: session } = useSession();
   const user = session?.user as { role?: string; name?: string } | undefined;
 
-  // Sign-In URL
   const signInUrl = (type: "signin" | "signup") => {
     const url = new URL(`https://auth.salesmanpro.site/${type}`);
     url.searchParams.set("callbackUrl", `${window.location.origin}/finance`);
@@ -55,34 +50,30 @@ export default function FinanceHeader() {
 
   const handleProfileClick = () => {
     if (!user) return handleGoogleSignIn();
-
     if (user.role?.toLowerCase() === "admin") {
       return router.push("/dashboards");
     }
-
     return router.push(`/finance/profile`);
   };
 
   const handleLogout = () => {
     const returnTo = window.location.origin;
     signOut({
-        redirect: true,
-        callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
-      }) ;
+      redirect: true,
+      callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
+    });
   };
 
-  // UI State
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [scrolled, setScrolled] = useState(false);
+  const [hoveredLink, setHoveredLink] = useState<string | null>(null);
 
-  // Refs
   const searchInputRef = useRef<HTMLInputElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const mobileToggleRef = useRef<HTMLButtonElement>(null);
 
-  // Extract store data
   const {
     slug = "",
     name = "CapitalEdge",
@@ -92,7 +83,6 @@ export default function FinanceHeader() {
   } = storeFormData || {};
 
   const primary = themeSettings?.primaryColor || "#2563EB";
-  const secondary = themeSettings?.secondaryColor || "#9333EA";
 
   const navLinks = [
     { label: "Home", href: `#home` },
@@ -102,38 +92,38 @@ export default function FinanceHeader() {
     { label: "Contact", href: `#contact` },
   ];
 
-  // Scroll header shadow
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40);
+    const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Click outside handling
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
-      if (searchOpen && searchInputRef.current && !searchInputRef.current.contains(e.target as Node))
-        setSearchOpen(false);
-
       if (
         mobileOpen &&
         mobileMenuRef.current &&
         !mobileMenuRef.current.contains(e.target as Node) &&
         !mobileToggleRef.current?.contains(e.target as Node)
-      )
+      ) {
         setMobileOpen(false);
+      }
     };
 
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
-  }, [mobileOpen, searchOpen]);
+  }, [mobileOpen]);
 
-  // Disable body scroll when mobile menu is open
+  useEffect(() => {
+    if (searchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [searchOpen]);
+
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
   }, [mobileOpen]);
 
-  // Debounced search
   const handleSearch = useCallback(
     debounce((q: string) => {
       if (q.length > 2) console.log("Searching:", q);
@@ -148,248 +138,234 @@ export default function FinanceHeader() {
 
   return (
     <>
-      <style jsx global>{`
-        :root {
-          --primary-color: ${primary};
-          --secondary-color: ${secondary};
-        }
-      `}</style>
-
-      <header className="fixed inset-x-0 top-0 z-50 font-sans">
+      <header className="fixed inset-x-0 top-0 z-50 font-sans transition-all duration-300">
         <motion.div
-          initial={{ backgroundColor: "rgba(255,255,255,0)" }}
           animate={{
-            backgroundColor: scrolled ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0)",
-            backdropFilter: scrolled ? "blur(10px)" : "blur(0px)",
-            WebkitBackdropFilter: scrolled ? "blur(10px)" : "blur(0px)",
+            backgroundColor: scrolled ? "rgba(255, 255, 255, 0.9)" : "rgba(255, 255, 255, 0)",
+            backdropFilter: scrolled ? "blur(16px)" : "blur(0px)",
+            WebkitBackdropFilter: scrolled ? "blur(16px)" : "blur(0px)",
+            borderBottomColor: scrolled ? "rgba(241, 245, 249, 1)" : "rgba(241, 245, 249, 0)",
           }}
-          transition={{ duration: 0.35 }}
-          className={clsx(
-            "absolute inset-x-0 top-0 h-20 border-b transition-all",
-            scrolled ? "border-gray-200 shadow-lg" : "border-transparent"
-          )}
+          transition={{ duration: 0.2 }}
+          className="absolute inset-x-0 top-0 h-20 border-b flex items-center transition-all"
+          style={{ borderBottomWidth: "1px" }}
         >
-          <div className="max-w-7xl mx-auto h-20 flex items-center justify-between px-4">
-            {/* LOGO */}
-            <Link href="#" className="flex items-center">
-              <Image
-                src={logoUrl || "https://placehold.co/140x48/ffffff/000000?text=Logo"}
-                alt={name}
-                width={150}
-                height={48}
-                loader={imageLoader}
-                className="object-contain h-20 w-32"
-              />
+          <div className="max-w-7xl mx-auto w-full flex items-center justify-between px-4 sm:px-6 lg:px-8">
+            
+            {/* LOGO AREA */}
+            <Link href="#" className="flex items-center gap-2 group z-10">
+              {logoUrl && !logoUrl.includes("placehold.co") ? (
+                <Image
+                  src={logoUrl}
+                  alt={name}
+                  width={130}
+                  height={40}
+                  loader={imageLoader}
+                  className="object-contain max-h-10 w-auto"
+                />
+              ) : (
+                <span className="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: primary }} />
+                  {name}
+                </span>
+              )}
             </Link>
 
             {/* DESKTOP NAV */}
-            <nav className="hidden lg:flex space-x-8">
+            <nav className="hidden lg:flex items-center space-x-1 relative">
               {navLinks.map((item) => (
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="relative font-medium text-gray-700 hover:text-gray-900 group"
+                  onMouseEnter={() => setHoveredLink(item.label)}
+                  onMouseLeave={() => setHoveredLink(null)}
+                  className="relative px-4 py-2 text-xs font-mono font-bold tracking-wider uppercase text-slate-600 hover:text-slate-900 transition-colors duration-200"
                 >
-                  {item.label}
-                  <span
-                    className="absolute left-0 -bottom-1 h-[2px] w-full scale-x-0 group-hover:scale-x-100 origin-left transition-transform"
-                    style={{
-                      backgroundImage: `linear-gradient(to right, ${primary}, ${secondary})`,
-                    }}
-                  />
+                  <span className="relative z-10">{item.label}</span>
+                  {hoveredLink === item.label && (
+                    <motion.span
+                      layoutId="navHoverCapsule"
+                      className="absolute inset-0 bg-slate-50 border border-slate-100/60 rounded-xl z-0"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
                 </Link>
               ))}
             </nav>
 
-            {/* ACTION BUTTONS */}
-            <div className="flex items-center space-x-4">
-              {/* SEARCH */}
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                onClick={() => setSearchOpen((p) => !p)}
-                className="text-gray-700 hover:text-[var(--primary-color)]"
+            {/* ACTION CENTER */}
+            <div className="flex items-center space-x-3 z-10">
+              {/* SEARCH TRIGGER */}
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="p-2 text-slate-500 hover:text-slate-900 transition-colors rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100"
+                aria-label="Open search pane"
               >
-                <MagnifyingGlassIcon className="h-6 w-6" />
-              </motion.button>
+                <MagnifyingGlassIcon className="h-5 w-5 stroke-[2]" />
+              </button>
 
-              {/* AUTH BUTTONS */}
+              {/* SECURITY / ACCOUNT MANAGEMENT */}
               {!user ? (
-                <div className="hidden lg:flex items-center space-x-3">
+                <div className="hidden lg:flex items-center space-x-2 border-l border-slate-100 pl-3">
                   <button
                     onClick={handleGoogleSignIn}
-                    className="px-4 py-1 text-sm font-medium rounded-md text-white"
-                    style={{ backgroundColor: primary }}
+                    className="px-3.5 py-1.5 text-xs font-mono font-bold tracking-wider uppercase text-slate-600 hover:text-slate-900 transition-colors"
                   >
                     Login
                   </button>
-
                   <button
                     onClick={handleGoogleSignUp}
-                    className="px-4 py-1 text-sm font-medium rounded-md border"
-                    style={{ borderColor: primary, color: primary }}
+                    className="px-3.5 py-1.5 text-xs font-mono font-bold tracking-wider uppercase text-white rounded-xl shadow-sm hover:shadow transition-all duration-200"
+                    style={{ backgroundColor: primary }}
                   >
                     Register
                   </button>
                 </div>
               ) : (
-                <div className="hidden lg:flex items-center space-x-3">
+                <div className="hidden lg:flex items-center space-x-3 border-l border-slate-100 pl-3">
                   <button
                     onClick={handleProfileClick}
-                    className="text-gray-700 font-medium"
+                    className="text-xs font-mono font-bold tracking-wider uppercase text-slate-700 hover:text-slate-950 transition-colors"
                   >
                     {user.name || "Profile"}
                   </button>
-
                   <button
                     onClick={handleLogout}
-                    className="text-red-600 font-semibold text-sm"
+                    className="text-xs font-mono font-bold tracking-wider uppercase text-red-500 hover:text-red-600 transition-colors"
                   >
-                    Logout
+                    Exit
                   </button>
                 </div>
               )}
 
-              {/* MOBILE TOGGLE */}
+              {/* RESPONSIVE TOGGLE */}
               <button
                 ref={mobileToggleRef}
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="lg:hidden p-2 rounded-full hover:bg-gray-200"
+                className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all"
+                aria-label="Toggle structural menu"
               >
                 {mobileOpen ? (
-                  <XMarkIcon className="h-7 w-7 text-gray-700" />
+                  <XMarkIcon className="h-5 w-5 stroke-[2]" />
                 ) : (
-                  <Bars3BottomLeftIcon className="h-7 w-7 text-gray-700" />
+                  <Bars3BottomLeftIcon className="h-5 w-5 stroke-[2]" />
                 )}
               </button>
             </div>
           </div>
+        </motion.div>
 
-          {/* === SEARCH BOX === */}
-          <AnimatePresence>
-            {searchOpen && (
-              <motion.div
-                ref={searchInputRef}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="absolute right-4 top-20 bg-white/90 backdrop-blur-md border border-gray-200 shadow-xl rounded-xl p-2 w-64 flex items-center"
-              >
+        {/* === ARCHITECTURAL SLIDE-DOWN SEARCH WINDOW === */}
+        <AnimatePresence>
+          {searchOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+              className="absolute inset-x-0 top-0 bg-white border-b border-slate-200 shadow-xl z-50 h-24 flex items-center"
+            >
+              <div className="max-w-4xl mx-auto w-full px-4 flex items-center gap-4">
+                <MagnifyingGlassIcon className="h-5 w-5 text-slate-400 flex-shrink-0 stroke-[2.5]" />
                 <input
+                  ref={searchInputRef}
                   type="text"
                   value={searchQuery}
                   onChange={onSearchChange}
-                  placeholder="Search..."
-                  className="flex-1 px-3 py-2 bg-transparent text-gray-800 text-sm focus:outline-none"
+                  placeholder="Type parameters, workflows or legal documents to search..."
+                  className="flex-1 bg-transparent text-slate-900 placeholder-slate-400 text-sm focus:outline-none font-medium tracking-wide"
                 />
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSearchOpen(false);
+                  }}
+                  className="px-3 py-1.5 text-xs font-mono font-bold tracking-wider uppercase border border-slate-100 hover:border-slate-300 text-slate-500 hover:text-slate-900 rounded-lg transition-all"
+                >
+                  Close [Esc]
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="p-1 text-gray-500 hover:text-gray-800"
+        {/* === MINIMALIST MOBILE OVERLAY DIRECTORY === */}
+        <AnimatePresence>
+          {mobileOpen && (
+            <motion.nav
+              ref={mobileMenuRef}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="lg:hidden fixed inset-x-4 top-24 bg-white/95 backdrop-blur-md border border-slate-100 shadow-xl rounded-2xl overflow-hidden z-40"
+            >
+              <div className="p-6 space-y-3">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="block text-xs font-mono font-bold tracking-wider uppercase text-slate-600 hover:text-slate-900 py-2.5 px-3 rounded-xl hover:bg-slate-50 transition-colors"
                   >
-                    <XMarkIcon className="h-4 w-4" />
-                  </button>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
+                    {link.label}
+                  </Link>
+                ))}
 
-          {/* === MOBILE MENU === */}
-          <AnimatePresence>
-            {mobileOpen && (
-              <motion.nav
-                ref={mobileMenuRef}
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.35 }}
-                className="lg:hidden bg-white/90 backdrop-blur-xl shadow-xl border-t border-gray-200 rounded-b-3xl mt-20 overflow-hidden"
-              >
-                <div className="px-6 py-6 space-y-4">
-                  {navLinks.map((link) => (
-                    <Link
-                      key={link.label}
-                      href={link.href}
-                      onClick={() => setMobileOpen(false)}
-                      className="block text-gray-800 font-medium py-2 hover:text-[var(--primary-color)]"
+                <div className="border-t border-slate-100 my-4" />
+
+                {/* ACCOUNT STRATEGY INSIDE MOBILE DRAWER */}
+                {!user ? (
+                  <div className="grid grid-cols-2 gap-3 pt-2">
+                    <button
+                      onClick={() => {
+                        setMobileOpen(false);
+                        handleGoogleSignIn();
+                      }}
+                      className="w-full py-2.5 border border-slate-200 rounded-xl text-xs font-mono font-bold tracking-wider uppercase text-slate-700 hover:bg-slate-50 transition-colors"
                     >
-                      {link.label}
-                    </Link>
-                  ))}
-
-                  <div className="border-t border-gray-300 my-4" />
-
-                  {/* AUTH INSIDE MOBILE MENU */}
-                  {!user ? (
-                    <>
-                      <button
-                        onClick={() => {
-                          setMobileOpen(false);
-                          handleGoogleSignIn();
-                        }}
-                        className="w-full px-4 py-2 rounded-lg text-white font-medium"
-                        style={{ backgroundColor: primary }}
-                      >
-                        Login
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          setMobileOpen(false);
-                          handleGoogleSignUp();
-                        }}
-                        className="w-full mt-2 border font-medium py-2 rounded-lg"
-                        style={{ borderColor: primary, color: primary }}
-                      >
-                        Register
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => {
-                          setMobileOpen(false);
-                          handleProfileClick();
-                        }}
-                        className="block w-full text-left py-2 font-medium"
-                      >
-                        {user.name || "Profile"}
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          setMobileOpen(false);
-                          handleLogout();
-                        }}
-                        className="block w-full text-left py-2 text-red-600 font-semibold"
-                      >
-                        Logout
-                      </button>
-                    </>
-                  )}
-
-                  <div className="border-t border-gray-300 my-4" />
-
-                  {/* SOCIAL LINKS */}
-                  <div className="flex space-x-4">
-                    {socialLinks?.map((s: any) => (
-                      <a
-                        key={s.channel}
-                        href={s.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="capitalize text-gray-700 hover:text-[var(--secondary-color)]"
-                      >
-                        {s.channel}
-                      </a>
-                    ))}
+                      Login
+                    </button>
+                    <button
+                      onClick={() => {
+                        setMobileOpen(false);
+                        handleGoogleSignUp();
+                      }}
+                      className="w-full py-2.5 rounded-xl text-xs font-mono font-bold tracking-wider uppercase text-white shadow-sm transition-all"
+                      style={{ backgroundColor: primary }}
+                    >
+                      Register
+                    </button>
                   </div>
-                </div>
-              </motion.nav>
-            )}
-          </AnimatePresence>
-        </motion.div>
+                ) : (
+                  <div className="space-y-2 pt-2">
+                    <button
+                      onClick={() => {
+                        setMobileOpen(false);
+                        handleProfileClick();
+                      }}
+                      className="block w-full text-left py-2.5 px-3 text-xs font-mono font-bold tracking-wider uppercase text-slate-700 hover:bg-slate-50 rounded-xl transition-colors"
+                    >
+                      {user.name || "Profile Dashboard"}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setMobileOpen(false);
+                        handleLogout();
+                      }}
+                      className="block w-full text-left py-2.5 px-3 text-xs font-mono font-bold tracking-wider uppercase text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                    >
+                      Logout Securely
+                    </button>
+                  </div>
+                )}
+              </div>
+            </motion.nav>
+          )}
+        </AnimatePresence>
       </header>
     </>
   );
