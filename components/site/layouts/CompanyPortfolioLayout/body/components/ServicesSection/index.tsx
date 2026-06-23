@@ -3,9 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import Image from 'next/next-image'; // Fallback to standard img if configuration issues arise
 import { 
-  ArrowUpRightIcon, 
   ShieldCheckIcon,
   ChevronRightIcon,
   ChevronLeftIcon
@@ -212,7 +210,7 @@ export default function GreyServicesSection({ services = defaultServices, storeS
                 {/* Media Presentation Layer */}
                 <div className="relative h-64 sm:h-80 w-full overflow-hidden">
                   <img
-                    src={activeService.imageUrl}
+                    src={activeService.images[0] || activeService.imageUrl }
                     alt={activeService.name}
                     className="object-cover w-full h-full scale-100 transition-transform duration-700 ease-out"
                   />
@@ -254,13 +252,13 @@ export default function GreyServicesSection({ services = defaultServices, storeS
 
                   {/* Operational Interactive CTA Action Button */}
                   <div className="pt-2 flex justify-between items-center">
-                    <button 
+                    {/* <button 
                       onClick={() => router.push(`/companyprofile/services/${activeService.id}`)}
                       className="group/btn inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-400 hover:text-amber-300 transition-colors"
                     >
                       Initialize Allocation Pipeline
                       <ArrowUpRightIcon className="w-3.5 h-3.5 transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-                    </button>
+                    </button> */}
                     
                     {/* Manual Navigation Chevrons for Mobile/Tablet layout optimization */}
                     <div className="flex items-center gap-1 bg-zinc-900 p-1 rounded-lg border border-zinc-800">
