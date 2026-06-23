@@ -86,7 +86,7 @@ export default function CommandFooter() {
               <h4 className="text-white font-black uppercase text-[10px] tracking-[0.5em] border-l-2 border-amber-500 pl-4">Operations</h4>
               <ul className="space-y-4 text-xs font-black uppercase tracking-widest">
                 {['Direct API', 'Storefronts', 'Logistics', 'Procurement', 'Security'].map((item) => (
-                  <li key={item}><Link href={`/hardwareecommerce/${item.toLowerCase().replace(' ', '-')}`} className="hover:text-amber-500 transition-colors">{item}</Link></li>
+                  <li key={item}><Link href={`/automotiveecommerce/${item.toLowerCase().replace(' ', '-')}`} className="hover:text-amber-500 transition-colors">{item}</Link></li>
                 ))}
               </ul>
             </div>
@@ -95,7 +95,7 @@ export default function CommandFooter() {
               <h4 className="text-white font-black uppercase text-[10px] tracking-[0.5em] border-l-2 border-amber-500 pl-4">Network</h4>
               <ul className="space-y-4 text-xs font-black uppercase tracking-widest">
                 {['Documentation', 'Developer Hub', 'Regional Nodes', 'Cloud Status', 'Support'].map((item) => (
-                  <li key={item}><Link href={`/hardwareecommerce/${item.toLowerCase().replace(' ', '-')}`} className="hover:text-amber-500 transition-colors">{item}</Link></li>
+                  <li key={item}><Link href={`/automotiveecommerce/${item.toLowerCase().replace(' ', '-')}`} className="hover:text-amber-500 transition-colors">{item}</Link></li>
                 ))}
               </ul>
             </div>

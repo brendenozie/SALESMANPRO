@@ -148,7 +148,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       >
         {/* --- IMAGE OVERLAY --- */}
         <div className="relative h-72 w-full overflow-hidden bg-[#F4F4F5] dark:bg-zinc-900/50">
-          <Link href={`/hardwareecommerce/products/${product.id}`} className="block h-full w-full relative z-10">
+          <Link href={`/automotiveecommerce/products/${product.id}`} className="block h-full w-full relative z-10">
             <Image
               src={imageSrc}
               alt={name}
@@ -206,7 +206,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
              </div>
           </div>
 
-          <Link href={`/hardwareecommerce/products/${product.id}`}>
+          <Link href={`/automotiveecommerce/products/${product.id}`}>
             <h4 className="text-md font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-tight line-clamp-2 leading-snug group-hover:underline decoration-2 decoration-amber-500 transition-all mb-4">
               {name}
             </h4>

@@ -2,7 +2,7 @@
 
 import React, { useMemo, useRef } from "react";
 import { motion, Variants, AnimatePresence } from "framer-motion";
-import Image from "next/image";
+// Image and Fallback logic will need to be added to types/structure but are omitted per request
 import Link from "next/link";
 import { IStoreCategory, ISubcategory, StoreForm } from "@/types/typings";
 import { 
@@ -15,9 +15,6 @@ import {
 /* -------------------------------------------------------------------------- */
 /* Helpers */
 /* -------------------------------------------------------------------------- */
-
-const customLoader = ({ src, width, quality }: any) =>
-  `${src}?w=${width}&q=${quality || 75}`;
 
 function safeSlug(value?: string, fallback = "category") {
   if (!value) return fallback;
@@ -47,12 +44,11 @@ const cardVariants: Variants = {
 
 function CategoryCard({ cat, index, primaryColor }: { cat: IStoreCategory; index: number; primaryColor: string }) {
   const catSlug = safeSlug(cat.displayName || "category");
-  const imageUrl = cat.image || cat.category?.image || "https://images.unsplash.com/photo-1581244276891-6bc618f3a697";
 
   return (
     <motion.div variants={cardVariants} className="flex-shrink-0 group">
       <Link
-        href={`/hardwareecommerce/products?category=${cat.categoryId || cat.category?.id || catSlug}`}
+        href={`/automotiveecommerce/products?category=${cat.categoryId || cat.category?.id || catSlug}`}
         className="flex flex-col w-64 md:w-72"
       >
         <div className="relative w-full aspect-[4/5] bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 transition-all duration-500 group-hover:border-amber-500 overflow-hidden">
@@ -66,18 +62,15 @@ function CategoryCard({ cat, index, primaryColor }: { cat: IStoreCategory; index
           <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none"
                style={{ backgroundImage: `linear-gradient(${primaryColor} 1px, transparent 1px), linear-gradient(90deg, ${primaryColor} 1px, transparent 1px)`, backgroundSize: '20px 20px' }} />
           
-          <div className="relative w-full h-3/5 mt-10 p-8 transition-transform duration-700 group-hover:scale-110">
-            <Image
-              src={imageUrl}
-              alt={cat.displayName || "Category"}
-              fill
-              loader={customLoader}
-              className="object-contain drop-shadow-2xl"
-            />
+          {/* Product Placeholder Area */}
+          <div className="relative w-full h-3/5 mt-10 p-8 flex items-center justify-center transition-transform duration-700 group-hover:scale-110">
+            <div className="w-full h-full bg-zinc-200 dark:bg-zinc-800 rounded-md border-2 border-dashed border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-400 dark:text-zinc-600 font-black text-4xl group-hover:bg-amber-100 dark:group-hover:bg-amber-950 transition-colors">
+              {index + 1}
+            </div>
           </div>
 
           <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-white dark:from-zinc-900 via-white/80 dark:via-zinc-900/80 to-transparent">
-              <h3 className="font-black tracking-tighter text-xl md:text-2xl uppercase leading-none text-zinc-900 dark:text-white group-hover:text-amber-500 transition-colors">
+              <h3 className="font-black tracking-tighter text-xl md:text-2xl uppercase leading-none text-zinc-900 dark:text-white group-hover:text-amber-500 transition-colors truncate">
                 {cat.displayName}
               </h3>
               <div className="mt-4 flex items-center justify-between">
@@ -94,7 +87,7 @@ function CategoryCard({ cat, index, primaryColor }: { cat: IStoreCategory; index
 function SubcategoryPill({ sub }: { sub: ISubcategory }) {
   return (
     <motion.div variants={cardVariants}>
-      <Link href={`/hardwareecommerce/products?subcategory=${sub.slug || sub.name}`}>
+      <Link href={`/automotiveecommerce/products?subcategory=${sub.slug || sub.name}`}>
         <div className="group flex items-center justify-between bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 p-6 hover:border-amber-500 transition-all duration-300">
           <div className="flex flex-col">
             <span className="text-[8px] font-black text-amber-500 uppercase tracking-widest mb-1">Module</span>
@@ -109,7 +102,7 @@ function SubcategoryPill({ sub }: { sub: ISubcategory }) {
   );
 }
 
-export default function HardwareCategoriesSection({ store }: { store: StoreForm | null }) {
+export default function AutomotiveCategoriesSection({ store }: { store: StoreForm | null }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const primaryColor = store?.themeSettings?.primaryColor || '#F59E0B';
 
@@ -143,7 +136,9 @@ export default function HardwareCategoriesSection({ store }: { store: StoreForm 
   if (categoriesToShow.length === 0) return null;
 
   return (
-    <section className="relative bg-white dark:bg-[#080808] py-24 transition-colors duration-500">
+    <section className="relative bg-white dark:bg-[#080808] py-24 transition-colors duration-500 overflow-hidden">
+      <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.06] pointer-events-none" style={{ backgroundImage: 'linear-gradient(90deg, transparent 49%, #e2e8f0 49%, #e2e8f0 51%, transparent 51%), linear-gradient(0deg, transparent 49%, #e2e8f0 49%, #e2e8f0 51%, transparent 51%)', backgroundSize: '60px 60px' }} />
+      
       <div className="max-w-[1800px] mx-auto px-6 md:px-12 relative z-10">
         
         {/* Header Section */}
@@ -156,11 +151,11 @@ export default function HardwareCategoriesSection({ store }: { store: StoreForm 
             >
               <Square3Stack3DIcon className="h-6 w-6 text-amber-500" />
               <span className="font-black text-[10px] uppercase tracking-[0.5em] text-zinc-400">
-                Departmental Catalog
+                Parts Catalog v2.1
               </span>
             </motion.div>
             <h2 className="text-5xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.85] tracking-tighter uppercase">
-              {isFew ? "Engineered\nSelections" : "Industrial\nSolutions"}
+              {isFew ? "Engineered\nSelections" : "Performance\nSolutions"}
             </h2>
           </div>
 
@@ -168,13 +163,13 @@ export default function HardwareCategoriesSection({ store }: { store: StoreForm 
             <div className="flex gap-2">
               <button
                 onClick={() => scroll("left")}
-                className="w-14 h-14 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center hover:bg-amber-500 hover:text-white transition-all"
+                className="w-14 h-14 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center hover:bg-amber-500 hover:text-white dark:hover:text-zinc-900 transition-all shadow-lg active:scale-95"
               >
                 <ChevronLeftIcon className="h-6 w-6" />
               </button>
               <button
                 onClick={() => scroll("right")}
-                className="w-14 h-14 bg-zinc-900 dark:bg-amber-500 text-white flex items-center justify-center hover:bg-zinc-800 transition-all"
+                className="w-14 h-14 bg-zinc-900 dark:bg-amber-500 text-white dark:text-zinc-900 flex items-center justify-center hover:bg-zinc-800 dark:hover:bg-amber-600 transition-all shadow-lg active:scale-95"
               >
                 <ChevronRightIcon className="h-6 w-6" />
               </button>
@@ -187,12 +182,14 @@ export default function HardwareCategoriesSection({ store }: { store: StoreForm 
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.2 }}
           ref={scrollRef}
-          className="flex overflow-x-auto scrollbar-hide space-x-6 pb-12"
+          className="flex overflow-x-auto scrollbar-hide space-x-6 pb-12 snap-x snap-mandatory"
         >
           {categoriesToShow.map((cat, idx) => (
-            <CategoryCard key={cat.id || idx} cat={cat} index={idx} primaryColor={primaryColor} />
+            <div key={cat.id || idx} className="snap-center">
+              <CategoryCard cat={cat} index={idx} primaryColor={primaryColor} />
+            </div>
           ))}
         </motion.div>
 
@@ -200,9 +197,9 @@ export default function HardwareCategoriesSection({ store }: { store: StoreForm 
         <AnimatePresence>
           {isFew && subcategoriesForGrid.length > 0 && (
             <motion.div 
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              className="mt-16 pt-16 border-t border-zinc-200 dark:border-zinc-800"
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="mt-16 pt-16 border-t-4 border-dashed border-zinc-200 dark:border-zinc-800"
             >
               <div className="flex items-center justify-between mb-10">
                 <h4 className="font-black text-sm uppercase tracking-[0.2em] text-zinc-900 dark:text-white">Technical Sub-Departments</h4>

@@ -13,18 +13,18 @@ import {
   Squares2X2Icon,
   PhoneIcon,
   TruckIcon,
-  FireIcon,
   Bars3Icon,
   XMarkIcon,
   CpuChipIcon,
   CommandLineIcon,
   SunIcon,
-  MoonIcon
+  MoonIcon,
+  WrenchIcon
 } from '@heroicons/react/24/solid';
 
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { IStoreCategory } from '@/types/typings';
 import CartDrawer from './CartDrawer';
 
@@ -40,7 +40,7 @@ function debounce<T extends (...args: any[]) => void>(func: T, delay: number) {
   };
 }
 
-export default function IndustrialHeader() {
+export default function AutomotiveDukaHeader() {
   const { cart } = useStateContext();
   const { storeFormData } = useStoreContext();
   const router = useRouter();
@@ -51,6 +51,7 @@ export default function IndustrialHeader() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   const {
     name = 'SalesmanPro Duka',
@@ -62,7 +63,6 @@ export default function IndustrialHeader() {
 
   const primaryColor = themeSettings?.primaryColor || '#F59E0B';
 
-  // Toggle Theme Logic
   const toggleTheme = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
@@ -86,69 +86,82 @@ export default function IndustrialHeader() {
 
   const handleSearch = useCallback(
     debounce((query: string) => {
-      if (query.length > 2) console.log('Searching Inventory:', query);
+      if (query.length > 2) console.log('Searching OEM Parts Vault:', query);
     }, 300),
     [slug]
   );
 
   return (
-    <header className="w-full bg-white dark:bg-[#050505] font-sans sticky top-0 z-50 border-b-2 border-gray-100 dark:border-zinc-900 transition-colors duration-300">
-      
-      {/* TACTICAL TOP BAR */}
-      <div className="hidden md:flex w-full bg-gray-50 dark:bg-zinc-900 text-gray-500 dark:text-zinc-400 text-[10px] font-black uppercase tracking-[0.2em] py-2 px-10 justify-between items-center border-b border-gray-200 dark:border-white/5">
-        <div className="flex items-center space-x-8">
-          <div className="flex items-center space-x-2 text-amber-600 dark:text-amber-500">
-            <CommandLineIcon className="h-3 w-3"/>
-            <span>SYSTEM READY // V2.6</span>
+    <header 
+      style={{ '--primary-color': primaryColor } as React.CSSProperties}
+      className="w-full bg-white dark:bg-[#09090b] font-sans sticky top-0 z-50 border-b border-gray-200 dark:border-zinc-800 transition-colors duration-300"
+    >
+      {/* HIGH-PERFORMANCE TOP BAR */}
+      <div className="hidden lg:flex w-full bg-zinc-900 text-zinc-400 text-[11px] font-semibold tracking-wider py-2.5 px-8 justify-between items-center border-b border-zinc-800">
+        <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-2 text-[var(--primary-color)]">
+            <CommandLineIcon className="h-3.5 w-3.5 animate-pulse" />
+            <span className="font-mono uppercase tracking-widest text-[10px]">DIAGNOSTICS: LIVE CORE V2.6</span>
           </div>
-          <div className="flex items-center space-x-2 hover:text-black dark:hover:text-white transition-colors cursor-pointer font-bold">
-            <PhoneIcon className="h-3 w-3"/>
-            <span>+254 HQ DISPATCH</span>
+          <div className="flex items-center space-x-2 hover:text-white transition-colors cursor-pointer">
+            <PhoneIcon className="h-3.5 w-3.5" />
+            <span>HQ DISPATCH: +254 PARTS CALL</span>
           </div>
         </div>
 
-        <div className="flex items-center space-x-8">
-          <Link href="/hardwareecommerce/products/track-order" className="hover:text-amber-600 dark:hover:text-amber-500 flex items-center space-x-2 transition-colors font-bold">
-            <TruckIcon className="h-3 w-3"/>
-            <span>LOGISTICS TRACKING</span>
+        <div className="flex items-center space-x-6">
+          <Link href="/automotiveecommerce/products/track-order" className="hover:text-[var(--primary-color)] flex items-center space-x-2 transition-colors">
+            <TruckIcon className="h-3.5 w-3.5" />
+            <span>FLEET LOGISTICS TRACE</span>
           </Link>
-          <div className="flex items-center text-gray-900 dark:text-white font-bold">
-            <span className="bg-amber-500 text-black px-2 py-0.5 rounded-sm mr-2">KES</span>
-            <span>Kenya Shilling</span>
+          <div className="flex items-center text-white font-medium bg-zinc-800 px-2.5 py-0.5 rounded border border-zinc-700">
+            <span className="text-[var(--primary-color)] font-bold mr-1.5 text-[10px]">KES</span>
+            <span className="text-[10px]">KSH</span>
           </div>
         </div>
       </div>
 
-      {/* MAIN COMMAND NAV */}
-      <div className="max-w-[1800px] mx-auto px-4 md:px-10 py-5 flex items-center justify-between gap-6">
+      {/* CORE CONTROL CONSOLE */}
+      <div className="max-w-[1800px] mx-auto px-4 lg:px-8 py-4 flex items-center justify-between gap-4 lg:gap-8">
         
-        {/* MOBILE TRIGGER & THEME TOGGLE (Mobile) */}
-        <div className="flex items-center gap-2 md:hidden">
-          <button onClick={() => setIsDrawerOpen(true)} className="p-2 text-gray-900 dark:text-white">
-            <Bars3Icon className="h-7 w-7"/>
+        {/* MOBILE INTERACTIVE CONTROLS */}
+        <div className="flex items-center gap-1 lg:hidden">
+          <button 
+            onClick={() => setIsDrawerOpen(true)} 
+            className="p-2 text-zinc-800 dark:text-zinc-200 hover:text-[var(--primary-color)] transition-colors"
+            aria-label="Open Menu"
+          >
+            <Bars3Icon className="h-6 w-6"/>
+          </button>
+          <button 
+            onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)} 
+            className="p-2 text-zinc-800 dark:text-zinc-200 hover:text-[var(--primary-color)] lg:hidden transition-colors"
+            aria-label="Toggle Search"
+          >
+            <MagnifyingGlassIcon className="h-5 w-5"/>
           </button>
         </div>
 
-        {/* BRAND LOGO */}
+        {/* LOGO ENGINE */}
         <Link href="/" className="flex-shrink-0 group">
           {logoUrl ? (
-            <Image src={logoUrl} alt={name} width={140} height={45} loader={imageLoader} className="object-contain h-20 w-32" />
+            <Image src={logoUrl} alt={name} width={150} height={50} loader={imageLoader} className="object-contain h-12 w-auto" />
           ) : (
-            <div className="flex items-center gap-3">
-              <div className="bg-amber-500 p-1.5 rotate-3 group-hover:rotate-0 transition-transform">
-                <CpuChipIcon className="w-6 h-6 text-black" />
+            <div className="flex items-center gap-2.5">
+              <div className="bg-[var(--primary-color)] p-2 rounded transform group-hover:scale-105 group-hover:rotate-6 transition-all duration-300 shadow-lg shadow-amber-500/10">
+                <CpuChipIcon className="w-5 h-5 text-zinc-950" />
               </div>
-              <h1 className="text-2xl font-black text-gray-900 dark:text-white uppercase italic tracking-tighter leading-none">
-                {name.split(' ')[0]}<span className="text-amber-500">.OS</span>
+              <h1 className="text-xl lg:text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tighter italic">
+                {name.split(' ')[0]}<span className="text-[var(--primary-color)]">.DRIVE</span>
               </h1>
             </div>
           )}
         </Link>
 
-        {/* INDUSTRIAL SEARCH BAR */}
-        <div className="hidden md:flex flex-grow max-w-3xl items-center">
-          <div className="flex w-full items-center bg-gray-100 dark:bg-zinc-900 border-2 border-gray-200 dark:border-zinc-800 focus-within:border-amber-500 focus-within:ring-1 focus-within:ring-amber-500 transition-all">
-            <button className="px-5 text-gray-400 dark:text-zinc-500 hover:text-amber-600 dark:hover:text-amber-500 border-r border-gray-200 dark:border-zinc-800 transition-colors">
+        {/* RACING GRID SEARCH VAULT (DESKTOP) */}
+        <div className="hidden lg:flex flex-grow max-w-2xl xl:max-w-3xl items-center">
+          <div className="flex w-full items-center bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-lg focus-within:border-[var(--primary-color)] focus-within:ring-2 focus-within:ring-[var(--primary-color)]/20 transition-all duration-200 shadow-inner">
+            <button className="px-4 text-zinc-400 dark:text-zinc-500 hover:text-[var(--primary-color)] border-r border-zinc-200 dark:border-zinc-800 transition-colors">
               <Squares2X2Icon className="h-5 w-5"/>
             </button>
             <input
@@ -157,108 +170,152 @@ export default function IndustrialHeader() {
                 setSearchQuery(e.target.value);
                 handleSearch(e.target.value);
               }}
-              placeholder="ENTER PART NO. OR CATEGORY..."
-              className="flex-grow bg-transparent py-4 px-6 text-xs font-mono font-bold text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-zinc-600 outline-none"
+              placeholder="Search by part number, OEM code, specs..."
+              className="flex-grow bg-transparent py-3 px-4 text-xs font-mono tracking-wide text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 outline-none"
             />
-            <button className="p-4 bg-amber-500 text-black hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors">
-              <MagnifyingGlassIcon className="h-6 w-6"/>
+            <button className="p-3 mr-1 bg-zinc-900 dark:bg-zinc-800 hover:bg-[var(--primary-color)] text-white hover:text-zinc-950 rounded-md transition-all duration-200">
+              <MagnifyingGlassIcon className="h-4 w-4"/>
             </button>
           </div>
         </div>
 
-        {/* ACTION SUITE */}
-        <div className="flex items-center space-x-2 md:space-x-3">
-          {/* THEME TOGGLE */}
+        {/* SUITE OF COCKPIT ACTIONS */}
+        <div className="flex items-center space-x-1.5 md:space-x-3">
+          
+          {/* VISUAL SHIFT (LIGHT/DARK) */}
           <button 
             onClick={toggleTheme}
-            className="p-3 text-gray-500 dark:text-zinc-400 bg-gray-100 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 hover:text-amber-600 dark:hover:text-amber-500 transition-all"
+            className="p-2.5 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 transition-all"
+            aria-label="Toggle Theme"
           >
-            {isDarkMode ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
+            {isDarkMode ? <SunIcon className="h-5 w-5 text-amber-400" /> : <MoonIcon className="h-5 w-5 text-indigo-500" />}
           </button>
 
-          <button className="hidden sm:flex p-3 text-gray-500 dark:text-zinc-400 bg-gray-100 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 hover:text-black dark:hover:text-white hover:border-gray-400 dark:hover:border-zinc-600 transition-all">
-            <HeartIcon className="h-6 w-6"/>
+          {/* GARAGE WISHLIST */}
+          <button className="hidden sm:flex p-2.5 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 transition-all">
+            <HeartIcon className="h-5 w-5"/>
           </button>
 
+          {/* PARTS MANIFEST (CART) */}
           <button
             onClick={() => setIsCartOpen(true)}
-            className="flex items-center gap-2 md:gap-4 bg-gray-100 dark:bg-zinc-900 border-2 border-gray-200 dark:border-zinc-800 p-1 md:p-2 md:pr-5 hover:border-amber-500 transition-all"
+            className="flex items-center gap-2 bg-zinc-950 dark:bg-zinc-900 text-white border border-zinc-800 p-1.5 pl-3 rounded-lg hover:border-[var(--primary-color)] transition-all group"
           >
-            <div className="relative bg-amber-500 text-black p-2">
-              <ShoppingBagIcon className="h-5 w-5 md:h-6 md:w-6"/>
+            <div className="text-left hidden xl:block pr-1">
+              <p className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest leading-none mb-0.5">MANIFEST</p>
+              <p className="text-xs font-black text-[var(--primary-color)]">0.00 KES</p>
+            </div>
+            <div className="relative bg-[var(--primary-color)] text-zinc-950 p-2 rounded-md group-hover:scale-95 transition-transform">
+              <ShoppingBagIcon className="h-4 w-4 md:h-5 md:w-5"/>
               {cart.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-gray-900 dark:bg-white text-white dark:text-black text-[9px] w-5 h-5 flex items-center justify-center font-black border-2 border-white dark:border-[#050505]">
+                <span className="absolute -top-1.5 -right-1.5 bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 text-[9px] w-4.5 h-4.5 rounded-full flex items-center justify-center font-black ring-2 ring-zinc-950">
                   {cart.length}
                 </span>
               )}
             </div>
-            <div className="hidden lg:block text-left">
-              <p className="text-[9px] text-gray-500 dark:text-zinc-500 font-black uppercase leading-none tracking-widest mb-1">Manifest</p>
-              <p className="text-sm font-black text-gray-900 dark:text-white italic">0.00 KES</p>
-            </div>
           </button>
 
-          <button onClick={handleUserAction} className="ml-1 md:ml-2 group">
+          {/* PILOT TERMINAL PROFILE */}
+          <button onClick={handleUserAction} className="group flex-shrink-0">
             {user?.image ? (
-              <Image src={user.image} alt="User" width={44} height={44} className="border-2 border-gray-200 dark:border-zinc-800 group-hover:border-amber-500 transition-all rounded-none" loader={imageLoader} />
+              <div className="h-9 w-9 relative rounded-full overflow-hidden border-2 border-zinc-200 dark:border-zinc-800 group-hover:border-[var(--primary-color)] transition-all">
+                <Image src={user.image} alt="User Autoprofile" fill className="object-cover" loader={imageLoader} />
+              </div>
             ) : (
-              <div className="bg-gray-100 dark:bg-zinc-900 border-2 border-gray-200 dark:border-zinc-800 p-2.5 text-gray-500 dark:text-zinc-400 group-hover:text-amber-600 group-hover:border-amber-500 transition-all">
-                <UserIcon className="h-6 w-6"/>
+              <div className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-lg text-zinc-500 dark:text-zinc-400 group-hover:text-[var(--primary-color)] group-hover:border-[var(--primary-color)]/50 transition-all">
+                <UserIcon className="h-4 w-4 md:h-5 md:w-5"/>
               </div>
             )}
           </button>
         </div>
       </div>
 
-      {/* TACTICAL CATEGORY NAV */}
-      <div className="hidden md:block border-t border-gray-100 dark:border-zinc-900 bg-white dark:bg-[#080808]">
-        <div className="max-w-[1800px] mx-auto px-10 flex items-center justify-between">
-          <nav className="flex items-center">
-            <Link href="/hardwareecommerce/products" className="py-4 pr-8 text-xs font-black text-gray-900 dark:text-white uppercase tracking-[0.2em] border-r border-gray-100 dark:border-zinc-900 mr-8 flex items-center gap-2 hover:text-amber-600 dark:hover:text-amber-500 transition-colors">
-              <Bars3Icon className="h-4 w-4" /> ALL DEPARTMENTS
+      {/* MOBILE EXPANDABLE AUTO-SEARCH */}
+      <AnimatePresence>
+        {isMobileSearchOpen && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="lg:hidden px-4 pb-4 border-b border-zinc-200 dark:border-zinc-800 overflow-hidden"
+          >
+            <div className="flex w-full items-center bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg">
+              <input
+                type="text"
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  handleSearch(e.target.value);
+                }}
+                placeholder="Search micro-parts & systems..."
+                className="flex-grow bg-transparent py-2.5 px-4 text-xs font-mono text-zinc-900 dark:text-white placeholder-zinc-400 outline-none"
+              />
+              <button className="p-2.5 mr-1 text-zinc-500 dark:text-zinc-400">
+                <MagnifyingGlassIcon className="h-4 w-4"/>
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* MECHANIZED CATEGORIES NAVWAY */}
+      <div className="hidden lg:block border-t border-zinc-100 dark:border-zinc-900 bg-zinc-50/50 dark:bg-[#0b0b0d]">
+        <div className="max-w-[1800px] mx-auto px-8 flex items-center justify-between">
+          <nav className="flex items-center space-x-1">
+            <Link href="/automotiveecommerce/products" className="py-3.5 pr-6 text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider flex items-center gap-2 hover:text-[var(--primary-color)] transition-colors border-r border-zinc-200 dark:border-zinc-800 mr-4">
+              <WrenchIcon className="h-4 w-4 text-[var(--primary-color)]" /> CATALOG DEPARTMENTS
             </Link>
             {StoreCategory?.slice(0, 6).map((cat: IStoreCategory) => (
               <Link
                 key={cat.id}
-                href={`/hardwareecommerce/products?categories=${cat.displayName?.toLowerCase()}`}
-                className="py-4 px-6 text-[10px] font-bold text-gray-500 dark:text-zinc-500 uppercase tracking-widest hover:text-gray-900 dark:hover:text-white transition-all relative group"
+                href={`/automotiveecommerce/products?categories=${cat.displayName?.toLowerCase()}`}
+                className="py-3.5 px-4 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide hover:text-zinc-900 dark:hover:text-white transition-all relative group"
               >
                 {cat.displayName || cat.category?.name}
-                <div className="absolute bottom-0 left-0 w-full h-0.5 bg-amber-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                <div className="absolute bottom-0 left-4 right-4 h-0.5 bg-[var(--primary-color)] scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-200" />
               </Link>
             ))}
           </nav>
 
-          <div className="flex items-center gap-3 py-4">
-            <div className="h-2 w-2 rounded-full bg-orange-600 dark:bg-orange-500 animate-ping" />
-            <Link href="/hardwareecommerce/products?filter=hot-deals" className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tighter hover:text-orange-600 dark:hover:text-orange-500 transition-colors">
-              PRIORITY DISPATCH
+          <div className="flex items-center gap-2 py-3.5 border-l border-zinc-200 dark:border-zinc-800 pl-6">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+            </span>
+            <Link href="/automotiveecommerce/products?filter=hot-deals" className="text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider hover:text-red-500 transition-colors">
+              CRITICAL STOCK DISPATCH
             </Link>
           </div>
         </div>
       </div>
 
-      {/* MOBILE DRAWER */}
+      {/* SLIDEOUT DASHBOARD SIDEBAR (MOBILE) */}
       <AnimatePresence>
         {isDrawerOpen && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsDrawerOpen(false)} className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm md:hidden" />
-            <motion.div initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }} className="fixed inset-0 z-[70] bg-white dark:bg-[#050505] p-6 w-[300px] border-r-2 border-amber-500 md:hidden flex flex-col">
-               <div className="flex justify-between items-center mb-10">
-                 <span className="font-black text-amber-600 dark:text-amber-500 italic uppercase">System Menu</span>
-                 <XMarkIcon className="w-8 h-8 text-gray-900 dark:text-white" onClick={() => setIsDrawerOpen(false)}/>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsDrawerOpen(false)} className="fixed inset-0 z-[60] bg-zinc-950/80 backdrop-blur-md lg:hidden" />
+            <motion.div initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }} transition={{ type: 'tween', duration: 0.25 }} className="fixed inset-y-0 left-0 z-[70] bg-white dark:bg-[#09090b] p-6 w-[280px] border-r border-zinc-200 dark:border-zinc-800 lg:hidden flex flex-col shadow-2xl">
+               <div className="flex justify-between items-center mb-8">
+                 <span className="font-mono text-xs font-bold text-[var(--primary-color)] uppercase tracking-widest">DRIVE CORE // MENU</span>
+                 <button onClick={() => setIsDrawerOpen(false)} className="p-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900">
+                   <XMarkIcon className="w-6 h-6 text-zinc-900 dark:text-white" />
+                 </button>
                </div>
-               <nav className="flex flex-col gap-6">
+               <nav className="flex flex-col gap-4">
                  {StoreCategory?.map((cat: IStoreCategory) => (
-                   <Link key={cat.id} href={`/hardwareecommerce/products?categories=${cat.displayName?.toLowerCase()}`} onClick={() => setIsDrawerOpen(false)} className="text-sm font-black text-gray-600 dark:text-zinc-400 uppercase tracking-widest hover:text-amber-500">
+                   <Link 
+                     key={cat.id} 
+                     href={`/automotiveecommerce/products?categories=${cat.displayName?.toLowerCase()}`} 
+                     onClick={() => setIsDrawerOpen(false)} 
+                     className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider hover:text-[var(--primary-color)] transition-colors py-2 block border-b border-zinc-100 dark:border-zinc-900"
+                   >
                      {cat.displayName || cat.category?.name}
                    </Link>
                  ))}
                </nav>
-               <div className="mt-auto pt-6 border-t border-gray-100 dark:border-zinc-900">
-                  <button onClick={toggleTheme} className="flex items-center gap-3 text-xs font-black uppercase text-gray-500 dark:text-zinc-400">
-                    {isDarkMode ? <SunIcon className="w-5 h-5"/> : <MoonIcon className="w-5 h-5"/>} 
-                    {isDarkMode ? 'Switch to Light' : 'Switch to Dark'}
+               <div className="mt-auto pt-4 border-t border-zinc-200 dark:border-zinc-800">
+                  <button onClick={toggleTheme} className="flex items-center gap-3 text-xs font-bold uppercase text-zinc-500 dark:text-zinc-400 w-full py-2">
+                    {isDarkMode ? <SunIcon className="w-4 h-4 text-amber-400"/> : <MoonIcon className="w-4 h-4 text-indigo-500"/>} 
+                    <span>{isDarkMode ? 'Light Terminal' : 'Dark Terminal'}</span>
                   </button>
                </div>
             </motion.div>

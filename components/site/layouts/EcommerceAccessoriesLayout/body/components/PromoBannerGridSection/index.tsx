@@ -8,55 +8,54 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import { 
   WrenchIcon, 
   BoltIcon, 
-  FireIcon,
   ArrowRightIcon,
   ShieldCheckIcon
 } from '@heroicons/react/24/solid';
 
 const promoBanners = [
   {
-    title: 'POWER TOOLS',
-    subtitle: 'Precision engineering',
-    price: 'KES 8,500',
-    discount: 'TRADE-IN DEAL',
-    image: 'https://images.unsplash.com/photo-1504148455328-c376907d081c',
+    title: 'MOTOR PERFORMANCE',
+    subtitle: 'Engineered speed & efficiency',
+    price: 'KES 14,000',
+    discount: 'TUNER PACKAGE',
+    image: 'https://images.unsplash.com/photo-1599908617830-466d62886a87', // Carbon fiber engine cover/air intake close-up
     baseColor: '#F59E0B', 
     icon: WrenchIcon,
-    tag: 'Pro Series'
+    tag: 'Tuner Series'
   },
   {
-    title: 'SITE SAFETY',
-    subtitle: 'Zero-compromise gear',
-    buttonText: 'Bulk Order',
-    discount: 'OSHA COMPLIANT',
-    image: 'https://images.unsplash.com/photo-1516937941344-00b4e0337589',
+    title: 'CHASSIS CONTROL',
+    subtitle: 'Stop. Turn. Corner. Perfected.',
+    buttonText: 'Order Kit',
+    discount: 'OEM CERTIFIED',
+    image: 'https://images.unsplash.com/photo-1594918731327-a068f86f787e', // High-end coilover suspension or performance brake calipers
     isSpecial: true,
     icon: ShieldCheckIcon,
-    tag: 'Safety First'
+    tag: 'SafeDrive Dynamics'
   },
   {
-    title: 'ELECTRICAL',
-    subtitle: 'High-voltage efficiency',
-    price: 'From KES 1,200',
-    discount: 'NEW INVENTORY',
-    image: 'https://images.unsplash.com/photo-1558434195-096860368d40', 
+    title: 'DRIVEVOLT TECH',
+    subtitle: 'Next-Gen Power & Diagnostics',
+    price: 'From KES 2,500',
+    discount: 'NEW INNOVATION',
+    image: 'https://images.unsplash.com/photo-1631165416041-9447b864f7df', // Detailed car wiring harness or EV battery components
     baseColor: '#3B82F6', 
     icon: BoltIcon,
-    tag: 'Energy Tech'
+    tag: 'Energy Diagnostics'
   },
 ];
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-export default function HardwarePromoBannerSection() {
+export default function AutomotivePromoBannerSection() {
   const { storeFormData } = useStoreContext();
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#F59E0B'; // Safety Amber
 
   return (
     <section className="max-w-[1800px] mx-auto px-6 md:px-12 py-24 bg-white dark:bg-[#050505]">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {promoBanners.map((banner, index) => (
+        {promoBanners.map((banner: (typeof promoBanners)[0], index: number) => (
           <motion.div
             key={index}
             initial={{ opacity: 0, scale: 0.95 }}
@@ -111,7 +110,7 @@ export default function HardwarePromoBannerSection() {
 
               <div className="w-full flex items-end justify-between">
                 {banner.isSpecial ? (
-                  <Link href="/hardwareecommerce/products" className="inline-block">
+                  <Link href="/automotiveecommerce/products" className="inline-block">
                     <motion.button 
                       whileHover={{ x: 5 }}
                       className="flex items-center gap-4 px-6 py-4 bg-amber-500 text-zinc-900 text-[10px] font-black uppercase tracking-widest"
@@ -127,8 +126,8 @@ export default function HardwarePromoBannerSection() {
                             {banner.price}
                         </p>
                     )}
-                    <Link href="/hardwareecommerce/products" className="group/link flex items-center gap-3 text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-amber-500 transition-colors">
-                        Procurement Path
+                    <Link href="/automotiveecommerce/products" className="group/link flex items-center gap-3 text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-amber-500 transition-colors">
+                        Explore Catalog
                         <ArrowRightIcon className="w-3 h-3 group-hover/link:translate-x-2 transition-transform" />
                     </Link>
                   </div>

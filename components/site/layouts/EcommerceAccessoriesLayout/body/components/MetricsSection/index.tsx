@@ -21,40 +21,49 @@ const MetricCard = ({
 }) => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      viewport={{ once: true }}
-      className="group relative p-10 bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 hover:border-zinc-900 dark:hover:border-amber-500 transition-all duration-500"
+      initial={{ opacity: 0, y: 40, scale: 0.95 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.6, delay: index * 0.15, type: "spring", stiffness: 100 }}
+      viewport={{ once: true, margin: "-50px" }}
+      className="group relative p-10 bg-white dark:bg-[#0c0c0e] rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden z-10"
     >
-      {/* Structural Corner Accents */}
-      <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-transparent group-hover:border-amber-500 transition-colors" />
-      <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-transparent group-hover:border-amber-500 transition-colors" />
+      {/* Dynamic Hover Glow / Ambient Engine Heat */}
+      <div 
+        className="absolute inset-0 opacity-0 group-hover:opacity-[0.08] transition-opacity duration-700 blur-2xl"
+        style={{ backgroundColor: color }}
+      />
+      
+      {/* Subtle Grid Track Overlay */}
+      <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#000_10px,#000_11px)]" />
 
-      <div className="flex flex-col items-start gap-8">
-        {/* Icon with "Hard" Shadow */}
+      <div className="relative flex flex-col items-start gap-8 z-20">
+        {/* Icon with Aerodynamic Wrapper */}
         <div 
-          className="w-16 h-16 flex items-center justify-center bg-zinc-900 dark:bg-zinc-800 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] group-hover:shadow-[6px_6px_0px_0px_rgba(245,158,11,0.5)] transition-all"
+          className="w-16 h-16 flex items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 group-hover:-translate-y-2 transition-transform duration-500"
         >
-          <Icon className="w-8 h-8 text-white group-hover:text-amber-500 transition-colors" />
+          <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-20 animate-pulse" style={{ backgroundColor: color }} />
+          <Icon className="relative z-10 w-8 h-8 text-zinc-900 dark:text-white transition-colors duration-500" style={{ '--hover-color': color } as any} />
         </div>
 
-        <div className="space-y-3">
-          <h3 className="text-xl font-black text-zinc-900 dark:text-white uppercase italic tracking-tighter">
+        <div className="space-y-4">
+          <h3 className="text-2xl font-black text-zinc-900 dark:text-white uppercase italic tracking-tighter drop-shadow-sm group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-zinc-900 group-hover:to-zinc-500 dark:group-hover:from-white dark:group-hover:to-zinc-500 transition-all duration-500">
             {title}
           </h3>
-          <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest leading-relaxed">
+          <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-widest leading-relaxed">
             {description}
           </p>
         </div>
 
-        {/* Tactical "Scanner" Progress Bar */}
-        <div className="w-full h-1 bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+        {/* Tactical "RPM" Progress Bar */}
+        <div className="w-full h-1 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden mt-4">
           <motion.div 
             initial={{ x: '-100%' }}
-            whileInView={{ x: '100%' }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="w-1/3 h-full bg-amber-500 opacity-0 group-hover:opacity-100"
+            whileInView={{ x: '200%' }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", repeatDelay: 1 }}
+            className="w-1/2 h-full rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            style={{ 
+              background: `linear-gradient(90deg, transparent, ${color}, transparent)` 
+            }}
           />
         </div>
       </div>
@@ -62,65 +71,79 @@ const MetricCard = ({
   );
 };
 
-export default function HardwareMetricsSection({ coreValues }: { coreValues: ICoreValue[] }) {
+export default function AutomotiveMetricsSection({ coreValues }: { coreValues: ICoreValue[] }) {
   const { storeFormData } = useStoreContext();
-  const primary = storeFormData?.themeSettings?.primaryColor || '#F59E0B'; // Safety Amber
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#EF4444'; // Racing Red
 
   const defaultValues = [
-    { id: '1', title: 'Tactical Security', description: 'Encrypted trade-portal architecture for bulk procurement.', icon: 'ShieldCheckIcon', color: primary },
-    { id: '2', title: 'Site Logistics', description: '24/7 technical dispatch and procurement coordination.', icon: 'TruckIcon', color: primary },
-    { id: '3', title: 'ISO Certified', description: 'Full compliance with international industrial safety standards.', icon: 'CheckBadgeIcon', color: primary },
+    { id: '1', title: 'OEM Certified', description: 'Genuine aftermarket and factory-spec parts strictly verified for performance.', icon: 'ShieldCheckIcon', color: primaryColor },
+    { id: '2', title: 'Express Dispatch', description: 'Same-day shipping protocols for all high-priority performance components.', icon: 'TruckIcon', color: primaryColor },
+    { id: '3', title: 'Pit-Stop Support', description: 'Expert automotive technicians on standby for installation guidance.', icon: 'WrenchScrewdriverIcon', color: primaryColor },
   ];
 
   const valuesToUse = coreValues?.length > 0 ? coreValues : defaultValues;
 
   return (
-    <section className="relative py-40 bg-zinc-50 dark:bg-[#050505] overflow-hidden">
+    <section className="relative py-40 bg-zinc-50 dark:bg-[#09090b] overflow-hidden">
       
-      {/* Background Technical Markers */}
-      <div className="absolute top-0 left-0 w-full h-full opacity-[0.02] dark:opacity-[0.05] pointer-events-none select-none overflow-hidden font-black text-[20vw] leading-none uppercase italic">
-        WARRANTY
+      {/* Background Redline Markers */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center opacity-[0.02] dark:opacity-[0.04] pointer-events-none select-none overflow-hidden font-black text-[25vw] leading-none uppercase italic whitespace-nowrap">
+        REDLINE
       </div>
 
       <div className="max-w-[1800px] mx-auto px-6 md:px-12 relative z-10">
-        {/* Header: Centered Minimalist */}
+        
+        {/* Header: High-Octane Title */}
         <div className="flex flex-col items-center text-center mb-24 space-y-6">
-          <div className="px-4 py-1 bg-zinc-900 dark:bg-zinc-800 text-white text-[9px] font-black uppercase tracking-[0.5em]">
-            Service Level Agreement
+          <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm">
+            <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
+            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-900 dark:text-white">
+              Performance Standards
+            </span>
+            <div className="w-2 h-2 rounded-full animate-pulse delay-75" style={{ backgroundColor: primaryColor }} />
           </div>
           
-          <h2 className="text-5xl md:text-8xl font-black text-zinc-900 dark:text-white tracking-tighter leading-none uppercase italic">
+          <h2 className="text-5xl md:text-8xl font-black text-zinc-900 dark:text-white tracking-tighter leading-[0.9] uppercase italic drop-shadow-md">
             Engineered for <br/> 
-            <span className="text-transparent" style={{ WebkitTextStroke: '1px currentColor' }}>Extreme Performance</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-500 to-zinc-900 dark:from-zinc-400 dark:to-white">
+              Maximum RPM
+            </span>
           </h2>
         </div>
 
-        {/* Grid: Mechanical Spacing */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border-t-2 border-l-2 border-zinc-100 dark:border-zinc-800">
+        {/* Grid: Sleek Float Spacing */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 relative">
+          {/* Subtle connecting line behind cards */}
+          <div className="hidden md:block absolute top-1/2 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-zinc-300 dark:via-zinc-800 to-transparent -translate-y-1/2 z-0" />
+          
           {valuesToUse.map((value: any, index: number) => {
-            const iconKey = value.icon || 'BoltIcon';
-            const Icon = (HeroIconsSolid as any)[iconKey] || HeroIconsSolid.BoltIcon;
+            const iconKey = value.icon || 'FireIcon';
+            const Icon = (HeroIconsSolid as any)[iconKey] || HeroIconsSolid.FireIcon;
             
             return (
-              <div key={value.id} className="border-r-2 border-b-2 border-zinc-100 dark:border-zinc-800">
-                <MetricCard
-                  index={index}
-                  title={value.title}
-                  description={value.description}
-                  Icon={Icon}
-                  color={primary}
-                />
-              </div>
+              <MetricCard
+                key={value.id}
+                index={index}
+                title={value.title}
+                description={value.description}
+                Icon={Icon}
+                color={primaryColor}
+              />
             );
           })}
         </div>
       </div>
 
-      {/* --- GEOMETRIC SAWTOOTH DIVIDER --- */}
-      <div className="absolute bottom-0 left-0 w-full h-24 pointer-events-none">
+      {/* --- AERODYNAMIC SLASH DIVIDER --- */}
+      <div className="absolute bottom-0 left-0 w-full h-16 pointer-events-none overflow-hidden">
+        {/* Adds a fast, slanted "racing stripe" edge to the bottom of the section */}
         <div 
-          className="h-full w-full bg-white dark:bg-zinc-950" 
-          style={{ clipPath: 'polygon(0% 100%, 5% 80%, 10% 100%, 15% 80%, 20% 100%, 25% 80%, 30% 100%, 35% 80%, 40% 100%, 45% 80%, 50% 100%, 55% 80%, 60% 100%, 65% 80%, 70% 100%, 75% 80%, 80% 100%, 85% 80%, 90% 100%, 95% 80%, 100% 100%)' }}
+          className="absolute bottom-0 left-0 h-full w-full bg-white dark:bg-[#050505] origin-bottom-right" 
+          style={{ clipPath: 'polygon(0 100%, 100% 0, 100% 100%, 0 100%)' }}
+        />
+        <div 
+          className="absolute bottom-0 left-0 h-full w-full origin-bottom-right opacity-50" 
+          style={{ backgroundColor: primaryColor, clipPath: 'polygon(0 100%, 100% 60%, 100% 100%, 0 100%)' }}
         />
       </div>
 

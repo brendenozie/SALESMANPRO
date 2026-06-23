@@ -8,7 +8,7 @@ import { SkeletonGrid } from '../SkeletonGrid/SkeletonGrid';
 import { 
   ChevronLeftIcon, 
   ChevronRightIcon, 
-  FireIcon, 
+  BoltIcon, 
   ArrowRightIcon,
   CpuChipIcon
 } from '@heroicons/react/24/outline';
@@ -18,7 +18,7 @@ import Link from 'next/link';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-export default function HardwareTrendingProducts({ id }: { id: string }) {
+export default function AutomotiveTrendingCarousel({ id }: { id: string }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { storeFormData } = useStoreContext();
   
@@ -42,45 +42,54 @@ export default function HardwareTrendingProducts({ id }: { id: string }) {
     }
   };
 
-  if (isLoading) return <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={4} /></div>;
+  if (isLoading) return <div className="py-20 bg-zinc-50 dark:bg-[#060606] border-y border-zinc-100 dark:border-zinc-900"><SkeletonGrid count={4} /></div>;
   if (error || !data?.data?.length) return null;
 
   return (
-    <section className="relative py-24 bg-white dark:bg-[#0A0A0A] transition-colors duration-500 overflow-hidden">
-      {/* Structural Grid Background */}
-      <div className="absolute inset-0 opacity-[0.15] dark:opacity-[0.05] pointer-events-none" 
-           style={{ backgroundImage: `radial-gradient(${primaryColor} 0.5px, transparent 0.5px)`, backgroundSize: '32px 32px' }} />
+    <section 
+      style={{ '--primary-color': primaryColor } as React.CSSProperties}
+      className="relative py-24 bg-white dark:bg-[#060606] border-y border-zinc-100 dark:border-zinc-900 transition-colors duration-500 overflow-hidden"
+    >
+      {/* High-Performance Engineered Pattern Overlay */}
+      <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.04] pointer-events-none" 
+           style={{ backgroundImage: 'linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(0deg, rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
 
       <div className="max-w-[1800px] mx-auto px-6 md:px-12 relative z-10">
         
-        {/* Header: Engineered Layout */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-16 gap-8">
+        {/* Header: Performance Dashboard Layout */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-16 gap-8 relative group">
+          {/* Header decorative accent line */}
+          <div className="absolute -bottom-6 left-0 w-32 h-1 bg-[var(--primary-color)] transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-700 z-10" />
+          
           <div className="space-y-6">
             <motion.div 
               initial={{ opacity: 0, x: -10 }}
               whileInView={{ opacity: 1, x: 0 }}
-              className="inline-flex items-center gap-3 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 border-l-4 border-amber-500"
+              className="inline-flex items-center gap-3.5 px-3.5 py-1.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-sm shadow-sm group"
             >
-              <FireIcon className="w-4 h-4 text-amber-500" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 dark:text-zinc-400">Market Demand High</span>
+              <BoltIcon className="w-4 h-4 text-[var(--primary-color)] animate-pulse" />
+              <span className="text-[10px] font-mono font-black uppercase tracking-[0.3em] text-zinc-600 dark:text-zinc-400">Core Status: High Performance</span>
             </motion.div>
             
-            <h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.85] tracking-tighter uppercase">
-              Trending <br />
-              <span className="text-transparent" style={{ WebkitTextStroke: `1.5px ${primaryColor}` }}>Hardware</span>
+            <h2 className="text-6xl md:text-8xl lg:text-9xl font-black text-zinc-950 dark:text-white leading-[0.85] tracking-tighter uppercase relative group">
+              Systems <br />
+              <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, transparent)`, WebkitTextStroke: `1px ${primaryColor}` }}>Core Series</span>
             </h2>
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="hidden md:flex">
+            <div className="hidden md:flex gap-1">
               <NavBtn icon={<ChevronLeftIcon className="w-6 h-6" />} onClick={() => scroll('left')} />
               <NavBtn icon={<ChevronRightIcon className="w-6 h-6" />} onClick={() => scroll('right')} />
             </div>
             
-            <Link href="/hardwareecommerce/products" className="group h-20 flex items-center gap-6 px-10 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 transition-all hover:bg-amber-500 dark:hover:bg-amber-500 hover:text-zinc-900">
-              <span className="text-[11px] font-black uppercase tracking-[0.2em]">View Full Catalog</span>
-              <div className="w-8 h-px bg-current group-hover:w-12 transition-all" />
-              <ArrowRightIcon className="w-4 h-4" />
+            <Link href="/automotiveecommerce/products" className="group relative h-16 flex items-center gap-4 px-10 bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 font-black transition-all shadow-md active:scale-95 rounded-sm overflow-hidden">
+              {/* Dynamic hover trail pattern */}
+              <div className="absolute inset-0 opacity-[0.05] dark:opacity-[0.08]" style={{ backgroundImage: 'linear-gradient(to right, currentColor 1px, transparent 1px)', backgroundSize: '10px 100%' }} />
+              
+              <div className="absolute inset-0 bg-[var(--primary-color)] transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 z-0" />
+              <span className="relative z-10 text-[11px] font-black uppercase tracking-[0.2em] group-hover:text-zinc-950 transition-colors">Catalog Dispatch</span>
+              <ArrowRightIcon className="relative z-10 w-4 h-4 group-hover:translate-x-2 transition-transform group-hover:text-zinc-950" />
             </Link>
           </div>
         </div>
@@ -89,7 +98,7 @@ export default function HardwareTrendingProducts({ id }: { id: string }) {
         <div className="relative">
           <div 
             ref={scrollRef}
-            className="flex overflow-x-auto scrollbar-hide space-x-6 pb-12 -mx-6 px-6 md:mx-0 md:px-0 scroll-smooth items-stretch"
+            className="flex overflow-x-auto scrollbar-hide space-x-6 pb-12 -mx-6 px-6 md:mx-0 md:px-0 scroll-smooth items-stretch snap-x snap-mandatory"
           >
             {data.data.map((product: any, idx: number) => (
               <motion.div 
@@ -98,34 +107,44 @@ export default function HardwareTrendingProducts({ id }: { id: string }) {
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ delay: idx * 0.05 }}
                 viewport={{ once: true }}
-                className="flex-shrink-0 w-[310px] md:w-[380px]"
+                className="flex-shrink-0 w-[310px] md:w-[380px] snap-start md:snap-align-none"
               >
-                <div className="h-full border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 transition-colors hover:border-amber-500 group">
+                <div className="h-full border border-zinc-200 dark:border-zinc-800/80 bg-white dark:bg-zinc-950 shadow-sm hover:border-[var(--primary-color)] group hover:shadow-xl hover:shadow-[var(--primary-color)]/10 transition-all rounded-sm overflow-hidden relative">
+                    {/* Added precise mechanical detail */}
+                    <div className="absolute top-0 left-0 w-full h-1 bg-[var(--primary-color)] transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 z-20" />
                     <ProductCard product={product} />
                 </div>
               </motion.div>
             ))}
             
-            {/* The "Toolbox" See All Card */}
+            {/* The central OEM Access/Schematic Dispatch Card */}
             <motion.div 
               whileHover={{ scale: 1.02 }}
-              className="flex-shrink-0 w-[280px] relative bg-zinc-900 dark:bg-zinc-100 flex flex-col items-center justify-center p-12 text-center group overflow-hidden"
+              className="flex-shrink-0 w-[280px] relative bg-white dark:bg-zinc-950 border-2 border-dashed border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center p-12 text-center group overflow-hidden rounded-sm cursor-pointer shadow-lg hover:border-[var(--primary-color)]/50 transition-colors snap-start md:snap-align-none"
             >
-              {/* Animated Rivet Detail */}
-              <div className="absolute top-4 left-4 w-2 h-2 rounded-full bg-zinc-700 dark:bg-zinc-300" />
-              <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-zinc-700 dark:bg-zinc-300" />
-              <div className="absolute bottom-4 left-4 w-2 h-2 rounded-full bg-zinc-700 dark:bg-zinc-300" />
-              <div className="absolute bottom-4 right-4 w-2 h-2 rounded-full bg-zinc-700 dark:bg-zinc-300" />
+              {/* Background pattern details */}
+              <div className="absolute inset-0 opacity-[0.1]" style={{ backgroundImage: 'linear-gradient(currentColor 0.5px, transparent 0.5px), linear-gradient(90deg, currentColor 0.5px, transparent 0.5px)', backgroundSize: '20px 20px' }} />
+              
+              {/* Refined Rivet detail motifs */}
+              <div className="absolute top-4 left-4 w-1 h-1 rounded-full bg-current opacity-30" />
+              <div className="absolute top-4 right-4 w-1 h-1 rounded-full bg-current opacity-30" />
+              <div className="absolute bottom-4 left-4 w-1 h-1 rounded-full bg-current opacity-30" />
+              <div className="absolute bottom-4 right-4 w-1 h-1 rounded-full bg-current opacity-30" />
+              
+              {/* Circuit animation schematic details on hover */}
+              <div className="absolute -bottom-16 -right-16 w-32 h-32 opacity-[0.05] dark:opacity-[0.03] group-hover:opacity-[0.1] transition-opacity" style={{ backgroundImage: 'radial-gradient(currentColor 1.5px, transparent 1.5px)', backgroundSize: '15px 15px' }} />
 
-              <div className="relative z-10">
-                <div className="w-20 h-20 border-2 border-amber-500 flex items-center justify-center mb-8 mx-auto rotate-45 group-hover:rotate-0 transition-transform duration-500">
-                    <CpuChipIcon className="w-10 h-10 text-amber-500 -rotate-45 group-hover:rotate-0 transition-transform duration-500" />
+              <div className="relative z-10 flex flex-col items-center">
+                <div className="w-20 h-20 border border-[var(--primary-color)] flex items-center justify-center mb-8 mx-auto shadow-inner rounded-sm group-hover:bg-[var(--primary-color)] transition-colors duration-500 relative">
+                  {/* Internal glow detail */}
+                  <div className="absolute inset-2 border-t border-[var(--primary-color)]/50 rounded-sm" />
+                    <CpuChipIcon className="w-10 h-10 text-[var(--primary-color)] group-hover:text-zinc-950 transition-colors duration-500" />
                 </div>
-                <h3 className="text-2xl font-black text-white dark:text-zinc-900 tracking-tighter uppercase leading-none">Complete<br/>Series</h3>
-                <p className="mt-4 text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.3em]">Built for Professionals</p>
+                <h3 className="text-3xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase leading-none group-hover:text-[var(--primary-color)] transition-colors">Dispatch<br/>Systems</h3>
+                <p className="mt-4 text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.3em] font-mono">Engineered OEM Series</p>
               </div>
               
-              <Link href="/hardwareecommerce/products" className="absolute inset-0" />
+              <Link href="/automotiveecommerce/products" className="absolute inset-0" />
             </motion.div>
           </div>
         </div>
@@ -138,9 +157,10 @@ function NavBtn({ icon, onClick }: { icon: React.ReactNode, onClick: () => void 
   return (
     <button 
       onClick={onClick}
-      className="w-20 h-20 flex items-center justify-center border border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all active:scale-95"
+      className="w-16 h-16 flex items-center justify-center border border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-950 dark:hover:bg-zinc-100 hover:text-zinc-950 transition-all rounded-sm shadow-md active:scale-95 group relative overflow-hidden"
     >
-      {icon}
+      <div className="absolute inset-0 bg-zinc-950 dark:bg-white scale-y-0 group-hover:scale-y-100 origin-bottom transition-transform duration-500 z-0" />
+      <span className="relative z-10 transition-colors duration-500 group-hover:currentColor">{icon}</span>
     </button>
   );
 }
