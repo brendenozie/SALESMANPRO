@@ -20,8 +20,8 @@ export default function AboutPage() {
   
   // Safe extraction of customizable system accents
   const primaryAccent = useMemo(() => {
-    return store?.themeSettings?.primaryColor || '#F59E0B'; // Gold/Amber Institutional Node
-  }, [store?.themeSettings]);
+    return store?.storeFormData?.themeSettings?.primaryColor || '#F59E0B'; // Gold/Amber Institutional Node
+  }, [store?.storeFormData?.themeSettings]);
 
   return (
     <div className="w-full bg-zinc-950 text-zinc-100 font-sans selection:bg-zinc-800 selection:text-white overflow-hidden">
@@ -47,7 +47,7 @@ export default function AboutPage() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-4xl md:text-6xl font-black tracking-tight uppercase"
           >
-            {store?.name || 'Aurum Precious Metals Limited'}
+            {store?.storeFormData?.name || 'Aurum Precious Metals Limited'}
           </motion.h1>
           
           <motion.p 
@@ -104,7 +104,7 @@ export default function AboutPage() {
         <div className="lg:col-span-5 space-y-6">
           <div className="relative aspect-[4/3] rounded-xl border border-zinc-800 overflow-hidden bg-zinc-900 group">
             <Image 
-              src="image_agent_tag_13143559083773578911" 
+              src={store?.storeFormData?.logoUrl || 'https://images.unsplash.com/photo-1587582423100-ee481a5e52dc?q=80&w=2070&auto=format&fit=crop'}
               alt="High purity gold bars casting process at refinery" 
               fill
               priority
@@ -120,7 +120,7 @@ export default function AboutPage() {
 
           <div className="relative aspect-[4/3] rounded-xl border border-zinc-800 overflow-hidden bg-zinc-900 group">
             <Image 
-              src="image_agent_tag_13143559083773578368" 
+              src={store?.storeFormData?.bannerUrl || 'https://images.unsplash.com/photo-1587582423100-ee481a5e52dc?q=80&w=2070&auto=format&fit=crop'}
               alt="Industrial stacks of newly made copper cathode sheets inside warehouse facility" 
               fill
               sizes="(max-w-768px) 100vw, 50vw"
@@ -165,7 +165,7 @@ export default function AboutPage() {
                 
                 <div className="relative h-48 w-full rounded-lg border border-zinc-900 overflow-hidden bg-zinc-900">
                   <Image 
-                    src="image_agent_tag_13143559083773575358" 
+                    src={'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?q=80&w=2070&auto=format&fit=crop'}
                     alt="Commercial logistics cargo aircraft loading containers at terminal airfield runway during night operations" 
                     fill
                     sizes="(max-w-768px) 100vw, 50vw"
@@ -210,7 +210,7 @@ export default function AboutPage() {
                 
                 <div className="relative h-48 w-full rounded-lg border border-zinc-900 overflow-hidden bg-zinc-900">
                   <Image 
-                    src="image_agent_tag_13143559083773575901" 
+                    src={'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?q=80&w=2070&auto=format&fit=crop'} 
                     alt="Massive ocean-going container vessel cargo ship sailing over deep seawater routes" 
                     fill
                     sizes="(max-w-768px) 100vw, 50vw"

@@ -28,9 +28,7 @@ const navLinks = [
   { name: "Home" },
   { name: "About" },
   { name: "Services" },
-  { name: "Network" },
   { name: "Blog" },
-  { name: "Contact Us" },
 ];
 
 export default function Navbar() {
