@@ -2,14 +2,12 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDownIcon, QuestionMarkCircleIcon, LightBulbIcon } from '@heroicons/react/24/outline'; // New icons for visual flair
-import { useStoreContext } from '@/contexts/StoreContext';
+import { ChevronDownIcon, SparklesIcon } from '@heroicons/react/24/outline';
 
-// Type definitions for clarity
 interface FAQItem {
   question: string;
   answer: string;
-  order?: number; // Optional order for sorting
+  order?: number;
 }
 
 interface ThemeSettings {
@@ -25,18 +23,32 @@ interface FAQsSectionProps {
   themeSettings?: ThemeSettings | undefined | null;
 }
 
-export default function FAQsSection({faqs, themeSettings}:FAQsSectionProps) {
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
 
-  // Robust theme color fallbacks
-  const primaryColor = themeSettings?.primaryColor || '#007bff'; // Vibrant blue
-  const secondaryColor = themeSettings?.secondaryColor || '#6c757d'; // Complementary gray
-  const sectionBgColor = themeSettings?.sectionBgColor || '#f8f9fa'; // Light gray background for contrast
-  const textColor = themeSettings?.textColor || '#1a202c'; // Dark text for headings (tailwind: gray-900)
-  const answerTextColor = themeSettings?.answerTextColor || '#4a5568'; // Slightly lighter text for answers (tailwind: gray-700)
-  const borderColor = '#e2e8f0'; // Tailwind: gray-200 for borders
-  const accentLight = `${primaryColor}20`; // Primary color with 20% opacity for light accents
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 110,
+      damping: 16,
+    },
+  },
+};
 
-  // Prepare FAQs: use dynamicFaqs sorted by order if available, else fallback static
+export default function FAQsSection({ faqs, themeSettings }: FAQsSectionProps) {
+  const primaryColor = themeSettings?.primaryColor || '#000000';
+
   const staticFaqs: FAQItem[] = [
     {
       question: "How do I schedule a session?",
@@ -50,18 +62,13 @@ export default function FAQsSection({faqs, themeSettings}:FAQsSectionProps) {
     },
     {
       question: "Are your coaches certified and experienced?",
-      answer: "Absolutely! We pride ourselves on working with only highly qualified and experienced professionals. All our coaches undergo a rigorous vetting process, possess relevant certifications from accredited institutions, and have a proven track record of success in their respective fields. Your growth is our priority.",
+      answer: "Absolutely! We pride ourselves on working with only highly qualified and experienced professionals. All our coaches undergo a rigorous vetting process, possess relevant certifications from accredited institutions, and have a proven track record of success in their respective fields.",
       order: 3,
     },
     {
       question: "Which payment methods do you accept?",
       answer: "For your convenience, we accept a variety of secure payment methods, including all major credit/debit cards (Visa, MasterCard, American Express), as well as popular digital wallets and local payment solutions like M-Pesa. Your transactions are always encrypted and secure.",
       order: 4,
-    },
-    {
-      question: "Do you offer group coaching or workshops?",
-      answer: "Yes, in addition to one-on-one sessions, we regularly host group coaching programs and specialized workshops designed to foster collective learning and skill development. Check our 'Events' or 'Programs' page for upcoming opportunities and details.",
-      order: 5,
     },
   ];
 
@@ -76,112 +83,105 @@ export default function FAQsSection({faqs, themeSettings}:FAQsSectionProps) {
   };
 
   return (
-    <section
-      id="faqs"
-      className="relative py-24 md:py-32 px-6 lg:px-12 overflow-hidden"
-      style={{ backgroundColor: sectionBgColor }}
-    >
-      {/* Background radial gradient at top right */}
-      <div
-        className="absolute top-0 right-0 w-1/3 h-1/3 opacity-10"
-        style={{
-          background: `radial-gradient(circle at 100% 0%, ${primaryColor}, transparent 50%)`,
-        }}
-      />
-      {/* Background radial gradient at bottom left */}
-      <div
-        className="absolute bottom-0 left-0 w-1/3 h-1/3 opacity-10"
-        style={{
-          background: `radial-gradient(circle at 0% 100%, ${secondaryColor}, transparent 50%)`,
-        }}
-      />
+    <AnimatePresence>
+      <section
+        id="faqs"
+        className="relative py-24 lg:py-32 px-6 lg:px-8 bg-white text-slate-900 overflow-hidden border-b border-slate-100"
+      >
+        {/* Minimal Wire Grid Background Sync */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000002_1px,transparent_1px),linear-gradient(to_bottom,#00000002_1px,transparent_1px)] bg-[size:5rem_5rem] pointer-events-none" />
 
-      <div className="max-w-4xl mx-auto relative z-10">
-        <div className="text-center mb-16">
-          <motion.h2
-            className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight text-gray-900 dark:text-gray-900 drop-shadow-sm" // Ensure dark mode text is visible
-            style={{ color: textColor }}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
+        <div className="max-w-4xl mx-auto relative z-10">
+          
+          {/* Section Header */}
+          <motion.div
+            className="text-center mb-20 flex flex-col items-center"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
           >
-            Your Questions, Our <span style={{ color: primaryColor }}>Answers</span>
-          </motion.h2>
-          <motion.p
-            className="text-lg md:text-xl text-gray-700 dark:text-gray-700 max-w-2xl mx-auto" // Ensure dark mode text is visible
-            style={{ color: answerTextColor }}
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            Find quick answers to the most common questions about our services, booking process, and more.
-          </motion.p>
-        </div>
+            {/* Minimal Inline Badge Tagline */}
+            <motion.div
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-md bg-slate-50 border border-slate-200 mb-5"
+              variants={itemVariants}
+            >
+              <SparklesIcon className="w-4 h-4 text-slate-600" />
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
+                Information Base
+              </p>
+            </motion.div>
 
-        <div className="space-y-6 text-left">
-          {faqsData.map((faq, i) => {
-            const isOpen = openIndex === i;
-            return (
-              <motion.div
-                key={i}
-                className="rounded-3xl shadow-lg border transition-all duration-300 overflow-hidden"
-                style={{
-                  backgroundColor: isOpen ? accentLight : '#ffffff', // Light accent color when open, white when closed
-                  borderColor: isOpen ? primaryColor : borderColor,
-                }}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 * i, duration: 0.5 }}
-                viewport={{ once: true, amount: 0.2 }} // Trigger animation when 20% in view
-              >
-                <button
-                  onClick={() => toggle(i)}
-                  className="w-full flex items-center justify-between px-8 py-6 text-left text-xl font-semibold focus:outline-none"
-                  style={{ color: textColor }}
+            <motion.h2
+              className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight max-w-4xl leading-[1.15] text-slate-900"
+              variants={itemVariants}
+            >
+              Your Questions, Our <span style={{ color: primaryColor }}>Answers</span>
+            </motion.h2>
+
+            <motion.p
+              className="mt-6 text-slate-500 max-w-2xl text-lg font-normal leading-relaxed"
+              variants={itemVariants}
+            >
+              Find quick answers to the most common questions about our services, booking process, and operational matrix frameworks.
+            </motion.p>
+          </motion.div>
+
+          {/* Structured Accordion Grid Row Stack */}
+          <motion.div
+            className="space-y-4 text-left"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.1 }}
+          >
+            {faqsData.map((faq, i) => {
+              const isOpen = openIndex === i;
+              return (
+                <motion.div
+                  key={i}
+                  className="bg-white border border-slate-200 rounded-xl overflow-hidden transition-all duration-200 hover:border-slate-900"
+                  variants={itemVariants}
                 >
-                  <span className="flex items-center gap-4">
-                    <QuestionMarkCircleIcon className="w-7 h-7" style={{ color: primaryColor }} />
-                    {faq.question}
-                  </span>
-                  <motion.div
-                    animate={{ rotate: isOpen ? 180 : 0 }}
-                    transition={{ duration: 0.3 }}
+                  <button
+                    onClick={() => toggle(i)}
+                    className="w-full flex items-center justify-between px-6 py-5 sm:px-8 sm:py-6 text-left text-base sm:text-lg font-bold text-slate-900 focus:outline-none gap-4 group"
                   >
-                    <ChevronDownIcon className="w-6 h-6 text-gray-500" />
-                  </motion.div>
-                </button>
-
-                <AnimatePresence initial={false}>
-                  {isOpen && (
+                    <span className="tracking-tight leading-snug">{faq.question}</span>
                     <motion.div
-                      key="content"
-                      initial="collapsed"
-                      animate="open"
-                      exit="collapsed"
-                      variants={{
-                        open: { height: 'auto', opacity: 1, paddingTop: '0px', paddingBottom: '24px' }, // Match actual padding in div below
-                        collapsed: { height: 0, opacity: 0, paddingTop: '0px', paddingBottom: '0px' },
-                      }}
-                      transition={{ duration: 0.3, ease: 'easeInOut' }}
-                      style={{ overflow: 'hidden' }} // Crucial for height animation
+                      className="flex-shrink-0 w-6 h-6 rounded-md bg-slate-50 border border-slate-200 flex items-center justify-center transition-colors duration-200 group-hover:bg-slate-900 group-hover:border-slate-900"
+                      animate={{ rotate: isOpen ? 180 : 0 }}
+                      transition={{ type: 'spring', stiffness: 200, damping: 20 }}
                     >
-                      <div
-                        className="px-8 text-base leading-relaxed border-t border-gray-100 dark:border-gray-700 pt-6" // Added top border and padding
-                        style={{ color: answerTextColor }}
-                      >
-                        <LightBulbIcon className="w-6 h-6 inline-block mr-2 align-middle" style={{ color: secondaryColor }} />
-                        {faq.answer}
-                      </div>
+                      <ChevronDownIcon className="w-3.5 h-3.5 text-slate-600 transition-colors duration-200 group-hover:text-white" strokeWidth={2.5} />
                     </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            );
-          })}
+                  </button>
+
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        key="content"
+                        initial="collapsed"
+                        animate="open"
+                        exit="collapsed"
+                        variants={{
+                          open: { height: 'auto', opacity: 1 },
+                          collapsed: { height: 0, opacity: 0 },
+                        }}
+                        transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
+                      >
+                        <div className="px-6 pb-6 sm:px-8 sm:pb-7 text-sm sm:text-base text-slate-500 font-normal leading-relaxed tracking-normal border-t border-slate-100 pt-4">
+                          {faq.answer}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
+          </motion.div>
         </div>
-      </div>
-    </section>
+      </section>
+    </AnimatePresence>
   );
 }

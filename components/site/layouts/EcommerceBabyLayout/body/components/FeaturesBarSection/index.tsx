@@ -33,9 +33,10 @@ const features = [
   },
 ];
 
-export default function FeaturesBarSection() {
-  const { storeFormData } = useStoreContext();
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#FF8FA3';
+export default function FeaturesBarSection({ coreValues, themeSettings }: { coreValues: any[]; themeSettings: any }) {
+  
+  const primaryColor = themeSettings?.primaryColor || '#FF8FA3';
+  const valuesToShow = coreValues && coreValues.length > 0 ? coreValues : features;
 
   return (
     <section className="relative py-16 bg-white dark:bg-zinc-950 overflow-hidden">
@@ -44,7 +45,7 @@ export default function FeaturesBarSection() {
 
       <div className="max-w-[1800px] mx-auto px-6 md:px-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-          {features.map((feature, index) => (
+          {valuesToShow.map((feature, index) => (
             <motion.div 
               key={index}
               initial={{ opacity: 0, y: 20 }}

@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import ProductCard from '@/components/site/layouts/EcommerceAccessoriesLayout/body/components/ProductCard';
+import ProductCard from '@/components/site/layouts/EcommerceAccessoriesLayout/body/components/ProductShowcaseGrid/ProductCard';
 import { JsonValue } from "@prisma/client/runtime/library";
 import { MarketListingForm } from "@/types/typings";
 

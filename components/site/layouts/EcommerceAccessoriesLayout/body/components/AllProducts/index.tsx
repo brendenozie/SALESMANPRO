@@ -11,7 +11,7 @@ import {
   WrenchScrewdriverIcon,
   MapPinIcon
 } from '@heroicons/react/24/solid';
-import ProductCard from '../ProductCard';
+import ProductCard from '../ProductShowcaseGrid/ProductCard';
 
 interface AllProductsProps {
   id: string;

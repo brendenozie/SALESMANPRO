@@ -9,28 +9,19 @@ import {
     StarIcon,
     ArrowRightIcon,
     SparklesIcon,
-    RocketLaunchIcon, // A great icon for ambition/tagline
-    HandRaisedIcon // Good for dedication/contact
 } from '@heroicons/react/24/outline';
 import { HeroSlide, Stat } from '@/types/typings';
-// Removed Next.js Image for standalone runnability, replaced with standard <img>
-// import Image from 'next/image';
 
 const storeData = {
     name: 'John Doe',
     tagline: 'Dedicated to Excellence and Innovation',
     description: `I am a passionate professional committed to crafting exceptional experiences and delivering innovative solutions. With a relentless focus on quality and a deep understanding of modern challenges, I help individuals and businesses achieve their full potential. My work is driven by curiosity, precision, and a genuine desire to make a lasting impact. My philosophy is simple: start with the client's end goal and work backward to design a flawless journey.`,
     themeSettings: {
-        primaryColor: '#6366F1', // Indigo 500
-        secondaryColor: '#EC4899', // Pink 500
-        accentColor: '#F97316',
+        primaryColor: '#000000',
     },
-    heroSlides: [{ productImageUrl: 'https://images.unsplash.com/photo-1519085360753-af0f19c307d8?q=80&w=2787&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' }],
-    slug: 'john-doe',
-    contactEmail: 'contact@example.com',
+    heroSlides: [{ productImageUrl: 'https://images.unsplash.com/photo-1519085360753-af0f19c307d8?q=80&w=2787&auto=format&fit=crop' }],
 };
 
-// Map stat labels to appropriate HeroIcons
 const iconMap: { [key: string]: React.ElementType } = {
     'Years Experience': BriefcaseIcon,
     'Clients Served': UsersIcon,
@@ -38,43 +29,25 @@ const iconMap: { [key: string]: React.ElementType } = {
     'Awards': StarIcon,
 };
 
-// Framer Motion Variants
-const sectionVariants = {
-    hidden: { opacity: 0, y: 50 },
+const containerVariants = {
+    hidden: { opacity: 0 },
     visible: {
         opacity: 1,
-        y: 0,
         transition: {
-            duration: 0.8,
-            ease: 'easeOut',
-            staggerChildren: 0.1,
+            staggerChildren: 0.05,
         },
     },
 };
 
 const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
+    hidden: { opacity: 0, y: 20 },
     visible: {
         opacity: 1,
         y: 0,
         transition: {
             type: 'spring',
-            stiffness: 100,
-            damping: 12,
-        },
-    },
-};
-
-const statVariants = {
-    hidden: { opacity: 0, scale: 0.9, rotateX: 20 },
-    visible: {
-        opacity: 1,
-        scale: 1,
-        rotateX: 0,
-        transition: {
-            type: 'spring',
-            stiffness: 120,
-            damping: 14,
+            stiffness: 110,
+            damping: 16,
         },
     },
 };
@@ -91,11 +64,9 @@ interface AboutSectionLightProps {
     contactEmail: string | undefined | null;
 }
 
-export default function AboutSectionLight({ name, tagline, bannerUrl, description, themeSettings, stats, heroSlides, slug, contactEmail }: AboutSectionLightProps) {
+export default function AboutSectionLight({ name, tagline, bannerUrl, description, themeSettings, stats, heroSlides, contactEmail }: AboutSectionLightProps) {
     
-    // Fallback colors
-    const primaryColor = themeSettings?.primaryColor || '#6366F1';
-    const secondaryColor = themeSettings?.secondaryColor || '#EC4899';
+    const primaryColor = themeSettings?.primaryColor || '#000000';
 
     const title = name || storeData.name;
     const aboutTagline = tagline || storeData.tagline;
@@ -108,7 +79,6 @@ export default function AboutSectionLight({ name, tagline, bannerUrl, descriptio
         { label: 'Awards', value: '15' },
     ];
 
-    // Combine stats data with corresponding icons
     const statsData: Stat[] = (Array.isArray(stats) && stats.length > 0 ? stats : defaultStatsData).map(stat => ({
         ...stat,
     }));
@@ -120,119 +90,112 @@ export default function AboutSectionLight({ name, tagline, bannerUrl, descriptio
         <AnimatePresence>
             <section 
                 id="about" 
-                className="relative overflow-hidden bg-white text-gray-900 py-24 md:py-36"
+                className="relative overflow-hidden bg-white text-slate-900 py-24 lg:py-32 border-b border-slate-100"
             >
-                {/* Subtle Geometric Background */}
-                <div 
-                    className="absolute inset-0 z-0 opacity-5 pointer-events-none"
-                    style={{
-                        background: `repeating-linear-gradient(-45deg, #f0f0f0, #f0f0f0 2px, transparent 2px, transparent 4px)`
-                    }}
-                />
+                {/* Minimal Wire Grid Background Sync */}
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000002_1px,transparent_1px),linear-gradient(to_bottom,#00000002_1px,transparent_1px)] bg-[size:5rem_5rem] pointer-events-none" />
                 
-                <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+                <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
 
-                    {/* Left Column (lg:col-span-5): Dynamic Image Presentation */}
+                    {/* Left Column: Monochromatic Framed Media Port */}
                     <motion.div
                         className="lg:col-span-5 relative order-2 lg:order-1 flex justify-center lg:justify-start"
-                        variants={sectionVariants}
+                        variants={containerVariants}
                         initial="hidden"
                         whileInView="visible"
                         viewport={{ once: true, amount: 0.2 }}
                     >
-                        {/* Image Container with Stylish Frame */}
-                        <div 
-                            className="w-full max-w-sm md:max-w-md h-[400px] md:h-[550px] relative rounded-3xl shadow-2xl overflow-hidden"
-                            style={{ boxShadow: `0 25px 50px -12px ${primaryColor}40` }}
+                        <motion.div 
+                            className="w-full max-w-sm lg:max-w-md aspect-[4/5] relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 group transition-all duration-200 hover:border-slate-900 hover:shadow-xl"
+                            variants={itemVariants}
                         >
                             <img
-                                src={imgSrc || 'https://placehold.co/600x800/6366F1/FFFFFF?text=Professional+Portrait'}
+                                src={imgSrc || 'https://placehold.co/600x800/000000/FFFFFF?text=Professional+Portrait'}
                                 alt={`Portrait of ${title}`}
-                                className="w-full h-full object-cover object-center transform transition-transform duration-500 group-hover:scale-105"
+                                className="w-full h-full object-cover object-center transition-transform duration-300 ease-out group-hover:scale-105"
                                 onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-                                    e.currentTarget.src = 'https://placehold.co/600x800/6366F1/FFFFFF?text=Professional+Portrait';
+                                    e.currentTarget.src = 'https://placehold.co/600x800/000000/FFFFFF?text=Professional+Portrait';
                                 }}
                             />
-                            {/* Gradient overlay for depth */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-gray-100/30 to-transparent" />
-                        </div>
+                        </motion.div>
                     </motion.div>
 
-                    {/* Right Column (lg:col-span-7): Text Content and Enhanced Stats */}
+                    {/* Right Column: Architectural Content Matrix */}
                     <motion.div
-                        className="lg:col-span-7 flex flex-col justify-center space-y-8 order-1 lg:order-2"
-                        variants={sectionVariants}
+                        className="lg:col-span-7 flex flex-col justify-center items-start order-1 lg:order-2"
+                        variants={containerVariants}
                         initial="hidden"
                         whileInView="visible"
                         viewport={{ once: true, amount: 0.2 }}
                     >
-                        
-                        <motion.div variants={itemVariants} className="flex items-center space-x-3">
-                            <SparklesIcon className="w-8 h-8" style={{ color: secondaryColor }} />
-                            <p
-                                className="uppercase tracking-[0.3em] text-sm font-extrabold"
-                                style={{ color: secondaryColor }}
-                            >
-                                OUR VISION & MISSION
-                            </p>
+                        {/* Minimal Tagline Badge */}
+                        <motion.div 
+                            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-md bg-slate-50 border border-slate-200 mb-5"
+                            variants={itemVariants}
+                        >
+                          <SparklesIcon className="w-4 h-4 text-slate-600" />
+                          <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
+                            Strategic Overview
+                          </p>
                         </motion.div>
 
+                        {/* Title Headings */}
                         <motion.h2
-                            className="text-5xl md:text-6xl font-extrabold leading-snug drop-shadow-sm text-gray-900"
+                            className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight max-w-4xl leading-[1.15] text-slate-900 mb-6"
                             variants={itemVariants}
                         >
                             Hello, I'm <span style={{ color: primaryColor }}>{title}</span>
-                            <span className="block text-3xl font-light mt-2 text-gray-700">{aboutTagline}</span>
+                            <span className="block text-2xl sm:text-3xl font-normal text-slate-500 mt-3 tracking-tight">{aboutTagline}</span>
                         </motion.h2>
 
+                        {/* Professional Biography Narrative */}
                         <motion.p
-                            className="text-xl text-gray-600 leading-relaxed max-w-prose border-l-4 pl-4"
-                            style={{ borderColor: primaryColor }}
+                            className="text-base text-slate-500 leading-relaxed font-normal max-w-2xl mb-10 pb-8 border-b border-slate-100"
                             variants={itemVariants}
                         >
                             {aboutText}
                         </motion.p>
 
-                        {/* Stats Grid - Feature Block Style */}
+                        {/* Integrated Stats Matrix */}
                         <motion.div
-                            className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-6 border-t border-gray-100"
-                            variants={sectionVariants}
+                            className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full mb-10"
+                            variants={containerVariants}
                         >
                             {statsData.map((stat, idx) => {
                                 let IconComponent = iconMap[stat.label] || ChartBarIcon;
                                 
                                 return (
-                                <motion.div
-                                    key={idx}
-                                    className="p-5 bg-gray-50 rounded-xl transition-all duration-300 transform hover:bg-white hover:shadow-lg flex flex-col items-start space-y-2"
-                                    variants={statVariants}
-                                    whileHover={{ y: -3 }}
-                                >
-                                    <IconComponent className="w-8 h-8 text-indigo-500" />                                    
-                                    <p className="text-3xl font-extrabold text-gray-900">
-                                        {stat.value}
-                                    </p>
-                                    <p className="text-sm uppercase tracking-wider text-gray-500 font-medium">
-                                        {stat.label}
-                                    </p>
-                                </motion.div>
-                            ); })}
+                                    <motion.div
+                                        key={idx}
+                                        className="group p-5 bg-white border border-slate-200 rounded-xl flex flex-col items-start gap-2.5 transition-all duration-200 hover:border-slate-900 hover:shadow-lg"
+                                        variants={itemVariants}
+                                        whileHover={{ y: -4 }}
+                                        whileTap={{ scale: 0.98 }}
+                                    >
+                                        <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-slate-50 border border-slate-200 transition-colors duration-200 group-hover:bg-slate-900 group-hover:border-slate-900">
+                                            <IconComponent className="w-4 h-4 text-slate-800 transition-colors duration-200 group-hover:text-white" strokeWidth={2} />
+                                        </div>
+                                        <div>
+                                            <p className="text-2xl font-black tracking-tight text-slate-900 leading-none mb-1">
+                                                {stat.value}
+                                            </p>
+                                            <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">
+                                                {stat.label}
+                                            </p>
+                                        </div>
+                                    </motion.div>
+                                ); 
+                            })}
                         </motion.div>
 
-                        {/* Call to Action - Vibrant Gradient Button */}
-                        <motion.div variants={itemVariants} className="mt-6">
+                        {/* Micro-Action Control Node */}
+                        <motion.div variants={itemVariants} className="w-full sm:w-auto">
                             <a
                                 href={contactHref}
-                                className="inline-flex items-center justify-center px-10 py-4 rounded-full text-lg font-bold shadow-2xl transition-all duration-300 transform hover:scale-105"
-                                style={{
-                                    // Use a gradient for a powerful visual appeal
-                                    background: `linear-gradient(45deg, ${secondaryColor}, ${primaryColor})`,
-                                    color: 'white',
-                                    boxShadow: `0 15px 30px -5px ${secondaryColor}66`,
-                                }}
+                                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider px-7 py-4 rounded-xl border border-slate-900 bg-slate-900 text-white transition-all duration-200 hover:bg-slate-800 active:scale-95 shadow-sm"
                             >
                                 Get in Touch Today
-                                <HandRaisedIcon className="ml-3 w-5 h-5" />
+                                <ArrowRightIcon className="w-4 h-4" strokeWidth={2.5} />
                             </a>
                         </motion.div>
                     </motion.div>

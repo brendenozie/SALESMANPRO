@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import FilterSidebar from '../FilterSidebar/FilterSidebar';
 import { AdjustmentsHorizontalIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline';
 import { useRouter, useSearchParams } from 'next/navigation';
-import ProductCard from '@/components/site/layouts/EcommerceHardwareLayout/body/components/ProductCard';
+import ProductCard from '@/components/site/layouts/EcommerceHardwareLayout/body/components/ProductShowcaseGrid/ProductCard';
 
 export interface FilterState {
   search: string;

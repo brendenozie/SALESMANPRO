@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { ArrowRightIcon, Squares2X2Icon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/solid';
-import ProductCard from '../ProductCard';
+import ProductCard from '../ProductShowcaseGrid/ProductCard';
 
 interface AllProductsProps {
   id: string;

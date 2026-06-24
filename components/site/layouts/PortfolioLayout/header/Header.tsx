@@ -4,12 +4,11 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bars3Icon, UserIcon, XMarkIcon } from '@heroicons/react/24/outline'; // Changed FaceFrownIcon to UserIcon for auth
+import { Bars3Icon, UserIcon, XMarkIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
-import { useRouter } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react'; // Kept useSession, signOut
+import { useSession, signOut } from 'next-auth/react';
 
-// --- Custom Icon Components (Kept for completeness) ---
+// --- Custom Icon Components ---
 const FacebookIcon = ({ className }: { className?: string }) => (
   <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M14 13.5h2.5l1-4H14v-2c0-1.03 0-2 2-2h3V2h-3c-3.402 0-4.673 2.144-4.673 4.587V9.5H7.75v4H10V22h4v-8.5z"/></svg>
 );
@@ -21,51 +20,51 @@ const TwitterIcon = ({ className }: { className?: string }) => (
 );
 const WhatsappIcon = ({ className }: { className?: string }) => (
   <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M20.52 3.48A11.88 11.88 0 0012.04.02C6.06.02 1.02 5.06 1.02 11.04c0 1.94.5 3.83 1.45 5.5L.02 23l6.6-1.73a11 11 0 005.42 1.43h.01c5.98 0 10.99-4.84 11-10.82a11.9 11.9 0 00-2.53-7.2zM12.04 20.1h-.01a9.15 9.15 0 01-4.66-1.28l-.33-.2-3.92 1.03 1.05-3.82-.22-.35a9.04 9.04 0 01-1.4-4.7c0-5 4.07-9.07 9.08-9.07 2.43 0 4.72.95 6.43 2.67a9.06 9.06 0 012.66 6.4c-.01 5-4.08 9.07-9.09 9.07zm5.02-7.16c-.27-.14-1.6-.79-1.85-.88-.25-.09-.43-.14-.61.14-.18.27-.7.88-.86 1.06-.16.18-.32.2-.59.07-.27-.14-1.14-.42-2.17-1.34-.8-.71-1.34-1.58-1.5-1.85-.16-.27-.02-.42.12-.56.12-.12.27-.32.41-.48.14-.16.18-.27.27-.45.09-.18.05-.34-.02-.48-.07-.14-.61-1.47-.84-2 .22-.52.48-.45 .65-.46h.55c,.18,0,.48,.07,.73,.34s1,.99,1,.99c,.18,.18,.3,.27,.48,.43,.18,.16,.3,.12,.41,.09.12-.03,.34-.14,.52-.21.18-.07,.55-.22,.84-.33.27-.11,.52-.05,."/>
-    </svg>
+    <path d="M20.52 3.48A11.88 11.88 0 0012.04.02C6.06.02 1.02 5.06 1.02 11.04c0 1.94.5 3.83 1.45 5.5L.02 23l6.6-1.73a11 11 0 005.42 1.43h.01c5.98 0 10.99-4.84 11-10.82a11.9 11.9 0 00-2.53-7.2zM12.04 20.1h-.01a9.15 9.15 0 01-4.66-1.28l-.33-.2-3.92 1.03 1.05-3.82-.22-.35a9.04 9.04 0 01-1.4-4.7c0-5 4.07-9.07 9.08-9.07 2.43 0 4.72.95 6.43 2.67a9.06 9.06 0 012.66 6.4c-.01 5-4.08 9.07-9.09 9.07zm5.02-7.16c-.27-.14-1.6-.79-1.85-.88-.25-.09-.43-.14-.61.14-.18.27-.7.88-.86 1.06-.16.18-.32.2-.59.07-.27-.14-1.14-.42-2.17-1.34-.8-.71-1.34-1.58-1.5-1.85-.16-.27-.02-.42.12-.56.12-.12.27-.32.41-.48.14-.16.18-.27.27-.45.09-.18.05-.34-.02-.48-.07-.14-.61-1.47-.84-2 .22-.52.48-.45 .65-.46h.55c.18,0,.48,.07,.73,.34s1,.99,1,.99c.18,.18,.3,.27,.48,.43,.18,.16,.3,.12,.41,.09.12-.03,.34-.14,.52-.21.18-.07,.55-.22,.84-.33.27-.11,.52-.05,.75.09.25.14.79.81.88 1.06.09.25.14.43.07.61-.07.18-.32.55-.59.84z"/>
+  </svg>
 );
-// --- End Custom Icon Components ---
 
-
- // Loader for next/image (Kept)
- const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
+const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
 const navLinks = [
   { label: 'Features', href: '#features' },
   { label: 'Services', href: '#services' },
-  // { label: 'Pricing', href: '#pricing' },
   { label: 'About', href: '#about' },
   { label: 'Contact', href: '#contact' },
 ];
 
-export default function Header() {
+interface StoreFormData {
+  name?: string;
+  slug?: string;
+  logoUrl?: string;
+  contactPhone?: string;
+  socialLinks?: Array<{ platform: string; url?: string }> | Record<string, string | false>;
+  themeSettings?: {
+    primaryColor?: string;
+    secondaryColor?: string;
+  };
+}
 
-  const { storeFormData } = useStoreContext();
-  const router = useRouter();
-  
-    // --- Auth State & Hooks ---
-    const { data: session, status } = useSession(); // Get session data
-    const user = session?.user as { role?: string; name?: string } | undefined;
+export default function Header() {
+  const { storeFormData } = ((useStoreContext() || {}) as unknown as { storeFormData?: StoreFormData });
+  const { data: session, status } = useSession();
+  const user = session?.user as { role?: string; name?: string } | undefined;
 
   const name = storeFormData?.name || 'My Portfolio';
   const slug = storeFormData?.slug || 'my-portfolio';
-  const logoUrl = storeFormData?.logoUrl || 'https://placehold.co/140x40/png/gray/white?text=Logo';
+  const logoUrl = storeFormData?.logoUrl || '';
   const contactPhone = storeFormData?.contactPhone || '';
   const socialLinks = storeFormData?.socialLinks || [];
   const themeSettings = storeFormData?.themeSettings || {};
 
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
- 
-  // Default colors for better visual
-  const primaryColor = themeSettings.primaryColor || '#007bff'; // Modern Blue
-  const secondaryColor = themeSettings.secondaryColor || '#6c757d'; // Grey/Darker Blue
 
-  // --- Auth Handlers (Adjusted for clarity and better UX) ---
-  
-  const handleSignOut = ()=> {
+  const primaryColor = themeSettings.primaryColor || '#000000';
+  const secondaryColor = themeSettings.secondaryColor || '#64748b';
+
+  const handleSignOut = () => {
     const returnTo = window.location.origin;
-
     signOut({
       redirect: true,
       callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
@@ -73,27 +72,24 @@ export default function Header() {
   };
 
   const redirectToAuth = (action: 'signin' | 'signup') => {
-    // Assuming 'salesmanpro.site' is the external auth provider
     const authUrl = new URL(`https://auth.salesmanpro.site/${action}`);
     authUrl.searchParams.set("callbackUrl", `${window.location.origin}`);
     window.location.href = authUrl.toString();
   };
 
-
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 50);
+    const onScroll = () => setScrolled(window.scrollY > 32);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   const socialLinksMap: Record<string, string | false> = Array.isArray(socialLinks)
-    ? (socialLinks as any[]).reduce((acc: Record<string, string | false>, item: any) => {
+    ? socialLinks.reduce((acc: Record<string, string | false>, item: any) => {
         if (item?.platform) acc[item.platform] = item.url ?? false;
         return acc;
       }, {})
-    : (socialLinks || {}); 
+    : (socialLinks || {});
 
-  // Fallback social links for development/demonstration
   const defaultSocialLinks = {
     facebook: 'https://facebook.com/yourpage',
     instagram: 'https://instagram.com/yourpage',
@@ -101,58 +97,52 @@ export default function Header() {
     whatsapp: `https://wa.me/${contactPhone || '254712345678'}`,
   };
 
-    const getSocialLink = (platform: keyof typeof defaultSocialLinks) =>
+  const getSocialLink = (platform: keyof typeof defaultSocialLinks) =>
     (socialLinksMap as any)?.[platform] || defaultSocialLinks[platform];
-
-
-  // --- New Styles ---
-  const headerStyle = {
-    '--primary-color': primaryColor,
-    '--secondary-color': secondaryColor,
-  } as React.CSSProperties;
 
   return (
     <header
-      style={headerStyle}
-      className={`fixed w-full top-0 z-50 transition-all duration-300 ${
+      className={`fixed w-full top-0 z-50 border-b transition-all duration-300 ${
         scrolled
-          ? 'bg-white/95 dark:bg-gray-900/95 shadow-lg backdrop-blur-sm py-3'
-          : 'bg-transparent py-5'
+          ? 'bg-white/95 dark:bg-slate-900/95 border-slate-200/80 dark:border-slate-800/80 shadow-sm py-3'
+          : 'bg-transparent border-transparent py-6'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative">
-        {/* Logo or Name (Left) */}
-        <Link href={`/${slug}`} className="flex items-center gap-3 relative z-10">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 flex justify-between items-center relative">
+        
+        {/* Left Anchor: Identity Framework */}
+        <Link href={`/${slug}`} className="flex items-center gap-3 relative z-20">
           {logoUrl && logoUrl !== 'https://placehold.co/140x40/png/gray/white?text=Logo' ? (
             <Image
               src={logoUrl}
               loader={loader}
               alt={name}
-              width={140}
-              height={40}
-              className="object-contain h-20 w-32"
+              width={130}
+              height={36}
+              className="object-contain h-9 w-auto dark:invert-0"
             />
           ) : (
             <span
-              className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent transition-colors duration-300"
-              style={{ color: scrolled ? 'var(--primary-color)' : 'var(--secondary-color)' }}
+              className="text-lg font-black tracking-wider uppercase transition-colors"
+              style={{ color: scrolled ? '#0f172a' : primaryColor }}
             >
               {name}
             </span>
           )}
         </Link>
 
-        {/* Desktop Nav (Center) */}
-        <nav className="hidden md:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <div className="flex gap-8 text-sm font-semibold text-gray-700 dark:text-gray-300">
+        {/* Center Anchor: Matrix Navigation Track */}
+        <nav className="hidden md:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+          <div className="flex items-center gap-1 bg-slate-50/50 dark:bg-slate-800/40 p-1 border border-slate-200/60 dark:border-slate-700/60 rounded-xl backdrop-blur-md">
             {navLinks.map(({ label, href }) => (
               <motion.a
                 key={label}
                 href={href}
-                whileHover={{ color: 'var(--primary-color)', scale: 1.05 }}
-                transition={{ duration: 0.1 }}
-                className="transition-colors duration-200 hover:text-blue-600 dark:hover:text-blue-400"
-                style={{ '--primary-color': primaryColor } as React.CSSProperties}
+                className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 rounded-lg hover:text-slate-900 dark:hover:text-white transition-colors"
+                whileHover={{
+                  backgroundColor: 'rgba(15, 23, 42, 0.04)',
+                  transition: { type: 'spring', stiffness: 110, damping: 16 }
+                }}
               >
                 {label}
               </motion.a>
@@ -160,186 +150,169 @@ export default function Header() {
           </div>
         </nav>
 
-        {/* CTA, Social, and Auth (Right) */}
-        <div className="hidden md:flex items-center gap-6">
-          {/* Social Icons Group */}
-          <div className="flex items-center gap-3 text-gray-400 dark:text-gray-500">
-            {socialLinksMap?.facebook !== false && (
-                <a href={getSocialLink('facebook')} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors transform hover:scale-110">
-                  <FacebookIcon className="w-5 h-5" />
-                </a>
-              )}
-              {socialLinksMap?.instagram !== false && (
-                <a href={getSocialLink('instagram')} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors transform hover:scale-110">
-                  <InstagramIcon className="w-5 h-5" />
-                </a>
-              )}
-              {socialLinksMap?.twitter !== false && (
-                <a href={getSocialLink('twitter')} target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors transform hover:scale-110">
-                  <TwitterIcon className="w-5 h-5" />
-                </a>
-              )}
-              {socialLinksMap?.whatsapp !== false && (
-                <a href={getSocialLink('whatsapp')} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors transform hover:scale-110">
-                  <WhatsappIcon className="w-5 h-5" />
-                </a>
-              )}
-          </div>
+        {/* Right Anchor: Secure Node Control Suite */}
+        <div className="hidden md:flex items-center gap-4 relative z-20">
           
-          {/* CTA Button (Primary) */}
-          <Link
-            href={`#contact`}
-            className="px-5 py-2.5 rounded-full font-bold text-sm transition duration-300 shadow-md hover:shadow-lg transform hover:translate-y-[-1px] dark:shadow-none"
-            style={{ backgroundColor: primaryColor, color: '#ffffff' }}
-          >
-            Get in Touch
-          </Link>
+          {/* External Pipelines Group */}
+          <div className="flex items-center border-r border-slate-200 dark:border-slate-800 pr-4 gap-2 text-slate-400 dark:text-slate-500">
+            {socialLinksMap?.facebook !== false && (
+              <a href={getSocialLink('facebook')} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
+                <FacebookIcon className="w-4 h-4" />
+              </a>
+            )}
+            {socialLinksMap?.instagram !== false && (
+              <a href={getSocialLink('instagram')} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
+                <InstagramIcon className="w-4 h-4" />
+              </a>
+            )}
+            {socialLinksMap?.twitter !== false && (
+              <a href={getSocialLink('twitter')} target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
+                <TwitterIcon className="w-4 h-4" />
+              </a>
+            )}
+            {socialLinksMap?.whatsapp !== false && (
+              <a href={getSocialLink('whatsapp')} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
+                <WhatsappIcon className="w-4 h-4" />
+              </a>
+            )}
+          </div>
 
-          {/* Auth Dropdown/Button (Secondary) */}
+          {/* Secure Access Validation */}
           {status === "loading" ? (
-            <span className="text-gray-500 text-sm">...</span>
+            <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-900 rounded-full animate-spin" />
           ) : session ? (
             <div className="group relative">
-              <button className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 px-3 py-1.5 rounded-full hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-                <UserIcon className="w-5 h-5" />
-                <span className="hidden lg:inline">{user?.name?.split(' ')[0] || 'Account'}</span>
+              <button className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-4 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                <UserIcon className="w-4 h-4" strokeWidth={2.5} />
+                <span>{user?.name?.split(' ')[0] || 'Account'}</span>
               </button>
-              {/* Dropdown Menu */}
-              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto">
-                <Link href="/dashboard" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
-                  Dashboard
+              
+              {/* Context Dropdown Frame */}
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl overflow-hidden opacity-0 scale-95 origin-top-right group-hover:opacity-100 group-hover:scale-100 transition-all duration-150 pointer-events-none group-hover:pointer-events-auto z-50">
+                <Link href="/dashboard" className="block px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800">
+                  Dashboard Matrix
                 </Link>
                 <button
                   onClick={handleSignOut}
-                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-gray-700"
+                  className="block w-full text-left px-4 py-3 text-xs font-bold uppercase tracking-wider text-red-600 hover:bg-red-50/50 dark:hover:bg-slate-800/60 border-t border-slate-100 dark:border-slate-800"
                 >
-                  Logout
+                  Terminate Session
                 </button>
               </div>
             </div>
           ) : (
-            <>
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => redirectToAuth('signin')}
-                className="text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-[color:var(--primary)] transition"
-                style={{ '--primary-color': primaryColor } as React.CSSProperties}
+                className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-3 py-2.5 transition-colors"
               >
-                Login
+                Access
               </button>
               <button
                 onClick={() => redirectToAuth('signup')}
-                className="border border-[color:var(--primary-color)] text-[color:var(--primary-color)] px-4 py-2 rounded-full font-medium text-sm hover:bg-[color:var(--primary-color)] hover:text-white transition"
-                style={{ '--primary-color': primaryColor } as React.CSSProperties}
+                className="inline-flex items-center justify-center text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded-xl text-white bg-slate-900 dark:bg-white dark:text-slate-900 border border-slate-900 dark:border-white transition-all duration-200 hover:bg-slate-800 dark:hover:bg-slate-100 active:scale-95 shadow-sm"
               >
-                Sign Up
+                Provision Account
               </button>
-            </>
+            </div>
           )}
         </div>
 
-
-        {/* Mobile Toggle */}
+        {/* Mobile Grid Menu Trigger */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden p-2 rounded-md text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 relative z-10"
-          aria-label="Toggle menu"
+          className="md:hidden p-2 rounded-xl text-slate-800 dark:text-slate-200 border border-transparent active:border-slate-200 dark:active:border-slate-800 relative z-20 transition-colors"
+          aria-label="Toggle structural menu"
         >
           {menuOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
         </button>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Drawer Array */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="md:hidden bg-white dark:bg-gray-900 px-6 pt-4 pb-6 space-y-4 border-t border-gray-200 dark:border-gray-700 overflow-hidden"
+            transition={{ type: 'spring', stiffness: 120, damping: 18 }}
+            className="md:hidden bg-white dark:bg-slate-900 px-6 pt-4 pb-8 space-y-5 border-t border-slate-200 dark:border-slate-800 overflow-hidden"
           >
-            {navLinks.map(({ label, href }) => (
-              <Link
-                key={label}
-                href={href}
-                className="block text-gray-900 dark:text-gray-100 font-medium hover:text-[color:var(--primary)] transition"
-                onClick={() => setMenuOpen(false)}
-                style={{ '--primary-color': primaryColor } as React.CSSProperties}
-              >
-                {label}
-              </Link>
-            ))}
-            <Link
-              href={`#contact`}
-              onClick={() => setMenuOpen(false)}
-              className="block text-center text-white py-2 rounded-full font-bold mt-2 shadow-md hover:opacity-90 transition"
-              style={{ backgroundColor: primaryColor }}
-            >
-              Get in Touch
-            </Link>
-            
-            {/* Auth Buttons (Mobile) */}
-            <div className="mt-6 space-y-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+            <div className="space-y-1">
+              {navLinks.map(({ label, href }) => (
+                <Link
+                  key={label}
+                  href={href}
+                  className="block py-3 text-sm font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 border-b border-slate-50 dark:border-slate-800/40 hover:text-slate-900 dark:hover:text-white transition-colors"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
+
+            {/* Mobile Auth Execution Vectors */}
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 space-y-3">
               {status === "loading" ? (
-                <span className="block text-center text-gray-500 text-sm">Loading...</span>
+                <div className="text-center py-2 text-xs font-bold tracking-wider text-slate-400">SYNCING CONTROLS...</div>
               ) : session ? (
                 <>
+                  <div className="flex items-center gap-2 px-1 py-2 text-xs font-bold tracking-wider uppercase text-slate-400">
+                    <ShieldCheckIcon className="w-4 h-4 text-emerald-500" />
+                    <span>Node Connected: {user?.name}</span>
+                  </div>
                   <Link
                     href="/dashboard"
                     onClick={() => setMenuOpen(false)}
-                    className="block text-center font-medium text-gray-900 dark:text-gray-100 hover:text-[color:var(--primary)] transition"
-                    style={{ '--primary-color': primaryColor } as React.CSSProperties}
+                    className="block text-center text-xs font-bold uppercase tracking-wider bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white py-3.5 rounded-xl border border-slate-200 dark:border-slate-700"
                   >
-                    Dashboard
+                    Dashboard Terminal
                   </Link>
                   <button
                     onClick={() => { setMenuOpen(false); handleSignOut(); }}
-                    className="block w-full text-center text-red-600 font-medium hover:text-red-700 transition"
+                    className="block w-full text-center text-xs font-bold uppercase tracking-wider text-red-600 bg-red-50/40 dark:bg-red-950/20 py-3.5 rounded-xl border border-red-100 dark:border-red-900/40"
                   >
-                    Logout
+                    Terminate Session
                   </button>
                 </>
               ) : (
-                <>
+                <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => { setMenuOpen(false); redirectToAuth('signin'); }}
-                    className="block w-full text-center text-gray-900 dark:text-gray-100 font-medium hover:text-[color:var(--primary)] transition"
-                    style={{ '--primary-color': primaryColor } as React.CSSProperties}
+                    className="text-center text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60 py-3.5 rounded-xl border border-slate-200 dark:border-slate-700"
                   >
-                    Login
+                    Access Node
                   </button>
                   <button
                     onClick={() => { setMenuOpen(false); redirectToAuth('signup'); }}
-                    className="block w-full border border-[color:var(--primary-color)] text-[color:var(--primary-color)] py-2 rounded-full text-center font-medium hover:bg-[color:var(--primary-color)] hover:text-white transition"
-                    style={{ '--primary-color': primaryColor } as React.CSSProperties}
+                    className="text-center text-xs font-bold uppercase tracking-wider text-white bg-slate-900 py-3.5 rounded-xl"
                   >
-                    Register
+                    Provision Node
                   </button>
-                </>
+                </div>
               )}
             </div>
 
-
-            {/* Mobile Social Icons */}
-            <div className="flex justify-center gap-4 mt-6 pt-3 border-t border-gray-100 dark:border-gray-800 text-gray-400 dark:text-gray-500">
+            {/* Mobile Link Pipeline Group */}
+            <div className="flex justify-center gap-5 pt-4 border-t border-slate-100 dark:border-slate-800/80 text-slate-400">
               {socialLinksMap?.facebook !== false && (
-                <a href={getSocialLink('facebook')} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors transform hover:scale-110">
-                  <FacebookIcon className="w-6 h-6" />
+                <a href={getSocialLink('facebook')} target="_blank" rel="noopener noreferrer" className="hover:text-slate-900 dark:hover:text-white transition-colors">
+                  <FacebookIcon className="w-5 h-5" />
                 </a>
               )}
               {socialLinksMap?.instagram !== false && (
-                <a href={getSocialLink('instagram')} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors transform hover:scale-110">
-                  <InstagramIcon className="w-6 h-6" />
+                <a href={getSocialLink('instagram')} target="_blank" rel="noopener noreferrer" className="hover:text-slate-900 dark:hover:text-white transition-colors">
+                  <InstagramIcon className="w-5 h-5" />
                 </a>
               )}
               {socialLinksMap?.twitter !== false && (
-                <a href={getSocialLink('twitter')} target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors transform hover:scale-110">
-                  <TwitterIcon className="w-6 h-6" />
+                <a href={getSocialLink('twitter')} target="_blank" rel="noopener noreferrer" className="hover:text-slate-900 dark:hover:text-white transition-colors">
+                  <TwitterIcon className="w-5 h-5" />
                 </a>
               )}
               {socialLinksMap?.whatsapp !== false && (
-                <a href={getSocialLink('whatsapp')} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors transform hover:scale-110">
-                  <WhatsappIcon className="w-6 h-6" />
+                <a href={getSocialLink('whatsapp')} target="_blank" rel="noopener noreferrer" className="hover:text-slate-900 dark:hover:text-white transition-colors">
+                  <WhatsappIcon className="w-5 h-5" />
                 </a>
               )}
             </div>

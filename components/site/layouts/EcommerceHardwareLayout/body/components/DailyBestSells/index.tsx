@@ -3,7 +3,7 @@
 import React, { useRef } from 'react';
 import useSWR from 'swr';
 import { motion } from 'framer-motion';
-import ProductCard from '../ProductCard';
+import ProductCard from '../ProductShowcaseGrid/ProductCard';
 import { SkeletonGrid } from '../SkeletonGrid/SkeletonGrid';
 import { ChevronLeftIcon, ChevronRightIcon, BoltIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import { createCachedFetcher } from '@/lib/swrCachedFetcher';

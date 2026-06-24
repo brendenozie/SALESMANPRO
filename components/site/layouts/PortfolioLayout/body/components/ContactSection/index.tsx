@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { EnvelopeIcon, PhoneIcon, MapPinIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'; // Updated icons for better visual cues
+import { motion, AnimatePresence } from 'framer-motion';
+import { EnvelopeIcon, PhoneIcon, MapPinIcon, ChatBubbleLeftRightIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { useStoreContext } from '@/contexts/StoreContext';
 
-// Type definitions for clarity
 interface GeoLocation {
   lat: number;
   lng: number;
@@ -25,11 +24,34 @@ interface StoreFormData {
   address?: string;
   geoLocation?: GeoLocation;
   themeSettings?: ThemeSettings;
-  name?: string; // Company/Personal name for personalization
+  name?: string;
 }
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 110,
+      damping: 16,
+    },
+  },
+};
+
 export default function ContactSection() {
-  const { storeFormData } = useStoreContext() as { storeFormData: StoreFormData };
+  const { storeFormData } = useStoreContext() as { storeFormData: StoreFormData } || {};
   const {
     contactEmail,
     contactPhone,
@@ -37,18 +59,10 @@ export default function ContactSection() {
     geoLocation,
     themeSettings = {},
     name,
-  } = storeFormData;
+  } = storeFormData || {};
 
-  // Theme colors - using more robust defaults and new variables for consistency
-  const primaryColor = themeSettings.primaryColor || '#007bff'; // Vibrant blue
-  const secondaryColor = themeSettings.secondaryColor || '#6c757d'; // Complementary gray
-  const sectionBgColor = themeSettings.backgroundColor || '#f0f4f8'; // Light blue-gray for the section background
-  const formBgColor = '#ffffff'; // White for the form card
-  const textColor = themeSettings.textColor || '#1a202c'; // Dark text for headings
-  const placeholderColor = '#a0aec0'; // Tailwind gray-400 for input placeholders
-  const focusRingColor = `${primaryColor}60`; // Primary color with 60% opacity for focus ring
+  const primaryColor = themeSettings?.primaryColor || '#000000';
 
-  // State for form fields (for controlled inputs, though submission logic isn't here)
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -62,20 +76,17 @@ export default function ContactSection() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real application, you would handle form submission here (e.g., send to an API)
     console.log('Form submitted:', formData);
     alert('Thank you for your message! We will get back to you soon.');
-    setFormData({ fullName: '', email: '', message: '' }); // Clear form
+    setFormData({ fullName: '', email: '', message: '' });
   };
 
-  // Build WhatsApp link if phone exists
   const sanitizedPhone = contactPhone ? contactPhone.replace(/\D/g, '') : '';
   const whatsappHref = sanitizedPhone ? `https://wa.me/${sanitizedPhone}` : '';
 
-  // Map embed URL: using a more robust and correct Google Maps embed structure
-  let mapSrc = ""
+  let mapSrc = "";
   if (geoLocation && typeof geoLocation.lat === 'number' && typeof geoLocation.lng === 'number') {
-    mapSrc = "https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15955.123456789012!2d" + geoLocation.lng + "!3d" + geoLocation.lat + "!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2z" + geoLocation.lat + "N" + geoLocation.lng + "E!5e0!3m2!1sen!2ske!4v1700000000000!5m2!1sen!2ske"; 
+    mapSrc = `https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15955.123456789012!2d${geoLocation.lng}!3d${geoLocation.lat}!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2z${geoLocation.lat}N${geoLocation.lng}E!5e0!3m2!1sen!2ske!4v1700000000000!5m2!1sen!2ske`;
   } else if (address) {
     const encodedAddress = encodeURIComponent(address);
     mapSrc = `https://www.google.com/maps/embed?q=${encodedAddress}&output=embed`;
@@ -83,211 +94,211 @@ export default function ContactSection() {
     mapSrc = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.8164801198533!2d36.817223!3d-1.286389!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f1172d84d49a7%3A0xf7cf1f25b2447990!2sNairobi%2C%20Kenya!5e0!3m2!1sen!2ske!4v1700000000000!5m2!1sen!2ske";
   }
 
-  // Framer Motion variants
-  const sectionVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        when: 'beforeChildren',
-        staggerChildren: 0.2,
-        duration: 0.8,
-        ease: 'easeOut',
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } },
-  };
-
   return (
-    <motion.section
-      id="contact"
-      className="relative py-24 md:py-32 px-6 lg:px-12 overflow-hidden"
-      style={{ backgroundColor: sectionBgColor }} // Dynamic section background
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.1 }}
-      variants={sectionVariants}
-    >
-      {/* Subtle Background Elements */}
-      <div
-        className="absolute top-0 left-0 w-1/4 h-1/4 rounded-full mix-blend-multiply filter blur-3xl opacity-20"
-        style={{ background: primaryColor }}
-      />
-      <div
-        className="absolute bottom-0 right-0 w-1/4 h-1/4 rounded-full mix-blend-multiply filter blur-3xl opacity-20"
-        style={{ background: secondaryColor }}
-      />
+    <AnimatePresence>
+      <section
+        id="contact"
+        className="relative py-24 lg:py-32 px-6 lg:px-8 bg-white text-slate-900 overflow-hidden border-b border-slate-100"
+      >
+        {/* Minimal Wire Grid Background Sync */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000002_1px,transparent_1px),linear-gradient(to_bottom,#00000002_1px,transparent_1px)] bg-[size:5rem_5rem] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto relative z-10">
-        <div className="text-center mb-16">
-          <motion.h2
-            className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight text-gray-900 drop-shadow-sm"
-            style={{ color: textColor }}
-            variants={itemVariants}
-          >
-            Let's Connect & <span style={{ color: primaryColor }}>Build Something Great</span>
-          </motion.h2>
-
-          <motion.p
-            className="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto"
-            variants={itemVariants}
-          >
-            Have a question, an exciting project, or just want to say hello? Reach out to {name || 'us'} – we'd love to hear from you!
-          </motion.p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start"> {/* Align items at start */}
-          {/* Contact Form */}
+        <div className="max-w-7xl mx-auto relative z-10">
+          
+          {/* Section Header */}
           <motion.div
-            className="bg-white p-8 md:p-10 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700" // Elevated form card
-            style={{ backgroundColor: formBgColor }}
-            variants={itemVariants}
+            className="text-center mb-20 flex flex-col items-center"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
           >
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">Send Us a Message</h3>
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              <div>
-                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                <input
-                  type="text"
-                  id="fullName"
-                  name="fullName"
-                  placeholder="Your full name"
-                  className="mt-1 w-full px-5 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
-                  // style={{ borderColor: borderColor, focusRingColor: focusRingColor }} // Explicit border for consistency
-                  value={formData.fullName}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  placeholder="you@example.com"
-                  className="mt-1 w-full px-5 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
-                  // style={{ borderColor: borderColor, focusRingColor: focusRingColor }}
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">Your Message</label>
-                <textarea
-                  id="message"
-                  name="message"
-                  rows={5} // Slightly more rows for message
-                  placeholder="Tell us about your project or inquiry..."
-                  className="mt-1 w-full px-5 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 resize-y" // Allow vertical resize
-                  // style={{ borderColor: borderColor, focusRingColor: focusRingColor }}
-                  value={formData.message}
-                  onChange={handleInputChange}
-                  required
-                ></textarea>
-              </div>
-              <motion.button
-                type="submit"
-                className="w-full text-white font-semibold py-3.5 px-6 rounded-lg transition-all duration-300 transform hover:scale-[1.01] hover:shadow-lg focus:outline-none focus:ring-4"
-                style={{ backgroundColor: primaryColor, boxShadow: `0 0 0 3px ${focusRingColor}` }}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
+            {/* Minimal Tagline Badge */}
+            <motion.div
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-md bg-slate-50 border border-slate-200 mb-5"
+              variants={itemVariants}
+            >
+              <SparklesIcon className="w-4 h-4 text-slate-600" />
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
+                Communications Hub
+              </p>
+            </motion.div>
+
+            <motion.h2
+              className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight max-w-4xl leading-[1.15] text-slate-900"
+              variants={itemVariants}
+            >
+              Let's Connect & <span style={{ color: primaryColor }}>Build Frameworks</span>
+            </motion.h2>
+
+            <motion.p
+              className="mt-6 text-slate-500 max-w-2xl text-lg font-normal leading-relaxed"
+              variants={itemVariants}
+            >
+              Have an operation query, pipeline challenge, or structural request? Reach out to {name || 'us'} below.
+            </motion.p>
+          </motion.div>
+
+          {/* Matrix Content Grid Split */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+            
+            {/* Left Column: Communications Formulation Matrix Form */}
+            <motion.div
+              className="lg:col-span-6 bg-slate-50 border border-slate-200 rounded-2xl p-6 sm:p-10 w-full"
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.1 }}
+            >
+              <h3 className="text-xl font-bold tracking-tight text-slate-900 mb-6">Inquiry Vector Submission</h3>
+              
+              <form className="space-y-5" onSubmit={handleSubmit}>
+                <motion.div variants={itemVariants}>
+                  <label htmlFor="fullName" className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Full Name Identity</label>
+                  <input
+                    type="text"
+                    id="fullName"
+                    name="fullName"
+                    placeholder="John Doe"
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 font-medium placeholder-slate-400 text-sm focus:outline-none focus:border-slate-900 transition-colors"
+                    value={formData.fullName}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </motion.div>
+
+                <motion.div variants={itemVariants}>
+                  <label htmlFor="email" className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Digital Routing Email</label>
+                  <input
+                    type="authorEmail"
+                    id="email"
+                    name="email"
+                    placeholder="johndoe@example.com"
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 font-medium placeholder-slate-400 text-sm focus:outline-none focus:border-slate-900 transition-colors"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </motion.div>
+
+                <motion.div variants={itemVariants}>
+                  <label htmlFor="message" className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Inquiry Context Payload</label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    rows={4}
+                    placeholder="Provide details regarding your operational objectives..."
+                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 font-medium placeholder-slate-400 text-sm focus:outline-none focus:border-slate-900 transition-colors resize-y"
+                    value={formData.message}
+                    onChange={handleInputChange}
+                    required
+                  ></textarea>
+                </motion.div>
+
+                <motion.button
+                  type="submit"
+                  className="w-full inline-flex items-center justify-center text-xs font-bold uppercase tracking-wider px-6 py-4 rounded-xl text-white bg-slate-900 border border-slate-900 transition-all duration-200 hover:bg-slate-800 active:scale-95 shadow-sm"
+                  variants={itemVariants}
+                >
+                  Transmit Message Payload
+                </motion.button>
+              </form>
+            </motion.div>
+
+            {/* Right Column: Direct Nodes & Framework Frame */}
+            <div className="lg:col-span-6 w-full flex flex-col gap-6 lg:gap-8">
+              
+              {/* Direct Address Mapping Framework */}
+              <motion.div
+                className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-2 gap-6"
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.1 }}
               >
-                Send Message
-              </motion.button>
-            </form>
-            </motion.div>
-
-          {/* Contact Information & Map */}
-          <div className="flex flex-col gap-12">
-            {/* Contact Details Card */}
-            <motion.div
-              className="bg-white p-8 md:p-10 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 h-full flex flex-col justify-between" // Elevated card
-              style={{ backgroundColor: formBgColor }}
-              variants={itemVariants}
-            >
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Direct Contact</h3>
-              <div className="space-y-6 text-lg">
                 {contactEmail && (
-                  <Link
-                    href={`mailto:${contactEmail}`}
-                    className="flex items-start gap-4 text-gray-800 hover:text-gray-900 transition-colors group"
-                  >
-                    <EnvelopeIcon className="w-8 h-8 text-gray-500 group-hover:text-gray-700 flex-shrink-0" />
-                    <div>
-                      <span className="block font-medium">Email Us</span>
-                      <span className="block text-base text-gray-600 group-hover:underline" style={{ color: primaryColor }}>{contactEmail}</span>
-                    </div>
-                  </Link>
+                  <motion.div variants={itemVariants}>
+                    <Link href={`mailto:${contactEmail}`} className="flex items-start gap-3.5 group">
+                      <div className="w-9 h-9 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-700 transition-colors group-hover:bg-slate-900 group-hover:border-slate-900 group-hover:text-white flex-shrink-0">
+                        <EnvelopeIcon className="w-4 h-4" strokeWidth={2} />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="block text-xs font-bold uppercase tracking-wider text-slate-400">Email Router</span>
+                        <span className="block text-sm font-bold text-slate-900 truncate mt-0.5 group-hover:underline">{contactEmail}</span>
+                      </div>
+                    </Link>
+                  </motion.div>
                 )}
-                {contactPhone && (
-                  <Link
-                    href={`tel:${contactPhone}`}
-                    className="flex items-start gap-4 text-gray-800 hover:text-gray-900 transition-colors group"
-                  >
-                    <PhoneIcon className="w-8 h-8 text-gray-500 group-hover:text-gray-700 flex-shrink-0" />
-                    <div>
-                      <span className="block font-medium">Call Us</span>
-                      <span className="block text-base text-gray-600 group-hover:underline" style={{ color: primaryColor }}>{contactPhone}</span>
-                    </div>
-                  </Link>
-                )}
-                {whatsappHref && (
-                  <Link
-                    href={whatsappHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-start gap-4 text-gray-800 hover:text-gray-900 transition-colors group"
-                  >
-                    <ChatBubbleLeftRightIcon className="w-8 h-8 text-gray-500 group-hover:text-gray-700 flex-shrink-0" />
-                    <div>
-                      <span className="block font-medium">WhatsApp</span>
-                      <span className="block text-base text-gray-600 group-hover:underline" style={{ color: primaryColor }}>Start a chat</span>
-                    </div>
-                  </Link>
-                )}
-                {address && (
-                  <Link
-                    href={mapSrc} // Link directly to map if address exists
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-start gap-4 text-gray-800 hover:text-gray-900 transition-colors group"
-                  >
-                    <MapPinIcon className="w-8 h-8 text-gray-500 group-hover:text-gray-700 flex-shrink-0" />
-                    <div>
-                      <span className="block font-medium">Our Location</span>
-                      <span className="block text-base text-gray-600 group-hover:underline">{address}</span>
-                    </div>
-                  </Link>
-                )}
-              </div>
-            </motion.div>
 
-            {/* Google Map Embed */}
-            <motion.div
-              className="rounded-3xl overflow-hidden shadow-xl border border-gray-100 dark:border-gray-700 h-[350px] md:h-[450px] lg:h-full" // Increased height and rounded borders
-              variants={itemVariants}
-            >
-              <iframe
-                src={mapSrc}
-                width="100%"
-                height="100%"
-                style={{ border: 0 }} // Remove default iframe border
-                allowFullScreen={true}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade" // Recommended for embeds
-                title="Our Location" // Accessible title for the iframe
-              ></iframe>
-            </motion.div>
+                {contactPhone && (
+                  <motion.div variants={itemVariants}>
+                    <Link href={`tel:${contactPhone}`} className="flex items-start gap-3.5 group">
+                      <div className="w-9 h-9 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-700 transition-colors group-hover:bg-slate-900 group-hover:border-slate-900 group-hover:text-white flex-shrink-0">
+                        <PhoneIcon className="w-4 h-4" strokeWidth={2} />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="block text-xs font-bold uppercase tracking-wider text-slate-400">Voice Line</span>
+                        <span className="block text-sm font-bold text-slate-900 truncate mt-0.5 group-hover:underline">{contactPhone}</span>
+                      </div>
+                    </Link>
+                  </motion.div>
+                )}
+
+                {whatsappHref && (
+                  <motion.div variants={itemVariants}>
+                    <Link href={whatsappHref} target="_blank" rel="noopener noreferrer" className="flex items-start gap-3.5 group">
+                      <div className="w-9 h-9 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-700 transition-colors group-hover:bg-slate-900 group-hover:border-slate-900 group-hover:text-white flex-shrink-0">
+                        <ChatBubbleLeftRightIcon className="w-4 h-4" strokeWidth={2} />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="block text-xs font-bold uppercase tracking-wider text-slate-400">Instant Messaging</span>
+                        <span className="block text-sm font-bold text-slate-900 truncate mt-0.5 group-hover:underline">Start Chat Session</span>
+                      </div>
+                    </Link>
+                  </motion.div>
+                )}
+
+                {address && (
+                  <motion.div variants={itemVariants}>
+                    <Link href={mapSrc} target="_blank" rel="noopener noreferrer" className="flex items-start gap-3.5 group">
+                      <div className="w-9 h-9 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-700 transition-colors group-hover:bg-slate-900 group-hover:border-slate-900 group-hover:text-white flex-shrink-0">
+                        <MapPinIcon className="w-4 h-4" strokeWidth={2} />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="block text-xs font-bold uppercase tracking-wider text-slate-400">Physical Node</span>
+                        <span className="block text-sm font-bold text-slate-900 truncate mt-0.5 group-hover:underline">{address}</span>
+                      </div>
+                    </Link>
+                  </motion.div>
+                )}
+              </motion.div>
+
+              {/* Geographic Frame Vector */}
+              <motion.div
+                className="rounded-2xl overflow-hidden border border-slate-200 aspect-[16/10] bg-slate-50 p-1.5 w-full"
+                variants={itemVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.1 }}
+              >
+                <div className="w-full h-full rounded-xl overflow-hidden grayscale contrast-[1.1] border border-slate-150">
+                  <iframe
+                    src={mapSrc}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen={true}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="Our Location Matrix Node"
+                  ></iframe>
+                </div>
+              </motion.div>
+
+            </div>
           </div>
         </div>
-      </div>
-    </motion.section>
+      </section>
+    </AnimatePresence>
   );
 }

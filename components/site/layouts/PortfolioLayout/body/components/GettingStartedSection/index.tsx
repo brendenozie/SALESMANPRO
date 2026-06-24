@@ -11,11 +11,11 @@ import {
   ArrowRightIcon,
   CheckCircleIcon,
   MagnifyingGlassIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
 
-// Type definitions for clarity
 interface ThemeSettings {
   primaryColor?: string;
   secondaryColor?: string;
@@ -34,8 +34,8 @@ interface StoreFormData {
   gettingStartedSteps?: DynamicStep[];
 }
 
-// Map iconKey to actual icon component (extendable)
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+// heroicons components are ForwardRefExoticComponent with SVG props; allow flexible props to avoid propTypes mismatch
+const iconMap: Record<string, React.ComponentType<any>> = {
   CalendarIcon,
   BriefcaseIcon,
   UserGroupIcon,
@@ -46,7 +46,6 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   MagnifyingGlassIcon,
 };
 
-// Default steps tailored for a portfolio/personal-branding context
 const defaultSteps: DynamicStep[] = [
   {
     iconKey: 'MagnifyingGlassIcon',
@@ -62,7 +61,7 @@ const defaultSteps: DynamicStep[] = [
     description:
       'Learn about my collaborative process and see how I partner with clients to achieve exceptional outcomes.',
     ctaText: 'View Approach',
-    ctaLink: '#about', // Link to your approach or about section
+    ctaLink: '#about',
   },
   {
     iconKey: 'CalendarIcon',
@@ -74,15 +73,35 @@ const defaultSteps: DynamicStep[] = [
   },
 ];
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.06,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { 
+      type: 'spring',
+      stiffness: 110,
+      damping: 16 
+    } 
+  },
+};
+
 export default function GettingStartedSectionClean() {
   const { storeFormData } = useStoreContext() as { storeFormData: StoreFormData };
   const { themeSettings = {}, gettingStartedSteps } = storeFormData;
 
-  // Let's use more neutral, yet distinct, default colors for this section
-  const primaryColor = themeSettings.primaryColor || '#1f2937'; // Dark Gray for primary text/accents
-  const secondaryColor = themeSettings.secondaryColor || '#60a5fa'; // A nice blue for highlights/CTAs
+  const primaryColor = themeSettings.primaryColor || '#000000';
 
-  // Determine steps data: dynamic if provided, else defaultSteps
   const stepsData: DynamicStep[] =
     Array.isArray(gettingStartedSteps) && gettingStartedSteps.length > 0
       ? gettingStartedSteps.map((step: any) => ({
@@ -94,113 +113,95 @@ export default function GettingStartedSectionClean() {
         }))
       : defaultSteps;
 
-  // Framer Motion variants for subtle animations
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1, // Slight delay between cards
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } },
-    hover: { scale: 1.02, boxShadow: '0 15px 30px rgba(0,0,0,0.1)', transition: { duration: 0.2 } },
-  };
-
-  const headingVariants = {
-    hidden: { opacity: 0, y: -20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: 'easeOut' } },
-  };
-
   return (
     <section
       id="getting-started"
-      className="relative py-24 md:py-32 px-6 lg:px-12 bg-white dark:bg-gray-950 text-gray-900 dark:text-white transition-colors duration-500 overflow-hidden"
+      className="relative py-24 lg:py-32 px-6 lg:px-8 bg-white text-slate-900 overflow-hidden border-b border-slate-100"
     >
-      {/* NO ABSTRACT BACKGROUNDS OR BLOBS */}
+      {/* Minimal Wire Grid Background Sync */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000002_1px,transparent_1px),linear-gradient(to_bottom,#00000002_1px,transparent_1px)] bg-[size:5rem_5rem] pointer-events-none" />
 
-      <div className="relative max-w-7xl mx-auto text-center z-10">
-        <motion.h2
-          className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-16 leading-tight"
-          variants={headingVariants}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
-          style={{ color: primaryColor }} // Using primary color for headline
-        >
-          {/* Subtle text styling: no heavy drop shadow, but a soft text shadow for definition */}
-          <span style={{ textShadow: `0px 2px 4px rgba(0, 0, 0, 0.1)` }}>
-            Your Path to Engagement
-          </span>
-        </motion.h2>
-
+      <div className="relative max-w-7xl mx-auto z-10">
+        
+        {/* Section Header */}
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 lg:gap-16 items-start" /* Align items to start for cleaner look */
+          className="text-center mb-20 flex flex-col items-center"
           variants={containerVariants}
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, amount: 0.2 }}
         >
+          {/* Minimal Tagline Badge */}
+          <motion.div 
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-md bg-slate-50 border border-slate-200 mb-5"
+            variants={itemVariants}
+          >
+            <SparklesIcon className="w-4 h-4 text-slate-600" />
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
+              Execution Blueprint
+            </p>
+          </motion.div>
+
+          <motion.h2
+            className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight max-w-4xl leading-[1.15] text-slate-900"
+            variants={itemVariants}
+          >
+            Your Path to <span style={{ color: primaryColor }}>Engagement</span>
+          </motion.h2>
+        </motion.div>
+
+        {/* Dynamic Process Matrix */}
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-stretch"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.1 }}
+        >
           {stepsData.map(({ iconKey, title, description, ctaText, ctaLink }, index) => {
             const IconComponent = iconMap[iconKey ?? 'BriefcaseIcon'] || BriefcaseIcon;
-            const isLastStep = index === stepsData.length - 1;
 
             return (
               <motion.div
                 key={index}
-                className="relative bg-white dark:bg-gray-800 rounded-xl p-8 flex flex-col items-center text-center shadow-lg border border-gray-200 dark:border-gray-700 transform transition-transform duration-300 ease-in-out"
+                className="group relative bg-white border border-slate-200 rounded-2xl p-8 flex flex-col justify-between items-start transition-all duration-200 hover:border-slate-900 hover:shadow-xl"
                 variants={itemVariants}
-                whileHover="hover"
+                whileHover={{ y: -6 }}
+                whileTap={{ scale: 0.99 }}
               >
-                {/* Step Number Badge - Redesigned for a cleaner look */}
-                <div
-                  className="absolute -top-4 left-1/2 -translate-x-1/2 w-10 h-10 flex items-center justify-center rounded-full text-black font-bold text-lg shadow-md"
-                  style={{ backgroundColor: secondaryColor }} // Secondary color for the badge
-                >
-                  {index + 1}
+                <div className="w-full">
+                  {/* Step Metrics Row */}
+                  <div className="w-full flex items-center justify-between mb-8">
+                    {/* Crisp Line-Art Icon Box */}
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-slate-50 border border-slate-200 transition-colors duration-200 group-hover:bg-slate-900 group-hover:border-slate-900">
+                      <IconComponent className="w-5 h-5 text-slate-800 transition-colors duration-200 group-hover:text-white" strokeWidth={2} />
+                    </div>
+                    {/* Structural Monochromatic Step Counter */}
+                    <span className="text-xs font-black font-mono tracking-widest text-slate-400 bg-slate-50 border border-slate-100 px-2.5 py-1 rounded">
+                      PHASE 0{index + 1}
+                    </span>
+                  </div>
+
+                  {/* Step Title */}
+                  <h3 className="text-xl font-bold mb-3 text-slate-900 tracking-tight leading-snug">
+                    {title}
+                  </h3>
+                  
+                  {/* Step Description */}
+                  <p className="text-sm text-slate-500 leading-relaxed mb-8 font-normal">
+                    {description}
+                  </p>
                 </div>
 
-                {/* Icon Container - Clean, solid background from secondaryColor */}
-                <div
-                  className="w-16 h-16 rounded-full flex items-center justify-center text-white mb-6 mt-4 p-2 shadow-sm"
-                  style={{ backgroundColor: primaryColor }}
-                >
-                  <IconComponent className="w-8 h-8 text-white" />
-                </div>
-
-                {/* Title */}
-                <h3 className="text-xl md:text-2xl font-bold mb-3 text-gray-900 dark:text-white leading-snug">
-                  {title}
-                </h3>
-                {/* Description */}
-                <p className="text-base text-gray-600 dark:text-gray-300 flex-grow mb-6 leading-relaxed">
-                  {description}
-                </p>
-
-                {/* Button */}
+                {/* Micro-Action Node Button Link */}
                 {ctaText && ctaLink && (
                   <Link
                     href={ctaLink}
-                    className="inline-flex items-center gap-2 text-base font-semibold px-6 py-3 rounded-full text-white shadow-md transition-all duration-300 ease-in-out transform hover:scale-105"
-                    style={{
-                      backgroundColor: primaryColor,
-                      // No gradient on button, keep it clean
-                    }}
+                    className="w-full inline-flex items-center justify-between gap-2 text-xs font-bold uppercase tracking-wider px-5 py-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 transition-all duration-200 group-hover:bg-slate-900 group-hover:border-slate-900 group-hover:text-white group-active:scale-95 shadow-sm mt-auto"
                   >
-                    {ctaText}
-                    <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    <span>{ctaText}</span>
+                    <ArrowRightIcon className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" strokeWidth={2.5} />
                   </Link>
-                )}
-
-                {/* Connector Line and Arrow (Desktop Only, not last step) */}
-                {!isLastStep && (
-                  <div className="hidden md:flex absolute top-[calc(50%+20px)] left-[calc(100%+32px)] w-16 h-px bg-gray-300 dark:bg-gray-700 items-center justify-end">
-                    <ArrowRightIcon className="w-6 h-6 text-gray-500 dark:text-gray-400 -mr-3" />
-                  </div>
                 )}
               </motion.div>
             );
