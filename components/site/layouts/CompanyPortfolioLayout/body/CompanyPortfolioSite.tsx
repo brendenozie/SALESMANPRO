@@ -32,10 +32,10 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 export default function CompanyPortfolioSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   
   // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
-  const { data: blogsData } = useSWR(`${apiBaseUrl}/site/blogs?id=${companyId}`, fetcher);
-  const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
-  const { data: eventsData } = useSWR(`${apiBaseUrl}/site/events?id=${companyId}`, fetcher);
+  // const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
+  // const { data: blogsData } = useSWR(`${apiBaseUrl}/site/blogs?id=${companyId}`, fetcher);
+  // const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
+  // const { data: eventsData } = useSWR(`${apiBaseUrl}/site/events?id=${companyId}`, fetcher);
 
   return (
       <main className="min-h-screen bg-gray-100 font-sans">
@@ -60,16 +60,16 @@ export default function CompanyPortfolioSite({ pageData, companyId }: { pageData
         {/* {eventsData?.data && <EventsUpdatesSection />} */}
 
         {/* News - Render when data is ready */}
-        {blogsData?.data && <NewsSection pagedata={pageData} />}
+        {<NewsSection pagedata={pageData} />}
 
         {/* Testimonials & News - Render when data is ready */}
-        {testimonialsData?.data && <TestimonialsNewsSection pagedata={pageData} />}
+        {<TestimonialsNewsSection pagedata={pageData} />}
 
         {/* Call to Action - Bold */}
         <CtaBoldSection pagedata={pageData} />
 
         {/* FAQs - Render when data is ready */}
-        {faqsData?.data && <FAQSection pagedata={pageData} />}
+        {<FAQSection pagedata={pageData} />}
       </main>
   );
 }

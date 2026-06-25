@@ -210,7 +210,7 @@ export default function GreyServicesSection({ services = defaultServices, storeS
                 {/* Media Presentation Layer */}
                 <div className="relative h-64 sm:h-80 w-full overflow-hidden">
                   <img
-                    src={activeService.images[0] || activeService.imageUrl }
+                    src={activeService.images?.[0] || activeService.imageUrl}
                     alt={activeService.name}
                     className="object-cover w-full h-full scale-100 transition-transform duration-700 ease-out"
                   />

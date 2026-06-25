@@ -21,7 +21,7 @@ interface PageProps {
   }>;
 }
 
-export const dynamic = 'force-dynamic';
+// export const dynamic = 'force-dynamic';
 
 export default async function ProductListPage({ params, searchParams }: PageProps) {
   const { slug } = await params;

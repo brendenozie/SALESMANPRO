@@ -14,70 +14,91 @@ import {
 } from '@heroicons/react/24/outline';
 
 // --- TYPES ---
+export interface ICoreValue {
+  id?: string;
+  title: string;
+  description: string | null;
+  icon: string | null;
+}
+
 interface Pillar {
   id: string;
   title: string;
   description: string;
   Icon: React.ElementType<React.SVGProps<SVGSVGElement>>;
-  accentClass: string; // Tailored color themes for individual cards
+  accentClass: string;
   bgGlowClass: string;
 }
 
-// --- PILLARS CONFIGURATION ---
+// Map string values from your database/CMS to the actual Heroicons
+const iconMap: Record<string, React.ElementType<React.SVGProps<SVGSVGElement>>> = {
+  CircleStackIcon,
+  CubeIcon,
+  TruckIcon,
+  ShieldCheckIcon,
+  ChartBarIcon,
+  GlobeAltIcon,
+};
+
+// Cycle styles sequentially if custom ones aren't provided by dynamic data
+const colorThemes = [
+  { accent: 'text-amber-500 border-amber-500/30 group-hover:border-amber-400', glow: 'from-amber-500/10 to-transparent' },
+  { accent: 'text-orange-500 border-orange-500/30 group-hover:border-orange-400', glow: 'from-orange-500/10 to-transparent' },
+  { accent: 'text-zinc-400 border-zinc-700 group-hover:border-zinc-500', glow: 'from-zinc-500/10 to-transparent' },
+  { accent: 'text-emerald-500 border-emerald-500/30 group-hover:border-emerald-400', glow: 'from-emerald-500/10 to-transparent' },
+  { accent: 'text-blue-500 border-blue-500/30 group-hover:border-blue-400', glow: 'from-blue-500/10 to-transparent' },
+  { accent: 'text-indigo-500 border-indigo-500/30 group-hover:border-indigo-400', glow: 'from-indigo-500/10 to-transparent' },
+];
+
+// --- STATIC PILLARS CONFIGURATION (FALLBACK) ---
 const corporatePillars: Pillar[] = [
   {
     id: 'pillar-1',
     title: 'Precious Metals Liquidity',
-    description:
-      'Streamlined gold purchasing pipelines combining robust regional sourcing protocols with secure, verified tier-1 assay compliance.',
+    description: 'Streamlined gold purchasing pipelines combining robust regional sourcing protocols with secure, verified tier-1 assay compliance.',
     Icon: CircleStackIcon,
-    accentClass: 'text-amber-500 border-amber-500/30 group-hover:border-amber-400',
-    bgGlowClass: 'from-amber-500/10 to-transparent',
+    accentClass: colorThemes[0].accent,
+    bgGlowClass: colorThemes[0].glow,
   },
   {
     id: 'pillar-2',
     title: 'Industrial Cathode Supply',
-    description:
-      'High-grade copper cathode distribution frameworks built to meet scaling international manufacturing and industrial infrastructure demands.',
+    description: 'High-grade copper cathode distribution frameworks built to meet scaling international manufacturing and industrial infrastructure demands.',
     Icon: CubeIcon,
-    accentClass: 'text-orange-500 border-orange-500/30 group-hover:border-orange-400',
-    bgGlowClass: 'from-orange-500/10 to-transparent',
+    accentClass: colorThemes[1].accent,
+    bgGlowClass: colorThemes[1].glow,
   },
   {
     id: 'pillar-3',
     title: 'Logistics & Security Precision',
-    description:
-      'End-to-end global supply chain execution featuring locked transit networks, strict multi-modal freight management, and risk-managed clearing.',
+    description: 'End-to-end global supply chain execution featuring locked transit networks, strict multi-modal freight management, and risk-managed clearing.',
     Icon: TruckIcon,
-    accentClass: 'text-zinc-400 border-zinc-700 group-hover:border-zinc-500',
-    bgGlowClass: 'from-zinc-500/10 to-transparent',
+    accentClass: colorThemes[2].accent,
+    bgGlowClass: colorThemes[2].glow,
   },
   {
     id: 'pillar-4',
     title: 'Rigorous Compliance Frameworks',
-    description:
-      'Uncompromising alignment with global AML, sourcing transparencies, and international trading standards to guarantee institutional-grade safety.',
+    description: 'Uncompromising alignment with global AML, sourcing transparencies, and international trading standards to guarantee institutional-grade safety.',
     Icon: ShieldCheckIcon,
-    accentClass: 'text-emerald-500 border-emerald-500/30 group-hover:border-emerald-400',
-    bgGlowClass: 'from-emerald-500/10 to-transparent',
+    accentClass: colorThemes[3].accent,
+    bgGlowClass: colorThemes[3].glow,
   },
   {
     id: 'pillar-5',
     title: 'Risk-Controlled Execution',
-    description:
-      'Sophisticated market structural positioning and operational hedging parameters built to protect value and absorb international volatility.',
+    description: 'Sophisticated market structural positioning and operational hedging parameters built to protect value and absorb international volatility.',
     Icon: ChartBarIcon,
-    accentClass: 'text-blue-500 border-blue-500/30 group-hover:border-blue-400',
-    bgGlowClass: 'from-blue-500/10 to-transparent',
+    accentClass: colorThemes[4].accent,
+    bgGlowClass: colorThemes[4].glow,
   },
   {
     id: 'pillar-6',
     title: 'Global Demand Optimization',
-    description:
-      'Connecting regional extraction strongholds directly to high-liquidity international nodes, forging continuous commercial utility.',
+    description: 'Connecting regional extraction strongholds directly to high-liquidity international nodes, forging continuous commercial utility.',
     Icon: GlobeAltIcon,
-    accentClass: 'text-indigo-500 border-indigo-500/30 group-hover:border-indigo-400',
-    bgGlowClass: 'from-indigo-500/10 to-transparent',
+    accentClass: colorThemes[5].accent,
+    bgGlowClass: colorThemes[5].glow,
   },
 ];
 
@@ -99,15 +120,40 @@ const cardVariants = {
   },
 };
 
-export default function CorporatePillarsSection({pagedata}: {pagedata: any}) {
-  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.15 });
-  const companyName = pagedata?.companyName || "Trading Limited"; // Fallback to a default name if not provided
-  const companyDescription = pagedata?.companyDescription || "We manage sophisticated trading channels for refined and industrial metals, combining regional sourcing access with institutional compliance, structural security, and cross-border execution precision."; // Fallback description
-  const companyTagline = pagedata?.companyTagline || "At the intersection of global demand and trusted supply."; // Fallback tagline
+interface CorporatePillarsProps {
+  pagedata?: {
+    companyName?: string;
+    companyDescription?: string;
+    companyTagline?: string;
+    sectionSubtitle?: string | null | undefined;
+    sectionTitle?: string | null | undefined;
+    sectionDescription?: string | null | undefined;
+    CoreValues?: ICoreValue[];
+  };
+}
 
-  const featuresToRender = pagedata?.coreValues?.length > 0
-    ? pagedata.coreValues.sort((a: any, b: any) => a.order - b.order)
-    : corporatePillars; // Use mock data if no dynamic data is provided
+export default function CorporatePillarsSection({ pagedata }: CorporatePillarsProps) {
+  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.15 });
+
+  const companyName = pagedata?.sectionSubtitle || "Trading Limited &bull; Operational Architecture";
+  const companyDescription = pagedata?.sectionDescription || "We manage sophisticated trading channels for refined and industrial metals, combining regional sourcing access with institutional compliance, structural security, and cross-border execution precision.";
+  const companyTagline = pagedata?.sectionTitle || "At the intersection of global demand and trusted supply.";
+
+  // Transform runtime ICoreValue[] data into Pillar structures with fallback layouts
+  const featuresToRender: Pillar[] = pagedata?.CoreValues && pagedata.CoreValues.length > 0
+    ? pagedata.CoreValues.map((value, idx) => {
+        const theme = colorThemes[idx % colorThemes.length];
+        return {
+          id: value.id || `dynamic-pillar-${idx}`,
+          title: value.title,
+          description: value.description || '',
+          // Match string to component or fall back to default GlobeAltIcon
+          Icon: value.icon && iconMap[value.icon] ? iconMap[value.icon] : GlobeAltIcon, 
+          accentClass: theme.accent,
+          bgGlowClass: theme.glow,
+        };
+      })
+    : corporatePillars;
 
   return (
     <section
@@ -137,7 +183,7 @@ export default function CorporatePillarsSection({pagedata}: {pagedata: any}) {
             transition={{ duration: 0.5 }}
             className="text-xs uppercase tracking-[0.25em] text-amber-500 font-bold mb-4"
           >
-            {companyName || "Trading Limited"} &bull; Operational Architecture
+            {companyName} 
           </motion.p>
           
           <motion.h2 
@@ -167,7 +213,7 @@ export default function CorporatePillarsSection({pagedata}: {pagedata: any}) {
           animate={inView ? 'visible' : 'hidden'}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          {featuresToRender.map((pillar : { id: string; Icon: React.ComponentType; title: string; description: string }) => {
+          {featuresToRender.map((pillar) => {
             const IconComponent = pillar.Icon;
             return (
               <motion.div
@@ -203,17 +249,6 @@ export default function CorporatePillarsSection({pagedata}: {pagedata: any}) {
             );
           })}
         </motion.div>
-
-        {/* Secondary Institutional CTA */}
-        <div className="mt-20 text-center">
-          {/* <a
-            href="#compliance"
-            className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-zinc-100 text-zinc-950 text-sm font-bold tracking-wider uppercase hover:bg-white shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
-          >
-            Access Trade Desk & Compliance Portals
-            <ArrowRightIcon className="w-4 h-4 text-zinc-950" />
-          </a> */}
-        </div>
       </div>
     </section>
   );

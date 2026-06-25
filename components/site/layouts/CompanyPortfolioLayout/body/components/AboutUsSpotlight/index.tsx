@@ -160,12 +160,12 @@ export default function CorporateProfileSection({pagedata}: {pagedata: any}) {
                 <ArrowUpRightIcon className="w-4 h-4 text-zinc-950" />
               </a>
               
-              <a
+              {/* <a
                 href="#compliance-reports"
                 className="inline-flex items-center gap-2 border border-zinc-800 text-zinc-300 font-bold py-3.5 px-7 rounded-xl text-xs tracking-wider uppercase bg-zinc-900/20 hover:bg-zinc-900/50 hover:border-zinc-700 transition-all duration-300"
               >
                 Download Transparency Matrix
-              </a>
+              </a> */}
             </div>
           </motion.div>
         </div>
