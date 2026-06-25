@@ -1,143 +1,114 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
-import { LockClosedIcon, ArrowRightIcon } from '@heroicons/react/24/solid'; // Using solid icons
+import { ArrowRightIcon, ShieldCheckIcon } from '@heroicons/react/24/outline'; // Fine outline stroke vectors
 
-// Loader for next/image
-const loader = ({ src, width, quality }: any) =>
-  `${src}?w=${width}&q=${quality || 75}`;
+interface SecurityCtaSectionProps {
+  title?: string;
+  subtitle?: string;
+  buttonLabel?: string;
+  buttonHref?: string;
+  imageUrl?: string | undefined | null;
+}
 
-// Default security-focused colors
-const defaultPrimary = '#00A880'; // Teal
-const defaultSecondary = '#3B82F6'; // Blue
+const defaultPrimary = '#00A880'; 
 
 export default function SecurityCtaSection({
   title: propTitle,
   subtitle: propSubtitle,
   buttonLabel: propButtonLabel,
   buttonHref: propButtonHref,
-  imageUrl: propImageUrl,
-}: {
-  title?: string;
-  subtitle?: string;
-  buttonLabel?: string;
-  buttonHref?: string;
-  imageUrl?: string | undefined | null;
-}) {
-  const { storeFormData } = useStoreContext() as { storeFormData?: any }; // Ensure safe access
+}: SecurityCtaSectionProps) {
+  const { storeFormData } = useStoreContext() as { storeFormData?: any }; 
   
-  // Theme colors
   const primaryColor = storeFormData?.themeSettings?.primaryColor || defaultPrimary;
-  const secondaryColor = storeFormData?.themeSettings?.secondaryColor || defaultSecondary;
-  const buttonBg = secondaryColor; // Use secondary for high-contrast button
-  const buttonHoverBg = primaryColor; // Use primary for hover effect
-  // Dark overlay for visibility on abstract backgrounds
-  const overlayColor = 'rgba(0, 0, 0, 0.6)'; 
 
-  // --- SECURITY-FOCUSED FALLBACK CONTENT ---
-  const defaultTitle = `Ready to Fortify Your {accent}Digital Perimeter{/accent}?`;
+  const defaultTitle = `Ready to Fortify Your Digital Perimeter?`;
   const defaultSubtitle =
-    'Don\'t wait for an incident. Partner with our experts to deploy next-gen defense strategies tailored to your enterprise.';
-  const defaultButtonLabel = 'Begin Your Security Assessment';
+    "Don't wait for an exploit incident. Partner with our architecture specialists to immediately deploy structured defense strategies optimized for your operational constraints.";
+  const defaultButtonLabel = 'Initialize Security Assessment';
 
-  // Pull from props or defaults
   const title = propTitle || defaultTitle;
   const subtitle = propSubtitle || defaultSubtitle;
-  let buttonLabel = propButtonLabel || defaultButtonLabel;
+  const buttonLabel = propButtonLabel || defaultButtonLabel;
+  
   let buttonHref = propButtonHref || (storeFormData?.slug ? `/${storeFormData.slug}/contact` : '/contact');
 
-  // Link fallback logic
-  if (
-    (!buttonHref || buttonHref === '#') &&
-    storeFormData?.contactEmail
-  ) {
+  if ((!buttonHref || buttonHref === '#') && storeFormData?.contactEmail) {
     buttonHref = `mailto:${storeFormData.contactEmail}`;
   }
 
-  // Image URL - using a dynamic tech/security fallback
-  const imageUrl =
-    propImageUrl ||
-    'https://images.unsplash.com/photo-1541701490263-8822ab1a09d3?q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1400&h=700&fit=crop'; // Abstract digital network/circuitry
-
-  // Render Title with {accent} replacement
-  const renderTitle = (fullTitle: string, accentColor: string) => {
-    const parts = fullTitle.split(/\{accent\}(.*?)\{accent}/g);
-    return parts.map((part, idx) => (
-        idx % 2 === 1 ? (
-            <span key={idx} style={{ color: accentColor }}>{part}</span>
-        ) : (
-            <React.Fragment key={idx}>{part}</React.Fragment>
-        )
-    ));
-  };
-
+  const cleanTitleText = title
+    .replace('{accent}', '')
+    .replace('{/accent}', '')
+    .replace('{accent}', '');
 
   return (
-    <section className="py-20 md:py-32 px-4 flex justify-center items-center">
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: 'easeOut' }}
-        viewport={{ once: true, amount: 0.3 }}
-        className="relative w-full max-w-6xl rounded-3xl overflow-hidden shadow-2xl aspect-video md:aspect-[3/1]"
+    <AnimatePresence>
+      <section 
+        id="security-gateway-cta"
+        className="relative py-28 md:py-36 px-6 lg:px-12 bg-white text-gray-900 overflow-hidden border-b border-gray-100"
       >
-        {/* Background Image: Abstract tech image for security */}
-        <Image
-          src={imageUrl}
-          loader={loader}
-          alt="Digital security network background"
-          fill
-          sizes="(max-width: 768px) 100vw, 1200px"
-          objectFit="cover"
-          className="z-0 transition-transform duration-1000 hover:scale-105"
-          priority={false}
-        /> 
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-16 lg:gap-24 relative z-10">
+          
+          {/* LEFT HEADER PROSE COLUMN */}
+          <div className="w-full lg:w-7/12 text-left">
+            <div className="inline-flex items-center gap-2 mb-4">
+              <span className="w-8 h-[2px]" style={{ backgroundColor: primaryColor }} />
+              <div className="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-gray-500">
+                <ShieldCheckIcon className="w-3.5 h-3.5 stroke-[2.2]" />
+                System Nexus Gateway
+              </div>
+            </div>
 
-        {/* Dynamic Gradient Overlay */}
-        <div
-          className="absolute inset-0 z-10"
-          style={{ 
-            background: `linear-gradient(90deg, ${overlayColor} 0%, rgba(0, 0, 0, 0.3) 100%)`, 
-          }}
-        />
+            <h2 className="text-4xl md:text-5xl font-black tracking-tight text-gray-900 leading-[1.1] mb-6">
+              {cleanTitleText}
+            </h2>
 
-        {/* Content */}
-        <div className="relative z-20 h-full flex flex-col justify-center items-center text-center px-8 py-12 sm:px-12 md:px-16 lg:px-20 text-white">
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 leading-snug drop-shadow-md">
-            {renderTitle(title.replace('{accent}', secondaryColor), secondaryColor)}
-          </h2>
-          {subtitle && (
-            <p className="text-lg md:text-xl max-w-3xl mb-8 font-light drop-shadow-sm">
+            <p className="text-xs text-gray-500 leading-relaxed max-w-xl">
               {subtitle}
             </p>
-          )}
-          {buttonHref && (
-            <Link href={buttonHref}
-              className="inline-flex items-center gap-3 font-bold text-lg py-4 px-10 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-[1.03] hover:ring-4 focus:ring-4 text-white"
-              style={{
-                  backgroundColor: buttonBg, // Secondary color for contrast
-                  // Subtle glow effect
-                  boxShadow: `0 0 20px ${buttonBg}55`,
-                  ['--tw-ring-color']: `${buttonHoverBg}80`,
-              } as React.CSSProperties & Record<string, string>}
-              onMouseEnter={e => {
-                  (e.currentTarget as HTMLAnchorElement).style.backgroundColor = buttonHoverBg; // Primary color on hover
-              }}
-              onMouseLeave={e => {
-                  (e.currentTarget as HTMLAnchorElement).style.backgroundColor = buttonBg;
-              }}
-            >
-              <LockClosedIcon className="w-6 h-6" />
-              {buttonLabel}
-              <ArrowRightIcon className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-            </Link>
-          )}
+          </div>
+
+          {/* RIGHT ACTION CONTROL HUB BLOCK */}
+          <div className="w-full lg:w-5/12 flex flex-col items-start lg:items-end justify-center">
+            <div className="w-full max-w-md border border-gray-100 p-8 bg-gray-50/50 rounded-2xl text-left relative font-mono">
+              
+              {/* Telemetry metadata block lines */}
+              <div className="flex items-center justify-between border-b border-gray-200 pb-4 mb-6 text-[9px] font-bold uppercase tracking-wider text-gray-400">
+                <span>Node Connection Status</span>
+                <span className="text-gray-900 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full animate-ping" style={{ backgroundColor: primaryColor }} />
+                  [READY_STATE]
+                </span>
+              </div>
+
+              <p className="text-[11px] text-gray-500 leading-relaxed mb-6">
+                Requesting an audit establishes an isolated sandbox assessment trace mapping external public-facing structural vectors.
+              </p>
+
+              {buttonHref ? (
+                <Link
+                  href={buttonHref}
+                  className="w-full inline-flex items-center justify-between px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-white transition-all duration-200 rounded-xl hover:opacity-95"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  <span>{buttonLabel}</span>
+                  <ArrowRightIcon className="w-3.5 h-3.5 stroke-[2.5]" />
+                </Link>
+              ) : (
+                <span className="text-[10px] text-gray-400 block border border-dashed border-gray-200 p-3 rounded-lg text-center">
+                  Interface route point omitted.
+                </span>
+              )}
+            </div>
+          </div>
+
         </div>
-      </motion.div>
-    </section>
+      </section>
+    </AnimatePresence>
   );
 }

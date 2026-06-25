@@ -4,76 +4,34 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheckIcon, ArrowDownIcon, ArrowRightIcon } from '@heroicons/react/24/solid'; // Keeping only used icons for cleanliness
+import { ShieldCheckIcon, ArrowRightIcon, LockClosedIcon } from '@heroicons/react/24/solid';
 import { StarIcon, TrophyIcon } from '@heroicons/react/24/solid'; 
 import { Award, Testimonial } from '@/types/typings'; 
 
-// --- ANIMATION VARIANTS (Optimized for Light Mode reveal) ---
-
+// --- ADVANCED MICRO-ANIMATIONS ---
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.1, 
-    },
-  },
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 }
+  }
 };
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 30 }, 
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: 'spring', 
-      stiffness: 80, // Softer spring for subtle feel
-      damping: 15,
-      duration: 0.5,
-    },
-  },
+const telemetryVariants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 100 } }
 };
 
-const imageVariants = {
-  hidden: { opacity: 0, scale: 0.9, x: 0 }, // Subtle scale and no x-offset for mobile
-  visible: {
-    opacity: 1,
-    scale: 1,
-    x: 0,
+const floatingVisualVariants = {
+  animate: {
+    y: [0, -12, 0],
     transition: {
-      type: 'spring',
-      stiffness: 100,
-      damping: 20,
-      delay: 0.3, // Reduced delay for faster initial load
-    },
-  },
-};
-
-// --- UTILITY FUNCTIONS ---
-
-// Helper to correctly handle {accent} text replacement (Kept this, it's good)
-const renderHeadlineWithAccent = (text: string, accentColor: string) => {
-  const parts = text.split(/\{accent\}(.*?)\{\/accent\}/g);
-  return parts.map((part, idx) => {
-    if (idx % 2 === 1) {
-      // Accent part
-      return (
-        <span key={idx} style={{ color: accentColor }} className="drop-shadow-sm">
-          {part}
-        </span>
-      );
-    } else {
-      // Standard part - ensure strong contrast with white/light background
-      return <span key={idx} className="text-gray-900">{part}</span>;
+      duration: 6,
+      repeat: Infinity,
+      ease: "easeInOut"
     }
-  });
+  }
 };
-
-const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-};
-
-// --- Component Start ---
 
 interface HeroSectionProps {
   name: string | undefined | null;
@@ -91,217 +49,202 @@ interface HeroSectionProps {
   awards: Award[] | undefined | null;
 }
 
-export default function SecurityHeroSectionLight({ name, themeSettings, tagline, heroSlides, testimonials, awards }: HeroSectionProps) {
-  
-  // Security firm color defaults (Teal primary, Blue secondary)
-  const primaryColor = themeSettings?.primaryColor || '#00A880';
-  const secondaryColor = themeSettings?.secondaryColor || '#3B82F6';
-  
-  // Security Focused Default Messaging
-  const defaultHeadline = 'Proactive Cyber Defense in a {accent}Complex World{/accent}';
-  const defaultTagline = 'Global Intelligence. Local Action. Absolute Protection.';
-  
-  const headline = heroSlides[0]?.headline || defaultHeadline;
-  
-  // Abstract background for light mode
-  const visualImageUrl = heroSlides[0]?.imageUrl || 'https://images.unsplash.com/photo-1541701490263-8822ab1a09d3?q=80&w=1400&h=700&fit=crop'; 
-  
-  // Use a different placeholder for the distinct visual element
-  const distinctVisualUrl = heroSlides[0]?.productImageUrl || '/placeholder-security-shield.png'; 
+export default function PremiumSecurityHero({ name, themeSettings, tagline, heroSlides, testimonials, awards }: HeroSectionProps) {
+  const primaryColor = themeSettings?.primaryColor || '#00A880'; // e.g., Teal / Cyber Green
+  const secondaryColor = themeSettings?.secondaryColor || '#3B82F6'; // e.g., Deep Tech Blue
 
-  const validTestimonials: Testimonial[] = Array.isArray(testimonials) ? testimonials.filter(t => typeof t.rating === 'number') : [];
+  const headline = heroSlides[0]?.headline || "Proactive Cyber Defense in a {accent}Complex World{/accent}";
+  const distinctVisualUrl = heroSlides[0]?.productImageUrl || '/placeholder-security-shield.png';
+
+  const validTestimonials = Array.isArray(testimonials) ? testimonials.filter(t => typeof t.rating === 'number') : [];
   const reviewCount = validTestimonials.length;
-  const averageRating =
-    reviewCount > 0
-      ? validTestimonials.reduce((sum, t) => sum + (typeof t.rating === 'number' ? t.rating : 0), 0) / reviewCount
-      : 0;
-  const roundedRating = Math.round(averageRating * 2) / 2;
-  const awardsData: Award[] = Array.isArray(awards) && awards.length > 0 ? awards : [];
-  
+  const awardsData = Array.isArray(awards) && awards.length > 0 ? awards : [];
+
+  const renderHeadline = (text: string) => {
+    const parts = text.split(/\{accent\}(.*?)\{\/accent\}/g);
+    return parts.map((part, idx) => {
+      if (idx % 2 === 1) {
+        return (
+          <span key={idx} className="relative inline-block text-gray-900 font-black">
+            {part}
+            <span className="absolute bottom-2 left-0 w-full h-[30%] -z-10 opacity-20 mix-blend-multiply" style={{ backgroundColor: primaryColor }} />
+          </span>
+        );
+      }
+      return <span key={idx} className="font-extrabold text-gray-900">{part}</span>;
+    });
+  };
+
   return (
     <AnimatePresence>
-      <section
-        id="hero"
-        className="relative flex items-center min-h-screen py-24 md:py-32 px-6 lg:px-12 bg-gray-50 overflow-hidden" // Light Mode BG
-      >
+      <section id="hero" className="relative min-h-screen bg-white overflow-hidden flex items-center justify-center py-20 lg:py-0">
         
-        {/* --- Background Pattern/Abstract Shape (Light/Subtle) --- */}
-        <div 
-          className="absolute inset-0 opacity-20" // Reduced opacity slightly for better contrast with text
-          aria-hidden="true"
-          style={{
-            backgroundImage: `url(${visualImageUrl})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            filter: ' blur(5px) brightness(1.6)', // Increased brightness for lighter, softer feel
-          }}
-        />
+        {/* --- THE DEFENSE GRID (Abstract Technical Framework Background) --- */}
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          {/* Dot Matrix Layer */}
+          <div className="absolute inset-0 opacity-[0.15]" style={{ backgroundImage: `radial-gradient(${secondaryColor} 1px, transparent 1px)`, backgroundSize: '24px 24px' }} />
+          {/* Large structural glass geometric shape in the background */}
+          <div className="absolute top-[-10%] right-[-5%] w-[55vw] h-[120vh] bg-gradient-to-bl from-gray-50 via-slate-50/50 to-transparent transform rotate-6 border-l border-gray-100/70" />
+          {/* Radial Ambient Glow */}
+          <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] rounded-full mix-blend-multiply filter blur-[120px] opacity-[0.08] animate-pulse" style={{ backgroundColor: secondaryColor }} />
+        </div>
 
-        {/* Dynamic Accent Element (Subtle, professional line/shape) */}
-        <div 
-          className="absolute bottom-0 left-0 w-full h-1/2 opacity-5 pointer-events-none"
-          style={{ 
-            background: `radial-gradient(circle at 10% 90%, ${secondaryColor}, transparent 70%)`,
-          }}
-        />
-
-        {/* --- Hero Content Grid (Mobile Reordered) --- */}
-        <div className="max-w-7xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center pt-20 md:pt-0">
+        {/* --- MAIN HERO WRAPPER --- */}
+        <div className="w-full max-w-7xl mx-auto px-6 lg:px-12 z-10 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           
-          {/* RIGHT: Visual Element (Now ORDER-1 on mobile) */}
-          <motion.div
-            // **CHANGE 1: Make visible on mobile (remove hidden/flex) and use order utilities**
-            className="lg:col-span-5 flex justify-center lg:justify-end relative mt-12 lg:mt-0 order-1 lg:order-2" 
-            variants={imageVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            <div className="relative w-full max-w-sm aspect-square"> 
-              {/* **CHANGE 2: Mobile visual appeal adjustments** */}
-              <div 
-                className="absolute inset-0 rounded-3xl overflow-hidden transition-all duration-500 ease-in-out hover:scale-105" // Added hover scale
-                style={{
-                    backgroundColor: 'white',
-                    border: `5px solid ${secondaryColor}`,
-                    // Enhanced Shadow for more depth on mobile/light mode
-                    boxShadow: `0 25px 50px -12px rgba(0,0,0,0.25), 0 0 0 5px ${primaryColor}10`,
-                }}
-              >
-                <Image
-                  src={distinctVisualUrl}
-                  loader={imageLoader}
-                  alt="Abstract Digital Shield or Network Visual"
-                  fill
-                  priority
-                  className="object-contain object-center p-8 opacity-95" // Use object-contain to ensure placeholder image isn't cropped weirdly
-                  sizes="(max-width: 1024px) 80vw, 50vw" // Better size definition for mobile
-                /> 
-              </div>
-            </div>
-          </motion.div>
-
-          {/* LEFT: Text Content & CTAs (Now ORDER-2 on mobile) */}
-          <motion.div
-            // **CHANGE 3: Use order-2 on mobile**
-            className="lg:col-span-7 text-center lg:text-left order-2 lg:order-1 pt-12 lg:pt-0" 
+          {/* LEFT: STRUCTURAL COPY & HERO INTEL */}
+          <motion.div 
+            className="lg:col-span-7 space-y-8 text-center lg:text-left flex flex-col items-center lg:items-start"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
           >
-            
-            {/* Tagline - High Contrast and Uppercase for Impact */}
-            <motion.p
-              className="text-lg font-bold uppercase tracking-widest mb-4 text-gray-600"
-              style={{ color: primaryColor }} // Primary accent color
-              variants={itemVariants}
+            {/* System Status Pill Tag */}
+            <motion.div 
+              variants={telemetryVariants}
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-md border border-gray-200 bg-gray-50/80 shadow-sm backdrop-blur-md"
             >
-              {tagline || defaultTagline}
-            </motion.p>
+              <div className="h-2 w-2 rounded-full animate-ping" style={{ backgroundColor: primaryColor }} />
+              <span className="text-[10px] font-black tracking-widest text-gray-500 uppercase">
+                {tagline || "SYSTEMS ACTIVE // ZERO TRUST ENFORCED"}
+              </span>
+            </motion.div>
 
-            {/* Main Title - Large and Dynamic Coloring */}
-            <motion.h1
-              // **CHANGE 4: Reduced font size slightly on mobile for better fit**
-              className="text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight mb-8"
-              variants={itemVariants}
-            >
-              {renderHeadlineWithAccent(headline, secondaryColor)}
-            </motion.h1>
-            
-            {/* Subtitle/Description (Default text for flow) */}
-            <motion.p
-                // **CHANGE 5: Stronger contrast for description text**
-                className="text-xl text-gray-700 max-w-xl mx-auto lg:mx-0 mb-8"
-                variants={itemVariants}
-            >
-                We deliver continuous, intelligent cybersecurity solutions to protect your most valuable assets from the evolving threat landscape.
-            </motion.p>
+            {/* Premium Typographic Stack */}
+            <div className="space-y-4 max-w-2xl lg:max-w-none">
+              <motion.h1 
+                variants={telemetryVariants}
+                className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-gray-900 leading-[1.08]"
+              >
+                {renderHeadline(headline)}
+              </motion.h1>
 
-            {/* Trust Signals (Embedded for Credibility) */}
-            <motion.div
-              // **CHANGE 6: Added padding/background to trust signals for mobile clarity**
-              className="mb-10 flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-3 text-gray-700 bg-white/70 backdrop-blur-sm p-4 rounded-xl shadow-md mx-auto lg:mx-0 max-w-fit"
-              variants={itemVariants}
+              <motion.p 
+                variants={telemetryVariants}
+                className="text-lg sm:text-xl text-gray-500 font-normal leading-relaxed max-w-xl mx-auto lg:mx-0"
+              >
+                Enterprise infrastructure demands more than reactive patching. We position highly specialized execution layers to safeguard your high-value digital systems.
+              </motion.p>
+            </div>
+
+            {/* CTA Interaction Blocks */}
+            <motion.div 
+              variants={telemetryVariants}
+              className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
             >
-              {reviewCount > 0 && (
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-0.5">
-                    {/* Star Rating Render - Darker for Light BG */}
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <StarIcon
-                        key={i}
-                        className={`w-5 h-5 transition-colors duration-300 ${i < Math.floor(roundedRating) ? 'text-yellow-500' : 'text-gray-300'}`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-sm font-semibold text-gray-900">
-                    {averageRating.toFixed(1)}/5
-                  </span>
-                  <span className="text-sm hidden sm:inline"> {/* Hidden on tiny mobile screens */}
-                    ({reviewCount} verified reviews)
-                  </span>
+              <Link href="#contact" className="group relative w-full sm:w-auto overflow-hidden rounded-xl">
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex items-center justify-center gap-3 px-8 py-4 font-bold text-sm text-white shadow-md transition-all duration-300"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  <ShieldCheckIcon className="w-5 h-5 transition-transform group-hover:rotate-6" />
+                  Request Infrastructure Audit
+                </motion.div>
+              </Link>
+
+              <Link href="#services" className="group w-full sm:w-auto">
+                <motion.div
+                  whileHover={{ scale: 1.02, backgroundColor: '#f9fafb' }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex items-center justify-center gap-2 px-8 py-4 font-semibold text-sm border bg-transparent rounded-xl transition-all duration-200"
+                  style={{ color: textSecondaryFallback(secondaryColor), borderColor: '#e5e7eb' }}
+                >
+                  <span>Our Architecture</span>
+                  <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </motion.div>
+              </Link>
+            </motion.div>
+
+            {/* Embedded Live Trust Metrics */}
+            <motion.div 
+              variants={telemetryVariants}
+              className="flex flex-wrap justify-center lg:justify-start items-center gap-6 border-t border-gray-100 pt-6 w-full"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gray-50 rounded-lg border border-gray-100">
+                  <LockClosedIcon className="w-5 h-5" style={{ color: secondaryColor }} />
                 </div>
-              )}
+                <div>
+                  <div className="text-xs font-bold text-gray-900">99.99% Resilience</div>
+                  <div className="text-[11px] text-gray-400">Threat Mitigation Vector</div>
+                </div>
+              </div>
+
               {awardsData.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <TrophyIcon className="w-5 h-5 text-yellow-500" />
-                  <span className="text-sm font-semibold text-gray-700">
-                    Awarded: {awardsData[0]?.name}
-                  </span>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gray-50 rounded-lg border border-gray-100">
+                    <TrophyIcon className="w-5 h-5 text-amber-500" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-gray-900 truncate max-w-[160px]">{awardsData[0].name}</div>
+                    <div className="text-[11px] text-gray-400">Industry Validation</div>
+                  </div>
                 </div>
               )}
             </motion.div>
-
-            {/* Call-to-Action Buttons - Prominent and Clear */}
-            <motion.div
-              className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4"
-              variants={itemVariants}
-            >
-              {/* Primary CTA (Assessment/Contact) */}
-              <Link
-                href="#contact"
-                // **CHANGE 7: Made mobile button full width for better tapping area**
-                className="inline-flex items-center gap-3 text-base font-bold px-8 py-4 rounded-xl shadow-2xl transition-all duration-300 transform hover:scale-105 hover:opacity-90 text-white w-full sm:w-auto justify-center" 
-                style={{ 
-                    backgroundColor: primaryColor, 
-                    boxShadow: `0 4px 15px -3px ${primaryColor}60`,
-                }} 
-              >
-                <ShieldCheckIcon className="w-5 h-5" />
-                Start Your Free Assessment
-              </Link>
-              
-              {/* Secondary CTA (Services/Explore) - Re-enabled for completeness */}
-              <Link
-                href="#services"
-                // **CHANGE 8: Made mobile button full width for better tapping area**
-                className="inline-flex items-center gap-3 text-base font-semibold px-8 py-4 rounded-xl transition-all duration-300 ease-in-out transform hover:scale-105 hover:bg-gray-100 w-full sm:w-auto justify-center"
-                style={{
-                  backgroundColor: 'transparent',
-                  color: secondaryColor, // Use secondary color for text
-                  border: `2px solid ${secondaryColor}`,
-                }}
-              >
-                {/* Changed ClockIcon to ArrowRightIcon for more action, kept original but commented out */}
-                <ArrowRightIcon className="w-5 h-5" />
-                Explore Services
-              </Link>
-            </motion.div>
-
           </motion.div>
-          
-        </div>
-        
-        {/* Scroll Indicator */}
-        <motion.div 
-            className="absolute bottom-10 left-1/2 transform -translate-x-1/2"
-            initial={{ y: -10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ repeat: Infinity, duration: 1, ease: 'easeInOut' }}
-        >
-            <ArrowDownIcon className="w-6 h-6 text-gray-500 animate-bounce" />
-        </motion.div>
 
+          {/* RIGHT: THE FLOATING INTERACTIVE TELEMETRY FRAME */}
+          <div className="lg:col-span-5 flex justify-center items-center relative">
+            
+            {/* Structural Technical Frame Backdrop */}
+            <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_45%,#ef4444_45%,#ef4444_55%,transparent_55%)] bg-[size:10px_10px] opacity-[0.03] pointer-events-none" />
+
+            <motion.div
+              variants={floatingVisualVariants}
+              animate="animate"
+              className="relative w-full max-w-sm aspect-[4/5] rounded-[2rem] p-1 bg-gradient-to-b from-gray-100 to-transparent shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)] group"
+            >
+              {/* Glassmorphic Shell Outer Layer */}
+              <div className="w-full h-full rounded-[1.9rem] bg-white border border-white p-6 flex flex-col justify-between relative overflow-hidden">
+                
+                {/* Visual Header HUD element */}
+                <div className="flex justify-between items-center opacity-40 border-b border-gray-100 pb-4">
+                  <span className="text-[9px] font-mono tracking-widest text-gray-500">CORE_SHIELD_V4.8</span>
+                  <div className="flex gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+                  </div>
+                </div>
+
+                {/* Primary Core Asset Image Container */}
+                <div className="relative w-full h-[60%] my-auto flex items-center justify-center transform group-hover:scale-[1.03] transition-transform duration-700 ease-out">
+                  <Image
+                    src={distinctVisualUrl}
+                    alt={`${name || 'Security'} platform engine interface`}
+                    loader={({ src }) => src}
+                    fill
+                    priority
+                    className="object-contain p-4 drop-shadow-[0_16px_24px_rgba(0,0,0,0.04)]"
+                    sizes="(max-width: 1024px) 80vw, 30vw"
+                  />
+                </div>
+
+                {/* Simulated Floating Status Callout Card */}
+                <div className="bg-white/80 backdrop-blur-md border border-gray-100 shadow-sm p-3.5 rounded-xl flex items-center gap-3 transform translate-y-2 group-hover:-translate-y-1 transition-transform duration-500">
+                  <div className="h-8 w-8 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-inner" style={{ backgroundColor: primaryColor }}>
+                    ✓
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-bold text-gray-900 truncate">Secured Endpoint Active</div>
+                    <div className="text-[10px] text-gray-400 font-mono tracking-tighter">INTELLIGENCE NETWORK REALTIME</div>
+                  </div>
+                </div>
+
+              </div>
+            </motion.div>
+          </div>
+
+        </div>
       </section>
     </AnimatePresence>
   );
+}
+
+// Utility styling helper fallback
+function textSecondaryFallback(color: string) {
+  return color === '#3B82F6' ? '#2563EB' : color;
 }

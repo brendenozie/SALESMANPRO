@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -11,11 +11,9 @@ import {
   BugAntIcon, 
   LockClosedIcon, 
   GlobeAltIcon, 
-  MagnifyingGlassIcon, // Added for analysis/discovery
+  MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
-// Assuming useStoreContext, IStoreCategory, ISubcategory are imported correctly
 
-// Map service names to Heroicon components for Security
 const iconMap: Record<string, React.ElementType> = {
   'Cyber Threat Defense': ShieldCheckIcon,
   'Network Security': ServerStackIcon,
@@ -33,7 +31,6 @@ type Offering = {
   iconComponent: React.ElementType;
 };
 
-// **Security-focused** Fallback Data (Max 6 for the grid)
 const defaultSecuritySolutions: Offering[] = [
   { title: 'Cyber Threat Defense', desc: 'Proactive defense against ransomware, malware, and zero-day attacks with 24/7 monitoring.', iconComponent: ShieldCheckIcon },
   { title: 'Network Infrastructure Security', desc: 'Secure your core systems and cloud environments with robust firewalls and intrusion prevention.', iconComponent: ServerStackIcon },
@@ -43,23 +40,21 @@ const defaultSecuritySolutions: Offering[] = [
   { title: 'Managed Security Services (MSSP)', desc: 'Full outsourced security operations, threat hunting, and incident response management.', iconComponent: GlobeAltIcon },
 ];
 
-// Framer Motion variants
 const headerVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 20, scale: 0.98 },
+  hidden: { opacity: 0, y: 24 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    scale: 1,
     transition: {
-      delay: i * 0.08, // Subtle stagger
+      delay: i * 0.05,
       type: 'spring',
-      stiffness: 100,
-      damping: 15,
+      stiffness: 150,
+      damping: 20,
     },
   }),
 };
@@ -75,21 +70,15 @@ interface BusinessSectionProps {
   StoreCategory: any[];
 }
 
-// Helper to get icon
 const getIcon = (title: string): React.ElementType => {
-    const Icon = iconMap[title] || iconMap[title.split(' ')[0] as keyof typeof iconMap];
-    return Icon || ShieldCheckIcon; 
+  const Icon = iconMap[title] || iconMap[title.split(' ')[0] as keyof typeof iconMap];
+  return Icon || ShieldCheckIcon; 
 };
 
-
 export default function SecuritySolutionsSection({ name, slug, description, themeSettings, StoreCategory }: BusinessSectionProps) {
-  
-  // Professional Light Mode Color Palette (Trustworthy Deep Blue)
-  // Use Deep Blue for Primary and a brighter blue for accent/shadows
-  const primaryColor = themeSettings?.primaryColor || '#0056B3'; // Deep Blue
-  const secondaryColor = themeSettings?.secondaryColor || '#007BFF'; // Standard Blue
+  const primaryColor = themeSettings?.primaryColor || '#00A880'; 
+  const secondaryColor = themeSettings?.secondaryColor || '#3B82F6'; 
 
-  // --- Data Processing Logic (Kept from previous version) ---
   const hasCategories = Array.isArray(StoreCategory) && StoreCategory.length > 0;
   let offeringsToShow: Offering[] = [];
 
@@ -107,11 +96,9 @@ export default function SecuritySolutionsSection({ name, slug, description, them
         id: item.id,
         iconComponent: getIcon(item.displayName || item.name || ''),
     }));
-
   } else {
     offeringsToShow = defaultSecuritySolutions;
   }
-  // --- End of Data Processing Logic ---
 
   const sectionTitle = name ? `${name} Solutions` : 'Our Core Security Solutions';
   const subtitle = description || 'Delivering robust, end-to-end protection against the evolving landscape of digital threats.';
@@ -124,40 +111,42 @@ export default function SecuritySolutionsSection({ name, slug, description, them
   return (
     <AnimatePresence>
       <section 
-        id="solutions" 
-        // LIGHT MODE: Clean white background
-        className="relative py-24 md:py-32 px-6 lg:px-12 bg-white text-gray-900 overflow-hidden" 
+        id="services" 
+        className="relative py-28 md:py-36 px-6 lg:px-12 bg-white text-gray-900 overflow-hidden border-b border-gray-100" 
         style={cssVars}
       >
-        {/* Subtle Background Detail (Soft, light pattern) */}
-        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#0056B310_1px,transparent_1px)] [background-size:25px_25px] [background-position:0_0,12.5px_12.5px]"></div>
+        {/* STRUCTURAL BLUEPRINT MATRIX BACKGROUND */}
+        <div className="absolute inset-0 opacity-[0.12] pointer-events-none">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_100%_200px,#00A88010,transparent)]" />
+        </div>
         
         <div className="max-w-7xl mx-auto relative z-10">
           
-          {/* Header */}
+          {/* CONTROL SECTION HEADER */}
           <motion.div
-            className="text-center mb-16 max-w-4xl mx-auto"
+            className="mb-20 text-left max-w-3xl"
             variants={headerVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
           >
-            <p 
-              className="text-lg font-semibold uppercase tracking-widest mb-3" 
-              style={{ color: primaryColor }}
-            >
-              Protecting Your Assets
-            </p>
-            <h2 className="text-4xl md:text-6xl font-extrabold leading-tight text-gray-900">
+            <div className="inline-flex items-center gap-2 mb-4">
+              <span className="w-8 h-[2px] rounded-full" style={{ backgroundColor: primaryColor }} />
+              <p className="text-xs font-black uppercase tracking-widest text-gray-500">
+                Operational Framework
+              </p>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black tracking-tight text-gray-900 leading-[1.1]">
               {sectionTitle}
             </h2>
-            <p className="mt-4 text-xl text-gray-600">
+            <p className="mt-4 text-lg text-gray-500 leading-relaxed max-w-2xl">
               {subtitle}
             </p>
           </motion.div>
 
-          {/* Feature Grid Container */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {/* ASYMMETRIC COMMAND GRID */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {offeringsToShow.map((offer, idx) => {
               const Icon = offer.iconComponent;
               
@@ -168,69 +157,78 @@ export default function SecuritySolutionsSection({ name, slug, description, them
                   variants={cardVariants}
                   initial="hidden"
                   whileInView="visible"
-                  viewport={{ once: true, amount: 0.3 }}
-                  // Card Styling: White/Light, professional shadow, color on hover
-                  className="p-8 rounded-xl border border-gray-100 bg-white shadow-xl transition-all duration-300 transform hover:shadow-[0_15px_30px_-5px_rgba(0,86,179,0.2)] hover:scale-[1.02] flex flex-col justify-start"
+                  viewport={{ once: true, amount: 0.1 }}
+                  whileHover={{ y: -4 }}
+                  className="group relative p-8 rounded-2xl border border-gray-100 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.01)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.04)] transition-all duration-300 flex flex-col justify-between overflow-hidden"
                 >
-                  
-                  {/* Icon & Title */}
-                  <div className="flex items-start mb-4">
+                  {/* Subtle active accent corner indicator */}
+                  <div 
+                    className="absolute top-0 left-0 w-full h-[3px] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"
+                    style={{ backgroundColor: primaryColor }}
+                  />
+
+                  <div>
+                    {/* ICON ARCHITECTURE */}
                     <div 
-                      className="p-3 rounded-lg mr-4 flex-shrink-0"
+                      className="w-12 h-12 rounded-xl flex items-center justify-center text-white mb-6 transition-transform duration-300 group-hover:scale-105"
                       style={{ 
                         backgroundColor: primaryColor,
-                        boxShadow: `0 5px 15px -5px ${primaryColor}80`,
+                        boxShadow: `0 8px 24px -6px ${primaryColor}40`,
                       }}
                     >
-                      {/* Icon Color is White for contrast */}
-                      <Icon className="w-8 h-8 text-white" />
+                      <Icon className="w-5 h-5 text-white" />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 leading-snug">
+
+                    {/* TYPOGRAPHY CORE */}
+                    <h3 className="text-xl font-bold text-gray-900 tracking-tight mb-3 group-hover:text-gray-900">
                       {offer.title}
                     </h3>
+                    <p className="text-sm text-gray-500 leading-relaxed mb-8">
+                      {offer.desc}
+                    </p>
                   </div>
-
-                  {/* Description */}
-                  <p className="text-gray-600 mb-6 flex-grow">
-                    {offer.desc}
-                  </p>
                   
-                  {/* Call to Action */}
+                  {/* FLOATING ACTION ARROW */}
                   <Link
                     href={offer.id ? `/${slug}/service/${offer.id}` : `/${slug}/contact`}
-                    className="inline-flex items-center gap-2 text-base font-semibold transition-all duration-300 group mt-auto"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold tracking-wide uppercase transition-colors duration-200 mt-auto"
                     style={{ color: primaryColor }}
                   >
-                    Explore Service
-                    <ArrowRightIcon className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                    <span>Analyze Scope</span>
+                    <ArrowRightIcon className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1" />
                   </Link>
                 </motion.div>
               );
             })}
           </div>
           
-          {/* Main CTA after the grid */}
+          {/* COMPACT FOOTER ANCHOR */}
           <motion.div 
-            className="text-center mt-20"
-            initial={{ opacity: 0, y: 20 }}
+            className="mt-20 flex flex-col sm:flex-row items-center justify-between p-8 rounded-2xl bg-gray-50/50 border border-gray-100/80 backdrop-blur-sm gap-6"
+            initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.6 }}
-            viewport={{ once: true, amount: 0.5 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            viewport={{ once: true }}
           >
-            <Link
-              href={`/${slug}/contact`}
-              className="inline-flex items-center gap-3 text-lg font-bold px-10 py-4 rounded-full transition-all duration-300 transform hover:scale-[1.05] shadow-xl text-white"
-              style={{ 
-                background: primaryColor, 
-                boxShadow: `0 10px 20px -5px ${primaryColor}80` 
-              }}
-            >
-              <ShieldCheckIcon className="w-6 h-6" />
-              Request a Security Consultation
+            <div className="text-left">
+              <h4 className="text-base font-bold text-gray-900">Need an enterprise matrix overview?</h4>
+              <p className="text-xs text-gray-500 mt-0.5">Let our engineers map out your target infrastructure requirements.</p>
+            </div>
+
+            <Link href={`/${slug}/contact`}>
+              <motion.button
+                whileHover={{ scale: 1.02, y: -1 }}
+                whileTap={{ scale: 0.98 }}
+                className="inline-flex items-center gap-2 font-bold tracking-wide text-xs uppercase px-6 py-4 rounded-xl text-white shadow-md"
+                style={{ 
+                  backgroundColor: primaryColor, 
+                  boxShadow: `0 6px 20px -4px ${primaryColor}30`,
+                }}
+              >
+                <ShieldCheckIcon className="w-4 h-4" />
+                Initialize System Audit
+              </motion.button>
             </Link>
-            <p className="mt-4 text-sm text-gray-500">
-                Start protecting your business today.
-            </p>
           </motion.div>
 
         </div>

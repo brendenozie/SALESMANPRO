@@ -2,11 +2,10 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { EnvelopeIcon, PhoneIcon, MapPinIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'; // Updated icons for better visual cues
+import { EnvelopeIcon, PhoneIcon, MapPinIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { useStoreContext } from '@/contexts/StoreContext';
 
-// Type definitions for clarity
 interface GeoLocation {
   lat: number;
   lng: number;
@@ -25,7 +24,7 @@ interface StoreFormData {
   address?: string;
   geoLocation?: GeoLocation;
   themeSettings?: ThemeSettings;
-  name?: string; // Company/Personal name for personalization
+  name?: string;
 }
 
 export default function ContactSection() {
@@ -39,16 +38,8 @@ export default function ContactSection() {
     name,
   } = storeFormData;
 
-  // Theme colors - using more robust defaults and new variables for consistency
-  const primaryColor = themeSettings.primaryColor || '#007bff'; // Vibrant blue
-  const secondaryColor = themeSettings.secondaryColor || '#6c757d'; // Complementary gray
-  const sectionBgColor = themeSettings.backgroundColor || '#f0f4f8'; // Light blue-gray for the section background
-  const formBgColor = '#ffffff'; // White for the form card
-  const textColor = themeSettings.textColor || '#1a202c'; // Dark text for headings
-  const placeholderColor = '#a0aec0'; // Tailwind gray-400 for input placeholders
-  const focusRingColor = `${primaryColor}60`; // Primary color with 60% opacity for focus ring
+  const primaryColor = themeSettings.primaryColor || '#00A880'; 
 
-  // State for form fields (for controlled inputs, though submission logic isn't here)
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -62,235 +53,212 @@ export default function ContactSection() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real application, you would handle form submission here (e.g., send to an API)
-    console.log('Form submitted:', formData);
-    alert('Thank you for your message! We will get back to you soon.');
-    setFormData({ fullName: '', email: '', message: '' }); // Clear form
+    console.log('Form telemetry dispatched:', formData);
+    alert('Transmission successful. Our operations desk will respond shortly.');
+    setFormData({ fullName: '', email: '', message: '' });
   };
 
-  // Build WhatsApp link if phone exists
   const sanitizedPhone = contactPhone ? contactPhone.replace(/\D/g, '') : '';
   const whatsappHref = sanitizedPhone ? `https://wa.me/${sanitizedPhone}` : '';
 
-  // Map embed URL: using a more robust and correct Google Maps embed structure
   let mapSrc = '';
   if (geoLocation && typeof geoLocation.lat === 'number' && typeof geoLocation.lng === 'number') {
-    // Example: https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=Space+Needle,Seattle+WA
-    // Note: You might need a Google Maps API Key for production use.
-    mapSrc = `https://www.google.com/maps/embed/v1/place?q=${geoLocation.lat},${geoLocation.lng}&key=YOUR_Maps_API_KEY`; // Placeholder for API Key
+    mapSrc = `https://www.google.com/maps/embed/v1/place?q=${geoLocation.lat},${geoLocation.lng}&key=YOUR_Maps_API_KEY`;
   } else if (address) {
-    const encodedAddress = encodeURIComponent(address);
-    mapSrc = `https://www.google.com/maps/embed/v1/place?q=${encodedAddress}&key=YOUR_Maps_API_KEY`; // Placeholder for API Key
+    mapSrc = `https://www.google.com/maps/embed/v1/place?q=${encodeURIComponent(address)}&key=YOUR_Maps_API_KEY`;
   } else {
-    // Default to Nairobi CBD, Kenya if no address or geo-location provided
-    mapSrc = `https://www.google.com/maps/embed/v1/place?q=Nairobi+CBD,+Kenya&key=YOUR_Maps_API_KEY`; // Placeholder for API Key
+    mapSrc = `https://www.google.com/maps/embed/v1/place?q=Nairobi+CBD,+Kenya&key=YOUR_Maps_API_KEY`;
   }
 
-  // Framer Motion variants
-  const sectionVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        when: 'beforeChildren',
-        staggerChildren: 0.2,
-        duration: 0.8,
-        ease: 'easeOut',
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } },
-  };
-
   return (
-    <motion.section
+    <section
       id="contact"
-      className="relative py-24 md:py-32 px-6 lg:px-12 overflow-hidden"
-      style={{ backgroundColor: sectionBgColor }} // Dynamic section background
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.1 }}
-      variants={sectionVariants}
+      className="relative py-28 md:py-36 px-6 lg:px-12 bg-white text-gray-900 border-b border-gray-100 overflow-hidden"
     >
-      {/* Subtle Background Elements */}
-      <div
-        className="absolute top-0 left-0 w-1/4 h-1/4 rounded-full mix-blend-multiply filter blur-3xl opacity-20"
-        style={{ background: primaryColor }}
-      />
-      <div
-        className="absolute bottom-0 right-0 w-1/4 h-1/4 rounded-full mix-blend-multiply filter blur-3xl opacity-20"
-        style={{ background: secondaryColor }}
-      />
-
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="text-center mb-16">
-          <motion.h2
-            className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight text-gray-900 drop-shadow-sm"
-            style={{ color: textColor }}
-            variants={itemVariants}
-          >
-            Let's Connect & <span style={{ color: primaryColor }}>Build Something Great</span>
-          </motion.h2>
-
-          <motion.p
-            className="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto"
-            variants={itemVariants}
-          >
-            Have a question, an exciting project, or just want to say hello? Reach out to {name || 'us'} – we'd love to hear from you!
-          </motion.p>
+        
+        {/* SECTION HEADER TELEMETRY */}
+        <div className="flex flex-col lg:flex-row items-start justify-between gap-8 mb-20 border-b border-gray-100 pb-12">
+          <div className="max-w-xl">
+            <div className="inline-flex items-center gap-2 mb-4">
+              <span className="w-8 h-[2px]" style={{ backgroundColor: primaryColor }} />
+              <p className="text-xs font-mono font-bold uppercase tracking-widest text-gray-500">
+                COMMS_GATEWAY // SECURE
+              </p>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black tracking-tight text-gray-900 leading-[1.1]">
+              Establish Communication
+            </h2>
+          </div>
+          <p className="text-xs text-gray-500 leading-relaxed max-w-sm lg:mt-8">
+            Initialize an encrypted session link with {name || 'our architecture group'}. Our distributed support desk monitors all routing tags continuously.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start"> {/* Align items at start */}
-          {/* Contact Form */}
-          <motion.div
-            className="bg-white p-8 md:p-10 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700" // Elevated form card
-            style={{ backgroundColor: formBgColor }}
-            variants={itemVariants}
-          >
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">Send Us a Message</h3>
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              <div>
-                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                <input
-                  type="text"
-                  id="fullName"
-                  name="fullName"
-                  placeholder="Your full name"
-                  className="mt-1 w-full px-5 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
-                  // style={{ borderColor: borderColor, focusRingColor: focusRingColor }} // Explicit border for consistency
-                  value={formData.fullName}
-                  onChange={handleInputChange}
-                  required
-                />
+        {/* PRIMARY INTERFACE SPLIT */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+          
+          {/* TERMINAL TRANSMISSION FORM (7 Columns) */}
+          <div className="lg:col-span-7">
+            <div className="border border-gray-100 bg-gray-50/40 p-8 rounded-2xl relative">
+              <div className="flex items-center justify-between border-b border-gray-200 pb-4 mb-8">
+                <span className="text-[10px] font-mono font-black uppercase tracking-wider text-gray-400">
+                  [MESSAGE_TRANSMISSION_PROTOCOL]
+                </span>
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: primaryColor }} />
               </div>
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  placeholder="you@example.com"
-                  className="mt-1 w-full px-5 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
-                  // style={{ borderColor: borderColor, focusRingColor: focusRingColor }}
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">Your Message</label>
-                <textarea
-                  id="message"
-                  name="message"
-                  rows={5} // Slightly more rows for message
-                  placeholder="Tell us about your project or inquiry..."
-                  className="mt-1 w-full px-5 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 resize-y" // Allow vertical resize
-                  // style={{ borderColor: borderColor, focusRingColor: focusRingColor }}
-                  value={formData.message}
-                  onChange={handleInputChange}
-                  required
-                ></textarea>
-              </div>
-              <motion.button
-                type="submit"
-                className="w-full text-white font-semibold py-3.5 px-6 rounded-lg transition-all duration-300 transform hover:scale-[1.01] hover:shadow-lg focus:outline-none focus:ring-4"
-                style={{ backgroundColor: primaryColor, boxShadow: `0 0 0 3px ${focusRingColor}` }}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                Send Message
-              </motion.button>
-            </form>
-            </motion.div>
 
-          {/* Contact Information & Map */}
-          <div className="flex flex-col gap-12">
-            {/* Contact Details Card */}
-            <motion.div
-              className="bg-white p-8 md:p-10 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 h-full flex flex-col justify-between" // Elevated card
-              style={{ backgroundColor: formBgColor }}
-              variants={itemVariants}
-            >
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Direct Contact</h3>
-              <div className="space-y-6 text-lg">
+              <form className="space-y-6" onSubmit={handleSubmit}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label htmlFor="fullName" className="block text-[10px] font-mono font-bold uppercase tracking-wider text-gray-500 mb-2">
+                      01 // FULL_NAME
+                    </label>
+                    <input
+                      type="text"
+                      id="fullName"
+                      name="fullName"
+                      placeholder="Identity parameter"
+                      className="w-full bg-white px-4 py-3 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-gray-900 transition-colors placeholder-gray-300 font-mono"
+                      value={formData.fullName}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="block text-[10px] font-mono font-bold uppercase tracking-wider text-gray-500 mb-2">
+                      02 // EMAIL_ADDRESS
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      placeholder="Routing target destination"
+                      className="w-full bg-white px-4 py-3 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-gray-900 transition-colors placeholder-gray-300 font-mono"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="message" className="block text-[10px] font-mono font-bold uppercase tracking-wider text-gray-500 mb-2">
+                    03 // INQUIRY_DATA_STRING
+                  </label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    rows={6}
+                    placeholder="Enter explicit architectural specifications or parameters..."
+                    className="w-full bg-white px-4 py-3 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-gray-900 transition-colors placeholder-gray-300 font-mono resize-none"
+                    value={formData.message}
+                    onChange={handleInputChange}
+                    required
+                  ></textarea>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full text-white text-xs font-mono font-bold uppercase tracking-wider py-4 px-6 rounded-xl transition-all duration-200 hover:opacity-95"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  Dispatch Payload Data
+                </button>
+              </form>
+            </div>
+          </div>
+
+          {/* TELEMETRY METRICS & MAP (5 Columns) */}
+          <div className="lg:col-span-5 flex flex-col gap-12">
+            
+            {/* DIRECT COMMS HUB */}
+            <div className="border-t border-gray-100 pt-6">
+              <span className="text-[10px] font-mono font-black uppercase tracking-wider text-gray-400 block mb-6">
+                [DIRECT_DIRECTORY_ROUTING]
+              </span>
+              
+              <div className="divide-y divide-gray-100">
                 {contactEmail && (
                   <Link
                     href={`mailto:${contactEmail}`}
-                    className="flex items-start gap-4 text-gray-800 hover:text-gray-900 transition-colors group"
+                    className="flex items-center justify-between py-4 group text-xs font-mono transition-colors"
                   >
-                    <EnvelopeIcon className="w-8 h-8 text-gray-500 group-hover:text-gray-700 flex-shrink-0" />
-                    <div>
-                      <span className="block font-medium">Email Us</span>
-                      <span className="block text-base text-gray-600 group-hover:underline" style={{ color: primaryColor }}>{contactEmail}</span>
-                    </div>
+                    <span className="text-gray-500 uppercase tracking-wider flex items-center gap-3">
+                      <EnvelopeIcon className="w-4 h-4 text-gray-400 stroke-[2]" />
+                      SMTP_SERVER
+                    </span>
+                    <span className="font-bold text-gray-900 group-hover:underline break-all max-w-[220px] text-right">
+                      {contactEmail}
+                    </span>
                   </Link>
                 )}
+                
                 {contactPhone && (
                   <Link
                     href={`tel:${contactPhone}`}
-                    className="flex items-start gap-4 text-gray-800 hover:text-gray-900 transition-colors group"
+                    className="flex items-center justify-between py-4 group text-xs font-mono transition-colors"
                   >
-                    <PhoneIcon className="w-8 h-8 text-gray-500 group-hover:text-gray-700 flex-shrink-0" />
-                    <div>
-                      <span className="block font-medium">Call Us</span>
-                      <span className="block text-base text-gray-600 group-hover:underline" style={{ color: primaryColor }}>{contactPhone}</span>
-                    </div>
+                    <span className="text-gray-500 uppercase tracking-wider flex items-center gap-3">
+                      <PhoneIcon className="w-4 h-4 text-gray-400 stroke-[2]" />
+                      VOICE_UPLINK
+                    </span>
+                    <span className="font-bold text-gray-900 group-hover:underline">
+                      {contactPhone}
+                    </span>
                   </Link>
                 )}
+
                 {whatsappHref && (
                   <Link
                     href={whatsappHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-start gap-4 text-gray-800 hover:text-gray-900 transition-colors group"
+                    className="flex items-center justify-between py-4 group text-xs font-mono transition-colors"
                   >
-                    <ChatBubbleLeftRightIcon className="w-8 h-8 text-gray-500 group-hover:text-gray-700 flex-shrink-0" />
-                    <div>
-                      <span className="block font-medium">WhatsApp</span>
-                      <span className="block text-base text-gray-600 group-hover:underline" style={{ color: primaryColor }}>Start a chat</span>
-                    </div>
+                    <span className="text-gray-500 uppercase tracking-wider flex items-center gap-3">
+                      <ChatBubbleLeftRightIcon className="w-4 h-4 text-gray-400 stroke-[2]" />
+                      ASYNC_SIGNAL
+                    </span>
+                    <span className="font-bold tracking-wider uppercase text-xs" style={{ color: primaryColor }}>
+                      CONNECT_LIVE →
+                    </span>
                   </Link>
                 )}
+                
                 {address && (
-                  <Link
-                    href={mapSrc} // Link directly to map if address exists
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-start gap-4 text-gray-800 hover:text-gray-900 transition-colors group"
-                  >
-                    <MapPinIcon className="w-8 h-8 text-gray-500 group-hover:text-gray-700 flex-shrink-0" />
-                    <div>
-                      <span className="block font-medium">Our Location</span>
-                      <span className="block text-base text-gray-600 group-hover:underline">{address}</span>
-                    </div>
-                  </Link>
+                  <div className="flex items-start justify-between py-4 text-xs font-mono">
+                    <span className="text-gray-500 uppercase tracking-wider flex items-center gap-3 mt-0.5">
+                      <MapPinIcon className="w-4 h-4 text-gray-400 stroke-[2]" />
+                      GRID_LOC
+                    </span>
+                    <span className="font-bold text-gray-900 max-w-[200px] text-right leading-tight">
+                      {address}
+                    </span>
+                  </div>
                 )}
               </div>
-            </motion.div>
+            </div>
 
-            {/* Google Map Embed */}
-            <motion.div
-              className="rounded-3xl overflow-hidden shadow-xl border border-gray-100 dark:border-gray-700 h-[350px] md:h-[450px] lg:h-full" // Increased height and rounded borders
-              variants={itemVariants}
-            >
+            {/* HIGH-DENSITY FRAME MAP EMBED */}
+            <div className="border border-gray-100 p-2 rounded-2xl bg-gray-50 h-[240px] relative overflow-hidden">
               <iframe
                 src={mapSrc}
                 width="100%"
                 height="100%"
-                style={{ border: 0 }} // Remove default iframe border
+                style={{ border: 0 }}
                 allowFullScreen={true}
                 loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade" // Recommended for embeds
-                title="Our Location" // Accessible title for the iframe
+                referrerPolicy="no-referrer-when-downgrade"
+                title="System Location Grid Map"
+                className="rounded-xl grayscale filter contrast-[1.05] brightness-[0.98]"
               ></iframe>
-            </motion.div>
+            </div>
+
           </div>
+
         </div>
       </div>
-    </motion.section>
+    </section>
   );
 }
