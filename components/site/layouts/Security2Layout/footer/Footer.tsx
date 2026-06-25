@@ -3,41 +3,25 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion'; // Import motion for animations
 import { useStoreContext } from '@/contexts/StoreContext';
 import {
   EnvelopeIcon,
   MapPinIcon,
   PhoneIcon,
-  ArrowRightIcon, // For the subscribe button
-  // FacebookSquareFilled, // Assuming you have a custom icon for Facebook or use a generic social icon
-  // TwitterIcon, // Assuming you have Twitter icon
-  // LinkedinIcon, // Assuming you have LinkedIn icon
-  // Or use generic:
-  // SocialIcon, // If you have a generic social icon component
-} from '@heroicons/react/24/outline'; // Using outline icons for a lighter feel, consistent with other sections.
+  ChevronRightIcon,
+} from '@heroicons/react/24/solid';
 
-// Assuming you have actual social media icons available or use placeholders/generic ones.
-// For example, you might install 'react-icons' or have custom SVGs.
-// For this example, I'll use placeholders or generic heroicons if suitable.
-// Let's stick with generic placeholders for now if specific brand icons aren't available.
-
-// Define a type for themeSettings for better type safety
 interface ThemeSettings {
   primaryColor?: string;
   secondaryColor?: string;
-  footerBgColor?: string; // Specific background color for footer
-  footerTextColor?: string; // Specific text color for footer
-  footerHeadingColor?: string; // Specific heading color for footer
 }
 
-// Define a type for storeFormData to ensure correct property access
 interface StoreFormData {
   name?: string;
   slug?: string;
   logoUrl?: string;
   themeSettings?: ThemeSettings;
-  contactEmail?: string; // Assuming contact info can come from storeFormData
+  contactEmail?: string;
   contactPhone?: string;
   address?: string;
   socialLinks?: {
@@ -54,8 +38,8 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 export default function Footer() {
   const { storeFormData } = useStoreContext() as { storeFormData: StoreFormData };
   const {
-    name = 'Your Company Name', // Default name
-    slug = '/', // Default slug for home
+    name = 'CyberShield',
+    slug = 'cybershield',
     logoUrl,
     themeSettings = {},
     contactEmail,
@@ -64,221 +48,177 @@ export default function Footer() {
     socialLinks,
   } = storeFormData;
 
-  // Theme colors with more robust fallbacks
-  const primaryColor = themeSettings.primaryColor || '#007bff'; // Vibrant blue
-  const secondaryColor = themeSettings.secondaryColor || '#6c757d'; // Complementary gray
-  const footerBgColor = themeSettings.footerBgColor || '#1a202c'; // Dark charcoal for a deep, rich footer background
-  const footerTextColor = themeSettings.footerTextColor || '#cbd5e0'; // Light gray for general text (slate-300)
-  const footerHeadingColor = themeSettings.footerHeadingColor || '#ffffff'; // White for headings
+  const primaryColor = themeSettings.primaryColor || '#00A880';
 
-  // Animation variants for staggered reveal
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    alert('Telemetry channel established. System alerts will route here.');
   };
 
   return (
-    <motion.footer
-      className="relative py-16 md:py-24 px-6 lg:px-12 z-10 overflow-hidden" // Added overflow-hidden for background elements
-      style={{ backgroundColor: footerBgColor, color: footerTextColor }}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.1 }}
-      variants={containerVariants}
-    >
-      {/* Subtle Background Gradients/Shapes */}
-      <div
-        className="absolute top-0 left-0 w-1/3 h-full opacity-5"
-        style={{
-          background: `linear-gradient(to right, ${primaryColor}, transparent)`,
-          filter: 'blur(50px)',
-        }}
-      />
-      <div
-        className="absolute bottom-0 right-0 w-1/3 h-full opacity-5"
-        style={{
-          background: `linear-gradient(to left, ${secondaryColor}, transparent)`,
-          filter: 'blur(50px)',
-        }}
-      />
-
-      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12 relative z-20">
-        {/* Company Logo & Description */}
-        <motion.div className="space-y-4" variants={itemVariants}>
-          <Link href={`/${slug}`} className="inline-block group">
-            {logoUrl ? (
-              <Image
-                src={logoUrl}
-                alt={name}
-                width={180} // Slightly larger logo
-                height={45} // Maintain aspect ratio
-                loader={loader}
-                className="object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300" // Subtle grayscale on hover
-              />
-            ) : (
-              <span
-                className="text-3xl font-extrabold bg-clip-text text-transparent group-hover:opacity-90 transition-opacity"
-                style={{
-                  backgroundImage: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})`,
-                }}
-              >
-                {name}
-              </span>
-            )}
-          </Link>
-          <p className="text-sm leading-relaxed text-gray-400">
-            Empowering your journey with innovative solutions and a commitment to excellence. Discover the difference.
-          </p>
-          {socialLinks && (
-            <div className="flex space-x-4 pt-2">
-              {socialLinks.facebook && (
-                <Link
-                  href={socialLinks.facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Facebook"
-                  className="text-gray-400 hover:text-white transform hover:scale-110 transition-transform"
-                >
-                  {/* Replace with actual Facebook icon if available, e.g., from react-icons */}
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.811c-3.27 0-3.589 2.508-3.589 4.332v2.668z"></path></svg>
-                </Link>
-              )}
-              {socialLinks.twitter && (
-                <Link
-                  href={socialLinks.twitter}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Twitter"
-                  className="text-gray-400 hover:text-white transform hover:scale-110 transition-transform"
-                >
-                  {/* Replace with actual Twitter icon */}
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.447 0-6.227 2.78-6.227 6.228 0 .486.052.958.148 1.413-5.18-.259-9.754-2.744-12.898-6.518-.535.91-.843 1.961-.843 3.064 0 2.153 1.096 4.053 2.766 5.158-.808-.026-1.566-.247-2.229-.616v.081c0 3.016 2.144 5.534 4.99 6.09-.44.12-.91.182-1.394.182-.343 0-.676-.034-.999-.101.794 2.479 3.078 4.292 5.798 4.341-2.132 1.684-4.811 2.697-7.721 2.697-.502 0-.997-.03-1.48-.086 2.756 1.764 6.035 2.796 9.531 2.796 11.422 0 17.618-9.49 17.618-17.619 0-.267-.015-.534-.04-.795z"></path></svg>
-                </Link>
-              )}
-              {socialLinks.linkedin && (
-                <Link
-                  href={socialLinks.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="LinkedIn"
-                  className="text-gray-400 hover:text-white transform hover:scale-110 transition-transform"
-                >
-                  {/* Replace with actual LinkedIn icon */}
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M4.98 3.5c0 1.381-1.11 2.5-2.48 2.5s-2.48-1.119-2.48-2.5c0-1.38-.11-2.5 2.48-2.5s2.48 1.12 2.48 2.5zm.02 4.5h-5v16h5v-16zm7.982 0h-4.962v16h4.962v-8.399c0-4.67 6.021-4.237 6.021 0v8.399h4.938v-8.59c0-7.223-4.385-8.25-8.28-4.701z"></path></svg>
-                </Link>
-              )}
-              {/* Add more social icons as needed, e.g., Instagram, YouTube */}
-            </div>
-          )}
-        </motion.div>
-
-        {/* Quick Links */}
-        <motion.div variants={itemVariants}>
-          <h4 className="font-bold mb-5" style={{ color: footerHeadingColor }}>Quick Links</h4>
-          <ul className="space-y-3">
-            <li><Link href={`/${slug}`} className="hover:text-white transition">Home</Link></li>
-            <li><Link href={`/${slug}/services`} className="hover:text-white transition">Services</Link></li>
-            <li><Link href={`/${slug}/about`} className="hover:text-white transition">About Us</Link></li>
-            <li><Link href={`/${slug}/blog`} className="hover:text-white transition">Blog</Link></li>
-            <li><Link href={`/${slug}/#faqs`} className="hover:text-white transition">FAQs</Link></li>
-            <li><Link href={`/${slug}/#contact`} className="hover:text-white transition">Contact</Link></li>
-          </ul>
-        </motion.div>
-
-        {/* Contact Info */}
-        <motion.div variants={itemVariants}>
-          <h4 className="font-bold mb-5" style={{ color: footerHeadingColor }}>Get in Touch</h4>
-          <ul className="space-y-3">
-            {contactEmail && (
-              <li>
-                <Link href={`mailto:${contactEmail}`} className="flex items-start gap-3 hover:text-white transition">
-                  <EnvelopeIcon className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: primaryColor }} />
-                  <span className="break-all">{contactEmail}</span>
-                </Link>
-              </li>
-            )}
-            {contactPhone && (
-              <li>
-                <Link href={`tel:${contactPhone}`} className="flex items-start gap-3 hover:text-white transition">
-                  <PhoneIcon className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: primaryColor }} />
-                  <span>{contactPhone}</span>
-                </Link>
-              </li>
-            )}
-            {address && (
-              <li>
-                <Link
-                  href={`https://www.google.com/maps/embed/v1/place?q=Nairobi+CBD,+Kenya&key=YOUR_Maps_API_KEY`} // Link to map for directions
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-start gap-3 hover:text-white transition"
-                >
-                  <MapPinIcon className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: primaryColor }} />
-                  <span>{address}</span>
-                </Link>
-              </li>
-            )}
-            {!contactEmail && !contactPhone && !address && (
-              <li><p className="text-gray-500">No contact info provided.</p></li>
-            )}
-          </ul>
-        </motion.div>
-
-        {/* Newsletter Subscription */}
-        <motion.div variants={itemVariants}>
-          <h4 className="font-bold mb-5" style={{ color: footerHeadingColor }}>Stay Updated</h4>
-          <p className="text-sm leading-relaxed text-gray-400 mb-4">
-            Subscribe to our newsletter for exclusive insights, updates, and special offers.
-          </p>
-          <form className="flex rounded-lg overflow-hidden shadow-md">
-            <input
-              type="email"
-              placeholder="Your email address"
-              className="flex-grow px-4 py-3 bg-gray-700 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2"
-              // style={{ focusRingColor: primaryColor }}
-              aria-label="Email for newsletter"
-            />
-            <button
-              type="submit"
-              className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 px-5 py-3 text-sm font-semibold text-white transition-all duration-300 flex items-center justify-center gap-2"
-              style={{
-                // Revert to primary/secondary if gradient not desired, or use themeSettings.buttonColor
-              }}
-            >
-              Subscribe <ArrowRightIcon className="w-4 h-4" />
-            </button>
-          </form>
-        </motion.div>
+    <footer className="relative bg-white text-gray-900 border-t border-gray-200 overflow-hidden">
+      
+      {/* BACKGROUND TELEMETRY STRUCTURAL GRID */}
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none border-x border-gray-900 max-w-7xl mx-auto grid grid-cols-4 md:grid-cols-12 gap-0">
+        {Array.from({ length: 12 }).map((_, i) => (
+          <div key={i} className="border-r border-gray-900 h-full" />
+        ))}
       </div>
 
-      {/* Copyright */}
-      <motion.div
-        className="border-t border-white/10 mt-16 pt-8 text-center text-sm text-gray-500 relative z-20"
-        variants={itemVariants}
-      >
-        © {new Date().getFullYear()} {name}. All rights reserved.
-        <br />
-      </motion.div>
-      <div className="flex items-center gap-1.5 px-4 py-2 mt-4 justify-center">
-        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Powered by</span>
-        <a 
-          href="https://salesmanpro.site" 
-          className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-700 transition-colors"
-        >
-          SalesmanPro.site
-        </a>
-    </div>
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10 pt-20 pb-12">
+        
+        {/* CORE FLAT MATRIX LAYOUT */}
+        <div className="grid grid-cols-1 md:grid-cols-12 border border-gray-200 bg-white">
+          
+          {/* COLUMN 1: CORPORATE BOUNDARY RECORD (4/12 width) */}
+          <div className="md:col-span-4 p-8 border-b md:border-b-0 md:border-r border-gray-200 flex flex-col justify-between">
+            <div className="space-y-6">
+              <Link href={`/${slug}`} className="inline-block">
+                {logoUrl ? (
+                  <Image
+                    src={logoUrl}
+                    alt={name}
+                    width={130}
+                    height={36}
+                    loader={loader}
+                    className="object-contain grayscale contrast-125 mix-blend-multiply max-h-9"
+                  />
+                ) : (
+                  <span className="text-lg font-mono font-black uppercase tracking-tighter text-gray-900 flex items-center gap-2">
+                    <span className="w-2.5 h-2.5" style={{ backgroundColor: primaryColor }} />
+                    {name}
+                  </span>
+                )}
+              </Link>
+              <p className="text-xs font-mono text-gray-500 uppercase leading-relaxed tracking-tight">
+                Critical asset management, network telemetry protection, and enterprise infrastructure fortification routines assigned under operational node {slug.toUpperCase()}.
+              </p>
+            </div>
 
-    </motion.footer>
+            {/* SOCIAL TELEMETRY MATRIX */}
+            {socialLinks && Array.isArray(socialLinks) && (
+              <div className="flex flex-wrap gap-2 pt-8 border-t border-gray-100 mt-8">
+                {socialLinks.map((link: any, index: number) => {
+                  // Handle either array of objects [{channel, url}] or protect against null formats
+                  const platform = link?.channel || `LINK_${index}`;
+                  const href = link?.url || '';
+                  
+                  if (!href) return null;
+
+                  return (
+                    <a
+                      key={index}
+                      href={href.startsWith('http') ? href : `https://${href}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] font-mono font-bold uppercase border border-gray-200 px-2.5 py-1 text-gray-400 hover:text-gray-950 hover:border-gray-950 transition-colors"
+                    >
+                      {String(platform).slice(0, 3)}//
+                    </a>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* COLUMN 2: INTERNAL ROUTING SYSTEM (2/12 width) */}
+          <div className="md:col-span-2 p-8 border-b md:border-b-0 md:border-r border-gray-200">
+            <span className="block text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest mb-6">[SYS_LINKS]</span>
+            <ul className="space-y-3">
+              {[
+                { label: 'HOME', href: `/${slug}` },
+                { label: 'SERVICES', href: '#services' },
+                { label: 'CASE STUDIES', href: '#case-studies' },
+                { label: 'FAQS', href: '#security-faqs' },
+                { label: 'CONTACT', href: '#contact-routing' }
+              ].map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className="text-xs font-mono font-bold text-gray-500 hover:text-gray-950 transition-colors uppercase block tracking-wider">
+                    // {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* COLUMN 3: DIRECT DATA CHANNELS (3/12 width) */}
+          <div className="md:col-span-3 p-8 border-b md:border-b-0 md:border-r border-gray-200">
+            <span className="block text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest mb-6">[SYS_ENDPOINT]</span>
+            <ul className="space-y-4">
+              {contactEmail && (
+                <li>
+                  <Link href={`mailto:${contactEmail}`} className="group flex items-start gap-2.5 text-gray-500 hover:text-gray-950 transition-colors">
+                    <EnvelopeIcon className="w-3.5 h-3.5 mt-0.5 text-gray-400 group-hover:text-gray-950" />
+                    <span className="text-xs font-mono font-bold uppercase tracking-tight break-all">{contactEmail}</span>
+                  </Link>
+                </li>
+              )}
+              {contactPhone && (
+                <li>
+                  <Link href={`tel:${contactPhone}`} className="group flex items-start gap-2.5 text-gray-500 hover:text-gray-950 transition-colors">
+                    <PhoneIcon className="w-3.5 h-3.5 mt-0.5 text-gray-400 group-hover:text-gray-950" />
+                    <span className="text-xs font-mono font-bold uppercase tracking-tight">{contactPhone}</span>
+                  </Link>
+                </li>
+              )}
+              {address && (
+                <li>
+                  <div className="flex items-start gap-2.5 text-gray-500">
+                    <MapPinIcon className="w-3.5 h-3.5 mt-0.5 text-gray-400 flex-shrink-0" />
+                    <span className="text-xs font-mono font-bold uppercase tracking-tight leading-tight">{address}</span>
+                  </div>
+                </li>
+              )}
+              {!contactEmail && !contactPhone && !address && (
+                <li className="text-xs font-mono text-gray-300 font-bold uppercase">// NO_ENDPOINT_DATA</li>
+              )}
+            </ul>
+          </div>
+
+          {/* COLUMN 4: TRANSMISSION BROADCAST INBOUNDS (3/12 width) */}
+          <div className="md:col-span-3 p-8 bg-gray-50/50 flex flex-col justify-between">
+            <div>
+              <span className="block text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest mb-4">[BROADCAST_FEED]</span>
+              <p className="text-xs font-mono text-gray-400 uppercase tracking-tight leading-normal mb-6">
+                Establish an immediate operational socket to capture incoming threat matrix intelligence briefs.
+              </p>
+            </div>
+            <form onSubmit={handleSubscribe} className="relative border border-gray-200 bg-white">
+              <input
+                type="email"
+                placeholder="EMAIL_SOCKET"
+                required
+                className="w-full bg-transparent text-xs font-mono p-3 pr-10 text-gray-900 placeholder-gray-300 uppercase tracking-tight focus:outline-none"
+                aria-label="Secure email communication socket"
+              />
+              <button
+                type="submit"
+                className="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-gray-950 transition-colors flex items-center justify-center border-l border-gray-100 bg-gray-50"
+              >
+                <ChevronRightIcon className="w-3.5 h-3.5" />
+              </button>
+            </form>
+          </div>
+
+        </div>
+
+        {/* BOTTOM TERMINAL FOOTER LINE */}
+        <div className="mt-12 border-t border-gray-200 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[9px] font-mono font-bold tracking-widest text-gray-400 uppercase">
+          <div>
+            © {new Date().getFullYear()} {name.toUpperCase()}. CORE_SYS_ALL_RIGHTS_RESERVED.
+          </div>
+          <div className="flex items-center gap-1.5 border border-gray-200 px-3 py-1 bg-gray-50">
+            <span>POWERED_BY //</span>
+            <a 
+              href="https://salesmanpro.site" 
+              className="text-orange-600 hover:text-orange-700 font-black transition-colors"
+            >
+              SALESMANPRO.SITE
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </footer>
   );
 }

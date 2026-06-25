@@ -3,16 +3,15 @@
 import React from 'react';
 import Link from 'next/link';
 import {
-  ShieldExclamationIcon, // New: For Assessment/Discovery
-  ShieldCheckIcon,      // New: For Strategy/Protection
-  RocketLaunchIcon,     // New: For Deployment/Execution
+  ShieldExclamationIcon,
+  ShieldCheckIcon,
+  RocketLaunchIcon,
   ArrowRightIcon,
   SparklesIcon,
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
 
-// Type definitions (kept for clarity)
 interface ThemeSettings {
   primaryColor?: string;
   secondaryColor?: string;
@@ -31,7 +30,6 @@ interface StoreFormData {
   gettingStartedSteps?: DynamicStep[];
 }
 
-// Map iconKey to actual icon component
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   ShieldExclamationIcon,
   ShieldCheckIcon,
@@ -39,7 +37,6 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   SparklesIcon,
 };
 
-// Default steps tailored for a Security Firm's client journey
 const defaultSecuritySteps: DynamicStep[] = [
   {
     iconKey: 'ShieldExclamationIcon',
@@ -64,32 +61,30 @@ const defaultSecuritySteps: DynamicStep[] = [
   },
 ];
 
-// --- Framer Motion Variants ---
 const headingVariants = {
-  hidden: { opacity: 0, y: -20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: 'easeOut' } },
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { duration: 0.4, ease: 'linear' } },
+};
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 },
+  },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, x: -50 },
-  show: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 80, damping: 15 } },
-  hover: { scale: 1.03, boxShadow: '0 15px 35px rgba(0,0,0,0.15)', transition: { duration: 0.3 } },
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'linear' } },
 };
 
 export default function GettingStartedSectionSecurityRoadmap() {
-  // Mocking context hook since it's not available here, but keeping structure
   const { storeFormData } = useStoreContext() as { storeFormData: StoreFormData };
-
-  // const { themeSettings = {}, gettingStartedSteps } = storeFormData;
-  // const storeFormData = { themeSettings: {}, gettingStartedSteps: undefined } as StoreFormData; 
-  // const { storeFormData } = useStoreContext() as { storeFormData: StoreFormData }; 
   const { themeSettings = {}, gettingStartedSteps } = storeFormData;
 
-  // Use security-aligned colors for defaults (e.g., deep blue/teal for trust/tech)
-  const primaryColor = themeSettings.primaryColor || '#00A880'; // Teal
-  const secondaryColor = themeSettings.secondaryColor || '#3B82F6'; // Blue
+  const primaryColor = themeSettings.primaryColor || '#00A880';
 
-  // Determine steps data: use custom steps if provided and valid, otherwise use security defaults
   const stepsData: DynamicStep[] =
     Array.isArray(gettingStartedSteps) && gettingStartedSteps.length >= 3
       ? gettingStartedSteps.map((step: any) => ({
@@ -101,122 +96,94 @@ export default function GettingStartedSectionSecurityRoadmap() {
         })).slice(0, 4) 
       : defaultSecuritySteps;
 
-  const cssVars = {
-    '--primary': primaryColor,
-    '--secondary': secondaryColor,
-  } as React.CSSProperties;
-
   return (
     <section
       id="roadmap"
-      className="relative py-24 md:py-32 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white overflow-hidden"
-      style={cssVars}
+      className="relative py-28 md:py-36 bg-white text-gray-900 border-b border-gray-100 overflow-hidden"
     >
-      <div className="relative max-w-7xl mx-auto px-6 lg:px-12 z-10">
+      {/* BACKGROUND TELEMETRY MESHGRID */}
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none border-x border-gray-900 max-w-7xl mx-auto grid grid-cols-4 md:grid-cols-12 gap-0">
+        {Array.from({ length: 12 }).map((_, i) => (
+          <div key={i} className="border-r border-gray-900 h-full" />
+        ))}
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
         
-        {/* --- Section Header --- */}
+        {/* ASYMMETRIC METHODOLOGY HEADER */}
         <motion.div
-          className="text-center max-w-4xl mx-auto mb-20"
+          className="flex flex-col lg:flex-row items-start justify-between gap-8 mb-20 border-b border-gray-100 pb-12"
           variants={headingVariants}
           initial="hidden"
           whileInView="show"
           viewport={{ once: true }}
         >
-          <p 
-            className="text-lg font-semibold uppercase tracking-widest mb-3" 
-            style={{ color: primaryColor }}
-          >
-            Our Proven Methodology
+          <div className="max-w-xl">
+            <div className="inline-flex items-center gap-2 mb-4">
+              <span className="w-8 h-[2px]" style={{ backgroundColor: primaryColor }} />
+              <p className="text-xs font-mono font-bold uppercase tracking-widest text-gray-400">
+                EXECUTION_FLOW // STRATEGY
+              </p>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase text-gray-900 leading-[1.1]">
+              METHODOLOGY DEPLOYMENT ROUTINE
+            </h2>
+          </div>
+          <p className="text-xs font-mono text-gray-400 leading-relaxed max-w-sm lg:mt-8">
+            Systemized staging environments tracking client baseline profiles through isolated identification, engineering diagnostics, and infrastructure hardening pipelines.
           </p>
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight">
-            Your Security{' '}
-            <span style={{ color: secondaryColor }}>Transformation Roadmap</span>
-          </h2>
         </motion.div>
 
-        {/* --- VERTICAL FUNNEL/TIMELINE CONTAINER --- */}
+        {/* HIGH-DENSITY HORIZONTAL GRID CHANNELS */}
         <motion.div
-          className="relative"
+          className="grid grid-cols-1 lg:grid-cols-3 gap-0 border-t border-l border-gray-100"
+          variants={containerVariants}
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, amount: 0.1 }}
         >
-          
-          {/* Main Vertical Funnel Line (Desktop) */}
-          <div 
-            className="hidden lg:block absolute left-1/2 transform -translate-x-1/2 top-0 bottom-0 w-1 rounded-full opacity-70"
-            // Use a dramatic security gradient, potentially darker on the edges
-            style={{ 
-                background: `linear-gradient(to bottom, var(--primary), var(--secondary))`, 
-                boxShadow: `0 0 10px 2px var(--primary)30` // Subtle glow
-            }}
-          />
-
           {stepsData.map((step, index) => {
             const IconComponent = iconMap[step.iconKey ?? 'SparklesIcon'] || SparklesIcon;
-            const isOdd = index % 2 !== 0; 
+            const hexStep = `0${index + 1}`.slice(-2);
             
             return (
               <motion.div
                 key={index}
-                className={`flex flex-col lg:flex-row items-start py-8 relative ${isOdd ? 'lg:justify-end' : 'lg:justify-start'}`}
+                className="p-8 border-r border-b border-gray-100 bg-white hover:bg-gray-50/50 transition-colors flex flex-col justify-between group min-h-[340px]"
                 variants={itemVariants}
-                style={{ zIndex: stepsData.length - index }} 
               >
-                
-                {/* Timeline Dot (Desktop) - Security Badge style */}
-                <div className="hidden lg:flex absolute left-1/2 top-[70px] transform -translate-x-1/2 z-20">
-                  <div 
-                    className="w-12 h-12 rounded-full flex items-center justify-center p-1 shadow-2xl"
-                    style={{ 
-                        backgroundColor: primaryColor,
-                        // High contrast background matching for the "badge" effect
-                        boxShadow: `0 0 0 8px ${isOdd ? 'rgba(255,255,255,1)' : 'rgba(249,250,251,1)'}`, 
-                        border: `4px solid var(--secondary)`
-                    }}
-                  >
-                    <span className="text-white text-lg font-extrabold">{index + 1}</span>
+                <div>
+                  {/* STEP SPEC STREAM */}
+                  <div className="flex items-center justify-between mb-8">
+                    <span className="text-[10px] font-mono font-bold text-gray-300 group-hover:text-gray-900 transition-colors">
+                      [SEQ_NODE_{hexStep}]
+                    </span>
+                    <IconComponent className="w-4 h-4 text-gray-400 group-hover:text-gray-900 transition-colors" />
                   </div>
+
+                  <span className="text-[9px] font-mono font-black uppercase tracking-widest block mb-2 text-gray-400">
+                    ROUTINE STAGE // INTERCEPT
+                  </span>
+
+                  <h3 className="text-sm font-mono font-black uppercase tracking-tight text-gray-900 mb-3">
+                    {step.title}
+                  </h3>
+
+                  <p className="text-xs font-mono text-gray-400 leading-relaxed mb-8">
+                    {step.description}
+                  </p>
                 </div>
 
-                {/* Step Content Card */}
-                <motion.div
-                  className={`w-full lg:w-[45%] p-8 rounded-3xl shadow-xl transition-all duration-300 transform border border-gray-200 dark:border-gray-700 ${
-                    isOdd ? 'lg:ml-20' : 'lg:mr-20' 
-                  }`}
-                  whileHover="hover"
-                  // Using a clean white background for readability and crispness in a security context
-                  style={{ backgroundColor: 'rgba(255,255,255,0.98)' }} 
-                >
-                    <div className="flex items-start mb-4">
-                        <div 
-                            className="w-14 h-14 rounded-xl flex items-center justify-center text-white flex-shrink-0 mr-4"
-                            // Strong visual gradient on the icon container
-                            style={{ background: `linear-gradient(45deg, var(--primary), var(--secondary))` }}
-                        >
-                            <IconComponent className="w-7 h-7 text-white" />
-                        </div>
-                        <h3 className="text-2xl font-bold pt-2 text-gray-900 leading-snug flex-grow">
-                            {step.title}
-                        </h3>
-                    </div>
-
-                    <p className="text-base text-gray-600 mb-6 leading-relaxed">
-                        {step.description}
-                    </p>
-
-                    {/* Button */}
-                    {step.ctaText && step.ctaLink && (
-                        <Link
-                            href={step.ctaLink}
-                            className="inline-flex items-center gap-2 text-base font-semibold px-6 py-3 rounded-full text-white shadow-lg transition-all duration-300 hover:opacity-90"
-                            style={{ backgroundColor: primaryColor }}
-                        >
-                            {step.ctaText}
-                            <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                        </Link>
-                    )}
-                </motion.div>
+                {/* DISPATCH LINK ENTRY */}
+                {step.ctaText && step.ctaLink && (
+                  <Link
+                    href={step.ctaLink}
+                    className="inline-flex items-center gap-2 text-[10px] font-mono font-black uppercase tracking-wider text-gray-400 hover:text-gray-900 border border-transparent hover:border-gray-900 transition-colors py-2 px-3 w-fit"
+                  >
+                    {step.ctaText}
+                    <ArrowRightIcon className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                )}
               </motion.div>
             );
           })}

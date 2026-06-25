@@ -5,15 +5,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
-import { LockClosedIcon, ArrowRightIcon } from '@heroicons/react/24/solid'; // Using solid icons
+import { LockClosedIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
 
-// Loader for next/image
 const loader = ({ src, width, quality }: any) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-// Default security-focused colors
 const defaultPrimary = '#00A880'; // Teal
-const defaultSecondary = '#3B82F6'; // Blue
 
 export default function SecurityCtaSection({
   title: propTitle,
@@ -28,116 +25,131 @@ export default function SecurityCtaSection({
   buttonHref?: string;
   imageUrl?: string | undefined | null;
 }) {
-  const { storeFormData } = useStoreContext() as { storeFormData?: any }; // Ensure safe access
+  const { storeFormData } = useStoreContext() as { storeFormData?: any }; 
   
-  // Theme colors
   const primaryColor = storeFormData?.themeSettings?.primaryColor || defaultPrimary;
-  const secondaryColor = storeFormData?.themeSettings?.secondaryColor || defaultSecondary;
-  const buttonBg = secondaryColor; // Use secondary for high-contrast button
-  const buttonHoverBg = primaryColor; // Use primary for hover effect
-  // Dark overlay for visibility on abstract backgrounds
-  const overlayColor = 'rgba(0, 0, 0, 0.6)'; 
 
-  // --- SECURITY-FOCUSED FALLBACK CONTENT ---
-  const defaultTitle = `Ready to Fortify Your {accent}Digital Perimeter{/accent}?`;
+  const defaultTitle = 'Ready to Fortify Your {accent}Digital Perimeter{/accent}?';
   const defaultSubtitle =
-    'Don\'t wait for an incident. Partner with our experts to deploy next-gen defense strategies tailored to your enterprise.';
+    "Don't wait for an incident. Partner with our experts to deploy next-gen defense strategies tailored to your enterprise.";
   const defaultButtonLabel = 'Begin Your Security Assessment';
 
-  // Pull from props or defaults
   const title = propTitle || defaultTitle;
   const subtitle = propSubtitle || defaultSubtitle;
-  let buttonLabel = propButtonLabel || defaultButtonLabel;
+  const buttonLabel = propButtonLabel || defaultButtonLabel;
+  
   let buttonHref = propButtonHref || (storeFormData?.slug ? `/${storeFormData.slug}/contact` : '/contact');
 
-  // Link fallback logic
-  if (
-    (!buttonHref || buttonHref === '#') &&
-    storeFormData?.contactEmail
-  ) {
+  if ((!buttonHref || buttonHref === '#') && storeFormData?.contactEmail) {
     buttonHref = `mailto:${storeFormData.contactEmail}`;
   }
 
-  // Image URL - using a dynamic tech/security fallback
   const imageUrl =
     propImageUrl ||
-    'https://images.unsplash.com/photo-1541701490263-8822ab1a09d3?q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1400&h=700&fit=crop'; // Abstract digital network/circuitry
+    'https://images.unsplash.com/photo-1541701490263-8822ab1a09d3?q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1400&h=700&fit=crop';
 
-  // Render Title with {accent} replacement
-  const renderTitle = (fullTitle: string, accentColor: string) => {
-    const parts = fullTitle.split(/\{accent\}(.*?)\{accent}/g);
-    return parts.map((part, idx) => (
+  const renderTitle = (fullTitle: string, highlightColor: string) => {
+    // Standardize syntax for replacement keys
+    const cleanTitle = fullTitle.replace('{accent}', '{accent}').replace('{/accent}', '{accent}');
+    if (cleanTitle.includes('{accent}')) {
+      const parts = cleanTitle.split(/\{accent\}/g);
+      return parts.map((part, idx) => (
         idx % 2 === 1 ? (
-            <span key={idx} style={{ color: accentColor }}>{part}</span>
+          <span key={idx} style={{ color: highlightColor }}>{part}</span>
         ) : (
-            <React.Fragment key={idx}>{part}</React.Fragment>
+          <React.Fragment key={idx}>{part}</React.Fragment>
         )
-    ));
+      ));
+    }
+    return fullTitle;
   };
 
-
   return (
-    <section className="py-20 md:py-32 px-4 flex justify-center items-center">
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: 'easeOut' }}
-        viewport={{ once: true, amount: 0.3 }}
-        className="relative w-full max-w-6xl rounded-3xl overflow-hidden shadow-2xl aspect-video md:aspect-[3/1]"
-      >
-        {/* Background Image: Abstract tech image for security */}
-        <Image
-          src={imageUrl}
-          loader={loader}
-          alt="Digital security network background"
-          fill
-          sizes="(max-width: 768px) 100vw, 1200px"
-          objectFit="cover"
-          className="z-0 transition-transform duration-1000 hover:scale-105"
-          priority={false}
-        /> 
+    <section id="perimeter-hardening" className="relative py-28 md:py-36 bg-white text-gray-900 overflow-hidden border-b border-gray-100">
+      
+      {/* STRUCTURAL BACKGROUND TELEMETRY MESHGRID */}
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none border-x border-gray-900 max-w-7xl mx-auto grid grid-cols-4 md:grid-cols-12 gap-0">
+        {Array.from({ length: 12 }).map((_, i) => (
+          <div key={i} className="border-r border-gray-900 h-full" />
+        ))}
+      </div>
 
-        {/* Dynamic Gradient Overlay */}
-        <div
-          className="absolute inset-0 z-10"
-          style={{ 
-            background: `linear-gradient(90deg, ${overlayColor} 0%, rgba(0, 0, 0, 0.3) 100%)`, 
-          }}
-        />
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.4, ease: 'linear' }}
+          viewport={{ once: true, amount: 0.2 }}
+          className="grid grid-cols-1 lg:grid-cols-12 border border-gray-200 bg-white"
+        >
+          
+          {/* LEFT TELEMETRY COLUMN: CRITICAL SYSTEMS LOGS */}
+          <div className="lg:col-span-7 p-8 md:p-12 lg:p-16 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-gray-200">
+            <div>
+              <div className="inline-flex items-center gap-2 mb-6">
+                <span className="w-8 h-[2px]" style={{ backgroundColor: primaryColor }} />
+                <p className="text-xs font-mono font-bold uppercase tracking-widest text-gray-400">
+                  DISPATCH // DEFENSIVE_STAND
+                </p>
+              </div>
 
-        {/* Content */}
-        <div className="relative z-20 h-full flex flex-col justify-center items-center text-center px-8 py-12 sm:px-12 md:px-16 lg:px-20 text-white">
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 leading-snug drop-shadow-md">
-            {renderTitle(title.replace('{accent}', secondaryColor), secondaryColor)}
-          </h2>
-          {subtitle && (
-            <p className="text-lg md:text-xl max-w-3xl mb-8 font-light drop-shadow-sm">
-              {subtitle}
-            </p>
-          )}
-          {buttonHref && (
-            <Link href={buttonHref}
-              className="inline-flex items-center gap-3 font-bold text-lg py-4 px-10 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-[1.03] hover:ring-4 focus:ring-4 text-white"
-              style={{
-                  backgroundColor: buttonBg, // Secondary color for contrast
-                  // Subtle glow effect
-                  boxShadow: `0 0 20px ${buttonBg}55`,
-                  ['--tw-ring-color']: `${buttonHoverBg}80`,
-              } as React.CSSProperties & Record<string, string>}
-              onMouseEnter={e => {
-                  (e.currentTarget as HTMLAnchorElement).style.backgroundColor = buttonHoverBg; // Primary color on hover
-              }}
-              onMouseLeave={e => {
-                  (e.currentTarget as HTMLAnchorElement).style.backgroundColor = buttonBg;
-              }}
-            >
-              <LockClosedIcon className="w-6 h-6" />
-              {buttonLabel}
-              <ArrowRightIcon className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-            </Link>
-          )}
+              <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase text-gray-900 leading-[1.1] mb-6">
+                {renderTitle(title, primaryColor)}
+              </h2>
+
+              {subtitle && (
+                <p className="text-xs font-mono text-gray-500 leading-relaxed uppercase border-l border-gray-200 pl-4 mb-10 max-w-2xl">
+                  {subtitle}
+                </p>
+              )}
+            </div>
+
+            {/* FLAT HIGH-CONTRAST TRIGGER ROUTINE */}
+            <div className="pt-4">
+              <Link
+                href={buttonHref}
+                className="inline-flex items-center gap-4 text-xs font-mono font-black uppercase tracking-wider text-white bg-gray-950 hover:bg-gray-900 transition-colors py-4 px-6 border border-transparent hover:border-gray-950"
+              >
+                <LockClosedIcon className="w-4 h-4 text-gray-400" />
+                {buttonLabel}
+                <ArrowRightIcon className="w-4 h-4" style={{ color: primaryColor }} />
+              </Link>
+            </div>
+          </div>
+
+          {/* RIGHT COL: VISUAL PERIMETER TELEMETRY IMAGE GRID */}
+          <div className="lg:col-span-5 relative min-h-[300px] lg:min-h-full bg-gray-50 p-2">
+            <div className="relative w-full h-full min-h-[284px] bg-gray-100 border border-gray-200 overflow-hidden">
+              <Image
+                src={imageUrl}
+                loader={loader}
+                alt="Digital security blueprint architecture grid matrix"
+                layout="fill"
+                objectFit="cover"
+                className="mix-blend-multiply opacity-85 transition-transform duration-700 hover:scale-102"
+                priority={false}
+              />
+              
+              {/* TOP ANCHOR SYSTEM LABEL */}
+              <div className="absolute top-3 left-3 bg-gray-950 text-[9px] font-mono font-black text-white px-2 py-0.5 uppercase tracking-widest">
+                SYS_VISUAL_PRMT_V04
+              </div>
+
+              {/* BOTTOM STATUS METRIC OVERLAY */}
+              <div className="absolute bottom-3 right-3 bg-white/90 backdrop-blur-sm border border-gray-200 text-[8px] font-mono font-bold text-gray-500 px-2 py-1 uppercase tracking-tight">
+                ACTIVE_MATRIX // STATUS_OK
+              </div>
+            </div>
+          </div>
+
+        </motion.div>
+
+        {/* COMPONENT OUTLINE TELEMETRY BOUNDS */}
+        <div className="mt-4 flex items-center justify-between px-1 text-[9px] font-mono text-gray-300 font-bold uppercase tracking-wider">
+          <span>[PERIMETER_SECURE_INITIATIVE_ROUTINE]</span>
+          <span>REF_NODE_0X449</span>
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 }

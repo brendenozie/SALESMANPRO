@@ -3,44 +3,33 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ShieldExclamationIcon, // Vigilance
-  FingerPrintIcon,      // Integrity/Identity
-  LockClosedIcon,       // Protection
-  RocketLaunchIcon,     // Innovation/Execution
+  ShieldExclamationIcon,
+  FingerPrintIcon,
+  LockClosedIcon,
+  RocketLaunchIcon,
   ArrowRightIcon,
-  CodeBracketSquareIcon, // Technicality
-} from '@heroicons/react/24/solid'; // Use solid icons for greater impact
-import Image from 'next/image';
+  CodeBracketSquareIcon,
+} from '@heroicons/react/24/solid';
 import { ICoreValue } from '@/types/typings';
 
-// Framer Motion variants (kept for smooth experience)
 const sectionVariants = {
-  hidden: { opacity: 0, y: 50 },
+  hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    y: 0,
     transition: {
-      when: 'beforeChildren',
-      staggerChildren: 0.1,
-      duration: 0.8,
-      ease: 'easeOut',
+      staggerChildren: 0.04,
+      duration: 0.4,
+      ease: 'linear',
     },
   },
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, scale: 0.9, y: 30 },
+  hidden: { opacity: 0, y: 12 },
   visible: {
     opacity: 1,
-    scale: 1,
     y: 0,
-    transition: { duration: 0.6, ease: 'easeOut' },
-  },
-  hover: {
-    scale: 1.03,
-    translateY: -5,
-    boxShadow: '0 15px 35px rgba(0,0,0,0.15)',
-    transition: { duration: 0.3 },
+    transition: { duration: 0.3, ease: 'linear' },
   },
 };
 
@@ -60,13 +49,9 @@ interface CoreValuesSectionProps {
 }
 
 export default function CoreValuesSectionSecurityLight({ themeSettings, CoreValues }: CoreValuesSectionProps) {
+  const primaryColor = themeSettings?.primaryColor || '#00A880';
+  const secondaryColor = themeSettings?.secondaryColor || '#3B82F6';
 
-  const primaryColor = themeSettings?.primaryColor || '#00A880'; // Teal (Tech/Safety)
-  const secondaryColor = themeSettings?.secondaryColor || '#3B82F6'; // Blue (Trust/Cyber)
-  // Subtle light background for the card header/accent
-  const accentBg = `${primaryColor}10`; 
-
-  // --- SECURITY-FOCUSED FALLBACK CORE VALUES ---
   const defaultSecurityCoreValues: ICoreValue[] = [
     {
       id: "cv1",
@@ -92,7 +77,6 @@ export default function CoreValuesSectionSecurityLight({ themeSettings, CoreValu
       description: "We continuously adapt our defense strategies, leveraging the latest AI and threat intelligence to stay ahead of adversaries.",
       icon: "Innovation",
     },
-    // Adding a fifth for visual balance if needed, or keeping it at 4
     {
       id: "cv5",
       title: "Technical Mastery",
@@ -101,70 +85,56 @@ export default function CoreValuesSectionSecurityLight({ themeSettings, CoreValu
     },
   ];
 
-  // Map values to render, prioritizing the first few
   const coreValuesToRender: ICoreValue[] =
     CoreValues && CoreValues.length > 0
       ? CoreValues.map((val: any, idx: number) => ({
           ...val,
-          // Ensure icons are mapped correctly or fall back to a specific set
           label: val.label || defaultSecurityCoreValues[idx]?.icon || 'Vigilance',
-        })).slice(0, 5) // Limit to 5 for a potential 3-2 or 2-3 grid layout
-      : defaultSecurityCoreValues.slice(0, 5); // Use 5 default security values
+        })).slice(0, 5)
+      : defaultSecurityCoreValues.slice(0, 5);
 
   const gridClass = coreValuesToRender.length === 3 
     ? "lg:grid-cols-3" 
     : coreValuesToRender.length === 4 
       ? "md:grid-cols-2 lg:grid-cols-4" 
-      : "md:grid-cols-2 lg:grid-cols-3"; // Default to 3, wrapping to 2
+      : "md:grid-cols-2 lg:grid-cols-3";
 
   return (
     <AnimatePresence>
       <section
         id="core-values"
-        className="relative py-24 md:py-32 px-6 lg:px-16 overflow-hidden bg-white text-gray-900" // Light Mode Background
+        className="relative py-28 md:py-36 px-6 lg:px-12 bg-white text-gray-900 border-b border-gray-100 overflow-hidden"
       >
-        {/* Background animation - Toned down for Light Mode */}
-        <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
-          <motion.div
-            className="absolute -top-1/4 -left-1/4 w-3/4 h-3/4 rounded-full mix-blend-multiply filter blur-3xl"
-            style={{ backgroundColor: primaryColor }}
-            animate={{ rotate: 360 }}
-            transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-          />
-          <motion.div
-            className="absolute -bottom-1/4 -right-1/4 w-3/4 h-3/4 rounded-full mix-blend-multiply filter blur-3xl"
-            style={{ backgroundColor: secondaryColor }}
-            animate={{ rotate: -360 }}
-            transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
-          />
+        {/* STRUCTURAL TELEMETRY MESH */}
+        <div className="absolute inset-0 opacity-[0.02] pointer-events-none border-x border-gray-900 max-w-7xl mx-auto grid grid-cols-4 md:grid-cols-12 gap-0">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div key={i} className="border-r border-gray-900 h-full" />
+          ))}
         </div>
 
         <div className="max-w-7xl mx-auto relative z-10">
-          {/* Section Heading */}
-          <div className="text-center mb-16 max-w-4xl mx-auto">
-            <motion.h2
-              className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-4 leading-tight drop-shadow-sm"
-              initial={{ opacity: 0, y: -20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              The Foundational <span style={{ color: primaryColor }}>Pillars</span> of Our <span style={{ color: secondaryColor }}>Trust</span>
-            </motion.h2>
-            <motion.p
-              className="mt-4 text-gray-600 text-lg md:text-xl"
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              viewport={{ once: true }}
-            >
-              These are the core principles that define our commitment to your security and our standard of excellence.
-            </motion.p>
+          
+          {/* ASYMMETRIC HEADER SPLIT */}
+          <div className="flex flex-col lg:flex-row items-start justify-between gap-8 mb-20 border-b border-gray-100 pb-12">
+            <div className="max-w-xl">
+              <div className="inline-flex items-center gap-2 mb-4">
+                <span className="w-8 h-[2px]" style={{ backgroundColor: primaryColor }} />
+                <p className="text-xs font-mono font-bold uppercase tracking-widest text-gray-400">
+                  OPERATIONAL_PILLARS // CORE
+                </p>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase text-gray-900 leading-[1.1]">
+                FOUNDATIONAL PILLARS OF RISK MITIGATION
+              </h2>
+            </div>
+            <p className="text-xs font-mono text-gray-400 leading-relaxed max-w-sm lg:mt-8">
+              Systemized core architectural vectors defining explicit transparency matrices, non-negotiable compliance parameters, and absolute defense execution routines.
+            </p>
           </div>
 
-          {/* Core Values Grid */}
+          {/* HIGH-DENSITY FRAME GRID */}
           <motion.div
-            className={`grid grid-cols-1 gap-8 ${gridClass}`}
+            className={`grid grid-cols-1 gap-0 border-t border-l border-gray-100 ${gridClass}`}
             variants={sectionVariants}
             initial="hidden"
             whileInView="visible"
@@ -172,62 +142,57 @@ export default function CoreValuesSectionSecurityLight({ themeSettings, CoreValu
           >
             {coreValuesToRender.map((item, idx) => {
               const IconComponent = iconMap[item.icon as IconKey] || ShieldExclamationIcon;
+              const nodeString = `0${idx + 1}`.slice(-2);
               
               return (
                 <motion.div
                   key={item.id || `cv-${idx}`}
-                  className="relative rounded-2xl overflow-hidden shadow-xl border border-gray-200 bg-white transition-all duration-300 group"
+                  className="p-8 border-r border-b border-gray-100 bg-white hover:bg-gray-50/50 transition-colors flex flex-col justify-between group relative"
                   variants={cardVariants}
-                  whileHover="hover"
                 >
-                  <div className="p-8 h-full flex flex-col justify-start">
-                    
-                    {/* Header Block - Color Accent */}
-                    <div 
-                        className="p-4 rounded-xl flex items-center shadow-lg w-fit mb-6"
-                        style={{ backgroundColor: accentBg }}
-                    >
-                        <IconComponent 
-                            className="w-10 h-10" 
-                            style={{ color: primaryColor }} 
-                        />
+                  <div>
+                    {/* NODE IDENTIFIER STRIP */}
+                    <div className="flex items-center justify-between mb-8">
+                      <span className="text-[10px] font-mono font-bold text-gray-300 group-hover:text-gray-900 transition-colors">
+                        [PLR_VAL_{nodeString}]
+                      </span>
+                      <IconComponent 
+                        className="w-4 h-4 text-gray-400 group-hover:text-gray-900 transition-colors"
+                        style={{ color: primaryColor }}
+                      />
                     </div>
                     
-                    <span 
-                        className="text-xs uppercase tracking-widest font-bold mb-2"
-                        style={{ color: secondaryColor }}
-                    >
-                        {item.icon}
+                    <span className="text-[9px] font-mono font-black uppercase tracking-widest block mb-2 text-gray-400">
+                      METRIC // {item.icon}
                     </span>
                     
-                    <h3 className="text-2xl font-extrabold text-gray-900 mb-3 leading-snug">
+                    <h3 className="text-sm font-mono font-black uppercase tracking-tight text-gray-900 mb-3">
                       {item.title}
                     </h3>
 
                     {item.description && (
-                      <p className="text-gray-600 text-base leading-relaxed mb-8 flex-grow">
+                      <p className="text-xs font-mono text-gray-400 leading-relaxed mb-8">
                         {item.description}
                       </p>
                     )}
-                    
-                    {/* Consistent CTA Button */}
-                    <button
-                      className="inline-flex items-center gap-2 font-semibold px-6 py-3 rounded-full transition-all duration-300 w-fit text-white shadow-md hover:shadow-lg"
-                      style={{ backgroundColor: secondaryColor }}
-                    >
-                      Explore Our Commitment
-                      <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                    </button>
                   </div>
+                  
+                  {/* UTILITY TELEMETRY STREAM ROW */}
+                  <button
+                    className="inline-flex items-center gap-2 text-[10px] font-mono font-black uppercase tracking-wider text-gray-400 hover:text-gray-900 transition-colors text-left w-fit mt-auto"
+                  >
+                    Query Directive Protocol
+                    <ArrowRightIcon className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                  </button>
                 </motion.div>
               );
             })}
           </motion.div>
           
-          {/* Fallback to display the static placeholder image if only the original code was used */}
+          {/* STATIC FAULT STATE TELEMETRY HEADER */}
           {coreValuesToRender.length === 0 && (
-            <div className='text-center text-gray-500 mt-12'>
-                <p>No core values data available. Displaying default security placeholders.</p>
+            <div className="text-center font-mono text-[10px] text-gray-400 mt-12 uppercase tracking-widest">
+              STATUS_ERR // NO_INPUT_DATAFEED // LOADED_DEFAULT_REGISTRIES
             </div>
           )}
         </div>

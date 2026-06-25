@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShieldCheckIcon,      
@@ -12,10 +11,6 @@ import {
   Cog6ToothIcon,         
   MagnifyingGlassIcon,   
 } from '@heroicons/react/24/solid';
-
-// Assuming context import is correct
-// import { useStoreContext } from "@/contexts/StoreContext"; 
-// import { StoreForm } from "@/types/typings";
 
 const icons = {
   ShieldCheckIcon,
@@ -29,41 +24,24 @@ const icons = {
 
 type IconKey = keyof typeof icons;
 
-// Fallback data for a standalone preview
 const storeData = {
-  themeSettings: {
-    primaryColor: '#00A880', // Teal/Green for Tech/Safety
-    secondaryColor: '#3B82F6', // Blue for Trust/Cyber
-  },
   tagline: 'Uncompromising digital defense tailored for modern threats.',
-  promotions: [],
-  name: "CyberShield",
 };
 
-const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
-
-// Animation variants (No change, as they are appearance-based)
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
+    transition: { staggerChildren: 0.04 },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 50, scale: 0.95 },
+  hidden: { opacity: 0, y: 10 },
   visible: {
     opacity: 1,
     y: 0,
-    scale: 1,
-    transition: {
-      type: 'spring',
-      stiffness: 100,
-      damping: 12,
-    },
+    transition: { duration: 0.3, ease: 'linear' },
   },
 };
 
@@ -78,143 +56,108 @@ interface FeaturesSectionProps {
 }
 
 export default function FeaturesSecurityMatrixLight({ themeSettings, name, promotions, tagline }: FeaturesSectionProps) {
-
   const primary = themeSettings?.primaryColor || "#00A880";
-  const secondary = themeSettings?.secondaryColor || "#3B82F6";
-  // Light accent background for the badge/tagline
-  const accentBg = `${primary}20`; 
 
-  // --- SECURITY-FOCUSED FALLBACK FEATURES (CONTENT UNCHANGED) ---
   const fallbackFeatures: { icon: IconKey; title: string; desc: string }[] = [
     { icon: "ShieldCheckIcon", title: "Proactive Defense", desc: "Always-on threat intelligence and pre-emptive measures to neutralize emerging attacks." },
     { icon: "LockClosedIcon", title: "Zero Trust Architecture", desc: "Implementing strict verification protocols, ensuring no entity is trusted by default." },
-    { icon: "AdjustmentsVerticalIcon", title: "Customized Security Blueprints", desc: "Bespoke defense strategies mapped precisely to your infrastructure and compliance needs." },
-    { icon: "ClockIcon", title: "24/7 Global Monitoring (SOC)", desc: "Relentless monitoring and rapid incident response backed by a world-class Security Operations Center." },
+    { icon: "AdjustmentsVerticalIcon", title: "Customized Blueprints", desc: "Bespoke defense strategies mapped precisely to your infrastructure and compliance needs." },
+    { icon: "ClockIcon", title: "24/7 Global Monitoring", desc: "Relentless monitoring and rapid incident response backed by a world-class Security Operations Center." },
     { icon: "UserGroupIcon", title: "Elite Security Analysts", desc: "Access to a specialized team of certified ethical hackers and security architects." },
-    { icon: "MagnifyingGlassIcon", title: "Continuous Vulnerability Discovery", desc: "Ongoing penetration testing and deep-dive analysis to find and patch weaknesses before they're exploited." },
+    { icon: "MagnifyingGlassIcon", title: "Continuous Discovery", desc: "Ongoing penetration testing and deep-dive analysis to find and patch weaknesses before exploit vectors open." },
   ];
 
-  // Dynamic data handling (unchanged)
   const features = promotions?.[0]?.perks?.length > 0
     ? promotions?.[0].perks.map((perk: any, idx: number) => ({
-      icon: (idx % 3 === 0 ? "ShieldCheckIcon" : idx % 3 === 1 ? "LockClosedIcon" : "AdjustmentsVerticalIcon") as IconKey,
-      title: perk.label,
-      desc: perk.description,
-    }))
+        icon: (idx % 3 === 0 ? "ShieldCheckIcon" : idx % 3 === 1 ? "LockClosedIcon" : "AdjustmentsVerticalIcon") as IconKey,
+        title: perk.label,
+        desc: perk.description,
+      }))
     : fallbackFeatures;
-
-  const brandName = name || "CyberShield";
 
   return (
     <AnimatePresence>
       <section 
-        className="relative py-24 md:py-32 px-4 sm:px-12 bg-white text-gray-900 overflow-hidden" 
+        className="relative py-28 md:py-36 bg-white text-gray-900 overflow-hidden border-b border-gray-100" 
         id="security-features"
       >
-        
-        {/* Dynamic, blurred radial gradient background - Light Mode */}
-        <div className="absolute inset-0 z-0">
-          <motion.div
-            className="absolute -top-1/4 -left-1/4 w-3/4 h-3/4 rounded-full mix-blend-multiply filter blur-3xl opacity-10"
-            style={{ backgroundColor: primary }}
-            animate={{ x: ['-25%', '25%', '-25%'], y: ['-25%', '25%', '-25%'] }}
-            transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
-          />
-          <motion.div
-            className="absolute -bottom-1/4 -right-1/4 w-3/4 h-3/4 rounded-full mix-blend-multiply filter blur-3xl opacity-10"
-            style={{ backgroundColor: secondary }}
-            animate={{ x: ['25%', '-25%', '25%'], y: ['25%', '-25%', '25%'] }}
-            transition={{ duration: 50, repeat: Infinity, ease: 'linear' }}
-          />
+        {/* STRUCTURAL BACKGROUND TELEMETRY MESH */}
+        <div className="absolute inset-0 opacity-[0.02] pointer-events-none border-x border-gray-900 max-w-7xl mx-auto grid grid-cols-4 md:grid-cols-12 gap-0">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div key={i} className="border-r border-gray-900 h-full" />
+          ))}
         </div>
 
-        {/* Heading */}
-        <div className="max-w-5xl mx-auto text-center mb-20 relative z-10">
-          <motion.span
-            className="inline-block text-sm font-semibold px-5 py-2 rounded-full shadow-md"
-            // High-contrast badge for visibility
-            style={{ backgroundColor: accentBg, color: primary, border: `1px solid ${primary}` }}
-            initial={{ opacity: 0, y: -20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
-            viewport={{ once: true }}
-          >
-            Mission-Critical Capabilities
-          </motion.span>
-          <motion.h2
-            className="mt-6 text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight text-gray-900 drop-shadow-sm"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
-            viewport={{ once: true }}
-          >
-            The Core of Your <span style={{ color: primary }}>Digital Defense</span>
-          </motion.h2>
-          {tagline && (
-            <motion.p
-              className="mt-6 text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
-              viewport={{ once: true }}
-            >
-              {tagline || storeData.tagline}
-            </motion.p>
-          )}
-        </div>
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
+          
+          {/* ASYMMETRIC MONO HEADER ROUTINE */}
+          <div className="flex flex-col lg:flex-row items-start justify-between gap-8 mb-20 border-b border-gray-100 pb-12">
+            <div className="max-w-xl">
+              <div className="inline-flex items-center gap-2 mb-4">
+                <span className="w-8 h-[2px]" style={{ backgroundColor: primary }} />
+                <p className="text-xs font-mono font-bold uppercase tracking-widest text-gray-400">
+                  SYSTEM_CAPABILITIES // CORE_MATRIX
+                </p>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase text-gray-900 leading-[1.1]">
+                THE CORE OF YOUR DIGITAL DEFENSE
+              </h2>
+            </div>
+            <div className="max-w-sm lg:mt-8">
+              <p className="text-xs font-mono text-gray-400 leading-relaxed uppercase">
+                {tagline || storeData.tagline}
+              </p>
+            </div>
+          </div>
 
-        {/* Feature Cards Grid (Vigilance Matrix - Light) */}
-        <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto relative z-10"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-        >
-          {features.map(({ icon, title, desc } : { icon: string; title: string; desc: string }, idx : number) => {
-            const Icon = icons[icon as IconKey];
-            return (
-              <motion.div
-                key={title}
-                className="group rounded-xl border border-gray-200 p-8 relative z-10 transition-all duration-300 backdrop-blur-sm shadow-xl"
-                // LIGHT MODE: Clean white card background
-                style={{ backgroundColor: 'white' }}
-                variants={itemVariants}
-                // Hover effect: slight scale, lift, and a subtle shadow/glow
-                whileHover={{ 
-                    scale: 1.05, 
-                    translateY: -8, 
-                    boxShadow: `0 10px 30px ${primary}20, 0 5px 15px rgba(0,0,0,0.05)` 
-                }}
-              >
-                {/* Digital Glow/Pulse Effect on Hover (Toned Down for Light Mode) */}
-                <div
-                  className="absolute inset-0 z-0 opacity-0 group-hover:opacity-30 transition-opacity duration-500 rounded-xl"
-                  style={{
-                    background: `radial-gradient(circle at center, ${primary}22 0%, transparent 70%)`,
-                    filter: 'blur(30px)',
-                  }}
-                />
-                
-                <div
-                  className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg mb-6 relative z-10 group-hover:scale-110 transition-transform duration-300"
-                  // Icon container with clear color and a strong shadow
-                  style={{
-                    backgroundColor: primary,
-                    boxShadow: `0 5px 15px ${primary}66`,
-                  }}
+          {/* SYSTEM CHANNEL HARDENED GRID */}
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 border-t border-l border-gray-100"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.1 }}
+          >
+            {features.map(({ icon, title, desc } : { icon: string; title: string; desc: string }, idx : number) => {
+              const Icon = icons[icon as IconKey] || ShieldCheckIcon;
+              const hexIndex = `0${idx + 1}`.slice(-2);
+              
+              return (
+                <motion.div
+                  key={title}
+                  className="p-8 border-r border-b border-gray-100 bg-white hover:bg-gray-50/60 transition-colors flex flex-col justify-between group min-h-[280px]"
+                  variants={itemVariants}
                 >
-                  {/* White icon on primary background */}
-                  <Icon className="w-8 h-8 text-white" /> 
-                </div>
-                <h3 className="text-2xl font-bold relative z-10 text-gray-900">
-                  {title}
-                </h3>
-                <p className="text-md text-gray-600 mt-3 relative z-10 leading-relaxed">{desc || 'Unwavering commitment to secure your digital presence against all known and zero-day threats.'}</p>
-              </motion.div>
-            );
-          })}
-        </motion.div>
+                  <div>
+                    {/* METRIC HEADER BAR */}
+                    <div className="flex items-center justify-between mb-8">
+                      <span className="text-[10px] font-mono font-bold text-gray-300 group-hover:text-gray-900 transition-colors">
+                        [SYS_PERK_{hexIndex}]
+                      </span>
+                      <div 
+                        className="w-8 h-8 flex items-center justify-center border border-gray-100 group-hover:border-gray-950 transition-colors text-gray-400 group-hover:text-gray-900"
+                      >
+                        <Icon className="w-4 h-4 transition-transform duration-300 group-hover:scale-105" /> 
+                      </div>
+                    </div>
+
+                    <span className="text-[9px] font-mono font-black uppercase tracking-widest block mb-2 text-gray-400">
+                      INTELLIGENCE MODULE
+                    </span>
+
+                    <h3 className="text-sm font-mono font-black uppercase tracking-tight text-gray-900 mb-3">
+                      {title}
+                    </h3>
+
+                    <p className="text-xs font-mono text-gray-400 leading-relaxed">
+                      {desc || 'Unwavering commitment to secure your digital presence against all known and zero-day threats.'}
+                    </p>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </div>
       </section>
     </AnimatePresence>
   );

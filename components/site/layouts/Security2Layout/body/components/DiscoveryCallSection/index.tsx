@@ -5,211 +5,206 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { 
-    CalendarDaysIcon, 
-    ArrowRightIcon,
-    ShieldCheckIcon, // New icon for security assessment
-    BoltIcon,       // New icon for rapid action/crisis
-} from '@heroicons/react/24/solid'; // Using solid icons for punch
+  ShieldCheckIcon,
+  BoltIcon,
+} from '@heroicons/react/24/solid';
 
-// Define the shape of discoveryCall data and other props for clarity
 interface DiscoveryCallContent {
-    headline?: string;
-    description?: string;
-    ctaText?: string;
-    ctaLink?: string;
+  headline?: string;
+  description?: string;
+  ctaText?: string;
+  ctaLink?: string;
 }
 
 interface ThemeSettings {
-    primaryColor?: string; // Teal/Green (Safety)
-    secondaryColor?: string; // Blue (Trust/Cyber)
-    accentColor?: string; 
+  primaryColor?: string;
+  secondaryColor?: string;
+  accentColor?: string; 
 }
 
 interface StoreFormData {
-    name?: string;
-    slug?: string;
-    themeSettings?: ThemeSettings;
-    contactEmail?: string;
-    contactPhone?: string;
-    discoveryCall?: DiscoveryCallContent;
+  name?: string;
+  slug?: string;
+  themeSettings?: ThemeSettings;
+  contactEmail?: string;
+  contactPhone?: string;
+  discoveryCall?: DiscoveryCallContent;
 }
 
-// Fallback Data for Security Firm
 const defaultFirmData = {
-    name: 'CyberShield',
-    primaryColor: '#00A880', 
-    secondaryColor: '#3B82F6', 
-    accentColor: '#FFC107', 
+  name: 'CyberShield',
+  primaryColor: '#00A880', 
+  secondaryColor: '#3B82F6', 
+  accentColor: '#FFC107', 
 };
 
-
 export default function SecurityReadinessSection() {
-    // Assuming context returns proper security firm data
-    const { storeFormData } = useStoreContext() as { storeFormData: StoreFormData };
+  const { storeFormData } = useStoreContext() as { storeFormData: StoreFormData };
 
-    const {
-        name,
-        slug,
-        themeSettings = {},
-        contactEmail,
-        contactPhone,
-        discoveryCall = {},
-    } = storeFormData;
+  const {
+    name,
+    slug,
+    themeSettings = {},
+    contactEmail,
+    contactPhone,
+    discoveryCall = {},
+  } = storeFormData || {};
 
-    // Theme colors - using security defaults for visual integrity
-    const primaryColor = themeSettings.primaryColor || defaultFirmData.primaryColor;
-    const secondaryColor = themeSettings.secondaryColor || defaultFirmData.secondaryColor;
-    const accentColor = themeSettings.accentColor || defaultFirmData.accentColor;
+  const primaryColor = themeSettings.primaryColor || defaultFirmData.primaryColor;
+  const accentColor = themeSettings.accentColor || defaultFirmData.accentColor;
 
-    // --- SECURITY-FOCUSED CONTENT ---
-    const defaultHeadline = `Stop Guessing. Get a Real-Time {accent} Threat Assessment {accent} Now.`;
-    const defaultDescription =
-        'Your security posture demands immediate clarity. Schedule a personalized, no-cost audit with our elite analysts to identify hidden vulnerabilities before they escalate into a crisis.';
-    const defaultCtaText = 'Request Your Security Readiness Audit';
+  const defaultHeadline = 'Stop Guessing. Get a Real-Time {accent} Threat Assessment {accent} Now.';
+  const defaultDescription =
+    'Your security posture demands immediate clarity. Schedule a personalized, no-cost audit with our elite analysts to identify hidden vulnerabilities before they escalate into a crisis.';
+  const defaultCtaText = 'Request Your Security Readiness Audit';
 
-    // Replace default content placeholders
-    const title = discoveryCall.headline || defaultHeadline.replace('{accent}', defaultFirmData.accentColor);
-    const subtitle = discoveryCall.description || defaultDescription;
-    const ctaText = discoveryCall.ctaText || defaultCtaText;
-    
-    // --- CTA LINK LOGIC (UNCHANGED) ---
-    let ctaLink = discoveryCall.ctaLink || '';
-    if (!ctaLink) {
-        if (slug) {
-            ctaLink = `/${slug}/contact`; 
-        } else if (contactEmail) {
-            ctaLink = `mailto:${contactEmail}`; 
-        } else if (contactPhone) {
-            ctaLink = `tel:${contactPhone}`; 
-        } else {
-            ctaLink = '#'; 
-        }
+  const title = discoveryCall.headline || defaultHeadline.replace('{accent}', defaultFirmData.accentColor);
+  const subtitle = discoveryCall.description || defaultDescription;
+  const ctaText = discoveryCall.ctaText || defaultCtaText;
+  
+  let ctaLink = discoveryCall.ctaLink || '';
+  if (!ctaLink) {
+    if (slug) {
+      ctaLink = `/${slug}/contact`; 
+    } else if (contactEmail) {
+      ctaLink = `mailto:${contactEmail}`; 
+    } else if (contactPhone) {
+      ctaLink = `tel:${contactPhone}`; 
+    } else {
+      ctaLink = '#'; 
+    }
+  }
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.3,
+        staggerChildren: 0.05,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'linear' } },
+  };
+
+  const renderTitleWithAccent = (fullTitle: string, highlightColor: string) => {
+    if (fullTitle.includes('{accent}')) {
+      const parts = fullTitle.split(/\{accent\}(.*?)\{\/accent\}/g);
+      return parts.map((part, idx) => (
+        idx % 2 === 1 ? (
+          <span key={idx} style={{ color: highlightColor }}>{part}</span>
+        ) : (
+          <React.Fragment key={idx}>{part}</React.Fragment>
+        )
+      ));
     }
 
-    // Framer Motion variants (unchanged, as they are effective)
-    const containerVariants = {
-        hidden: { opacity: 0, y: 50 },
-        visible: {
-            opacity: 1,
-            y: 0,
-            transition: {
-                type: 'spring',
-                damping: 10,
-                stiffness: 100,
-                delayChildren: 0.2,
-                staggerChildren: 0.1,
-            },
-        },
-    };
+    const words = fullTitle.split(' ');
+    if (words.length > 1) {
+      const lastWord = words[words.length - 1];
+      const rest = words.slice(0, -1).join(' ');
+      return (
+        <>
+          {rest}{' '}
+          <span style={{ color: highlightColor }}>
+            {lastWord.replace(/[?!.,]$/, '')}
+          </span>
+          {lastWord.match(/[?!.,]$/)?.[0]}
+        </>
+      );
+    }
+    return fullTitle;
+  };
 
-    const itemVariants = {
-        hidden: { opacity: 0, y: 20 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-    };
+  return (
+    <section id="security-readiness" className="relative py-28 md:py-36 bg-white text-gray-900 overflow-hidden border-b border-gray-100">
+      
+      {/* STRUCTURAL BACKGROUND TELEMETRY MESHGRID */}
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none border-x border-gray-900 max-w-7xl mx-auto grid grid-cols-4 md:grid-cols-12 gap-0">
+        {Array.from({ length: 12 }).map((_, i) => (
+          <div key={i} className="border-r border-gray-900 h-full" />
+        ))}
+      </div>
 
-    // Helper to handle the new {accent} placeholder for flexible highlighting
-    const renderTitleWithAccent = (fullTitle: string, accentColor: string) => {
-        if (fullTitle.includes('{accent}')) {
-            const parts = fullTitle.split(/\{accent\}(.*?)\{\/accent\}/g);
-            return parts.map((part, idx) => (
-                idx % 2 === 1 ? (
-                    <span key={idx} style={{ color: accentColor }}>{part}</span>
-                ) : (
-                    <React.Fragment key={idx}>{part}</React.Fragment>
-                )
-            ));
-        }
-
-        // Default fallback logic (highlighting the last word)
-        const words = fullTitle.split(' ');
-        if (words.length > 1) {
-            const lastWord = words[words.length - 1];
-            const rest = words.slice(0, -1).join(' ');
-            return (
-                <>
-                    {rest}{' '}
-                    <span style={{ color: accentColor }}>
-                        {lastWord.replace(/[?!.,]$/, '')}
-                    </span>
-                    {lastWord.match(/[?!.,]$/) && lastWord.match(/[?!.,]$/)?.[0]}
-                </>
-            );
-        }
-        return fullTitle;
-    };
-
-
-    return (
-        <motion.section
-            className="relative py-16 md:py-24 px-6 lg:px-12 rounded-3xl text-center mx-auto max-w-7xl my-24 overflow-hidden shadow-2xl"
-            style={{
-                // Dark, high-impact gradient for security urgency
-                background: `linear-gradient(135deg, ${primaryColor} 20%, #1e293b 80%)`, 
-            }}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={containerVariants}
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
+        
+        {/* INTERPOLATED PERIMETER TERMINAL */}
+        <motion.div
+          className="border border-gray-100 bg-gray-50/40 p-8 md:p-16 relative text-left"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+          variants={containerVariants}
         >
-            {/* Background pattern and radial glow for a high-tech/urgent feel */}
-            <div
-                className="absolute inset-0 opacity-20 z-0"
-                style={{
-                    background: `radial-gradient(circle at 10% 20%, #ffffff33 0%, transparent 20%),
-                                 radial-gradient(circle at 90% 80%, ${secondaryColor}66 0%, transparent 20%)`,
-                }}
-            />
-            {/* Binary code/circuitry overlay for a high-tech look */}
-             <div className="absolute inset-0 z-0 opacity-[0.1]" style={{ 
-                backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'10\' height=\'10\' viewBox=\'0 0 10 10\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23FFFFFF\' fill-opacity=\'0.2\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'2\' cy=\'2\' r=\'1\'/%3E%3C/g%3E%3C/svg%3E")', 
-                backgroundSize: '30px 30px' 
-            }}></div>
+          {/* TOP INDEX TELEMETRY ACCESSORS */}
+          <div className="absolute top-0 inset-x-0 h-8 border-b border-gray-100 flex items-center justify-between px-4 md:px-8 text-[9px] font-mono font-bold text-gray-400">
+            <span>[SYS_DISPATCH_CALL_ROUTINE]</span>
+            <span>SEC_LEVEL_A // {name?.toUpperCase().replace(/\s+/g, '_') || 'CYBERSHIELD'}</span>
+          </div>
 
-            <div className="relative z-10">
-                <motion.h2
-                    className="text-4xl md:text-6xl font-extrabold leading-tight text-white mb-6 drop-shadow-lg"
-                    variants={itemVariants}
-                >
-                    {renderTitleWithAccent(title, accentColor)}
-                </motion.h2>
-
-                {subtitle && (
-                    <motion.p
-                        className="mt-4 text-white/90 max-w-4xl mx-auto text-lg md:text-2xl leading-relaxed opacity-90"
-                        variants={itemVariants}
-                    >
-                        {subtitle}
-                    </motion.p>
-                )}
-
-                <motion.div variants={itemVariants}>
-                    {ctaLink ? (
-                        <Link
-                            href={ctaLink}
-                            className="mt-10 inline-flex items-center justify-center px-10 py-4 rounded-full text-xl font-bold bg-white text-gray-900 shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105 hover:ring-4 focus:outline-none focus:ring-4"
-                            // Custom styling for the hover ring to match the primary color
-                            style={{ 
-                                boxShadow: `0 0 40px ${primaryColor}44`,
-                                color: primaryColor, // Make text the primary color
-                                backgroundColor: 'white',
-                                borderColor: primaryColor,
-                                textShadow: 'none',
-                            }}
-                        >
-                            <ShieldCheckIcon className="w-6 h-6 mr-3" />
-                            {ctaText}
-                            <BoltIcon className="w-5 h-5 ml-3" />
-                        </Link>
-                    ) : (
-                        <div className="mt-10 text-white/70 text-lg">
-                            Contact us directly: {contactEmail && <a href={`mailto:${contactEmail}`} className="underline hover:text-white">{contactEmail}</a>}
-                            {contactEmail && contactPhone && ' or '}
-                            {contactPhone && <a href={`tel:${contactPhone}`} className="underline hover:text-white">{contactPhone}</a>}
-                            {!contactEmail && !contactPhone && 'Please configure a contact method.'}
-                        </div>
-                    )}
-                </motion.div>
+          <div className="mt-4 max-w-4xl">
+            <div className="inline-flex items-center gap-2 mb-6">
+              <span className="w-8 h-[2px]" style={{ backgroundColor: primaryColor }} />
+              <p className="text-xs font-mono font-bold uppercase tracking-widest text-gray-400">
+                ACTION // DISCOVERY_TRIGGER
+              </p>
             </div>
-        </motion.section>
-    );
+
+            <motion.h2 
+              className="text-3xl md:text-5xl font-black tracking-tighter uppercase text-gray-900 leading-[1.1] mb-6"
+              variants={itemVariants}
+            >
+              {renderTitleWithAccent(title, primaryColor)}
+            </motion.h2>
+
+            {subtitle && (
+              <motion.p 
+                className="text-xs font-mono text-gray-500 leading-relaxed max-w-3xl border-l border-gray-200 pl-4 mb-10"
+                variants={itemVariants}
+              >
+                {subtitle}
+              </motion.p>
+            )}
+
+            <motion.div variants={itemVariants}>
+              {ctaLink && ctaLink !== '#' ? (
+                <Link
+                  href={ctaLink}
+                  className="inline-flex items-center gap-4 text-xs font-mono font-black uppercase tracking-wider text-white bg-gray-950 hover:bg-gray-900 transition-colors py-4 px-6 border border-transparent hover:border-gray-950"
+                >
+                  <ShieldCheckIcon className="w-4 h-4 text-gray-400" />
+                  {ctaText}
+                  <BoltIcon className="w-4 h-4" style={{ color: primaryColor }} />
+                </Link>
+              ) : (
+                <div className="text-xs font-mono text-gray-400 border-t border-gray-100 pt-6">
+                  CRITICAL COMMANDS: {' '}
+                  {contactEmail && (
+                    <a href={`mailto:${contactEmail}`} className="text-gray-900 underline underline-offset-4 hover:text-gray-600 mr-4">
+                      [EMAIL // {contactEmail.toUpperCase()}]
+                    </a>
+                  )}
+                  {contactPhone && (
+                    <a href={`tel:${contactPhone}`} className="text-gray-900 underline underline-offset-4 hover:text-gray-600">
+                      [COMMS // {contactPhone}]
+                    </a>
+                  )}
+                  {!contactEmail && !contactPhone && '[CONFIGURE EXPLICIT TERMINAL ANCHORS]'}
+                </div>
+              )}
+            </motion.div>
+          </div>
+
+          {/* LOWER DECORATIVE STATUS ANCHOR */}
+          <div className="absolute bottom-3 right-4 hidden md:block text-[9px] font-mono font-bold text-gray-300">
+            STATUS // READY_TO_EXECUTE
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
 }

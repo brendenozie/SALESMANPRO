@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'; 
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/solid'; 
 import { useStoreContext } from '@/contexts/StoreContext';
 import type { IconType } from 'react-icons';
 import type { SocialChannel as ExternalSocialChannel } from '@/types/typings';
@@ -16,7 +16,6 @@ import {
   FaYoutube,
 } from 'react-icons/fa';
 
-// --- TYPES & UTILITIES ---
 type SocialChannel = ExternalSocialChannel;
 
 const socialIconMap: Record<string, IconType> = {
@@ -27,218 +26,187 @@ const socialIconMap: Record<string, IconType> = {
   YOUTUBE: FaYoutube,
 };
 
-// Loader for next/image
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
 const navLinks = [
-  { label: 'Services', href: '#services' },
-  { label: 'Case Studies', href: '#case-studies' }, // Security firms often feature case studies
-  { label: 'FAQs', href: '#security-faqs' },
-  { label: 'Contact', href: '#contact' }, 
+  { label: 'SERVICES', href: '#services', index: '01' },
+  { label: 'CASE STUDIES', href: '#case-studies', index: '02' },
+  { label: 'FAQS', href: '#security-faqs', index: '03' },
+  { label: 'CONTACT', href: '#contact-routing', index: '04' }, 
 ];
 
-// Helper component for Social Icons (Adapted for Light Mode)
-function SocialLink({ channel, url, primaryColor }: { channel: SocialChannel; url: string; primaryColor: string }) {
+function SocialLink({ channel, url }: { channel: SocialChannel; url: string }) {
   const IconComponent = socialIconMap[channel];
   if (!IconComponent) return null;
 
   return (
-    <motion.a
-      key={String(channel)}
+    <a
       href={url.startsWith('http') ? url : `https://${url}`} 
       target="_blank"
       rel="noopener noreferrer"
-      className="text-gray-500 hover:text-[color:var(--primary)] transition duration-300 p-2 rounded-full hover:bg-gray-100"
-      // Use dynamic color for the icon hover
-      style={{ '--primary': primaryColor } as React.CSSProperties} 
-      whileHover={{ scale: 1.1, y: -2 }}
+      className="text-gray-400 hover:text-gray-950 p-2 border border-transparent hover:border-gray-200 transition-colors"
     >
       {(() => {
         const Icon = IconComponent as unknown as React.ComponentType<{ className?: string }>;
-        return <Icon className="w-5 h-5" aria-hidden="true" />;
+        return <Icon className="w-3.5 h-3.5" aria-hidden="true" />;
       })()}
-    </motion.a>
+    </a>
   );
 }
 
-
-
-export default function HeaderLightMode() {
+export default function HeaderIndustrialGrid() {
   const { storeFormData } = useStoreContext();
 
   const name = storeFormData?.name || 'CyberShield';
   const slug = storeFormData?.slug || 'cybershield';
-  const logoUrl = storeFormData?.logoUrl || 'https://placehold.co/140x40/000000/ffffff?text=CS+LOGO';
+  const logoUrl = storeFormData?.logoUrl || '';
   const socialLinks = storeFormData?.socialLinks || [];
   const themeSettings = storeFormData?.themeSettings || {};
 
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Security firm color defaults
   const primaryColor = themeSettings.primaryColor || '#00A880'; 
-  const secondaryColor = themeSettings.secondaryColor || '#3B82F6'; 
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 50);
+    const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Set the theme color as a CSS variable for easy use in Tailwind
-  const cssVars = {
-    '--primary': primaryColor,
-    '--secondary': secondaryColor,
-  } as React.CSSProperties;
-
-  // Define dynamic class for link text color
-  const linkTextColor = scrolled ? 'text-gray-700' : 'text-white';
-  const mobileMenuBg = 'bg-white';
-  const mobileLinkColor = 'text-gray-700';
-  const mobileBorderColor = 'border-gray-100';
-
-
   return (
     <header
-      className={`fixed w-full top-0 z-50 transition-all duration-500`}
-      style={cssVars}
+      className={`fixed w-full top-0 z-50 transition-all duration-300 ${
+        scrolled ? 'bg-white border-b border-gray-200' : 'bg-white/90 backdrop-blur-md border-b border-gray-100'
+      }`}
     >
-      <div 
-        className={`w-full transition-all duration-500 ${
-          // Light Mode Scroll Logic: White background with sharp shadow
-          scrolled
-            ? 'bg-white shadow-xl py-4 border-b border-gray-100'
-            : 'bg-transparent py-6'
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center h-12">
-          
-          {/* Logo or Name */}
-          <Link href={`/${slug}`} className="flex items-center gap-3">
-            {logoUrl ? (
-              <Image
-                src={logoUrl}
-                loader={loader}
-                alt={name}
-                width={140}
-                height={40}
-                // Light mode: ensure logo contrast against white background
-                className={`object-contain h-20 w-32 ${scrolled ? 'filter-none' : 'filter brightness-125'}`} 
-              />
-            ) : (
-              <span
-                className={`text-2xl font-extrabold tracking-tight bg-clip-text text-transparent transition-colors duration-300 ${scrolled ? 'text-gray-900' : 'text-white'}`}
-                style={{
-                  // Use gradient text for branding when transparent over the hero
-                  backgroundImage: scrolled ? 'none' : `linear-gradient(90deg, white, ${secondaryColor})`,
-                  WebkitTextFillColor: scrolled ? 'initial' : 'transparent',
-                }}
-              >
-                {name}
-              </span>
-            )}
-          </Link>
+      {/* GLOBAL SYSTEM STATUS BAR */}
+      <div className="w-full bg-gray-950 text-[9px] font-mono text-gray-400 px-6 py-1.5 flex justify-between items-center tracking-widest border-b border-gray-900">
+        <div className="flex items-center gap-4">
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            SYS_SECURE // ONLINE
+          </span>
+          <span className="hidden sm:inline text-gray-600">|</span>
+          <span className="hidden sm:inline text-gray-500">SRC_NODE: {slug.toUpperCase()}</span>
+        </div>
+        <div className="font-bold text-gray-500">
+          [SECURE_CHANNEL_v4.11]
+        </div>
+      </div>
 
-          {/* Desktop Nav - Middle */}
-          <nav className="hidden lg:flex gap-10 text-base font-medium">
-            {navLinks.map(({ label, href }) => (
-              <motion.a
-                key={label}
-                href={href}
-                whileHover={{ scale: 1.05, color: primaryColor }}
-                className={`${linkTextColor} ${scrolled ? 'text-gray-700' : 'text-white'} hover:text-[color:var(--primary)] transition-colors duration-200`}
-                style={{ color: scrolled ? 'inherit' : 'white' }}
-              >
-                {label}
-              </motion.a>
-            ))}
-          </nav>
+      {/* CORE STRUCTURAL ROUTING MATRIX */}
+      <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center relative">
+        
+        {/* BRAND IDENTITY NODE */}
+        <Link href={`/${slug}`} className="flex items-center h-full border-r border-gray-100 pr-8">
+          {logoUrl ? (
+            <Image
+              src={logoUrl}
+              loader={loader}
+              alt={name}
+              width={130}
+              height={36}
+              className="object-contain grayscale contrast-125 mix-blend-multiply max-h-9" 
+            />
+          ) : (
+            <span className="text-lg font-mono font-black uppercase tracking-tighter text-gray-900 flex items-center gap-2">
+              <span className="w-2.5 h-2.5" style={{ backgroundColor: primaryColor }} />
+              {name}
+            </span>
+          )}
+        </Link>
 
-          {/* Right Section: Socials & CTA */}
-          <div className="hidden lg:flex items-center gap-6">
-              
-            {/* Social Icons */}
-            <div className="flex items-center gap-2">
+        {/* DESKTOP MATRIX SYSTEM ROUTING LINKS */}
+        <nav className="hidden lg:flex items-center h-full flex-1 px-12 gap-8">
+          {navLinks.map(({ label, href, index }) => (
+            <a
+              key={label}
+              href={href}
+              className="group flex items-baseline gap-1.5 text-xs font-mono font-bold tracking-wider text-gray-500 hover:text-gray-950 transition-colors py-2 relative"
+            >
+              <span className="text-[9px] font-medium text-gray-300 group-hover:text-gray-900 transition-colors">{index}</span>
+              {label}
+            </a>
+          ))}
+        </nav>
+
+        {/* RIGHT PANEL: TELEMETRY SOCIALS & SYSTEM ACTION BUTTON */}
+        <div className="hidden lg:flex items-center h-full gap-6 pl-6 border-l border-gray-100">
+          {socialLinks.length > 0 && (
+            <div className="flex items-center gap-1 border-r border-gray-100 pr-4">
               {socialLinks.map(({ channel, url }) => (
                 <SocialLink 
                   key={String(channel)}
                   channel={channel} 
                   url={url} 
-                  primaryColor={primaryColor}
                 />
               ))}
             </div>
+          )}
 
-            {/* Separator Line */}
-            {(socialLinks.length > 0) && (
-                <div className="w-px h-6 bg-gray-300 mx-2"></div>
-            )}
-
-
-            {/* CTA Button - High Visibility */}
-            <Link
-              href={`/${slug}/contact`}
-              className="inline-flex items-center font-semibold px-6 py-2 text-sm rounded-full shadow-lg transition-all duration-300 hover:opacity-90 hover:scale-[1.02] text-white"
-              style={{ 
-                  backgroundColor: primaryColor, 
-                  boxShadow: `0 4px 15px 0 ${primaryColor}40`, // Subtle glow
-              }}
-            >
-              Get a Quote
-            </Link>
-          </div>
-          
-          {/* Mobile Toggle */}
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className={`lg:hidden p-2 rounded-md transition ${scrolled ? 'text-gray-700 hover:bg-gray-100' : 'text-white hover:bg-white/10'}`}
-            aria-label="Toggle menu"
+          <Link
+            href={`/${slug}/contact`}
+            className="inline-flex items-center text-xs font-mono font-black uppercase tracking-wider text-white bg-gray-950 hover:bg-gray-900 transition-colors py-3 px-5 border border-transparent"
           >
-            {menuOpen ? <XMarkIcon className="w-7 h-7" /> : <Bars3Icon className="w-7 h-7" />}
-          </button>
+            INITIALIZE_ROUTINE
+          </Link>
         </div>
+        
+        {/* MOBILE INTERFACE TRIGGER */}
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="lg:hidden p-2 text-gray-900 hover:bg-gray-50 border border-gray-200 transition"
+          aria-label="Toggle system interface"
+        >
+          {menuOpen ? <XMarkIcon className="w-5 h-5" /> : <Bars3Icon className="w-5 h-5" />}
+        </button>
       </div>
 
-      {/* Mobile Menu (Light Mode Adapted) */}
+      {/* MOBILE EXPANSION OVERLAY MODULE */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className={`md:hidden ${mobileMenuBg} px-6 pt-4 pb-6 space-y-4 border-t ${mobileBorderColor} shadow-lg`}
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.15, ease: 'linear' }}
+            className="absolute top-full left-0 w-full bg-white border-b border-gray-300 shadow-2xl flex flex-col md:hidden z-50"
           >
-            {navLinks.map(({ label, href }) => (
-              <Link
-                key={label}
-                href={href}
-                className={`block ${mobileLinkColor} font-medium py-2 text-lg transition-colors duration-200 hover:text-[color:var(--primary)] border-b ${mobileBorderColor}`}
-                onClick={() => setMenuOpen(false)}
-              >
-                {label}
-              </Link>
-            ))}
-            
-            {/* Mobile CTA */}
-            <Link
-              href={`/${slug}/contact`}
-              onClick={() => setMenuOpen(false)}
-              className="block text-center text-white py-3 rounded-xl font-bold mt-4"
-              style={{ backgroundColor: primaryColor }}
-            >
-              Get a Quote
-            </Link>
-
-            {/* Mobile Social Icons */}
-            <div className={`flex justify-center gap-6 pt-4 border-t ${mobileBorderColor}`}>
-              {socialLinks.map(({ channel, url }) => (
-                <SocialLink 
-                  key={channel}
-                  channel={channel} 
-                  url={url} 
-                  primaryColor={primaryColor}
-                />
+            <div className="p-6 space-y-3 bg-white">
+              {navLinks.map(({ label, href, index }) => (
+                <Link
+                  key={label}
+                  href={href}
+                  className="flex items-baseline gap-3 text-xs font-mono font-bold tracking-widest text-gray-500 hover:text-gray-950 py-3 border-b border-gray-100 uppercase"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <span className="text-[9px] font-medium text-gray-300">{index} //</span>
+                  {label}
+                </Link>
               ))}
+              
+              {/* MOBILE CALL TO ACTION */}
+              <Link
+                href={`/${slug}/contact`}
+                onClick={() => setMenuOpen(false)}
+                className="block text-center text-xs font-mono font-black uppercase tracking-wider text-white bg-gray-950 hover:bg-gray-900 transition-colors py-4 w-full mt-4"
+              >
+                INITIALIZE_ROUTINE
+              </Link>
+
+              {/* MOBILE INTEGRATION LINKS */}
+              {socialLinks.length > 0 && (
+                <div className="flex justify-center gap-4 pt-4 border-t border-gray-100 mt-4">
+                  {socialLinks.map(({ channel, url }) => (
+                    <SocialLink 
+                      key={channel}
+                      channel={channel} 
+                      url={url} 
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </motion.div>
         )}

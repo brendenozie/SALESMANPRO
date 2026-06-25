@@ -8,259 +8,258 @@ import {
   ArrowRightIcon, 
   ShoppingCartIcon,
   CameraIcon, 
-  WifiIcon, // For Networked devices
+  WifiIcon,
   RadioIcon, 
-  FingerPrintIcon, // For Biometric
+  FingerPrintIcon,
 } from '@heroicons/react/24/outline';
-import { MarketListingForm } from '@/types/typings';
-// Assuming useStoreContext, MarketListingForm are imported correctly
+import { ListingMarketStatus, ListingSystemStatus, ListingTransactionType, MarketListingForm } from '@/types/typings';
 
-// Loader for Next.js Image component
 const imageLoader = ({ src, width, quality }: any) => {
- return `${src}?w=${width}&q=${quality || 75}`;
+  return `${src}?w=${width}&q=${quality || 75}`;
 };
 
-// --- EXPANDED PHYSICAL SECURITY PRODUCT FALLBACK DATA (7 items) ---
 const defaultListings: MarketListingForm[] = [
- {
-   id: '1', name: '4K Ultra-HD Dome Camera', finalPrice: 450.00, quantity: 50, isAvailable: true,
-   description: 'Vandal-proof indoor/outdoor camera with 100ft night vision and advanced AI detection.',
-   images: [{ url: 'https://images.unsplash.com/photo-1627918739947-6b19888d3632?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', id: 'img1' }], tags: ['CCTV', 'Outdoor'], isOnOffer: true,
-   // ... Minimal required MarketListingForm fields set to defaults or null
-   duration: undefined, productCategoryId: '', subCategory: undefined, option: [], color: [], size: [], weight: [], material: [], buyingPrice: 0, sellingPrice: 0, pricingTiers: [], isFlashDeal: false, isNewArrival: false, isFeatured: true, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: true, paymentOption: 'QUOTE', status: 'ACTIVE', location: null,
-   isDiscounted: false
- },
- {
-  id: '2', name: 'Rugged Digital Walkie Talkie', finalPrice: 150.00, quantity: 120, isAvailable: true,
-  description: 'Durable, waterproof two-way radio with extended battery life and secure, encrypted channels.',
-  images: [{ url: 'https://images.unsplash.com/photo-1594917534599-4c275997237e?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', id: 'img2' }], tags: ['Communication', 'Radio'],
-  // ... Minimal required MarketListingForm fields set to defaults or null
-  duration: undefined, productCategoryId: '', subCategory: undefined, option: [], color: [], size: [], weight: [], material: [], buyingPrice: 0, sellingPrice: 0, pricingTiers: [], isOnOffer: false, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: false, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: true, paymentOption: 'QUOTE', status: 'ACTIVE', location: null
- },
- {
-  id: '3', name: 'Biometric Access Control Reader', finalPrice: 220.00, quantity: 30, isAvailable: true,
-  description: 'High-speed fingerprint and RFID access reader for secure entry points and time-tracking.',
-  images: [{ url: 'https://images.unsplash.com/photo-1590483321590-449e79391090?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', id: 'img3' }], tags: ['Access Control', 'Biometric'], isNewArrival: true,
-  // ... Minimal required MarketListingForm fields set to defaults or null
-  duration: undefined, productCategoryId: '', subCategory: undefined, option: [], color: [], size: [], weight: [], material: [], buyingPrice: 0, sellingPrice: 0, pricingTiers: [], isOnOffer: false, isFlashDeal: false, isDiscounted: false, isFeatured: false, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: true, paymentOption: 'QUOTE', status: 'ACTIVE', location: null
- },
- {
-  id: '4', name: 'High-Gain Mesh WiFi Extender', finalPrice: 99.00, quantity: 200, isAvailable: true,
-  description: 'Extends coverage for wireless cameras and network devices across large commercial areas.',
-  images: [{ url: 'https://images.unsplash.com/photo-1549497042-3a85b6a7a72d?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', id: 'img4' }], tags: ['Networking', 'Wireless'], 
-  // ... Minimal required MarketListingForm fields set to defaults or null
-  duration: undefined, productCategoryId: '', subCategory: undefined, option: [], color: [], size: [], weight: [], material: [], buyingPrice: 0, sellingPrice: 0, pricingTiers: [], isOnOffer: false, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: false, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: true, paymentOption: 'QUOTE', status: 'ACTIVE', location: null
- },
- {
-  id: '5', name: 'Commercial 32-Ch NVR', finalPrice: 1200.00, quantity: 15, isAvailable: true,
-  description: 'Network Video Recorder supporting up to 32 cameras with 40TB expandable storage.',
-  images: [{ url: 'https://images.unsplash.com/photo-1520697526685-c49c71c49603?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', id: 'img5' }], tags: ['Storage', 'NVR'], 
-  // ... Minimal required MarketListingForm fields set to defaults or null
-  duration: undefined, productCategoryId: '', subCategory: undefined, option: [], color: [], size: [], weight: [], material: [], buyingPrice: 0, sellingPrice: 0, pricingTiers: [], isOnOffer: false, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: false, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: true, paymentOption: 'QUOTE', status: 'ACTIVE', location: null
- },
- {
-  id: '6', name: 'Heavy Duty Siren & Strobe', finalPrice: 85.00, quantity: 75, isAvailable: true,
-  description: '120dB outdoor siren with bright strobe light for immediate intrusion deterrence.',
-  images: [{ url: 'https://images.unsplash.com/photo-1528698827571-3c6b1ad4c556?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', id: 'img6' }], tags: ['Alarm', 'Deterrence'], isDiscounted: true,
-  // ... Minimal required MarketListingForm fields set to defaults or null
-  duration: undefined, productCategoryId: '', subCategory: undefined, option: [], color: [], size: [], weight: [], material: [], buyingPrice: 0, sellingPrice: 0, pricingTiers: [], isOnOffer: false, isFlashDeal: false, isNewArrival: false, isFeatured: false, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: true, paymentOption: 'QUOTE', status: 'ACTIVE', location: null
- },
- {
-  id: '7', name: 'Covert Mini Body Camera', finalPrice: 180.00, quantity: 90, isAvailable: true,
-  description: 'Tiny, discreet camera with 8-hour battery and local SD card recording for surveillance.',
-  images: [{ url: 'https://images.unsplash.com/photo-1627918739947-6b19888d3632?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', id: 'img7' }], tags: ['Covert', 'Wearable'], 
-  // ... Minimal required MarketListingForm fields set to defaults or null
-  duration: undefined, productCategoryId: '', subCategory: undefined, option: [], color: [], size: [], weight: [], material: [], buyingPrice: 0, sellingPrice: 0, pricingTiers: [], isOnOffer: false, isFlashDeal: false, isNewArrival: true, isDiscounted: false, isFeatured: false, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: true, paymentOption: 'QUOTE', status: 'ACTIVE', location: null
- },
-];
-// --- END FALLBACK DATA ---
-
-// Framer Motion variants
-const headerVariants = {
- hidden: { opacity: 0, y: 30 },
- visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
-};
-const cardContainerVariants = {
- hidden: { opacity: 0 },
- visible: {
-  opacity: 1,
-  transition: {
-   staggerChildren: 0.1, // Stagger less for a faster full grid reveal
-   delayChildren: 0.2,
+  {
+    id: '1', name: '4K Ultra-HD Dome Camera', finalPrice: 450.00, quantity: 50, isAvailable: true,
+    description: 'Vandal-proof indoor/outdoor camera with 100ft night vision and advanced AI detection.',
+    images: [{ url: 'https://images.unsplash.com/photo-1627918739947-6b19888d3632?q=80&w=2670&auto=format&fit=crop', id: 'img1' }], tags: ['CCTV', 'Outdoor'], isOnOffer: true,
+    duration: undefined, productCategoryId: '', subCategory: undefined, option: [], color: [], size: [], weight: [], material: [], buyingPrice: 0, sellingPrice: 0, pricingTiers: [], isFlashDeal: false, isNewArrival: false, isFeatured: true, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: true, paymentOption: 'QUOTE', status: 'ACTIVE', location: null,
+    isDiscounted: false, listingMarketStatus: ListingMarketStatus.AVAILABLE, listingSystemStatus: ListingSystemStatus.DRAFT, listingTransactionType: ListingTransactionType.SALE
   },
- },
-};
-const cardVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+  {
+    id: '2', name: 'Rugged Digital Walkie Talkie', finalPrice: 150.00, quantity: 120, isAvailable: true,
+    description: 'Durable, waterproof two-way radio with extended battery life and secure, encrypted channels.',
+    images: [{ url: 'https://images.unsplash.com/photo-1594917534599-4c275997237e?q=80&w=2670&auto=format&fit=crop', id: 'img2' }], tags: ['Communication', 'Radio'],
+    duration: undefined, productCategoryId: '', subCategory: undefined, option: [], color: [], size: [], weight: [], material: [], buyingPrice: 0, sellingPrice: 0, pricingTiers: [], isOnOffer: false, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: false, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: true, paymentOption: 'QUOTE', status: 'ACTIVE', location: null,
+    listingMarketStatus: ListingMarketStatus.AVAILABLE, listingSystemStatus: ListingSystemStatus.DRAFT, listingTransactionType: ListingTransactionType.SALE
+  },
+  {
+    id: '3', name: 'Biometric Access Control Reader', finalPrice: 220.00, quantity: 30, isAvailable: true,
+    description: 'High-speed fingerprint and RFID access reader for secure entry points and time-tracking.',
+    images: [{ url: 'https://images.unsplash.com/photo-1590483321590-449e79391090?q=80&w=2670&auto=format&fit=crop', id: 'img3' }], tags: ['Access Control', 'Biometric'], isNewArrival: true,
+    duration: undefined, productCategoryId: '', subCategory: undefined, option: [], color: [], size: [], weight: [], material: [], buyingPrice: 0, sellingPrice: 0, pricingTiers: [], isOnOffer: false, isFlashDeal: false, isDiscounted: false, isFeatured: false, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: true, paymentOption: 'QUOTE', status: 'ACTIVE', location: null,
+    listingMarketStatus: ListingMarketStatus.AVAILABLE, listingSystemStatus: ListingSystemStatus.DRAFT, listingTransactionType: ListingTransactionType.SALE
+  },
+  {
+    id: '4', name: 'High-Gain Mesh WiFi Extender', finalPrice: 99.00, quantity: 200, isAvailable: true,
+    description: 'Extends coverage for wireless cameras and network devices across large commercial areas.',
+    images: [{ url: 'https://images.unsplash.com/photo-1549497042-3a85b6a7a72d?q=80&w=2670&auto=format&fit=crop', id: 'img4' }], tags: ['Networking', 'Wireless'],
+    duration: undefined, productCategoryId: '', subCategory: undefined, option: [], color: [], size: [], weight: [], material: [], buyingPrice: 0, sellingPrice: 0, pricingTiers: [], isOnOffer: false, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: false, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: true, paymentOption: 'QUOTE', status: 'ACTIVE', location: null,
+    listingMarketStatus: ListingMarketStatus.AVAILABLE, listingSystemStatus: ListingSystemStatus.DRAFT, listingTransactionType: ListingTransactionType.SALE
+  },
+  {
+    id: '5', name: 'Commercial 32-Ch NVR', finalPrice: 1200.00, quantity: 15, isAvailable: true,
+    description: 'Network Video Recorder supporting up to 32 cameras with 40TB expandable storage.',
+    images: [{ url: 'https://images.unsplash.com/photo-1520697526685-c49c71c49603?q=80&w=2670&auto=format&fit=crop', id: 'img5' }], tags: ['Storage', 'NVR'],
+    duration: undefined, productCategoryId: '', subCategory: undefined, option: [], color: [], size: [], weight: [], material: [], buyingPrice: 0, sellingPrice: 0, pricingTiers: [], isOnOffer: false, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: false, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: true, paymentOption: 'QUOTE', status: 'ACTIVE', location: null,
+    listingMarketStatus: ListingMarketStatus.AVAILABLE, listingSystemStatus: ListingSystemStatus.DRAFT, listingTransactionType: ListingTransactionType.SALE
+  },
+  {
+    id: '6', name: 'Heavy Duty Siren & Strobe', finalPrice: 85.00, quantity: 75, isAvailable: true,
+    description: '120dB outdoor siren with bright strobe light for immediate intrusion deterrence.',
+    images: [{ url: 'https://images.unsplash.com/photo-1528698827571-3c6b1ad4c556?q=80&w=2670&auto=format&fit=crop', id: 'img6' }], tags: ['Alarm', 'Deterrence'], isDiscounted: true,
+    duration: undefined, productCategoryId: '', subCategory: undefined, option: [], color: [], size: [], weight: [], material: [], buyingPrice: 0, sellingPrice: 0, pricingTiers: [], isOnOffer: false, isFlashDeal: false, isNewArrival: false, isFeatured: false, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: true, paymentOption: 'QUOTE', status: 'ACTIVE', location: null,
+    listingMarketStatus: ListingMarketStatus.AVAILABLE, listingSystemStatus: ListingSystemStatus.DRAFT, listingTransactionType: ListingTransactionType.SALE
+  },
+  {
+    id: '7', name: 'Covert Mini Body Camera', finalPrice: 180.00, quantity: 90, isAvailable: true,
+    description: 'Tiny, discreet camera with 8-hour battery and local SD card recording for surveillance.',
+    images: [{ url: 'https://images.unsplash.com/photo-1627918739947-6b19888d3632?q=80&w=2670&auto=format&fit=crop', id: 'img7' }], tags: ['Covert', 'Wearable'],
+    duration: undefined, productCategoryId: '', subCategory: undefined, option: [], color: [], size: [], weight: [], material: [], buyingPrice: 0, sellingPrice: 0, pricingTiers: [], isOnOffer: false, isFlashDeal: false, isNewArrival: true, isDiscounted: false, isFeatured: false, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: true, paymentOption: 'QUOTE', status: 'ACTIVE', location: null,
+    listingMarketStatus: ListingMarketStatus.AVAILABLE, listingSystemStatus: ListingSystemStatus.DRAFT, listingTransactionType: ListingTransactionType.SALE
+  },
+];
+
+const headerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.4, ease: 'linear' } },
 };
 
+const cardContainerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.04 },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'linear' } },
+};
 
 interface MarketplaceListingsSectionProps {
- name: string | undefined | null;
- slug: string | undefined | null;
- themeSettings: { 
-  primaryColor?: string; 
-  secondaryColor?: string; 
- } | undefined | null;
- marketplaceListings: MarketListingForm[] | undefined | null;
+  name: string | undefined | null;
+  slug: string | undefined | null;
+  themeSettings: { 
+    primaryColor?: string; 
+    secondaryColor?: string; 
+  } | undefined | null;
+  marketplaceListings: MarketListingForm[] | undefined | null;
 }
 
-// Helper to determine the main tag/type icon
 const getProductIcon = (tag: string): React.ElementType => {
-    const lowerTag = tag.toLowerCase();
-    if (lowerTag.includes('cctv') || lowerTag.includes('camera')) return CameraIcon;
-    if (lowerTag.includes('radio') || lowerTag.includes('communication')) return RadioIcon;
-    if (lowerTag.includes('biometric') || lowerTag.includes('access')) return FingerPrintIcon;
-    if (lowerTag.includes('network') || lowerTag.includes('wifi') || lowerTag.includes('nvr')) return WifiIcon;
-    return CameraIcon;
-}
-
+  const lowerTag = tag.toLowerCase();
+  if (lowerTag.includes('cctv') || lowerTag.includes('camera')) return CameraIcon;
+  if (lowerTag.includes('radio') || lowerTag.includes('communication')) return RadioIcon;
+  if (lowerTag.includes('biometric') || lowerTag.includes('access')) return FingerPrintIcon;
+  if (lowerTag.includes('network') || lowerTag.includes('wifi') || lowerTag.includes('nvr')) return WifiIcon;
+  return CameraIcon;
+};
 
 export default function MarketplaceListingsSection({ name, slug, themeSettings, marketplaceListings }: MarketplaceListingsSectionProps) {
- 
- // Keeping the Light Mode Deep Blue aesthetic
-  const primaryColor = themeSettings?.primaryColor || '#0056B3'; // Deep Blue (Primary)
- const secondaryColor = themeSettings?.secondaryColor || '#007BFF'; // Standard Blue (Accent)
+  const primaryColor = themeSettings?.primaryColor || '#00A880';
 
- // --- Data Processing Logic ---
- const allListings: MarketListingForm[] = Array.isArray(marketplaceListings) && marketplaceListings.length > 0
-  ? marketplaceListings.filter(item => item.isAvailable).slice(0, 7) // Limit to 7 items
-  : defaultListings.slice(0, 7); // Use 7 default items
+  const allListings: MarketListingForm[] = Array.isArray(marketplaceListings) && marketplaceListings.length > 0
+    ? marketplaceListings.filter(item => item.isAvailable).slice(0, 7)
+    : defaultListings.slice(0, 7);
 
- if (allListings.length === 0) {
-  return null; 
- }
+  if (allListings.length === 0) return null;
 
- const formatPrice = (price: number) => {
-   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(price);
- };
-  
- const cssVars = {
-  '--primary': primaryColor,
-  '--secondary': secondaryColor,
- } as React.CSSProperties;
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(price);
+  };
 
+  return (
+    <AnimatePresence>
+      <section id="inventory" className="relative py-28 md:py-36 px-6 lg:px-12 bg-white text-gray-900 border-b border-gray-100 overflow-hidden">
+        
+        {/* BACKGROUND TELEMETRY MESHGRID */}
+        <div className="absolute inset-0 opacity-[0.02] pointer-events-none border-x border-gray-900 max-w-7xl mx-auto grid grid-cols-4 md:grid-cols-12 gap-0">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div key={i} className="border-r border-gray-900 h-full" />
+          ))}
+        </div>
 
- return (
-  <AnimatePresence>
-   <section id="inventory" className="relative py-24 md:py-32 px-6 lg:px-12 bg-gray-50 text-gray-900 overflow-hidden" style={cssVars}>
-    
-    {/* Header */}
-    <motion.div
-     className="text-center mb-16 max-w-4xl mx-auto"
-     variants={headerVariants}
-     initial="hidden"
-     whileInView="visible"
-     viewport={{ once: true, amount: 0.2 }}
-    >
-     <p 
-      className="text-lg font-semibold uppercase tracking-widest mb-3" 
-      style={{ color: primaryColor }}
-     >
-      Featured Hardware Inventory
-     </p>
-     <h2 className="text-4xl md:text-5xl font-extrabold leading-tight text-gray-900">
-      Essential <span style={{ color: primaryColor }}>Security Products</span>
-     </h2>
-     <p className="mt-4 text-xl text-gray-600">
-      Browse our top-selling, high-performance security equipment trusted by professionals.
-     </p>
-    </motion.div>
+        <div className="max-w-7xl mx-auto relative z-10">
+          
+          {/* ASYMMETRIC LOGISTICS HEADER */}
+          <motion.div
+            className="flex flex-col lg:flex-row items-start justify-between gap-8 mb-20 border-b border-gray-100 pb-12"
+            variants={headerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.1 }}
+          >
+            <div className="max-w-xl">
+              <div className="inline-flex items-center gap-2 mb-4">
+                <span className="w-8 h-[2px]" style={{ backgroundColor: primaryColor }} />
+                <p className="text-xs font-mono font-bold uppercase tracking-widest text-gray-400">
+                  HARDWARE_DEPLOYMENT // STOCKS
+                </p>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase text-gray-900 leading-[1.1]">
+                CRITICAL HARDWARE INVENTORY
+              </h2>
+            </div>
+            <p className="text-xs font-mono text-gray-400 leading-relaxed max-w-sm lg:mt-8">
+              Field-ready physical perimeter components, cryptographic units, and secure operational endpoints optimized for zero-degradation deployment matrices.
+            </p>
+          </motion.div>
 
-    {/* --- 3-COLUMN PRODUCT GRID --- */}
-    <motion.div
-     className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-     variants={cardContainerVariants}
-     initial="hidden"
-     whileInView="visible"
-     viewport={{ once: true, amount: 0.1 }}
-    >
-     {allListings.map((item, idx) => {
-                const ItemIcon = getProductIcon(item.tags[0] || '');
-                return (
-       <motion.div
-        key={item.id || idx}
-        className="relative group bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
-        variants={cardVariants}
-       >
-                <Link href={`/${slug}/product/${item.id}`} className="block">
-                  {/* Image Container with Badge */}
-         <div className="relative w-full h-48 bg-gray-200">
-          <Image
-           src={item.images?.[0]?.url || 'https://images.unsplash.com/photo-1594917534599-4c275997237e?q=80&w=2670&auto=format&fit=crop'}
-           loader={imageLoader}
-           alt={item.name}
-           fill
-           className="object-cover object-center transition-transform duration-500 ease-in-out group-hover:scale-110"
-          />
-                      {/* Status Badge */}
-                      {(item.isOnOffer || item.isNewArrival) && (
-                          <span 
-                            className={`absolute top-3 left-3 px-3 py-1 text-xs font-bold text-white uppercase rounded-full shadow-md ${
-                              item.isOnOffer ? 'bg-red-600' : 'bg-green-500'
-                            }`}
-                          >
-                            {item.isOnOffer ? 'Sale' : 'New'}
+          {/* HIGH-DENSITY SECURE ITEM CHANNELS */}
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 border-t border-l border-gray-100"
+            variants={cardContainerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.1 }}
+          >
+            {allListings.map((item, idx) => {
+              const ItemIcon = getProductIcon(item.tags[0] || '');
+              const hexIndex = `0${idx + 1}`.slice(-2);
+              
+              return (
+                <motion.div
+                  key={item.id || idx}
+                  className="p-6 border-r border-b border-gray-100 bg-white hover:bg-gray-50/50 transition-colors flex flex-col justify-between group relative"
+                  variants={cardVariants}
+                >
+                  <Link href={`/${slug}/product/${item.id}`} className="block h-full flex flex-col justify-between">
+                    <div>
+                      {/* IMAGE MATRIX CONTAINER */}
+                      <div className="relative w-full aspect-[16/10] border border-gray-200 p-1 mb-6 bg-gray-50">
+                        <div className="absolute top-1 left-1 bg-white text-[8px] font-mono font-black uppercase px-1.5 py-0.5 z-20 border-r border-b border-gray-100 text-gray-500">
+                          RAW_FEED // {hexIndex}
+                        </div>
+                        
+                        {(item.isOnOffer || item.isNewArrival) && (
+                          <span className="absolute top-1 right-1 px-2 py-0.5 text-[8px] font-mono font-black uppercase text-white z-20" style={{ backgroundColor: primaryColor }}>
+                            {item.isOnOffer ? 'MARKDOWN' : 'NEW_ALLOCATION'}
                           </span>
-                      )}
-         </div>
-                  
-                  {/* Product Details */}
-         <div className="p-5 flex flex-col justify-between h-[calc(100%-12rem)]">
-          <div>
-           <div className="text-xs font-semibold uppercase mb-1 flex items-center gap-1 text-gray-500">
-                          <ItemIcon className="w-4 h-4" />
-                          {item.tags?.[0] || 'Hardware'}
+                        )}
+                        
+                        <div className="relative w-full h-full overflow-hidden grayscale filter contrast-[1.04]">
+                          <Image
+                            src={item.images?.[0]?.url || 'https://images.unsplash.com/photo-1594917534599-4c275997237e?q=80&w=2670&auto=format&fit=crop'}
+                            loader={imageLoader}
+                            alt={item.name}
+                            fill
+                            className="object-cover object-center transition-transform duration-300 group-hover:scale-[1.02]"
+                          />
+                        </div>
                       </div>
-           <h3 className="text-xl font-bold mb-2 leading-snug text-gray-900 line-clamp-2">
-            {item.name}
-           </h3>
-           <p className="text-sm text-gray-600 mb-4 line-clamp-3">
-            {item.description}
-           </p>
-          </div>
 
-                    {/* Price and CTA */}
-          <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
-           <p className="text-2xl font-extrabold" style={{ color: primaryColor }}>
-            {formatPrice(item.finalPrice || 0)}
-           </p>
-           <div 
-            className="inline-flex items-center gap-2 text-sm font-bold px-4 py-2 rounded-lg transition-all duration-300 hover:ring-4 hover:ring-opacity-50"
-            style={
-              {
-                backgroundColor: secondaryColor,
-                color: '#fff',
-                boxShadow: `0 4px 10px -2px ${secondaryColor}60`,
-                ['--tw-ring-color' as any]: secondaryColor
-              } as React.CSSProperties
-            }
-           >
-            Add to Quote
-                        <ShoppingCartIcon className="w-4 h-4" />
-           </div>
-          </div>
-         </div>
-                </Link>
-       </motion.div>
-      );
+                      {/* FIELD DATA SPECS */}
+                      <div className="flex items-center gap-1.5 text-[9px] font-mono font-bold text-gray-400 uppercase tracking-widest mb-2">
+                        <ItemIcon className="w-3 h-3 stroke-[2]" />
+                        <span>{item.tags?.[0] || 'UNCLASSIFIED'}</span>
+                      </div>
+
+                      <h3 className="text-sm font-mono font-black uppercase tracking-tight text-gray-900 mb-2 line-clamp-1">
+                        {item.name}
+                      </h3>
+                      
+                      <p className="text-xs font-mono text-gray-400 leading-relaxed mb-6 line-clamp-2">
+                        {item.description}
+                      </p>
+                    </div>
+
+                    {/* PRICING & CALL-TO-ACTION STRIP */}
+                    <div className="pt-4 border-t border-gray-100 flex items-center justify-between mt-auto">
+                      <div className="font-mono">
+                        <span className="block text-[8px] text-gray-300 font-bold uppercase leading-none mb-0.5">VAL_UNIT_USD</span>
+                        <span className="text-sm font-black text-gray-900">
+                          {formatPrice(item.finalPrice || 0)}
+                        </span>
+                      </div>
+                      
+                      <div className="inline-flex items-center gap-2 text-[9px] font-mono font-black uppercase tracking-wider py-2 px-3 border border-gray-200 text-gray-400 group-hover:text-gray-900 group-hover:border-gray-900 transition-colors">
+                        Queue Quote
+                        <ShoppingCartIcon className="w-3 h-3" />
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              );
             })}
-    </motion.div>
+          </motion.div>
 
-    {/* Footer CTA */}
-    <div className="text-center mt-16">
-     <Link
-      href={`/${slug}/products`}
-      className="inline-flex items-center gap-3 text-lg font-bold px-10 py-4 rounded-full transition-all duration-300 transform hover:scale-[1.03] shadow-xl text-white border-2 border-transparent"
-      style={{ backgroundColor: primaryColor, boxShadow: `0 8px 20px -5px ${primaryColor}80` }}
-     >
-      Explore Full 70+ Product Catalog
-      <ArrowRightIcon className="w-5 h-5 ml-1" />
-     </Link>
-    </div>
+          {/* TELEMETRY ARCHIVE MASTER DISPATCH ROUTE */}
+          <motion.div 
+            className="mt-16 pt-12 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
+            viewport={{ once: true }}
+          >
+            <div className="flex flex-col gap-1 text-left w-full md:w-auto">
+              <span className="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-widest">REGISTRY_STREAM_ACCESS</span>
+              <p className="text-xs font-mono text-gray-400">Query complete secure procurement manifests.</p>
+            </div>
 
-   </section>
-  </AnimatePresence>
- );
+            <Link
+              href={`/${slug}/products`}
+              className="inline-flex items-center gap-3 text-xs font-mono font-bold uppercase tracking-wider py-4 px-8 text-white transition-opacity w-full md:w-auto justify-center"
+              style={{ backgroundColor: primaryColor }}
+            >
+              Access Global Registry Index
+              <ArrowRightIcon className="w-4 h-4" />
+            </Link>
+          </motion.div>
+
+        </div>
+      </section>
+    </AnimatePresence>
+  );
 }
