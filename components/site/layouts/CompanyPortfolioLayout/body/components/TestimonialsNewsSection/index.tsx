@@ -13,7 +13,7 @@ const mockVerifications = [
     {
         id: 'ver-1',
         authorName: 'Marcus Vance',
-        quote: "Grey Trading's automated risk architecture insulated our liquidity allocations during the Q1 corridor breakdown. Their physical validation layer operates with absolute precision.",
+        quote: "AURUM PRECIOUS METALS LIMITED's automated risk architecture insulated our liquidity allocations during the Q1 corridor breakdown. Their physical validation layer operates with absolute precision.",
         avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&auto=format&fit=crop',
         role: 'Managing Director, Global Liquidity Pools',
         order: 1,

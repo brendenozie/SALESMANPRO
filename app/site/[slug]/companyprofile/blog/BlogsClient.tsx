@@ -161,7 +161,7 @@ export default function BlogsClient({
                 animate={{ opacity: 1, y: 0 }}
                 className="group relative grid grid-cols-1 lg:grid-cols-2 gap-8 bg-zinc-900/40 border border-zinc-800 rounded-3xl overflow-hidden mb-12 backdrop-blur-sm transition-colors hover:border-zinc-700"
               >
-                <Link href={`/blog/${featuredBlog.slug}`} className="relative h-72 lg:h-full w-full overflow-hidden block">
+                <Link href={`/companyprofile/blog/${featuredBlog.slug}`} className="relative h-72 lg:h-full w-full overflow-hidden block">
                   {featuredBlog.coverImage ? (
                     <img 
                       src={featuredBlog.coverImage} 
@@ -207,7 +207,7 @@ export default function BlogsClient({
                       </span>
                     </div>
                     <Link 
-                      href={`/blog/${featuredBlog.slug}`}
+                      href={`/companyprofile/blog/${featuredBlog.slug}`}
                       className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-zinc-800 text-zinc-300 group-hover:bg-amber-500 group-hover:text-zinc-950 transition-colors"
                     >
                       <ArrowUpRightIcon className="w-5 h-5" />
@@ -228,7 +228,7 @@ export default function BlogsClient({
                     key={blog.id}
                     className="group flex flex-col bg-zinc-900/30 border border-zinc-800 rounded-2xl overflow-hidden hover:bg-zinc-900/60 transition-all duration-300"
                   >
-                    <Link href={`/blog/${blog.slug}`} className="relative h-48 overflow-hidden block">
+                    <Link href={`/companyprofile/blog/${blog.slug}`} className="relative h-48 overflow-hidden block">
                       {blog.coverImage ? (
                          <img 
                           src={blog.coverImage} 
@@ -246,7 +246,7 @@ export default function BlogsClient({
                     </Link>
                     
                     <div className="p-6 flex flex-col flex-1">
-                      <Link href={`/blog/${blog.slug}`} className="block mb-3">
+                      <Link href={`/companyprofile/blog/${blog.slug}`} className="block mb-3">
                         <h3 className="text-xl font-bold text-zinc-100 leading-snug group-hover:text-amber-400 transition-colors line-clamp-2">
                           {blog.title}
                         </h3>
@@ -264,7 +264,7 @@ export default function BlogsClient({
                               {formatDate(blog.publishedAt || blog.createdAt)}
                             </span>
                           </div>
-                          <Link href={`/blog/${blog.slug}`} className="flex items-center gap-1 text-xs text-amber-500/70 font-medium group-hover:text-amber-400 transition-colors uppercase tracking-wider">
+                          <Link href={`/companyprofile/blog/${blog.slug}`} className="flex items-center gap-1 text-xs text-amber-500/70 font-medium group-hover:text-amber-400 transition-colors uppercase tracking-wider">
                             Read <ArrowUpRightIcon className="w-3 h-3" />
                           </Link>
                         </div>

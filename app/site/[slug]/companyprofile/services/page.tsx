@@ -82,8 +82,8 @@ export default async function ProductListPage({ params, searchParams }: PageProp
       slug: p.slug || p.id,
       // Map tags/features if they exist, otherwise provide default cinematic specs
       specs: (p as any).tags || ['Verified Origin', 'Secure Transit', 'AML Cleared'],
-      metric: p.finalPrice ? `$${Number(p.finalPrice).toLocaleString()}` : 'A-Grade',
-      metricLabel: p.finalPrice ? 'Valuation' : 'Quality Class'
+      metric:  'A-Grade',//p.finalPrice ? `$${Number(p.finalPrice).toLocaleString()}` :
+      metricLabel:  'Quality Class'//p.finalPrice ? 'Valuation' :
     };
   });
 
@@ -153,7 +153,7 @@ export default async function ProductListPage({ params, searchParams }: PageProp
       {/* --- Main Cinematic Component --- */}
       {formattedServices.length > 0 ? (
         <div className="-mt-12 lg:-mt-20">
-          <GreyServicesSection services={formattedServices} storeSlug={slug} />
+          <GreyServicesSection services={formattedServices} storeSlug={'companyprofile'} />
         </div>
       ) : (
         <div className="max-w-7xl mx-auto px-4 py-40 text-center flex flex-col items-center justify-center">
@@ -172,7 +172,7 @@ export default async function ProductListPage({ params, searchParams }: PageProp
       {totalPages > 1 && (
         <div className="max-w-7xl mx-auto px-4 pb-20 flex justify-center items-center gap-2 relative z-20">
           <Link
-            href={`/${slug}/products?page=${pageNum - 1}&search=${search || ''}&category=${categoryId || ''}&sort=${sortOption}`}
+            href={`/companyprofile/products?page=${pageNum - 1}&search=${search || ''}&category=${categoryId || ''}&sort=${sortOption}`}
             className={`px-4 py-2 text-xs font-mono tracking-widest uppercase border rounded-xl transition-all ${
               pageNum <= 1 
                 ? 'opacity-30 pointer-events-none border-zinc-800 text-zinc-600' 
@@ -186,7 +186,7 @@ export default async function ProductListPage({ params, searchParams }: PageProp
             {Array.from({ length: totalPages }, (_, i) => (
               <Link
                 key={i}
-                href={`/${slug}/products?page=${i + 1}&search=${search || ''}&category=${categoryId || ''}&sort=${sortOption}`}
+                href={`/companyprofile/products?page=${i + 1}&search=${search || ''}&category=${categoryId || ''}&sort=${sortOption}`}
                 className={`w-8 h-8 flex items-center justify-center text-xs font-mono rounded-lg border transition-all ${
                   i + 1 === pageNum 
                     ? 'bg-amber-500/10 border-amber-500/50 text-amber-400 font-bold' 
@@ -199,7 +199,7 @@ export default async function ProductListPage({ params, searchParams }: PageProp
           </div>
 
           <Link
-            href={`/${slug}/products?page=${pageNum + 1}&search=${search || ''}&category=${categoryId || ''}&sort=${sortOption}`}
+            href={`/companyprofile/products?page=${pageNum + 1}&search=${search || ''}&category=${categoryId || ''}&sort=${sortOption}`}
             className={`px-4 py-2 text-xs font-mono tracking-widest uppercase border rounded-xl transition-all ${
               pageNum >= totalPages 
                 ? 'opacity-30 pointer-events-none border-zinc-800 text-zinc-600' 

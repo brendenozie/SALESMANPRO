@@ -54,7 +54,7 @@ export default function BlogReaderClient({ blog }: BlogReaderClientProps) {
       <nav className="w-full border-b border-zinc-800/50 bg-zinc-950/80 backdrop-blur-md sticky top-0 z-40 px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto h-16 flex items-center justify-between">
           <Link 
-            href="/blog/products" 
+            href="/companyprofile/blog/products" 
             className="flex items-center gap-2 text-xs font-mono text-zinc-400 hover:text-amber-400 transition-colors uppercase tracking-widest group"
           >
             <ChevronLeftIcon className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
