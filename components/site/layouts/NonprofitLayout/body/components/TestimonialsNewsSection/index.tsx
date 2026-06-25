@@ -1,209 +1,169 @@
+"use client";
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { ArrowRightIcon, ChevronDoubleDownIcon } from '@heroicons/react/24/outline';
+import { ArrowRightIcon } from '@heroicons/react/24/outline';
 
 // --- MOCK DATA & CONFIGURATION ---
 
-const primaryColor = '#FF5722'; // Default Orange (Warm and Energetic)
-
-// Placeholder for external context data (simulating storeFormData)
 const mockTestimonials = [
-    {
-        id: 'test-1',
-        authorName: 'Alex Johnson',
-        quote: "This organization truly changed the lives of many in my community. Their dedication is inspiring and their impact is undeniable!",
-        avatarUrl: 'https://placehold.co/60x60/FF5722/FFFFFF?text=AJ',
-        role: 'Community Volunteer',
-        order: 1,
-    },
-    {
-        id: 'test-2',
-        authorName: 'Emily Carter',
-        quote: "The support provided by this non-profit has been invaluable to countless families in desperate need. Their programs are well-managed and incredibly transparent.",
-        avatarUrl: 'https://placehold.co/60x60/34D399/FFFFFF?text=EC', // Light Green
-        role: 'Beneficiary Parent',
-        order: 2,
-    },
-    {
-        id: 'test-3',
-        authorName: 'David Lee',
-        quote: "I've seen firsthand the positive change they bring. Every donation makes a real difference in the lives of children. Proud to be a dedicated supporter!",
-        avatarUrl: 'https://placehold.co/60x60/2563EB/FFFFFF?text=DL', // Blue
-        role: 'Corporate Partner',
-        order: 3,
-    },
-    {
-        id: 'test-4',
-        authorName: 'Maria Garcia',
-        quote: "A beacon of hope for our community. Their work in providing essential services has been life-changing. We are forever grateful for their presence.",
-        avatarUrl: 'https://placehold.co/60x60/A855F7/FFFFFF?text=MG', // Purple
-        role: 'Local Leader',
-        order: 4,
-    },
+  {
+    id: 'test-1',
+    authorName: 'Alex Johnson',
+    quote: "This organization truly changed the lives of many in my community. Their dedication is inspiring and their impact is undeniable!",
+    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120',
+    role: 'Community Volunteer',
+    order: 1,
+  },
+  {
+    id: 'test-2',
+    authorName: 'Emily Carter',
+    quote: "The support provided by this non-profit has been invaluable to countless families in desperate need. Their programs are well-managed and incredibly transparent.",
+    avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=120',
+    role: 'Beneficiary Parent',
+    order: 2,
+  },
+  {
+    id: 'test-3',
+    authorName: 'David Lee',
+    quote: "I've seen firsthand the positive change they bring. Every donation makes a real difference in the lives of children. Proud to be a dedicated supporter!",
+    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120',
+    role: 'Corporate Partner',
+    order: 3,
+  },
 ];
 
 const mockStoreFormData = {
-    slug: 'childrens-hope-foundation',
-    testimonials: mockTestimonials,
-    themeSettings: { primaryColor: primaryColor, secondaryColor: '#FFFFFF' },
+  slug: 'childrens-hope-foundation',
+  testimonials: mockTestimonials,
+  themeSettings: { primaryColor: '#FF5722', secondaryColor: '#FFFFFF' },
 };
 
-// Function to simulate context data retrieval
 const useStoreContext = () => ({ storeFormData: mockStoreFormData });
-
 
 // --- FRAMER MOTION VARIANTS ---
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
+  show: { opacity: 1, transition: { staggerChildren: 0.05 } },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 30, scale: 0.95 },
-  show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: "easeOut" } },
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.21, 0.47, 0.32, 0.98] } },
 };
 
 // --- TESTIMONIAL CARD COMPONENT ---
 
-const TestimonialCard = ({ test, primaryColor, index }: { test: typeof mockTestimonials[0]; primaryColor: string; index: number }) => {
-    // Note: Replaced Next/Image with standard <img> for single-file component compatibility
-    return (
-        <motion.div
-            variants={itemVariants}
-            className="p-8 rounded-3xl shadow-xl border-t-4 relative group transition-all duration-300 hover:shadow-2xl flex flex-col justify-between h-full"
-            style={{ 
-                borderColor: primaryColor,
-                backgroundColor: '#FFFFFF',
+const TestimonialCard = ({ test }: { test: typeof mockTestimonials[0] }) => {
+  return (
+    <motion.div
+      variants={itemVariants}
+      className="p-8 rounded-2xl border border-slate-200 bg-white flex flex-col justify-between h-full hover:border-slate-300 transition-colors group shadow-sm"
+    >
+      {/* Quote Body */}
+      <div className="mb-8">
+        <p className="text-slate-700 text-base md:text-lg font-medium leading-relaxed tracking-tight">
+          “{test.quote}”
+        </p>
+      </div>
+
+      {/* Author Metadata Group */}
+      <div className="flex items-center pt-5 border-t border-slate-100">
+        <div className="relative w-11 h-11 rounded-full overflow-hidden bg-slate-100 flex-shrink-0 mr-3.5 border border-slate-200">
+          <img
+            src={test.avatarUrl}
+            alt={test.authorName || 'Profile Identity'}
+            className="object-cover w-full h-full filter grayscale-[20%] group-hover:grayscale-0 transition-all duration-300"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120`;
             }}
-        >
-            <div className="absolute top-0 right-0 p-6 opacity-30 group-hover:opacity-50 transition-opacity duration-300" style={{ color: primaryColor }}>
-                <ChevronDoubleDownIcon className="w-12 h-12 rotate-180" />
-            </div>
-
-            {/* Quote Body */}
-            <div className="mb-8 relative z-10">
-                <p className="text-gray-800 text-xl font-medium leading-relaxed">
-                    {test.quote}
-                </p>
-            </div>
-
-            {/* Author Info */}
-            <div className="flex items-center mt-auto pt-4 border-t border-gray-100">
-                <div className="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0 mr-4 border-2" style={{ borderColor: primaryColor }}>
-                    <img
-                        src={test.avatarUrl}
-                        alt={test.authorName || 'Avatar'}
-                        className="object-cover w-full h-full"
-                        onError={(e) => {
-                            e.currentTarget.onerror = null;
-                            e.currentTarget.src = `https://placehold.co/60x60/CCCCCC/333333?text=${test.authorName?.split(' ').map(n => n[0]).join('') || 'NN'}`;
-                        }}
-                    />
-                </div>
-                <div>
-                    <h4 className="font-bold text-gray-900 text-lg">{test.authorName}</h4>
-                    <p className="text-sm font-medium" style={{ color: primaryColor }}>{test.role}</p>
-                </div>
-            </div>
-        </motion.div>
-    );
+          />
+        </div>
+        <div>
+          <h4 className="font-bold text-slate-900 text-sm tracking-tight">{test.authorName}</h4>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-0.5">{test.role}</p>
+        </div>
+      </div>
+    </motion.div>
+  );
 };
 
 // --- MAIN SECTION COMPONENT ---
 
-export default function App() {
-  const { storeFormData } = useStoreContext();
-  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 });
+export default function TestimonialsSection({storeFormData}: {storeFormData: any}) {
+  // const { storeFormData } = useStoreContext();
+  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.15 });
 
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#FF5722';
-  const secondaryColor = storeFormData?.themeSettings?.secondaryColor || '#FFFFFF';
   const organizationSlug = storeFormData?.slug || 'non-profit';
-
-  // Determine which testimonials to render (max 3 for best layout aesthetic)
-  const allTestimonials = storeFormData?.testimonials || mockTestimonials;
-  const testimonialsToRender = (allTestimonials.length >= 3 
-    ? allTestimonials.slice(0, 3) 
-    : allTestimonials)
-    .sort((a, b) => (a.order || 0) - (b.order || 0));
-
+  const testimonialsToRender = storeFormData?.testimonials || mockTestimonials;
 
   return (
-    <section id="testimonials" className="py-24 md:py-32 bg-gray-50 font-sans overflow-hidden">
+    <section id="testimonials" className="py-24 md:py-32 bg-white border-b border-slate-200 overflow-hidden font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Header Section */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-16"
-        >
-          <p className="text-sm uppercase tracking-widest font-bold mb-2" style={{ color: primaryColor }}>
-            Proof of Trust
-          </p>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
-            Voices from the Community
-          </h2>
-          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
-            These authentic stories from supporters, volunteers, and beneficiaries highlight the real, human impact of our mission.
-          </p>
-        </motion.div>
+        {/* Asynchronous Layout Header Block */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-end mb-16 md:mb-20">
+          <div className="lg:col-span-7 max-w-2xl">
+            <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-3">
+              Proof of Trust
+            </span>
+            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none">
+              Voices From The Field.
+            </h2>
+          </div>
+          <div className="lg:col-span-5">
+            <p className="text-sm text-slate-600 leading-relaxed">
+              Authentic performance accounts and validation records generated directly by our ecosystem partners, field volunteers, and primary community beneficiaries.
+            </p>
+          </div>
+        </div>
 
-        {/* Testimonials Grid */}
-        <div className="relative" ref={ref}>
+        {/* Testimonials Display Grid */}
+        <div className="relative">
           <motion.div
+            ref={ref}
             variants={containerVariants}
             initial="hidden"
             animate={inView ? "show" : "hidden"}
-            className={`grid grid-cols-1 md:grid-cols-2 ${testimonialsToRender.length >= 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-2 lg:max-w-4xl lg:mx-auto'} gap-8`}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            {testimonialsToRender.map((test, index) => (
-              <TestimonialCard
-                key={test.id}
-                test={test}
-                primaryColor={primaryColor}
-                index={index}
-              />
+            {testimonialsToRender.slice(0, 3).map((test) => (
+              <TestimonialCard key={test.id} test={test} />
             ))}
           </motion.div>
         </div>
 
-        {/* Dynamic CTA - Prominent and action-oriented */}
+        {/* Streamlined Call-to-Action Panel */}
         <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.4 }}
-            transition={{ duration: 0.7, delay: 0.5 }}
-            className="p-10 rounded-3xl shadow-3xl flex flex-col md:flex-row items-center justify-between mt-20 text-center md:text-left"
-            style={{ background: primaryColor, color: secondaryColor }}
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.5, ease: [0.21, 0.47, 0.32, 0.98] }}
+          className="p-8 md:p-12 rounded-2xl bg-slate-900 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mt-16 text-left"
         >
-            <ChevronDoubleDownIcon className="w-12 h-12 mb-4 md:mb-0 md:mr-6 flex-shrink-0 opacity-80" />
-            <div className="flex-1">
-                <h3 className="text-3xl font-bold mb-3 md:mb-0 leading-tight">
-                    Inspired by their journey? Join the movement today!
-                </h3>
-            </div>
-            <motion.a
-                href={`/${organizationSlug}/donate`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="mt-6 md:mt-0 inline-flex items-center px-8 py-3 rounded-full font-semibold shadow-2xl transition duration-300 flex-shrink-0"
-                style={{ backgroundColor: secondaryColor, color: primaryColor }}
-            >
-                Donate Now
-                <ArrowRightIcon className="w-5 h-5 ml-2" />
-            </motion.a>
+          <div className="max-w-xl">
+            <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight leading-snug">
+              Inspired by their journey? Transform your intent into localized runtime support.
+            </h3>
+          </div>
+          
+          <button
+            onClick={() => mockRouterPush(`/${organizationSlug}/donate`)}
+            className="inline-flex items-center gap-2 px-6 py-3.5 bg-white text-slate-900 rounded-xl text-xs font-black uppercase tracking-wider transition-colors hover:bg-slate-100 flex-shrink-0 w-full md:w-auto justify-center shadow-sm"
+          >
+            <span>Join The Movement</span>
+            <ArrowRightIcon className="w-3.5 h-3.5 text-slate-900" strokeWidth={2.5} />
+          </button>
         </motion.div>
 
       </div>
     </section>
   );
+}
+
+function mockRouterPush(path: string) {
+  console.log(`Navigating to: ${path}`);
 }

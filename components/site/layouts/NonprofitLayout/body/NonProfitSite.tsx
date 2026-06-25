@@ -30,42 +30,42 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 // Updated component signature
 export default function NonProfitSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
-  const { data: blogsData } = useSWR(`${apiBaseUrl}/site/blogs?id=${companyId}`, fetcher);
-  const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
-  const { data: eventsData } = useSWR(`${apiBaseUrl}/site/events?id=${companyId}`, fetcher);
+  // const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
+  // const { data: blogsData } = useSWR(`${apiBaseUrl}/site/blogs?id=${companyId}`, fetcher);
+  // const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
+  // const { data: eventsData } = useSWR(`${apiBaseUrl}/site/events?id=${companyId}`, fetcher);
 
   return (
       <main className="min-h-screen bg-gray-100 font-sans">
         {/* Hero Section - Render immediately */}
-        <HeroSection />
+        <HeroSection storeFormData={pageData} />
 
         {/* Core Highlights / Impact Areas */}
-        <CoreHighlightsSection />
+        <CoreHighlightsSection storeFormData={pageData} />
 
         {/* About Us Spotlight */}
-        <AboutUsSpotlight />
+        <AboutUsSpotlight storeFormData={pageData} />
 
         {/* Our Programs / Featured Causes */}
-        <ProgramsCausesSection />
+        <ProgramsCausesSection storeFormData={pageData} />
 
         {/* Impact Stats */}
-        <ImpactStatsSection />
+        <ImpactStatsSection storeFormData={pageData} />
 
         {/* Events & Updates - Render when data is ready */}
-        {eventsData?.data && <EventsUpdatesSection />}
+        <EventsUpdatesSection storeFormData={pageData} />
 
         {/* News - Render when data is ready */}
-        {blogsData?.data && <NewsSection />}
+        <NewsSection storeFormData={pageData} />
 
         {/* Testimonials & News - Render when data is ready */}
-        {testimonialsData?.data && <TestimonialsNewsSection />}
+        <TestimonialsNewsSection storeFormData={pageData} />
 
         {/* Call to Action - Bold */}
-        <CtaBoldSection />
+        <CtaBoldSection storeFormData={pageData} />
 
         {/* FAQs - Render when data is ready */}
-        {faqsData?.data && <FAQSection />}
+        <FAQSection storeFormData={pageData} />
       </main>
   );
 }

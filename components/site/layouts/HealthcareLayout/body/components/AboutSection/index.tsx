@@ -9,13 +9,14 @@ import { ICoreValue } from "@/types/typings";
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => `${src}?w=${width}&q=${quality || 75}`;
 
-// --- Animation Variants ---
-const fadeInUp = {
-  hidden: { opacity: 0, y: 40 },
+// --- Premium Animation Suite ---
+const fadeInScaleUp = {
+  hidden: { opacity: 0, y: 30, scale: 0.98 },
   visible: { 
     opacity: 1, 
     y: 0, 
-    transition: { duration: 0.6, ease: "easeOut" } 
+    scale: 1,
+    transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] } 
   }
 };
 
@@ -24,20 +25,10 @@ const staggerContainer = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.2
+      staggerChildren: 0.12,
+      delayChildren: 0.1
     }
   }
-};
-
-const cardHover = {
-    rest: { scale: 1, y: 0 },
-    hover: { 
-        scale: 1.02, 
-        y: -5,
-        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
-        transition: { type: "spring", stiffness: 300 } 
-    }
 };
 
 const fallbackCoreValues: ICoreValue[] = [
@@ -57,141 +48,150 @@ const iconMap: { [key: string]: React.ElementType } = {
 export default function AboutSection() {
   const { storeFormData } = useStoreContext();
 
-  // Data extraction with fallbacks
+  // Dynamic values with clean fallbacks
   const aboutImageUrl = storeFormData?.bannerUrl || "https://images.unsplash.com/photo-1631815588090-d4bfec5b1b89?q=80&w=1974&auto=format&fit=crop";
   const aboutText = storeFormData?.description || "Our mission is to provide compassionate, high-quality healthcare services to our community. We are dedicated to promoting wellness and restoring health with professionalism and empathy. Our team of skilled medical professionals works collaboratively to ensure every patient receives personalized care.";
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || "#0d9488"; // Teal
-  const secondaryColor = storeFormData?.themeSettings?.secondaryColor || "#0f766e";
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || "#0d9488"; // Healthcare Teal
   const coreValuesToRender = storeFormData?.CoreValues || fallbackCoreValues;
 
   return (
-    <section id="about" className="relative py-24 lg:py-32 overflow-hidden bg-white dark:bg-gray-950">
+    <section id="about" className="relative py-24 lg:py-32 overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-500">
       
-      {/* Decorative Background Blobs */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gray-100 dark:bg-gray-900 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 opacity-50" />
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gray-50 dark:bg-gray-900 rounded-full blur-3xl translate-y-1/4 -translate-x-1/4 opacity-50" />
+      {/* Premium Ambient Light Backdrops */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none select-none">
+        <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-teal-500/5 dark:bg-teal-500/10 rounded-full blur-[120px] opacity-70" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-emerald-500/5 dark:bg-emerald-500/5 rounded-full blur-[100px] opacity-60" />
       </div>
 
       <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-8 items-center">
           
-          {/* --- LEFT: Image Composition --- */}
+          {/* --- LEFT SIDE: Immersive Asymmetric Image Grid --- */}
           <motion.div 
-            initial={{ opacity: 0, x: -50 }}
+            initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8 }}
-            className="relative"
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="relative lg:col-span-5 z-10"
           >
-            {/* Main Image */}
-            <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl aspect-[4/5] lg:aspect-[3/4] group">
-              <Image
-                src={aboutImageUrl}
-                alt="Our dedicated healthcare team"
-                loader={loader}
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
-              {/* Subtle Gradient Overlay on Image */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+            {/* Interactive Hero Image Frame */}
+            <div className="relative rounded-[2rem] overflow-hidden bg-white dark:bg-slate-900 p-3 shadow-[0_24px_70px_-15px_rgba(15,23,42,0.12)] border border-slate-100 dark:border-slate-800/80 group">
+              <div className="relative rounded-[1.5rem] overflow-hidden aspect-[4/5] lg:aspect-[3/4] bg-slate-100 dark:bg-slate-800">
+                <Image
+                  src={aboutImageUrl}
+                  alt="Our dedicated healthcare infrastructure"
+                  loader={loader}
+                  fill
+                  priority
+                  className="object-cover transition-transform duration-1000 ease-[0.16, 1, 0.3, 1] group-hover:scale-[1.04]"
+                  sizes="(max-width: 768px) 100vw, 40vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-slate-950/5 to-transparent opacity-80" />
+              </div>
             </div>
 
-            {/* Floating "Trust" Card */}
+            {/* Floating Clinical Trust Verification Badge */}
             <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="absolute -bottom-8 -right-4 md:-right-12 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 max-w-xs z-20"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              whileInView={{ opacity: 1, scale: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4, duration: 0.6, ease: "easeOut" }}
+              className="absolute -bottom-6 -right-2 md:-right-10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-5 rounded-2xl shadow-[0_20px_40px_-10px_rgba(15,23,42,0.15)] border border-white dark:border-slate-800 max-w-[260px] z-20"
             >
-                <div className="flex items-center gap-3 mb-2">
-                    <div className="flex -space-x-2">
-                        {[1,2,3].map(i => (
-                            <div key={i} className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white dark:border-gray-800 overflow-hidden">
-                                <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="Avatar" className="w-full h-full object-cover" />
-                            </div>
-                        ))}
+              <div className="flex items-center gap-2.5 mb-2">
+                <div className="flex -space-x-2.5">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="w-8 h-8 rounded-full border-2 border-white dark:border-slate-900 overflow-hidden shadow-sm bg-slate-100">
+                      <img src={`https://i.pravatar.cc/100?img=${i + 12}`} alt="Verified Practitioner" className="w-full h-full object-cover" />
                     </div>
-                    <div className="flex text-yellow-400">
-                        {[1,2,3,4,5].map(i => <StarIcon key={i} className="w-4 h-4" />)}
-                    </div>
+                  ))}
                 </div>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    "Exceptional care and support from the entire team."
-                </p>
-                <p className="text-xs text-gray-500 mt-1 font-semibold">Trusted by 10k+ Patients</p>
+                <div className="flex text-amber-400">
+                  {[1, 2, 3, 4, 5].map((i) => <StarIcon key={i} className="w-3.5 h-3.5" />)}
+                </div>
+              </div>
+              <p className="text-xs font-semibold leading-normal text-slate-800 dark:text-slate-100">
+                "Exceptional standards, clinical accuracy, and deeply supportive professionals."
+              </p>
+              <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-[10px] uppercase tracking-wider font-bold text-slate-400">
+                <span>Patient Trust Network</span>
+                <span style={{ color: primaryColor }}>10k+ Strong</span>
+              </div>
             </motion.div>
 
-            {/* Decorative Pattern Dot Grid behind image */}
-            <div className="absolute -top-8 -left-8 w-32 h-32 z-[-1] opacity-20" style={{ backgroundImage: `radial-gradient(${primaryColor} 2px, transparent 2px)`, backgroundSize: '16px 16px' }}></div>
+            {/* Abstract Tech Accent Lines */}
+            <div className="absolute -top-6 -left-6 w-24 h-24 z-[-1] opacity-25 dark:opacity-40" style={{ backgroundImage: `radial-gradient(${primaryColor} 1.5px, transparent 1.5px)`, backgroundSize: '12px 12px' }}></div>
           </motion.div>
 
-
-          {/* --- RIGHT: Text & Values --- */}
+          {/* --- RIGHT SIDE: Copy & Interactive Bento Grid --- */}
           <motion.div
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
+            viewport={{ once: true, amount: 0.1 }}
             variants={staggerContainer}
-            className="flex flex-col justify-center"
+            className="flex flex-col justify-center lg:col-span-7 lg:pl-12"
           >
-            {/* Header */}
-            <motion.div variants={fadeInUp}>
-                <span 
-                    className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-opacity-10 mb-6"
-                    style={{ backgroundColor: `${primaryColor}20`, color: primaryColor }}
-                >
-                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: primaryColor }} />
-                    Who We Are
-                </span>
-                
-                <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white leading-[1.1] mb-6">
-                    We are Dedicated to Your <span className="relative whitespace-nowrap">
-                        <span className="relative z-10">Health</span>
-                        <span className="absolute bottom-2 left-0 w-full h-3 -z-0 opacity-30" style={{ backgroundColor: primaryColor }}></span>
-                    </span> & Wellbeing.
-                </h2>
+            {/* Header / Meta Segment */}
+            <motion.div variants={fadeInScaleUp} className="mb-8">
+              <span 
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-widest mb-4 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 shadow-sm"
+                style={{ color: primaryColor }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
+                Clinical Mission
+              </span>
+              
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-[1.15] mb-6">
+                Dedicated to Advancing Your <span className="relative inline-block px-1">
+                  <span className="relative z-10" style={{ color: primaryColor }}>Health</span>
+                  <span className="absolute bottom-1 left-0 w-full h-2 rounded bg-teal-500/10 dark:bg-teal-500/20 -z-0"></span>
+                </span> & Lasting Vitality.
+              </h2>
 
-                <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed mb-10">
-                    {aboutText}
-                </p>
+              <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                {aboutText}
+              </p>
             </motion.div>
 
-            {/* Core Values Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                {coreValuesToRender.map((value) => {
-                    const IconComponent = iconMap[value.icon as string] || AcademicCapIcon;
-                    
-                    return (
-                        <motion.div 
-                            key={value.id} 
-                            variants={fadeInUp}
-                            whileHover="hover"
-                            initial="rest"
-                            animate="rest"
-                            className="relative p-6 rounded-2xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 transition-colors duration-300 group"
-                        >
-                            <motion.div 
-                                variants={cardHover}
-                                className="h-full flex flex-col"
-                            >
-                                <div 
-                                    className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors duration-300 group-hover:bg-white group-hover:shadow-md"
-                                    style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}
-                                >
-                                    <IconComponent className="w-6 h-6" />
-                                </div>
-                                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 group-hover:text-teal-600 transition-colors">
-                                    {value.title}
-                                </h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 leading-snug">
-                                    {value.description}
-                                </p>
-                            </motion.div>
-                        </motion.div>
-                    );
-                })}
+            {/* Premium Micro-Bento Core Values Layout */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {coreValuesToRender.map((value) => {
+                const IconComponent = iconMap[value.icon as string] || AcademicCapIcon;
+                
+                return (
+                  <motion.div 
+                    key={value.id} 
+                    variants={fadeInScaleUp}
+                    whileHover={{ y: -4, scale: 1.01 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    className="group relative p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 hover:border-slate-300/80 dark:hover:border-slate-700 transition-colors shadow-sm hover:shadow-md duration-300 flex flex-col justify-between"
+                  >
+                    <div>
+                      {/* Dynamic Theme Icon Frame */}
+                      <div 
+                        className="w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110 shadow-sm group-hover:shadow"
+                        style={{ backgroundColor: `${primaryColor}10`, color: primaryColor }}
+                      >
+                        <IconComponent className="w-5 h-5" />
+                      </div>
+                      
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1.5 group-hover:text-slate-800 dark:group-hover:text-teal-400 transition-colors">
+                        {value.title}
+                      </h3>
+                      
+                      <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                        {value.description}
+                      </p>
+                    </div>
+
+                    {/* Clean Corner Aesthetic Deco Line */}
+                    <div 
+                      className="absolute bottom-0 right-0 w-0 h-[3px] rounded-bl-full rounded-br-full transition-all duration-300 group-hover:w-12"
+                      style={{ backgroundColor: primaryColor }}
+                    />
+                  </motion.div>
+                );
+              })}
             </div>
             
           </motion.div>

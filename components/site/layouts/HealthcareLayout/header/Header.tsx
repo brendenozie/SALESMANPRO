@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -14,7 +14,6 @@ import {
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession, signOut } from 'next-auth/react';
 
-// Optional custom loader
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
@@ -27,8 +26,8 @@ const DEFAULT_SOCIAL_LINKS = [
   { channel: 'facebook', url: 'https://facebook.com' },
   { channel: 'instagram', url: 'https://instagram.com' },
 ];
-const DEFAULT_PRIMARY_COLOR = '#0ea5e9';
-const DEFAULT_SECONDARY_COLOR = '#8b5cf6';
+const DEFAULT_PRIMARY_COLOR = '#0d9488'; // Clean Medical Teal
+const DEFAULT_SECONDARY_COLOR = '#0f766e';
 
 export default function Header() {
   const { storeFormData } = useStoreContext();
@@ -61,9 +60,8 @@ export default function Header() {
     }
   };
 
-  const handleSignOut = ()=> {
+  const handleSignOut = () => {
     const returnTo = window.location.origin;
-
     signOut({
       redirect: true,
       callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
@@ -88,240 +86,242 @@ export default function Header() {
     { label: 'Home', href: `/` },
     { label: 'Services', href: `/#services` },
     { label: 'Doctors', href: `/#doctors` },
-    { label: 'About Us', href: `/#about` },
+    { label: 'About', href: `/#about` },
     { label: 'FAQs', href: `/#faqs` },
     { label: 'Contact', href: `/#contact` },
   ];
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 80);
+      setScrolled(window.scrollY > 40);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const headerVariants = {
-    initial: { y: -100, opacity: 0 },
-    animate: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 120, damping: 14, delay: 0.2 } },
-  };
-
-  const mobileMenuVariants = {
-    hidden: { x: '100%', opacity: 0 },
-    visible: { x: 0, opacity: 1, transition: { type: 'spring', stiffness: 100, damping: 20 } },
-    exit: { x: '100%', opacity: 0, transition: { type: 'spring', stiffness: 100, damping: 20 } }
-  };
-
   return (
     <motion.header
-      variants={headerVariants}
-      initial="initial"
-      animate="animate"
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
         scrolled
-          ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg shadow-xl py-3 border-b border-gray-100 dark:border-gray-800'
-          : 'bg-transparent py-5 text-white'
+          ? 'bg-white/90 dark:bg-slate-950/90 backdrop-blur-md py-3 shadow-[0_4px_30px_rgba(15,23,42,0.03)] border-b border-slate-200/50 dark:border-slate-800/50'
+          : 'bg-transparent py-5'
       }`}
     >
-      {/* TOP INFO BAR */}
-      <motion.div
-        className={`hidden md:flex justify-center items-center text-sm font-medium transition-all ${
-          scrolled ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100 h-auto py-2'
+      {/* PROFESSIONAL INFO TOP BAR */}
+      <div 
+        className={`hidden md:block transition-all duration-300 overflow-hidden ${
+          scrolled ? 'max-h-0 opacity-0' : 'max-h-10 opacity-100 pb-3'
         }`}
-        style={{ backgroundColor: `${primary}15`, color: primary }}
       >
-        <div className="max-w-7xl w-full flex justify-between items-center px-6">
-          <div className="flex items-center space-x-6">
+        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center text-xs font-semibold tracking-wide">
+          <div className="flex items-center space-x-6 text-slate-600 dark:text-slate-300">
             {contactEmail && (
-              <motion.a href={`mailto:${contactEmail}`} className="flex items-center space-x-2"
-                whileHover={{ scale: 1.05 }}>
-                <EnvelopeIcon className="w-4 h-4" /> <span>{contactEmail}</span>
-              </motion.a>
+              <a href={`mailto:${contactEmail}`} className="flex items-center space-x-2 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
+                <EnvelopeIcon className="w-3.5 h-3.5 opacity-80" /> 
+                <span>{contactEmail}</span>
+              </a>
             )}
             {contactPhone && (
-              <motion.a href={`tel:${contactPhone}`} className="flex items-center space-x-2"
-                whileHover={{ scale: 1.05 }}>
-                <PhoneIcon className="w-4 h-4" /> <span>{contactPhone}</span>
-              </motion.a>
+              <a href={`tel:${contactPhone}`} className="flex items-center space-x-2 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
+                <PhoneIcon className="w-3.5 h-3.5 opacity-80" /> 
+                <span>{contactPhone}</span>
+              </a>
             )}
           </div>
 
-          <div className="flex space-x-4">
+          <div className="flex items-center space-x-4 text-slate-400 dark:text-slate-500">
             {socialLinks.map((s) => (
-              <motion.a
+              <a
                 key={s.channel}
                 href={s.url}
                 target="_blank"
                 rel="noreferrer"
-                whileHover={{ scale: 1.2, color: secondary }}
-                className="capitalize"
+                className="capitalize text-[11px] hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
               >
                 {s.channel}
-              </motion.a>
+              </a>
             ))}
           </div>
         </div>
-      </motion.div>
+      </div>
 
-      {/* MAIN NAV */}
+      {/* MAIN NAVIGATION BAR */}
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        {/* LOGO */}
-        <motion.div
-          className="flex items-center space-x-3 cursor-pointer"
+        
+        {/* BRAND IDENTITY LOGO */}
+        <div
           onClick={() => router.push(`/${slug}`)}
-          whileHover={{ scale: 1.05 }}
+          className="flex items-center space-x-2.5 cursor-pointer group z-10"
         >
-          {logoUrl !== DEFAULT_LOGO_URL ? (
-            <Image
-              src={logoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=56&background=random`}
-              alt={name}
-              width={56}
-              height={56}
-              className="rounded-full shadow-lg border border-gray-200  h-20 w-32"
-              loader={loader}
-            />
+          {logoUrl && logoUrl !== DEFAULT_LOGO_URL ? (
+            <div className="relative h-10 w-28 transition-transform duration-300 group-hover:scale-[1.02]">
+              <Image
+                src={logoUrl}
+                alt={name}
+                fill
+                className="object-contain object-left"
+                loader={loader}
+                priority
+              />
+            </div>
           ) : (
-            <motion.span
-              className="text-3xl font-extrabold bg-clip-text text-transparent"
-              style={{ backgroundImage: `linear-gradient(45deg, ${primary}, ${secondary})` }}
+            <span 
+              className="text-2xl font-black tracking-tight bg-clip-text text-transparent transition-all duration-300 group-hover:opacity-90"
+              style={{ backgroundImage: `linear-gradient(135deg, ${primary}, ${secondary})` }}
             >
               {name}
-            </motion.span>
+            </span>
           )}
-        </motion.div>
+        </div>
 
-        {/* DESKTOP NAV */}
-        <nav className="hidden md:flex items-center space-x-8 font-semibold text-lg text-gray-700 dark:text-gray-200">
+        {/* DESKTOP CONTENT SYSTEM */}
+        <nav className="hidden md:flex items-center space-x-7 text-sm font-bold text-slate-700 dark:text-slate-200">
           {navItems.map(({ label, href }) => (
-            <Link key={label} href={href} className="relative group">
+            <Link 
+              key={label} 
+              href={href} 
+              className="relative py-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors group"
+            >
               {label}
-              <motion.span
-                className="absolute left-0 bottom-[-8px] h-1 rounded-full"
-                style={{ backgroundImage: `linear-gradient(90deg, ${primary}, ${secondary})` }}
-                initial={{ width: 0 }}
-                whileHover={{ width: '100%' }}
-                transition={{ duration: 0.3 }}
+              <span
+                className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2.5px] w-0 rounded-full transition-all duration-300 ease-[0.16, 1, 0.3, 1] group-hover:w-full"
+                style={{ backgroundColor: primary }}
               />
             </Link>
           ))}
 
-          {/* AUTH SECTION — replaces Book Appointment */}
-          {!user ? (
-            <div className="flex items-center space-x-4 ml-6">
-              <button
-                onClick={handleGoogleSignIn}
-                className="px-5 py-2 rounded-full font-bold text-white shadow-md"
-                style={{ backgroundColor: primary }}
-              >
-                Login
-              </button>
-              <button
-                onClick={handleGoogleSignUp}
-                className="px-5 py-2 rounded-full font-bold border"
-                style={{ borderColor: primary, color: primary }}
-              >
-                Register
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center space-x-4 ml-6">
-              <button
-                onClick={handleUserAction}
-                className="font-semibold text-gray-800 dark:text-gray-100"
-              >
-                {user.name || "Profile"}
-              </button>
-              <button
-                onClick={() => handleSignOut()}
-                className="text-red-600 font-bold"
-              >
-                Logout
-              </button>
-            </div>
-          )}
+          {/* SPLIT SECURITY AUTH LAYOUT */}
+          <div className="flex items-center space-x-3 ml-4 border-l border-slate-200/60 dark:border-slate-800 pl-6">
+            {!user ? (
+              <>
+                <button
+                  onClick={handleGoogleSignIn}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all"
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={handleGoogleSignUp}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white shadow-sm transition-all active:scale-[0.98] hover:brightness-105"
+                  style={{ backgroundColor: primary }}
+                >
+                  Register
+                </button>
+              </>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={handleUserAction}
+                  className="text-xs font-bold text-slate-800 dark:text-slate-100 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800"
+                >
+                  {user.name || "My Account"}
+                </button>
+                <button
+                  onClick={handleSignOut}
+                  className="text-xs font-bold text-rose-500 hover:text-rose-600 transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         </nav>
 
-        {/* MOBILE TOGGLE */}
+        {/* MOBILE INTERACTIVE TOGGLE */}
         <motion.button
-          className="md:hidden p-2 rounded-md"
+          whileTap={{ scale: 0.95 }}
+          className="md:hidden p-2 rounded-xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/50 dark:border-slate-800/80"
           onClick={() => setMobileMenuOpen(true)}
-          whileHover={{ scale: 1.1 }}
         >
-          <Bars3BottomRightIcon className="w-8 h-8 text-gray-700 dark:text-gray-200" />
+          <Bars3BottomRightIcon className="w-5 h-5 text-slate-700 dark:text-slate-200" />
         </motion.button>
       </div>
 
-      {/* MOBILE DRAWER */}
+      {/* MOBILE PREMIUM DRAWER LINKAGE */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.aside
-            variants={mobileMenuVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className="fixed inset-y-0 right-0 z-[60] w-full max-w-sm bg-white dark:bg-gray-900 shadow-2xl p-8 flex flex-col"
-          >
-            <div className="flex justify-between items-center mb-10">
-              {logoUrl ? (
-                <Image src={logoUrl} alt={name} width={60} height={60} className="rounded-full  h-20 w-32" />
-              ) : (
-                <span className="text-2xl font-extrabold">{name}</span>
-              )}
-              <motion.button onClick={() => setMobileMenuOpen(false)}>
-                <XMarkIcon className="w-8 h-8" />
-              </motion.button>
-            </div>
+          <>
+            {/* Backdrop lock */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileMenuOpen(false)}
+              className="fixed inset-0 bg-slate-950/20 backdrop-blur-sm z-[60]"
+            />
 
-            <nav className="flex flex-col space-y-6 flex-grow">
-              {navItems.map(({ label, href }) => (
-                <Link
-                  key={label}
-                  href={href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-2xl font-bold"
-                >
-                  {label}
-                </Link>
-              ))}
-            </nav>
+            <motion.aside
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 right-0 z-[61] w-full max-w-xs bg-white dark:bg-slate-950 shadow-2xl p-6 flex flex-col justify-between border-l border-slate-100 dark:border-slate-900"
+            >
+              <div>
+                <div className="flex justify-between items-center mb-8 pb-4 border-b border-slate-100 dark:border-slate-900">
+                  <span className="text-lg font-black tracking-tight dark:text-white">{name}</span>
+                  <button 
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-400 hover:text-slate-600"
+                  >
+                    <XMarkIcon className="w-5 h-5" />
+                  </button>
+                </div>
 
-            {/* AUTH INSIDE MOBILE DRAWER */}
-            <div className="mt-10 border-t border-gray-200 dark:border-gray-700 pt-6 space-y-4">
-              {!user ? (
-                <>
-                  <button
-                    onClick={handleGoogleSignIn}
-                    className="w-full py-3 rounded-full font-bold text-white"
-                    style={{ backgroundColor: primary }}
-                  >
-                    Login
-                  </button>
-                  <button
-                    onClick={handleGoogleSignUp}
-                    className="w-full py-3 rounded-full font-bold border"
-                    style={{ borderColor: primary, color: primary }}
-                  >
-                    Register
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={handleUserAction}
-                    className="w-full py-3 rounded-full font-bold"
-                  >
-                    Profile
-                  </button>
-                  <button
-                    onClick={() => handleSignOut()}
-                    className="w-full py-3 rounded-full font-bold text-red-600"
-                  >
-                    Logout
-                  </button>
-                </>
-              )}
-            </div>
-          </motion.aside>
+                <nav className="flex flex-col space-y-4">
+                  {navItems.map(({ label, href }) => (
+                    <Link
+                      key={label}
+                      href={href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="text-base font-bold text-slate-800 dark:text-slate-200 hover:text-teal-600 dark:hover:text-teal-400 transition-colors py-1"
+                    >
+                      {label}
+                    </Link>
+                  ))}
+                </nav>
+              </div>
+
+              {/* AUTH SYSTEM INSIDE CONTAINER */}
+              <div className="border-t border-slate-100 dark:border-slate-900 pt-4 space-y-3">
+                {!user ? (
+                  <>
+                    <button
+                      onClick={() => { setMobileMenuOpen(false); handleGoogleSignIn(); }}
+                      className="w-full py-3 rounded-xl font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900"
+                    >
+                      Sign In
+                    </button>
+                    <button
+                      onClick={() => { setMobileMenuOpen(false); handleGoogleSignUp(); }}
+                      className="w-full py-3 rounded-xl font-bold text-sm text-white shadow-sm"
+                      style={{ backgroundColor: primary }}
+                    >
+                      Register Account
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => { setMobileMenuOpen(false); handleUserAction(); }}
+                      className="w-full py-3 rounded-xl font-bold text-sm text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-900"
+                    >
+                      Dashboard Profile
+                    </button>
+                    <button
+                      onClick={() => { setMobileMenuOpen(false); handleSignOut(); }}
+                      className="w-full py-2 font-bold text-xs text-rose-500 text-center"
+                    >
+                      Logout Session
+                    </button>
+                  </>
+                )}
+              </div>
+            </motion.aside>
+          </>
         )}
       </AnimatePresence>
     </motion.header>

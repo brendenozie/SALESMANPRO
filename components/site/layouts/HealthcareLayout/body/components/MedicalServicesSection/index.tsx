@@ -5,8 +5,8 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ArrowRightIcon, SparklesIcon } from '@heroicons/react/24/solid';
+import { useStoreContext } from '@/contexts/StoreContext';
 
-// Mock loader
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
@@ -16,129 +16,150 @@ interface MedicalServicesSectionProps {
   storeSlug: string;
 }
 
-// Animation Variants
+const DEFAULT_PRIMARY_COLOR = '#0d9488'; 
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2
+      staggerChildren: 0.08,
+      delayChildren: 0.1
     }
   }
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 40 },
   visible: { 
     opacity: 1, 
     y: 0,
-    transition: { duration: 0.5, ease: "easeOut" }
+    transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] }
   }
 };
 
 export default function MedicalServicesSection({ services, storeSlug }: MedicalServicesSectionProps) {
   const router = useRouter();
+  const { storeFormData } = useStoreContext();
+
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || DEFAULT_PRIMARY_COLOR;
 
   return (
-    <section id="services" className="relative py-24 lg:py-32 bg-gray-50 dark:bg-gray-950 overflow-hidden">
+    <section id="services" className="relative py-24 lg:py-36 bg-slate-50 dark:bg-slate-950 overflow-hidden">
       
-      {/* --- Background Pattern (CSS Dots) --- */}
-      <div className="absolute inset-0 z-0 opacity-[0.03] dark:opacity-[0.05]" 
-           style={{ backgroundImage: 'radial-gradient(#6b7280 1px, transparent 1px)', backgroundSize: '24px 24px' }}>
-      </div>
+      {/* AMBIENT GLOW DECORATIONS */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-teal-500/5 dark:bg-teal-500/[0.02] rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-12 left-10 w-[300px] h-[300px] bg-sky-500/5 dark:bg-sky-500/[0.01] rounded-full blur-[100px] pointer-events-none" />
+
+      {/* BACKGROUND GEOMETRIC TEXTURE */}
+      <div 
+        className="absolute inset-0 z-0 opacity-[0.4] dark:opacity-[0.15] mix-blend-overlay pointer-events-none" 
+        style={{ 
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgb(203 213 225 / 0.4) 1px, transparent 0)', 
+          backgroundSize: '32px 32px' 
+        }}
+      />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
         
-        {/* --- Header Section --- */}
+        {/* HEADER BLOCK ARCHITECTURE */}
         <div className="text-center max-w-3xl mx-auto mb-20">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 text-sm font-bold uppercase tracking-wider mb-6">
-              <SparklesIcon className="w-4 h-4" />
-              World Class Care
+            <span 
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 text-xs font-bold uppercase tracking-widest mb-6 shadow-sm"
+              style={{ color: primaryColor }}
+            >
+              <SparklesIcon className="w-3.5 h-3.5 animate-pulse" />
+              Our Specializations
             </span>
             
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight mb-6">
-              Our Expert <span className="relative inline-block">
-                <span className="relative z-10">Medical Services</span>
-                {/* Yellow Highlight Underline */}
-                <svg className="absolute bottom-1 left-0 w-full h-3 text-yellow-300 -z-0 opacity-60" viewBox="0 0 100 10" preserveAspectRatio="none">
-                   <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="10" fill="none" />
-                </svg>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.1] mb-6">
+              World-Class <span className="relative inline-block">
+                <span className="relative z-10">Medical Expertise</span>
+                <span 
+                  className="absolute bottom-2 left-0 w-full h-[6px] rounded-full opacity-20 -z-10"
+                  style={{ backgroundColor: primaryColor }}
+                />
               </span>
             </h2>
             
-            <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
-              We combine advanced technology with compassionate care to provide a wide range of medical services tailored to your needs.
+            <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400 font-medium leading-relaxed max-w-2xl mx-auto">
+              Combining advanced data insights, top-tier clinical machinery, and deeply compassionate environments to look after your overall wellness profile.
             </p>
           </motion.div>
         </div>
 
-        {/* --- Services Grid --- */}
+        {/* HIGH-END INTERACTIVE SERVICES GRID */}
         <motion.div 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.1 }}
+          viewport={{ once: true, amount: 0.05 }}
         >
           {services.map((svc) => (
             <motion.div
               key={svc.id}
               variants={cardVariants}
-              className="group relative flex flex-col bg-white dark:bg-gray-900 rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 hover:shadow-2xl hover:shadow-teal-900/10 transition-all duration-500 cursor-pointer"
+              whileHover={{ y: -8 }}
+              className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-[2rem] overflow-hidden shadow-[0_4px_20px_rgba(15,23,42,0.01)] border border-slate-200/50 dark:border-slate-800/60 hover:shadow-[0_20px_40px_rgba(15,23,42,0.06)] dark:hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] transition-all duration-500 cursor-pointer"
               onClick={() => router.push(`/${storeSlug}/service/${svc.slug}`)}
             >
-              
-              {/* Image Container */}
-              <div className="relative h-64 w-full overflow-hidden">
+              {/* IMAGE ASSET CONTROLLER */}
+              <div className="relative h-56 w-full overflow-hidden bg-slate-100 dark:bg-slate-950">
                 <Image
                   src={svc.imageUrl || "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?q=80&w=2091&auto=format&fit=crop"}
                   alt={svc.name}
                   loader={customLoader}
                   fill
-                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                  className="object-cover transition-transform duration-700 ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                 />
                 
-                {/* Dark Gradient Overlay (Only visible on hover for text readability contrast) */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
 
-                {/* Floating Icon/Badge - Moves slightly on hover */}
-                <div className="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-3 rounded-2xl shadow-lg transform transition-transform duration-500 group-hover:-translate-y-1 group-hover:scale-105">
-                    {/* You can replace this with a specific icon per service if available */}
-                    <div className="w-6 h-6 rounded-full border-2 border-teal-500 flex items-center justify-center">
-                        <div className="w-2 h-2 bg-teal-500 rounded-full" />
-                    </div>
+                {/* PREMIUM MICRO BADGE INDICATOR */}
+                <div className="absolute top-4 right-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-2.5 rounded-xl shadow-sm border border-white/20 dark:border-slate-800/50 transition-transform duration-500 group-hover:scale-105">
+                  <div 
+                    className="w-4 h-4 rounded-full border-2 flex items-center justify-center opacity-80"
+                    style={{ borderColor: primaryColor }}
+                  >
+                    <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: primaryColor }} />
+                  </div>
                 </div>
               </div>
 
-              {/* Content Container */}
-              <div className="flex-1 p-8 flex flex-col relative">
+              {/* CARD DETAILS CONTAINER */}
+              <div className="flex-1 p-6 lg:p-7 flex flex-col relative">
                 
-                {/* Decorative Line */}
-                <div className="w-12 h-1 bg-teal-500 rounded-full mb-4 transition-all duration-500 group-hover:w-20" />
+                {/* AMBIENT SPRING ACCENT LINE */}
+                <div 
+                  className="h-1 rounded-full mb-5 transition-all duration-500 ease-[0.16, 1, 0.3, 1] w-8 group-hover:w-16" 
+                  style={{ backgroundColor: primaryColor }}
+                />
 
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-teal-600 transition-colors duration-300">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight transition-colors duration-300 group-hover:text-slate-800 dark:group-hover:text-slate-100">
                   {svc.name}
                 </h3>
 
                 {svc.description && (
-                  <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-6 line-clamp-2">
+                  <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium leading-relaxed mb-6 line-clamp-2">
                     {svc.description}
                   </p>
                 )}
 
-                {/* Bottom Action Area */}
-                <div className="mt-auto flex items-center text-sm font-bold text-gray-900 dark:text-white group/btn">
-                  <span className="mr-2 group-hover:mr-4 transition-all duration-300">Learn More</span>
-                  <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center group-hover:bg-teal-500 group-hover:text-white transition-colors duration-300">
-                    <ArrowRightIcon className="w-4 h-4 transform group-hover:-rotate-45 transition-transform duration-300" />
+                {/* CALL-TO-ACTION ELEMENT */}
+                <div className="mt-auto pt-2 flex items-center justify-between text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 group/btn">
+                  <span className="tracking-tight transition-all duration-300 group-hover:text-slate-950 dark:group-hover:text-white">
+                    Explore Treatment Details
+                  </span>
+                  <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/40 dark:border-slate-700/50 flex items-center justify-center group-hover:bg-slate-900 dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-slate-900 transition-all duration-300">
+                    <ArrowRightIcon className="w-3.5 h-3.5 transform group-hover:-rotate-45 transition-transform duration-300" />
                   </div>
                 </div>
               </div>
@@ -146,19 +167,19 @@ export default function MedicalServicesSection({ services, storeSlug }: MedicalS
           ))}
         </motion.div>
 
-        {/* --- Footer CTA --- */}
+        {/* FULL CATALOGUE REDIRECT SYSTEM */}
         <div className="mt-20 text-center">
-            <motion.button
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => router.push(`/${storeSlug}/all-services`)}
-                className="group inline-flex items-center gap-3 px-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-lg font-bold rounded-full shadow-xl hover:shadow-2xl transition-all duration-300"
-            >
-                View Full Service Menu
-                <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </motion.button>
+          <motion.button
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => router.push(`/${storeSlug}/all-services`)}
+            className="group inline-flex items-center gap-3 px-8 py-4 bg-slate-950 dark:bg-white text-white dark:text-slate-950 text-base font-bold rounded-2xl shadow-[0_4px_20px_rgba(15,23,42,0.05)] hover:shadow-[0_10px_30px_rgba(15,23,42,0.1)] transition-all duration-300 border border-transparent dark:border-slate-200"
+          >
+            View Full Service Menu
+            <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+          </motion.button>
         </div>
 
       </div>

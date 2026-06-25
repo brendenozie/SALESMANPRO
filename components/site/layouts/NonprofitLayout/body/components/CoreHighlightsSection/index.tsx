@@ -9,6 +9,7 @@ import {
   HeartIcon,
   LightBulbIcon,
   ShieldCheckIcon,
+  ArrowRightIcon,
 } from '@heroicons/react/24/outline';
 
 // --- TYPES ---
@@ -16,18 +17,11 @@ interface Feature {
   id: string;
   title: string;
   description: string;
-  Icon:
-    | React.ComponentType<React.SVGProps<SVGSVGElement>>
-    | React.ForwardRefExoticComponent<
-        React.SVGProps<SVGSVGElement> & React.RefAttributes<SVGSVGElement>
-      >;
-  color: string;
+  Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   order: number;
 }
 
 // --- CONFIGURATION ---
-const primaryColor = '#10B981'; // Emerald green
-
 const mockFeatures: Feature[] = [
   {
     id: 'feat-1',
@@ -35,7 +29,6 @@ const mockFeatures: Feature[] = [
     description:
       'Providing essential healthcare and medical support to vulnerable children, ensuring they receive the care they need to thrive.',
     Icon: HeartIcon,
-    color: '#EF4444', // Red for urgency/care
     order: 1,
   },
   {
@@ -43,8 +36,7 @@ const mockFeatures: Feature[] = [
     title: 'Education Support',
     description:
       'Ensuring access to quality education and learning resources for a brighter future, empowering young minds with knowledge.',
-    Icon: LightBulbIcon, // ✅ Fixed key casing
-    color: '#F97316', // Orange for energy/learning
+    Icon: LightBulbIcon,
     order: 2,
   },
   {
@@ -53,7 +45,6 @@ const mockFeatures: Feature[] = [
     description:
       'Investing in community projects that uplift families and children, building a foundation for long-term success.',
     Icon: LightBulbIcon,
-    color: '#06B6D4', // Cyan for clarity/future
     order: 3,
   },
   {
@@ -62,7 +53,6 @@ const mockFeatures: Feature[] = [
     description:
       'Delivering urgent aid and support in times of crisis and natural disasters, acting as a lifeline when it’s needed most.',
     Icon: ShieldCheckIcon,
-    color: '#3B82F6', // Blue for protection
     order: 4,
   },
   {
@@ -71,7 +61,6 @@ const mockFeatures: Feature[] = [
     description:
       'Implementing projects to provide sustainable and accessible power and clean water to communities, fostering health.',
     Icon: BoltIcon,
-    color: '#FBBF24', // Amber for power/energy
     order: 5,
   },
   {
@@ -80,7 +69,6 @@ const mockFeatures: Feature[] = [
     description:
       'Educating and engaging communities in sustainable practices to protect the environment for future generations.',
     Icon: GlobeAltIcon,
-    color: '#10B981', // Emerald for environment
     order: 6,
   },
 ];
@@ -93,17 +81,16 @@ const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.1 },
+    transition: { staggerChildren: 0.08 },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 50, rotateX: 15, transformPerspective: 500 },
+  hidden: { opacity: 0, y: 24 },
   visible: {
     opacity: 1,
     y: 0,
-    rotateX: 0,
-    transition: { duration: 0.7, ease: 'easeOut' },
+    transition: { duration: 0.5, ease: [0.21, 0.47, 0.32, 0.98] },
   },
 };
 
@@ -114,136 +101,86 @@ const FeatureCard: React.FC<{ feature: Feature }> = ({ feature }) => {
   return (
     <motion.div
       variants={itemVariants}
-      className="bg-white p-8 rounded-3xl shadow-2xl border-t-8 relative overflow-hidden group transition-all duration-500 transform hover:shadow-4xl hover:-translate-y-1 cursor-pointer flex flex-col items-start text-left h-full"
-      style={{ borderColor: feature.color }}
+      className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between items-start text-left h-full group cursor-pointer"
     >
-      {/* Background Accent */}
-      <div
-        className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-10 transition-all duration-500 group-hover:w-60 group-hover:h-60"
-        style={{ backgroundColor: feature.color }}
-      ></div>
-
-      <div className="relative z-10">
-        {/* Icon */}
-        <div
-          className="w-16 h-16 mb-6 flex items-center justify-center rounded-xl shadow-lg transition-all duration-300 group-hover:scale-105"
-          style={{ backgroundColor: feature.color }}
-        >
-          <IconComponent className="text-white w-8 h-8" />
+      <div className="w-full">
+        {/* Minimalist Icon Housing */}
+        <div className="w-12 h-12 mb-6 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-700 transition-colors duration-300 group-hover:bg-slate-900 group-hover:text-white group-hover:border-slate-900">
+          <IconComponent className="w-5 h-5" strokeWidth={2} />
         </div>
 
-        {/* Text */}
-        <h3 className="text-2xl font-bold text-gray-900 mb-3 leading-snug transition-colors duration-300">
+        {/* Text Area */}
+        <h3 className="text-xl font-bold text-slate-900 mb-2 tracking-tight">
           {feature.title}
         </h3>
-        <p className="text-gray-600 text-lg">{feature.description}</p>
+        <p className="text-slate-600 text-sm leading-relaxed">
+          {feature.description}
+        </p>
+      </div>
+
+      {/* Inline subtle interactive link */}
+      <div className="mt-6 flex items-center gap-1.5 text-xs font-bold text-slate-900 opacity-0 transform translate-x-[-4px] transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0">
+        <span>Learn more</span>
+        <ArrowRightIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
       </div>
     </motion.div>
   );
 };
 
 // --- MAIN SECTION ---
-export default function CoreHighlightsSection() {
-  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.3 });
-  const featuresToRender = mockFeatures.sort((a, b) => a.order - b.order);
+export default function CoreHighlightsSection({storeFormData}: {storeFormData: any}) {
+  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.15 });
+  const featuresToRender = [...mockFeatures].sort((a, b) => a.order - b.order);
 
   return (
     <section
       id="mission"
-      className="py-20 md:py-32 bg-gray-50 relative overflow-hidden font-sans"
+      className="py-24 md:py-32 bg-slate-50 border-b border-slate-200 relative overflow-hidden"
     >
-      {/* Geometric Background */}
-      <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
-        <div
-          className="absolute w-64 h-64 border-8 rounded-full border-dashed animate-spin-slow"
-          style={{ top: '10%', left: '5%', borderColor: primaryColor }}
-        ></div>
-        <div
-          className="absolute w-96 h-96 border-4 rounded-xl rotate-45 animate-pulse"
-          style={{ bottom: '15%', right: '5%', borderColor: primaryColor }}
-        ></div>
-      </div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-16"
-        >
-          <p
-            className="text-sm uppercase tracking-widest font-bold mb-2"
-            style={{ color: primaryColor }}
-          >
-            Our Pillars of Impact
-          </p>
-          <h2 className="text-4xl md:text-6xl font-extrabold text-gray-900 leading-tight">
+        
+        {/* Main Content Header Area */}
+        <div className="text-center max-w-3xl mx-auto mb-20">
+          <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-3">
+            Our Strategy
+          </span>
+          <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none mb-6">
             {sectionTitle}
           </h2>
-          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-base md:text-lg text-slate-600 leading-relaxed">
             Our mission is clear and impactful. These core values guide every
             action we take and define the future we are building at{' '}
-            <span
-              className="font-semibold"
-              style={{ color: primaryColor }}
-            >
+            <span className="font-bold text-slate-900">
               {organizationName}
             </span>
             .
           </p>
-        </motion.div>
+        </div>
 
-        {/* Feature Cards */}
+        {/* Feature Grid Systems */}
         <motion.div
           ref={ref}
           variants={containerVariants}
           initial="hidden"
           animate={inView ? 'visible' : 'hidden'}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
         >
           {featuresToRender.map((feature) => (
             <FeatureCard key={feature.id} feature={feature} />
           ))}
         </motion.div>
 
-        {/* CTA */}
-        <div className="mt-20 text-center">
+        {/* Integrated Clean Call To Action Element */}
+        <div className="mt-16 text-center">
           <a
-            href="#"
-            className="inline-flex items-center px-10 py-4 rounded-full font-bold text-white text-lg shadow-xl transition duration-300 transform hover:scale-[1.02] hover:shadow-2xl active:scale-95"
-            style={{ backgroundColor: primaryColor }}
+            href="#strategy"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white border border-slate-200 shadow-sm rounded-xl text-sm font-bold text-slate-800 hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-98"
           >
-            Explore Our Comprehensive Strategy
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="ml-3 w-5 h-5"
-            >
-              <path d="M5 12h14" />
-              <path d="m12 5 7 7-7 7" />
-            </svg>
+            <span>Explore Comprehensive Strategy</span>
+            <ArrowRightIcon className="w-4 h-4 text-slate-500" strokeWidth={2} />
           </a>
         </div>
       </div>
-
-      {/* Slow Spin Animation */}
-      <style>{`
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .animate-spin-slow {
-          animation: spin-slow 20s linear infinite;
-        }
-      `}</style>
     </section>
   );
 }

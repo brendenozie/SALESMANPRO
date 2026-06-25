@@ -1,31 +1,33 @@
-// components/EventsSection.tsx
 "use client";
 
 import React from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRightIcon, CalendarDaysIcon, ClockIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { 
+  ArrowRightIcon, 
+  CalendarDaysIcon, 
+  MapPinIcon 
+} from '@heroicons/react/24/outline';
 import { useInView } from 'react-intersection-observer';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { IEvent } from '@/types/typings';
 
-// Optimized image loader
+// Optimized image loader template 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
-// Helper function for date formatting
-const formatEventDate = (isoString: string) => {
+// Helper function for crisp numerical date strings
+const formatEventDate = (isoString: string | Date) => {
   try {
-    const date = new Date(isoString);
+    const date = typeof isoString === 'string' ? new Date(isoString) : isoString;
     return {
       month: date.toLocaleDateString('en-US', { month: 'short' }),
       day: date.toLocaleDateString('en-US', { day: 'numeric' }),
-      year: date.toLocaleDateString('en-US', { year: 'numeric' }),
+      time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
     };
   } catch (error) {
-    return { month: 'N/A', day: 'N/A', year: 'N/A' };
+    return { month: 'N/A', day: 'N/A', time: 'N/A' };
   }
 };
 
@@ -38,211 +40,171 @@ const fallbackEvents: IEvent[] = [
     id: 'fb-event-1',
     title: 'Annual Charity Run',
     description: 'Join us for our annual charity run to support children\'s education programs and community development initiatives.',
-    startDateTime: new Date(), //'2025-08-10T08:00:00Z',
+    startDateTime: new Date(),
     endDateTime: new Date(),
-    // eventTime: '8:00 AM',
     location: 'Central Park, NYC',
-    imageUrl: 'https://images.unsplash.com/photo-1532629391091-c247900b1713?q=80&w=2670&auto=format&fit=crop',
-    summary: null,
-    onlineMeetingLink: null,
-    videoUrl: null,
-    projectId: null,
-    eventType: 'GENERAL',
-    eventStatus: 'SCHEDULED',
-    organizerId: '',
-    companyId: null,
-    audience: 'ALL',
-    targetAcademicLevelIds: [],
-    targetCourseIds: [],
-    targetEducatorIds: [],
-    targetStudentIds: [],
-    targetDepartmentIds: [],
-    targetParentIds: [],
-    isRegistrationRequired: false,
-    maxCapacity: null,
-    isPaid: false,
-    price: null,
-    contactPerson: null,
-    contactEmail: null,
-    contactPhone: null,
-    createdAt: null,
-    updatedAt: null
+    imageUrl: 'https://images.unsplash.com/photo-1532629391091-c247900b1713?q=80&w=600&auto=format&fit=crop',
+    summary: null, onlineMeetingLink: null, videoUrl: null, projectId: null, eventType: 'GENERAL', eventStatus: 'SCHEDULED', organizerId: '', companyId: null, audience: 'ALL', targetAcademicLevelIds: [], targetCourseIds: [], targetEducatorIds: [], targetStudentIds: [], targetDepartmentIds: [], targetParentIds: [], isRegistrationRequired: false, maxCapacity: null, isPaid: false, price: null, contactPerson: null, contactEmail: null, contactPhone: null, createdAt: null, updatedAt: null,
+    productCategoryId: null,
+    category: null,
+    subCategory: null,
+    subCategoryName: null
   },
   {
     id: 'fb-event-2',
     title: 'Volunteer Appreciation Picnic',
     description: 'A day to celebrate and thank our incredible volunteers for their dedication and hard work throughout the year.',
-    // startDateTime: '2025-09-01T12:00:00Z',
-    // eventTime: '12:00 PM',
-    startDateTime: new Date(), //'2025-08-10T08:00:00Z',
+    startDateTime: new Date(),
     endDateTime: new Date(),
     location: 'Community Gardens, CA',
-    imageUrl: 'https://images.unsplash.com/photo-1518621736915-f3b160292723?q=80&w=2670&auto=format&fit=crop',
-    summary: null,
-    onlineMeetingLink: null,
-    videoUrl: null,
-    projectId: null,
-    eventType: 'GENERAL',
-    eventStatus: 'SCHEDULED',
-    organizerId: '',
-    companyId: null,
-    audience: 'ALL',
-    targetAcademicLevelIds: [],
-    targetCourseIds: [],
-    targetEducatorIds: [],
-    targetStudentIds: [],
-    targetDepartmentIds: [],
-    targetParentIds: [],
-    isRegistrationRequired: false,
-    maxCapacity: null,
-    isPaid: false,
-    price: null,
-    contactPerson: null,
-    contactEmail: null,
-    contactPhone: null,
-    createdAt: null,
-    updatedAt: null
+    imageUrl: 'https://images.unsplash.com/photo-1518621736915-f3b160292723?q=80&w=600&auto=format&fit=crop',
+    summary: null, onlineMeetingLink: null, videoUrl: null, projectId: null, eventType: 'GENERAL', eventStatus: 'SCHEDULED', organizerId: '', companyId: null, audience: 'ALL', targetAcademicLevelIds: [], targetCourseIds: [], targetEducatorIds: [], targetStudentIds: [], targetDepartmentIds: [], targetParentIds: [], isRegistrationRequired: false, maxCapacity: null, isPaid: false, price: null, contactPerson: null, contactEmail: null, contactPhone: null, createdAt: null, updatedAt: null,
+    productCategoryId: null,
+    category: null,
+    subCategory: null,
+    subCategoryName: null
   },
   {
     id: 'fb-event-3',
     title: 'Winter Coat Drive',
     description: 'Help us collect warm coats for children and families in need this winter season to ensure everyone stays warm.',
-    // eventDate: '2025-10-20T09:00:00Z',
-    // eventTime: '9:00 AM - 4:00 PM',
-    startDateTime: new Date(), //'2025-08-10T08:00:00Z',
+    startDateTime: new Date(),
     endDateTime: new Date(),
     location: 'Headquarters Lobby',
-    imageUrl: 'https://images.unsplash.com/photo-1549429168-f9d936162391?q=80&w=2670&auto=format&fit=crop',
-    summary: null,
-    onlineMeetingLink: null,
-    videoUrl: null,
-    projectId: null,
-    eventType: 'GENERAL',
-    eventStatus: 'SCHEDULED',
-    organizerId: '',
-    companyId: null,
-    audience: 'ALL',
-    targetAcademicLevelIds: [],
-    targetCourseIds: [],
-    targetEducatorIds: [],
-    targetStudentIds: [],
-    targetDepartmentIds: [],
-    targetParentIds: [],
-    isRegistrationRequired: false,
-    maxCapacity: null,
-    isPaid: false,
-    price: null,
-    contactPerson: null,
-    contactEmail: null,
-    contactPhone: null,
-    createdAt: null,
-    updatedAt: null
+    imageUrl: 'https://images.unsplash.com/photo-1549429168-f9d936162391?q=80&w=600&auto=format&fit=crop',
+    summary: null, onlineMeetingLink: null, videoUrl: null, projectId: null, eventType: 'GENERAL', eventStatus: 'SCHEDULED', organizerId: '', companyId: null, audience: 'ALL', targetAcademicLevelIds: [], targetCourseIds: [], targetEducatorIds: [], targetStudentIds: [], targetDepartmentIds: [], targetParentIds: [], isRegistrationRequired: false, maxCapacity: null, isPaid: false, price: null, contactPerson: null, contactEmail: null, contactPhone: null, createdAt: null, updatedAt: null,
+    productCategoryId: null,
+    category: null,
+    subCategory: null,
+    subCategoryName: null
   },
 ];
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.15 } },
+  show: { opacity: 1, transition: { staggerChildren: 0.05 } },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 30 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.21, 0.47, 0.32, 0.98] } },
 };
 
-export default function EventsSection() {
-  const { storeFormData } = useStoreContext();
-  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.2 });
+export default function EventsSection({storeFormData}: {storeFormData: any}) {
+  // const { storeFormData } = useStoreContext();
+  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.15 });
 
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#FF5722';
   const eventsToRender = storeFormData?.events && Array.isArray(storeFormData?.events) && storeFormData.events.length > 0
-    ? storeFormData.events//.sort((a, b) => (a.order || 0) - (b.order || 0))
+    ? storeFormData.events
     : fallbackEvents;
+    
   const organizationSlug = storeFormData?.slug || 'non-profit';
 
   return (
-    <section id="events" className="py-20 md:py-32 bg-gray-50 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-16"
-        >
-          <p className="text-sm uppercase tracking-widest font-semibold mb-2" style={{ color: primaryColor }}>Get Involved</p>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
-            Upcoming Events
-          </h2>
-          <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-            Join our community at an upcoming event and help us make a difference.
-          </p>
-        </motion.div>
+    <section id="events" className="py-24 md:py-32 bg-white border-b border-slate-200 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Asynchronous Layout Header Block */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-end mb-16 md:mb-20">
+          <div className="lg:col-span-7 max-w-2xl">
+            <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-3">
+              Get Involved
+            </span>
+            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none">
+              Upcoming Events.
+            </h2>
+          </div>
+          <div className="lg:col-span-5">
+            <p className="text-sm text-slate-600 leading-relaxed">
+              Join our community coordinates at an upcoming gathering, summit, or localized operational drive to build lasting change directly in the field.
+            </p>
+          </div>
+        </div>
 
+        {/* Unified Display Grid */}
         <motion.div
           ref={ref}
           variants={containerVariants}
           initial="hidden"
           animate={inView ? "show" : "hidden"}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16"
         >
           {eventsToRender.slice(0, 3).map((evt) => {
-            const formattedDate = formatEventDate(evt.startDateTime.toLocaleDateString());
+            const dateMeta = formatEventDate(evt.startDateTime);
             return (
               <motion.div
                 key={evt.id}
                 variants={itemVariants}
-                className="bg-white rounded-3xl shadow-xl overflow-hidden group transition-all duration-500 hover:scale-105 hover:shadow-2xl"
+                className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:border-slate-300 transition-colors group flex flex-col justify-between"
               >
-                <div className="relative h-48 w-full">
+                {/* Visual Cover Wrapper */}
+                <div 
+                  className="relative aspect-[16/10] bg-slate-50 border-b border-slate-100 cursor-pointer overflow-hidden"
+                  onClick={() => mockRouterPush(`/${organizationSlug}/events/${evt.id}`)}
+                >
                   <Image
-                    src={evt.imageUrl || "https://placehold.co/128x128/D1D5DB/4B5563?text=Event+Image"}
-                    alt={evt.title || 'IEvent Image'}
+                    src={evt.imageUrl || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=600"}
+                    alt={evt.title || 'Event Context Poster'}
                     loader={loader}
                     fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    className="object-cover transition-transform duration-700 group-hover:scale-102"
                   />
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-gray-800 rounded-lg p-2 flex flex-col items-center shadow-lg">
-                    <span className="text-sm font-semibold uppercase">{formattedDate.month}</span>
-                    <span className="text-2xl font-extrabold" style={{ color: primaryColor }}>{formattedDate.day}</span>
-                  </div>
                 </div>
 
-                <div className="p-6 md:p-8">
-                  <h3 className="font-bold text-xl md:text-2xl mb-2 text-gray-900 leading-snug group-hover:text-blue-600 transition-colors" 
-                  // style={{ '--tw-hover-text-color': primaryColor }}
-                  >
-                    {evt.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm md:text-base line-clamp-3 mb-4">{evt.description}</p>
-                  <ul className="text-sm text-gray-500 space-y-2">
-                    <li className="flex items-center">
-                      <ClockIcon className="w-5 h-5 mr-2" style={{ color: primaryColor }} />
-                      <span>{evt.startDateTime.getTime()}</span>
-                    </li>
+                {/* Event Core Structural Meta Box */}
+                <div className="p-6 flex-1 flex flex-col justify-between">
+                  <div>
+                    {/* Normalized Inline Calendar String */}
+                    <div className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider">
+                      <CalendarDaysIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
+                      <span>{dateMeta.month} {dateMeta.day} • {dateMeta.time}</span>
+                    </div>
+
+                    <h3 
+                      className="font-bold text-lg text-slate-900 mb-2 tracking-tight line-clamp-1 cursor-pointer"
+                      onClick={() => mockRouterPush(`/${organizationSlug}/events/${evt.id}`)}
+                    >
+                      {evt.title}
+                    </h3>
+                    <p className="text-xs text-slate-600 leading-relaxed line-clamp-2 mb-6">
+                      {evt.description}
+                    </p>
+                  </div>
+
+                  {/* Context Block & Action Anchor Group */}
+                  <div className="space-y-4 pt-4 border-t border-slate-100">
                     {evt.location && (
-                      <li className="flex items-center">
-                        <MapPinIcon className="w-5 h-5 mr-2" style={{ color: primaryColor }} />
-                        <span>{evt.location}</span>
-                      </li>
+                      <div className="flex items-center text-xs font-semibold text-slate-500">
+                        <MapPinIcon className="w-4 h-4 mr-1.5 text-slate-400 flex-shrink-0" strokeWidth={2} />
+                        <span className="truncate">{evt.location}</span>
+                      </div>
                     )}
-                  </ul>
-                  <Link href={evt.id} onClick={(e) => { e.preventDefault(); mockRouterPush(evt.id); }} className="mt-6 block w-full text-center px-6 py-3 rounded-full font-semibold text-white shadow-lg transition-transform duration-300 transform group-hover:scale-105" style={{ backgroundColor: primaryColor }}>
-                    Learn More
-                  </Link>
+
+                    <button 
+                      onClick={() => mockRouterPush(`/${organizationSlug}/events/${evt.id}`)} 
+                      className="inline-flex items-center gap-1.5 text-xs font-black tracking-wider uppercase text-slate-900 group/btn transition-colors hover:text-slate-700 w-fit"
+                    >
+                      <span>Learn More</span>
+                      <ArrowRightIcon className="w-3.5 h-3.5 text-slate-400 transition-transform duration-300 group-hover/btn:translate-x-1" strokeWidth={2.5} />
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             );
           })}
         </motion.div>
 
-        <div className="mt-16 text-center">
-          <Link href={`/${organizationSlug}/events`} className="inline-flex items-center px-8 py-3 rounded-full font-semibold text-white shadow-lg transition duration-300 transform hover:scale-105" style={{ backgroundColor: primaryColor }}>
-            View All Events
-            <ArrowRightIcon className="w-5 h-5 ml-2" />
-          </Link>
+        {/* Central Action Row Footer */}
+        <div className="flex justify-center md:justify-start">
+          <button
+            onClick={() => mockRouterPush(`/${organizationSlug}/events`)}
+            className="px-6 py-3.5 bg-slate-900 text-white rounded-xl text-sm font-bold shadow-sm hover:bg-slate-800 transition-all active:scale-98"
+          >
+            Explore Full Calendar
+          </button>
         </div>
+
       </div>
     </section>
   );

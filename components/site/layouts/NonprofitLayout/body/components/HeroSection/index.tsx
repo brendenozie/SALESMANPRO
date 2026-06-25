@@ -1,13 +1,19 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-// Assuming useStoreContext is available and provides storeFormData
-import { useStoreContext } from '@/contexts/StoreContext'; // Keep this import for actual use
+import { motion, AnimatePresence } from 'framer-motion';
+import { useStoreContext } from '@/contexts/StoreContext';
+import { 
+  ArrowRightIcon, 
+  HeartIcon, 
+  ShieldCheckIcon, 
+  SparklesIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon
+} from '@heroicons/react/24/outline';
 
-// Define types based on your transformCompanyToStoreForm and Prisma schema
 export type HeroSlide = {
   id: string;
   imageUrl: string;
@@ -21,191 +27,279 @@ export type HeroSlide = {
 export type ThemeSettings = {
   primaryColor?: string;
   secondaryColor?: string;
-  accentColor?: string; // Added for more design flexibility
+  accentColor?: string;
 };
 
 export type StoreForm = {
   id?: string;
-  name?: string; // For the organization's name
-  tagline?: string; // For a catchy phrase
-  description?: string; // For a longer description
-  bannerUrl?: string; // General banner image
-  heroSlides?: HeroSlide[]; // Array of hero slides, if multiple are supported
+  name?: string;
+  tagline?: string;
+  description?: string;
+  bannerUrl?: string;
+  heroSlides?: HeroSlide[];
   themeSettings?: ThemeSettings;
-  // Add other relevant StoreForm fields if needed for this section
 };
 
-// --- START: Placeholder for useStoreContext (for independent running/demonstration) ---
-// In a real application, you would remove this placeholder and use the actual import.
-// const useStoreContext = () => ({
-//   storeFormData: {
-//     id: 'nonprofit-org-id',
-//     name: 'Global Impact Initiative', // More impactful organization name
-//     tagline: 'Empowering Communities, Transforming Futures', // Stronger tagline
-//     description: 'Join us in our mission to create sustainable change and uplift lives across the globe.', // More inspiring description
-//     bannerUrl: 'https://images.unsplash.com/photo-1579762635293-9c869911e3b5?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Diverse group of people collaborating
-//     heroSlides: [
-//       {
-//         id: 'hero-slide-1',
-//         imageUrl: 'https://images.unsplash.com/photo-1579762635293-9c869911e3b5?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-//         headline: 'Empowering Communities, Transforming Futures Together', // Enhanced headline
-//         subline: 'Your support enables us to provide education, healthcare, and sustainable development to those who need it most.', // More specific subline
-//         ctaText: 'Discover Our Initiatives',
-//         ctaLink: '/initiatives',
-//         order: 1,
-//       },
-//       // You can add more hero slides here if your design supports a carousel
-//     ],
-//     themeSettings: {
-//       primaryColor: "#3B82F6", // A vibrant blue for primary actions
-//       secondaryColor: "#FFFFFF", // White for secondary actions/text
-//       accentColor: "#FCD34D", // A warm yellow for highlights
-//     },
-//   } as StoreForm,
-// });
-// --- END: Placeholder ---
-
-// Optimized image loader for Next.js Image component
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
+  return `${src}?w=${width}&q=${quality || 80}`;
 };
 
-// Framer Motion variants for staggered animations
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1, // Stagger children elements by 0.1 seconds
-      delayChildren: 0.3,   // Start animating children after 0.3 seconds
-    },
+// Clean fallback slides to ensure visual elegance if data is missing
+const DEFAULT_SLIDES: HeroSlide[] = [
+  {
+    id: 'default-1',
+    imageUrl: 'https://images.unsplash.com/photo-1579762635293-9c869911e3b5?q=80&w=2670&auto=format&fit=crop',
+    headline: 'Empowering Communities, Transforming Futures Together',
+    subline: 'Your support enables us to provide education, healthcare, and sustainable development to those who need it most.',
+    ctaText: 'Discover Our Initiatives',
+    ctaLink: '/initiatives',
+    order: 1,
   },
-};
-
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: {
-      type: "spring",
-      stiffness: 100,
-      damping: 10,
-    },
+  {
+    id: 'default-2',
+    imageUrl: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=2670&auto=format&fit=crop',
+    headline: 'Providing Quality Education To Every Child',
+    subline: 'We build classrooms, supply essential learning materials, and train local educators to spark lifelong opportunities.',
+    ctaText: 'Explore Educational Programs',
+    ctaLink: '/programs/education',
+    order: 2,
   },
-};
+  {
+    id: 'default-3',
+    imageUrl: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?q=80&w=2670&auto=format&fit=crop',
+    headline: 'Delivering Vital Health Solutions Globally',
+    subline: 'Establishing clean water sources, mobile medical clinics, and persistent nutritional support to remote regions.',
+    ctaText: 'Support Healthcare Missions',
+    ctaLink: '/programs/health',
+    order: 3,
+  }
+];
 
-const wordVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: "spring",
-      stiffness: 100,
-      damping: 10,
-    },
-  },
-};
+export default function HeroSection({storeFormData}: {storeFormData: StoreForm}) {
+  // const { storeFormData } = useStoreContext();
 
-export default function HeroSection() {
-  const { storeFormData } = useStoreContext();
+  // Color Configurations - Pure colors, no gradients
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#2563EB'; // Professional Royal Blue
+  const secondaryColor = storeFormData?.themeSettings?.secondaryColor || '#FFFFFF'; // Clean White
+  const accentColor = storeFormData?.themeSettings?.accentColor || '#D97706'; // Flat Ochre/Amber
 
-  // Dynamic colors from storeFormData
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#3B82F6'; // Default Vibrant Blue
-  const secondaryColor = storeFormData?.themeSettings?.secondaryColor || '#FFFFFF'; // Default White
-  const accentColor = storeFormData?.themeSettings?.accentColor || '#FCD34D'; // Default Warm Yellow
+  // Extract custom slides or fallback to high-quality defaults
+  const slides: HeroSlide[] = (storeFormData?.heroSlides && storeFormData.heroSlides.length > 0)
+    ? [...storeFormData.heroSlides].sort((a, b) => a.order - b.order)
+    : DEFAULT_SLIDES;
 
-  // Determine the active hero slide or use defaults
-  const activeHeroSlide = storeFormData?.heroSlides?.[0];
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [direction, setDirection] = useState<'forward' | 'backward'>('forward');
 
-  const headline = activeHeroSlide?.headline || storeFormData?.tagline || 'Empowering Communities, Transforming Futures Together';
-  const subtitle = activeHeroSlide?.subline || storeFormData?.description || 'Your support enables us to provide education, healthcare, and sustainable development to those who need it most.';
-  const ctaButton1Label = activeHeroSlide?.ctaText || 'Discover Our Initiatives';
-  const ctaButton1Link = activeHeroSlide?.ctaLink || '/initiatives';
-  const heroImage = activeHeroSlide?.imageUrl || storeFormData?.bannerUrl || "/default-hero.jpg"; // Updated default image name
-
-  // Mock router for demonstration (replace with actual useRouter in a Next.js app)
-  const mockRouterPush = (path: string) => {
-    console.log(`Navigating to: ${path}`);
-    // window.location.href = path; // Uncomment for actual redirection
+  // Slide navigation handlers
+  const handleNext = () => {
+    setDirection('forward');
+    setCurrentIdx((prev) => (prev + 1) % slides.length);
   };
 
+  const handlePrev = () => {
+    setDirection('backward');
+    setCurrentIdx((prev) => (prev - 1 + slides.length) % slides.length);
+  };
+
+  const activeSlide = slides[currentIdx];
+
+  // Dynamic image error handler
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.onerror = null;
-    e.currentTarget.src = "https://placehold.co/1920x1080/4F46E5/FFFFFF?text=Hero+Image+Unavailable"; // Brighter placeholder
+    e.currentTarget.src = "https://images.unsplash.com/photo-1509099836639-18ba1795216d?q=80&w=2000";
+  };
+
+  // Framer Motion layout configurations for transitions
+  const slideVariants = {
+    enter: (dir: 'forward' | 'backward') => ({
+      x: dir === 'forward' ? 100 : -100,
+      opacity: 0
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      transition: { type: 'spring', stiffness: 100, damping: 18 }
+    },
+    exit: (dir: 'forward' | 'backward') => ({
+      x: dir === 'forward' ? -100 : 100,
+      opacity: 0,
+      transition: { duration: 0.2 }
+    })
   };
 
   return (
-    <section id="home" className="relative h-screen min-h-[600px] flex items-center justify-center text-white overflow-hidden font-sans">
-      <div className="absolute inset-0">
-        <Image
-          src={heroImage}
-          alt="Diverse group of people collaborating on a community project"
-          fill
-          className="object-cover brightness-[0.5] contrast-[0.9] saturate-[1.1]" // More nuanced image adjustments
-          loader={loader}
-          priority
-          onError={handleImageError}
-        />
-        {/* Dynamic gradient overlay for better text contrast and visual depth */}
-        <div
-          className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/30 to-transparent"
-          style={{
-            // Optionally, you can make the gradient dynamic based on primary color
-            // backgroundImage: `linear-gradient(to bottom right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)`
-          }}
-        />
+    <section id="home" className="relative min-h-screen lg:h-screen flex items-center justify-center bg-slate-50 text-slate-900 overflow-hidden font-sans pt-24 pb-16 lg:py-0">
+      
+      {/* Light Professional Grid Overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:40px_40px] opacity-[0.4] pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        
+        {/* Left Column: Typography Content & Controls */}
+        <div className="lg:col-span-7 flex flex-col justify-between h-full space-y-8 lg:space-y-12">
+          
+          <AnimatePresence mode="wait" custom={direction}>
+            <motion.div 
+              key={activeSlide.id}
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              className="space-y-6 sm:space-y-8 text-left"
+            >
+              {/* Top Trust Badge */}
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-semibold tracking-wide text-slate-700">
+                <SparklesIcon className="w-4 h-4 text-amber-600" />
+                <span>Featured Cause of the Month</span>
+              </div>
+
+              {/* Headline with strategic flat accent coloring */}
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] text-slate-900">
+                {activeSlide.headline.split(' ').map((word, index) => {
+                  const highlightWords = ["Empowering", "Transforming", "Together", "Futures", "Communities", "Quality", "Education", "Vital", "Health"];
+                  const cleanWord = word.replace(/[.,]/g, "");
+                  const isHighlighted = highlightWords.includes(cleanWord);
+                  
+                  return (
+                    <span key={index} className="inline-block mr-2.5">
+                      {isHighlighted ? (
+                        <span className="font-extrabold" style={{ color: accentColor }}>
+                          {word}
+                        </span>
+                      ) : (
+                        word
+                      )}
+                    </span>
+                  );
+                })}
+              </h1>
+
+              {/* Subtitle Description */}
+              <p className="text-base sm:text-lg lg:text-xl text-slate-600 leading-relaxed max-w-2xl font-light">
+                {activeSlide.subline}
+              </p>
+
+              {/* CTAs */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
+                <Link
+                  href={activeSlide.ctaLink}
+                  className="group relative flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-base transition-all duration-200 shadow-md active:scale-[0.98]"
+                  style={{ backgroundColor: primaryColor, color: secondaryColor }}
+                >
+                  <span>{activeSlide.ctaText}</span>
+                  <ArrowRightIcon className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+                </Link>
+
+                <Link
+                  href="/#donate"
+                  className="group flex items-center justify-center gap-2 border-2 border-slate-300 hover:border-slate-400 bg-white px-8 py-4 rounded-xl font-bold text-base text-slate-800 transition-all duration-200 active:scale-[0.98] shadow-sm"
+                >
+                  <HeartIcon className="w-5 h-5 text-rose-500 group-hover:scale-105 transition-transform" />
+                  <span>Make a Direct Donation</span>
+                </Link>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Controls & Mini Bar */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pt-6 border-t border-slate-200 w-full">
+            
+            {/* Slide Navigation Selectors */}
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={handlePrev}
+                className="p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition-all shadow-sm active:scale-95"
+                aria-label="Previous Slide"
+              >
+                <ChevronLeftIcon className="w-5 h-5" />
+              </button>
+
+              {/* Horizontal Progress Indicators */}
+              <div className="flex items-center gap-2">
+                {slides.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setDirection(idx > currentIdx ? 'forward' : 'backward');
+                      setCurrentIdx(idx);
+                    }}
+                    className={`h-2.5 rounded-full transition-all duration-300 ${
+                      idx === currentIdx ? 'w-8 bg-slate-900' : 'w-2.5 bg-slate-200 hover:bg-slate-300'
+                    }`}
+                    aria-label={`Go to slide ${idx + 1}`}
+                  />
+                ))}
+              </div>
+
+              <button 
+                onClick={handleNext}
+                className="p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition-all shadow-sm active:scale-95"
+                aria-label="Next Slide"
+              >
+                <ChevronRightIcon className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Verification Metadata */}
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <ShieldCheckIcon className="w-5 h-5 text-emerald-600" />
+              <span>Verified 501(c)(3) Public Charity</span>
+            </div>
+
+          </div>
+        </div>
+
+        {/* Right Column: Visual Image frame with floating non-gradient metric blocks */}
+        <div className="lg:col-span-5 relative flex justify-center items-center w-full aspect-square max-w-[500px] lg:max-w-none mx-auto">
+          
+          <AnimatePresence mode="wait">
+            <motion.div 
+              key={activeSlide.id}
+              initial={{ scale: 0.96, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.96, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="relative w-full h-full rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 shadow-xl"
+            >
+              <Image
+                src={activeSlide.imageUrl}
+                alt="Community Empowerment Visual representation"
+                fill
+                className="object-cover"
+                loader={loader}
+                priority
+                onError={handleImageError}
+                sizes="(max-w-1024px) 100vw, 45vw"
+              />
+              {/* Flat color protective screen layer for crisp readability */}
+              <div className="absolute inset-0 bg-slate-900/[0.04]" />
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Transparent-free glassmorphic/flat style metrics */}
+          <div className="absolute -bottom-4 -left-4 sm:left-6 bg-white border border-slate-200 p-4 rounded-xl shadow-lg flex items-center gap-4 max-w-[240px]">
+            <div className="p-3 bg-emerald-50 text-emerald-700 rounded-lg font-bold text-lg border border-emerald-100">
+              94%
+            </div>
+            <div>
+              <p className="text-xs text-slate-500 font-bold tracking-wider uppercase leading-none">Funding Efficacy</p>
+              <p className="text-sm font-bold text-slate-800 mt-1">Direct deployment to field operations</p>
+            </div>
+          </div>
+
+          <div className="absolute -top-4 -right-4 bg-white border border-slate-200 px-5 py-3.5 rounded-xl shadow-lg hidden sm:flex flex-col gap-0.5 text-right">
+            <span className="text-2xl font-black text-slate-900 tracking-tight" style={{ color: primaryColor }}>
+              120,000+
+            </span>
+            <span className="text-xs uppercase tracking-wider font-semibold text-slate-500">
+              Uplifted Global Lives
+            </span>
+          </div>
+
+        </div>
       </div>
-
-      <motion.div
-        className="relative z-10 max-w-5xl mx-auto py-16 px-6 sm:px-8 lg:px-12 text-center"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        <motion.h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold leading-tight mb-6 tracking-tight drop-shadow-lg" variants={itemVariants}>
-          {headline.split(' ').map((word, index) => (
-            <motion.span key={index} className="inline-block mr-2" variants={wordVariants}>
-              {word === "Empowering" || word === "Transforming" || word === "Together" ? (
-                <span style={{ color: accentColor }}>{word}</span>
-              ) : (
-                word
-              )}
-            </motion.span>
-          ))}
-        </motion.h1>
-
-        <motion.p className="mt-4 text-lg sm:text-xl lg:text-2xl max-w-3xl mx-auto leading-relaxed opacity-90 drop-shadow-md" variants={itemVariants}>
-          {subtitle}
-        </motion.p>
-
-        <motion.div
-          className="mt-12 flex flex-col sm:flex-row space-y-5 sm:space-y-0 sm:space-x-6 justify-center"
-          variants={itemVariants} // Animate the button container
-        >
-          <Link
-            href={ctaButton1Link}
-            className="px-10 py-4 rounded-full font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-xl"
-            style={{ backgroundColor: primaryColor, color: secondaryColor }}
-          >
-            {ctaButton1Label}
-          </Link>
-          <motion.button
-            onClick={() => mockRouterPush('/donate')}
-            className="border-2 px-10 py-4 rounded-full font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
-            style={{ borderColor: secondaryColor, color: secondaryColor, backgroundColor: 'transparent' }}
-            // Apply hover styles directly with motion for smoother transitions
-            whileHover={{
-              backgroundColor: secondaryColor,
-              color: primaryColor,
-              borderColor: secondaryColor,
-            }}
-          >
-            Make a Donation
-          </motion.button>
-        </motion.div>
-      </motion.div>
     </section>
   );
 }
