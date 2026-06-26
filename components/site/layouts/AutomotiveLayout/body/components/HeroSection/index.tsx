@@ -43,7 +43,8 @@ const defaultSlides: HeroSlide[] = [
     order: 0,
     iconKey: null,
     backgroundColor: null,
-    textColor: null
+    textColor: null,
+    stats: null
   }
 ];
 
@@ -116,7 +117,7 @@ export default function LuxuryCommandHero({
             className="absolute inset-0"
           >
             <Image
-              src={heroSlides[current].imageUrl || defaultSlides[0].imageUrl}
+              src={heroSlides[current].imageUrl || defaultSlides[0].imageUrl || "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2560"}
               alt="Hero Background"
               fill
               className="object-cover brightness-[0.5] dark:brightness-[0.35] saturate-[1.1]"
@@ -146,19 +147,34 @@ export default function LuxuryCommandHero({
           </span>
         </motion.div>
 
-        {/* Headline */}
-        <div className="mb-12 md:mb-16 text-center select-none w-full max-w-6xl">
+        {/* Headline & Subline Container */}
+        <div className="mb-12 md:mb-16 text-center select-none w-full max-w-5xl mx-auto flex flex-col items-center">
           <AnimatePresence mode="wait">
-            <motion.h1
+            <motion.div
               key={current}
               initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
               animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
               exit={{ opacity: 0, y: -20, filter: "blur(8px)" }}
               transition={{ duration: 0.8, ease: "easeOut" }}
-              className="text-5xl sm:text-7xl md:text-[8rem] font-[900] leading-[0.9] tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-white/90 to-white/50 uppercase drop-shadow-2xl whitespace-pre-line"
+              className="flex flex-col items-center gap-6"
             >
-              {heroSlides[current].headline}
-            </motion.h1>
+              {/* Scaled Responsive Headline */}
+              <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] xl:text-[6.5rem] font-[900] leading-[0.95] tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-white/90 to-white/50 uppercase drop-shadow-2xl whitespace-pre-line">
+                {heroSlides[current].headline}
+              </h1>
+
+              {/* Added Subline for Better Engagement */}
+              {heroSlides[current].subline && (
+                <motion.p 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3, duration: 0.8 }}
+                  className="text-base sm:text-lg md:text-xl font-medium text-white/80 max-w-2xl leading-relaxed tracking-wide drop-shadow-md"
+                >
+                  {heroSlides[current].subline}
+                </motion.p>
+              )}
+            </motion.div>
           </AnimatePresence>
         </div>
 

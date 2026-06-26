@@ -9,7 +9,6 @@ import {
   ChevronDownIcon,
   SparklesIcon,
   TicketIcon,
-  FireIcon,
 } from "@heroicons/react/24/outline";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
@@ -179,7 +178,8 @@ export default function HeroSection({
                 animate="center"
                 exit="exit"
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="text-4xl sm:text-6xl md:text-8xl font-black text-white leading-[0.95] tracking-tight uppercase italic drop-shadow-2xl font-sans"
+                // UPDATED SIZING CLASSES HERE:
+                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[5.5rem] font-black text-white leading-[0.95] tracking-tight uppercase italic drop-shadow-2xl font-sans"
               >
                 {heroSlides[current].headline?.split("\n").map((line, i) => (
                   <span key={i} className="block bg-gradient-to-b from-white via-white to-neutral-300 bg-clip-text text-transparent">
