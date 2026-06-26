@@ -118,7 +118,7 @@ export default function CorporateProfileSection({pagedata}: {pagedata: any}) {
                 src={pagedata.bannerUrl || enterpriseData.profileImageUrl}
                 alt="Institutional trading desk operations tracking bulk commodities markets"
                 fill
-                className="w-full h-full object-cover grayscale opacity-80 mix-blend-luminosity transform hover:scale-102 transition-transform duration-700"
+                className="w-full h-full object-cover opacity-80 transform hover:scale-102 transition-transform duration-700"
                 sizes="(max-width: 1024px) 100vw, 40vw"
                 priority
                 loader={({ src }) => `${src}?q=80&w=800&auto=format&fit=crop`}

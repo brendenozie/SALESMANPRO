@@ -215,7 +215,7 @@ export default function GreyServicesSection({ services = defaultServices, storeS
                     alt={activeService.name}
                     className="object-cover w-full h-full scale-100 transition-transform duration-700 ease-out"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent" />
+                  {/* <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent" /> */}
                   
                   {/* Dynamic Floating Glass Badge */}
                   <div className="absolute bottom-4 right-4 backdrop-blur-lg bg-zinc-900/70 border border-zinc-700/60 p-3 rounded-xl text-right min-w-[110px]">

@@ -43,7 +43,7 @@ export default async function BlogsPage({ params, searchParams }: PageProps) {
   const resolvedSearchParams = await searchParams;
   const cookieHeader = (await cookies()).toString();
 
-  const baseCompany = await findCompanyCached(slug, "lean");
+  const baseCompany = await findCompanyCached(slug, "page");
     if (!baseCompany) notFound();
   
   const page = typeof resolvedSearchParams.page === "string" ? parseInt(resolvedSearchParams.page, 10) : 1;
@@ -99,7 +99,7 @@ export default async function BlogsPage({ params, searchParams }: PageProps) {
     <BlogsClient
       companyId={baseCompany.id}
       categoriesData={categoriesData}
-      blogs={blogsData}
+      blogs={blogsData.length > 0 ? blogsData : baseCompany?.blogs && Array.isArray(baseCompany.blogs) && baseCompany.blogs.length > 0 ? baseCompany.blogs : []}
       totalItems={totalItems}
       totalPages={totalPages}
       currentPage={page}

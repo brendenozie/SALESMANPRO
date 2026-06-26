@@ -194,7 +194,7 @@ export default function NewsSection({pagedata}: {pagedata: any}) {
                     loader={loader}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover grayscale opacity-60 mix-blend-luminosity transition-transform duration-700 ease-out group-hover:scale-102 group-hover:opacity-75"
+                    className="object-cover opacity-60 transition-transform duration-700 ease-out group-hover:scale-102 group-hover:opacity-75"
                   />
                   {/* Category Micro Tag */}
                   <div className="absolute top-4 left-4 z-10 bg-zinc-950/80 backdrop-blur-md border border-zinc-800 text-[10px] font-mono tracking-wider uppercase text-zinc-400 px-2.5 py-1 rounded-md">
@@ -232,17 +232,17 @@ export default function NewsSection({pagedata}: {pagedata: any}) {
 
               {/* Action Vector Footers */}
               <div className="px-6 md:px-8 pb-6 pt-2">
-                {/* <Link 
-                  href={`/${organizationSlug}/blog/${brief.slug}`} 
-                  onClick={(e) => { 
-                    e.preventDefault(); 
-                    mockRouterPush(`/${organizationSlug}/blog/${brief.slug}`); 
-                  }} 
+                <Link 
+                  href={`/companyprofile/blog/${brief.slug}`} 
+                  // onClick={(e) => { 
+                  //   e.preventDefault(); 
+                  //   mockRouterPush(`/${organizationSlug}/blog/${brief.slug}`); 
+                  // }} 
                   className="inline-flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-zinc-300 hover:text-white transition-colors group/link"
                 >
                   Access Intelligence
                   <ArrowRightIcon className="w-3.5 h-3.5 text-zinc-500 group-hover/link:translate-x-1 group-hover/link:text-amber-500 transition-all" />
-                </Link> */}
+                </Link>
               </div>
 
             </motion.div>
@@ -251,13 +251,13 @@ export default function NewsSection({pagedata}: {pagedata: any}) {
 
         {/* Centered Institutional Core CTA */}
         <div className="mt-16 flex justify-center">
-          {/* <Link 
-            href={`/${organizationSlug}/blog`} 
+          <Link 
+            href={`/companyprofile/blog`} 
             className="inline-flex items-center gap-3 border border-zinc-800 bg-zinc-900/20 hover:bg-zinc-900/50 hover:border-zinc-700 text-zinc-200 hover:text-white font-bold py-3.5 px-8 rounded-xl text-xs tracking-wider uppercase transition-all duration-300 shadow-lg"
           >
             Review Full Intelligence Hub
             <ArrowRightIcon className="w-4 h-4 text-zinc-500" />
-          </Link> */}
+          </Link>
         </div>
 
       </div>

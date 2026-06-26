@@ -51,7 +51,7 @@ export default function CompanyPortfolioSite({ pageData, companyId }: { pageData
         <AboutUsSpotlight pagedata={pageData} />
 
         {/* Our Programs / Featured Causes */}
-        {/* <ProgramsCausesSection /> */}
+        <ProgramsCausesSection pagedata={pageData} />
 
         {/* Impact Stats */}
         <ImpactStatsSection pagedata={pageData} />
