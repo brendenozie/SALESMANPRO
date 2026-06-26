@@ -69,7 +69,7 @@ export default async function Page({ params }: PageProps) {
   return (
     <ProductPageClient 
       listing={serializedListing} 
-      similarListings={serializedSimilar} 
+      related={serializedSimilar} 
     />
   );
 }
