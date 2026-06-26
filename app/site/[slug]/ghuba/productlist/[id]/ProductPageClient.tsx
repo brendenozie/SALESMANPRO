@@ -1,27 +1,80 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, memo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
-// HeroIcons
-import { 
-  MapPinIcon, StarIcon, WifiIcon, SunIcon, TruckIcon, ShieldCheckIcon, 
-  CheckCircleIcon, BeakerIcon, Square2StackIcon, ChatBubbleLeftRightIcon, 
-  PhoneIcon, CalendarDaysIcon, XMarkIcon, ChevronLeftIcon, ChevronRightIcon,
-  ShareIcon, HeartIcon, HomeIcon, UserIcon, InformationCircleIcon,
-  FireIcon, BoltIcon, KeyIcon, VideoCameraIcon, CalendarIcon, ClockIcon, 
-  EnvelopeIcon, UsersIcon, ShoppingBagIcon, PlusIcon, MinusIcon, ArrowLeftIcon 
-} from "@heroicons/react/24/outline";
+// --- HERO ICONS ---
+import {
+  WifiIcon,
+  SunIcon,
+  ShieldCheckIcon,
+  TruckIcon,
+  BoltIcon,
+  FireIcon,
+  KeyIcon,
+  VideoCameraIcon,
+  CheckCircleIcon,
+  Square2StackIcon,
+  HomeIcon,
+  BeakerIcon,
+  MinusIcon,
+  PlusIcon,
+  ShoppingBagIcon,
+  CalendarDaysIcon,
+  XMarkIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ArrowLeftIcon,
+  ShareIcon,
+  HeartIcon,
+  MapPinIcon,
+  StarIcon,
+  InformationCircleIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  ClockIcon,
+  UserGroupIcon
+} from "@heroicons/react/24/solid";
 
-// Context & Components (Adjust paths based on your actual structure)
+import { UserIcon } from "@heroicons/react/24/outline";
 import { useStateContext } from "@/contexts/ContextProvider";
-import WhatsAppInquiry from "@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry";
+import { useRouter } from "next/navigation";
 import GhubaProductCard from "@/components/site/layouts/GhubaLayout/body/components/GhubaProductCard";
 
-// --- HELPERS ---
+type ProductType = "PROPERTY" | "AUTO" | "ECOMMERCE";
+
+const resolveProductType = (listing: any): ProductType => {
+  const cat =  listing.productCategory?.name?.toLowerCase() || (listing.category || "").toLowerCase() ;
+  if (
+    cat.includes("property") ||
+    cat.includes("real estate") ||
+    listing.bedrooms ||
+    listing.area
+  ) {
+    return "PROPERTY";
+  }
+  if (
+    cat.includes("automotive") ||
+    cat.includes("car") || cat.includes("cars") ||
+    cat.includes("vehicle") ||
+    listing.mileage ||
+    listing.engineSize
+  ) {
+    return "AUTO";
+  }
+  return "ECOMMERCE";
+};
+
+const withCapabilities = (listing: any, type: ProductType) => ({
+  ...listing,
+  capabilities: {
+    canAddToCart: type === "ECOMMERCE",
+    canBookSession: type === "PROPERTY",
+    canInquire: type === "AUTO",
+  },
+});
 
 const customLoader = ({ src, width, quality }: { src: string; width?: number; quality?: number }) => {
   return width ? `${src}?w=${width}&q=${quality || 75}` : src;
@@ -40,6 +93,29 @@ const getAmenityIcon = (value: string) => {
   return CheckCircleIcon; 
 };
 
+// Sub-components
+const StatItem = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number }) => (
+  <div className="flex flex-col gap-1">
+    <div className="flex items-center gap-2 text-slate-400 dark:text-zinc-500 mb-1">
+      {icon}
+      <span className="text-[10px] font-bold uppercase tracking-widest">{label}</span>
+    </div>
+    <span className="font-black text-slate-900 dark:text-white truncate">{value || "N/A"}</span>
+  </div>
+);
+
+const UnitCard = ({ unit, type }: { unit: any; type: string }) => (
+  <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 shadow-sm flex items-center justify-between">
+    <div>
+      <span className="text-xs font-bold text-emerald-500 uppercase tracking-widest">{type}</span>
+      <h4 className="font-black text-slate-900 dark:text-white mt-1">{unit.type || unit.name}</h4>
+    </div>
+    <div className="w-10 h-10 rounded-full bg-slate-50 dark:bg-zinc-950 flex items-center justify-center text-slate-400">
+      <CheckCircleIcon className="w-5 h-5" />
+    </div>
+  </div>
+);
+
 const FormField = ({ label, icon: Icon, children }: any) => (
   <div className="space-y-1.5">
     {label && (
@@ -48,28 +124,26 @@ const FormField = ({ label, icon: Icon, children }: any) => (
       </label>
     )}
     <div className="relative group">
-      <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors group-focus-within:text-emerald-600 dark:group-focus-within:text-emerald-400">
-        <Icon className="w-5 h-5 text-slate-400 dark:text-zinc-500" />
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors group-focus-within:text-emerald-600 dark:group-focus-within:text-emerald-400 z-10">
+        <Icon className="w-5 h-5 text-slate-400 dark:text-zinc-500 transition-colors" />
       </div>
       {children}
     </div>
   </div>
 );
 
-// --- MAIN COMPONENT ---
+/* ======================================================
+   MAIN COMPONENT
+====================================================== */
 
 export default function GhubaProductDetail({ listing, related }: { listing: any; related: any[] }) {
   const router = useRouter();
   const { addToCart, decreaseQuantity, cart } = useStateContext();
   const { data: session } = useSession();
 
-  // Determine Item Type dynamically based on data structure
-  const itemType = useMemo(() => {
-    const cat = (listing.category || "").toLowerCase();
-    if (cat.includes("property") || cat.includes("real estate") || listing.bedrooms) return "PROPERTY";
-    if (cat.includes("auto") || cat.includes("cars") || cat.includes("vehicle") || listing.mileage) return "AUTO";
-    return "ECOMMERCE";
-  }, [listing]);
+  // Determine Item Type dynamically based on data structure (ECOMMERCE, PROPERTY, AUTO)
+  const itemType = useMemo(() => resolveProductType(listing), [listing]);
+  const product = useMemo(() => withCapabilities(listing, itemType), [listing, itemType]);
 
   // -- STATE: Gallery --
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
@@ -90,6 +164,14 @@ export default function GhubaProductDetail({ listing, related }: { listing: any;
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [pageUrl, setPageUrl] = useState("");
   const [mounted, setMounted] = useState(false);
+  const [likedItems, setLikedItems] = useState<Record<string, boolean>>({});
+  
+  const toggleLike = (id: string) => {
+    setLikedItems((prev: Record<string, boolean>) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
 
   useEffect(() => {
     setPageUrl(window.location.href);
@@ -227,7 +309,6 @@ export default function GhubaProductDetail({ listing, related }: { listing: any;
   const hasDiscount = liveSellingPrice > liveFinalPrice;
 
   // --- SUB-RENDERERS ---
-  
   const renderBentoGallery = () => (
     <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-2 md:gap-4 h-[400px] md:h-[550px] rounded-[2rem] overflow-hidden mb-12 shadow-2xl shadow-slate-200/50 dark:shadow-none bg-slate-100 dark:bg-zinc-900">
       <div className="col-span-1 md:col-span-2 md:row-span-2 relative group cursor-pointer overflow-hidden" onClick={() => setIsGalleryOpen(true)}>
@@ -249,7 +330,7 @@ export default function GhubaProductDetail({ listing, related }: { listing: any;
   );
 
   const renderSpecsGrid = () => {
-    if (itemType === "PROPERTY") {
+    if (itemType === "PROPERTY" || itemType === "REAL ESTATE") {
       const bedroomCount = listing.bedrooms?.length > 0 ? listing.bedrooms[0].type : "N/A";
       const displayArea = listing.area ? `${listing.area.toLocaleString()} sqft` : "TBD";
       return (
@@ -261,7 +342,7 @@ export default function GhubaProductDetail({ listing, related }: { listing: any;
         </div>
       );
     }
-    if (itemType === "AUTO") {
+    if (itemType === "AUTO" || itemType === "AUTOMOTIVE" || itemType === "VEHICLE" || itemType === "CAR" || itemType === "MOTORCYCLE" || itemType === "Cars") {
       return (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-6 bg-white dark:bg-zinc-900 rounded-3xl border border-slate-100 dark:border-zinc-800 shadow-sm">
           <StatItem icon={<BoltIcon className="w-6 h-6" />} label="Engine" value={`${listing.engineSize || ''}L ${listing.engineType || ''}`} />
@@ -504,12 +585,18 @@ export default function GhubaProductDetail({ listing, related }: { listing: any;
                     <h3 className="text-3xl font-black mb-1">{host.name}</h3>
                     <p className="text-emerald-400 text-xs font-black uppercase tracking-widest mb-6">{host.role}</p>
                     <div className="flex flex-wrap justify-center sm:justify-start gap-4">
-                      <button onClick={() => { setModalType("inquiry"); setIsScheduleOpen(true); }} className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 transition-colors rounded-xl font-bold">
-                        <ChatBubbleLeftRightIcon className="w-5 h-5" /> Message
+                      <button 
+                        onClick={() => { setModalType("inquiry"); setIsScheduleOpen(true); }} 
+                        className="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-white font-bold text-sm transition-colors flex items-center gap-2"
+                      >
+                        <EnvelopeIcon className="w-5 h-5" /> Message
                       </button>
                       {host.phone && (
-                        <a href={`tel:${host.phone}`} className="flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 transition-colors rounded-xl font-bold">
-                          <PhoneIcon className="w-5 h-5" /> Call Dealer
+                        <a 
+                          href={`tel:${host.phone}`} 
+                          className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 rounded-xl text-white font-bold text-sm shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2"
+                        >
+                          <PhoneIcon className="w-5 h-5" /> Call Now
                         </a>
                       )}
                     </div>
@@ -518,154 +605,130 @@ export default function GhubaProductDetail({ listing, related }: { listing: any;
               </div>
             )}
           </div>
-
+          
           {/* --- SIDEBAR --- */}
-          <div className="lg:col-span-1 hidden lg:block">
+          <div className="lg:col-span-1">
             {renderActionSidebar()}
           </div>
         </div>
 
         {/* --- RELATED ITEMS --- */}
-        {related?.length > 0 && (
-          <section className="mt-32">
-            <div className="flex items-end justify-between mb-10">
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500 mb-2 block">Curated Collection</span>
-                <h2 className="text-3xl md:text-4xl font-black uppercase italic tracking-tight">You Might Also Like</h2>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {related.slice(0, 4).map(r => <GhubaProductCard key={r.id} product={r} />)}
+        {related && related.length > 0 && (
+          <section className="mt-24">
+            <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-8">You Might Also Like</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {related.slice(0, 4).map((item, idx) => (
+                <GhubaProductCard 
+                  key={product._id || product.id}
+                  product={product} 
+                  toggleLike={toggleLike} 
+                  likedItems={[]} 
+                  addToCart={addToCart} 
+                />
+              ))}
             </div>
           </section>
         )}
       </main>
 
-      {/* --- SCHEDULING MODAL (Property/Auto) --- */}
+      {/* --- SCHEDULING / INQUIRY MODAL (Fully Completed) --- */}
       <AnimatePresence>
         {isScheduleOpen && (
-          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsScheduleOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-            <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className="relative w-full max-w-xl bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-2xl overflow-y-auto max-h-[90vh] border border-slate-100 dark:border-zinc-800">
-              <button onClick={() => setIsScheduleOpen(false)} className="absolute top-6 right-6 z-10 p-2 bg-slate-50 dark:bg-zinc-800 rounded-full hover:scale-95 transition-transform">
-                <XMarkIcon className="w-6 h-6 text-slate-500" />
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
+            className="fixed inset-0 z-[120] bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} 
+              className="bg-white dark:bg-zinc-900 rounded-[2.5rem] w-full max-w-lg p-8 relative shadow-2xl overflow-hidden"
+            >
+              <button onClick={() => setIsScheduleOpen(false)} className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors bg-slate-100 dark:bg-zinc-800 p-2 rounded-full">
+                <XMarkIcon className="w-5 h-5" />
               </button>
-              
-              <div className="p-8 md:p-12">
-                {isSuccess ? (
-                  <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-12">
-                    <div className="w-24 h-24 bg-emerald-50 dark:bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <CheckCircleIcon className="w-12 h-12 text-emerald-500" />
+
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2">
+                {modalType === "showing" ? "Schedule a Tour" : "Send an Inquiry"}
+              </h2>
+              <p className="text-slate-500 dark:text-zinc-400 text-sm mb-8">
+                {modalType === "showing" ? "Pick a date and time that works best for you." : "We'll get back to you as soon as possible."}
+              </p>
+
+              {isSuccess ? (
+                <div className="flex flex-col items-center justify-center py-10 text-center">
+                  <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-500 rounded-full flex items-center justify-center mb-6">
+                    <CheckCircleIcon className="w-10 h-10" />
+                  </div>
+                  <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Request Sent!</h3>
+                  <p className="text-slate-500">The {itemType === "PROPERTY" ? "agent" : "dealer"} will contact you shortly to confirm.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleSchedule} className="space-y-5">
+                  {scheduleError && (
+                    <div className="p-3 bg-red-50 text-red-500 text-sm font-bold rounded-xl border border-red-100">
+                      {scheduleError}
                     </div>
-                    <h3 className="text-3xl font-black mb-3">Request Sent!</h3>
-                    <p className="text-slate-500 dark:text-zinc-400">The agent has been notified and will contact you shortly.</p>
-                  </motion.div>
-                ) : (
-                  <>
-                    <header className="mb-8">
-                      <h3 className="text-3xl font-black leading-tight mb-2">{modalType === "showing" ? "Book a Tour" : "Inquire Now"}</h3>
-                      <p className="text-slate-500 dark:text-zinc-400 text-sm font-medium">{displayTitle}</p>
-                    </header>
-                    <form onSubmit={handleSchedule} className="space-y-5">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField label="Full Name" icon={UserIcon}>
-                          <input required value={formData.clientName} onChange={handleFormChange} name="clientName" placeholder="Full Name" className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-zinc-950 border-2 border-transparent focus:border-emerald-500 rounded-2xl outline-none font-bold transition-all text-slate-900 dark:text-white" />
-                        </FormField>
-                        <FormField label="Phone" icon={PhoneIcon}>
-                          <input required value={formData.clientPhone} onChange={handleFormChange} name="clientPhone" type="tel" placeholder="Phone Number" className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-zinc-950 border-2 border-transparent focus:border-emerald-500 rounded-2xl outline-none font-bold transition-all text-slate-900 dark:text-white" />
-                        </FormField>
-                      </div>
-                      <FormField label="Email" icon={EnvelopeIcon}>
-                        <input required value={formData.clientEmail} onChange={handleFormChange} name="clientEmail" type="email" placeholder="Email Address" className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-zinc-950 border-2 border-transparent focus:border-emerald-500 rounded-2xl outline-none font-bold transition-all text-slate-900 dark:text-white" />
+                  )}
+
+                  <FormField label="Full Name" icon={UserIcon}>
+                    <input required type="text" name="clientName" value={formData.clientName} onChange={handleFormChange} className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl py-3 pl-12 pr-4 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-slate-900 dark:text-white transition-all" placeholder="John Doe" />
+                  </FormField>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField label="Email" icon={EnvelopeIcon}>
+                      <input required type="email" name="clientEmail" value={formData.clientEmail} onChange={handleFormChange} className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl py-3 pl-12 pr-4 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-slate-900 dark:text-white transition-all" placeholder="john@example.com" />
+                    </FormField>
+                    <FormField label="Phone" icon={PhoneIcon}>
+                      <input required type="tel" name="clientPhone" value={formData.clientPhone} onChange={handleFormChange} className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl py-3 pl-12 pr-4 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-slate-900 dark:text-white transition-all" placeholder="+254..." />
+                    </FormField>
+                  </div>
+
+                  {modalType === "showing" && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField label="Preferred Date" icon={CalendarDaysIcon}>
+                        <input required type="date" name="preferredDate" value={formData.preferredDate} onChange={handleFormChange} className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl py-3 pl-12 pr-4 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-slate-900 dark:text-white transition-all" />
                       </FormField>
-
-                      {modalType === "showing" && (
-                        <div className="p-5 bg-slate-50 dark:bg-zinc-800/50 rounded-[2rem] space-y-4 border border-slate-100 dark:border-zinc-800">
-                          <FormField label="Date" icon={CalendarIcon}>
-                            <input required name="preferredDate" value={formData.preferredDate} onChange={handleFormChange} type="date" className="w-full pl-12 pr-4 py-4 bg-white dark:bg-zinc-900 border-2 border-transparent focus:border-emerald-500 rounded-xl outline-none font-bold [color-scheme:light] dark:[color-scheme:dark]" />
-                          </FormField>
-                          <div className="grid grid-cols-2 gap-4">
-                            <FormField label="Time" icon={ClockIcon}>
-                              <select name="preferredTime" value={formData.preferredTime} onChange={handleFormChange} className="w-full pl-12 pr-4 py-4 bg-white dark:bg-zinc-900 border-2 border-transparent focus:border-emerald-500 rounded-xl outline-none font-bold appearance-none">
-                                <option>Morning</option><option>Afternoon</option><option>Evening</option>
-                              </select>
-                            </FormField>
-                            <FormField label="Guests" icon={UsersIcon}>
-                              <input required name="guests" value={formData.guests} onChange={handleFormChange} type="number" min="1" className="w-full pl-12 pr-4 py-4 bg-white dark:bg-zinc-900 border-2 border-transparent focus:border-emerald-500 rounded-xl outline-none font-bold" />
-                            </FormField>
-                          </div>
-                        </div>
-                      )}
-
-                      <FormField label="" icon={ChatBubbleLeftRightIcon}>
-                        <textarea value={formData.message} onChange={handleFormChange} name="message" placeholder="Specific questions?" rows={3} className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-zinc-950 border-2 border-transparent focus:border-emerald-500 rounded-2xl outline-none font-bold resize-none text-slate-900 dark:text-white" />
+                      <FormField label="Preferred Time" icon={ClockIcon}>
+                        <input required type="time" name="preferredTime" value={formData.preferredTime} onChange={handleFormChange} className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl py-3 pl-12 pr-4 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-slate-900 dark:text-white transition-all" />
                       </FormField>
+                    </div>
+                  )}
 
-                      {scheduleError && <p className="text-rose-500 text-sm font-bold">{scheduleError}</p>}
+                  <div className="relative">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-zinc-500 block mb-2">Message</label>
+                    <textarea 
+                      name="message" 
+                      rows={3} 
+                      value={formData.message} 
+                      onChange={handleFormChange} 
+                      className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl p-4 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-slate-900 dark:text-white transition-all resize-none" 
+                      placeholder={modalType === "showing" ? "Any specific details you'd like to mention before the tour?" : "What would you like to know about this listing?"} 
+                    />
+                  </div>
 
-                      <button disabled={isSubmitting} type="submit" className="w-full py-5 bg-slate-900 dark:bg-emerald-600 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-emerald-600 dark:hover:bg-emerald-500 transition-all active:scale-[0.98] disabled:opacity-70">
-                        {isSubmitting ? "Processing..." : modalType === "showing" ? "Confirm Booking" : "Send Message"}
-                      </button>
-                    </form>
-                  </>
-                )}
-              </div>
+                  <button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                    className="w-full py-4 mt-4 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-xl font-black text-sm uppercase tracking-widest shadow-xl shadow-emerald-500/20 transition-all flex items-center justify-center gap-2"
+                  >
+                    {isSubmitting ? (
+                      <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <CheckCircleIcon className="w-5 h-5" /> 
+                        {modalType === "showing" ? "Confirm Booking" : "Send Message"}
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
-
-      {mounted && pageUrl && (
-        <WhatsAppInquiry 
-          productName={displayTitle}
-          productPrice={liveFinalPrice}
-          productUrl={pageUrl}
-          phoneNumber="254712345678"
-        />
-      )}
     </div>
   );
 }
 
-// --- MICRO-COMPONENTS ---
-
-function StatItem({ icon, label, value }: { icon: React.ReactNode, label: string, value: string | number }) {
-  return (
-    <div className="flex flex-col items-start p-2">
-      <div className="text-slate-400 dark:text-zinc-500 mb-3 bg-slate-50 dark:bg-zinc-800 p-2.5 rounded-xl">{icon}</div>
-      <p className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest mb-1">{label}</p>
-      <p className="text-sm font-black text-slate-900 dark:text-white line-clamp-1">{value || "N/A"}</p>
-    </div>
-  );
-}
-
-function UnitCard({ unit, type }: { unit: any; type: string }) {
-  const formattedPrice = new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 }).format(Number(unit.price));
-  return (
-    <motion.div whileHover={{ y: -5 }} className="p-6 rounded-[2rem] bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 shadow-sm hover:shadow-xl transition-all group">
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <span className="px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest">{type}</span>
-          <h4 className="text-xl font-black text-slate-900 dark:text-white mt-3">{unit.type}</h4>
-        </div>
-        <div className="p-3 bg-slate-50 dark:bg-zinc-950 rounded-2xl group-hover:bg-emerald-600 group-hover:text-white text-slate-400 transition-colors">
-          <Square2StackIcon className="w-6 h-6" />
-        </div>
-      </div>
-      <div className="space-y-4">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-slate-400 font-medium">Area</span>
-          <span className="text-slate-900 dark:text-white font-bold">{Number(unit.size).toLocaleString()} sqft</span>
-        </div>
-        <div className="h-px bg-slate-50 dark:bg-zinc-800" />
-        <div className="flex items-center justify-between">
-          <span className="text-slate-400 text-sm font-medium">Price</span>
-          <span className="text-lg font-black text-emerald-600 dark:text-emerald-400">{formattedPrice}</span>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
 // "use client";
 
 // import React, { useState, useCallback, memo, useMemo } from "react";

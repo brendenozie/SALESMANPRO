@@ -1,5 +1,5 @@
 "use client"
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { usePathname } from 'next/navigation';
 import Link from "next/link";
 // import CookieConsentBar from "./components/CookieConsentBar";
@@ -11,6 +11,9 @@ import SignInModal from "../body/components/SignInModal/SignInModal";
 
 const Footer = () => {
   const path = usePathname();
+
+  const isMobile = useIsMobile();
+
   // bail out on /stores or any deeper stores route
   // if (path.startsWith('/stores')) return null;
   // if (path.startsWith('/admin')) return null;
@@ -26,6 +29,10 @@ const Footer = () => {
   // if (path.startsWith('/play')) return null;
   // if (path.startsWith('/doctor')) return null;
   // if (path.startsWith('/patient')) return null;
+  // 🔥 NEW RULE: hide footer only on mobile + specific path
+  if (isMobile && path === "/ghuba/productlist") {
+    return null;
+  }
 
   return (
     <>
@@ -113,3 +120,18 @@ const Footer = () => {
 };
 
 export default Footer;
+
+
+
+function useIsMobile(breakpoint = 768) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < breakpoint);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [breakpoint]);
+
+  return isMobile;
+}
