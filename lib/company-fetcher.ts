@@ -83,7 +83,7 @@ export async function findCompanyCached(
     () => findCompanyFn(cleanIdentifier, strategy), // 👈 Arrow func keeps scope clean
     [key],
     {
-      tags: [`company:${cleanIdentifier}`],
+      tags: [`company:${cleanIdentifier}`, `company-details:${cleanIdentifier}:${strategy}`], // 👈 Safe primitive variables
       revalidate: false, // Relies on manual revalidation from API routes
     },
   );
@@ -217,6 +217,10 @@ export function pageDataInclude() {
 export async function revalidateCompanyCache(identifier: string) {
   // 👈 Renamed parameter from 'slug' to 'identifier' for accuracy
   revalidateTag(`company:${identifier}`);
+  revalidateTag(`company-details:${identifier}:lean`);
+  revalidateTag(`company-details:${identifier}:page`);
+  revalidateTag(`company-details:${identifier}:full`);
+
 }
 
 // Invalidate specific data subsets for a tenant

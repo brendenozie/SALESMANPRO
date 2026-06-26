@@ -616,7 +616,7 @@ export default function GhubaProductDetail({ listing, related }: { listing: any;
         {related && related.length > 0 && (
           <section className="mt-24">
             <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-8">You Might Also Like</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1">
               {related.slice(0, 4).map((item, idx) => (
                 <GhubaProductCard 
                   key={product._id || product.id}
