@@ -1,205 +1,299 @@
-// app/[slug]/products/[productId]/page.tsx
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-// import ProductCard from '@/components/shop/ProductCard'; // Assuming ProductCard is the correct component for individual products
+import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { 
+  ShieldCheckIcon,
+  ChevronRightIcon,
+  ChevronLeftIcon,
+  ArrowUpRightIcon
+} from '@heroicons/react/24/outline';
+import { StoreForm, MarketListingForm } from '@/types/typings';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
-import { StarIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/solid';
-import { motion, AnimatePresence } from 'framer-motion'; // Import motion and AnimatePresence
-import { useStateContext } from '@/contexts/ContextProvider';
-import { StoreForm, MarketListingForm } from '@/types/typings'; // Import relevant types
 import ProductCard from '@/components/site/layouts/EcommerceLayout/body/components/ProductCard';
 import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 
-
-export default async function ProductDetail({ product, related, storeData }: {
+export default function ProductDetail({ 
+  product, 
+  related, 
+  storeData 
+}: {
   product: MarketListingForm;
   related: MarketListingForm[];
   storeData: StoreForm;
 }) {
-  const { addToCart, decreaseQuantity, cart } = useStateContext();
-  const [mainIndex, setMainIndex] = useState(0);
+  const router = useRouter();
+  const [activeTierIndex, setActiveTierIndex] = useState<number>(0);
+  const [mainImageIndex, setMainImageIndex] = useState<number>(0);
 
-  // Access theme settings from storeData passed from the server
-  const primary = storeData.themeSettings?.primaryColor || '#10B981'; // Default: Emerald
-  const secondary = storeData.themeSettings?.secondaryColor || '#3B82F6'; // Default: Blue
-
-  const quantity = cart.find((c: any) => c.id === product.id)?.quantity || 0;
-
-  const handleAddToCart = () => {
-    addToCart(product);
-  };
-
-  const handleDecreaseQuantity = () => {
-    decreaseQuantity(product.id);
-  };
-
-  const currentImage = product.images?.[mainIndex]?.url || '/placeholder-image.png';
-
-  // Variants for image animation
-  const imageVariants = {
-    initial: { opacity: 0, scale: 0.95 },
-    animate: { opacity: 1, scale: 1 },
-    exit: { opacity: 0, scale: 0.95 },
-  };
+  // Fallback if no tiers exist
+  const tiers = product.pricingTiers && product.pricingTiers.length > 0 
+    ? product.pricingTiers 
+    : [{ name: "Standard Service", price: product.finalPrice || 0, features: ["Standard Allocation", "Baseline Compliance"] }];
+    
+  const activeTier = tiers[activeTierIndex];
+  const images = product.images?.length ? product.images : [{ url: 'https://images.unsplash.com/photo-1610375228911-c4ab455981ca?q=80&w=2070&auto=format&fit=crop' }];
+  const currentImage = images[mainImageIndex]?.url || images[mainImageIndex] || 'https://images.unsplash.com/photo-1610375228911-c4ab455981ca?q=80&w=2070&auto=format&fit=crop';
 
   return (
-    <div className="bg-gradient-to-br from-gray-100 to-white dark:from-gray-900 dark:to-black text-gray-800 dark:text-gray-200 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-        {/* Image Gallery */}
-        <div className="lg:sticky lg:top-8 flex flex-col items-center">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={mainIndex} // Key changes to re-trigger animation on image change
-              variants={imageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={{ duration: 0.3 }}
-              className="relative w-full aspect-video md:aspect-square lg:aspect-video rounded-2xl overflow-hidden shadow-xl border border-gray-200 dark:border-gray-700"
-            >
-              <Image
-                src={currentImage || 'https://via.placeholder.com/600x400?text=No+Image'}
-                alt={product.name}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-contain bg-white dark:bg-gray-800" // Use object-contain and a background for better fit
-              />
-            </motion.div>
-          </AnimatePresence>
+    <div className="bg-zinc-950 text-white min-h-screen font-sans selection:bg-amber-500/30">
+      
+      {/* High-Tech Premium Ambient Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none opacity-50">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-amber-500/5 blur-[120px] rounded-full" />
+        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-zinc-800/10 blur-[150px] rounded-full" />
+        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.015) 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+      </div>
 
-          <div className="flex mt-6 space-x-3 overflow-x-auto pb-2 scrollbar-hide">
-            {product.images?.map((img: any, idx: number) => (
-              <motion.button
-                key={idx}
-                onClick={() => setMainIndex(idx)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 transition-all duration-300 ${
-                  idx === mainIndex ? 'ring-4 ring-offset-2 ring-offset-white dark:ring-offset-gray-900' : 'ring-2 ring-gray-300 dark:ring-gray-700'
-                }`}
-                style={idx === mainIndex ? { borderColor: primary, boxShadow: `0 0 0 4px ${primary}` } : {}} // Dynamic ring color
-              >
-                <Image
-                  src={img.url || 'https://via.placeholder.com/96x96?text=No+Image'}
-                  alt={`${product.name}-${idx}`}
-                  fill
-                  sizes="96px"
-                  className="object-cover"
-                />
-              </motion.button>
-            ))}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
+        
+        {/* Header Block */}
+        <div className="mb-12 lg:mb-20 max-w-3xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-500/30 bg-amber-500/5 text-amber-400 text-[10px] font-bold tracking-[0.25em] uppercase mb-4">
+            {product.subCategoryName || product.category || 'Company Services'}
           </div>
-        </div>
-
-        {/* Details Section */}
-        <div className="space-y-8 p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
-          <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 dark:text-white leading-tight">
+          <h1 className="text-4xl sm:text-6xl font-black text-zinc-100 tracking-tight leading-tight uppercase">
             {product.name}
           </h1>
+          <p className="mt-4 text-lg text-zinc-400 font-light leading-relaxed max-w-2xl">
+            {product.description || 'Enterprise-grade services and procurement structuring integrated with verified operational frameworks.'}
+          </p>
+        </div>
 
-          {/* Rating */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <StarIcon
-                  key={i}
-                  className={`h-6 w-6 transition-colors duration-200 ${
-                    // product.rating && product.rating > i ? 'text-yellow-400' : 
-                    'text-gray-300'
+        {/* MAIN CONTAINER */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
+          
+          {/* LEFT SIDE: CONTROL INDEX (Desktop) & Touch Swiper Controls (Mobile) */}
+          <div className="lg:col-span-5 flex flex-col justify-between space-y-6 lg:space-y-8">
+            
+            <div className="text-sm font-mono text-zinc-500 uppercase tracking-widest mb-[-1rem]">
+              Select Service Tier
+            </div>
+
+            {/* Desktop Dynamic Sidebar Menu */}
+            <div className="hidden lg:flex flex-col gap-3">
+              {tiers.map((tier, idx) => {
+                const isActive = activeTierIndex === idx;
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveTierIndex(idx)}
+                    className={`group w-full relative flex items-start gap-4 p-5 rounded-2xl text-left transition-all duration-300 border ${
+                      isActive 
+                        ? 'bg-gradient-to-r from-zinc-900 to-zinc-900/60 border-zinc-800 text-white shadow-lg shadow-black/40' 
+                        : 'border-transparent text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/20'
+                    }`}
+                  >
+                    {isActive && (
+                      <motion.div 
+                        layoutId="activeBar"
+                        className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-amber-500 rounded-r-md"
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      />
+                    )}
+
+                    <span className={`font-mono text-xs font-bold mt-0.5 ${isActive ? 'text-amber-400' : 'text-zinc-700'}`}>
+                      0{idx + 1}
+                    </span>
+                    <div className="space-y-1 w-full">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-base font-semibold tracking-wide transition-colors">
+                          {tier.name}
+                        </h3>
+                        {tier.price > 0 && (
+                          <span className={`font-mono text-sm ${isActive ? 'text-white' : 'text-zinc-500'}`}>
+                            ${tier.price.toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                      {isActive && tier.features && (
+                        <motion.p 
+                          initial={{ opacity: 0, y: 4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-xs text-zinc-400 font-light leading-relaxed pr-4"
+                        >
+                          Includes {tier.features.length} standardized operational features and protocols.
+                        </motion.p>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Mobile Horizontal Carousel Slider (Visible only on < lg screens) */}
+            <div className="block lg:hidden w-full overflow-x-auto snap-x snap-mandatory no-scrollbar flex gap-4 pb-4">
+              {tiers.map((tier, idx) => (
+                <div 
+                  key={idx}
+                  onClick={() => setActiveTierIndex(idx)}
+                  className={`snap-center shrink-0 w-[85vw] sm:w-[380px] p-5 rounded-2xl border transition-all cursor-pointer ${
+                    activeTierIndex === idx 
+                      ? 'bg-zinc-900 border-zinc-700 text-white' 
+                      : 'bg-zinc-900/40 border-zinc-900 text-zinc-400'
                   }`}
-                />
+                >
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-mono text-xs text-amber-500 font-bold">0{idx + 1}</span>
+                    {tier.price > 0 && (
+                      <span className="text-[10px] uppercase font-mono tracking-wider bg-zinc-800 px-2 py-0.5 rounded text-zinc-300">
+                        ${tier.price.toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-sm font-bold truncate mb-1 text-zinc-100">{tier.name}</h3>
+                  <p className="text-xs text-zinc-400 font-light line-clamp-2">
+                    {tier.features?.length || 0} embedded capabilities
+                  </p>
+                </div>
               ))}
             </div>
-            <span className="ml-2 text-lg font-medium text-gray-700 dark:text-gray-300">
-              {/* {product.rating ? `(${product.rating.toFixed(1)})` :  */}
-              {'(No reviews yet)'}
-            </span>
-            {/* {product.reviews && product.reviews > 0 && (
-              <span className="text-gray-500 dark:text-gray-400">({product.reviews} reviews)</span>
-            )} */}
+
+            {/* Micro Compliance Banner */}
+            <div className="p-4 rounded-xl bg-zinc-900/40 border border-zinc-900 flex gap-4 items-center backdrop-blur-sm">
+              <ShieldCheckIcon className="w-5 h-5 text-amber-500/70 shrink-0" />
+              <p className="text-[11px] text-zinc-500 leading-normal font-light">
+                <span className="text-zinc-300 font-medium">Verified Vendor Status:</span> Operations bound by platform AML policies and standardized structural terms.
+              </p>
+            </div>
           </div>
 
-          {/* Price */}
-          <div className="flex items-baseline gap-3">
-            <span className="text-5xl font-extrabold" style={{ color: primary }}>
-              ${product.finalPrice?.toFixed(2) || '0.00'}
-            </span>
-            {typeof product.sellingPrice === 'number' && typeof product.finalPrice === 'number' && product.sellingPrice > product.finalPrice && (
-              <span className="text-2xl line-through text-gray-500 dark:text-gray-400">
-                ${product.sellingPrice.toFixed(2)}
-              </span>
-            )}
-            {typeof product.sellingPrice === 'number' && typeof product.finalPrice === 'number' && product.sellingPrice > product.finalPrice && (
-              <span className="ml-3 px-3 py-1 bg-red-500 text-white rounded-full text-lg font-bold">
-                -{Math.round(((product.sellingPrice - product.finalPrice) / product.sellingPrice) * 100)}%
-              </span>
-            )}
-          </div>
-
-          {/* Description */}
-          <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300">
-            {product.description || 'No description available for this product.'}
-          </p>
-
-          {/* Quantity & Add to Cart */}
-          <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            {quantity > 0 ? (
-              <div className="flex items-center space-x-4">
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={handleDecreaseQuantity}
-                  className="p-3 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-red-100 dark:hover:bg-red-700 transition-all duration-200 shadow-sm"
-                >
-                  <MinusIcon className="h-6 w-6 text-gray-600 dark:text-gray-300" />
-                </motion.button>
-                <span className="text-xl font-bold text-gray-900 dark:text-white">{quantity}</span>
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={handleAddToCart}
-                  className="p-3 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-green-100 dark:hover:bg-green-700 transition-all duration-200 shadow-sm"
-                >
-                  <PlusIcon className="h-6 w-6 text-gray-600 dark:text-gray-300" />
-                </motion.button>
-              </div>
-            ) : (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleAddToCart}
-                className="w-full sm:w-auto flex-grow px-8 py-4 rounded-xl text-white font-bold text-xl shadow-lg transition-all duration-300 hover:shadow-xl"
-                style={{
-                  background: `linear-gradient(135deg, ${primary}, ${secondary})`,
-                }}
+          {/* RIGHT SIDE: CINEMATIC SHOWCASE THEATER */}
+          <div className="lg:col-span-7 h-auto min-h-[500px] lg:min-h-full flex flex-col">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTierIndex}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="w-full flex flex-col justify-between bg-gradient-to-b from-zinc-900/80 to-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl relative flex-1"
               >
-                Add to Cart
-              </motion.button>
-            )}
+                {/* Media Presentation Layer */}
+                <div className="relative h-64 sm:h-80 w-full overflow-hidden bg-zinc-900 flex items-center justify-center">
+                  <Image
+                    src={currentImage}
+                    alt={product.name}
+                    loader={({ src }) => src}
+                    fill
+                    className="object-cover scale-105 transition-transform duration-700 ease-out opacity-80"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
+                  
+                  {/* Image Navigation (if multiple) */}
+                  {images.length > 1 && (
+                     <div className="absolute top-4 right-4 flex gap-2 z-20">
+                       <button onClick={() => setMainImageIndex(prev => (prev - 1 + images.length) % images.length)} className="p-2 bg-black/50 hover:bg-amber-500/80 rounded-full text-white backdrop-blur-md transition-colors">
+                         <ChevronLeftIcon className="w-4 h-4" />
+                       </button>
+                       <button onClick={() => setMainImageIndex(prev => (prev + 1) % images.length)} className="p-2 bg-black/50 hover:bg-amber-500/80 rounded-full text-white backdrop-blur-md transition-colors">
+                         <ChevronRightIcon className="w-4 h-4" />
+                       </button>
+                     </div>
+                  )}
+
+                  {/* Dynamic Floating Glass Badge */}
+                  <div className="absolute bottom-4 right-4 backdrop-blur-lg bg-zinc-900/80 border border-zinc-700/60 p-3 rounded-xl text-right min-w-[110px]">
+                    <div className="text-sm font-mono font-bold tracking-tight text-amber-400">
+                      {activeTier.price > 0 ? `$${activeTier.price.toLocaleString()}` : 'QUOTE'}
+                    </div>
+                    <div className="text-[9px] uppercase tracking-widest text-zinc-400 mt-0.5">Valuation</div>
+                  </div>
+                </div>
+
+                {/* Content Details Block */}
+                <div className="p-6 sm:p-8 flex-1 flex flex-col justify-between space-y-8">
+                  <div>
+                    <h3 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                      {activeTier.name}
+                    </h3>
+                    <p className="mt-2 text-zinc-400 text-sm font-light leading-relaxed">
+                      Select this tier to unlock the specific operational parameters and features listed below. Designed for immediate structural integration.
+                    </p>
+                  </div>
+
+                  {/* Technical Tags Grid (Features) */}
+                  <div className="space-y-5">
+                    <div className="h-[1px] bg-gradient-to-r from-zinc-800 via-transparent to-transparent" />
+                    <h4 className="text-[10px] uppercase tracking-widest text-zinc-500 font-mono">Inclusions & Capabilities</h4>
+                    <div className="flex flex-wrap gap-2.5">
+                      {activeTier.features?.map((feature: string, i: number) => (
+                        <span 
+                          key={i} 
+                          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800 text-zinc-300 text-xs font-light shadow-sm"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+                          {feature}
+                        </span>
+                      ))}
+                      {(!activeTier.features || activeTier.features.length === 0) && (
+                         <span className="text-xs text-zinc-600 italic">No specific features listed for this tier.</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Operational Interactive CTA Action Button */}
+                  <div className="pt-4 flex flex-col sm:flex-row gap-4 justify-between items-center border-t border-zinc-800/50">
+                    {/* <button 
+                      onClick={() => {
+                        // Assuming you might want to handle this differently for services
+                        // You could trigger the WhatsApp inquiry directly here
+                        const whatsappBtn = document.getElementById('whatsapp-inquiry-btn');
+                        if(whatsappBtn) whatsappBtn.click();
+                      }}
+                      className="w-full sm:w-auto group/btn inline-flex items-center justify-center gap-3 bg-amber-500 text-zinc-950 px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-amber-400 transition-all shadow-[0_0_20px_rgba(245,158,11,0.2)] hover:shadow-[0_0_25px_rgba(245,158,11,0.4)]"
+                    >
+                      Inquire / Initialize
+                      <ArrowUpRightIcon className="w-4 h-4 transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                    </button> */}
+                    
+                    <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider">
+                      ID: {product.id.slice(-8)}
+                    </span>
+                  </div>
+                </div>
+
+              </motion.div>
+            </AnimatePresence>
           </div>
+
         </div>
       </div>
 
-      {/* Related Products */}
-      {related.length > 0 && (
-        <div title="You might also like" className="bg-gray-50 dark:bg-gray-900 py-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {/* Iterating directly over related products and rendering ProductCard */}
-            {related.map((r) => (
-              <ProductCard key={r.id} product={r} />
-            ))}
+      {/* Related Products Section mapped to dark theme */}
+      {/* {related.length > 0 && (
+        <div className="relative z-10 border-t border-zinc-900 bg-zinc-950/50 py-16 mt-12 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h3 className="text-xl font-bold text-white mb-8 tracking-wide">Parallel Assets & Capabilities</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {related.map((r) => (
+                <div key={r.id} className="dark"> 
+                  {/* Wrapping in 'dark' class if your ProductCard relies on tailwind dark mode, 
+                      or it naturally inherits the dark backgrounds */}
+                  {/* <ProductCard product={r} />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      )}
+      )} */}
 
-      <NewsletterSection />
-      
-      <WhatsAppInquiry 
-        productName={product.name}
-        productPrice={product.finalPrice || product.sellingPrice || 0}
-        productUrl={window.location.href}
-        phoneNumber = "254712345678"
-      />
+      {/* Hidden/Visually integrated WhatsApp component */}
+      <div className="hidden">
+        <WhatsAppInquiry 
+          productName={`${product.name} - ${activeTier.name} Tier`}
+          productPrice={activeTier.price || product.finalPrice || 0}
+          productUrl={typeof window !== 'undefined' ? window.location.href : ''}
+          phoneNumber="254712345678"
+        />
+      </div>
+
+      {/* Newsletter */}
+      <div className="relative z-10 border-t border-zinc-900">
+        {/* <NewsletterSection /> */}
+      </div>
     </div>
   );
 }

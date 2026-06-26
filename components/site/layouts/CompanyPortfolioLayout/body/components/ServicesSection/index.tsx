@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import { 
   ShieldCheckIcon,
   ChevronRightIcon,
-  ChevronLeftIcon
+  ChevronLeftIcon,
+  ArrowUpRightIcon
 } from '@heroicons/react/24/outline';
 
 interface ServiceItem {
@@ -252,13 +253,13 @@ export default function GreyServicesSection({ services = defaultServices, storeS
 
                   {/* Operational Interactive CTA Action Button */}
                   <div className="pt-2 flex justify-between items-center">
-                    {/* <button 
+                    <button 
                       onClick={() => router.push(`/companyprofile/services/${activeService.id}`)}
                       className="group/btn inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-400 hover:text-amber-300 transition-colors"
                     >
                       Initialize Allocation Pipeline
                       <ArrowUpRightIcon className="w-3.5 h-3.5 transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-                    </button> */}
+                    </button>
                     
                     {/* Manual Navigation Chevrons for Mobile/Tablet layout optimization */}
                     <div className="flex items-center gap-1 bg-zinc-900 p-1 rounded-lg border border-zinc-800">

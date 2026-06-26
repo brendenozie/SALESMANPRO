@@ -8,14 +8,16 @@ import { findCompanyCached } from '@/lib/company-fetcher';
 import ProductDetail from './ProductDetail';
 
 interface PageProps {
-  params: Promise<{ slug: string; productId: string }>;
+  params: Promise<{ slug: string; id: string }>;
 }
 
 // Ensure this is a server component as it fetches data
-export const dynamic = 'force-dynamic';
+// export const dynamic = 'force-dynamic';
 
 export default async function ProductPage({ params }: PageProps) {
-  const { slug, productId } = await params;
+  const { slug, id } = await params;//slug, productId
+
+  // console.log('ProductPage params:', { slug, id });
 
   // Fetch store data
   const rawStore = await findCompanyCached(slug, "lean");
@@ -23,7 +25,7 @@ export default async function ProductPage({ params }: PageProps) {
 
   // Fetch product and related items
   const product = await prisma.marketplaceListings.findFirst({
-    where: { id: productId, company: { slug } },
+    where: { id  },//company: { slug }
     // Ensure images are included if your schema supports it and it's needed
     // include: { images: true }, // Uncomment if 'images' is a relation in your Prisma schema
   });
