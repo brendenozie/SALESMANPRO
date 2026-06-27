@@ -1,9 +1,9 @@
 /** @type {import("pliny/config").PlinyConfig } */
 const siteMetadata = {
-  title: 'SalesmanPro | Ghuba',
+  title: '',
   author: 'Brenden Odhiambo',
-  headerTitle: 'Ghuba',
-  description: 'Online Shopping marketplace',
+  headerTitle: '',
+  description: '',//'SalesmanPro is a platform that provides sales professionals with the tools and resources they need to succeed in their careers. Our mission is to empower salespeople to achieve their goals and reach their full potential.',
   language: 'en-us',
   theme: 'system', // system, dark or light
   siteUrl: 'https://salesmanpro.site',

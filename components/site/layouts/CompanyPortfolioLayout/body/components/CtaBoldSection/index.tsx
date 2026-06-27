@@ -29,10 +29,10 @@ export default function CtaBoldSection({ pagedata }: { pagedata: any }) {
   const organizationSlug = pagedata?.slug || 'grey-trading';
 
   // Transformed corporate copy matrix with definitive rollbacks
-  const ctaTitle = 'Optimize Capital Velocity & Corridor Throughput';
-  const ctaSubtitle = `Establish a dedicated clearance endpoint. Interface directly with ${pagedata?.name || 'Trading Limited'}\'s multi-sovereign clearing desks and automated physical risk architectures.`;
-  const ctaButtonLabel = 'Request Terminal Connection';
-  const ctaButtonHref = `/companyprofile/onboarding`;
+  const ctaTitle = 'Optimize Your Cash Flow & Trade Speed';
+  const ctaSubtitle = `Open a dedicated account with us to move your goods and capital more efficiently. You will gain direct access to the ${pagedata?.name || 'Trading Limited'} global network, backed by our automated security and risk-management systems.`;
+  const ctaButtonLabel = 'Request a Connection';
+  const ctaButtonHref = `/companyprofile/services`;
 
   return (
     <section
@@ -57,7 +57,7 @@ export default function CtaBoldSection({ pagedata }: { pagedata: any }) {
           {/* Micro Terminal Operational Status Tag */}
           <div className="inline-flex items-center gap-2 border border-zinc-800 bg-zinc-950 px-3 py-1 rounded-md text-[10px] font-mono tracking-[0.2em] uppercase text-zinc-400 mb-8 select-none">
             <CpuChipIcon className="w-3.5 h-3.5 animate-pulse text-amber-500" />
-            System Status: Ready to Bind
+            Fast-track your operations.
           </div>
 
           {/* High-Fidelity Non-Overlapping Header Scales */}
@@ -96,13 +96,13 @@ export default function CtaBoldSection({ pagedata }: { pagedata: any }) {
               className="inline-flex items-center gap-3 border border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900 hover:border-zinc-700 text-zinc-200 hover:text-white font-bold py-4 px-10 rounded-xl text-xs tracking-wider uppercase transition-all duration-300 shadow-md group"
             >
               {ctaButtonLabel}
-              <ArrowRightIcon className="w-4 h-4 text-zinc-500 group-hover:translate-x-1 group-hover:text-amber-500 transition-all" />
+              
             </Link>
           </motion.div>
 
           {/* Bottom Tracking Feed Mock Decorator */}
           <div className="absolute bottom-4 right-6 font-mono text-[9px] tracking-widest text-zinc-800 hidden md:block select-none">
-            SECURE_CHANNEL_AUTH_REQUIRED_//
+            {/* SECURE_CHANNEL_AUTH_REQUIRED_// */}
           </div>
         </div>
       </div>

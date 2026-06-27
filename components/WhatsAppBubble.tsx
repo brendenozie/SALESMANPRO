@@ -136,7 +136,7 @@ export default function WhatsAppBubble({
                 <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
                   Hi there! 👋 I'm here to help. 
                   <br /><br />
-                  Would you like to confirm availability or arrange a delivery to your location?
+                  What would you like to enquire about?
                 </p>
                 <span className="text-[9px] text-gray-400 mt-2 block text-right">09:41 AM</span>
               </motion.div>

@@ -141,7 +141,7 @@ export default function Footer() {
             </div>
             <div className="mt-4 flex items-center gap-2 opacity-50">
                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-               <span className="text-[10px] font-black uppercase tracking-widest">Network Status: Online</span>
+               {/* <span className="text-[10px] font-black uppercase tracking-widest">Network Status: Online</span> */}
             </div>
           </div>
         </div>

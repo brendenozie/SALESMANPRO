@@ -160,7 +160,7 @@ export default function NewsSection({pagedata}: {pagedata: any}) {
           <div className="max-w-2xl">
             <p className="text-xs uppercase tracking-[0.3em] font-bold text-amber-500 mb-3">Operational Intelligence</p>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-100 tracking-tight uppercase">
-              Market Briefings & Analysis
+              Market Updates & Analysis
             </h2>
             <p className="mt-4 text-sm text-zinc-400 font-light leading-relaxed">
               Real-time dispatches, asset performance adjustments, and regulatory audits compiled straight from our global node terminals.

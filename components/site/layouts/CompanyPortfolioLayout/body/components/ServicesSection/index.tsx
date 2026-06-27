@@ -102,10 +102,10 @@ export default function GreyServicesSection({ services = defaultServices, storeS
             Institutional Capabilities
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-zinc-100 tracking-tight leading-tight">
-            Refined Metals <span className="text-zinc-500 font-light italic">Trading Channels</span>
+            Reliable <span className="text-zinc-500 font-light italic">Enterprise Solutions</span>
           </h2>
           <p className="mt-4 text-base text-zinc-400 font-light leading-relaxed">
-            Bridging localized asset extraction with high-liquidity global fulfillment systems under ironclad regulatory compliance.
+            We bridge the gap between local operational capacities and global market demands. Our infrastructure ensures that your end-to-end operations are executed safely, efficiently, and in strict compliance with all industry regulations.           
           </p>
         </div>
 

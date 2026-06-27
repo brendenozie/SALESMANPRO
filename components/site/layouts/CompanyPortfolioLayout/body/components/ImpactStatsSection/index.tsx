@@ -111,7 +111,7 @@ const MetricTile = ({ metric }: { metric: UnifiedMetric }) => {
             <IconComponent className="w-5 h-5" />
           </div>
           <span className="font-mono text-[10px] tracking-widest text-zinc-600 select-none">
-            // SYS_0{metric.order}
+            // {metric.order}
           </span>
         </div>
 
@@ -131,7 +131,7 @@ const MetricTile = ({ metric }: { metric: UnifiedMetric }) => {
 export default function PerformanceMetricsDashboard({ pagedata }: ComponentProps) {
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 });
 
-  const sectionTitle = "Institutional Volume & Performance";
+  const sectionTitle = "Delivering Results at Scale";
   const firmName = pagedata?.name || "Trading Limited"; 
 
   // --- 1. NORMALIZATION & AGGREGATION PIPELINE ---
@@ -212,7 +212,7 @@ export default function PerformanceMetricsDashboard({ pagedata }: ComponentProps
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-16 items-start mb-20">
           <div className="lg:col-span-5">
             <p className="text-xs uppercase tracking-[0.3em] font-bold text-amber-500 mb-3">
-              Audited Capital Realization
+              Audited Capital & Performance
             </p>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-100 tracking-tight uppercase leading-none">
               {sectionTitle}
@@ -221,7 +221,7 @@ export default function PerformanceMetricsDashboard({ pagedata }: ComponentProps
           
           <div className="lg:col-span-7 lg:border-l lg:border-zinc-900 lg:pl-10">
             <p className="text-zinc-400 text-sm md:text-base font-light leading-relaxed text-justify">
-              The continuous scale of our processing network relies entirely upon automated compliance checking, multi-asset security vaults, and precision timing. These verified ledgers map the continuous operational throughput generated under the direction of **{firmName}**.
+              The success of our network is built on a foundation of speed, safety, and accuracy. By using automated compliance checks and secure, high-tech vaults, we ensure that every transaction is verified and protected. These records provide a clear, transparent view of the reliable operations managed by {firmName}.
             </p>
           </div>
         </div>

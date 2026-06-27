@@ -151,12 +151,12 @@ export default function FAQSection({pagedata}: {pagedata: any}) {
         
         {/* Segment Monospace Tracking Header */}
         <div className="text-center mb-16 md:mb-24">
-          <div className="inline-flex items-center gap-2 border border-zinc-800 bg-zinc-900/30 px-3 py-1 rounded-md text-[10px] font-mono tracking-[0.2em] uppercase text-zinc-400 mb-4 select-none">
+          {/* <div className="inline-flex items-center gap-2 border border-zinc-800 bg-zinc-900/30 px-3 py-1 rounded-md text-[10px] font-mono tracking-[0.2em] uppercase text-zinc-400 mb-4 select-none">
             <CommandLineIcon className="w-3.5 h-3.5 text-amber-500" />
             Operational Protocols
-          </div>
+          </div> */}
           <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-100 tracking-tight uppercase">
-            System Infrastructure FAQ
+            Frequently Asked Questions
           </h2>
           <div className="w-12 h-[1px] bg-zinc-900 mx-auto mt-6" />
         </div>

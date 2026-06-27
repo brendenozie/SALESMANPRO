@@ -13,7 +13,7 @@ const mockVerifications = [
     {
         id: 'ver-1',
         authorName: 'Marcus Vance',
-        quote: "AURUM PRECIOUS METALS LIMITED's automated risk architecture insulated our liquidity allocations during the Q1 corridor breakdown. Their physical validation layer operates with absolute precision.",
+        quote: "The company portfolio clearly showcased their expertise and successful projects. It gave me total confidence in their capabilities",
         avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&auto=format&fit=crop',
         role: 'Managing Director, Global Liquidity Pools',
         order: 1,
@@ -21,7 +21,7 @@ const mockVerifications = [
     {
         id: 'ver-2',
         authorName: 'Hanae Tanaka',
-        quote: "The down-stream terminal infrastructure node integration provided our network with unprecedented multi-berth clearing speeds. A highly sophisticated operational partner.",
+        quote: "AURUM PRECIOUS METALS LIMITED's automated security systems protected our investments during the recent market volatility. Their team handles physical assets with absolute precision.",
         avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=150&auto=format&fit=crop',
         role: 'Chief Operations Officer, Pacific Rim Logistics',
         order: 2,
@@ -141,11 +141,11 @@ export default function App({pagedata}: {pagedata: any}) {
                         Institutional Validation
                     </p>
                     <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-100 tracking-tight uppercase">
-                        Counterparty Endorsements
+                        What Our Partners Say
                     </h2>
                     <div className="w-12 h-[1px] bg-zinc-800 mx-auto my-6" />
                     <p className="text-sm text-zinc-400 font-light max-w-2xl mx-auto leading-relaxed">
-                        Verified performance disclosures, security audits, and risk alignment testimonials delivered by our tier-1 clearing network operators.
+                        We are proud of the trust our partners place in us. Below are verified performance reports and testimonials from the industry leaders we work with every day.
                     </p>
                 </motion.div>
 

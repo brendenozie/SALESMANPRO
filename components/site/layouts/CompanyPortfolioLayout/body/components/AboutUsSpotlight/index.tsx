@@ -14,18 +14,18 @@ import {
 
 // --- INSTITUTIONAL PROFILE DATA ---
 const enterpriseData = {
-  name: 'Auram Limited',
+  name: 'Aurum Precious Metals Limited',
   tagline: 'Risk-Insulated Physical Commodity Execution',
-  profileNarrative: "Auram Limited operates at the absolute intersection of localized primary extraction and structured global market demand. We handle downstream logistics, validation, and multi-market delivery of refined metals through deeply integrated, compliance-locked clearings. By reinforcing regional supplier relationships with tier-1 international execution protocols, we insulate both sides of the trade ledger from structural market volatility.",
+  profileNarrative: "Aurum Precious Metals Limited is a trusted international trading company that specializes in gold and copper. We have built a solid reputation for excellence and reliability by connecting high-quality local sources directly to the global market. We are committed to professional service and helping our clients get the materials they need, when they need them.",
   
   // High-fidelity asset image focusing on industrial refining/bulk logistics architecture
   profileImageUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop', 
   
   metrics: [
-    { id: 'm-1', label: "Refined Volume Handled", value: "340k+ MT", order: 1, Icon: CircleStackIcon },
-    { id: 'm-2', label: "Verified Sourcing Hubs", value: "12 Nodes", order: 2, Icon: ScaleIcon },
-    { id: 'm-3', label: "Compliance Baseline", value: "Tier-1", order: 3, Icon: ShieldCheckIcon },
-    { id: 'm-4', label: "Global Clearing Terminal Ports", value: "24 Routes", order: 4, Icon: GlobeAmericasIcon },
+    { id: 'm-1', label: "Total Metals Delivered", value: "340k+ MT", order: 1, Icon: CircleStackIcon },
+    { id: 'm-2', label: "Trusted Sourcing Locations", value: "12 Regional Hubs", order: 2, Icon: ScaleIcon },
+    { id: 'm-3', label: "Certified Compliance & Safety", value: "Top Standards", order: 3, Icon: ShieldCheckIcon },
+    { id: 'm-4', label: "Secure International Shipping Ports", value: "24 Global Routes", order: 4, Icon: GlobeAmericasIcon },
   ],
 };
 
@@ -86,8 +86,6 @@ const MetricCard = ({ metric }: { metric: any }) => {
 export default function CorporateProfileSection({pagedata}: {pagedata: any}) {
 
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.15 });
-
-  // const metricsToRender = pagedata.metrics ? pagedata.metrics : enterpriseData.metrics;
   
   const metricsToRender = enterpriseData.metrics;
 
@@ -144,7 +142,7 @@ export default function CorporateProfileSection({pagedata}: {pagedata: any}) {
             </p>
             
             <h2 className="text-4xl sm:text-5xl font-extrabold text-zinc-100 tracking-tight leading-[1.15] mb-6">
-              Connecting localized extraction to <span className="text-zinc-500 font-normal italic">sovereign clearings</span>.
+              Connecting local resources to <span className="text-zinc-500 font-normal italic">global markets</span>.
             </h2>
             
             <p className="text-zinc-400 text-base md:text-lg font-light leading-relaxed mb-10 text-justify">
@@ -156,7 +154,7 @@ export default function CorporateProfileSection({pagedata}: {pagedata: any}) {
                 href="#trade-desk"
                 className="inline-flex items-center gap-2.5 bg-zinc-100 text-zinc-950 font-bold py-3.5 px-7 rounded-xl shadow-lg text-xs tracking-wider uppercase hover:bg-white transition-all duration-300 transform hover:scale-[1.01]"
               >
-                Inquire Allocation Parameters
+                Inquire About Availability
                 <ArrowUpRightIcon className="w-4 h-4 text-zinc-950" />
               </a>
               

@@ -132,7 +132,7 @@ export default function Navbar() {
 
             <div className="flex flex-col justify-center min-w-0 flex-1">
               <span className="text-sm sm:text-base md:text-lg font-black tracking-wider uppercase text-zinc-100 leading-none group-hover:text-white transition-colors truncate block">
-                {name || 'Grey Trading'}
+                {name || 'AURUM Trading'}
               </span>
               <span className="hidden sm:block text-[9px] font-mono uppercase tracking-[0.18em] text-zinc-500 mt-1 leading-none truncate">
                 {tagline || 'Risk Infrastructure'}

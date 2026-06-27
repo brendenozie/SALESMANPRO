@@ -12,15 +12,15 @@ import ThemeProvider from "./theme-provider";
 export const metadata: Metadata = {
   metadataBase: new URL(siteMetadata.siteUrl),
   title: {
-    default: siteMetadata.title,
-    template: `%s | ${siteMetadata.title}`,
+    default: siteMetadata.title, // Removed the `%s |` prefix
+    template: `%s | ${siteMetadata.title}`, // This is the only place `%s` should be used
   },
-  description: siteMetadata.description,
+  description: siteMetadata.description, // Removed redundant template literals
   openGraph: {
-    title: siteMetadata.title,
+    title: siteMetadata.title, // Removed the `%s |` prefix
     description: siteMetadata.description,
     url: "./",
-    siteName: siteMetadata.title,
+    siteName: siteMetadata.title, // Removed the `%s |` prefix
     images: [siteMetadata.socialBanner],
     locale: "en_US",
     type: "website",
@@ -43,12 +43,11 @@ export const metadata: Metadata = {
     },
   },
   twitter: {
-    title: siteMetadata.title,
+    title: siteMetadata.title, // Removed the `%s |` prefix
     card: "summary_large_image",
     images: [siteMetadata.socialBanner],
   },
 };
-
 
 export default async function RootLayout({
   children,
