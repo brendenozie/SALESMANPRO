@@ -23,7 +23,8 @@ const HomePage = ({ pageData, companyId }: { pageData: StoreForm, companyId: str
     discounts: [],
     featured: [],
     featuredCategory: null,
-    productsByCategory: {}
+    productsByCategory: {},
+    featuredCategoryProducts: []
   });
   
   const [loading, setLoading] = useState<boolean>(true);
@@ -42,18 +43,24 @@ const HomePage = ({ pageData, companyId }: { pageData: StoreForm, companyId: str
         }
 
         const data = await response.json();
-        const featuredCat = data.categories.find((c: any) => c.isFeatured) || data.categories[0];
+        const featuredCat =  data.featuredCategory ??  data.categories.find((c: any) => c.isFeatured) ??  data.categories[0];
 
         setHomeData({
-          categories: data.categories || [],
-          flashDeals: data.flashDeals || [],
-          newArrivals: data.newArrivals || [],
-          discounts: data.discounts || [],
-          featured: data.featured || [],
+          categories: data.categories ?? [],
+
+          flashDeals: data.sections?.flashDeals ?? [],
+
+          newArrivals: data.sections?.newArrivals ?? [],
+
+          discounts: data.sections?.discounts ?? [],
+
+          featured: data.sections?.featured ?? [],
+
           featuredCategory: featuredCat,
-          productsByCategory: {
-            [featuredCat?.name]: data.featuredCategoryProducts || []
-          }
+
+          productsByCategory: {[featuredCat?.name ?? "featured"]: data.sections?.featuredCategoryProducts ?? [], },
+
+          featuredCategoryProducts: data.sections?.featuredCategoryProducts ?? []
         });
 
       } catch (err: any) {
@@ -83,7 +90,7 @@ const HomePage = ({ pageData, companyId }: { pageData: StoreForm, companyId: str
     );
   }
 
-  const { categories, flashDeals, newArrivals, discounts, featuredCategory, productsByCategory } = homeData;
+  const { categories, flashDeals, newArrivals, discounts, featuredCategory, productsByCategory, featuredCategoryProducts } = homeData;
 
   return (
     <>
@@ -118,10 +125,10 @@ const HomePage = ({ pageData, companyId }: { pageData: StoreForm, companyId: str
         />
       )}
       
-      {featuredCategory && productsByCategory[featuredCategory.name] && (
+      {featuredCategory && featuredCategoryProducts.length > 0 && (
         <Shop
           category={featuredCategory}
-          shopItems={productsByCategory[featuredCategory.name]}
+          shopItems={featuredCategoryProducts}
           addToCart={addToCart}
           decreaseQuantity={decreaseQuantity}
           removeFromCart={removeFromCart}
