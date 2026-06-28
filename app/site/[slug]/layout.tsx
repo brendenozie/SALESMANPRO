@@ -1,7 +1,7 @@
 // app/site/[tenantSlug]/layout.tsx
 import { notFound } from 'next/navigation';
 import { ReactNode, Suspense } from 'react';
-import type { Metadata } from 'next';
+import type { Metadata, ResolvingMetadata } from 'next';
 
 import { StoreContextProvider } from '@/contexts/StoreContext';
 import categoryHeaderFooterLayoutMap from '@/components/site/layouts/categoryHeaderFooterLayoutMap';
@@ -15,41 +15,88 @@ import WhatsAppBubble from '@/components/WhatsAppBubble';
 // ISR Activation: Allows caching static pages on the edge for 60 seconds
 export const revalidate = 60;
 
-interface Props {
+type Props = {
   params: Promise<{ slug: string }>;
-}
+};
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
   const { slug } = await params;
 
   // Blazing fast cache read using only the parsed param string
   const company = await findCompanyCached(slug, 'lean');
 
   if (!company) {
-    return { title: 'Store not found' };
+    return { 
+      title: 'Store not found',
+      description: 'The requested store could not be found on Ghuba.'
+    };
   }
 
   const seo = (company as any).SEO ?? (company as any).sEO;
-  const title = seo?.title || company.name || 'Ghuba';
+  const title = seo?.title || company.name;// || 'Ghuba';
   const description = seo?.description || 'Discover our exclusive collection.';
+
+  // Safely fallback to the root layout's social banner if the store has no logo
+  const previousImages = (await parent).openGraph?.images || [];
+  const images = company.logoUrl ? [company.logoUrl] : previousImages;
 
   return {
     title,
     description,
+    icons: company.logoUrl ? { icon: company.logoUrl, apple: company.logoUrl } : undefined,
     keywords: seo?.keywords || 'ecommerce, ghuba, shops, marketplace',
+    alternates: {
+      canonical: `/${slug}`, // Prevents duplicate content penalties
+    },
     openGraph: {
       title,
       description,
-      images: [company.logoUrl || ''],
+      url: `/${slug}`, // Ensures social shares link directly to the profile
+      images,
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: [company.logoUrl || ''],
+      images,
     },
   };
 }
+
+// export async function generateMetadata({ params }: Props): Promise<Metadata> {
+//   const { slug } = await params;
+
+//   // Blazing fast cache read using only the parsed param string
+//   const company = await findCompanyCached(slug, 'lean');
+
+//   if (!company) {
+//     return { title: 'Store not found' };
+//   }
+
+//   const seo = (company as any).SEO ?? (company as any).sEO;
+//   const title = seo?.title || company.name || 'Ghuba';
+//   const description = seo?.description || 'Discover our exclusive collection.';
+
+//   return {
+//     title,
+//     description,
+//     keywords: seo?.keywords || 'ecommerce, ghuba, shops, marketplace',
+//     openGraph: {
+//       title,
+//       description,
+//       images: [company.logoUrl || ''],
+//     },
+//     twitter: {
+//       card: 'summary_large_image',
+//       title,
+//       description,
+//       images: [company.logoUrl || ''],
+//     },
+//   };
+// }
 
 interface StoreLayoutProps {
   params: Promise<{ slug: string }>;

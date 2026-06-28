@@ -12,15 +12,15 @@ import ThemeProvider from "./theme-provider";
 export const metadata: Metadata = {
   metadataBase: new URL(siteMetadata.siteUrl),
   title: {
-    default: siteMetadata.title, // Removed the `%s |` prefix
-    template: `%s | ${siteMetadata.title}`, // This is the only place `%s` should be used
+    default: siteMetadata.title, 
+    template: `%s | ${siteMetadata.title}`, 
   },
-  description: siteMetadata.description, // Removed redundant template literals
+  description: siteMetadata.description, 
   openGraph: {
-    title: siteMetadata.title, // Removed the `%s |` prefix
+    title: siteMetadata.title, 
     description: siteMetadata.description,
     url: "./",
-    siteName: siteMetadata.title, // Removed the `%s |` prefix
+    siteName: siteMetadata.title, 
     images: [siteMetadata.socialBanner],
     locale: "en_US",
     type: "website",
