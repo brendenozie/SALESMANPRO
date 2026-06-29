@@ -139,7 +139,7 @@ const handleEnrollmentSubmit = async (
 
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#050505] text-black dark:text-white flex flex-col justify-between">
+    <div className="min-h-screen bg-white dark:bg-[#050505] text-black dark:text-white flex flex-col justify-between pt-36">
       {/* HEADER */}
       <header className="border-b border-zinc-100 dark:border-zinc-900 px-6 lg:px-16 py-6 flex items-center justify-between">
         <button 

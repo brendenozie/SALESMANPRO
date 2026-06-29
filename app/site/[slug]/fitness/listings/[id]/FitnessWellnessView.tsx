@@ -1,4 +1,3 @@
-// app/[slug]/products/[productId]/FitnessWellnessView.tsx
 "use client";
 
 import React, { useMemo, useState } from "react";
@@ -11,7 +10,7 @@ import {
   BoltIcon,
   ChevronDownIcon,
   BookOpenIcon,
-  ArrowDownTrayIcon,
+  DocumentIcon, // Replaced ArrowDownTrayIcon with DocumentIcon
 } from "@heroicons/react/24/outline";
 import CourseCheckoutView from "./CourseCheckoutView";
 import NewsletterSection from "@/components/site/NewsletterSection/NewsletterSection";
@@ -240,20 +239,18 @@ export default function FitnessWellnessView({
                         </div>
                       </div>
 
-                      {/* MATERIALS */}
+                      {/* MATERIALS - NOW VIEW ONLY */}
                       {lesson.materials?.length > 0 && (
                         <div className="mt-6 flex flex-wrap gap-3">
                           {lesson.materials.map((material: any) => (
-                            <a
+                            <div
                               key={material.id}
-                              href={material.fileUrl || material.linkUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-zinc-100 dark:bg-zinc-900 text-xs font-black uppercase tracking-widest hover:scale-105 transition-all"
+                              title="Enroll to access this material"
+                              className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-zinc-100 dark:bg-zinc-900 text-xs font-black uppercase tracking-widest text-zinc-500 cursor-not-allowed select-none"
                             >
-                              <ArrowDownTrayIcon className="w-4 h-4" />
-                              {material.title}
-                            </a>
+                              <DocumentIcon className="w-4 h-4" />
+                              {material.title} (Locked)
+                            </div>
                           ))}
                         </div>
                       )}

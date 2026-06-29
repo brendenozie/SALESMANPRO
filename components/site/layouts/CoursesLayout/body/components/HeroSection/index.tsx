@@ -118,7 +118,7 @@ export default function PristineHero({ storeFormData }: PristineHeroProps) {
               <motion.button
                 whileHover={{ scale: 1.02, translateY: -1 }}
                 whileTap={{ scale: 0.98 }}
-                className="px-8 py-4.5 rounded-xl font-bold text-xs uppercase tracking-wider text-white shadow-xl shadow-slate-950/20 transition-all text-center"
+                className="px-8 py-5 rounded-xl font-bold text-xs uppercase tracking-wider text-white shadow-xl shadow-slate-950/20 transition-all text-center"
                 style={{ backgroundColor: primaryColor }}
               >
                 Book a Private Tour

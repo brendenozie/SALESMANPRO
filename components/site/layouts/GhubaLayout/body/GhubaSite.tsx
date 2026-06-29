@@ -1,17 +1,30 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import BannerSlider from "./components/BannerSlider/BannerSlider";
-import FlashDeals from "./components/flashDeals/FlashDeals";
-import TopCate from "./components/top";
-import NewArrivals from "./components/newarrivals";
-import Discount from "./components/discount";
-import Annocument from "./components/annocument/Annocument";
+
+import dynamic from 'next/dynamic';
+import useSWR from 'swr';
+
+// import FlashDeals from "";
+// import TopCate from "";
+// import NewArrivals from "./components/newarrivals";
+// import Discount from "./components/discount";
+// import Annocument from "./components/annocument/Annocument";
 import Wrapper from "./components/wrapper/Wrapper";
 import { useStateContext } from '@/contexts/ContextProvider';
-import Shop from "./components/shops";
+// import Shop from "./components/shops";
 import { StoreForm } from '@/types/typings';
 
+const DynamicBannerSlider = dynamic(() => import('./components/BannerSlider/BannerSlider'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false,});
+const DynamicFlashDeals = dynamic(() => import('./components/flashDeals/FlashDeals'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false,});
+const DynamicTopCate = dynamic(() => import('./components/top'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false,});
+const DynamicNewArrivals = dynamic(() => import('./components/newarrivals'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false,});
+const DynamicDiscount = dynamic(() => import('./components/discount'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false,});
+const DynamicAnnocument = dynamic(() => import('./components/annocument/Annocument'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false,});
+const DynamicWrapper = dynamic(() => import('./components/wrapper/Wrapper'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false,});
+const DynamicShop = dynamic(() => import('./components/shops'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false,});
+
+import { SkeletonGrid } from "./components/SkeletonGrid/SkeletonGrid";
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 const HomePage = ({ pageData, companyId }: { pageData: StoreForm, companyId: string }) => {
@@ -73,14 +86,14 @@ const HomePage = ({ pageData, companyId }: { pageData: StoreForm, companyId: str
     fetchHomepage();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        {/* Replace with your preferred loading spinner or skeleton */}
-        <p className="text-xl font-semibold text-gray-500">Loading store...</p>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="flex h-screen items-center justify-center">
+  //       {/* Replace with your preferred loading spinner or skeleton */}
+  //       <p className="text-xl font-semibold text-gray-500">Loading store...</p>
+  //     </div>
+  //   );
+  // }
 
   if (error) {
     return (
@@ -94,10 +107,10 @@ const HomePage = ({ pageData, companyId }: { pageData: StoreForm, companyId: str
 
   return (
     <>
-      {categories?.length > 0 && <BannerSlider categories={categories} />}
+      {categories?.length > 0 && <DynamicBannerSlider categories={categories} />}
       
       {flashDeals?.length > 0 && (
-        <FlashDeals
+        <DynamicFlashDeals
           productItems={flashDeals}
           addToCart={addToCart}
           decreaseQuantity={decreaseQuantity}
@@ -105,10 +118,10 @@ const HomePage = ({ pageData, companyId }: { pageData: StoreForm, companyId: str
         />
       )}
       
-      {categories?.length > 0 && <TopCate categories={categories} />}
+      {categories?.length > 0 && <DynamicTopCate categories={categories} />}
       
       {newArrivals?.length > 0 && (
-        <NewArrivals
+        <DynamicNewArrivals
           productItems={newArrivals}
           addToCart={addToCart}
           decreaseQuantity={decreaseQuantity}
@@ -117,7 +130,7 @@ const HomePage = ({ pageData, companyId }: { pageData: StoreForm, companyId: str
       )}
       
       {discounts?.length > 0 && (
-        <Discount
+        <DynamicDiscount
           productItems={discounts}
           addToCart={addToCart}
           decreaseQuantity={decreaseQuantity}
@@ -126,7 +139,7 @@ const HomePage = ({ pageData, companyId }: { pageData: StoreForm, companyId: str
       )}
       
       {featuredCategory && featuredCategoryProducts.length > 0 && (
-        <Shop
+        <DynamicShop
           category={featuredCategory}
           shopItems={featuredCategoryProducts}
           addToCart={addToCart}
@@ -135,8 +148,8 @@ const HomePage = ({ pageData, companyId }: { pageData: StoreForm, companyId: str
         />
       )}
       
-      <Annocument />
-      <Wrapper />
+      <DynamicAnnocument />
+      <DynamicWrapper />
     </>
   );
 };
