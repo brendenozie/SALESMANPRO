@@ -63,80 +63,73 @@ const CategoriesGrid = ({ categories }) => {
 };
 
 // --- REFINED SLIDE CARD ---
+
 const SlideCard = ({ slide }) => {
   return (
     <div className="px-2">
       <motion.div
-        className="relative w-full min-h-[550px] md:h-[650px] flex flex-col md:flex-row items-center justify-between overflow-hidden group 
+        className="relative w-full min-h-[500px] md:h-[600px] flex flex-col md:flex-row overflow-hidden group 
                    bg-zinc-50 dark:bg-zinc-950 
-                   rounded-[3rem] md:rounded-[4rem] 
+                   rounded-[2.5rem] md:rounded-[4rem] 
                    border border-zinc-200 dark:border-zinc-800 
                    transition-colors duration-500"
       >
-        {/* Layered Background */}
+        {/* Layered Background - Simplified for Mobile */}
         <div className="absolute inset-0 z-0">
           <Image
             src={slide.bgImage}
             fill
             alt="Background"
-            className="object-cover opacity-20 dark:opacity-30 grayscale group-hover:scale-105 transition-transform duration-[10s]"
+            className="object-cover opacity-20 dark:opacity-30 grayscale group-hover:scale-105 transition-transform duration-[10s] min-h-[500px] md:min-h-[600px] h-[500px] md:h-[600px]"
             loader={loader}
           />
-          {/* Light Mode Gradients */}
-          <div className="absolute inset-0 bg-gradient-to-r from-zinc-50 via-zinc-50/80 to-transparent dark:hidden" />
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-50 via-transparent to-transparent dark:hidden" />
-          
-          {/* Dark Mode Gradients */}
-          <div className="absolute inset-0 hidden dark:block bg-gradient-to-r from-black via-black/80 to-transparent" />
-          <div className="absolute inset-0 hidden dark:block bg-gradient-to-t from-black via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-zinc-50/50 via-zinc-50/80 to-zinc-50 dark:from-black/50 dark:via-black/80 dark:to-black" />
         </div>
 
-        {/* Content */}
-        <div className="relative z-20 w-full md:w-1/2 p-8 md:p-24 space-y-8">
+        {/* Content - Optimized Padding & Font Scaling */}
+        <div className="relative z-20 w-full md:w-1/2 p-8 sm:p-12 md:p-24 flex flex-col justify-center order-2 md:order-1">
           <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-3 bg-amber-500/10 border border-amber-500/20 px-4 py-2 rounded-full w-fit"
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-full w-fit mb-6"
           >
-            <SparklesIcon className="w-4 h-4 text-amber-600 dark:text-amber-500" />
-            <span className="text-amber-600 dark:text-amber-500 text-[10px] font-black uppercase tracking-[0.2em]">
+            <SparklesIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-500" />
+            <span className="text-amber-600 dark:text-amber-500 text-[9px] font-black uppercase tracking-[0.2em]">
               Exclusive Deal
             </span>
           </motion.div>
 
-          <h2 className="text-5xl md:text-8xl font-black uppercase leading-[0.9] text-zinc-900 dark:text-white tracking-tighter transition-colors">
+          <h2 className="text-4xl sm:text-6xl md:text-8xl font-black uppercase leading-[0.9] text-zinc-900 dark:text-white tracking-tighter mb-6 transition-colors">
             {slide.title}
           </h2>
 
-          <p className="text-lg md:text-xl text-zinc-600 dark:text-zinc-400 font-medium max-w-sm leading-relaxed transition-colors">
+          <p className="text-sm sm:text-lg text-zinc-600 dark:text-zinc-400 font-medium max-w-sm leading-relaxed mb-8 transition-colors">
             {slide.description}
           </p>
 
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="group/btn relative px-10 py-5 bg-amber-500 text-white dark:text-black font-black uppercase tracking-widest text-xs rounded-2xl flex items-center gap-3 overflow-hidden shadow-lg shadow-amber-500/20"
+            className="w-full sm:w-auto px-8 py-4 bg-amber-500 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl flex items-center justify-center gap-3 shadow-lg shadow-amber-500/20"
           >
-            <span className="relative z-10">Shop Now</span>
-            <ArrowRightIcon className="w-4 h-4 z-10 group-hover/btn:translate-x-2 transition-transform" />
-            {/* Glossy Overlay for Light/Dark feel */}
-            <div className="absolute inset-0 bg-white opacity-0 group-hover/btn:opacity-20 transition-opacity" />
+            <span>Shop Now</span>
+            <ArrowRightIcon className="w-4 h-4" />
           </motion.button>
         </div>
 
-        {/* Image Display */}
+        {/* Image Display - Constrained for Mobile */}
         <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
-          className="relative z-10 w-full md:w-1/2 h-[350px] md:h-full flex justify-center items-center p-12"
+          className="relative z-10 w-full md:w-1/2 h-[250px] sm:h-[300px] md:h-full flex justify-center items-center order-1 md:order-2 p-6 md:p-12"
         >
-          <div className="relative w-full h-full group-hover:drop-shadow-[0_0_50px_rgba(245,158,11,0.2)] transition-all duration-700">
+          <div className="relative w-full h-full max-w-[300px] md:max-w-none group-hover:drop-shadow-[0_0_50px_rgba(245,158,11,0.15)] transition-all duration-700">
             <Image
               src={slide.img}
               loader={loader}
               alt={slide.title}
               fill
-              className="object-contain drop-shadow-[0_30px_60px_rgba(0,0,0,0.15)] dark:drop-shadow-[0_30px_60px_rgba(0,0,0,0.8)]"
+              className="object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] dark:drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)] min-h-[250px] sm:min-h-[300px] md:min-h-[400px] h-[250px] sm:h-[300px] md:h-[400px] transition-transform duration-700 group-hover:scale-105"
             />
           </div>
         </motion.div>
