@@ -1,12 +1,16 @@
 "use client"
 
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import dynamic from "next/dynamic";
 import debounce from "lodash.debounce";
 import { useInView } from 'react-intersection-observer';
 import Filters from "@/components/Filters";
 import { useRouter } from "next/navigation";
 import { useStateContext } from '@/contexts/ContextProvider';
-import GhubaProductCard from "@/components/site/layouts/GhubaLayout/body/components/GhubaProductCard";
+
+import { SkeletonGrid } from "@/components/site/layouts/GhubaLayout/body/components/SkeletonGrid/SkeletonGrid";
+const DynamicBannerSlider = dynamic(() => import('@/components/site/layouts/GhubaLayout/body/components/GhubaProductCard'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false,});
+
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
@@ -169,7 +173,7 @@ const ProductList = () => {
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1">
             {products.length > 0 ? (
               products.map((product) => (
-                <GhubaProductCard 
+                <DynamicBannerSlider 
                   key={product._id || product.id}
                   product={product} 
                   toggleLike={toggleLike} 
