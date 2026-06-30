@@ -1,8 +1,8 @@
 "use server";
 
-import { prisma } from "@/lib/prisma"; // Adjust path to your prisma client
-import { encrypt } from "@/lib/crypto";
+import prisma from "@/server/db/prismadb";
 import { revalidatePath } from "next/cache";
+import { encryptKRA } from "../crypto/aes";
 
 export async function saveKraConfiguration(
   companyId: string,
@@ -20,7 +20,7 @@ export async function saveKraConfiguration(
   }
 
   // Encrypt the manager key if provided
-  const encryptedManagerKey = managerKey ? encrypt(managerKey) : null;
+  const encryptedManagerKey = managerKey ? encryptKRA(managerKey) : null;
 
   try {
     // Upsert ensures we either update the existing config or create a new one

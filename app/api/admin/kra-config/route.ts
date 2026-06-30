@@ -1,6 +1,7 @@
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
+import { encryptKRA } from "@/lib/crypto/aes";
 
 /**
  * GET: Fetch the eTIMS configuration for a specific company
@@ -110,6 +111,9 @@ export async function POST(req: Request) {
 
     // Force strict database alignment validation checks
     const formattedPin = kraPin.toUpperCase().trim();
+    
+    // Encrypt the manager key if provided
+    const encryptedManagerKey = managerKey ? encryptKRA(managerKey) : null;
 
     const updatedConfig = await prisma.kraConfiguration.upsert({
       where: { companyId },
@@ -119,7 +123,7 @@ export async function POST(req: Request) {
         kraPin: formattedPin,
         branchId: branchId.trim(),
         deviceId: deviceId.trim(),
-        ...(managerKey ? { managerKey: managerKey.trim() } : {}),
+        ...(managerKey ? { managerKey: encryptedManagerKey } : {}),
       },
       create: {
         companyId,
@@ -128,7 +132,7 @@ export async function POST(req: Request) {
         kraPin: formattedPin,
         branchId: branchId.trim(),
         deviceId: deviceId.trim(),
-        managerKey: managerKey ? managerKey.trim() : "",
+        managerKey: encryptedManagerKey,
       },
     });
 
