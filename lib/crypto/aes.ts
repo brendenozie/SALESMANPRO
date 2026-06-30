@@ -49,6 +49,40 @@ export function decrypt(payload: { iv: string; value: string; tag: string }) {
     decipher.final(),
   ]).toString("utf8");
 }
+
+
+// import crypto from "crypto";
+
+const ALGORITHM = "aes-256-gcm";
+const SECRET_KEY = process.env.ENCRYPTION_KEY as string; // Must be 32 characters
+const IV_LENGTH = 12;
+
+export function encryptKRA(text: string): string {
+  const iv = crypto.randomBytes(IV_LENGTH);
+  const cipher = crypto.createCipheriv(
+    ALGORITHM,
+    Buffer.from(SECRET_KEY, "hex"),
+    iv,
+  );
+  let encrypted = cipher.update(text, "utf8", "hex");
+  encrypted += cipher.final("hex");
+  const tag = cipher.getAuthTag();
+  return `${iv.toString("hex")}:${tag.toString("hex")}:${encrypted}`;
+}
+
+export function decryptKRA(text: string): string {
+  const [ivHex, tagHex, encrypted] = text.split(":");
+  const decipher = crypto.createDecipheriv(
+    ALGORITHM,
+    Buffer.from(SECRET_KEY, "hex"),
+    Buffer.from(ivHex, "hex"),
+  );
+  decipher.setAuthTag(Buffer.from(tagHex, "hex"));
+  let decrypted = decipher.update(encrypted, "hex", "utf8");
+  decrypted += decipher.final("utf8");
+  return decrypted;
+}
+
 // export function encrypt(value: string) {
 //   const iv = crypto.randomBytes(12); // GCM recommended 96-bit IV
 //   const cipher = crypto.createCipheriv("aes-256-gcm", MASTER_KEY, iv);
@@ -74,3 +108,5 @@ export function decrypt(payload: { iv: string; value: string; tag: string }) {
 //   const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
 //   return decrypted.toString("utf8");
 // }
+
+

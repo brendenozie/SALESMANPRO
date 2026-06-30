@@ -482,6 +482,7 @@ model Company {
   eventTicketPurchases EventTicketPurchase[]
   userProgresses       UserProgress[]
   socialIntegrations   SocialIntegration[]
+  kraConfigurations    KraConfiguration[]
 
   @@index([userId])
   @@index([name])
@@ -489,6 +490,31 @@ model Company {
   @@index([deletedAt])
   @@index([createdAt])
   @@index([deletedAt, slug])
+}
+
+//Etims Configuration
+model KraConfiguration {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId String  @unique @db.ObjectId // Changed to @unique assuming 1 configuration per tenant company
+
+  // eTIMS Operational Toggles
+  etimsEnabled Boolean @default(false)
+  environment  String  @default("sandbox") // 'sandbox' or 'production'
+  etimsUrl     String? // KRA Sandbox or Production base URL
+
+  // Authentication & Onboarding
+  kraPin     String // KRA PIN for tax purposes
+  branchId   String  @default("00") // Default to head office '00'
+  managerKey String? // The platform or account level eTIMS API Manager Key
+  deviceId   String? // System/Device Serial Number assigned by KRA after onboarding
+
+  // Transaction Keys & Session State
+  cmcKey     String? // Encrypted Communication Key received during initialization
+  lastInitAt DateTime? // Crucial for managing the 24-hour key lifecycle
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // This model represents the integration of a company's account with various social media platforms.
@@ -2656,6 +2682,11 @@ model OrderItem {
   marketplaceListing   marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
   quantity             Int
   price                Float
+  totalPrice           Float
+  discount             Float?
+  tax                  Float?
+  serviceNotes         String?
+  selectedOptions      Json? // e.g., { color: "red", size: "M" }
 
   riderId String?
   status  OrderStatus? @default(PENDING)
