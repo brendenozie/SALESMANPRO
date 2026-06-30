@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/prisma";
-import { decrypt } from "@/lib/crypto";
+import prisma  from "@/server/db/prismadb";
+import { decryptKRA } from "../crypto/aes";
 
 // KRA eTIMS Tax Code definitions
 export type TaxType = "A" | "B" | "C" | "D" | "E";
@@ -32,15 +32,15 @@ export class EtimsService {
       where: { companyId },
     });
 
-    if (!config || !config.etimsEnabled || !config.is_active) {
+    if (!config || !config.etimsEnabled || !config.etimsEnabled) {
       throw new Error(
         "eTIMS integration is disabled or not configured for this company.",
       );
     }
 
     // 2. Decrypt the tenant secrets at execution time
-    const decryptedCmcKey = decrypt(config.cmcKey || "");
-    const decryptedManagerKey = decrypt(config.managerKey || "");
+    const decryptedCmcKey = decryptKRA(config.cmcKey || "");
+    const decryptedManagerKey = decryptKRA(config.managerKey || "");
 
     if (!decryptedCmcKey) {
       throw new Error("Failed to decrypt eTIMS Communication Key (cmcKey).");

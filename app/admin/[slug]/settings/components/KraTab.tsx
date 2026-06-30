@@ -27,7 +27,7 @@ export const KraTab: React.FC<KraTabProps> = ({ companyId, showStatus, apiBaseUr
   useEffect(() => {
     async function fetchKraConfig() {
       try {
-        const res = await fetch(`${apiBaseUrl}/kra-config?companyId=${companyId}`);
+        const res = await fetch(`${apiBaseUrl}/admin/kra-config?companyId=${companyId}`);
         if (res.ok) {
           const payload = await res.json();
           if (payload.config) {
@@ -51,7 +51,7 @@ export const KraTab: React.FC<KraTabProps> = ({ companyId, showStatus, apiBaseUr
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/kra-config`, {
+      const res = await fetch(`${apiBaseUrl}/admin/kra-config`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -78,7 +78,7 @@ export const KraTab: React.FC<KraTabProps> = ({ companyId, showStatus, apiBaseUr
   const handleDeviceInitialization = async () => {
     setInitLoading(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/kra-config/initialize`, {
+      const res = await fetch(`${apiBaseUrl}/admin/kra-config/initialize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyId }),
