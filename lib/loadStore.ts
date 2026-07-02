@@ -12,16 +12,20 @@ export interface LoadedStore {
 }
 
 export async function loadStore(slug: string): Promise<LoadedStore> {
-
   const raw = await findCompanyCached(slug, "page");
 
   if (!raw) notFound();
 
   const pageData = transformCompanyToStoreForm(raw);
-  const componentName = getComponentNameForCategory(
-    pageData.category,
-    pageData.variant || "",
-  );
+  // 2. Apply your "ghuba" override logic
+  const isGhuba = pageData.domain === "ghuba" || pageData.slug === "ghuba";
+  const categoryInput = pageData.category || "other";
+  const variantInput = pageData.variant || "";
+
+  const category = isGhuba ? "other" : categoryInput;
+  const variant = isGhuba ? "ghuba" : variantInput;
+
+  const componentName = getComponentNameForCategory(category, variant || "");
 
   return { raw, pageData, componentName };
 }
