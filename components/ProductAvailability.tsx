@@ -8,10 +8,32 @@ import {
   TagIcon,
   SparklesIcon,
   CurrencyDollarIcon,
-  CalendarDaysIcon
+  CalendarDaysIcon,
+  ShieldCheckIcon,
+  ShoppingBagIcon
 } from "@heroicons/react/24/outline";
 
-// No changes needed here, the interface is correct for updateField
+// Enums (Assuming these are imported from your types file)
+export enum ListingSystemStatus {
+  DRAFT = "DRAFT",
+  UNDER_REVIEW = "UNDER_REVIEW",
+  ACTIVE = "ACTIVE",
+  REJECTED = "REJECTED",
+  INACTIVE = "INACTIVE",
+}
+
+export enum ListingMarketStatus {
+  AVAILABLE = "AVAILABLE",
+  UNDER_OFFER = "UNDER_OFFER",
+  SOLD = "SOLD",
+  RENTED = "RENTED",
+}
+
+export enum ListingTransactionType {
+  SALE = "SALE",
+  RENT = "RENT",
+}
+
 interface ProductAvailabilityProps {
   formData: Record<string, any>;
   setFormData: (name: string, value: any) => void;
@@ -49,94 +71,33 @@ const FeatureToggle = ({
 );
 
 const ProductAvailability: React.FC<ProductAvailabilityProps> = ({ formData, setFormData }) => {
-  
-      // Default to "buy" if not set in your ProductForm type yet
-  const listingType = (formData as any).listingTransactionType || "SALE";
-  
+  // Default fallbacks for the statuses
+  const listingType = formData.listingTransactionType || ListingTransactionType.SALE;
+  const systemStatus = formData.listingSystemStatus || ListingSystemStatus.DRAFT;
+  const marketStatus = formData.listingMarketStatus || ListingMarketStatus.AVAILABLE;
+
   return (
     <section className="p-6 bg-white rounded-2xl shadow-xl border border-gray-200 space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-800">Product </h2>
+        <h2 className="text-2xl font-bold text-gray-800">Product Availability</h2>
         <p className="text-gray-500 mt-1">
-          Control stock status, quantity, and special flags for this product.
+          Control stock status, listing visibility, and special flags for this product.
         </p>
       </div>
 
-      {/* Stock Status */}
-      {/* <div className="bg-gray-50 p-5 rounded-lg shadow-sm">
-        <label className="block text-gray-700 font-medium mb-2">Stock Status</label>
-        <div className="flex items-center space-x-4">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setFormData("isAvailable", true)}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-              formData.isAvailable
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-          >
-            <CheckCircleIcon className="w-5 h-5" />
-            <span>In Stock</span>
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => {
-              setFormData("isAvailable", false);
-              setFormData("restockDate", ""); // This line assumes 'restockDate' is a field you want to clear
-            }}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-              !formData.isAvailable
-                ? "bg-red-600 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-          >
-            <XCircleIcon className="w-5 h-5" />
-            <span>Out of Stock</span>
-          </motion.button>
-        </div>
-      </div>
-
-      {/* Quantity & Restock */}
-      {/* <div className="bg-gray-50 p-5 rounded-lg shadow-sm space-y-4">
-        <div>
-          <label className="block text-gray-700 font-medium mb-1">Quantity Available</label>
-          <input
-            type="number"
-            name="quantity"
-            min={0}
-            value={formData.quantity || ""}
-            onChange={(e) => setFormData("quantity", parseInt(e.target.value, 10) || 0)}
-            placeholder="e.g. 100"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        {!formData.isAvailable && (
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">Restock Date</label>
-            <input
-              type="date"
-              name="restockDate"
-              value={formData.restockDate || ""}
-              onChange={(e) => setFormData("restockDate", e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        )}
-      </div> */}
-
-
-        {/* === Buy / Rent Toggle Segmented Control === */}
+      {/* === Transaction & Status Configuration === */}
+      <div className="bg-gray-50 p-5 rounded-lg shadow-sm space-y-6">
+        
+        {/* Listing Intent (Buy/Rent) */}
         <div className="space-y-2">
           <label className="block text-gray-700 text-sm font-medium">Listing Intent</label>
           <div className="flex bg-gray-200/70 p-1 rounded-xl w-full sm:w-72">
             <button
               type="button"
-              onClick={() => setFormData("listingTransactionType", "SALE")}
+              onClick={() => setFormData("listingTransactionType", ListingTransactionType.SALE)}
               className={`flex-1 flex items-center justify-center py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
-                listingType === "SALE"
+                listingType === ListingTransactionType.SALE
                   ? "bg-white shadow-sm text-blue-600"
                   : "text-gray-500 hover:text-gray-800"
               }`}
@@ -146,9 +107,9 @@ const ProductAvailability: React.FC<ProductAvailabilityProps> = ({ formData, set
             </button>
             <button
               type="button"
-              onClick={() => setFormData("listingTransactionType", "RENT")}
+              onClick={() => setFormData("listingTransactionType", ListingTransactionType.RENT)}
               className={`flex-1 flex items-center justify-center py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
-                listingType === "RENT"
+                listingType === ListingTransactionType.RENT
                   ? "bg-white shadow-sm text-blue-600"
                   : "text-gray-500 hover:text-gray-800"
               }`}
@@ -158,6 +119,49 @@ const ProductAvailability: React.FC<ProductAvailabilityProps> = ({ formData, set
             </button>
           </div>
         </div>
+
+        {/* Listing Statuses */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+          
+          {/* System Status */}
+          <div className="space-y-2">
+            <label className="flex items-center space-x-2 text-gray-700 text-sm font-medium">
+              <ShieldCheckIcon className="w-4 h-4 text-gray-500" />
+              <span>System Status</span>
+            </label>
+            <select
+              value={systemStatus}
+              onChange={(e) => setFormData("listingSystemStatus", e.target.value)}
+              className="block w-full rounded-xl border-gray-300 p-3 bg-white shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+            >
+              <option value={ListingSystemStatus.DRAFT}>Draft (Not Published)</option>
+              <option value={ListingSystemStatus.UNDER_REVIEW}>Under Review</option>
+              <option value={ListingSystemStatus.ACTIVE}>Active (Live)</option>
+              <option value={ListingSystemStatus.REJECTED}>Rejected</option>
+              <option value={ListingSystemStatus.INACTIVE}>Inactive (Archived)</option>
+            </select>
+          </div>
+
+          {/* Market Status */}
+          <div className="space-y-2">
+            <label className="flex items-center space-x-2 text-gray-700 text-sm font-medium">
+              <ShoppingBagIcon className="w-4 h-4 text-gray-500" />
+              <span>Market Status</span>
+            </label>
+            <select
+              value={marketStatus}
+              onChange={(e) => setFormData("listingMarketStatus", e.target.value)}
+              className="block w-full rounded-xl border-gray-300 p-3 bg-white shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
+            >
+              <option value={ListingMarketStatus.AVAILABLE}>Available</option>
+              <option value={ListingMarketStatus.UNDER_OFFER}>Under Offer (Deposit Paid)</option>
+              <option value={ListingMarketStatus.SOLD}>Sold</option>
+              <option value={ListingMarketStatus.RENTED}>Rented</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
 
       {/* Feature Toggles */}
       <div className="bg-gray-50 p-5 rounded-lg shadow-sm space-y-4">
@@ -196,14 +200,14 @@ const ProductAvailability: React.FC<ProductAvailabilityProps> = ({ formData, set
         </div>
 
         {/* Deal & Availability Date Range */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-4 border-t border-gray-200">
           <label className="block">
             <span className="text-gray-700 font-medium text-sm">Deal Start Date</span>
             <input
               type="datetime-local"
               value={formData.startDealDate || ""}
               onChange={(e) => setFormData("startDealDate", e.target.value)}
-              className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
+              className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-blue-500 focus:border-blue-500 bg-white"
             />
           </label>
           <label className="block">
@@ -212,7 +216,7 @@ const ProductAvailability: React.FC<ProductAvailabilityProps> = ({ formData, set
               type="datetime-local"
               value={formData.endDealDate || ""}
               onChange={(e) => setFormData("endDealDate", e.target.value)}
-              className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
+              className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-blue-500 focus:border-blue-500 bg-white"
             />
           </label>
           <label className="block">
@@ -221,7 +225,7 @@ const ProductAvailability: React.FC<ProductAvailabilityProps> = ({ formData, set
               type="datetime-local"
               value={formData.availabilityStart || ""}
               onChange={(e) => setFormData("availabilityStart", e.target.value)}
-              className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
+              className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-blue-500 focus:border-blue-500 bg-white"
             />
           </label>
           <label className="block">
@@ -230,7 +234,7 @@ const ProductAvailability: React.FC<ProductAvailabilityProps> = ({ formData, set
               type="datetime-local"
               value={formData.availabilityEnd || ""}
               onChange={(e) => setFormData("availabilityEnd", e.target.value)}
-              className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-indigo-500 focus:border-indigo-500"
+              className="mt-1 block w-full rounded-xl border-gray-300 p-3 focus:ring-blue-500 focus:border-blue-500 bg-white"
             />
           </label>
         </div>
