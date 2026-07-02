@@ -296,7 +296,9 @@ function productToListingForm(
     videos: p?.videos ?? [],
     ebooks: p?.ebooks ?? [],
 
-    listingTransactionType: p?.listingTransactionType
+    listingTransactionType: p?.listingTransactionType,
+    listingMarketStatus: p?.listingMarketStatus,
+    listingSystemStatus: p?.listingSystemStatus
     // NOTE: videos are not part of the standard ProductForm -> MarketListingForm conversion in original code
   } as MarketListingForm;
 }
@@ -417,7 +419,9 @@ function buildListingPayload(
     status: f.status,
     collectionId: f.collectionId || null,
     year: f.year,    
-    listingTransactionType: f.listingTransactionType
+    listingTransactionType: f.listingTransactionType,
+    listingMarketStatus: f.listingMarketStatus,
+    listingSystemStatus: f.listingSystemStatus,
   };
 }
 

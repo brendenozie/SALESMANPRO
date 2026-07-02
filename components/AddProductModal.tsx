@@ -341,7 +341,9 @@ function useProductForm(product: Partial<ProductForm> | null, companyId: string)
     fulfillmentStatus: product?.fulfillmentStatus,
     providerRating: product?.providerRating,
     bookingSlots: product?.bookingSlots,
-    listingTransactionType: product?.listingTransactionType
+    listingTransactionType: product?.listingTransactionType,
+    listingMarketStatus: product?.listingMarketStatus,
+    listingSystemStatus: product?.listingSystemStatus,
   } as ProductForm), [product, companyId]);
 
   const [formData, setFormData] = useState<ProductForm>(getInitial);
