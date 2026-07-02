@@ -24,8 +24,41 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, usePathname } from "next/navigation";
 import { debounce } from "lodash";
 import { useStateContext } from "@/contexts/ContextProvider";
+import { useStoreContext } from '@/contexts/StoreContext';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+
+// "use client";
+
+// import React, { useState, useEffect } from "react";
+// import logo from "@/assets/shop.png";
+// import {
+//   ShoppingBagIcon,
+//   XMarkIcon,
+//   UserIcon,
+//   MagnifyingGlassIcon,
+//   MoonIcon,
+//   SunIcon,
+//   HomeIcon,
+//   DocumentTextIcon,
+//   DocumentDuplicateIcon,
+//   BuildingLibraryIcon,
+//   TruckIcon,
+//   PhoneIcon,
+//   MapPinIcon,
+//   TrashIcon,
+//   MinusIcon,
+//   PlusIcon
+// } from "@heroicons/react/24/outline";
+// import { motion, AnimatePresence } from "framer-motion";
+// import { useRouter, usePathname } from "next/navigation";
+// import { debounce } from "lodash";
+// import { useStateContext } from "@/contexts/ContextProvider";
+
+// const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+
+// Assuming defaultStoreData is imported or defined elsewhere in your file
+const defaultStoreData = {}; 
 
 const Header = () => {
   const { 
@@ -36,8 +69,14 @@ const Header = () => {
     isCartOpen, 
     setIsCartOpen, 
     isOpen, 
-    setIsOpen 
+    setIsOpen
   } = useStateContext();
+
+
+  const { storeFormData } = useStoreContext();
+
+  const data = { ...defaultStoreData, ...storeFormData };
+  const { name, logoUrl, themeSettings, contactPhone, contactEmail } = data;
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
@@ -59,6 +98,8 @@ const Header = () => {
           locationName="Nairobi, KE" 
           isOpen={isOpen} 
           setIsOpen={setIsOpen} 
+          phone={contactPhone}
+          email={contactEmail}
         />
         
         <nav
@@ -67,13 +108,28 @@ const Header = () => {
           }`}
         >
           <div className="container mx-auto flex items-center justify-between px-6 py-4">
-            <a href="/">
-              <img
-                src={logo.src}
-                alt="Logo"
-                className="w-32 transition-transform transform hover:scale-110"
-                loading="lazy"
-              />
+            <a href="/" className="flex items-center gap-3">
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt={name || "Store Logo"}
+                  className="h-10 w-auto transition-transform transform hover:scale-105 object-contain"
+                  loading="lazy"
+                />
+              ) : (
+                <img
+                  src={logo.src}
+                  alt="Default Logo"
+                  className="w-32 transition-transform transform hover:scale-110"
+                  loading="lazy"
+                />
+              )}
+              {/* Optional: Show store name text if no logo exists, or alongside it if desired */}
+              {name && !logoUrl && (
+                <span className="font-black text-xl text-gray-900 dark:text-white uppercase tracking-tight">
+                  {name}
+                </span>
+              )}
             </a>
 
             <SearchBar />
@@ -111,6 +167,28 @@ const Header = () => {
     </>
   );
 };
+
+/* --- SUBCOMPONENTS --- */
+
+const TopBar = ({ locationName, isOpen, setIsOpen, phone, email }: any) => (
+  <div className="bg-yellow-400 text-black text-sm py-2 hidden md:block dark:bg-yellow-500">
+    <div className="container mx-auto flex justify-between px-6">
+      <div className="flex space-x-6 font-medium">
+        <span>{phone || "+254 732 771 353"}</span>
+        <span>{email || "support@salesmanpro.site"}</span>
+      </div>
+      <div className="flex space-x-6 font-medium">
+        <span className="flex items-center space-x-2 cursor-pointer hover:opacity-80" onClick={() => setIsOpen(!isOpen)}>
+          <MapPinIcon className="w-4 h-4" />
+          <span>{locationName || "Select Location"}</span>
+        </span>
+        <span className="cursor-pointer hover:opacity-80">FAQs</span>
+      </div>
+    </div>
+  </div>
+);
+
+// ... The rest of your components (CartDrawer, SearchBar, NavIcons, DesktopMenu, BottomNav, MobileMenu, menuItems) remain exactly the same ...
 
 /* --- SUBCOMPONENTS --- */
 
@@ -350,23 +428,6 @@ const SearchBar = () => {
   );
 };
 
-const TopBar = ({ locationName, isOpen, setIsOpen }: any) => (
-  <div className="bg-yellow-400 text-black text-sm py-2 hidden md:block dark:bg-yellow-500">
-    <div className="container mx-auto flex justify-between px-6">
-      <div className="flex space-x-6">
-        <span>+254 732 771 353</span>
-        <span>support@salesmanpro.site</span>
-      </div>
-      <div className="flex space-x-6">
-        <span className="flex items-center space-x-2 cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
-          <MapPinIcon className="w-4 h-4" />
-          <span>{locationName || "Select Location"}</span>
-        </span>
-        <span className="cursor-pointer">FAQs</span>
-      </div>
-    </div>
-  </div>
-);
 
 const NavIcons = ({ user, cart, isDarkMode, setMode, isCartOpen, setIsCartOpen }: any) => {
   const router = useRouter();

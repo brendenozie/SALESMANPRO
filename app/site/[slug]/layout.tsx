@@ -114,20 +114,45 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
   }
 
   const storeFormData = transformCompanyToStoreForm(raw);
-  const category = normalize(storeFormData.category || 'other');
-  const variant = normalize(storeFormData.variant || '');
+  // const category = normalize(storeFormData.category || 'other');
+  // const variant = normalize(storeFormData.variant || '');
 
-  const categoryMap = new Map(SITE_CATEGORIES.map(c => [normalize(c.name), c]));
+  // const categoryMap = new Map(SITE_CATEGORIES.map(c => [normalize(c.name), c]));
   
-  let LayoutComponent = categoryHeaderFooterLayoutMap[variant] || categoryHeaderFooterLayoutMap[category]
-    || (() => {
-      const matchedCategory = categoryMap.get(category)
-      if (matchedCategory?.variants?.length) {
-        const firstVariant = normalize(matchedCategory.variants[0].name);
-        return categoryHeaderFooterLayoutMap[firstVariant];
-      }
-    })()
-    || categoryHeaderFooterLayoutMap['default'];
+  // let LayoutComponent = categoryHeaderFooterLayoutMap[variant] || categoryHeaderFooterLayoutMap[category]
+  //   || (() => {
+  //     const matchedCategory = categoryMap.get(category)
+  //     if (matchedCategory?.variants?.length) {
+  //       const firstVariant = normalize(matchedCategory.variants[0].name);
+  //       return categoryHeaderFooterLayoutMap[firstVariant];
+  //     }
+  //   })()
+  //   || categoryHeaderFooterLayoutMap['default'];
+
+  // 1. Normalize the inputs
+  const categoryInput = storeFormData.category || 'other';
+  const variantInput = storeFormData.variant || '';
+
+  // 2. Apply your "ghuba" override logic
+  const isGhuba = storeFormData.domain === 'ghuba' || storeFormData.slug === 'ghuba';
+
+  const category = isGhuba ? 'other' : normalize(categoryInput);
+  const variant = isGhuba ? 'ghuba' : normalize(variantInput);
+
+  // 3. Map setup
+  const categoryMap = new Map(SITE_CATEGORIES.map(c => [normalize(c.name), c]));
+
+  // 4. Determine the Layout Component
+  let LayoutComponent = categoryHeaderFooterLayoutMap[variant] 
+  || categoryHeaderFooterLayoutMap[category]
+  || (() => {
+    const matchedCategory = categoryMap.get(category);
+    if (matchedCategory?.variants?.length) {
+      const firstVariant = normalize(matchedCategory.variants[0].name);
+      return categoryHeaderFooterLayoutMap[firstVariant];
+    }
+  })()
+  || categoryHeaderFooterLayoutMap['default'];
 
   const userId = ''; // Replace with session data when needed
 
