@@ -852,6 +852,8 @@ enum ListingMarketStatus {
 }
 
 enum ListingSystemStatus {
+  ACTIVE // Replaces ACTIVE / Available
+  UNDER_REVIEW // Replaces PENDING / Under_Offer
   DRAFT // Replaces DRAFT / Draft
   INACTIVE // Replaces INACTIVE (Archived/Hidden)
   REJECTED // Replaces REJECTED (Admin denied)
