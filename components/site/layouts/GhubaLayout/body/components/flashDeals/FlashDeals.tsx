@@ -110,7 +110,7 @@ const FlashDeals = ({ productItems, addToCart }: any) => {
         <div className="max-w-[1600px] mx-auto px-4 md:px-6">
           
           {/* Header - Adjusted for Mobile Stack */}
-          <div className="flex flex-col md:flex-row justify-between items-center mb-8 md:mb-10 gap-6">
+          <div className="flex flex-col md:flex-row justify-between items-center md:items-end  mb-8 md:mb-10 gap-6">
             <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 text-center md:text-left">
               <motion.div
                 className="w-14 h-14 md:w-16 md:h-16 bg-amber-500 flex items-center justify-center rounded-2xl md:rounded-3xl shadow-2xl shadow-amber-500/20"
