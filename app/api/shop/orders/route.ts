@@ -38,6 +38,7 @@ const orderItemSchema = z.object({
   timeSlot: z.string().optional(),
   quantity: z.number().int().positive(),
   price: z.number().positive(),
+  selectedOptions: z.record(z.string(), z.any()).optional(), // Optional selected options for the item
 });
 
 const orderSchema = z.object({

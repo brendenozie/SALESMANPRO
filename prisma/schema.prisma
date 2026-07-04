@@ -2604,7 +2604,7 @@ model ConsumerInventoryLog {
 
 model CustomerOrder {
   id            String      @id @default(auto()) @map("_id") @db.ObjectId
-  consumerId    String      @db.ObjectId
+  consumerId    String?     @db.ObjectId
   name          String?
   email         String?
   phone         String?

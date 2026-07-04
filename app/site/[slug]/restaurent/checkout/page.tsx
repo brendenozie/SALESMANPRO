@@ -218,7 +218,7 @@ export default function CheckoutPage(): JSX.Element {
         email: billing.email,
         phone: billing.phone,
         promoCode,
-        items: cart.map((i: any) => ({ marketplaceListingId: i.id, quantity: i.quantity, price: i.finalPrice })),
+        items: cart.map((i: any) => ({ marketplaceListingId: i.id, quantity: i.quantity, price: i.finalPrice, totalPrice: i.finalPrice * i.quantity, selectedOptions: i.selectedOptions || [] })),
         shippingAddress: {
           display_name: shipping.display_name,
           lat: shipping.lat,

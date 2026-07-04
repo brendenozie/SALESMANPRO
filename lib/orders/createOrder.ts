@@ -61,6 +61,8 @@ export async function createOrder(data: any) {
           price: item.price,
           date: item.date || null,
           timeSlot: item.timeSlot || null,
+          totalPrice: item.price * item.quantity, // Calculate total price for the item
+          selectedOptions: item.selectedOptions || null, // Store selected options if available
         })),
       },
     },

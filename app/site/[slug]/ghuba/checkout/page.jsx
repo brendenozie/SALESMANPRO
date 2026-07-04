@@ -176,7 +176,7 @@ const CheckoutPage = () => {
         
         consumerId: session?.user?.id,
         companyId: storeFormData?.id,
-        items: cart.map(i => ({ marketplaceListingId: i.id, quantity: i.quantity, price: i.finalPrice })),
+        items: cart.map(i => ({ marketplaceListingId: i.id, quantity: i.quantity, price: i.finalPrice, totalPrice: i.finalPrice * i.quantity, selectedOptions: i.selectedOptions || [] })),
         shippingAddress: formData.shippingAddress,
         shippingMethod: formData.shippingMethod,
         delivery:formData.paymentMethod == "pickupatshop",
