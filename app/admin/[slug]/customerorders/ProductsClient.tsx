@@ -205,6 +205,17 @@ export default function ProductsClient({ initialOrders, initialRiders, paginatio
                                </div>
                             </div>
                             <span className="font-medium text-gray-800">{item.marketplaceListing.name}</span>
+                            <span className="text-xs text-gray-400">
+                              {item.selectedOptions && item.selectedOptions.length > 0 ? (
+                                <span>
+                                  {item.selectedOptions.map((option: any, idx: number) => (
+                                    <span key={idx} className="inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-md mr-2">
+                                      {option.name}
+                                    </span>
+                                  ))}
+                                </span>
+                              ) : null}
+                            </span>
                           </div>
                         </td>
                         <td className="px-6 py-4 text-center text-gray-600">x{item.quantity}</td>
