@@ -50,6 +50,46 @@ export function decrypt({
   iv: string;
   tag: string;
 }) {
+  // 1. Check for missing or malformed incoming data
+  if (!value || !iv || !tag) {
+    console.error("Decryption failed due to missing inputs:", { value, iv, tag });
+    throw new Error("Crypto Error: Missing value, iv, or tag for decryption.");
+  }
+
+  // 2. Log lengths to verify data isn't truncated (IV should be 24 hex chars, Tag should be 32 hex chars)
+  console.log(`[Crypto Debug] IV length: ${iv.length}, Tag length: ${tag.length}, Value length: ${value.length}`);
+
+  const decipher = crypto.createDecipheriv(
+    algorithm,
+    getEncryptionKey(),
+    Buffer.from(iv, "hex"),
+  );
+
+  decipher.setAuthTag(Buffer.from(tag, "hex"));
+
+  try {
+    const decrypted = Buffer.concat([
+      decipher.update(Buffer.from(value, "hex")),
+      decipher.final(),
+    ]);
+
+    return decrypted.toString("utf8");
+  } catch (err: any) {
+    // 3. Catch the exact point of authentication failure
+    console.error("Authentication failed. Check if BACKUP_ENCRYPTION_KEY matches the encryption source.");
+    throw err;
+  }
+}
+
+export function decryptV3({
+  value,
+  iv,
+  tag,
+}: {
+  value: string;
+  iv: string;
+  tag: string;
+}) {
   // 3. Call getEncryptionKey() here too
   const decipher = crypto.createDecipheriv(
     algorithm,

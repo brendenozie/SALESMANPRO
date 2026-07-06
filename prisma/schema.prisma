@@ -2688,7 +2688,7 @@ model OrderItem {
   discount             Float?
   tax                  Float?
   serviceNotes         String?
-  selectedOptions      Json? // e.g., { color: "red", size: "M" }
+  selectedOptions      Json? // e.g., [{category: "color", name: "Red", extraPrice: 20}, {category: "size", name: "7", extraPrice: 50}]
 
   riderId String?
   status  OrderStatus? @default(PENDING)

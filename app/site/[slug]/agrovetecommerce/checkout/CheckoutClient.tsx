@@ -228,8 +228,8 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
         name: billing.name,
         email: billing.email,
         phone: billing.phone,
-        promoCode,
-        items: cart.map((i: any) => ({ marketplaceListingId: i.id, quantity: i.quantity, price: i.finalPrice, totalPrice: i.finalPrice * i.quantity, selectedOptions: i.selectedOptions || [] })),
+        promoCode,//
+        items: cart.map((i: any) => ({ marketplaceListingId: i.id, quantity: i.quantity, price: i.finalPrice, totalPrice: i.finalPrice * i.quantity, subtotal: i.subtotal, selectedOptions: i.selectedOptions || [] })),
         shippingAddress: {
           display_name: shipping.display_name,
           lat: shipping.lat,

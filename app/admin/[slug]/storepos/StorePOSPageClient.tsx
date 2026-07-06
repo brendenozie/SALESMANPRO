@@ -11,6 +11,10 @@ import {
   CreditCardIcon,
   UserCircleIcon,
   UserIcon,
+  BanknotesIcon,
+  CalendarIcon,
+  TagIcon,
+  WalletIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { MarketListingForm, IStoreCategory } from '@/types/typings';
@@ -44,8 +48,10 @@ export interface VariantOptionItem {
 
 export type CartItem = MarketListingForm & {
   cartItemId: string; // Unique ID combining productId and selected variants
+  price: number; // Base price of the product
+  finalPrice: number; // Price after adding variant extra costs
   quantity: number;
-  subtotal: number;
+  subtotal: number; // finalPrice * quantity
   selectedOptions?: VariantOptionItem[]; // Track chosen variants
 };
 
@@ -274,6 +280,12 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   const [showMobileCart, setShowMobileCart] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'success' | 'failed' | null>(null);
   
+
+  // Add these state variables at the top of your POS component
+  const [isSplit, setIsSplit] = useState(false);
+  const [isPending, setIsPending] = useState(false);
+ 
+  
   // persistent category
   const [selectedCategory, setSelectedCategory] = usePersistentState<string>('pos:selectedCategory', 'all');
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
@@ -433,6 +445,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
         updatedCart[existingItemIndex] = {
           ...existingItem,
           quantity: newQuantity,
+          finalPrice: unitFinalPrice, // Update final price in case variants changed
           subtotal: unitFinalPrice * newQuantity,
         };
         return updatedCart;
@@ -444,6 +457,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
             ...product,
             cartItemId, 
             quantity: 1,
+            price: basePrice,
             finalPrice: unitFinalPrice, // Override final price with variant calculation
             subtotal: unitFinalPrice,
             selectedOptions: options
@@ -484,6 +498,10 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   const totalTax = useMemo(() => (subtotal - totalDiscountAmount) * taxRate, [subtotal, totalDiscountAmount, taxRate]);
   const finalTotal = useMemo(() => subtotal - totalDiscountAmount + totalTax, [subtotal, totalDiscountAmount, totalTax]);
   
+   const [splits, setSplits] = useState<{ method: string; amount: number }[]>([
+    { method: 'cash', amount: finalTotal }
+  ]);
+  
   const filteredProducts = useMemo(() => {
     return products.filter(p => {
       const catId = (p as any).productCategoryId || (p as any).categoryId || 'all';
@@ -496,7 +514,97 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     });
   }, [products, searchTerm, selectedCategory]);
   
+  // 2. Updated finalizeSale accepts the dynamic payment schema
   const finalizeSale = useCallback(async () => {
+    if (cart.length === 0) return alert("Cart is empty");
+    
+    // Validate split totals match final total
+    if (isSplit && !isPending) {
+      const totalAllocated = splits.reduce((sum, s) => sum + s.amount, 0);
+      if (Math.abs(totalAllocated - finalTotal) > 0.01) {
+        return alert(`Split total (${totalAllocated}) must equal final total (${finalTotal})`);
+      }
+    }
+
+    setPaymentStatus(null);
+
+    const orderPayload = {
+      name: "Walk-in Customer",
+      email: "pos-customer@store.com",
+      phone: "0000000000",
+      consumerId: userId || 'pos-agent',
+      companyId: companyId,
+      // Store 'split', 'pending', or the singular choice
+      paymentOption: isPending ? "pending" : (isSplit ? "split" : splits[0].method),
+      totalPrice: subtotal,
+      totalFinalPrice: finalTotal,
+      items: cart.map(item => ({
+        marketplaceListingId: item.id,
+        quantity: item.quantity,
+        price: item.finalPrice,
+        totalPrice: item.finalPrice * item.quantity,
+        subtotal: item.subtotal,
+        selectedOptions: item.selectedOptions || null,
+      })),
+      paymentData: {
+        notes: `POS Sale by ${currentAgent?.name} ${isPending ? '[CREDIT/PENDING]' : ''}`,
+        discountApplied: totalDiscountAmount,
+        // Pass breakdown details to backend for ledger logging
+        paymentBreakdown: isPending ? [] : splits,
+      }
+    };
+
+    try {
+      const response = await fetch(`/api/shop/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderPayload),
+      });
+
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(`${result.error}` || 'Failed to process order');
+      
+      setPaymentStatus('success');
+
+      const now = new Date();
+      const receiptDetails = {
+        cart: cart.map(item => ({
+          ...item,
+          finalPrice: item.finalPrice || 0,
+          subtotal: item.subtotal - (item.discount || 0),
+          category: item.category || "General",
+        })),
+        subtotal: subtotal,
+        totalDiscountAmount: totalDiscountAmount,
+        totalTax: totalTax,
+        finalTotal: finalTotal,
+        agentId: currentAgent?.id || 'N/A',
+        agentName: currentAgent?.name || 'N/A', 
+        transactionId: result.data.trackingNumber, 
+        date: now.toISOString().split('T')[0], 
+        time: now.toTimeString().split(' ')[0], 
+        storeName: companyInfo?.name || 'Store',
+        storeAddress: companyInfo?.address || 'Address',
+        storePhone: companyInfo?.contactPhone || 'Phone',
+        currencySymbol: currencySymbol,
+        paymentMethodDetails: isPending ? "PENDING/CREDIT" : (isSplit ? "SPLIT BILL" : splits[0].method.toUpperCase())
+      };
+
+      printReceipt(generateReceiptHtml(receiptDetails), receiptDetails);
+
+      // Reset workflow
+      setCart([]);
+      setDiscountPercentage(0);
+      setShowPaymentModal(false);
+
+    } catch (error: any) {
+      console.error("Order creation failed:", error);
+      setPaymentStatus('failed');
+      alert(`Error: ${error}`);
+    }
+  }, [cart, finalTotal, subtotal, totalDiscountAmount, totalTax, companyId, userId, currentAgent, companyInfo, currencySymbol, isSplit, isPending, splits]);
+
+  const finalizeSalev1 = useCallback(async () => {
     if (cart.length === 0) return alert("Cart is empty");
     setPaymentStatus(null);
 
@@ -513,8 +621,10 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
         marketplaceListingId: item.id, // Original base ID for inventory tracking
         quantity: item.quantity,
         price: item.finalPrice,
+        totalPrice: item.finalPrice * item.quantity,
+        subtotal: item.subtotal,
         // Optional: you can pass the variant data to the backend here if your schema supports it
-        variants: item.selectedOptions?.map(o => `${o.category}:${o.name}`).join(',') || null 
+        selectedOptions: item.selectedOptions || null,
       })),
       paymentData: {
         notes: `POS Sale by ${currentAgent?.name}`,
@@ -575,11 +685,23 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     }
   }, [cart, finalTotal, subtotal, totalDiscountAmount, totalTax, companyId, userId, currentAgent, companyInfo, currencySymbol]);
 
-  const handleProcessPayment = useCallback(() => {
-    if (cart.length === 0) return alert('Cart is empty.');
-    setShowPaymentModal(true);
-    finalizeSale(); 
-  }, [cart.length, finalizeSale]);
+
+// 1. Open the modal first instead of immediately finalizing the sale
+const handleProcessPayment = useCallback(() => {
+  if (cart.length === 0) return alert('Cart is empty.');
+  
+  // Reset payment states to current total
+  setSplits([{ method: 'cash', amount: finalTotal }]);
+  setIsSplit(false);
+  setIsPending(false);
+  setShowPaymentModal(true);
+}, [cart.length, finalTotal]);
+
+  // const handleProcessPayment = useCallback(() => {
+  //   if (cart.length === 0) return alert('Cart is empty.');
+  //   setShowPaymentModal(true);
+  //   finalizeSale(); 
+  // }, [cart.length, finalizeSale]);
 
   const itemCount = cart.reduce((s, i) => s + i.quantity, 0);
 
@@ -868,7 +990,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       )}
 
       {/* (Mobile Cart Overlay goes here - shortened for brevity, just ensure you map item.cartItemId instead of item.id in the loops) */}
- {/* MOBILE CART OVERLAY */}
+      {/* MOBILE CART OVERLAY */}
       {showMobileCart && (
         <div ref={mobileCartRef} className="fixed inset-0 z-50 flex justify-end bg-zinc-900/60 backdrop-blur-md">
           {/* Cart Sidebar / Modal Content */}
@@ -961,6 +1083,175 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
           </div>
         </div>
       )}
+
+      {showPaymentModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/60 backdrop-blur-sm p-4">
+              <div className="bg-white dark:bg-zinc-900 w-full max-w-xl rounded-3xl p-6 shadow-2xl border border-zinc-100 dark:border-zinc-800 animate-in fade-in zoom-in-95 duration-150">
+                
+                {/* Header */}
+                <div className="flex items-center justify-between pb-4 border-b border-zinc-100 dark:border-zinc-800">
+                  <div>
+                    <h3 className="text-xl font-bold text-zinc-900 dark:text-white">Process POS Payment</h3>
+                    <p className="text-sm text-zinc-500 mt-0.5">Total Amount due: <span className="font-semibold text-indigo-600">{currencySymbol} {finalTotal.toFixed(2)}</span></p>
+                  </div>
+                  <button 
+                    onClick={() => setShowPaymentModal(false)}
+                    className="p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 transition"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Mode Selectors */}
+                <div className="grid grid-cols-3 gap-3 my-5">
+                  <button
+                    type="button"
+                    onClick={() => { setIsSplit(false); setIsPending(false); setSplits([{ method: 'cash', amount: finalTotal }]); }}
+                    className={`p-3 rounded-xl border font-medium text-sm transition flex flex-col items-center gap-1.5 ${!isSplit && !isPending ? 'border-indigo-600 bg-indigo-50/50 text-indigo-600 dark:bg-indigo-950/30' : 'border-zinc-200 dark:border-zinc-800'}`}
+                  >
+                    <BanknotesIcon className="w-5 h-5" />
+                    Single Method
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => { setIsSplit(true); setIsPending(false); setSplits([{ method: 'cash', amount: finalTotal / 2 }, { method: 'mpesa', amount: finalTotal / 2 }]); }}
+                    className={`p-3 rounded-xl border font-medium text-sm transition flex flex-col items-center gap-1.5 ${isSplit && !isPending ? 'border-indigo-600 bg-indigo-50/50 text-indigo-600 dark:bg-indigo-950/30' : 'border-zinc-200 dark:border-zinc-800'}`}
+                  >
+                    <WalletIcon className="w-5 h-5" />
+                    Split Bill
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => { setIsPending(true); setIsSplit(false); }}
+                    className={`p-3 rounded-xl border font-medium text-sm transition flex flex-col items-center gap-1.5 ${isPending ? 'border-amber-600 bg-amber-50/50 text-amber-700 dark:bg-amber-950/30' : 'border-zinc-200 dark:border-zinc-800'}`}
+                  >
+                    <CalendarIcon className="w-5 h-5" />
+                    Pending / Credit
+                  </button>
+                </div>
+
+                {/* Main Dynamic Panel */}
+                <div className="space-y-4 max-h-[300px] overflow-y-auto pr-1">
+                  {isPending ? (
+                    <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 rounded-2xl">
+                      <p className="text-sm text-amber-800 dark:text-amber-400 font-medium">
+                        This order will be registered under processing status without active payment confirmation ledger entry. Excellent for ongoing commercial invoice structures.
+                      </p>
+                    </div>
+                  ) : !isSplit ? (
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">Select Payment Gateway Option</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {[
+                          { id: 'cash', label: 'Cash payment', icon: BanknotesIcon },
+                          { id: 'mpesa', label: 'M-Pesa STK', icon: TagIcon },
+                          { id: 'stripe', label: 'Card Reader / Stripe', icon: CreditCardIcon },
+                          { id: 'ghuba', label: 'Ghuba Pay Wallet', icon: WalletIcon }
+                        ].map((m) => (
+                          <button
+                            key={m.id}
+                            type="button"
+                            onClick={() => setSplits([{ method: m.id, amount: finalTotal }])}
+                            className={`flex items-center gap-3 p-3.5 rounded-xl border text-left transition ${splits[0]?.method === m.id ? 'border-zinc-900 bg-zinc-50 dark:border-white dark:bg-zinc-800 font-semibold' : 'border-zinc-200 dark:border-zinc-800'}`}
+                          >
+                            <m.icon className="w-5 h-5 text-zinc-500" />
+                            <span className="text-sm">{m.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold uppercase tracking-wider text-zinc-400">Configure Multi-Split Breakdowns</label>
+                        <button 
+                          type="button" 
+                          onClick={() => setSplits([...splits, { method: 'cash', amount: 0 }])}
+                          className="text-xs text-indigo-600 font-bold flex items-center gap-1 hover:underline"
+                        >
+                          <PlusIcon className="w-3.5 h-3.5" /> Add Row
+                        </button>
+                      </div>
+                      
+                      {splits.map((split, idx) => (
+                        <div key={idx} className="flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-100">
+                          <select
+                            value={split.method}
+                            onChange={(e) => {
+                              const next = [...splits];
+                              next[idx].method = e.target.value;
+                              setSplits(next);
+                            }}
+                            className="p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm flex-1 focus:ring-1 focus:ring-indigo-500 outline-none"
+                          >
+                            <option value="cash">Cash</option>
+                            <option value="mpesa">M-Pesa</option>
+                            <option value="stripe">Credit Card</option>
+                            <option value="ghuba">Ghuba Pay</option>
+                          </select>
+
+                          <div className="relative flex-1">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-zinc-400 font-medium">{currencySymbol}</span>
+                            <input
+                              type="number"
+                              step="any"
+                              value={split.amount || ''}
+                              onChange={(e) => {
+                                const next = [...splits];
+                                next[idx].amount = parseFloat(e.target.value) || 0;
+                                setSplits(next);
+                              }}
+                              placeholder="0.00"
+                              className="w-full p-2.5 pl-8 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:ring-1 focus:ring-indigo-500 outline-none font-semibold"
+                            />
+                          </div>
+
+                          {splits.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setSplits(splits.filter((_, i) => i !== idx))}
+                              className="p-2.5 text-zinc-400 hover:text-red-500 rounded-xl transition"
+                            >
+                              <MinusIcon className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      
+                      {/* Split Balance Tracker */}
+                      <div className="pt-2 flex justify-between text-xs font-semibold">
+                        <span className="text-zinc-500">Total Allocated: {splits.reduce((s, x) => s + x.amount, 0).toFixed(2)}</span>
+                        <span className={Math.abs(splits.reduce((s, x) => s + x.amount, 0) - finalTotal) < 0.01 ? 'text-green-600' : 'text-red-500'}>
+                          Remaining: {(finalTotal - splits.reduce((s, x) => s + x.amount, 0)).toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="mt-6 pt-4 border-t border-zinc-100 dark:border-zinc-800 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowPaymentModal(false)}
+                    className="flex-1 py-3 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl font-medium text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 active:scale-98 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={finalizeSale}
+                    className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-600/10 active:scale-98 transition"
+                  >
+                    Confirm & Complete
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          )}
     </div>
   );
 };

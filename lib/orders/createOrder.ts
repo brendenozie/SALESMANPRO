@@ -59,9 +59,11 @@ export async function createOrder(data: any) {
           marketplaceListingId: item.marketplaceListingId,
           quantity: item.quantity,
           price: item.price,
+          totalPrice: item.totalPrice, // Store total price for the item
+          subtotal: item.subtotal, // Store subtotal for the item
           date: item.date || null,
           timeSlot: item.timeSlot || null,
-          totalPrice: item.price * item.quantity, // Calculate total price for the item
+          // totalPrice: item.subtotal, // Calculate total price for the item
           selectedOptions: item.selectedOptions || null, // Store selected options if available
         })),
       },

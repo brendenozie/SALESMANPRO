@@ -1,4 +1,3 @@
-// app/api/shop/orders/route.ts
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import crypto from "crypto";
@@ -23,7 +22,8 @@ export async function OPTIONS() {
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept, cache-control",
+      "Access-Control-Allow-Headers":
+        "Content-Type, Authorization, X-Requested-With, Accept, cache-control",
       "Access-Control-Max-Age": "86400",
     },
   });
@@ -38,7 +38,16 @@ const orderItemSchema = z.object({
   timeSlot: z.string().optional(),
   quantity: z.number().int().positive(),
   price: z.number().positive(),
-  selectedOptions: z.record(z.string(), z.any()).optional(), // Optional selected options for the item
+  totalPrice: z.number().positive(),
+  selectedOptions: z
+    .array(
+      z.object({
+        category: z.string().min(1),
+        name: z.string().min(1),
+        extraPrice: z.number().nonnegative().optional(),
+      }),
+    )
+    .optional(),
 });
 
 const orderSchema = z.object({
@@ -57,6 +66,9 @@ const orderSchema = z.object({
       "ghuba",
       "stripe",
       "paypal",
+      "cash", // Added: Standard POS Counter Cash processing
+      "split", // Added: Multi-method balanced ledger payment
+      "pending", // Added: Direct business credit/unverified account book entries
     ])
     .default("cod"),
   items: z
@@ -65,11 +77,11 @@ const orderSchema = z.object({
   trackingNumber: z.string().optional(),
   totalPrice: z.number().positive(),
   totalFinalPrice: z.number().optional(),
-  shippingAddress: z.record(z.string(), z.any()).optional(), // Hardened from z.any()
+  shippingAddress: z.record(z.string(), z.any()).optional(),
   shippingMethod: z.string().optional(),
   companyId: z.string().min(1, "Company ID is required"),
   paymentData: z.record(z.string(), z.any()).optional(),
-  callbainitialUrlckUrl: z.string().url().optional(), // Optional callback URL for payment gateways that support it
+  callbainitialUrlckUrl: z.string().url().optional(),
   idempotencyKey: z.string().uuid().optional(),
 });
 
@@ -77,9 +89,8 @@ const orderSchema = z.object({
 // UTILS
 // ---------------------------
 function generateTrackingNumber() {
-  // Generates a collision-resistant ID like: TRK-2605-A8F9B2
-  const datePart = new Date().toISOString().slice(2, 7).replace('-', '');
-  const randomPart = crypto.randomBytes(3).toString('hex').toUpperCase();
+  const datePart = new Date().toISOString().slice(2, 7).replace("-", "");
+  const randomPart = crypto.randomBytes(3).toString("hex").toUpperCase();
   return `TRK-${datePart}-${randomPart}`;
 }
 
@@ -93,18 +104,29 @@ export const POST = withApiHandler(
       const parsed = orderSchema.safeParse(body);
 
       if (!parsed.success) {
-        // Return explicit field errors to the frontend for better UI/UX mapping
-        const errorMessages = parsed.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ');
-        return formatResponse(false, null, `Validation failed: ${errorMessages}`, 400);
+        const errorMessages = parsed.error.issues
+          .map((i) => `${i.path.join(".")}: ${i.message}`)
+          .join(", ");
+        return formatResponse(
+          false,
+          null,
+          `Validation failed: ${errorMessages}`,
+          400,
+        );
       }
 
-      if(parsed.data.idempotencyKey) {
+      if (parsed.data.idempotencyKey) {
         const existingOrder = await prisma.customerOrder.findFirst({
           where: { idempotencyKey: parsed.data.idempotencyKey },
         });
 
         if (existingOrder) {
-          return formatResponse(false, null, 'Order with this idempotency key already exists', 409);
+          return formatResponse(
+            false,
+            null,
+            "Order with this idempotency key already exists",
+            409,
+          );
         }
       }
 
@@ -133,10 +155,19 @@ export const POST = withApiHandler(
         idempotencyKey: data.idempotencyKey,
       });
 
+      let cfg = null;
       // 2. Retrieve Tenant Payment Configurations
-      const cfg = await getCompanyPaymentConfig(data.companyId);
-      if (!cfg || !cfg.credentials) {
-        return formatResponse(false, null, "Payment gateway configuration is missing for this store.", 500);
+      if(data.paymentOption !== "cash" && data.paymentOption !== "split" && data.paymentOption !== "pending" && data.paymentOption !== "cod" && data.paymentOption !== "pickupatshop") {
+      
+        cfg = await getCompanyPaymentConfig(data.companyId);
+        if (!cfg || !cfg.credentials) {
+          return formatResponse(
+            false,
+            null,
+            "Payment gateway configuration is missing for this store.",
+            500,
+          );
+        }
       }
 
       // 3. Route to specific payment processor
@@ -144,32 +175,72 @@ export const POST = withApiHandler(
 
       switch (data.paymentOption) {
         case "mpesa": {
-          const phoneNumber = data.paymentData?.mpesaPhone ?? data.mpesaPhone ?? data.phone;
-          if (!phoneNumber) return formatResponse(false, null, "M-Pesa phone number required", 400);
-          
-          paymentResponse = await initiateMpesaPayment(orderDb, phoneNumber, cfg.credentials);
+          const phoneNumber =
+            data.paymentData?.mpesaPhone ?? data.mpesaPhone ?? data.phone;
+          if (!phoneNumber)
+            return formatResponse(
+              false,
+              null,
+              "M-Pesa phone number required",
+              400,
+            );
+
+          paymentResponse = await initiateMpesaPayment(
+            orderDb,
+            phoneNumber,
+            cfg?.credentials || {},
+          );
           break;
         }
         case "paystack": {
-          paymentResponse = await initiatePaystackPayment(orderDb, data.email, cfg.credentials, "");
+          paymentResponse = await initiatePaystackPayment(
+            orderDb,
+            data.email,
+            cfg?.credentials || {},
+            "",
+          );
           break;
         }
         case "ghuba": {
-          // FIXED: Passed cfg.credentials to the Paystack alias
           paymentResponse = await initiateGhubaPayment(orderDb, data.email);
           break;
         }
         case "stripe": {
-          paymentResponse = await initiateStripePaymentIntent(orderDb, cfg.credentials);
+          paymentResponse = await initiateStripePaymentIntent(
+            orderDb,
+            cfg?.credentials || {},
+          );
           break;
         }
         case "paypal": {
-          paymentResponse = await createPaypalOrder(orderDb, cfg.credentials);
+          paymentResponse = await createPaypalOrder(orderDb, cfg?.credentials || {});
           break;
         }
+
+        // --- POS COMPLETED TRANSACTIONS ---
+        case "cash":
+        case "split": {
+          paymentResponse = {
+            success: true,
+            message: `POS counter payment via ${data.paymentOption.toUpperCase()} verified and closed by agent.`,
+            breakdown: data.paymentData?.paymentBreakdown || [],
+          };
+
+          await prisma.customerOrder.update({
+            where: { id: orderDb.id },
+            data: { paymentStatus: "COMPLETED" }, // Cashier verified balances instantly clear order debt
+          });
+          break;
+        }
+
+        // --- UNPAID / DELAYED ACCRUALS ---
+        case "pending":
         case "cod":
         case "pickupatshop": {
-          paymentResponse = { message: "Payment on delivery or pickup confirmed." };
+          paymentResponse = {
+            success: true,
+            message: `Order locked under pending collections status [Method: ${data.paymentOption}].`,
+          };
           await prisma.customerOrder.update({
             where: { id: orderDb.id },
             data: { paymentStatus: "PENDING" },
@@ -181,9 +252,9 @@ export const POST = withApiHandler(
       }
 
       // 4. Return successful payload
-      const authorizationUrl = 
-        paymentResponse?.data?.authorization_url ?? 
-        paymentResponse?.authorization_url ?? 
+      const authorizationUrl =
+        paymentResponse?.data?.authorization_url ??
+        paymentResponse?.authorization_url ??
         null;
 
       const response = formatResponse(
@@ -195,23 +266,296 @@ export const POST = withApiHandler(
           authorizationUrl,
         },
         "Order created successfully",
-        201
+        201,
       );
 
-      // Inject CORS headers onto the successful response just in case `withApiHandler` misses them
       response.headers.set("Access-Control-Allow-Origin", "*");
       return response;
-
     } catch (err: any) {
       console.error("[ORDER_CREATION_ERROR]", err);
-      return formatResponse(false, null, err.message || "Failed to process order checkout", 500);
+      return formatResponse(
+        false,
+        null,
+        err.message || "Failed to process order checkout",
+        500,
+      );
     }
   },
   {
-    requireAuth: false, // Must remain false for public storefronts
-    requireRateLimit: true, // HIGHLY RECOMMENDED: Prevent carding/spam attacks on your payment endpoints
-  }
+    requireAuth: false,
+    requireRateLimit: true,
+  },
 );
+
+// // app/api/shop/orders/route.ts
+// import { NextResponse } from "next/server";
+// import { z } from "zod";
+// import crypto from "crypto";
+// import prisma from "@/server/db/prismadb";
+// import { createOrder as createOrderRecord } from "@/lib/orders/createOrder";
+// import { getCompanyPaymentConfig } from "@/lib/paymentsv2/index";
+// import { initiateMpesaPayment } from "@/lib/paymentsv2/mpesa";
+// import { initiatePaystackPayment } from "@/lib/paymentsv2/paystack";
+// import { initiatePaystackPayment as initiateGhubaPayment } from "@/lib/payments/paystack"; // Temporary Ghuba fallback
+// import { initiateStripePaymentIntent } from "@/lib/paymentsv2/stripe";
+// import { createPaypalOrder } from "@/lib/paymentsv2/paypal";
+// import { withApiHandler } from "@/lib/hooks/withApiHandler";
+// import { formatResponse } from "@/lib/formatResponse";
+
+// // ---------------------------
+// // CROSS-DOMAIN CORS PRE-FLIGHT
+// // Essential for multi-tenant custom domains hitting this API
+// // ---------------------------
+// export async function OPTIONS() {
+//   return new NextResponse(null, {
+//     status: 204,
+//     headers: {
+//       "Access-Control-Allow-Origin": "*",
+//       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+//       "Access-Control-Allow-Headers":
+//         "Content-Type, Authorization, X-Requested-With, Accept, cache-control",
+//       "Access-Control-Max-Age": "86400",
+//     },
+//   });
+// }
+
+// // ---------------------------
+// // SCHEMA VALIDATION
+// // ---------------------------
+// const orderItemSchema = z.object({
+//   marketplaceListingId: z.string().min(1),
+//   date: z.string().optional(),
+//   timeSlot: z.string().optional(),
+//   quantity: z.number().int().positive(),
+//   price: z.number().positive(),
+//   totalPrice: z.number().positive(),
+//   // selected options [{category: "color", name: "Red", extraPrice: 20}, {category: "size", name: "7", extraPrice: 50}]
+//   selectedOptions: z
+//     .array(
+//       z.object({
+//         category: z.string().min(1),
+//         name: z.string().min(1),
+//         extraPrice: z.number().nonnegative().optional(),
+//       }),
+//     )
+//     .optional(), // Optional selected options for the item
+
+//   // selectedOptions: z.record(z.string(), z.any()).optional(), // Optional selected options for the item
+// });
+
+// const orderSchema = z.object({
+//   name: z.string().min(1, "Name is required"),
+//   email: z.string().email("Invalid email format"),
+//   phone: z.string().min(1, "Phone is required"),
+//   mpesaPhone: z.string().optional(),
+//   consumerId: z.string().min(1),
+//   paymentOption: z
+//     .enum([
+//       "cod",
+//       "pickupatshop",
+//       "mpesa",
+//       "card",
+//       "paystack",
+//       "ghuba",
+//       "stripe",
+//       "paypal",
+//     ])
+//     .default("cod"),
+//   items: z
+//     .array(orderItemSchema)
+//     .min(1, "Order must contain at least one item"),
+//   trackingNumber: z.string().optional(),
+//   totalPrice: z.number().positive(),
+//   totalFinalPrice: z.number().optional(),
+//   shippingAddress: z.record(z.string(), z.any()).optional(), // Hardened from z.any()
+//   shippingMethod: z.string().optional(),
+//   companyId: z.string().min(1, "Company ID is required"),
+//   paymentData: z.record(z.string(), z.any()).optional(),
+//   callbainitialUrlckUrl: z.string().url().optional(), // Optional callback URL for payment gateways that support it
+//   idempotencyKey: z.string().uuid().optional(),
+// });
+
+// // ---------------------------
+// // UTILS
+// // ---------------------------
+// function generateTrackingNumber() {
+//   // Generates a collision-resistant ID like: TRK-2605-A8F9B2
+//   const datePart = new Date().toISOString().slice(2, 7).replace("-", "");
+//   const randomPart = crypto.randomBytes(3).toString("hex").toUpperCase();
+//   return `TRK-${datePart}-${randomPart}`;
+// }
+
+// // ---------------------------
+// // ROUTE HANDLER
+// // ---------------------------
+// export const POST = withApiHandler(
+//   async (req) => {
+//     try {
+//       const body = await req.json();
+//       const parsed = orderSchema.safeParse(body);
+
+//       if (!parsed.success) {
+//         // Return explicit field errors to the frontend for better UI/UX mapping
+//         const errorMessages = parsed.error.issues
+//           .map((i) => `${i.path.join(".")}: ${i.message}`)
+//           .join(", ");
+//         return formatResponse(
+//           false,
+//           null,
+//           `Validation failed: ${errorMessages}`,
+//           400,
+//         );
+//       }
+
+//       if (parsed.data.idempotencyKey) {
+//         const existingOrder = await prisma.customerOrder.findFirst({
+//           where: { idempotencyKey: parsed.data.idempotencyKey },
+//         });
+
+//         if (existingOrder) {
+//           return formatResponse(
+//             false,
+//             null,
+//             "Order with this idempotency key already exists",
+//             409,
+//           );
+//         }
+//       }
+
+//       const data = parsed.data;
+//       const trackingNumber = data.trackingNumber ?? generateTrackingNumber();
+
+//       // 1. Create the base order record
+//       const orderDb = await createOrderRecord({
+//         consumerId: data.consumerId,
+//         items: data.items,
+//         totalPrice: data.totalPrice,
+//         totalFinalPrice: data.totalFinalPrice ?? data.totalPrice,
+//         mpesaPhone: data.mpesaPhone,
+//         paymentOption: data.paymentOption,
+//         shippingAddress: data.shippingAddress,
+//         shippingMethod: data.shippingMethod,
+//         name: data.name,
+//         email: data.email,
+//         phone: data.phone,
+//         promoCode: data.paymentData?.promoCode ?? undefined,
+//         trackingNumber,
+//         deliveryStatus: "Pending",
+//         delivery: false,
+//         notes: data.paymentData?.notes ?? undefined,
+//         companyId: data.companyId,
+//         idempotencyKey: data.idempotencyKey,
+//       });
+
+//       // 2. Retrieve Tenant Payment Configurations
+//       const cfg = await getCompanyPaymentConfig(data.companyId);
+//       if (!cfg || !cfg.credentials) {
+//         return formatResponse(
+//           false,
+//           null,
+//           "Payment gateway configuration is missing for this store.",
+//           500,
+//         );
+//       }
+
+//       // 3. Route to specific payment processor
+//       let paymentResponse: any = null;
+
+//       switch (data.paymentOption) {
+//         case "mpesa": {
+//           const phoneNumber =
+//             data.paymentData?.mpesaPhone ?? data.mpesaPhone ?? data.phone;
+//           if (!phoneNumber)
+//             return formatResponse(
+//               false,
+//               null,
+//               "M-Pesa phone number required",
+//               400,
+//             );
+
+//           paymentResponse = await initiateMpesaPayment(
+//             orderDb,
+//             phoneNumber,
+//             cfg.credentials,
+//           );
+//           break;
+//         }
+//         case "paystack": {
+//           paymentResponse = await initiatePaystackPayment(
+//             orderDb,
+//             data.email,
+//             cfg.credentials,
+//             "",
+//           );
+//           break;
+//         }
+//         case "ghuba": {
+//           // FIXED: Passed cfg.credentials to the Paystack alias
+//           paymentResponse = await initiateGhubaPayment(orderDb, data.email);
+//           break;
+//         }
+//         case "stripe": {
+//           paymentResponse = await initiateStripePaymentIntent(
+//             orderDb,
+//             cfg.credentials,
+//           );
+//           break;
+//         }
+//         case "paypal": {
+//           paymentResponse = await createPaypalOrder(orderDb, cfg.credentials);
+//           break;
+//         }
+//         case "cod":
+//         case "pickupatshop": {
+//           paymentResponse = {
+//             message: "Payment on delivery or pickup confirmed.",
+//           };
+//           await prisma.customerOrder.update({
+//             where: { id: orderDb.id },
+//             data: { paymentStatus: "PENDING" },
+//           });
+//           break;
+//         }
+//         default:
+//           return formatResponse(false, null, "Unsupported payment option", 400);
+//       }
+
+//       // 4. Return successful payload
+//       const authorizationUrl =
+//         paymentResponse?.data?.authorization_url ??
+//         paymentResponse?.authorization_url ??
+//         null;
+
+//       const response = formatResponse(
+//         true,
+//         {
+//           order: orderDb,
+//           trackingNumber,
+//           paymentResponse,
+//           authorizationUrl,
+//         },
+//         "Order created successfully",
+//         201,
+//       );
+
+//       // Inject CORS headers onto the successful response just in case `withApiHandler` misses them
+//       response.headers.set("Access-Control-Allow-Origin", "*");
+//       return response;
+//     } catch (err: any) {
+//       console.error("[ORDER_CREATION_ERROR]", err);
+//       return formatResponse(
+//         false,
+//         null,
+//         err.message || "Failed to process order checkout",
+//         500,
+//       );
+//     }
+//   },
+//   {
+//     requireAuth: false, // Must remain false for public storefronts
+//     requireRateLimit: true, // HIGHLY RECOMMENDED: Prevent carding/spam attacks on your payment endpoints
+//   },
+// );
 // // app/api/shop/orders/route.ts
 // import { NextResponse } from "next/server";
 // import { z } from "zod";
