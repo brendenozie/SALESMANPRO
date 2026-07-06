@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -29,16 +29,6 @@ export default function Header() {
 
   const { slug, name, logoUrl, themeSettings = {} } = storeFormData || {};
   const primaryColor = themeSettings?.primaryColor || '#00A880';
-
-  // Convert hex to RGB for rgba glass effects
-  const hexToRgb = (hex: string) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? 
-      `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` 
-      : '0, 168, 128';
-  };
-
-  const primaryRgb = hexToRgb(primaryColor);
 
   const navItems = [
     { id: 'services', label: 'Services' },
@@ -73,9 +63,8 @@ export default function Header() {
     window.location.href = authUrl.toString();
   };
 
-  const handleSignOut = ()=> {
+  const handleSignOut = () => {
     const returnTo = window.location.origin;
-
     signOut({
       redirect: true,
       callbackUrl: `/logout?returnTo=${encodeURIComponent(returnTo)}`,
@@ -85,15 +74,15 @@ export default function Header() {
   // Animation Variants
   const menuVariants = {
     closed: { opacity: 0, x: "100%" },
-    open: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 300, damping: 30 } }
+    open: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 260, damping: 26 } }
   };
 
   const listVariants = {
-    closed: { opacity: 0, y: 20 },
+    closed: { opacity: 0, y: 15 },
     open: (i: number) => ({ 
       opacity: 1, 
       y: 0, 
-      transition: { delay: i * 0.1, type: "spring" } 
+      transition: { delay: i * 0.05, type: "spring", stiffness: 300 } 
     })
   };
 
@@ -104,159 +93,147 @@ export default function Header() {
         animate={{ y: 0 }}
         className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ease-in-out ${
           scrolled
-            ? 'py-3 bg-white/80 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.03)] border-b border-gray-100'
+            ? 'py-3 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-xl shadow-lg dark:shadow-neutral-950/20 border-b border-neutral-200/50 dark:border-neutral-900'
             : 'py-6 bg-transparent'
         }`}
       >
-        <div className="container mx-auto px-6 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           
-          {/* Logo Section */}
+          {/* LOGO WRAPPER MODULE */}
           <Link href="#hero" className="flex items-center gap-3 group z-50 relative">
-            <div className="relative">
+            <div className="relative flex items-center justify-center">
               <div 
-                className="absolute inset-0 rounded-full blur-md opacity-0 group-hover:opacity-40 transition-opacity duration-500"
+                className="absolute inset-0 rounded-full blur-md opacity-0 group-hover:opacity-30 transition-opacity duration-500"
                 style={{ backgroundColor: primaryColor }}
               />
               {logoUrl && (
-                <Image
-                  src={logoUrl}
-                  alt={`${name} Logo`}
-                  width={44}
-                  height={44}
-                  loader={loader}
-                  className="relative rounded-full object-cover ring-2 ring-white shadow-sm  h-20 w-32"
-                />
+                <div className="relative w-10 h-10 overflow-hidden rounded-full ring-2 ring-white dark:ring-neutral-900 shadow-sm transition-all duration-300">
+                  <Image
+                    src={logoUrl}
+                    alt={`${name || 'Brand'} Logo`}
+                    fill
+                    sizes="40px"
+                    loader={loader}
+                    className="object-cover"
+                  />
+                </div>
               )}
             </div>
-            <span className={`text-xl font-bold tracking-tight transition-colors duration-300 ${scrolled ? 'text-gray-900' : 'text-gray-900'}`}>
+            <span className="text-lg font-black tracking-tight text-neutral-900 dark:text-white transition-colors duration-300">
               {name || 'Booking Site'}
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center bg-white/50 backdrop-blur-sm px-2 py-1.5 rounded-full border border-gray-100 shadow-sm">
+          {/* DESKTOP NAVIGATION PILL */}
+          <nav className="hidden md:flex items-center bg-neutral-200/40 dark:bg-neutral-900/50 backdrop-blur-md px-1.5 py-1 rounded-full border border-neutral-300/30 dark:border-neutral-800 transition-colors duration-300">
             {navItems.map((item) => (
               <a
                 key={item.id}
                 href={`#${item.id}`}
                 onMouseEnter={() => setHoveredNav(item.id)}
                 onMouseLeave={() => setHoveredNav(null)}
-                className="relative px-5 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors rounded-full"
+                className="relative px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors rounded-full"
               >
                 <span className="relative z-10">{item.label}</span>
                 {hoveredNav === item.id && (
                   <motion.div
                     layoutId="nav-pill"
-                    className="absolute inset-0 rounded-full bg-gray-100"
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    className="absolute inset-0 rounded-full bg-white dark:bg-neutral-800 shadow-sm border border-neutral-200/50 dark:border-neutral-700/50"
+                    transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
                   />
                 )}
               </a>
             ))}
           </nav>
 
-          {/* Desktop Actions */}
-          <div className="hidden md:flex items-center gap-4">
-            {/* User/Profile Button */}
+          {/* DESKTOP AUTHENTICATION ACTIONS */}
+          <div className="hidden md:flex items-center gap-3">
             {!user ? (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 <button
                   onClick={handleGoogleSignIn}
-                  className="px-4 py-2 rounded-full text-sm font-medium text-gray-700 bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-850 hover:border-neutral-300 dark:hover:border-neutral-700 transition-all active:scale-95"
                 >
                   Log In
                 </button>
                 <button
                   onClick={handleGoogleSignUp}
-                  className="px-4 py-2 rounded-full text-sm font-medium text-white shadow-md"
+                  className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-white shadow-md hover:brightness-110 transition-all active:scale-95"
                   style={{ backgroundColor: primaryColor }}
                 >
                   Sign Up
                 </button>
               </div>
             ) : (
-                <button
-                  onClick={handleUserAction}
-                  className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-gray-100 transition-all duration-200 group"
-                >
-                  {user.image ? (
+              <button
+                onClick={handleUserAction}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 shadow-sm transition-all duration-200 group"
+              >
+                {user.image ? (
+                  <div className="relative w-6 h-6 overflow-hidden rounded-full border border-neutral-200 dark:border-neutral-700">
                     <img
                       src={user.image}
-                      alt={user.name || 'User Avatar'}
-                      className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm"
+                      alt={user.name || 'User Profile'}
+                      className="w-full h-full object-cover"
                     />
-                  ) : (
-                    <div className="p-1.5 bg-gray-50 rounded-full border border-gray-200 group-hover:border-gray-300 transition-colors">
-                      <UserIcon className="h-5 w-5 text-gray-600" />
-                    </div>
-                  )}
-                  <span className="text-sm font-medium text-gray-700 max-w-[100px] truncate">
-                    {user.name?.split(' ')[0]}
-                  </span>
-                </button>
-              )
-            }
-
-            {/* Primary CTA */}
-            {/* <motion.a
-              href="#booking"
-              whileHover={{ scale: 1.02, y: -1 }}
-              whileTap={{ scale: 0.98 }}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-white text-sm shadow-lg overflow-hidden relative group"
-              style={{
-                background: `linear-gradient(135deg, ${primaryColor}, rgba(${primaryRgb}, 0.8))`,
-                boxShadow: `0 8px 20px -6px rgba(${primaryRgb}, 0.4)`
-              }}
-            >
-              <span className="relative z-10">Book Now</span>
-              <ArrowRightIcon className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
-              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-            </motion.a> */}
+                  </div>
+                ) : (
+                  <div className="p-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg text-neutral-500 dark:text-neutral-400">
+                    <UserIcon className="h-4 w-4" />
+                  </div>
+                )}
+                <span className="text-xs font-bold uppercase tracking-wide text-neutral-700 dark:text-neutral-300 max-w-[90px] truncate">
+                  {user.name?.split(' ')[0]}
+                </span>
+              </button>
+            )}
           </div>
 
-          {/* Mobile Toggle */}
+          {/* MOBILE NAV TOGGLE */}
           <button
             onClick={() => setIsOpen(true)}
-            className="md:hidden p-2 rounded-full hover:bg-gray-100 text-gray-800 transition-colors"
+            className="md:hidden p-2 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200 transition-colors"
           >
-            <Bars3Icon className="h-7 w-7" />
+            <Bars3Icon className="h-6 w-6" />
           </button>
         </div>
       </motion.header>
 
-      {/* MOBILE MENU OVERLAY */}
+      {/* COMPACT INTERACTIVE SIDE PANEL OVERLAY */}
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* Backdrop */}
+            {/* Backdrop Shading */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
-              className="fixed inset-0 z-[90] bg-gray-900/20 backdrop-blur-sm md:hidden"
+              className="fixed inset-0 z-[90] bg-neutral-950/40 dark:bg-black/60 backdrop-blur-sm md:hidden"
             />
 
-            {/* Slide-over Panel */}
+            {/* Slideover Menu Box */}
             <motion.aside
               variants={menuVariants}
               initial="closed"
               animate="open"
               exit="closed"
-              className="fixed inset-y-0 right-0 z-[100] w-full sm:w-[380px] bg-white shadow-2xl flex flex-col"
+              className="fixed inset-y-0 right-0 z-[100] w-full sm:w-[360px] bg-white dark:bg-neutral-950 border-l border-neutral-200 dark:border-neutral-900 shadow-2xl flex flex-col transition-colors duration-300"
             >
-              <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                <span className="text-lg font-bold text-gray-900">{name}</span>
+              {/* Sidebar Slate Header */}
+              <div className="flex items-center justify-between p-6 border-b border-neutral-100 dark:border-neutral-900">
+                <span className="text-base font-black tracking-tight text-neutral-900 dark:text-white">{name || 'Menu'}</span>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-2 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-900 transition-colors"
+                  className="p-2 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-all"
                 >
-                  <XMarkIcon className="h-6 w-6" />
+                  <XMarkIcon className="h-5 w-5" />
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto py-8 px-6">
-                <nav className="flex flex-col space-y-2">
+              {/* Navigation Stack Links */}
+              <div className="flex-1 overflow-y-auto py-6 px-4">
+                <nav className="flex flex-col space-y-1.5">
                   {navItems.map((item, i) => (
                     <motion.a
                       custom={i}
@@ -264,28 +241,28 @@ export default function Header() {
                       key={item.id}
                       href={`#${item.id}`}
                       onClick={() => setIsOpen(false)}
-                      className="flex items-center justify-between p-4 rounded-2xl text-xl font-semibold text-gray-800 hover:bg-gray-50 transition-all group"
+                      className="flex items-center justify-between p-4 rounded-2xl text-sm font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-900/60 hover:text-neutral-900 dark:hover:text-white border border-transparent hover:border-neutral-200 dark:hover:border-neutral-850 transition-all group"
                     >
                       {item.label}
-                      <ArrowRightIcon className="w-5 h-5 text-gray-300 group-hover:text-gray-900 -translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all" />
+                      <ArrowRightIcon className="w-4 h-4 text-neutral-300 dark:text-neutral-700 group-hover:text-neutral-900 dark:group-hover:text-white -translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all" />
                     </motion.a>
                   ))}
                 </nav>
               </div>
 
-              {/* Mobile Footer */}
-              <div className="p-6 border-t border-gray-100 bg-gray-50/50">
+              {/* Panel Action Footer Block */}
+              <div className="p-6 border-t border-neutral-100 dark:border-neutral-900 bg-neutral-50/50 dark:bg-neutral-950/50">
                 {!user ? (
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={() => { setIsOpen(false); handleGoogleSignIn(); }}
-                      className="w-full py-3.5 rounded-xl text-gray-700 font-semibold bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors"
+                      className="w-full py-3 rounded-xl text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-850 transition-colors"
                     >
                       Log In
                     </button>
                     <button
                       onClick={() => { setIsOpen(false); handleGoogleSignUp(); }}
-                      className="w-full py-3.5 rounded-xl text-white font-semibold shadow-md"
+                      className="w-full py-3 rounded-xl text-xs font-bold uppercase tracking-wider text-white shadow-md"
                       style={{ backgroundColor: primaryColor }}
                     >
                       Sign Up
@@ -293,25 +270,25 @@ export default function Header() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
-                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
-                        <UserIcon className="w-6 h-6" />
+                    <div className="flex items-center gap-3 p-3.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-sm">
+                      <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 dark:text-neutral-400">
+                        <UserIcon className="w-5 h-5" />
                       </div>
-                      <div>
-                        <p className="font-semibold text-gray-900">{user.name || 'User'}</p>
-                        <p className="text-xs text-gray-500 capitalize">{user.role || 'Member'}</p>
+                      <div className="text-left">
+                        <p className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wide">{user.name || 'User'}</p>
+                        <p className="text-[10px] text-neutral-400 dark:text-neutral-500 uppercase font-semibold tracking-wider mt-0.5">{user.role || 'Member'}</p>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-3">
                       <button
                         onClick={() => { setIsOpen(false); handleUserAction(); }}
-                        className="py-3 rounded-xl bg-white border border-gray-200 text-gray-700 font-medium hover:bg-gray-50"
+                        className="py-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-850"
                       >
-                        My Account
+                        Account
                       </button>
                       <button
                         onClick={() => { setIsOpen(false); handleSignOut(); }}
-                        className="py-3 rounded-xl bg-red-50 text-red-600 font-medium hover:bg-red-100"
+                        className="py-3 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/30 text-xs font-bold uppercase tracking-wider text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/50"
                       >
                         Sign Out
                       </button>

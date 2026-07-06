@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import Image from 'next/image';
 import {
     CheckIcon,
@@ -13,24 +13,22 @@ import {
     RocketLaunchIcon,
     ShieldCheckIcon,
     BoltIcon,
-    ArrowRightIcon,
     CreditCardIcon,
     ChartBarIcon,
 } from '@heroicons/react/24/outline';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ICoreValue } from '@/types/typings';
 
 // --- UTILS ---
-const loader = ({ src }: { src: string }) => src;
+const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
-// --- ICONS ---
+// --- ICONS MAP ---
 const IconMap: { [key: string]: React.ElementType } = {
     CheckIcon, UserGroupIcon, LockClosedIcon, AdjustmentsVerticalIcon,
     ClockIcon, Cog6ToothIcon, SparklesIcon, RocketLaunchIcon, 
     ShieldCheckIcon, BoltIcon, CreditCardIcon, ChartBarIcon
 };
 
-// --- PROPS ---
 interface FeaturesSectionProps {
     name: string | null | undefined;
     description: string | null | undefined;
@@ -40,174 +38,115 @@ interface FeaturesSectionProps {
 
 const sampleProps: FeaturesSectionProps = {
     name: 'SwiftCare',
-    description: "All the power you need, condensed into one simple interface.",
-    themeSettings: { primaryColor: '#6366f1' }, // Indigo
+    description: "All the power you need, condensed into one simple, high-performance workspace.",
+    themeSettings: { primaryColor: '#00A880' },
     CoreValues: [],
 };
 
 export default function FeaturesSection({ name, description, themeSettings, CoreValues }: FeaturesSectionProps = sampleProps) {
-    const [activeIndex, setActiveIndex] = useState(0);
-    const [isHovering, setIsHovering] = useState(false); // Pause auto-play on hover
-    const primaryColor = themeSettings?.primaryColor || '#6366f1';
+    const primaryColor = themeSettings?.primaryColor || '#00A880';
 
-    const defaultFeatures: any[] = [
+    const defaultFeatures = [
         {
             icon: 'BoltIcon',
             title: 'Instant Speed',
-            description: 'Experience zero-latency booking with our edge-cached network.',
-            imageUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop',
+            description: 'Experience zero-latency interactions with our global edge network infrastructure.',
+            imageUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=600&auto=format&fit=crop',
         },
         {
             icon: 'ShieldCheckIcon',
             title: 'Secure Core',
-            description: 'Bank-grade encryption keeps every transaction completely private.',
-            imageUrl: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop',
+            description: 'Bank-grade multi-layer encryption keeps your data safe, private, and fully audited.',
+            imageUrl: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=600&auto=format&fit=crop',
         },
         {
             icon: 'ChartBarIcon',
             title: 'Smart Analytics',
-            description: 'Track your usage patterns with beautiful, real-time dashboards.',
-            imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2670&auto=format&fit=crop',
+            description: 'Track growth, retention, and performance benchmarks with real-time data engines.',
+            imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=600&auto=format&fit=crop',
         },
         {
             icon: 'UserGroupIcon',
             title: 'Team Sync',
-            description: 'Collaborate effortlessly with shared calendars and permissions.',
-            imageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2670&auto=format&fit=crop',
+            description: 'Collaborate seamlessly across distributed groups with unified permission logic.',
+            imageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=600&auto=format&fit=crop',
         },
     ];
 
     const features = CoreValues?.length ? CoreValues : defaultFeatures;
 
-    // --- AUTO PLAY LOGIC ---
-    useEffect(() => {
-        if (isHovering) return;
-        const timer = setInterval(() => {
-            setActiveIndex((prev) => (prev + 1) % features.length);
-        }, 4000); // Rotate every 4 seconds
-        return () => clearInterval(timer);
-    }, [features.length, isHovering]);
-
     return (
-        <section id="benefits" className="relative py-16 px-4 sm:px-6 lg:px-8 bg-white overflow-hidden">
-            
-            {/* Background Decor - Minimalist */}
-            <div className="absolute inset-0 z-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-30" />
-            
-            <div className="max-w-5xl mx-auto relative z-10 flex flex-col items-center">
+        <section id="benefits" className="py-24 px-4 sm:px-6 lg:px-8 bg-neutral-50 dark:bg-neutral-950 border-b border-neutral-200/60 dark:border-neutral-900/60 transition-colors duration-300">
+            <div className="max-w-7xl mx-auto">
                 
-                {/* 1. COMPACT HEADER */}
-                <div className="text-center mb-10 max-w-2xl">
-                    <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-3">
-                        Why {name || 'Us'}?
+                {/* Minimal Header Layout */}
+                <div className="max-w-3xl mb-16">
+                    <div className="flex items-center gap-2 mb-3">
+                        <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: primaryColor }} />
+                        <span className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Features</span>
+                    </div>
+                    <h2 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-white sm:text-4xl">
+                        Built for modern scaling
                     </h2>
-                    <p className="text-gray-500 text-lg">
+                    <p className="mt-3 text-neutral-500 dark:text-neutral-400 text-base md:text-lg leading-relaxed">
                         {description || sampleProps.description}
                     </p>
                 </div>
 
-                {/* 2. TAB NAVIGATION (The "Pill") */}
-                <div className="flex flex-wrap justify-center gap-2 mb-8 p-1.5 rounded-full bg-gray-100/80 border border-gray-200 backdrop-blur-sm shadow-inner overflow-hidden max-w-full">
+                {/* Clean Feature Grid Layout */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {features.map((feature, idx) => {
-                        const isActive = activeIndex === idx;
                         const Icon = IconMap[(feature.icon ?? 'CheckIcon') as keyof typeof IconMap] ?? CheckIcon;
 
                         return (
-                            <button
+                            <div
                                 key={idx}
-                                onClick={() => setActiveIndex(idx)}
-                                className={`relative px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 z-10 ${isActive ? 'text-white shadow-md' : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'}`}
-                                style={{ outline: 'none' }}
+                                className="group relative bg-white dark:bg-neutral-900 border border-neutral-200/70 dark:border-neutral-800/80 rounded-2xl p-5 flex flex-col justify-between overflow-hidden shadow-sm hover:shadow-md hover:border-neutral-300 dark:hover:border-neutral-700/80 transition-all duration-300"
                             >
-                                {/* Animated Background Pill for Active State */}
-                                {isActive && (
-                                    <motion.div
-                                        layoutId="activeTab"
-                                        className="absolute inset-0 rounded-full"
-                                        style={{ backgroundColor: primaryColor }}
-                                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                                    />
-                                )}
+                                <div>
+                                    {/* Small Visual Card Asset */}
+                                    {feature.imageUrl && (
+                                        <div className="relative w-full h-36 rounded-xl overflow-hidden mb-5 bg-neutral-100 dark:bg-neutral-800">
+                                            <Image
+                                                src={feature.imageUrl}
+                                                alt={feature.title}
+                                                fill
+                                                sizes="(max-w: 768px) 100vw, (max-w: 1200px) 50vw, 25vw"
+                                                className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                                                loader={loader}
+                                            />
+                                            <div className="absolute inset-0 bg-neutral-950/5 dark:bg-neutral-950/10 mix-blend-multiply" />
+                                        </div>
+                                    )}
+
+                                    {/* Icon & Title Grouping */}
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <div className="p-2 rounded-lg bg-neutral-50 dark:bg-neutral-950 border border-neutral-200/60 dark:border-neutral-800/60 text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-white transition-colors">
+                                            <Icon className="w-4 h-4" style={{ '--primary-accent': primaryColor } as React.CSSProperties} />
+                                        </div>
+                                        <h3 className="text-sm font-bold tracking-tight text-neutral-900 dark:text-white">
+                                            {feature.title}
+                                        </h3>
+                                    </div>
+
+                                    {/* Feature Description text */}
+                                    <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium leading-relaxed">
+                                        {feature.description}
+                                    </p>
+                                </div>
                                 
-                                {/* Icon & Text (Relative z-index to sit on top of the bg) */}
-                                <span className="relative z-10 flex items-center gap-2">
-                                    <Icon className="w-4 h-4" />
-                                    <span className="hidden sm:inline">{feature.title}</span>
-                                </span>
-                            </button>
+                                {/* Micro Accent Indicator Ring on Hover */}
+                                <div 
+                                    className="absolute bottom-0 right-0 w-8 h-8 rounded-tl-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none flex items-center justify-end pr-2 pb-2"
+                                    style={{ color: primaryColor }}
+                                >
+                                    <span className="w-1 h-1 rounded-full bg-current" />
+                                </div>
+                            </div>
                         );
                     })}
                 </div>
 
-                {/* 3. MAIN CONTENT CARD (The "Screen") */}
-                <div 
-                    className="w-full relative aspect-[16/10] sm:aspect-[21/9] md:h-[400px] bg-gray-900 rounded-3xl overflow-hidden shadow-2xl ring-1 ring-gray-900/5 group"
-                    onMouseEnter={() => setIsHovering(true)}
-                    onMouseLeave={() => setIsHovering(false)}
-                >
-                    <AnimatePresence mode='wait'>
-                        <motion.div
-                            key={activeIndex}
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            transition={{ duration: 0.4 }}
-                            className="absolute inset-0 flex flex-col md:flex-row"
-                        >
-                            {/* LEFT: Text Content */}
-                            <div className="w-full md:w-2/5 p-8 md:p-12 flex flex-col justify-center relative z-20 bg-white/95 backdrop-blur-md md:bg-white">
-                                <div 
-                                    className="w-12 h-12 rounded-xl flex items-center justify-center mb-6 shadow-lg"
-                                    style={{ backgroundColor: `${primaryColor}15` }}
-                                >
-                                    {React.createElement(IconMap[features[activeIndex].icon || 'CheckIcon'], { 
-                                        className: "w-6 h-6",
-                                        style: { color: primaryColor }
-                                    })}
-                                </div>
-                                
-                                <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                                    {features[activeIndex].title}
-                                </h3>
-                                <p className="text-gray-600 leading-relaxed mb-8">
-                                    {features[activeIndex].description}
-                                </p>
-
-                                <button className="flex items-center text-sm font-bold hover:underline transition-all group/btn w-max" style={{ color: primaryColor }}>
-                                    Learn more 
-                                    <ArrowRightIcon className="w-4 h-4 ml-2 transition-transform group-hover/btn:translate-x-1" />
-                                </button>
-
-                                {/* Progress Bar (Visual Timer) */}
-                                {!isHovering && (
-                                    <div className="absolute bottom-0 left-0 h-1 bg-gray-100 w-full">
-                                        <motion.div 
-                                            initial={{ width: "0%" }}
-                                            animate={{ width: "100%" }}
-                                            transition={{ duration: 4, ease: "linear" }} // Matches auto-play timer
-                                            className="h-full"
-                                            style={{ backgroundColor: primaryColor }}
-                                        />
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* RIGHT: Image Background */}
-                            <div className="absolute inset-0 md:relative md:w-3/5 h-full z-10 md:z-auto">
-                                <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent md:hidden z-20" /> {/* Mobile text legibility overlay */}
-                                <Image
-                                    src={features[activeIndex].imageUrl || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop"}
-                                    alt={features[activeIndex].title}
-                                    fill
-                                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                                    loader={loader}
-                                />
-                                {/* Dark overlay for depth */}
-                                <div className="absolute inset-0 bg-black/10 md:bg-transparent" />
-                            </div>
-                        </motion.div>
-                    </AnimatePresence>
-                </div>
             </div>
         </section>
     );

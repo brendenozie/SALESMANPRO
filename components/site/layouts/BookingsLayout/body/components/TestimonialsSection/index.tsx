@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
@@ -9,7 +9,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 const useStoreContext = () => ({
     storeFormData: {
         name: 'The Wellness Hub',
-        testimonials: [], // Use this if provided
+        testimonials: [],
         themeSettings: { primaryColor: '#059669' }, // Emerald 600
     }
 });
@@ -48,66 +48,79 @@ const staticTestimonials = [
     },
 ];
 
-// --- Custom Slider Implementation using useReducer (simplified for single file) ---
+// Helper to safely convert hex to rgba for glassmorphism styles
+const hexToRgba = (hex: string, alpha: number) => {
+    const cleanHex = hex.replace('#', '');
+    const r = parseInt(cleanHex.substring(0, 2), 16) || 0;
+    const g = parseInt(cleanHex.substring(2, 4), 16) || 0;
+    const b = parseInt(cleanHex.substring(4, 6), 16) || 0;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
 
 const TestimonialCard = ({ testimonial, primaryColor }: { testimonial: typeof staticTestimonials[0], primaryColor: string }) => (
-    <div className="h-full">
-        {/* Card Redesign: Stronger Shadow, Primary Color Accent */}
+    <motion.div 
+        whileHover={{ y: -6, scale: 1.01 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        className="relative h-full flex flex-col justify-between p-8 lg:p-10 rounded-3xl border border-white/40 bg-white/70 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.04)] overflow-hidden group"
+    >
+        {/* Decorative dynamic ambient glow inside card top-right */}
         <div 
-            className="bg-white rounded-3xl p-8 lg:p-10 border border-gray-100 transition-all duration-500 transform relative overflow-hidden h-full flex flex-col justify-between group"
-            // style={{ 
-            //     boxShadow: `0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 4px ${primaryColor}1A`, // Prominent shadow with primary accent ring
-            // }}
-            // // Hover effect
-            // onMouseEnter={(e: any) => e.currentTarget.style.boxShadow = `0 30px 60px -15px rgba(0, 0, 0, 0.4), 0 0 0 4px ${primaryColor}40`}
-            // onMouseLeave={(e: any) => e.currentTarget.style.boxShadow = `0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 4px ${primaryColor}1A`}
-        >
-            
-            {/* Large, styled Quote Icon */}
-            <svg 
-                className="absolute top-4 right-4 w-12 h-12 transition-all duration-300 group-hover:scale-110" 
-                fill="currentColor" 
-                viewBox="0 0 24 24"
-                style={{ color: primaryColor + '30' }} // Light primary color for the icon
-            >
-                <path d="M9.25 6.75A.75.75 0 0110 7.5v3.5a.75.75 0 01-.75.75H6.5a.75.75 0 01-.75-.75v-3.5a.75.75 0 01.75-.75h2.75zm5.75 0a.75.75 0 01.75.75v3.5a.75.75 0 01-.75.75h-3.5a.75.75 0 01-.75-.75v-3.5a.75.75 0 01.75-.75h3.5z" />
-            </svg>
+            className="absolute -top-10 -right-10 w-32 h-32 rounded-full blur-3xl opacity-20 pointer-events-none transition-all duration-500 group-hover:scale-150"
+            style={{ backgroundColor: primaryColor }}
+        />
 
-            <p className="text-gray-800 text-lg sm:text-xl font-medium leading-relaxed mb-6 mt-4 relative z-10 italic">
+        <div>
+            {/* Elegant Large Quote Graphic */}
+            <span 
+                className="absolute top-4 right-6 font-serif text-8xl select-none pointer-events-none transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110 opacity-10"
+                style={{ color: primaryColor }}
+            >
+                ”
+            </span>
+
+            {/* Star Ratings Row */}
+            <div className="flex gap-1 mb-6">
+                {Array.from({ length: 5 }).map((_, idx) => (
+                    <StarIcon 
+                        key={idx} 
+                        className={`w-5 h-5 transition-all duration-300 ${idx < (testimonial.rating ?? 5) ? 'scale-100' : 'opacity-20 scale-90'}`}
+                        style={{ color: idx < (testimonial.rating ?? 5) ? '#F59E0B' : '#9CA3AF' }}
+                    />
+                ))}
+            </div>
+
+            {/* Quote text */}
+            <p className="text-gray-700 text-lg sm:text-xl font-normal leading-relaxed mb-8 relative z-10 antialiased">
                 “{testimonial.quote}”
             </p>
+        </div>
 
-            <div className="flex items-center gap-4 mt-auto pt-6 border-t border-gray-100">
+        {/* User Info Block */}
+        <div className="flex items-center gap-4 pt-6 border-t border-gray-100/80 relative z-10">
+            <div className="relative">
+                <div 
+                    className="absolute inset-0 rounded-full blur-[4px] opacity-40 group-hover:scale-110 transition-transform duration-300"
+                    style={{ backgroundColor: primaryColor }}
+                />
                 <img
                     src={testimonial.avatarUrl || 'https://placehold.co/64x64/d1d5db/059669?text=A'}
-                    alt={`Avatar of ${testimonial.authorName}`}
-                    width={64}
-                    height={64}
-                    className="rounded-full object-cover border-4 shadow-lg transition-transform duration-300 group-hover:scale-105 w-16 h-16"
+                    alt={testimonial.authorName}
+                    className="w-14 h-14 rounded-full object-cover border-2 shadow-inner relative z-10"
                     style={{ borderColor: primaryColor }}
-                    onError={(e: any) => e.target.src = 'https://placehold.co/64x64/d1d5db/059669?text=A'} // Fallback for image loading error
                 />
-                <div className="text-left">
-                    <p className="text-xl font-extrabold text-gray-900">{testimonial.authorName}</p>
-                    <div className="flex text-amber-500 mt-1">
-                        {Array.from({ length: testimonial.rating ?? 0 }).map((_, idx) => (
-                            <StarIcon key={idx} className="w-5 h-5" />
-                        ))}
-                    </div>
-                </div>
+            </div>
+            <div className="text-left">
+                <h4 className="text-lg font-bold text-gray-900 tracking-tight">{testimonial.authorName}</h4>
+                <p className="text-xs font-semibold uppercase tracking-wider opacity-60" style={{ color: primaryColor }}>Verified Customer</p>
             </div>
         </div>
-    </div>
+    </motion.div>
 );
-
 
 const CustomSlider = ({ items, primaryColor }: { items: typeof staticTestimonials, primaryColor: string }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isMobile, setIsMobile] = useState(false);
-    const sliderRef = useRef<HTMLDivElement>(null);
-    const totalItems = items.length;
-    
-    // Determine screen size for responsive behavior
+
     useEffect(() => {
         const checkMobile = () => setIsMobile(window.innerWidth < 1024);
         checkMobile();
@@ -115,202 +128,200 @@ const CustomSlider = ({ items, primaryColor }: { items: typeof staticTestimonial
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    // Logic to calculate how many cards to show
-    const visibleCards = isMobile ? 1 : Math.min(items.length, 2);
+    const visibleCards = isMobile ? 1 : 2;
+    const maxIndex = Math.ceil(items.length / visibleCards) - 1;
 
-    // Navigation logic
     const next = useCallback(() => {
-        setCurrentIndex(prev => (prev + 1) % totalItems);
-    }, [totalItems]);
+        setCurrentIndex(prev => (prev >= maxIndex ? 0 : prev + 1));
+    }, [maxIndex]);
 
     const prev = useCallback(() => {
-        setCurrentIndex(prev => (prev - 1 + totalItems) % totalItems);
-    }, [totalItems]);
+        setCurrentIndex(prev => (prev <= 0 ? maxIndex : prev - 1));
+    }, [maxIndex]);
 
-    // Autoplay effect
+    // Autoplay configuration
     useEffect(() => {
-        const interval = setInterval(next, 6000);
+        const interval = setInterval(next, 7000);
         return () => clearInterval(interval);
     }, [next]);
 
-    // Scroll effect to simulate sliding (smooth scrolling must be enabled via CSS)
-    useEffect(() => {
-        if (sliderRef.current) {
-            // Find the width of the card element (including its padding/margin context)
-            const cardElement = sliderRef.current.querySelector('.flex-shrink-0');
-            const cardWidth = cardElement?.clientWidth || 0;
-            
-            // Adjust for gap/padding if necessary
-            // Here, we assume the scroll position is based on the index * card width
-            const scrollPosition = currentIndex * cardWidth;
-            
-            sliderRef.current.scrollTo({
-                left: scrollPosition,
-                behavior: 'smooth'
-            });
+    // Group items into viewport frames dynamically
+    const slideFrames = useMemo(() => {
+        const chunks = [];
+        for (let i = 0; i < items.length; i += visibleCards) {
+            chunks.push(items.slice(i, i + visibleCards));
         }
-    }, [currentIndex]);
-    
-    // Custom Arrow Components (Theme-Aware, Integrated Style)
-    const ArrowButton = ({ direction, onClick }: { direction: 'prev' | 'next', onClick: () => void }) => (
-        <motion.div
-            className={`absolute z-20 top-1/2 -translate-y-1/2 cursor-pointer transition-all duration-300 rounded-full p-2 lg:p-3 bg-white shadow-lg ring-2 ring-gray-100 hover:scale-110 active:scale-95 hidden lg:block`}
-            onClick={onClick}
-            whileTap={{ scale: 0.95 }}
-            style={{ 
-                // Position arrows right next to the content area
-                [direction === 'prev' ? 'left' : 'right']: '-2rem', 
-                boxShadow: `0 10px 20px -5px rgba(0, 0, 0, 0.2), 0 0 0 2px ${primaryColor}20`,
-                borderColor: primaryColor + '40', // Light border for definition
-            }}
-        >
-            {direction === 'prev' ? (
-                <ChevronLeftIcon className="w-8 h-8 lg:w-10 lg:h-10 transition-colors duration-300" style={{ color: primaryColor }} />
-            ) : (
-                <ChevronRightIcon className="w-8 h-8 lg:w-10 lg:h-10 transition-colors duration-300" style={{ color: primaryColor }} />
-            )}
-        </motion.div>
-    );
+        return chunks;
+    }, [items, visibleCards]);
 
     return (
-        <div className="relative">
-            {/* Slider Track */}
-            <div 
-                ref={sliderRef}
-                className="flex overflow-x-auto snap-x snap-mandatory scroll-x-hidden scrollbar-hide"
-                style={{ scrollSnapType: isMobile ? 'x mandatory' : 'none' }} // Use snap only on mobile
-            >
-                {items.map((t, i) => (
+        <div className="relative w-full">
+            {/* Viewport Window */}
+            <div className="overflow-hidden min-h-[380px] sm:min-h-[320px] lg:min-h-[280px] px-2 py-4">
+                <AnimatePresence mode="wait">
                     <motion.div
-                        key={i}
-                        className={`p-2 lg:p-4 flex-shrink-0 snap-center`}
-                        style={{ width: isMobile ? '100%' : `${100 / visibleCards}%` }} // Dynamic width
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: i * 0.1 }}
-                        viewport={{ once: true, amount: 0.5 }}
+                        key={currentIndex}
+                        initial={{ opacity: 0, x: 50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -50 }}
+                        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                        className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8"
                     >
-                        <TestimonialCard testimonial={t} primaryColor={primaryColor} />
+                        {slideFrames[currentIndex]?.map((testimonial, index) => (
+                            <TestimonialCard 
+                                key={testimonial.authorName + index} 
+                                testimonial={testimonial} 
+                                primaryColor={primaryColor} 
+                            />
+                        ))}
                     </motion.div>
-                ))}
+                </AnimatePresence>
             </div>
 
-            {/* Arrows (Desktop Only) */}
-            <ArrowButton direction="prev" onClick={prev} />
-            <ArrowButton direction="next" onClick={next} />
+            {/* Sleek Floating Control Layout (Desktop Only) */}
+            <div className="hidden lg:block">
+                <button
+                    onClick={prev}
+                    className="absolute left-[-5rem] top-1/2 -translate-y-1/2 w-14 h-14 flex items-center justify-center bg-white/80 backdrop-blur-md rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.06)] border border-gray-100 text-gray-700 hover:scale-110 active:scale-95 transition-all duration-200 group z-30"
+                    aria-label="Previous testimonials"
+                >
+                    <ChevronLeftIcon className="w-6 h-6 transition-colors duration-200" style={{ '--hover-color': primaryColor } as React.CSSProperties} />
+                </button>
+                <button
+                    onClick={next}
+                    className="absolute right-[-5rem] top-1/2 -translate-y-1/2 w-14 h-14 flex items-center justify-center bg-white/80 backdrop-blur-md rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.06)] border border-gray-100 text-gray-700 hover:scale-110 active:scale-95 transition-all duration-200 group z-30"
+                    aria-label="Next testimonials"
+                >
+                    <ChevronRightIcon className="w-6 h-6 transition-colors duration-200" style={{ '--hover-color': primaryColor } as React.CSSProperties} />
+                </button>
+            </div>
 
-            {/* Dots/Pagination (Mobile & Desktop) */}
-            <div className="flex justify-center mt-12">
-                {items.map((_, i) => (
-                    <div
-                        key={i}
-                        className={`w-3 h-3 rounded-full mx-2 cursor-pointer transition-all duration-300 ${i === currentIndex ? 'scale-150' : 'scale-100 opacity-60'}`}
-                        style={{ backgroundColor: i === currentIndex ? primaryColor : '#9ca3af' }} // Neutral gray for inactive
-                        onClick={() => setCurrentIndex(i)}
-                    ></div>
-                ))}
+            {/* Smart Expansive Pagination Pills */}
+            <div className="flex justify-center items-center gap-2 mt-12">
+                {slideFrames.map((_, i) => {
+                    const isActive = i === currentIndex;
+                    return (
+                        <button
+                            key={i}
+                            onClick={() => setCurrentIndex(i)}
+                            className="h-2.5 rounded-full transition-all duration-500 relative overflow-hidden focus:outline-none"
+                            style={{ 
+                                width: isActive ? '32px' : '10px',
+                                backgroundColor: isActive ? primaryColor : hexToRgba(primaryColor, 0.2)
+                            }}
+                            aria-label={`Go to slide frame ${i + 1}`}
+                        />
+                    );
+                })}
             </div>
         </div>
     );
 };
-// End Custom Slider Implementation
 
 interface TestimonialsSectionProps {
-    name?: string | undefined | null;
+    name?: string | null;
     testimonials?: typeof staticTestimonials;
     themeSettings?: {
         primaryColor?: string;
     } | null;
 }
 
-// Helper to calculate average rating (for header credibiltiy)
 const calculateAverageRating = (items: typeof staticTestimonials) => {
     if (!items || items.length === 0) return 0;
-    const totalRating = items.reduce((sum, item) => sum + (item.rating || 0), 0);
-    return (totalRating / items.length).toFixed(1);
+    return (items.reduce((sum, item) => sum + (item.rating || 0), 0) / items.length).toFixed(1);
 };
-
 
 export default function TestimonialsSection({ name = 'Our Platform', testimonials = [], themeSettings }: TestimonialsSectionProps) {
     const items = testimonials.length ? testimonials : staticTestimonials;
-    const primaryColor = themeSettings?.primaryColor || '#059669'; // Emerald 600
+    const primaryColor = themeSettings?.primaryColor || '#059669';
     const averageRating = calculateAverageRating(items);
 
     return (
-        // Use a slightly different background for contrast, like a very light off-white/gray
-        <section id="testimonials" className="relative bg-gray-50 py-24 lg:py-36 px-6 lg:px-12 text-gray-900 overflow-hidden">
+        <section id="testimonials" className="relative bg-slate-50 py-28 lg:py-40 px-6 lg:px-8 text-gray-900 overflow-hidden">
             
-            {/* 🎨 Background Grids & Shapes (Subtle, professional) */}
-            <div className="absolute inset-0 z-0 opacity-10" style={{
-                backgroundImage: `radial-gradient(circle, ${primaryColor}20 1px, transparent 1px)`,
-                backgroundSize: '30px 30px',
+            {/* 🪐 Ambient Premium Lighting Layers */}
+            <div 
+                className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full blur-[140px] opacity-[0.06] pointer-events-none"
+                style={{ backgroundColor: primaryColor }}
+            />
+            <div 
+                className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[120px] opacity-[0.05] pointer-events-none"
+                style={{ backgroundColor: primaryColor }}
+            />
+            
+            {/* Elegant Geometry Net */}
+            <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none" style={{
+                backgroundImage: `radial-gradient(circle, ${primaryColor} 1.5px, transparent 1.5px)`,
+                backgroundSize: '40px 40px',
             }} />
 
-            <div className="max-w-7xl mx-auto text-center relative z-10">
-                
-                {/* 1. Credibility Block (New) */}
-                <motion.div
-                    className="flex items-center justify-center space-x-4 mb-4"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5, delay: 0.1 }}
-                    viewport={{ once: true }}
-                >
-                    <div className="flex text-amber-500">
-                        {Array.from({ length: 5 }).map((_, idx) => (
-                            <StarIcon key={idx} className="w-8 h-8" />
-                        ))}
-                    </div>
-                    <p className="text-3xl font-extrabold text-gray-900">
-                        {averageRating}
-                    </p>
-                    <p className="text-xl font-medium text-gray-500">
-                        ({items.length} reviews)
-                    </p>
-                </motion.div>
-                
-                <motion.span
-                    className="inline-block bg-white text-emerald-700 text-sm font-bold px-5 py-2 rounded-full  uppercase tracking-wider border-2"
-                    initial={{ opacity: 0, y: -20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    viewport={{ once: true }}
-                    style={{ color: primaryColor, borderColor: primaryColor + '60' }}
-                >
-                    Client Success Stories
-                </motion.span>
-                
-                <motion.h2
-                    className="text-4xl sm:text-6xl font-extrabold mt-6 text-gray-900 leading-tight max-w-4xl mx-auto"
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    viewport={{ once: true }}
-                >
-                    Hear From Our <span style={{ color: primaryColor }}>Happy Clients</span>
-                </motion.h2>
+            <div className="max-w-7xl mx-auto relative z-10">
+                <div className="text-center max-w-3xl mx-auto mb-20">
+                    
+                    {/* Badge Pill */}
+                    <motion.div
+                        initial={{ opacity: 0, y: -15 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6 }}
+                        viewport={{ once: true }}
+                        className="inline-flex items-center gap-2 bg-white/80 border px-4 py-2 rounded-full shadow-sm mb-6"
+                        style={{ borderColor: hexToRgba(primaryColor, 0.15) }}
+                    >
+                        <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
+                        <span className="text-xs font-bold uppercase tracking-widest text-gray-600">Client Success Stories</span>
+                    </motion.div>
+                    
+                    {/* Captivating Heading */}
+                    <motion.h2
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.1 }}
+                        viewport={{ once: true }}
+                        className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-900 leading-[1.1]"
+                    >
+                        Hear From Our <span className="relative inline-block">
+                            <span className="relative z-10" style={{ color: primaryColor }}>Happy Clients</span>
+                            <span className="absolute bottom-2 left-0 w-full h-3 -rotate-1 opacity-20 -z-10" style={{ backgroundColor: primaryColor }} />
+                        </span>
+                    </motion.h2>
 
-                <motion.p
-                    className="max-w-3xl mx-auto mt-4 text-xl leading-relaxed"
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    viewport={{ once: true }}
-                >
-                    {/* Use a richer color for the text and add strong bolding */}
-                    <span className="text-gray-700">
-                        Stop guessing. See the real impact. Discover why 
-                        <strong style={{ color: primaryColor }} className="font-extrabold mx-1">
-                            {name || 'Our Platform'}
-                        </strong> 
-                        is consistently rated five stars, confirmed by the people who matter most—<span className="font-semibold text-gray-800">our users</span>.
-                    </span>
-                </motion.p>
-            </div>
+                    {/* Highly intuitive descriptive subtext */}
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        transition={{ duration: 0.8, delay: 0.2 }}
+                        viewport={{ once: true }}
+                        className="mt-6 text-lg sm:text-xl text-gray-600 leading-relaxed font-normal"
+                    >
+                        Stop guessing. See real impact. Discover why 
+                        <strong className="font-bold mx-1 text-gray-900">{name || 'Our Platform'}</strong> 
+                        is consistently rated 5 stars by the people who matter most—our beautiful community.
+                    </motion.p>
 
-            {/* Main Testimonials Container using the Custom Slider */}
-            <div className="mt-20 max-w-7xl mx-auto relative px-4 lg:px-16">
-                <CustomSlider items={items} primaryColor={primaryColor} />
+                    {/* Integrated Trust / Credibility Score */}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.5, delay: 0.3 }}
+                        viewport={{ once: true }}
+                        className="inline-flex items-center gap-3 mt-8 px-5 py-2.5 bg-white rounded-2xl shadow-sm border border-gray-100"
+                    >
+                        <div className="flex text-amber-500">
+                            {Array.from({ length: 5 }).map((_, idx) => (
+                                <StarIcon key={idx} className="w-5 h-5" />
+                            ))}
+                        </div>
+                        <div className="h-4 w-[1px] bg-gray-200" />
+                        <p className="text-sm font-semibold text-gray-700">
+                            <span className="font-extrabold text-gray-900 text-base">{averageRating}</span> / 5.0 Rating ({items.length} reviews)
+                        </p>
+                    </motion.div>
+                </div>
+
+                {/* Main Dynamic Slider Wrapper */}
+                <div className="max-w-6xl mx-auto relative px-0 sm:px-4 lg:px-8">
+                    <CustomSlider items={items} primaryColor={primaryColor} />
+                </div>
             </div>
         </section>
     );

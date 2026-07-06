@@ -1,225 +1,253 @@
 'use client';
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { useStoreContext } from '@/contexts/StoreContext';
+import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { StarIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
+import { ChatBubbleLeftRightIcon, ShieldCheckIcon, SparklesIcon, TrophyIcon } from '@heroicons/react/24/outline';
 
-// Define the API Base URL
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+// Mock implementation for the custom hook and context data
+const useStoreContext = () => ({
+    storeFormData: {
+        name: 'The Wellness Hub',
+        testimonials: [],
+        themeSettings: { primaryColor: '#059669' }, // Emerald 600
+    }
+});
 
-export default function ContactCTASection() {
-  const { storeFormData } = useStoreContext();
-  
-  // Logic Integration: Get Company ID and Theme
-  const companyId = storeFormData?.id;
-  const { themeSettings } = storeFormData || {};
-  const primaryColor = themeSettings?.primaryColor || '#00A880';
+// Fallback enhanced static testimonials with categorical metadata tags for filtering
+const staticTestimonials = [
+    {
+        authorName: 'Sarah L.',
+        quote: 'Booking my service through this platform is incredibly smooth and easy. The user interface is intuitive, and I always find exactly what I need. Highly recommend!',
+        rating: 5,
+        category: 'Experience',
+        tagline: 'Flawless Experience',
+        avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734b319?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    },
+    {
+        authorName: 'James K.',
+        quote: 'I was impressed by the quality of service providers and the seamless booking process. This platform truly sets a new standard for convenience and excellence.',
+        rating: 5,
+        category: 'Quality',
+        tagline: 'Next-Level Quality',
+        avatarUrl: 'https://images.unsplash.com/photo-1549040846-95ff88301f2f?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    },
+    {
+        authorName: 'Amara N.',
+        quote: 'The personalized experience I received was outstanding. Every detail was taken care of, making my well-being journey truly special. A fantastic discovery!',
+        rating: 5,
+        category: 'Service',
+        tagline: 'Highly Personalized',
+        avatarUrl: 'https://images.unsplash.com/photo-1542345513-8a9d18b6e632?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    },
+    {
+        authorName: 'David R.',
+        quote: 'Finally, a platform that understands what clients need. Quick, reliable, and with top-tier professionals. My go-to for all my wellness needs now.',
+        rating: 4,
+        category: 'Quality',
+        tagline: 'Reliable & Prompt',
+        avatarUrl: 'https://images.unsplash.com/photo-1557088924-d2e825a0b73c?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    },
+    {
+        authorName: 'Fatuma A.',
+        quote: 'The secure payment system gave me great peace of mind. Combined with the easy scheduling, it made the whole process stress-free from start to finish.',
+        rating: 5,
+        category: 'Security',
+        tagline: 'Safe & Stress-Free',
+        avatarUrl: 'https://images.unsplash.com/photo-1596461404986-e88e404b4c73?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    },
+];
 
-  // State Management
-  const [form, setForm] = useState({
-    fullName: '',
-    email: '',
-    message: ''
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+// Helper to safely convert hex to rgba for glassmorphism styles
+const hexToRgba = (hex: string, alpha: number) => {
+    const cleanHex = hex.replace('#', '');
+    const r = parseInt(cleanHex.substring(0, 2), 16) || 0;
+    const g = parseInt(cleanHex.substring(2, 4), 16) || 0;
+    const b = parseInt(cleanHex.substring(4, 6), 16) || 0;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
 
-  // Handlers
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.id]: e.target.value });
-    if (submitStatus !== 'idle') setSubmitStatus('idle'); // Clear errors on type
-  };
+interface TestimonialsSectionProps {
+    name?: string | null;
+    testimonials?: typeof staticTestimonials;
+    themeSettings?: {
+        primaryColor?: string;
+    } | null;
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+export default function PremiumBentoTestimonials({ name = 'Our Platform', testimonials = [], themeSettings }: TestimonialsSectionProps) {
+    const items = testimonials.length ? testimonials : staticTestimonials;
+    const primaryColor = themeSettings?.primaryColor || '#059669';
     
-    // Basic Validation
-    if (!form.fullName || !form.email || !form.message) {
-      alert("Please fill out all fields.");
-      return;
-    }
+    const [activeFilter, setActiveFilter] = useState('All');
 
-    setIsSubmitting(true);
+    // Unique Categories Extract
+    const categories = useMemo(() => {
+        const list = new Set(items.map(i => i.category || 'General'));
+        return ['All', ...Array.from(list)];
+    }, [items]);
 
-    // Format Message for Admin
-    const formattedContent = `
-NEW GENERAL INQUIRY
+    // Filter Logic
+    const filteredItems = useMemo(() => {
+        if (activeFilter === 'All') return items;
+        return items.filter(item => item.category === activeFilter);
+    }, [items, activeFilter]);
 
-Name: ${form.fullName}
-Email: ${form.email}
+    // Icon Mapping based on categories
+    const getCategoryIcon = (category: string) => {
+        switch (category) {
+            case 'Experience': return <SparklesIcon className="w-4 h-4" />;
+            case 'Quality': return <TrophyIcon className="w-4 h-4" />;
+            case 'Security': return <ShieldCheckIcon className="w-4 h-4" />;
+            default: return <ChatBubbleLeftRightIcon className="w-4 h-4" />;
+        }
+    };
 
-Message:
-${form.message}
-    `;
+    return (
+        <section id="testimonials" className="relative bg-[#0b1329] py-28 lg:py-40 px-6 lg:px-8 text-white overflow-hidden">
+            
+            {/* 🌌 High-End Cosmic Backdrop Lighting Effects */}
+            <div 
+                className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full blur-[160px] opacity-[0.12] pointer-events-none"
+                style={{ backgroundColor: primaryColor }}
+            />
+            <div 
+                className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full blur-[140px] opacity-[0.1] pointer-events-none"
+                style={{ backgroundColor: primaryColor }}
+            />
+            <div className="absolute inset-0 opacity-[0.02] pointer-events-none bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px]" />
 
-    try {
-      const res = await fetch(`${apiBaseUrl}/conversations/send-to-admin`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          companyId: companyId,
-          content: formattedContent,
-        }),
-      });
+            <div className="max-w-7xl mx-auto relative z-10">
+                
+                {/* Header Grid Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end mb-20">
+                    <div className="lg:col-span-7 space-y-4">
+                        <div 
+                            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md shadow-sm"
+                        >
+                            <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
+                            <span className="text-xs font-bold uppercase tracking-widest text-gray-300">Wall of Proof</span>
+                        </div>
+                        
+                        <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-none">
+                            Validated by <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200" style={{ WebkitTextFillColor: 'transparent', backgroundImage: `linear-gradient(to right, #ffffff, ${primaryColor})` }}>industry leaders</span>
+                        </h2>
+                        
+                        <p className="text-lg text-gray-400 max-w-2xl font-light">
+                            Discover how <strong className="text-white font-semibold">{name || 'Our Platform'}</strong> transforms standard operations into frictionless user experiences, verified completely by our dynamic client network.
+                        </p>
+                    </div>
 
-      if (!res.ok) throw new Error("API Error");
+                    {/* Dynamic Filters Pills Layout */}
+                    <div className="lg:col-span-5 flex flex-wrap lg:justify-end gap-2">
+                        {categories.map((category) => {
+                            const isSelected = activeFilter === category;
+                            return (
+                                <button
+                                    key={category}
+                                    onClick={() => setActiveFilter(category)}
+                                    className="px-4 py-2 text-xs font-semibold rounded-xl transition-all duration-300 flex items-center gap-2 border"
+                                    style={{
+                                        backgroundColor: isSelected ? primaryColor : 'rgba(255, 255, 255, 0.03)',
+                                        borderColor: isSelected ? primaryColor : 'rgba(255, 255, 255, 0.08)',
+                                        color: isSelected ? '#ffffff' : '#9ca3af',
+                                        boxShadow: isSelected ? `0 10px 25px -5px ${hexToRgba(primaryColor, 0.4)}` : 'none'
+                                    }}
+                                >
+                                    {category !== 'All' && getCategoryIcon(category)}
+                                    {category}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
 
-      setSubmitStatus('success');
-      setForm({ fullName: '', email: '', message: '' }); // Reset form
+                {/* 🍱 Bento Masonry Grid Implementation */}
+                <motion.div 
+                    layout
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[240px]"
+                >
+                    <AnimatePresence mode="popLayout">
+                        {filteredItems.map((testimonial, idx) => {
+                            // Rule definitions to balance sizing constraints beautifully across the Bento presentation layers
+                            const isFeatured = idx === 0 && activeFilter === 'All';
+                            const gridClasses = isFeatured 
+                                ? 'md:col-span-2 md:row-span-2 row-span-2' 
+                                : 'col-span-1 row-span-1 md:row-span-1';
 
-    } catch (error) {
-      console.error(error);
-      setSubmitStatus('error');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+                            return (
+                                <motion.div
+                                    layout
+                                    key={testimonial.authorName}
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    transition={{ duration: 0.4, ease: 'easeInOut' }}
+                                    className={`relative rounded-3xl p-6 lg:p-8 overflow-hidden border border-white/10 flex flex-col justify-between group cursor-default ${gridClasses}`}
+                                    style={{
+                                        background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)',
+                                        backdropFilter: 'blur(20px)'
+                                    }}
+                                    whileHover={{ 
+                                        borderColor: hexToRgba(primaryColor, 0.4),
+                                        boxShadow: `0 30px 60px -15px rgba(0,0,0,0.3), inset 0 1px 0 0 ${hexToRgba(primaryColor, 0.2)}`
+                                    }}
+                                >
+                                    {/* Ambient subtle spotlight inside hover interactions */}
+                                    <div 
+                                        className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full blur-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none"
+                                        style={{ backgroundColor: primaryColor }}
+                                    />
 
-  return (
-    <section id="contact" className="relative bg-gray-50 py-24 px-6 lg:px-12 text-gray-900 overflow-hidden">
-      
-      <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center relative z-10">
-        
-        {/* Left - Content + Form */}
-        <div>
-          {/* Badge */}
-          <motion.span
-            className="inline-block bg-emerald-100 text-emerald-700 text-sm font-semibold px-4 py-1.5 rounded-full border border-emerald-200 shadow-sm"
-            initial={{ opacity: 0, y: -10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            viewport={{ once: true }}
-          >
-            Get In Touch
-          </motion.span>
+                                    <div>
+                                        {/* Upper Meta Flag */}
+                                        <div className="flex items-center justify-between gap-4 mb-4">
+                                            <span 
+                                                className="text-xs font-bold tracking-widest uppercase px-2.5 py-1 rounded-md border border-white/5 bg-white/5"
+                                                style={{ color: isFeatured ? '#ffffff' : hexToRgba(primaryColor, 1) }}
+                                            >
+                                                {testimonial.tagline || testimonial.category}
+                                            </span>
+                                            <div className="flex gap-0.5 text-amber-500">
+                                                {Array.from({ length: testimonial.rating ?? 5 }).map((_, i) => (
+                                                    <StarIcon key={i} className="w-4 h-4" />
+                                                ))}
+                                            </div>
+                                        </div>
 
-          {/* Title */}
-          <motion.h2
-            className="text-4xl sm:text-5xl font-extrabold tracking-tight mt-6 text-gray-900 leading-tight"
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            viewport={{ once: true }}
-          >
-            We'd Love to <span style={{ color: primaryColor }}>Hear From You</span>
-          </motion.h2>
+                                        {/* Core Quote Statement */}
+                                        <p className={`text-gray-300 leading-relaxed font-light ${isFeatured ? 'text-xl sm:text-2xl mt-4 max-w-xl font-normal' : 'text-sm line-clamp-4 lg:line-clamp-5'}`}>
+                                            “{testimonial.quote}”
+                                        </p>
+                                    </div>
 
-          {/* Description */}
-          <motion.p
-            className="mt-4 text-lg text-gray-700 max-w-xl leading-relaxed"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            viewport={{ once: true }}
-          >
-            Whether you're curious about our services, need support, or just want to say hello — we're always ready to connect!
-          </motion.p>
+                                    {/* User Signature Row */}
+                                    <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-4">
+                                        <div className="flex items-center gap-3">
+                                            <img
+                                                src={testimonial.avatarUrl}
+                                                alt={testimonial.authorName}
+                                                className="w-10 h-10 rounded-full object-cover ring-2"
+                                                style={{ ringColor: hexToRgba(primaryColor, 0.5) }}
+                                            />
+                                            <div className="text-left">
+                                                <h4 className="text-sm font-bold text-white tracking-tight">{testimonial.authorName}</h4>
+                                                <div className="flex items-center gap-1 opacity-50">
+                                                    <CheckCircleIcon className="w-3 h-3 text-emerald-400" />
+                                                    <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Verified Client</span>
+                                                </div>
+                                            </div>
+                                        </div>
 
-          {/* Contact Form */}
-          <form onSubmit={handleSubmit} className="mt-10 space-y-6 max-w-xl bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
-            <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-              <input
-                type="text"
-                id="fullName"
-                value={form.fullName}
-                onChange={handleChange}
-                required
-                placeholder="Your Name"
-                className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
-              />
+                                        {/* Background Structural Watermark Accent */}
+                                        <span className="font-serif text-5xl select-none pointer-events-none opacity-5 text-white group-hover:scale-110 transition-transform duration-300">”</span>
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
+                    </AnimatePresence>
+                </motion.div>
             </div>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-              <input
-                type="email"
-                id="email"
-                value={form.email}
-                onChange={handleChange}
-                required
-                placeholder="you@example.com"
-                className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
-              />
-            </div>
-            <div>
-              <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">Message</label>
-              <textarea
-                id="message"
-                value={form.message}
-                onChange={handleChange}
-                required
-                rows={5}
-                placeholder="Type your message..."
-                className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
-              />
-            </div>
-
-            <motion.button
-              type="submit"
-              disabled={isSubmitting}
-              className={`w-full sm:w-auto inline-flex items-center justify-center text-white font-semibold px-8 py-4 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
-              style={{ backgroundColor: primaryColor }}
-              whileHover={!isSubmitting ? { scale: 1.05, boxShadow: "0 10px 30px rgba(0, 168, 128, 0.4)" } : {}}
-              whileTap={!isSubmitting ? { scale: 0.97 } : {}}
-            >
-              {isSubmitting ? 'Sending...' : 'Send Your Message'}
-              {!isSubmitting && (
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 ml-2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                </svg>
-              )}
-            </motion.button>
-
-            {/* Status Feedback */}
-            {submitStatus === 'success' && (
-              <p className="text-green-600 font-medium text-center animate-pulse">
-                Message sent successfully! We'll be in touch soon.
-              </p>
-            )}
-            {submitStatus === 'error' && (
-              <p className="text-red-500 font-medium text-center">
-                Something went wrong. Please try again later.
-              </p>
-            )}
-          </form>
-
-          {/* Live Support Hours + WhatsApp */}
-          <div className="mt-12 space-y-4 text-md text-gray-600">
-            <p className="flex items-center gap-2">
-              <span className="text-emerald-500"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></span>
-              <strong className="text-gray-800">Support Hours:</strong> Mon–Sat, 8:00 AM – 8:00 PM EAT
-            </p>
-            <p className="flex items-center gap-2">
-              <span className="text-emerald-500"><svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="w-5 h-5"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.557-3.84-1.557-5.887C.187 5.572 5.882.001 12.164.001c3.181 0 6.167 1.24 8.413 3.488 2.246 2.248 3.481 5.232 3.48 8.416-.001 6.183-5.704 11.87-11.987 11.87-.847 0-1.659-.119-2.433-.357L.057 24zm6.593-4.706c1.037.34 2.144.517 3.256.518 4.673 0 8.473-3.803 8.473-8.475S16.527 3.258 11.854 3.258C7.181 3.258 3.382 7.062 3.382 11.735c0 1.542.487 2.956 1.341 4.195l-.946 3.457 3.142-.997z"/></svg></span>
-              <a href="https://wa.me/254712345678" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-800 hover:underline font-medium">Chat with us on WhatsApp</a>
-            </p>
-            <p className="flex items-center gap-2">
-              <span className="text-emerald-500"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 1.5-3.375 3-7.5 3S6 13.5 6 12s3.375-3 7.5-3 7.5 1.5 7.5 3z" /></svg></span>
-              <a href="#livechat" className="text-emerald-600 hover:text-emerald-800 hover:underline font-medium">Start a Live Chat</a>
-            </p>
-          </div>
-        </div>
-
-        {/* Right - Map */}
-        <motion.div
-          className="w-full h-[450px] rounded-3xl overflow-hidden shadow-2xl border border-gray-200"
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-          viewport={{ once: true, amount: 0.2 }}
-        >
-          {/* Note: Ensure this is a valid Google Maps Embed URL for your actual location */}
-          <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.8164801198533!2d36.817223!3d-1.286389!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f1172d84d49a7%3A0xf7cf1f25b2447990!2sNairobi%2C%20Kenya!5e0!3m2!1sen!2ske!4v1700000000000!5m2!1sen!2ske"
-            width="100%"
-            height="100%"
-            loading="lazy"
-            allowFullScreen
-            className="border-none w-full h-full"
-            title="Our Location on Map"
-          />
-        </motion.div>
-      </div>
-    </section>
-  );
+        </section>
+    );
 }

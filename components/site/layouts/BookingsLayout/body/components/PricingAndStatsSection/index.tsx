@@ -9,9 +9,10 @@ import {
     CalendarDaysIcon, 
     BriefcaseIcon,
     ArrowPathIcon,
-} from '@heroicons/react/24/solid'; 
+    SparklesIcon,
+    ArrowRightIcon
+} from '@heroicons/react/24/outline'; 
 import { PricingTier, Stat } from '@/types/typings';
-
 
 // --- Helper Types & Maps (Retained) ---
 const StatIconMap: { [key: string]: React.ElementType } = {
@@ -20,9 +21,8 @@ const StatIconMap: { [key: string]: React.ElementType } = {
     "Happy Customers": UsersIcon,
     "Average Rating": StarIcon,
 };
-// ------------------------------------------------------------------------
 
-// CountUp component (Retained)
+// CountUp component (Retained & Optimized)
 const CountUp = ({ end, duration = 2000, decimals = 0 }: { end: number; duration?: number; decimals?: number }) => {
     const [count, setCount] = useState(0);
     const ref = useRef(null);
@@ -56,7 +56,6 @@ interface PricingAndStatsSectionProps {
     themeSettings: Record<string, any> | null; 
 }
 
-// --- START: Main Component ---
 export default function PricingAndStatsSection({ stats, pricingTiers, themeSettings }: PricingAndStatsSectionProps) {
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'annually'>('monthly');
 
@@ -73,42 +72,37 @@ export default function PricingAndStatsSection({ stats, pricingTiers, themeSetti
             { name: "Growth Pro", monthlyPrice: 29, annualPrice: 278.4, description: "Maximize growth with unlimited scheduling, team features, and advanced branding.", features: ["Unlimited client bookings", "Automated SMS reminders", "Priority chat support", "Custom branding & logo upload", "Up to 5 team members"], isFeatured: true },
             { name: "Enterprise", monthlyPrice: 0, annualPrice: 0, description: "Tailored infrastructure for high-volume operations, large teams, and custom integration.", features: ["Dedicated account manager", "Full CRM integration", "24/7 Phone and emergency support", "Custom team roles & SSO", "Unlimited users"], isFeatured: false },
         ] as PricingTier[],
-        themeSettings: { primaryColor: '#059669' }, // Emerald 600
+        themeSettings: { primaryColor: '#059669' },
     };
 
     const primaryColor = themeSettings?.primaryColor || '#059669'; 
     const accentColor = '#FACC15'; // Yellow 400 
 
     const sectionRef = useRef(null);
-    const inView = useInView(sectionRef, { once: true, amount: 0.2 });
+    const inView = useInView(sectionRef, { once: true, amount: 0.1 });
 
-    // Animation variants (Retained)
     const itemVariants = {
-        hidden: { opacity: 0, y: 50, scale: 0.8 },
+        hidden: { opacity: 0, y: 30, scale: 0.96 },
         visible: (i: number) => ({
             opacity: 1,
             y: 0,
             scale: 1,
             transition: {
-                delay: i * 0.1, 
-                duration: 0.7,
-                type: "spring",
-                stiffness: 120,
-                damping: 10,
+                delay: i * 0.08, 
+                duration: 0.6,
+                ease: [0.16, 1, 0.3, 1]
             },
         }),
     };
     
-    // Data processing (Retained)
     const normalizedStats: Stat[] = Array.isArray(stats) && stats.length > 0 ? stats : sampleData.stats;
     const processedTiers = pricingTiers && pricingTiers.length > 0 ? pricingTiers : sampleData.pricingTiers;
 
-    // Helper for Price Calculation (Retained)
     const getPriceDetails = (tier: PricingTier) => {
         const isMonthly = billingCycle === 'monthly';
         
         if (tier.name.toLowerCase() === 'enterprise' && (tier.monthlyPrice === 0 || tier.monthlyPrice === null)) {
-            return { priceDisplay: 'Custom', cycleLabel: '', isCustom: true, annualNote: 'Contact us for a tailored enterprise solution.', currency: '' };
+            return { priceDisplay: 'Custom', cycleLabel: '', isCustom: true, annualNote: 'Contact our team for a tailored framework setup.', currency: '' };
         }
 
         const basePrice = tier.monthlyPrice || tier.price || 0; 
@@ -118,10 +112,10 @@ export default function PricingAndStatsSection({ stats, pricingTiers, themeSetti
         if (isMonthly) {
             priceValue = basePrice;
             const discountedAnnualPrice = (basePrice * 12 * 0.8).toFixed(0); 
-            annualNote = `Billed annually at KES ${discountedAnnualPrice} per year (Save 20%)`;
+            annualNote = `Billed annually at KES ${Number(discountedAnnualPrice).toLocaleString('en-KE')}/yr (Save 20%)`;
         } else {
             priceValue = tier.annualPrice && tier.annualPrice > 0 ? tier.annualPrice : (basePrice * 12 * 0.8);
-            annualNote = `Saving 20% annually compared to the monthly plan.`;
+            annualNote = `Saving 20% compared to standard monthly structural configurations.`;
         }
         
         const priceDisplay = typeof priceValue === 'number' ? priceValue.toFixed(priceValue % 1 !== 0 ? 2 : 0) : 'Custom';
@@ -133,132 +127,152 @@ export default function PricingAndStatsSection({ stats, pricingTiers, themeSetti
     return (
         <section 
             ref={sectionRef} 
-            className="relative pt-20 pb-32 overflow-hidden min-h-screen"
-            // LIGHT MODE GRADIENT BACKGROUND
-            style={{ background: 'linear-gradient(135deg, #f9fafb 0%, #ffffff 50%, #f3f4f6 100%)' }} 
+            className="relative bg-[#fafafa] py-28 overflow-hidden min-h-screen text-gray-900"
         >
-            
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            {/* Ambient Blurred Accents */}
+            <div className="absolute top-1/4 left-1/3 w-[500px] h-[500px] rounded-full blur-[150px] opacity-[0.12] pointer-events-none -translate-x-1/2" style={{ backgroundColor: primaryColor }} />
+            <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] rounded-full blur-[160px] opacity-[0.08] pointer-events-none translate-x-1/3" style={{ backgroundColor: primaryColor }} />
+
+            <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
                 
-                {/* =========================================================
-                    1. HEADER & DYNAMIC STATS GRID (LIGHT MODE)
-                    =========================================================
-                */}
-                <div className="pt-8 pb-16 text-center">
-                    <motion.h2
-                        className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight mb-4"
-                        initial={{ opacity: 0, y: -20 }}
+                {/* 📊 SECTION 1: METRICS AND STATISTICS */}
+                <div className="text-center mb-12">
+                    <motion.span
+                        className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full backdrop-blur-md border"
+                        style={{ backgroundColor: primaryColor + '08', color: primaryColor, borderColor: primaryColor + '20' }}
+                        initial={{ opacity: 0, y: -10 }}
                         animate={inView ? { opacity: 1, y: 0 } : {}}
-                        transition={{ duration: 0.6 }}
+                        transition={{ duration: 0.4 }}
                     >
-                        Achieve <span style={{ color: primaryColor }}>Proven Results</span>
+                        <SparklesIcon className="w-3.5 h-3.5" /> Performance Data
+                    </motion.span>
+
+                    <motion.h2
+                        className="mt-6 text-4xl sm:text-5xl font-black text-gray-900 tracking-tight leading-[1.15]"
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={inView ? { opacity: 1, y: 0 } : {}}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
+                    >
+                        Achieve <span className="relative inline-block"><span className="relative z-10" style={{ color: primaryColor }}>Proven Results</span><span className="absolute bottom-2 left-0 w-full h-3 opacity-15" style={{ backgroundColor: primaryColor }} /></span>
                     </motion.h2>
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-16">
-                        See why thousands of professionals trust us daily.
-                    </p>
+                    
+                    <motion.p
+                        className="mt-4 text-base sm:text-lg text-gray-500 max-w-xl mx-auto leading-relaxed"
+                        initial={{ opacity: 0 }}
+                        animate={inView ? { opacity: 1 } : {}}
+                        transition={{ duration: 0.6, delay: 0.1 }}
+                    >
+                        Discover why elite industry professionals streamline and coordinate their operations using our architecture ecosystem.
+                    </motion.p>
+                </div>
 
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+                {/* Core Stats Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mt-16">
+                    {normalizedStats?.map((item, i) => {
+                        const numericValue = parseFloat(item.value as string) || 0;
+                        const IconComponent = StatIconMap[item.label] || UsersIcon;
+                        const isRating = item.label === "Average Rating";
                         
-                        {/* Core Stats (Dynamic Grid) */}
-                        {normalizedStats?.map((item, i) => {
-                            const numericValue = parseFloat(item.value as string) || 0;
-                            const IconComponent = StatIconMap[item.label] || UsersIcon;
-                            const isRating = item.label === "Average Rating";
-                            
-                            // Light Mode Stat Card Styling
-                            const statCardClasses = isRating 
-                                ? `bg-yellow-50 border-yellow-300 shadow-lg shadow-yellow-200/50` 
-                                : `bg-white/80 border-gray-200 shadow-md`;
-                            const statTextClasses = isRating ? 'text-yellow-700' : 'text-gray-900';
-                            const statLabelClasses = isRating ? 'text-yellow-600' : 'text-gray-600';
-
-                            return (
-                                <motion.div
-                                    key={item.label}
-                                    custom={i}
-                                    variants={itemVariants}
-                                    initial="hidden"
-                                    animate={inView ? "visible" : "hidden"}
-                                    
-                                    className={`relative p-6 rounded-3xl backdrop-blur-md border transition-transform duration-300 transform hover:scale-[1.03] flex flex-col items-center justify-center ${statCardClasses}`}
+                        return (
+                            <motion.div
+                                key={item.label}
+                                custom={i}
+                                variants={itemVariants}
+                                initial="hidden"
+                                animate={inView ? "visible" : "hidden"}
+                                className={`
+                                    relative p-7 rounded-[2rem] bg-white border border-gray-100/80 backdrop-blur-xl shadow-[0_15px_40px_-15px_rgba(0,0,0,0.03)]
+                                    transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.06)]
+                                    flex flex-col items-center text-center group
+                                `}
+                            >
+                                <div 
+                                    className="p-3.5 rounded-2xl border mb-5 transition-transform duration-500 group-hover:scale-110"
+                                    style={{ 
+                                        backgroundColor: isRating ? '#FEF3C7' + '50' : primaryColor + '08', 
+                                        borderColor: isRating ? '#FDE68A' : primaryColor + '15' 
+                                    }}
                                 >
                                     {IconComponent && (
                                         <IconComponent 
-                                            className={`w-10 h-10 mb-3`} 
-                                            style={{ color: isRating ? accentColor : primaryColor }}
+                                            className="w-6 h-6 stroke-[1.75]" 
+                                            style={{ color: isRating ? '#D97706' : primaryColor }}
                                         />
                                     )}
-                                    <h5 className={`text-4xl font-extrabold leading-tight ${statTextClasses}`}>
-                                        <CountUp end={numericValue} duration={2000} decimals={isRating ? 1 : 0} />
-                                        {item.suffix || ''}
-                                    </h5>
-                                    <p className={`mt-1 text-sm font-medium uppercase tracking-wider ${statLabelClasses}`}>{item.label}</p>
-                                </motion.div>
-                            );
-                        })}
-                    </div>
+                                </div>
+                                <h5 className="text-4xl font-black text-gray-900 tracking-tight flex items-baseline">
+                                    <CountUp end={numericValue} duration={1800} decimals={isRating ? 1 : 0} />
+                                    <span className="text-xl font-bold text-gray-400 ml-0.5">{item.suffix || ''}</span>
+                                </h5>
+                                <p className="mt-2 text-xs font-bold uppercase tracking-wider text-gray-400">{item.label}</p>
+                            </motion.div>
+                        );
+                    })}
                 </div>
 
-                <div className="my-16 flex items-center justify-center">
-                    <ArrowPathIcon className="w-8 h-8 text-gray-500 animate-spin mr-3" />
-                    <span className="text-gray-500 text-lg">Real-time data synchronization.</span>
-                </div>
+                {/* Modern Telemetry Metrics Sync Bar */}
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={inView ? { opacity: 1, scale: 1 } : {}}
+                    transition={{ delay: 0.4, duration: 0.5 }}
+                    className="my-20 max-w-xs mx-auto flex items-center justify-center gap-2.5 px-4 py-2 bg-white rounded-full border border-gray-100 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.02)]"
+                >
+                    <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: primaryColor }} />
+                        <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: primaryColor }} />
+                    </span>
+                    <span className="text-xs font-semibold text-gray-500 tracking-wide">Live telemetry data active</span>
+                </motion.div>
                 
-                {/* =========================================================
-                    2. PRICING SECTION (GLASS CARDS - LIGHT MODE)
-                    =========================================================
-                */}
-                <div className="py-8 text-center">
+                {/* 💳 SECTION 2: PRICING SECTION */}
+                <div className="text-center">
                     <motion.h2
-                        className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight mb-12"
-                        initial={{ opacity: 0, y: -20 }}
+                        className="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight"
+                        initial={{ opacity: 0, y: 15 }}
                         animate={inView ? { opacity: 1, y: 0 } : {}}
-                        transition={{ duration: 0.6, delay: 0.8 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
                     >
-                        <span style={{ color: primaryColor }}>Simple, Transparent Pricing</span>
+                        Transparent, <span style={{ color: primaryColor }}>Predictable Plans</span>
                     </motion.h2>
 
-                    {/* Pricing Toggle (Adjusted for Light BG) */}
-                    <div className="mt-12 flex justify-center items-center space-x-3 mb-16">
-                        <span className={`text-lg font-semibold transition-colors ${billingCycle === 'monthly' ? 'text-gray-900' : 'text-gray-500'}`}>
-                            Monthly
-                        </span>
-                        
-                        <div className="relative inline-block w-16 h-8 rounded-full cursor-pointer p-1 shadow-inner" 
-                            style={{ backgroundColor: billingCycle === 'annually' ? primaryColor : '#E5E7EB' /* gray-200 */ }}
-                            onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'annually' : 'monthly')}
-                        >
-                            <motion.div
-                                className="absolute w-6 h-6 rounded-full bg-white shadow-lg"
-                                initial={false}
-                                animate={{ x: billingCycle === 'annually' ? 'calc(100% + 2px)' : '0px' }}
-                                transition={{ type: "spring", stiffness: 700, damping: 50 }}
+                    {/* Fluid High-End Pricing Toggle Switch */}
+                    <div className="mt-8 flex justify-center items-center mb-20">
+                        <div className="p-1.5 bg-gray-100/80 backdrop-blur-md rounded-2xl border border-gray-200/40 flex items-center relative">
+                            <button 
+                                className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all relative z-10 ${billingCycle === 'monthly' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
+                                onClick={() => setBillingCycle('monthly')}
+                            >
+                                Monthly Billing
+                            </button>
+                            <button 
+                                className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all relative z-10 flex items-center gap-1.5 ${billingCycle === 'annually' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
+                                onClick={() => setBillingCycle('annually')}
+                            >
+                                Annual Plan
+                                <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black tracking-wide text-white" style={{ backgroundColor: primaryColor }}>
+                                    -20%
+                                </span>
+                            </button>
+
+                            {/* Slider Element */}
+                            <motion.div 
+                                className="absolute top-1.5 bottom-1.5 left-1.5 bg-white rounded-xl shadow-sm border border-gray-200/50"
+                                layout
+                                animate={{
+                                    width: billingCycle === 'monthly' ? '110px' : '122px',
+                                    x: billingCycle === 'monthly' ? 0 : 114
+                                }}
+                                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                             />
                         </div>
-
-                        <span className={`text-lg font-semibold transition-colors ${billingCycle === 'annually' ? 'text-gray-900' : 'text-gray-500'}`}>
-                            Annually 
-                            <span className="ml-3 px-3 py-0.5 text-sm font-bold rounded-full text-gray-900 shadow-md" style={{ backgroundColor: accentColor }}>
-                                Save 20%
-                            </span>
-                        </span>
                     </div>
-                    {/* End Pricing Toggle */}
                     
-                    <div className="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-y-12 lg:gap-x-8 items-stretch">
+                    {/* Pricing Cards Structural Grid */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch max-w-6xl mx-auto">
                         {processedTiers.map((tier, i) => {
                             const details = getPriceDetails(tier);
                             const { priceDisplay, cycleLabel, isCustom, annualNote, currency } = details;
                             const isFeatured = tier.isFeatured;
-
-                            // Light Mode Glassmorphism Card Classes
-                            const glassClasses = `bg-white/90 backdrop-blur-md border border-gray-300 shadow-xl transition-all duration-500 transform hover:translate-y-[-5px] z-10`;
-                            
-                            const buttonStyle = { 
-                                backgroundColor: primaryColor,
-                                color: 'white',
-                                boxShadow: isFeatured ? `0 10px 20px -5px ${primaryColor}40` : 'none',
-                            };
 
                             return (
                                 <motion.div
@@ -267,82 +281,106 @@ export default function PricingAndStatsSection({ stats, pricingTiers, themeSetti
                                     variants={itemVariants}
                                     initial="hidden"
                                     animate={inView ? "visible" : "hidden"}
-                                    
-                                    className={`relative rounded-3xl p-8 lg:p-12 flex flex-col justify-between ${glassClasses} ${isFeatured ? 'ring-2 ring-offset-4 ring-offset-gray-50 ring-emerald-300 scale-[1.05] z-20' : ''}`}
+                                    className={`
+                                        relative rounded-[2.25rem] p-8 sm:p-10 flex flex-col justify-between bg-white text-left
+                                        border transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]
+                                        ${isFeatured 
+                                            ? 'border-gray-900/5 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] lg:scale-[1.03] lg:-translate-y-2 z-20' 
+                                            : 'border-gray-100 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.03)] hover:-translate-y-1 z-10'}
+                                    `}
                                 >
-                                    {/* Featured Tag */}
+                                    {/* Accent strip on the featured card */}
                                     {isFeatured && (
-                                        <motion.div 
-                                            className="absolute inset-0 rounded-3xl pointer-events-none"
-                                            animate={{ opacity: [0.8, 0.4, 0.8] }}
-                                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                                            style={{ boxShadow: `inset 0 0 0 4px ${primaryColor}70` }} // Subtle inner border pulse
-                                        />
+                                        <div className="absolute top-0 inset-x-0 h-2 rounded-t-[2.25rem]" style={{ backgroundColor: primaryColor }} />
                                     )}
-                                    <div className="absolute -top-4 right-1/2 translate-x-1/2">
-                                        <span className={`inline-block px-6 py-1 text-sm font-bold text-gray-900 uppercase tracking-wider rounded-full shadow-lg ${isFeatured ? '' : 'hidden'}`} style={{ backgroundColor: accentColor }}>
-                                            Recommended
-                                        </span>
-                                    </div>
-                                    
-                                    <div className="text-center">
-                                        <h3 className="text-3xl font-extrabold mt-4 text-gray-900">
-                                            {tier.name}
-                                        </h3>
-                                        <p className={`mt-3 text-gray-600`}>{tier.description}</p>
-                                        
-                                        <motion.p 
-                                            key={priceDisplay + cycleLabel} 
-                                            className="mt-8 text-7xl font-extrabold leading-none text-gray-900"
-                                            initial={{ scale: 0.95 }}
-                                            animate={{ scale: 1 }}
-                                            transition={{ type: "tween", duration: 0.3 }}
-                                        >
-                                            {isCustom ? (
-                                                <span className="text-4xl font-extrabold">{priceDisplay}</span>
-                                            ) : (
-                                                <>
-                                                    <span className={`text-3xl font-normal align-top mr-1 text-gray-500`}>{currency}</span>
-                                                    <span className="text-gray-900">{priceDisplay}</span>
-                                                    <span className={`text-xl font-normal ml-1 text-gray-500`}>{cycleLabel}</span>
-                                                </>
+
+                                    {/* Top Metadata Header Segment */}
+                                    <div>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="text-xl font-extrabold text-gray-900 tracking-tight">
+                                                {tier.name}
+                                            </h3>
+                                            {isFeatured && (
+                                                <span className="inline-flex px-2.5 py-1 text-[10px] font-black tracking-widest uppercase rounded-lg" style={{ backgroundColor: primaryColor + '12', color: primaryColor }}>
+                                                    Recommended
+                                                </span>
                                             )}
-                                        </motion.p>
+                                        </div>
+                                        <p className="text-sm text-gray-400 font-medium leading-relaxed min-h-[40px]">{tier.description}</p>
                                         
-                                        {/* Annual Billing Note */}
-                                        {(billingCycle === 'annually' || isCustom) && (
-                                            <p className={`mt-2 text-sm italic font-medium`} style={{ color: primaryColor }}>
-                                                {annualNote}
-                                            </p>
-                                        )}
+                                        {/* Cost Matrix Representation */}
+                                        <div className="mt-8 mb-6 relative overflow-hidden py-2">
+                                            <AnimatePresence mode="wait">
+                                                <motion.div 
+                                                    key={priceDisplay}
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: -10 }}
+                                                    transition={{ duration: 0.25 }}
+                                                    className="flex items-baseline text-gray-900"
+                                                >
+                                                    {isCustom ? (
+                                                        <span className="text-4xl font-black tracking-tight">{priceDisplay}</span>
+                                                    ) : (
+                                                        <>
+                                                            <span className="text-sm font-bold text-gray-400 mr-1">{currency}</span>
+                                                            <span className="text-5xl font-black tracking-tight">
+                                                                {Number(priceDisplay).toLocaleString('en-KE')}
+                                                            </span>
+                                                            <span className="text-sm font-bold text-gray-400 ml-1.5">{cycleLabel}</span>
+                                                        </>
+                                                    )}
+                                                </motion.div>
+                                            </AnimatePresence>
+                                            
+                                            {/* Annual Discount Subtext */}
+                                            {(billingCycle === 'annually' || isCustom) && (
+                                                <p className="mt-2 text-xs font-semibold tracking-wide text-emerald-600">
+                                                    {annualNote}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
 
-                                    {/* Feature List */}
-                                    <ul className="mt-10 space-y-4 text-left w-full border-t pt-8 flex-grow border-gray-300">
-                                        {tier.features.map((feature: string, idx: number) => {
-                                            return (
-                                                <motion.li 
-                                                    key={idx} 
-                                                    className="flex items-start text-gray-800"
-                                                    initial={{ opacity: 0, x: -10 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    transition={{ delay: 1 + i * 0.1 + idx * 0.05, duration: 0.4 }}
-                                                >
-                                                    <CheckIcon className={`h-6 w-6 mr-2 flex-shrink-0`} style={{ color: primaryColor }} />
-                                                    <span className="text-base font-medium">{feature}</span>
-                                                </motion.li>
-                                            );
-                                        })}
+                                    {/* Features Checklist Block */}
+                                    <ul className="space-y-4 border-t border-gray-50 pt-8 flex-grow">
+                                        {tier.features.map((feature: string, idx: number) => (
+                                            <li key={idx} className="flex items-start text-gray-600 gap-3">
+                                                <div className="p-0.5 rounded-md mt-0.5 flex-shrink-0" style={{ backgroundColor: primaryColor + '12' }}>
+                                                    <CheckIcon className="h-3.5 w-3.5 stroke-[3]" style={{ color: primaryColor }} />
+                                                </div>
+                                                <span className="text-sm font-medium tracking-wide leading-tight">{feature}</span>
+                                            </li>
+                                        ))}
                                     </ul>
 
-                                    <motion.button
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        className={`mt-10 w-full px-8 py-4 rounded-full font-bold text-lg flex items-center justify-center transition-all duration-300 group shadow-lg`}
-                                        style={buttonStyle}
+                                    {/* Core Strategic Call to Action Trigger */}
+                                    <button
+                                        className="mt-10 w-full py-4 px-6 rounded-2xl text-sm font-bold shadow-sm transition-all duration-300 flex items-center justify-center gap-1.5 group/btn"
+                                        style={{ 
+                                            backgroundColor: isFeatured ? primaryColor : '#F3F4F6',
+                                            color: isFeatured ? '#ffffff' : '#374151'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            if (!isFeatured) {
+                                                e.currentTarget.style.backgroundColor = primaryColor + '12';
+                                                e.currentTarget.style.color = primaryColor;
+                                            } else {
+                                                e.currentTarget.style.filter = 'brightness(1.05)';
+                                            }
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            if (!isFeatured) {
+                                                e.currentTarget.style.backgroundColor = '#F3F4F6';
+                                                e.currentTarget.style.color = '#374151';
+                                            } else {
+                                                e.currentTarget.style.filter = 'none';
+                                            }
+                                        }}
                                     >
                                         {isFeatured ? 'Book Now' : (isCustom ? 'Contact Sales' : 'Start Free Trial')}
-                                    </motion.button>
+                                        <ArrowRightIcon className="w-4 h-4 transition-transform group-hover/btn:translate-x-0.5" />
+                                    </button>
                                 </motion.div>
                             );
                         })}
