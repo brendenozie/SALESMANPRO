@@ -2684,7 +2684,7 @@ model OrderItem {
   marketplaceListing   marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
   quantity             Int
   price                Float
-  totalPrice           Float
+  totalPrice           Float?
   discount             Float?
   tax                  Float?
   serviceNotes         String?
