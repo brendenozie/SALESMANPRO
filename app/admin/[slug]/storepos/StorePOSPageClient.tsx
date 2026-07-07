@@ -280,12 +280,10 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   const [showMobileCart, setShowMobileCart] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'success' | 'failed' | null>(null);
   
-
   // Add these state variables at the top of your POS component
   const [isSplit, setIsSplit] = useState(false);
   const [isPending, setIsPending] = useState(false);
  
-  
   // persistent category
   const [selectedCategory, setSelectedCategory] = usePersistentState<string>('pos:selectedCategory', 'all');
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
