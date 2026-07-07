@@ -1,158 +1,76 @@
-// app/[slug]/appointments/page.tsx
 import React from "react";
 import AdminAppointmentsClient, {
   AppointmentItem,
   OrderItem,
-  UnifiedItem, // Import the UnifiedItem type
+  UnifiedItem,
 } from "./AdminAppointementsClient";
 import { cookies } from "next/headers";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface Props {
-  params:Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ page?: string; limit?: string }>;
 }
 
-// ──────────────────────────────────────────────
-// Sample (Fallback) Data with explicit 'type' field
-// ──────────────────────────────────────────────
+export default async function AppointmentsPage({ params, searchParams }: Props) {
+  const { slug: companyId } = await params;
+  const parsedSearchParams = await searchParams;
+  
+  const page = parsedSearchParams.page || "1";
+  const limit = parsedSearchParams.limit || "12"; // Increased to 12 for better matching layout cards
 
-// Appointments are now typed with 'type: "Appointment"'
-const sampleAppointments: AppointmentItem[] = [
-  {
-    id: "apt_001",
-    type: "Appointment", // Explicit Type added
-    service: "Dental Checkup",
-    date: "2025-07-25",
-    timeSlot: "10:00 AM",
-    client: {
-      name: "Alice Johnson",
-      email: "alice.johnson@example.com",
-      phone: "+254712345678",
-    },
-    status: "Scheduled",
-    notes: "First-time visitor",
-  },
-  {
-    id: "apt_002",
-    type: "Appointment", // Explicit Type added
-    service: "Therapy Session",
-    date: "2025-07-26",
-    timeSlot: "02:30 PM",
-    client: {
-      name: "Bob Smith",
-      email: "bob.smith@example.com",
-      phone: "+254798765432",
-    },
-    status: "Scheduled",
-    notes: "Follow-up in two weeks",
-  },
-];
-
-// Order Items are now typed with 'type: "Order"'
-const sampleOrderItems: OrderItem[] = [
-  {
-    id: "ord_item_001",
-    type: "Order", // Explicit Type added
-    price: 50.0,
-    quantity: 1,
-    status: "PENDING",
-    date: "2025-07-25",
-    timeSlot: "01:00 PM",
-    // Ensure nested fields align with the strict OrderItem type
-    consumer: {
-      name: "Emily White",
-      email: "emily.white@example.com",
-      phone: "+254733445566",
-    },
-    marketplaceListing: {
-      title: "Standard Home Cleaning",
-    },
-    order: {
-      id: "order_xyz_123",
-      status: "PENDING",
-      createdAt: new Date().toISOString(),
-    },
-  },
-];
-
-// ──────────────────────────────────────────────
-// Page Component (Server Component)
-// ──────────────────────────────────────────────
-export default async function AppointmentsPage({ params }: Props) {
-  const { slug : companyId } = await params;
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
 
   let fetchedAppointments: AppointmentItem[] = [];
   let fetchedOrderItems: OrderItem[] = [];
+  let totalPages = 1;
+  let totalItems = 0;
 
-  // 1. Fetch data
   try {
-    // NOTE: If you have separate endpoints for Appointments and Orders,
-    // you would fetch both concurrently using Promise.all().
-    
-    // Example: Fetch Orders/Services
     const orderRes = await fetch(
-      `${apiBaseUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}&page=${page}&limit=${limit}`,
       {
-        next: { revalidate: 60 },
+        next: { revalidate: 10 },
         headers: { cookie: cookieHeader },
       }
     );
 
     if (orderRes.ok) {
       const json = await orderRes.json();
-
-      console.log("✅ Raw fetched order items:", json.data.orders);
-      // Map and add the explicit 'type' field to each order item
-      fetchedOrderItems = json?.data?.orders
-        // ?.filter((item: any) => item.date && item.timeSlot)
-        .map((item: any) => ({
+      
+      if (json?.data) {
+        totalPages = json.data.meta?.totalPages || json.meta?.totalPages || 1;
+        totalItems = json.data.meta?.totalItems || json.meta?.totalItems || 0;
+        const ordersArray = json.data.orders || json.data.results || [];
+        
+        fetchedOrderItems = ordersArray.map((item: any) => ({
           ...item,
           type: "Order",
-          // Ensure consumer field exists for safety
-          consumer: item.consumer || item.order?.consumer || { name: item.name, email: item.email, phone: item.phone },
-          // Use item.status or order.status
-          status: item.status || item.order?.status || 'UNKNOWN'
-        })) || [];
-        
-      console.log("✅ Fetched and typed order items:", fetchedOrderItems);
-    } else {
-      console.error(
-        "[AppointmentsPage] Failed to fetch order items →",
-        orderRes.status,
-        orderRes.statusText
-      );
+          consumer: item.consumer || item.order?.consumer || { 
+            name: item.name || "Unknown Customer", 
+            email: item.email || "", 
+            phone: item.phone || "" 
+          },
+          status: item.status || item.order?.status || 'PENDING',
+          items: item.items || []
+        }));
+      }
     }
-    
-    // TODO: Add a separate fetch call for appointments if needed,
-    // and map them to include `type: "Appointment"`.
-
   } catch (err: any) {
-    console.error(
-      "[AppointmentsPage] Error fetching data →",
-      err.message
-    );
+    console.error("[AppointmentsPage] Error fetching data →", err.message);
   }
 
-  // 2. Combine all fetched data, or use fallback samples
-  // const combinedSamples = [...sampleAppointments, ...sampleOrderItems];
+  const initialData: UnifiedItem[] = [...fetchedAppointments, ...fetchedOrderItems];
 
-  const initialData: UnifiedItem[] = 
-    (fetchedAppointments.length > 0 || fetchedOrderItems.length > 0)
-      ? [...fetchedAppointments, ...fetchedOrderItems] // Use fetched data
-      : []; // Use fallback data
-
-  console.log("✅ Initial data prepared with unified types:", initialData);
-
-  // 3. Pass the single, unified data array to the client component
   return (
     <AdminAppointmentsClient
       initialData={initialData}
+      currentPage={parseInt(page, 10)}
+      totalPages={totalPages}
+      totalItems={totalItems}
+      limit={parseInt(limit, 10)}
     />
   );
 }
-
-// Enforce dynamic rendering
-export const dynamic = 'force-dynamic';
