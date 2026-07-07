@@ -107,11 +107,11 @@ export type CompanyInfo = Company & {
   taxRate?: number; 
 };
 
-const AVAILABLE_STAFF = [
-    { id: 'staff-1', name: 'Alex Mwangi', role: 'Senior Specialist' },
-    { id: 'staff-2', name: 'Sarah Amina', role: 'Technical Expert' },
-    { id: 'staff-3', name: 'David Ochieng', role: 'Consultant' },
-];
+// const AVAILABLE_STAFF = [
+    // { id: 'staff-1', name: 'Alex Mwangi', role: 'Senior Specialist' },
+    // { id: 'staff-2', name: 'Sarah Amina', role: 'Technical Expert' },
+    // { id: 'staff-3', name: 'David Ochieng', role: 'Consultant' },
+// ];
 
 const AdminServicePOSClient: React.FC<{
     initialProducts?: MarketListingForm[];
@@ -196,7 +196,7 @@ const AdminServicePOSClient: React.FC<{
     }, [amountReceived, finalTotal]);
 
     const activeStaffName = useMemo(() => {
-        return AVAILABLE_STAFF.find(s => s.id === selectedStaffId)?.name || 'Unassigned';
+        return 'Unassigned'; // AVAILABLE_STAFF.find(s => s.id === selectedStaffId)?.name || 'Unassigned';
     }, [selectedStaffId]);
 
     // Infinite Scroll Configuration
@@ -459,7 +459,8 @@ const AdminServicePOSClient: React.FC<{
     const handleProcessPayment = useCallback(() => {
       if (cart.length === 0) return alert('Cart is empty.');
       if (!clientDetails.name) return alert("Please enter the customer's name.");
-      if (!selectedStaffId) return alert("Please assign a staff member to this service.");
+    //   if (!selectedStaffId) return alert("Please assign a staff member to this service.");
+    // selectedStaffId
       
       setAmountReceived('');
       setTransactionRef('');
@@ -467,7 +468,7 @@ const AdminServicePOSClient: React.FC<{
       setIsSplit(false);
       setIsPending(false);
       setShowPaymentModal(true);
-    }, [cart.length, clientDetails.name, selectedStaffId, finalTotal]);
+    }, [cart.length, clientDetails.name,  finalTotal]);
 
     // --- Complete Order & Sync Live Payload ---
     const finalizeSale = useCallback(async () => {
@@ -798,11 +799,11 @@ const AdminServicePOSClient: React.FC<{
                                                 style={{ '--tw-ring-color': primaryColor } as any}
                                             >
                                                 <option value="">Assign Staff (Required)</option>
-                                                {AVAILABLE_STAFF.map(staff => (
+                                                {/* {AVAILABLE_STAFF.map(staff => (
                                                     <option key={staff.id} value={staff.id}>
                                                         {staff.name} ({staff.role})
                                                     </option>
-                                                ))}
+                                                ))} */}
                                             </select>
                                         </div>
 
