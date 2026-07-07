@@ -175,24 +175,77 @@ export default function AdminAppointmentsClient({
     }));
   }, []);
 
-  const handleCycleStatus = useCallback((id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setItems(prev => prev.map(item => {
-      if (!item || item.id !== id) return item;
-      const currentConfig = getStatusDetails(item.status);
-      if (currentConfig.next) {
-        return { ...item, status: currentConfig.next } as any;
-      }
-      return item;
-    }));
-  }, []);
+  // const handleCycleStatus = useCallback((id: string, e: React.MouseEvent) => {
+  //   e.stopPropagation();
+  //   setItems(prev => prev.map(item => {
+  //     if (!item || item.id !== id) return item;
+  //     const currentConfig = getStatusDetails(item.status);
+  //     if (currentConfig.next) {
+  //       return { ...item, status: currentConfig.next } as any;
+  //     }
+  //     return item;
+  //   }));
+  // }, []);
+
+  // ... inside AdminAppointmentsClient component
 
   const handlePersistChanges = async () => {
+    // 1. Identify which items have been modified or need syncing.
+    // If you want to sync ALL items currently visible in the UI layout state:
     setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 800));
-    setIsSaving(false);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 2000);
+    
+    // Extract company slug/ID from the current URL path or context safely
+    // segments like "/[companyId]/appointments"
+    const pathSegments = pathname.split("/");
+    const companyId = pathSegments[1] || ""; 
+
+    if (!companyId) {
+      console.error("Could not parse companyId from pathname configuration");
+      setIsSaving(false);
+      return;
+    }
+
+    try {
+      // Find items whose state might be saved or modified. 
+      // To ensure we update the active item or all changed items:
+      const promises = items
+        .filter((item) => item && item.type === "Order") // The API provided updates "Orders"
+        .map(async (orderItem) => {
+          const targetUrl = new URL(
+            `/api/admin/orders/${orderItem.id}`,
+            window.location.origin
+          );
+          
+          // Append required query parameters for the Prisma transaction endpoint
+          targetUrl.searchParams.append("status", orderItem.status.toUpperCase());
+          targetUrl.searchParams.append("companyId", companyId);
+
+          const response = await fetch(targetUrl.toString(), {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(`Failed to update order reference: ${orderItem.id}`);
+          }
+          return response.json();
+        });
+
+      // Execute all synchronization updates in parallel
+      await Promise.all(promises);
+
+      // Trigger hot reload of Next.js server component data grids safely
+      setSaveSuccess(true);
+      router.refresh(); 
+    } catch (error) {
+      console.error("Error committing workspace persistence layer:", error);
+      alert("Workspace Sync Failed: One or more records could not be saved.");
+    } finally {
+      setIsSaving(false);
+      setTimeout(() => setSaveSuccess(false), 2500);
+    }
   };
 
   const filteredItems = useMemo(() => {
@@ -222,6 +275,35 @@ export default function AdminAppointmentsClient({
       );
     });
   }, [items, searchTerm, filterType]);
+
+  const handleCycleStatus = useCallback(async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    const pathSegments = pathname.split("/");
+    const companyId = pathSegments[1] || "";
+
+    setItems(prev => prev.map(item => {
+      if (!item || item.id !== id) return item;
+      const currentConfig = getStatusDetails(item.status);
+      if (currentConfig.next) {
+        const updatedStatus = currentConfig.next;
+
+        // Optional: Fire non-blocking immediate sync tracking to background API
+        if (item.type === "Order") {
+          const targetUrl = new URL(`/api/admin/orders/${id}`, window.location.origin);
+          targetUrl.searchParams.append("status", updatedStatus.toUpperCase());
+          targetUrl.searchParams.append("companyId", companyId);
+          
+          fetch(targetUrl.toString(), { method: "PUT" })
+            .then(res => { if (res.ok) router.refresh(); })
+            .catch(err => console.error("Auto-sync background failure:", err));
+        }
+
+        return { ...item, status: updatedStatus } as any;
+      }
+      return item;
+    }));
+  }, [pathname, router]);
 
   return (
     <div className="min-h-screen bg-[#f8fafc] dark:bg-[#070b13] text-slate-800 dark:text-slate-100 font-sans antialiased flex flex-col h-screen max-h-screen overflow-hidden transition-colors duration-300">
