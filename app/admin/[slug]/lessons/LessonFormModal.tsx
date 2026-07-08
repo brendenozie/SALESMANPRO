@@ -278,14 +278,14 @@ export default function LessonFormModal({
       return {
         kind: 'CLASSROOM',
         classroomName: conflictingEntry.classroom?.name ?? 'Classroom',
-        courseTitle: conflictingEntry.courseTitle,
+        courseTitle: conflictingEntry.course.title,
       };
     }
     if (formData.educatorId && conflictingEntry.educatorId === formData.educatorId) {
       return {
         kind: 'EDUCATOR',
         educatorName: conflictingEntry.educatorName,
-        courseTitle: conflictingEntry.courseTitle,
+        courseTitle: conflictingEntry.course.title,
       };
     }
     return null;
@@ -397,7 +397,7 @@ export default function LessonFormModal({
                 </select>
                 {conflicts.roomConflict && (
                     <p className="text-xs text-red-600 font-medium">
-                      ⚠️ Room is occupied by "{conflicts.roomConflict.courseTitle}"
+                      ⚠️ Room is occupied by "{conflicts.roomConflict.course.title}"
                     </p>
                   )}
               </div>
@@ -433,7 +433,7 @@ export default function LessonFormModal({
                 </select>
                 {conflicts.teacherConflict && (
                   <p className="text-xs text-red-600 font-medium">
-                    ⚠️ Teacher is already teaching "{conflicts.teacherConflict.courseTitle}"
+                    ⚠️ Teacher is already teaching "{conflicts.teacherConflict.course.title}"
                   </p>
                 )}
               </div>

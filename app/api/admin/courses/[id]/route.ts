@@ -81,37 +81,39 @@ export const GET = withApiHandler(async (_req, { params }) => {
 
 
 export const PATCH = withApiHandler(async (req, { params }) => {
-  const { id } = params;
+  const { id: oldId } = params;
   const body = await req.json();
-  const { academicLevelIds, educatorIds, ...data } = body;
+  const { academicLevelIds, educatorIds, id: updatedId, ...data } = body;
 
   try {
     const updatedCourse = await prisma.$transaction(async (tx) => {
       // 1. Handle Many-to-Many Syncing (Atomic Delete/Create)
       if (academicLevelIds) {
-        await tx.courseAcademicLevel.deleteMany({ where: { courseId: id } });
+        await tx.courseAcademicLevel.deleteMany({ where: { courseId: oldId } });
         await tx.courseAcademicLevel.createMany({
-          data: academicLevelIds.map((levelId: string) => ({ courseId: id, academicLevelId: levelId })),
+          data: academicLevelIds.map((levelId: string) => ({ courseId: updatedId, academicLevelId: levelId })),
         });
       }
 
       if (educatorIds) {
-        await tx.courseEducatorAssignment.deleteMany({ where: { courseId: id } });
+        await tx.courseEducatorAssignment.deleteMany({ where: { courseId: oldId } });
         await tx.courseEducatorAssignment.createMany({
-          data: educatorIds.map((educatorId: string) => ({ courseId: id, educatorId })),
+          data: educatorIds.map((educatorId: string) => ({ courseId: updatedId, educatorId })),
         });
       }
 
       // 2. Update Main Course Data & Return Final Shape in one go
       return await tx.course.update({
-        where: { id },
-        data,
+        where: { id: updatedId },
+        data:{
+          ...data,
+        },
         select: COURSE_SELECT,
       });
     });
 
       try {
-        await cacheDel(`admin:courses:${id || 'global'}:*`);
+        await cacheDel(`admin:courses:${updatedId || 'global'}:*`);
       } catch (e) {}
 
     return formatResponse(true, mapCourseResponse(updatedCourse), null, 200);

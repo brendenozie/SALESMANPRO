@@ -69,11 +69,11 @@ export const GET = withApiHandler(async (req: Request) => {
       updatedAt: true,
       course: { select: { title: true } },
       uploadedById: true,
-      uploadedBy: {
-        select: {
-          user: { select: { name: true, email: true } },
-        },
-      },
+      // uploadedBy: {
+      //   select: {
+      //     user: { select: { name: true, email: true } },
+      //   },
+      // },
     },
   });
 
@@ -87,8 +87,8 @@ export const GET = withApiHandler(async (req: Request) => {
     linkUrl: m.linkUrl,
     type: m.type,
     uploadedById: m.uploadedById,
-    uploadedByName: m.uploadedBy?.user?.name ?? "N/A",
-    uploadedByEmail: m.uploadedBy?.user?.email ?? "N/A",
+    uploadedByName: "N/A",// m.uploadedBy?.user?.name ?? "N/A",
+    uploadedByEmail: "N/A",//m.uploadedBy?.user?.email ?? "N/A",
     createdAt: m.createdAt?.toISOString(),
     updatedAt: m.updatedAt?.toISOString(),
   }));
@@ -152,11 +152,11 @@ export const POST = withApiHandler(async (req: Request) => {
         updatedAt: true,
         course: { select: { title: true } },
         uploadedById: true,
-        uploadedBy: {
-          select: {
-            user: { select: { name: true, email: true } },
-          },
-        },
+        // uploadedBy: {
+        //   select: {
+        //     user: { select: { name: true, email: true } },
+        //   },
+        // },
       },
     });
 
@@ -174,13 +174,13 @@ export const POST = withApiHandler(async (req: Request) => {
         linkUrl: created.linkUrl,
         type: created.type,
         uploadedById: created.uploadedById,
-        uploadedByName: created.uploadedBy?.user?.name ?? "N/A",
-        uploadedByEmail: created.uploadedBy?.user?.email ?? "N/A",
+        uploadedByName: "N/A", //created.uploadedBy?.user?.name ??
+        uploadedByEmail: "N/A", //created.uploadedBy?.user?.email ?? "N/A",
         createdAt: created.createdAt?.toISOString(),
         updatedAt: created.updatedAt?.toISOString(),
       },
       "Course material created successfully",
-      201
+      201,
     );
 
   });

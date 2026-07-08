@@ -187,7 +187,7 @@ export default async function AdminCoursesPage({ params }: PageProps) {
       { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (departmentsRes.ok) {
-      allDepartments = (await departmentsRes.json()).data as DepartmentOption[];
+      allDepartments = (await departmentsRes.json()).data.data as DepartmentOption[];
     } else {
       // console.error(
       //   `[AdminCoursesPage] Failed to fetch departments: ${departmentsRes.status} ${departmentsRes.statusText}`
@@ -215,14 +215,14 @@ export default async function AdminCoursesPage({ params }: PageProps) {
   }
 
   // If fetching failed or returned no data, use sample data
-  if (fetchError && initialCourses.length === 0 && allEducators.length === 0 && allDepartments.length === 0 && allAcademicLevels.length === 0) {
-    // console.log("[AdminCoursesPage] Using sample data for courses, educators, departments, and academic levels.");
-    const { sampleCourses, sampleEducators, sampleDepartments, sampleAcademicLevels } = generateSampleCoursesData(companyId);
-    initialCourses = sampleCourses;
-    allEducators = sampleEducators;
-    allDepartments = sampleDepartments;
-    allAcademicLevels = sampleAcademicLevels;
-  }
+  // if (fetchError && initialCourses.length === 0 && allEducators.length === 0 && allDepartments.length === 0 && allAcademicLevels.length === 0) {
+  //   // console.log("[AdminCoursesPage] Using sample data for courses, educators, departments, and academic levels.");
+  //   const { sampleCourses, sampleEducators, sampleDepartments, sampleAcademicLevels } = generateSampleCoursesData(companyId);
+  //   initialCourses = sampleCourses;
+  //   allEducators = sampleEducators;
+  //   allDepartments = sampleDepartments;
+  //   allAcademicLevels = sampleAcademicLevels;
+  // }
 
   return (
     <CoursesClient

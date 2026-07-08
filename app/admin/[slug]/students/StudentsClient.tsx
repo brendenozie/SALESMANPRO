@@ -553,7 +553,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
           </div>
 
           {/* NEW: Filter by Level Status */}
-          <div className="flex-shrink-0">
+          {/* <div className="flex-shrink-0">
             <select
               value={filterLevelStatus}
               onChange={(e) => setFilterLevelStatus(e.target.value)}
@@ -564,7 +564,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}
             </select>
-          </div>
+          </div> */}
         </div>
 
         {/* Students Table */}
@@ -577,7 +577,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Login Code</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Academic Level(s)</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classroom</th> {/* NEW COLUMN */}
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Level</th> {/* NEW COLUMN */}
+                {/* <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Level</th> NEW COLUMN */}
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parent Contact</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
                 <th scope="col" className="relative px-6 py-3 rounded-tr-lg">
@@ -666,7 +666,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
                       </div>
                     </td>
 
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    {/* <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {student.academicRecords && student.academicRecords.length > 0 ? (
                         (() => {
                           const current = getCurrentAcademicRecord(student);
@@ -685,7 +685,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
                       ) : (
                         <span className="text-gray-500">N/A</span>
                       )}
-                    </td>
+                    </td> */}
                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {student.parentName ? (
                         <>

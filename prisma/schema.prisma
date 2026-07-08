@@ -4178,7 +4178,7 @@ enum TicketCheckInStatus {
 // Class Schedule Model (for educator's classes/lectures and school timetabling)
 model ClassSchedule {
   id String @id @default(auto()) @map("_id") @db.ObjectId
-
+  
   courseId String @db.ObjectId
   course   Course @relation(fields: [courseId], references: [id])
 

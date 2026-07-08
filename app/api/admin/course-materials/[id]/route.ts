@@ -24,8 +24,8 @@ const MATERIAL_SELECT = {
 const flattenMaterial = (m: any) => ({
   ...m,
   courseTitle: m.course?.title || "N/A",
-  uploadedByName: m.uploadedBy?.user?.name || "N/A",
-  uploadedByEmail: m.uploadedBy?.user?.email || "N/A",
+  uploadedByName: "N/A",//m.uploadedBy?.user?.name || "N/A",
+  uploadedByEmail: "N/A",//m.uploadedBy?.user?.email || "N/A",
   course: undefined, // Remove nested objects
   uploadedBy: undefined,
 });

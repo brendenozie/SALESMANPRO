@@ -4,26 +4,28 @@ import React from 'react';
 import { PencilIcon, TrashIcon, UsersIcon, AcademicCapIcon, LinkIcon, BookOpenIcon, TagIcon } from '@heroicons/react/24/outline';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { TimetableEntry } from './WeeklyTimetable';
+// import { TimetableEntry } from '@/types/typings';
 // Assuming TimetableEntry is defined in a shared types file or directly in WeeklyTimetable.tsx
 // For this immersive, I'll define it locally for self-containment.
-export type TimetableEntry = {
-  id: string;
-  courseId: string;
-  courseTitle: string;
-  courseCode: string; // Added
-  courseAcademicLevels: { id: string; name: string; sortOrder?: number }[];
-  educatorId: string;
-  educatorName: string;
-  educatorEmail: string;
-  dayOfWeek: string;
-  startTime: string;
-  endTime: string;
-  topic?: string | null;
-  meetingLink?: string | null;
-  companyId: string;
-  createdAt: string;
-  updatedAt: string;
-};
+// export type TimetableEntry = {
+//   id: string;
+//   courseId: string;
+//   courseTitle: string;
+//   courseCode: string; // Added
+//   courseAcademicLevels: { id: string; name: string; sortOrder?: number }[];
+//   educatorId: string;
+//   educatorName: string;
+//   educatorEmail: string;
+//   dayOfWeek: string;
+//   startTime: string;
+//   endTime: string;
+//   topic?: string | null;
+//   meetingLink?: string | null;
+//   companyId: string;
+//   createdAt: string;
+//   updatedAt: string;
+// };
 
 const LESSON_COLORS = {
   default: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -58,19 +60,19 @@ export default function LessonCard({
       {...listeners}
       className={`relative p-3 rounded-lg border ${LESSON_COLORS.default} cursor-grab active:cursor-grabbing hover:shadow-md`}
     >
-      <p className="font-bold text-sm truncate">{entry.courseTitle}</p>
-      {entry.courseCode && ( // Display course code if available
+      <p className="font-bold text-sm truncate">{entry.course.title}</p>
+      {entry.courseId && ( // Display course code if available
         <p className="text-xs text-gray-700 mt-0.5 flex items-center">
-          <BookOpenIcon className="h-3 w-3 mr-1" /> {entry.courseCode}
+          <BookOpenIcon className="h-3 w-3 mr-1" /> {entry.courseId}
         </p>
       )}
       <p className="text-xs text-gray-700 mt-0.5 flex items-center">
         <UsersIcon className="h-3 w-3 mr-1" /> {entry.educatorName}
       </p>
-      {entry.courseAcademicLevels?.length > 0 && (
+      {entry.course?.academicLevels?.length > 0 && (
         <div className="mt-1 flex flex-wrap gap-1 text-[11px] font-medium text-indigo-700">
           <TagIcon className="h-3 w-3 mr-1 text-gray-700" /> {/* Changed to TagIcon */}
-          {entry.courseAcademicLevels.map((level) => (
+          {entry.course.academicLevels.map((level) => (
             <span
               key={level.id}
               className="bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100"

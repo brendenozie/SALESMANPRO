@@ -49,8 +49,9 @@ const generateSampleTimetableData = (companyId: string): {
     {
       id: 'SCH001',
       courseId: 'CRS001',
-      courseTitle: 'Algebra I',
-      courseCode: 'MATH101', // Added courseCode
+      // courseTitle: 'Algebra I',
+      // courseCode: 'MATH101', // Added courseCode
+
       // courseAcademicLevels: [{ id: 'AL006', name: 'Grade 9' }],
       academicLevel: { id: 'AL006', name: 'Grade 9' },
       academicLevelId: 'AL006',
@@ -70,19 +71,28 @@ const generateSampleTimetableData = (companyId: string): {
       companyId: companyId,
       createdAt: new Date('2023-01-01').toISOString(),
       updatedAt: new Date().toISOString(),
+      course: {
+        id: "",
+        title: "",
+        code: "",
+        academicLevels: [],
+        classrooms: [],
+        educators: []
+      }
     },
     {
       id: 'SCH002',
       courseId: 'CRS002',
-      courseTitle: 'Literary Analysis',
-      courseCode: 'ENG203', // Added courseCode
+      // courseTitle: 'Literary Analysis',
+      // courseCode: 'ENG203', // Added courseCode
+
       // courseAcademicLevels: [{ id: 'AL007', name: 'High School - Freshman' }],
       academicLevel: { id: 'AL007', name: 'High School - Freshman' },
       academicLevelId: 'AL007',
       // courseClassrooms: [{ id: 'CLS001', name: 'Room 101', academicLevelId: 'AL007' }],
       classroomId: 'CLS003',
       classroom: { id: 'CLS003', name: 'Lab A', academicLevelId: 'AL007' },
-      educators: [{ id: 'EDU002', name: 'Ms. Jane Smith', email: 'jane.smith@school.com', roleInCourse:"Co-Instructor" }],
+      educators: [{ id: 'EDU002', name: 'Ms. Jane Smith', email: 'jane.smith@school.com', roleInCourse: "Co-Instructor" }],
       educator: { id: 'EDU002', name: 'Ms. Jane Smith', email: 'jane.smith@school.com', roleInCourse: "Co-Instructor" },
       educatorId: 'EDU002',
       educatorName: 'Ms. Jane Smith',
@@ -95,12 +105,21 @@ const generateSampleTimetableData = (companyId: string): {
       companyId: companyId,
       createdAt: new Date('2023-01-02').toISOString(),
       updatedAt: new Date().toISOString(),
+      course: {
+        id: "",
+        title: "",
+        code: "",
+        academicLevels: [],
+        classrooms: [],
+        educators: []
+      }
     },
     {
       id: 'SCH003',
       courseId: 'CRS001',
-      courseTitle: 'Algebra I',
-      courseCode: 'MATH101', // Added courseCode
+      // courseTitle: 'Algebra I',
+      // courseCode: 'MATH101', // Added courseCode
+
       // courseAcademicLevels: [{ id: 'AL006', name: 'Grade 9' }],
       academicLevel: { id: 'AL006', name: 'Grade 9' },
       academicLevelId: 'AL006',
@@ -120,12 +139,21 @@ const generateSampleTimetableData = (companyId: string): {
       companyId: companyId,
       createdAt: new Date('2023-01-03').toISOString(),
       updatedAt: new Date().toISOString(),
+      course: {
+        id: "",
+        title: "",
+        code: "",
+        academicLevels: [],
+        classrooms: [],
+        educators: []
+      }
     },
     {
       id: 'SCH004',
       courseId: 'CRS003',
-      courseTitle: 'Elementary Math',
-      courseCode: 'MATH100', // Added courseCode
+      // courseTitle: 'Elementary Math',
+      // courseCode: 'MATH100', // Added courseCode
+
       // courseAcademicLevels: [{ id: 'AL003', name: 'Grade 1' }],
       academicLevel: { id: 'AL003', name: 'Grade 1' },
       academicLevelId: 'AL003',
@@ -145,6 +173,14 @@ const generateSampleTimetableData = (companyId: string): {
       companyId: companyId,
       createdAt: new Date('2023-01-04').toISOString(),
       updatedAt: new Date().toISOString(),
+      course: {
+        id: "",
+        title: "",
+        code: "",
+        academicLevels: [],
+        classrooms: [],
+        educators: []
+      }
     },
   ];
 
@@ -172,7 +208,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
     );
     if (timetableRes.ok) {
       initialTimetable = (await timetableRes.json()).data as any[];
-      // console.log(`[TimetableManagerPage] Fetched timetable entries with course and educator info.`, initialTimetable);
+      console.log(`[TimetableManagerPage] Fetched timetable entries with course and educator info.`, initialTimetable);
     } else {
       // console.error(
       //   "[TimetableManagerPage] Failed to fetch timetable →",
@@ -189,7 +225,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
     );
     if (coursesRes.ok) {
       const fetchedCourses = (await coursesRes.json()).data as any[];
-      // console.log(`[TimetableManagerPage] Fetched courses for dropdowns.`, fetchedCourses);
+
       allCourses = fetchedCourses.map(c => ({
         id: c.id,
         title: c.title,
@@ -213,8 +249,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
       { headers: { cookie: cookieHeader }, next: { revalidate: 60 } }
     );
     if (educatorsRes.ok) {
-      const fetchedEducators = (await educatorsRes.json()).data.data as any[];
-      
+      const fetchedEducators = (await educatorsRes.json()).data as any[];
       allEducators = fetchedEducators.map(e => ({
         id: e.id,
         name: e.name,
@@ -263,14 +298,14 @@ export default async function TimetableManagerPage({ params }: PageProps) {
   }
 
   // If no data was fetched from the API, generate and use sample data
-  if (fetchError  || initialTimetable.length === 0 && allCourses.length === 0 && allEducators.length === 0 && allAcademicLevels.length === 0 && allClassrooms.length === 0) {
-    // console.log("[TimetableManagerPage] No data fetched, generating sample data...");
-    const { sampleTimetableEntries, sampleCourses, sampleEducators, sampleAcademicLevels } = generateSampleTimetableData(companyId);
-    initialTimetable = sampleTimetableEntries;
-    allCourses = sampleCourses;
-    allEducators = sampleEducators;
-    allAcademicLevels = sampleAcademicLevels;
-  }
+  // if (fetchError  || initialTimetable.length === 0 && allCourses.length === 0 && allEducators.length === 0 && allAcademicLevels.length === 0 && allClassrooms.length === 0) {
+  //   // console.log("[TimetableManagerPage] No data fetched, generating sample data...");
+  //   const { sampleTimetableEntries, sampleCourses, sampleEducators, sampleAcademicLevels } = generateSampleTimetableData(companyId);
+  //   initialTimetable = sampleTimetableEntries;
+  //   allCourses = sampleCourses;
+  //   allEducators = sampleEducators;
+  //   allAcademicLevels = sampleAcademicLevels;
+  // }
 
   return (
     <WeeklyTimetable

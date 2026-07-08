@@ -3,40 +3,37 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import {
-  FolderOpenIcon, // Main icon for global materials
-  PlusCircleIcon, // Add material
-  PencilIcon, // Edit material
-  TrashIcon, // Delete material
-  MagnifyingGlassIcon, // Search
-  CalendarDaysIcon, // Date
-  DocumentTextIcon, // Document type
-  PlayCircleIcon, // Video type
-  LinkIcon, // Link type
-  PhotoIcon, // Image type
-  MusicalNoteIcon, // Audio type
-  UserIcon, // Uploader
-  BookOpenIcon, // Course icon
-  TagIcon, // Academic Level icon
-  XMarkIcon, // Error close
-  EnvelopeIcon, // For email
+  FolderOpenIcon,
+  PlusCircleIcon,
+  PencilIcon,
+  TrashIcon,
+  MagnifyingGlassIcon,
+  CalendarDaysIcon,
+  DocumentTextIcon,
+  PlayCircleIcon,
+  LinkIcon,
+  PhotoIcon,
+  MusicalNoteIcon,
+  BookOpenIcon,
+  TagIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 
-// Import the MaterialFormModal (will be slightly adjusted or duplicated for this context)
 import MaterialFormModal from './MaterialFormModal';
 
-// --- Type Definitions (matching API response) ---
+// --- Type Definitions ---
 export type CourseMaterialType = {
   id: string;
   courseId: string;
-  courseTitle: string; // Flattened for display
+  courseTitle: string;
   title: string;
   description?: string | null;
   fileUrl?: string | null;
   linkUrl?: string | null;
   type: 'DOCUMENT' | 'VIDEO' | 'LINK' | 'IMAGE' | 'AUDIO' | 'OTHER';
   uploadedById: string;
-  uploadedByName?: string; // Flattened for display
-  uploadedByEmail?: string; // Flattened for display
+  uploadedByName?: string;
+  uploadedByEmail?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -45,7 +42,7 @@ export type CourseOption = {
   id: string;
   title: string;
   instructorName?: string;
-  academicLevels: { id: string; name: string }[]; // Include academic levels for filtering
+  academicLevels: { id: string; name: string }[];
 };
 
 export type EducatorOption = {
@@ -69,15 +66,22 @@ interface MaterialsGlobalClientProps {
   apiBaseUrl: string;
 }
 
-export default function MaterialsGlobalClient({ initialMaterials, allCourses, allEducators, allAcademicLevels, companyId, apiBaseUrl }: MaterialsGlobalClientProps) {
+export default function MaterialsGlobalClient({
+  initialMaterials,
+  allCourses,
+  allEducators,
+  allAcademicLevels,
+  companyId,
+  apiBaseUrl
+}: MaterialsGlobalClientProps) {
   const [materials, setMaterials] = useState<CourseMaterialType[]>(initialMaterials);
   const [courses, setCourses] = useState<CourseOption[]>(allCourses);
   const [educators, setEducators] = useState<EducatorOption[]>(allEducators);
   const [academicLevels, setAcademicLevels] = useState<AcademicLevelOption[]>(allAcademicLevels);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('All');
-  const [filterCourse, setFilterCourse] = useState('All'); // New filter
-  const [filterAcademicLevel, setFilterAcademicLevel] = useState('All'); // New filter
+  const [filterCourse, setFilterCourse] = useState('All');
+  const [filterAcademicLevel, setFilterAcademicLevel] = useState('All');
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<CourseMaterialType | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -89,7 +93,6 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
     day: 'numeric',
   });
 
-  // Map material types to icons
   const materialTypeIcons = {
     DOCUMENT: <DocumentTextIcon className="h-5 w-5 text-blue-500" />,
     VIDEO: <PlayCircleIcon className="h-5 w-5 text-red-500" />,
@@ -99,162 +102,110 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
     OTHER: <FolderOpenIcon className="h-5 w-5 text-gray-500" />,
   };
 
-  // --- Data Fetching and Management ---
   const fetchAllData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const materialsRes = await fetch(`${apiBaseUrl}/admin/course-materials?companyId=${encodeURIComponent(companyId)}`);
-      const coursesRes = await fetch(`${apiBaseUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`);
-      const educatorsRes = await fetch(`${apiBaseUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`);
-      const academicLevelsRes = await fetch(`${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`);
+      const [materialsRes, coursesRes, educatorsRes, academicLevelsRes] = await Promise.all([
+        fetch(`${apiBaseUrl}/admin/course-materials?companyId=${encodeURIComponent(companyId)}`),
+        fetch(`${apiBaseUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`),
+        fetch(`${apiBaseUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`),
+        fetch(`${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`)
+      ]);
 
-      if (materialsRes.ok) {
-        const data= (await materialsRes.json()).data as CourseMaterialType[];  
-        setMaterials(data);
-      } else {
-        const errorData = await materialsRes.json();
-        setError(errorData.message || "Failed to fetch course materials.");
-        setMaterials(initialMaterials);
-      }
-
+      if (materialsRes.ok) setMaterials((await materialsRes.json()).data);
       if (coursesRes.ok) {
-        const fetchedCourses = (await coursesRes.json()).data as any[];
-        setCourses(fetchedCourses.map(c => ({
-          id: c.id,
-          title: c.title,
-          instructorName: c.instructorName,
-          academicLevels: c.academicLevels,
-        })));
-      } else {
-        const errorData = await coursesRes.json();
-        setError(errorData.message || "Failed to fetch courses.");
-        setCourses(allCourses);
+        const fetched = (await coursesRes.json()).data as any[];
+        setCourses(fetched.map(c => ({ id: c.id, title: c.title, instructorName: c.instructorName, academicLevels: c.academicLevels })));
       }
-
       if (educatorsRes.ok) {
-        const fetchedEducators = (await educatorsRes.json()).data.data as any[];
-        setEducators(fetchedEducators.map(e => ({ id: e.id, name: e.name, email: e.email })));
-      } else {
-        const errorData = await educatorsRes.json();
-        setError(errorData.message || "Failed to fetch educators.");
-        setEducators(allEducators);
+        const fetched = (await educatorsRes.json()).data as any[];
+        setEducators(fetched.map(e => ({ id: e.id, name: e.name, email: e.email })));
       }
-
-      if (academicLevelsRes.ok) {
-        const data: AcademicLevelOption[] = (await academicLevelsRes.json()).data;
-        setAcademicLevels(data);
-      } else {
-        const errorData = await academicLevelsRes.json();
-        setError(errorData.message || "Failed to fetch academic levels.");
-        setAcademicLevels(allAcademicLevels);
-      }
+      if (academicLevelsRes.ok) setAcademicLevels((await academicLevelsRes.json()).data);
 
     } catch (err: any) {
       setError(err.message || "Network error fetching data.");
-      setMaterials(initialMaterials);
-      setCourses(allCourses);
-      setEducators(allEducators);
-      setAcademicLevels(allAcademicLevels);
     } finally {
       setIsLoading(false);
     }
-  }, [apiBaseUrl, companyId, initialMaterials, allCourses, allEducators, allAcademicLevels]);
+  }, [apiBaseUrl, companyId]);
 
   useEffect(() => {
-    // If initial data from server is empty, try fetching on client side
     if (initialMaterials.length === 0 || allCourses.length === 0 || allEducators.length === 0 || allAcademicLevels.length === 0) {
       fetchAllData();
     }
   }, [fetchAllData, initialMaterials, allCourses, allEducators, allAcademicLevels]);
 
-
   const filteredMaterials = useMemo(() => {
     return materials.filter(material => {
-      const matchesSearch = (material.title?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            (material.description?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            (material.uploadedByName?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            (material.courseTitle?.toLowerCase().includes(searchTerm.toLowerCase()) || '');
+      const matchesSearch = 
+        (material.title?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+        (material.description?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+        (material.uploadedByName?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+        (material.courseTitle?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
 
       const matchesType = filterType === 'All' || material.type === filterType;
       const matchesCourse = filterCourse === 'All' || material.courseId === filterCourse;
-
-      // Check if material's course is associated with the filtered academic level
       const matchesAcademicLevel = filterAcademicLevel === 'All' ||
-                                   courses.find(c => c.id === material.courseId)?.academicLevels.some(al => al.id === filterAcademicLevel);
+        courses.find(c => c.id === material.courseId)?.academicLevels.some(al => al.id === filterAcademicLevel);
 
       return matchesSearch && matchesType && matchesCourse && matchesAcademicLevel;
-    }).sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()); // Sort by creation date
+    }).sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
   }, [materials, searchTerm, filterType, filterCourse, filterAcademicLevel, courses]);
 
-  // --- API Interaction Functions ---
-  const handleSaveMaterial = async (materialData: Omit<CourseMaterialType, 'id' | 'courseTitle' | 'uploadedByName' | 'uploadedByEmail' | 'createdAt' | 'updatedAt'> & { id?: string }) => {
+  const handleSaveMaterial = async (materialData: any) => {
     setIsLoading(true);
     setError(null);
     const method = materialData.id ? 'PATCH' : 'POST';
-    
+    const url = materialData.id ? `${apiBaseUrl}/admin/course-materials/${materialData.id}` : `${apiBaseUrl}/admin/course-materials`;
+
     try {
-
-      const url = materialData.id ? `${apiBaseUrl}/admin/course-materials/${materialData.id}` : `${apiBaseUrl}/admin/course-materials`;
-
-      const payload = {
-        ...materialData,
-      };
-
       const res = await fetch(url, {
-        method: method,
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        await fetchAllData(); // Re-fetch to get the latest data
-        setShowFormModal(false);
-        setEditingMaterial(null);
-      } else {
-        const errorData = await res.json();
-        setError(errorData.message || `Failed to ${method === 'POST' ? 'add' : 'update'} material.`);
-      }
-    } catch (err: any) {
-      setError(err.message || `Network error ${method === 'POST' ? 'adding' : 'updating'} material.`);
-    } finally {
-      setIsLoading(false);
-      // setIsUploading(false);
-      // setUploadProgress(0);
-    }
-  };
-
-  const handleDeleteMaterial = async (materialId: string) => {
-    if (!confirm("Are you sure you want to delete this course material? This action cannot be undone.")) {
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`${apiBaseUrl}/course-materials/${materialId}`, {
-        method: 'DELETE',
+        body: JSON.stringify(materialData),
       });
 
       if (res.ok) {
         await fetchAllData();
+        setShowFormModal(false);
+        setEditingMaterial(null);
       } else {
         const errorData = await res.json();
-        setError(errorData.message || "Failed to delete course material.");
+        setError(errorData.message || `Failed to satisfy ${method} operation.`);
       }
     } catch (err: any) {
-      setError(err.message || "Network error deleting course material.");
+      setError(err.message || "Network error updating material.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // --- Calculated Stats ---
+  const handleDeleteMaterial = async (materialId: string) => {
+    if (!confirm("Are you sure you want to delete this course material? This action cannot be undone.")) return;
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${apiBaseUrl}/admin/course-materials/${materialId}`, { method: 'DELETE' });
+      if (res.ok) {
+        await fetchAllData();
+      } else {
+        const errorData = await res.json();
+        setError(errorData.message || "Failed to delete resource.");
+      }
+    } catch (err: any) {
+      setError(err.message || "Network error deleting component.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const totalMaterials = materials.length;
   const totalDocuments = materials.filter(m => m.type === 'DOCUMENT').length;
   const totalVideos = materials.filter(m => m.type === 'VIDEO').length;
   const totalLinks = materials.filter(m => m.type === 'LINK').length;
-
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen font-sans antialiased">
@@ -275,14 +226,14 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
         </div>
       </div>
 
-      {/* Loading and Error Indicators */}
+      {/* States UI Indicators */}
       {isLoading && (
         <div className="flex items-center justify-center py-4 text-blue-700 font-medium text-lg">
-          <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          Loading data...
+          Loading components...
         </div>
       )}
       {error && (
@@ -291,45 +242,37 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
             <strong className="font-bold">Error!</strong>
             <span className="block sm:inline ml-2">{error}</span>
           </div>
-          <button onClick={() => setError(null)} className="text-red-500 hover:text-red-800 focus:outline-none">
+          <button onClick={() => setError(null)} className="text-red-500 hover:text-red-800">
             <XMarkIcon className="h-6 w-6" />
           </button>
         </div>
       )}
 
-      {/* Overview Stats */}
+      {/* Counter Dashboard Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-blue-50 flex items-center gap-4">
-          <div className="p-3 bg-white rounded-full shadow-sm">
-            <FolderOpenIcon className="h-8 w-8 text-blue-600" />
-          </div>
+          <div className="p-3 bg-white rounded-full shadow-sm"><FolderOpenIcon className="h-8 w-8 text-blue-600" /></div>
           <div>
             <p className="text-sm font-medium text-gray-600">Total Materials</p>
             <h2 className="text-3xl font-bold text-gray-800">{totalMaterials}</h2>
           </div>
         </div>
         <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-green-50 flex items-center gap-4">
-          <div className="p-3 bg-white rounded-full shadow-sm">
-            <DocumentTextIcon className="h-8 w-8 text-green-600" />
-          </div>
+          <div className="p-3 bg-white rounded-full shadow-sm"><DocumentTextIcon className="h-8 w-8 text-green-600" /></div>
           <div>
             <p className="text-sm font-medium text-gray-600">Documents</p>
             <h2 className="text-3xl font-bold text-gray-800">{totalDocuments}</h2>
           </div>
         </div>
         <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-purple-50 flex items-center gap-4">
-          <div className="p-3 bg-white rounded-full shadow-sm">
-            <PlayCircleIcon className="h-8 w-8 text-purple-600" />
-          </div>
+          <div className="p-3 bg-white rounded-full shadow-sm"><PlayCircleIcon className="h-8 w-8 text-purple-600" /></div>
           <div>
             <p className="text-sm font-medium text-gray-600">Videos</p>
             <h2 className="text-3xl font-bold text-gray-800">{totalVideos}</h2>
           </div>
         </div>
         <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-yellow-50 flex items-center gap-4">
-          <div className="p-3 bg-white rounded-full shadow-sm">
-            <LinkIcon className="h-8 w-8 text-yellow-600" />
-          </div>
+          <div className="p-3 bg-white rounded-full shadow-sm"><LinkIcon className="h-8 w-8 text-yellow-600" /></div>
           <div>
             <p className="text-sm font-medium text-gray-600">External Links</p>
             <h2 className="text-3xl font-bold text-gray-800">{totalLinks}</h2>
@@ -337,7 +280,7 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
         </div>
       </div>
 
-      {/* Materials List Section */}
+      {/* Workspace Management List Section */}
       <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
@@ -345,14 +288,13 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
           </h3>
           <button
             onClick={() => { setEditingMaterial(null); setShowFormModal(true); }}
-            className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-lg shadow-md
-                       hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-base font-medium"
+            className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition-colors text-base font-medium focus:outline-none"
           >
             <PlusCircleIcon className="h-5 w-5" /> Add New Material
           </button>
         </div>
 
-        {/* Search and Filter */}
+        {/* Inputs and Dropdowns Filter Bar */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="relative flex-grow">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -363,15 +305,14 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
               placeholder="Search by title, description, course, or uploader..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500
-                         focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
+              className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg bg-white placeholder-gray-500 text-base focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
           <div className="flex-shrink-0">
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="block w-full py-2.5 px-4 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
+              className="block w-full py-2.5 px-4 border border-gray-300 bg-white rounded-lg shadow-sm text-base focus:outline-none"
             >
               <option value="All">All Types</option>
               {Object.keys(materialTypeIcons).map(type => (
@@ -383,7 +324,7 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
             <select
               value={filterCourse}
               onChange={(e) => setFilterCourse(e.target.value)}
-              className="block w-full py-2.5 px-4 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
+              className="block w-full py-2.5 px-4 border border-gray-300 bg-white rounded-lg shadow-sm text-base focus:outline-none"
             >
               <option value="All">All Courses</option>
               {courses.map(course => (
@@ -395,7 +336,7 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
             <select
               value={filterAcademicLevel}
               onChange={(e) => setFilterAcademicLevel(e.target.value)}
-              className="block w-full py-2.5 px-4 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
+              className="block w-full py-2.5 px-4 border border-gray-300 bg-white rounded-lg shadow-sm text-base focus:outline-none"
             >
               <option value="All">All Academic Levels</option>
               {academicLevels.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(level => (
@@ -405,7 +346,7 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
           </div>
         </div>
 
-        {/* Materials Table */}
+        {/* Dynamic Materials Data Table Node */}
         <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -415,9 +356,7 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uploader</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Added</th>
-                <th scope="col" className="relative px-6 py-3 rounded-tr-lg">
-                  <span className="sr-only">Actions</span>
-                </th>
+                <th scope="col" className="relative px-6 py-3 rounded-tr-lg"><span className="sr-only">Actions</span></th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -453,7 +392,6 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
                       >
                         <BookOpenIcon className="h-4 w-4" /> {material.courseTitle || 'N/A'}
                       </Link>
-                      {/* Display academic levels associated with the course */}
                       {courses.find(c => c.id === material.courseId)?.academicLevels && (
                         <div className="flex flex-wrap gap-1 mt-1">
                           {courses.find(c => c.id === material.courseId)?.academicLevels.map(level => (
@@ -464,44 +402,29 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                        ${material.type === 'DOCUMENT' ? 'bg-blue-100 text-blue-800' :
-                                          material.type === 'VIDEO' ? 'bg-red-100 text-red-800' :
-                                          material.type === 'LINK' ? 'bg-green-100 text-green-800' :
-                                          material.type === 'IMAGE' ? 'bg-purple-100 text-purple-800' :
-                                          material.type === 'AUDIO' ? 'bg-orange-100 text-orange-800' :
-                                          'bg-gray-100 text-gray-800'}
-                                        `}>
-                        {material.type}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 capitalize">
+                        {material.type.toLowerCase()}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex items-center gap-1">
-                        <UserIcon className="h-4 w-4 text-gray-500" /> {material.uploadedByName || 'N/A'}
-                      </div>
-                      {material.uploadedByEmail && (
-                        <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                          <EnvelopeIcon className="h-3 w-3 text-gray-400" /> {material.uploadedByEmail}
-                        </div>
-                      )}
+                      <div className="font-medium text-gray-900">{material.uploadedByName || 'Institution Staff'}</div>
+                      <div className="text-xs text-gray-400">{material.uploadedByEmail || '-'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(material.createdAt).toLocaleDateString()}
+                      {new Date(material.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium' })}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
+                      <div className="flex items-center justify-end gap-3">
                         <button
                           onClick={() => { setEditingMaterial(material); setShowFormModal(true); }}
-                          className="p-2 rounded-full text-indigo-600 hover:bg-indigo-50 hover:text-indigo-800 transition-colors duration-200"
-                          title="Edit Material"
+                          className="text-indigo-600 hover:text-indigo-900 transition-colors"
                         >
                           <PencilIcon className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => handleDeleteMaterial(material.id)}
-                          className="p-2 rounded-full text-red-600 hover:bg-red-50 hover:text-red-800 transition-colors duration-200"
-                          title="Delete Material"
+                          className="text-red-600 hover:text-red-900 transition-colors"
                         >
                           <TrashIcon className="h-5 w-5" />
                         </button>
@@ -511,10 +434,8 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                    <FolderOpenIcon className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                    <p className="text-lg">No course materials found matching your criteria.</p>
-                    <p className="text-sm mt-2">Try adjusting your filters or add a new material.</p>
+                  <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-500 font-medium">
+                    No course materials found matching your current filters.
                   </td>
                 </tr>
               )}
@@ -523,7 +444,7 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
         </div>
       </div>
 
-      {/* Modals */}
+      {/* Material Modal Formulation Layer */}
       {showFormModal && (
         <MaterialFormModal
           apiBaseUrl={apiBaseUrl}

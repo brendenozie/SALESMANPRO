@@ -17,8 +17,9 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api
 export type TimetableEntry = {
   id: string;
   courseId: string;
-  courseTitle: string; // Flattened from course relation
-  courseCode: string; // NEW: Flattened from course relation
+  // courseTitle: string; // Flattened from course relation
+  // courseCode: string; // NEW: Flattened from course relation
+  course:{ id: string; title: string; code: string; academicLevels: { id: string; name: string; sortOrder?: number }[]; classrooms: { id: string; name: string; academicLevelId: string }[]; educators: { id: string; name: string; email: string; roleInCourse?: string }[] }; // Flattened from course relation
   academicLevelId: string;
   academicLevel: { id: string; name: string }; // NEW: Flattened from academicLevel relation
   // courseAcademicLevels: { id: string; name: string; sortOrder?: number }[]; // Flattened from course relation
@@ -114,8 +115,8 @@ const generateSampleTimetableData = (companyId: string): {
     {
       id: 'SCH001',
       courseId: 'CRS001',
-      courseTitle: 'Algebra I',
-      courseCode: 'MATH101',
+      // courseTitle: 'Algebra I',
+      // courseCode: 'MATH101',
       // courseAcademicLevels: [{ id: 'AL006', name: 'Grade 9' }],
       academicLevel: { id: 'AL006', name: 'Grade 9' },
       academicLevelId: 'AL006',
@@ -135,12 +136,20 @@ const generateSampleTimetableData = (companyId: string): {
       companyId: companyId,
       createdAt: new Date('2023-01-01').toISOString(),
       updatedAt: new Date().toISOString(),
+      course: {
+        id: '',
+        title: '',
+        code: '',
+        academicLevels: [],
+        classrooms: [],
+        educators: []
+      }
     },
     {
       id: 'SCH002',
       courseId: 'CRS002',
-      courseTitle: 'Literary Analysis',
-      courseCode: 'ENG203',
+      // courseTitle: 'Literary Analysis',
+      // courseCode: 'ENG203',
       // courseAcademicLevels: [{ id: 'AL007', name: 'High School - Freshman' }],
       academicLevel: { id: 'AL007', name: 'High School - Freshman' },
       academicLevelId: 'AL007',
@@ -160,12 +169,20 @@ const generateSampleTimetableData = (companyId: string): {
       companyId: companyId,
       createdAt: new Date('2023-01-02').toISOString(),
       updatedAt: new Date().toISOString(),
+      course: {
+        id: '',
+        title: '',
+        code: '',
+        academicLevels: [],
+        classrooms: [],
+        educators: []
+      }
     },
     {
       id: 'SCH003',
       courseId: 'CRS001',
-      courseTitle: 'Algebra I',
-      courseCode: 'MATH101',
+      // courseTitle: 'Algebra I',
+      // courseCode: 'MATH101',
       // courseAcademicLevels: [{ id: 'AL006', name: 'Grade 9' }],
       academicLevel: { id: 'AL006', name: 'Grade 9' },
       academicLevelId: 'AL006',
@@ -185,12 +202,20 @@ const generateSampleTimetableData = (companyId: string): {
       companyId: companyId,
       createdAt: new Date('2023-01-03').toISOString(),
       updatedAt: new Date().toISOString(),
+      course: {
+        id: '',
+        title: '',
+        code: '',
+        academicLevels: [],
+        classrooms: [],
+        educators: []
+      }
     },
     {
       id: 'SCH004',
       courseId: 'CRS003',
-      courseTitle: 'Elementary Math',
-      courseCode: 'MATH100',
+      // courseTitle: 'Elementary Math',
+      // courseCode: 'MATH100',
       // courseAcademicLevels: [{ id: 'AL003', name: 'Grade 1' }],
       academicLevel: { id: 'AL003', name: 'Grade 1' },
       academicLevelId: 'AL003',
@@ -210,6 +235,14 @@ const generateSampleTimetableData = (companyId: string): {
       companyId: companyId,
       createdAt: new Date('2023-01-04').toISOString(),
       updatedAt: new Date().toISOString(),
+      course: {
+        id: '',
+        title: '',
+        code: '',
+        academicLevels: [],
+        classrooms: [],
+        educators: []
+      }
     },
   ];
 
@@ -309,7 +342,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
         next: { revalidate: 60 },credentials: 'include',
       });
       if (res.ok) {
-        const data: TimetableEntry[] = await res.json();
+        const data: TimetableEntry[] = (await res.json()).data; // Assuming API returns { data: TimetableEntry[] }
         setTimetable(data); // Data from API should already be flattened and include course/educator details
       } else {
         const errorData = await res.json();
@@ -398,7 +431,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
       });
 
       if (conflict) {
-        alert(`Conflict! ${draggedLesson.educatorName} is already teaching "${conflict.courseTitle}" at this time.`);
+        alert(`Conflict! ${draggedLesson.educatorName} is already teaching "${conflict.course.title}" at this time.`);
         setActiveId(null);
         return; // Stop the execution
       }
@@ -491,7 +524,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
     });
 
     if (conflict) {
-      setError(`Teacher Conflict: This educator is busy with ${conflict.courseTitle} on ${conflict.dayOfWeek}.`);
+      setError(`Teacher Conflict: This educator is busy with ${conflict.course.title} on ${conflict.dayOfWeek}.`);
       return;
     }
 

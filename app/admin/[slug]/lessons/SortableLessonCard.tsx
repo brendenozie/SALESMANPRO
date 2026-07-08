@@ -105,11 +105,11 @@ export default function SortableLessonCard({
 
       {/* Course Title & Code */}
       <div className="pr-6"> {/* Padding for delete button */}
-        <h3 className="font-bold text-sm leading-tight">{entry.courseTitle}</h3>
-        {entry.courseCode && (
+        <h3 className="font-bold text-sm leading-tight">{entry.course?.title}</h3>
+        {entry.course?.code && (
           <div className="flex items-center gap-1 mt-1 opacity-80">
             <BookOpenIcon className="h-3 w-3" />
-            <span className="text-xs font-medium">{entry.courseCode}</span>
+            <span className="text-xs font-medium">{entry.course.code}</span>
           </div>
         )}
       </div>
