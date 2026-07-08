@@ -243,7 +243,7 @@ export default function AcademicLevelsClient({ initialAcademicLevels, companyId,
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-lg">Name</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sort Order</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+                {/* <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th> */}
                 <th scope="col" className="relative px-6 py-3 rounded-tr-lg">
                   <span className="sr-only">Actions</span>
                 </th>
@@ -265,9 +265,9 @@ export default function AcademicLevelsClient({ initialAcademicLevels, companyId,
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {level.sortOrder}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(level.createdAt).toLocaleDateString()}
-                    </td>
+                    </td> */}
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
                         <button

@@ -214,8 +214,7 @@ export default async function TeachersManagementPage({ params }: PageProps) {
       }
     );
     if (educatorsRes.ok) {
-      const data = (await educatorsRes.json()).data.data;
-      // console.log("[TeachersManagementPage] Fetched educators:", data);
+      const data = (await educatorsRes.json()).data;
       initialEducators = data as EducatorType[];
     } else {
       console.error(
@@ -245,7 +244,7 @@ export default async function TeachersManagementPage({ params }: PageProps) {
       { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (academicLevelsRes.ok) {
-      const data = (await academicLevelsRes.json()).data;      
+      const data = (await academicLevelsRes.json()).data;     
       allAcademicLevels = data as AcademicLevelOption[];
     } else {
       console.error(
@@ -270,18 +269,6 @@ export default async function TeachersManagementPage({ params }: PageProps) {
   } catch (err: any) {
     console.error("[TeachersManagementPage] Error fetching initial data:", err.message);
     fetchError = true;
-  }
-
-
-
-  // If fetching failed or returned no data, use sample data
-  if (fetchError || initialEducators.length === 0 && allDepartments.length === 0 && allAcademicLevels.length === 0 && allClassrooms.length === 0) {
-    // console.log("[TeachersManagementPage] Using sample data for educators, departments, academic levels, and classrooms.");
-    const { sampleEducators, sampleDepartments, sampleAcademicLevels, sampleClassrooms } = generateSampleEducatorsData(companyId);
-    initialEducators = sampleEducators;
-    allDepartments = sampleDepartments;
-    allAcademicLevels = sampleAcademicLevels;
-    allClassrooms = sampleClassrooms;
   }
 
   return (

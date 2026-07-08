@@ -207,7 +207,6 @@ export default async function StudentsManagementPage({ params }: PageProps) {
     );
     if (studentsRes.ok) {
       const data = (await studentsRes.json()).data;
-      
       initialStudents = data as StudentType[];
     } else {
       console.error(
@@ -275,14 +274,14 @@ export default async function StudentsManagementPage({ params }: PageProps) {
   }
 
   // If fetching failed or returned no data, use sample data
-  if (fetchError && initialStudents.length === 0 && allParents.length === 0 && allAcademicLevels.length === 0 && allClassRooms.length === 0) {
-    // console.log("[StudentsManagementPage] Using sample data for students, parents, academic levels, and classrooms.");
-    const { sampleStudents, sampleParents, sampleAcademicLevels, sampleClassRooms } = generateSampleStudentsData(companyId);
-    initialStudents = sampleStudents;
-    allParents = sampleParents;
-    allAcademicLevels = sampleAcademicLevels;
-    allClassRooms = sampleClassRooms;
-  }
+  // if (fetchError && initialStudents.length === 0 && allParents.length === 0 && allAcademicLevels.length === 0 && allClassRooms.length === 0) {
+  //   // console.log("[StudentsManagementPage] Using sample data for students, parents, academic levels, and classrooms.");
+  //   const { sampleStudents, sampleParents, sampleAcademicLevels, sampleClassRooms } = generateSampleStudentsData(companyId);
+  //   initialStudents = sampleStudents;
+  //   allParents = sampleParents;
+  //   allAcademicLevels = sampleAcademicLevels;
+  //   allClassRooms = sampleClassRooms;
+  // }
 
   return (
     <StudentsClient

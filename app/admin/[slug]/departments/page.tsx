@@ -58,8 +58,9 @@ export default async function DepartmentsManagerPage({ params}: PageProps) {
     }
   );
   if (educatorsRes.ok) {
-    const data = (await educatorsRes.json()).data.data;
-    // console.log("[TeachersManagementPage] Fetched educators:", data);
+    
+    const data = (await educatorsRes.json()).data;
+    
     initialEducators = data as EducatorType[];
   } else {
     console.error(

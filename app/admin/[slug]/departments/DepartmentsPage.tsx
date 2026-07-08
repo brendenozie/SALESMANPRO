@@ -272,7 +272,7 @@ export default function DepartmentsPage({ initialDepartments, possibleHeads, com
               <select name="headId" id="headId" value={formData.headId} onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
                 <option value="">-- Select Head --</option>
-                {possibleHeads.map(user => (
+                {possibleHeads && possibleHeads.length > 0 && possibleHeads.map(user => (
                   <option key={user.id} value={user.id}>{user.name} ({user.email})</option>
                 ))}
               </select>

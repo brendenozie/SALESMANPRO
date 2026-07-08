@@ -3087,8 +3087,8 @@ model Parent {
 model Student {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  userId String @unique @db.ObjectId // Link to User model
-  user   User   @relation(name: "student", fields: [userId], references: [id])
+  userId String? @unique @db.ObjectId // Link to User model
+  user   User?   @relation(name: "student", fields: [userId], references: [id])
 
   loginCode String @unique // NEW: Unique generated number for login
 
