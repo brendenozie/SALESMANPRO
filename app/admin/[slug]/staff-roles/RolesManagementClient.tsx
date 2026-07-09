@@ -38,11 +38,11 @@ export default function RolesPage({ companyId, initialData }: { companyId: strin
     }))
   );
 
-  useEffect(() => { fetchRoles(); }, []);
+  // useEffect(() => { fetchRoles(); }, []);
 
   const fetchRoles = async () => {
     const res = await fetch(`/api/admin/roles?companyId=${companyId}`);
-    setRoles(await res.json());
+    setRoles((await res.json()).data);
   };
 
   const handleSave = async () => {
@@ -75,7 +75,7 @@ export default function RolesPage({ companyId, initialData }: { companyId: strin
   };
 
   return (
-    <div className="p-8 max-w-5xl mx-auto bg-slate-50 min-h-screen">
+    <div className="p-8 mx-auto bg-slate-50 min-h-screen">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-slate-900">Roles & Permissions</h1>
         {editingRole && (

@@ -4,7 +4,7 @@ module.exports = {
       name: 'salesmanpro',
       script: 'node_modules/.bin/next',
       args: 'start -p 3000',
-      instances: 2,           // Back to 2 instances for better performance
+      instances: 3,           // Back to 2 instances for better performance
       exec_mode: 'cluster',   // Cluster mode is fine now that we have RAM room
       env: {
         NODE_ENV: 'production',

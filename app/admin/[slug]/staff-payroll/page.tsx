@@ -23,7 +23,7 @@ export default async function PayrollManagementPage({ params }: PageProps) {
     );
 
     if (res.ok) {
-      initialData = (await res.json());
+      initialData = (await res.json()).data;
     }
   } catch (err) {
     console.error("[PayrollManagementPage] Failed to load payroll data", err);
@@ -38,7 +38,7 @@ export default async function PayrollManagementPage({ params }: PageProps) {
     );
 
     if (resStaff.ok) {
-      const json = await resStaff.json();
+      const json = (await resStaff.json()).data;
       initialStaff = json.data;
     }
 
