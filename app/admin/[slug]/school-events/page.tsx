@@ -239,7 +239,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     });
     if (eventsRes.ok) {
       const data = (await eventsRes.json()).data;
-      // console.log("[EventsManagerPage] Fetched events data:", data);
+      console.log("[EventsManagerPage] Fetched events data:", data);
       initialEvents = data as EventData[];
     } else {
       console.error(`[EventsManagerPage] Failed to fetch events: ${eventsRes.status} ${eventsRes.statusText}`);
@@ -280,8 +280,8 @@ export default async function EventsManagerPage({ params }: PageProps) {
       headers: { cookie: cookieHeaders }
     });
     if (educatorsRes.ok) {
-      const data = (await educatorsRes.json()).data.data;
-      // console.log("[EventsManagerPage] Fetched educators data:", data);
+      const data = (await educatorsRes.json()).data;
+      console.log("[EventsManagerPage] Fetched educators data:", data);
       const fetchedEducators = data as any[];      
       allEducators = fetchedEducators.map(e => ({ id: e.id, name: e.user?.name || 'N/A', email: e.user?.email || 'N/A' }));
     } else {
@@ -356,28 +356,28 @@ export default async function EventsManagerPage({ params }: PageProps) {
   }
 
   // If any fetch failed or returned empty, use sample data as fallback
-  if (fetchError || initialEvents.length === 0 && allAcademicLevels.length === 0 && allCourses.length === 0 && allEducators.length === 0 || allStudents.length === 0 && allDepartments.length === 0 && allParents.length === 0 && allOrganizers.length === 0) {
-    // console.log("[EventsManagerPage] Using sample data as fallback for events.");
-    const {
-      sampleEvents,
-      sampleAcademicLevels,
-      sampleCourses,
-      sampleEducators,
-      sampleStudents,
-      sampleDepartments,
-      sampleParents,
-      sampleOrganizers
-    } = generateSampleEventData(companyId);
+  // if (fetchError || initialEvents.length === 0 && allAcademicLevels.length === 0 && allCourses.length === 0 && allEducators.length === 0 || allStudents.length === 0 && allDepartments.length === 0 && allParents.length === 0 && allOrganizers.length === 0) {
+  //   // console.log("[EventsManagerPage] Using sample data as fallback for events.");
+  //   const {
+  //     sampleEvents,
+  //     sampleAcademicLevels,
+  //     sampleCourses,
+  //     sampleEducators,
+  //     sampleStudents,
+  //     sampleDepartments,
+  //     sampleParents,
+  //     sampleOrganizers
+  //   } = generateSampleEventData(companyId);
 
-    initialEvents = sampleEvents;
-    allAcademicLevels = sampleAcademicLevels;
-    allCourses = sampleCourses;
-    allEducators = sampleEducators;
-    allStudents = sampleStudents;
-    allDepartments = sampleDepartments;
-    allParents = sampleParents;
-    allOrganizers = sampleOrganizers;
-  }
+  //   initialEvents = sampleEvents;
+  //   allAcademicLevels = sampleAcademicLevels;
+  //   allCourses = sampleCourses;
+  //   allEducators = sampleEducators;
+  //   allStudents = sampleStudents;
+  //   allDepartments = sampleDepartments;
+  //   allParents = sampleParents;
+  //   allOrganizers = sampleOrganizers;
+  // }
 
   return (
     <AdminEventsPage

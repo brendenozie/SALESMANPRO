@@ -179,7 +179,7 @@ const calculateGrade = (score: number): string => {
 };
 
 return (
-    <div className="p-8 max-w-6xl mx-auto bg-gray-50 min-h-screen">
+    <div className="p-8 mx-auto bg-gray-50 min-h-screen">
       {/* Dynamic Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>

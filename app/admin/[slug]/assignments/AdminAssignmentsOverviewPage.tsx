@@ -112,7 +112,7 @@ const ASSESSMENT_TYPE_CONFIG: Record<AssignmentData['type'], { label: string; bg
   QUIZ: { label: 'Quiz', bg: 'bg-violet-50', text: 'text-violet-700', ring: 'ring-violet-600/20' },
   ASSIGNMENT_BASED: { label: 'Assignment', bg: 'bg-indigo-50', text: 'text-indigo-700', ring: 'ring-indigo-600/20' },
   PRACTICE: { label: 'Practice', bg: 'bg-emerald-50', text: 'text-emerald-700', ring: 'ring-emerald-600/20' },
-  OTHER: { label: 'Other Assessment', bg: 'bg-slate-50', text: 'text-slate-700', ring: 'ring-slate-600/20' },
+  OTHER: { label: 'Other', bg: 'bg-slate-50', text: 'text-slate-700', ring: 'ring-slate-600/20' },
 };
 
 // =======================================================================
@@ -201,11 +201,11 @@ export default function AssignmentsPageClient({
       const res = await fetch(`${apiBaseUrl}/admin/course-assignments?companyId=${companyId}`, {
         credentials: 'include',
       });
-      if (!res.ok) throw new Error('Could not synchronize assessment data layers with remote server context.');
+      if (!res.ok) throw new Error('Could not load assignments. Please try again.');
       const payload = await res.json();
       setAssignments(payload.data || []);
     } catch (err: any) {
-      setError(err.message || 'Fatal system state anomaly reading assignment schemas.');
+      setError(err.message || 'Something went wrong while loading assignments.');
     } finally {
       setIsLoading(false);
     }
@@ -237,7 +237,7 @@ export default function AssignmentsPageClient({
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.message || 'Database write operational fault execution failure.');
+        throw new Error(data.message || 'Failed to save the assignment.');
       }
 
       setShowModal(false);
@@ -251,13 +251,13 @@ export default function AssignmentsPageClient({
   };
 
   const handleDeleteAssignment = async (id: string) => {
-    if (!confirm('Are you absolutely certain you want to purge this dynamic assignment structure from database nodes permanently? Action is irreversible.')) return;
+    if (!confirm('Are you sure you want to delete this assignment? This action cannot be undone.')) return;
     try {
       const res = await fetch(`${apiBaseUrl}/admin/course-assignments/${id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
-      if (!res.ok) throw new Error('Purge transactional command refused by relational integrity locks.');
+      if (!res.ok) throw new Error('Could not delete the assignment because it is linked to other records.');
       await fetchAssignments();
     } catch (err: any) {
       setError(err.message);
@@ -268,14 +268,14 @@ export default function AssignmentsPageClient({
     <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans antialiased text-slate-900 selection:bg-indigo-600 selection:text-white">
       <div className="max-w-7xl mx-auto space-y-8">
         
-        {/* Dynamic Action Navbar */}
+        {/* Header */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-200/60 pb-6">
           <div>
             <div className="flex items-center gap-2 text-indigo-600 text-xs font-bold uppercase tracking-widest mb-1.5">
-              <AcademicCapIcon className="h-4 w-4" /> Academic Operations Control
+              <AcademicCapIcon className="h-4 w-4" /> Academic Setup
             </div>
-            <h1 className="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Curriculum Assessments</h1>
-            <p className="text-slate-500 text-sm mt-1">Design, evaluate, monitor, and synchronize evaluation schemas across institutional tiers.</p>
+            <h1 className="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Assignments & Exams</h1>
+            <p className="text-slate-500 text-sm mt-1">Create, track, and manage all your student assignments and exams in one place.</p>
           </div>
           
           <div className="flex items-center gap-3 self-end md:self-center">
@@ -302,20 +302,20 @@ export default function AssignmentsPageClient({
               onClick={() => { setEditingAssignment(null); setShowModal(true); }}
               className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-black tracking-wide shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/30 transition-all active:scale-95"
             >
-              <PlusIcon className="h-5 w-5 stroke-[3px]" /> New Evaluation
+              <PlusIcon className="h-5 w-5 stroke-[3px]" /> New Assignment
             </button>
           </div>
         </header>
 
-        {/* Dynamic Analytics Aggregator Grid */}
+        {/* Quick Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          <StatCard label="Total Frameworks" value={assignments.length} icon={DocumentDuplicateIcon} color="text-indigo-600" bg="bg-indigo-50" ring="ring-indigo-600/10" />
-          <StatCard label="Active Pending" value={assignments.filter((a) => new Date(a.dueDate) >= new Date(new Date().setHours(0,0,0,0))).length} icon={ClockIcon} color="text-amber-600" bg="bg-amber-50" ring="ring-amber-600/10" />
-          <StatCard label="Live Published" value={assignments.filter((a) => a.isPublished).length} icon={CheckBadgeIcon} color="text-emerald-600" bg="bg-emerald-50" ring="ring-emerald-600/10" />
-          <StatCard label="Online Enabled" value={assignments.filter((a) => a.isOnline).length} icon={GlobeAltIcon} color="text-sky-600" bg="bg-sky-50" ring="ring-sky-600/10" />
+          <StatCard label="Total Assignments" value={assignments.length} icon={DocumentDuplicateIcon} color="text-indigo-600" bg="bg-indigo-50" ring="ring-indigo-600/10" />
+          <StatCard label="Upcoming" value={assignments.filter((a) => new Date(a.dueDate) >= new Date(new Date().setHours(0,0,0,0))).length} icon={ClockIcon} color="text-amber-600" bg="bg-amber-50" ring="ring-amber-600/10" />
+          <StatCard label="Published" value={assignments.filter((a) => a.isPublished).length} icon={CheckBadgeIcon} color="text-emerald-600" bg="bg-emerald-50" ring="ring-emerald-600/10" />
+          <StatCard label="Online Tests" value={assignments.filter((a) => a.isOnline).length} icon={GlobeAltIcon} color="text-sky-600" bg="bg-sky-50" ring="ring-sky-600/10" />
         </div>
 
-        {/* System Error Banner */}
+        {/* Error Message */}
         <AnimatePresence>
           {error && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
@@ -332,10 +332,10 @@ export default function AssignmentsPageClient({
           )}
         </AnimatePresence>
 
-        {/* Filter Toolbar Workstation Grid */}
+        {/* Filters */}
         <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 space-y-4">
           <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-wider">
-            <FunnelIcon className="h-4 w-4 text-slate-500" /> Granular Interface Filters
+            <FunnelIcon className="h-4 w-4 text-slate-500" /> Filters
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
@@ -343,56 +343,56 @@ export default function AssignmentsPageClient({
               <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 stroke-[2.5]" />
               <input
                 type="text"
-                placeholder="Query system models by title string, specific course names, or assigning educator data maps..."
+                placeholder="Search assignments by title, course, or teacher..."
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 text-sm rounded-xl focus:bg-white focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 outline-none transition-all placeholder:text-slate-400 font-medium text-slate-800"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
 
-            <SelectFilter value={selectedYear || 'All'} label="Academic Timeline" onChange={(v) => { setSelectedYear(v === 'All' ? null : v); setSelectedTerm('All'); }}>
-              <option value="All">Complete Institutional Logs</option>
+            <SelectFilter value={selectedYear || 'All'} label="Academic Year" onChange={(v) => { setSelectedYear(v === 'All' ? null : v); setSelectedTerm('All'); }}>
+              <option value="All">All Years</option>
               {academicYearOptions.map((y) => <option key={y.id} value={y.id}>{y.name}</option>)}
             </SelectFilter>
 
-            <SelectFilter value={selectedTerm || 'All'} label="Term Interval" disabled={!selectedYear} onChange={(v) => setSelectedTerm(v)}>
-              <option value="All">Full Calendar Subdivisions</option>
+            <SelectFilter value={selectedTerm || 'All'} label="Term" disabled={!selectedYear} onChange={(v) => setSelectedTerm(v)}>
+              <option value="All">All Terms</option>
               {academicYearOptions.find((y) => y.id === selectedYear)?.terms.map((t) => (
                 <option key={t.id} value={t.id}>{t.name}</option>
               ))}
             </SelectFilter>
 
-            <SelectFilter value={filterCourse} label="Course Target" onChange={setFilterCourse}>
-              <option value="All">All Disciplines</option>
+            <SelectFilter value={filterCourse} label="Course" onChange={setFilterCourse}>
+              <option value="All">All Courses</option>
               {allCourses?.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
             </SelectFilter>
 
-            <SelectFilter value={filterClass} label="Class Location Room" onChange={setFilterClass}>
-              <option value="All">All Structural Rooms</option>
+            <SelectFilter value={filterClass} label="Classroom" onChange={setFilterClass}>
+              <option value="All">All Classrooms</option>
               {allClassRooms?.map((cr) => <option key={cr.id} value={cr.id}>{cr.name}</option>)}
             </SelectFilter>
 
-            <SelectFilter value={filterEducator} label="Assigning Evaluator" onChange={setFilterEducator}>
-              <option value="All">All Faculty Entities</option>
+            <SelectFilter value={filterEducator} label="Teacher" onChange={setFilterEducator}>
+              <option value="All">All Teachers</option>
               {allEducators?.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
             </SelectFilter>
 
-            <SelectFilter value={filterType} label="Structural Type" onChange={setFilterType}>
-              <option value="All">All Framework Models</option>
+            <SelectFilter value={filterType} label="Type" onChange={setFilterType}>
+              <option value="All">All Types</option>
               {uniqueAssignmentsTypes.map((t) => (
                 <option key={t} value={t}>{ASSESSMENT_TYPE_CONFIG[t]?.label || t}</option>
               ))}
             </SelectFilter>
 
-            <SelectFilter value={filterStatus} label="Lifecycle Status" onChange={setFilterStatus}>
-              <option value="All">All Execution States</option>
+            <SelectFilter value={filterStatus} label="Status" onChange={setFilterStatus}>
+              <option value="All">All Statuses</option>
               <option value="Upcoming">Upcoming</option>
               <option value="Completed">Completed</option>
             </SelectFilter>
           </div>
         </div>
 
-        {/* View Layout Output Context Controller */}
+        {/* Content View */}
         <main>
           <AnimatePresence mode="wait">
             {viewMode === 'table' ? (
@@ -401,18 +401,18 @@ export default function AssignmentsPageClient({
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
-                        <th className="px-6 py-4">Assessment Context Data</th>
-                        <th className="px-6 py-4">Curriculum Destination</th>
-                        <th className="px-6 py-4">Timeline Delivery</th>
-                        <th className="px-6 py-4">Status & Architecture</th>
-                        <th className="px-6 py-4 text-right">Actions Panel</th>
+                        <th className="px-6 py-4">Assignment Details</th>
+                        <th className="px-6 py-4">Course & Classroom</th>
+                        <th className="px-6 py-4">Date & Time</th>
+                        <th className="px-6 py-4">Status & Type</th>
+                        <th className="px-6 py-4 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {filteredAssignments.length === 0 ? (
                         <tr>
                           <td colSpan={5} className="px-6 py-12 text-center text-slate-400 text-sm font-medium">
-                            No functional matching assignment profiles identified intersecting current system context criteria maps.
+                            No assignments match your current filters.
                           </td>
                         </tr>
                       ) : (
@@ -424,7 +424,7 @@ export default function AssignmentsPageClient({
                                 <div className="flex flex-col gap-1">
                                   <span className="font-bold text-slate-800 text-sm md:text-base tracking-tight">{a.title}</span>
                                   <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
-                                    <UserCircleIcon className="h-4 w-4 text-slate-400" /> {a.courseInstructorName || 'Unassigned Faculty'}
+                                    <UserCircleIcon className="h-4 w-4 text-slate-400" /> {a.courseInstructorName || 'Unassigned Teacher'}
                                   </div>
                                 </div>
                               </td>
@@ -435,7 +435,7 @@ export default function AssignmentsPageClient({
                                     <span>{a.courseTitle}</span>
                                   </div>
                                   <span className="w-fit text-[10px] font-bold px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-600 rounded">
-                                    {a.classroom?.name || 'Global Unassigned Room'}
+                                    {a.classroom?.name || 'No Classroom'}
                                   </span>
                                 </div>
                               </td>
@@ -455,23 +455,23 @@ export default function AssignmentsPageClient({
                                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ring-1 ring-inset ${
                                     a.isPublished ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20' : 'bg-slate-100 text-slate-600 ring-slate-600/20'
                                   }`}>
-                                    {a.isPublished ? 'Published' : 'Draft Layer'}
+                                    {a.isPublished ? 'Published' : 'Draft'}
                                   </span>
                                   {a.isOnline && (
                                     <span className="inline-flex items-center gap-1 text-[10px] font-bold text-sky-600 uppercase tracking-tight bg-sky-50 px-1.5 py-0.5 rounded border border-sky-100">
-                                      <GlobeAltIcon className="h-3 w-3" /> Virtual Testing
+                                      <GlobeAltIcon className="h-3 w-3" /> Online Test
                                     </span>
                                   )}
                                 </div>
                               </td>
                               <td className="px-6 py-4.5 text-right">
-                                <div className="flex items-center justify-end gap-1.5">
-                                  <div className="flex items-center border-r border-slate-400 pr-2 gap-1 ">
-                                    <ActionButton title="Configure Evaluation Tasks" onClick={() => window.location.href = `/admin/${companyId}/assignments/${a.id}/questions`}>
-                                      <DocumentDuplicateIcon className="h-4.5 w-4.5 text-slate-500" />
+                                <div className="flex items-center justify-end gap-2">
+                                  <div className="flex items-center border-r border-slate-300 pr-3 gap-2">
+                                    <ActionButton title="Questions" onClick={() => window.location.href = `/admin/${companyId}/assignments/${a.id}/questions`}>
+                                      <DocumentDuplicateIcon className="h-4 w-4 text-gray-700" />
                                     </ActionButton>
-                                    <ActionButton title="Analyze Interactive Submissions" onClick={() => window.location.href = `/admin/${companyId}/assignments/${a.id}/submissions`}>
-                                      <ClipboardDocumentListIcon className="h-4.5 w-4.5 text-slate-500" />
+                                    <ActionButton title="Submissions" onClick={() => window.location.href = `/admin/${companyId}/assignments/${a.id}/submissions`}>
+                                      <ClipboardDocumentListIcon className="h-4 w-4 text-gray-700" />
                                     </ActionButton>
                                   </div>
                                   
@@ -479,14 +479,14 @@ export default function AssignmentsPageClient({
                                     href={`/admin/${companyId}/assignments/${a.id}/grades?courseId=${a.courseId}&classroomId=${a.classroomId || ''}`}
                                     className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 border border-slate-200 rounded-lg transition-colors"
                                   >
-                                    <UsersIcon className="h-4 w-4" /> <span>Grades</span>
+                                    <UsersIcon className="h-4 w-4 text-gray-700" /> <span>Grades</span>
                                   </Link>
 
-                                  <ActionButton title="Edit Structural Fields" variant="primary" onClick={() => { setEditingAssignment(a); setShowModal(true); }}>
-                                    <PencilSquareIcon className="h-4.5 w-4.5 text-slate-500" />
+                                  <ActionButton title="Edit" variant="primary" onClick={() => { setEditingAssignment(a); setShowModal(true); }}>
+                                    <PencilSquareIcon className="h-4 w-4 text-gray-700" />
                                   </ActionButton>
-                                  <ActionButton title="Purge Record" variant="danger" onClick={() => handleDeleteAssignment(a.id)}>
-                                    <TrashIcon className="h-4.5 w-4.5 text-slate-500" />
+                                  <ActionButton title="Delete" variant="danger" onClick={() => handleDeleteAssignment(a.id)}>
+                                    <TrashIcon className="h-4 w-4 text-gray-700" />
                                   </ActionButton>
                                 </div>
                               </td>
@@ -507,7 +507,7 @@ export default function AssignmentsPageClient({
         </main>
       </div>
 
-      {/* Assignment Architectural Mutation Engine Form Modal */}
+      {/* Assignment Form Modal */}
       <AnimatePresence>
         {showModal && (
           <AssignmentFormModal
@@ -529,7 +529,7 @@ export default function AssignmentsPageClient({
 }
 
 // =======================================================================
-// Atomic Supporting Sub-Components Workspace Elements
+// Atomic Components
 // =======================================================================
 function StatCard({ label, value, icon: Icon, color, bg, ring }: any) {
   return (
@@ -563,19 +563,19 @@ function SelectFilter({ value, label, onChange, children, disabled = false }: { 
 
 function ActionButton({ children, onClick, title, variant = 'secondary' }: { children: React.ReactNode; onClick: () => void; title: string; variant?: 'primary' | 'secondary' | 'danger' }) {
   const themes = {
-    primary: 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 border-slate-100',
-    secondary: 'text-slate-400 hover:text-slate-700 hover:bg-slate-100 border-slate-100',
-    danger: 'text-slate-400 hover:text-rose-600 hover:bg-rose-50 border-slate-100',
+    primary: 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border-indigo-200',
+    secondary: 'text-slate-600 bg-slate-100 hover:bg-slate-200 border-slate-200',
+    danger: 'text-rose-600 bg-rose-50 hover:bg-rose-100 border-rose-200',
   };
   return (
-    <button onClick={onClick} title={title} className={`p-2 rounded-lg border border-transparent transition-all hover:shadow-sm active:scale-95 ${themes[variant]}`}>
+    <button onClick={onClick} title={title} className={`p-2 rounded-lg border transition-all hover:shadow-sm active:scale-95 ${themes[variant]}`}>
       {children}
     </button>
   );
 }
 
 // =======================================================================
-// Refactored Multi-Column Modular Form Modal Component
+// Assignment Form Modal Component
 // =======================================================================
 type AssignmentFormModalProps = {
   assignmentData: AssignmentData | null;
@@ -630,7 +630,7 @@ const AssignmentFormModal: React.FC<AssignmentFormModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title || !formData.courseId || !formData.createdById) {
-      alert('Validation failure: Missing structural parameters.');
+      alert('Please fill out all required fields marked with an asterisk (*).');
       return;
     }
     onSave(formData);
@@ -649,58 +649,58 @@ const AssignmentFormModal: React.FC<AssignmentFormModalProps> = ({
         <header className="px-6 py-5 bg-slate-50 border-b border-slate-200/80 flex justify-between items-center">
           <div>
             <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded border ${isEdit ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-indigo-50 border-indigo-200 text-indigo-700'}`}>
-              {isEdit ? 'Revision Terminal' : 'Deployment Terminal'}
+              {isEdit ? 'Editing' : 'New'}
             </span>
-            <h2 className="text-xl font-black text-slate-900 mt-1">{isEdit ? 'Modify Curriculum Matrix' : 'Instantiate New Curriculum Assessment'}</h2>
+            <h2 className="text-xl font-black text-slate-900 mt-1">{isEdit ? 'Edit Assignment' : 'Create New Assignment'}</h2>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-slate-200/60 rounded-xl text-slate-400 transition-colors"><XMarkIcon className="h-5 w-5" /></button>
         </header>
 
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
           
-          {/* Section 1: Core Parameters */}
+          {/* Section 1: Basic Info */}
           <section className="space-y-4">
-            <h3 className="text-xs font-black text-indigo-600 uppercase tracking-widest border-b border-slate-100 pb-2">1. Framework Classification</h3>
+            <h3 className="text-xs font-black text-indigo-600 uppercase tracking-widest border-b border-slate-100 pb-2">1. Basic Info</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <label className={labelClass}>Assessment Structural Title <span className="text-rose-500">*</span></label>
-                <input type="text" name="title" value={formData.title} onChange={handleChange} required className={`${inputClass} text-base font-bold`} placeholder="e.g., Q3 Advanced Organic Chemistry Evaluation" />
+                <label className={labelClass}>Title <span className="text-rose-500">*</span></label>
+                <input type="text" name="title" value={formData.title} onChange={handleChange} required className={`${inputClass} text-base font-bold`} placeholder="e.g., Chapter 3 History Quiz" />
               </div>
               <div className="md:col-span-2">
-                <label className={labelClass}>Operational Directives & Objectives</label>
-                <textarea name="description" value={formData.description} onChange={handleChange} rows={2} className={inputClass} placeholder="Scope configuration boundaries, contextual parameters for instructions..." />
+                <label className={labelClass}>Description & Instructions</label>
+                <textarea name="description" value={formData.description} onChange={handleChange} rows={2} className={inputClass} placeholder="What is this assignment about? Add basic instructions here..." />
               </div>
               <div>
-                <label className={labelClass}>Target Discipline <span className="text-rose-500">*</span></label>
+                <label className={labelClass}>Course <span className="text-rose-500">*</span></label>
                 <select name="courseId" value={formData.courseId} onChange={handleChange} required className={inputClass}>
-                  <option value="">Select Curricular Track</option>
+                  <option value="">Select Course</option>
                   {allCourses.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
                 </select>
               </div>
               <div>
-                <label className={labelClass}>Assigning Evaluator entity <span className="text-rose-500">*</span></label>
+                <label className={labelClass}>Teacher <span className="text-rose-500">*</span></label>
                 <select name="createdById" value={formData.createdById} onChange={handleChange} required className={inputClass}>
-                  <option value="">Select Authorized Faculty Member</option>
+                  <option value="">Select Teacher</option>
                   {allEducators.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
                 </select>
               </div>
             </div>
           </section>
 
-          {/* Section 2: Logistics Matrix */}
+          {/* Section 2: Logistics */}
           <section className="space-y-4 bg-slate-50/70 p-5 rounded-xl border border-slate-200/60">
-            <h3 className="text-xs font-black text-indigo-600 uppercase tracking-widest border-b border-slate-200 pb-2">2. Logistics Execution & Delivery</h3>
+            <h3 className="text-xs font-black text-indigo-600 uppercase tracking-widest border-b border-slate-200 pb-2">2. Schedule & Location</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <div>
-                <label className={labelClass}>Evaluation Date</label>
+                <label className={labelClass}>Date Assigned</label>
                 <input type="date" name="date" value={formData.date} onChange={handleChange} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Due Deadline Date</label>
+                <label className={labelClass}>Due Date</label>
                 <input type="date" name="dueDate" value={formData.dueDate} onChange={handleChange} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Structural Blueprint Model</label>
+                <label className={labelClass}>Assignment Type</label>
                 <select name="type" value={formData.type} onChange={handleChange} className={inputClass}>
                   {Object.keys(ASSESSMENT_TYPE_CONFIG).map((key) => (
                     <option key={key} value={key}>{ASSESSMENT_TYPE_CONFIG[key as AssignmentData['type']].label}</option>
@@ -708,55 +708,55 @@ const AssignmentFormModal: React.FC<AssignmentFormModalProps> = ({
                 </select>
               </div>
               <div>
-                <label className={labelClass}>Deployment Room / Zone</label>
+                <label className={labelClass}>Classroom</label>
                 <select name="classroomId" value={formData.classroomId} onChange={handleChange} className={inputClass}>
-                  <option value="">Global/Unassigned Room Location</option>
+                  <option value="">No specific classroom</option>
                   {allClassRooms.map((cr) => <option key={cr.id} value={cr.id}>{cr.name}</option>)}
                 </select>
               </div>
               <div>
-                <label className={labelClass}>Physical Venue Geolocation</label>
+                <label className={labelClass}>Location (if outside classroom)</label>
                 <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="e.g., Auditorium B" className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Duration Interval (Min)</label>
+                <label className={labelClass}>Duration (Minutes)</label>
                 <input type="number" name="durationMinutes" value={formData.durationMinutes || ''} onChange={handleChange} placeholder="90" className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Window Open Execution Time</label>
-                <input type="text" name="startTime" value={formData.startTime || ''} onChange={handleChange} placeholder="HH:MM (24h)" className={inputClass} />
+                <label className={labelClass}>Start Time</label>
+                <input type="text" name="startTime" value={formData.startTime || ''} onChange={handleChange} placeholder="HH:MM" className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Window Close Execution Time</label>
-                <input type="text" name="endTime" value={formData.endTime || ''} onChange={handleChange} placeholder="HH:MM (24h)" className={inputClass} />
+                <label className={labelClass}>End Time</label>
+                <input type="text" name="endTime" value={formData.endTime || ''} onChange={handleChange} placeholder="HH:MM" className={inputClass} />
               </div>
             </div>
           </section>
 
-          {/* Section 3: Value Metrics & Grading Strategy */}
+          {/* Section 3: Grading Strategy */}
           <section className="space-y-4">
-            <h3 className="text-xs font-black text-indigo-600 uppercase tracking-widest border-b border-slate-100 pb-2">3. Point Structures & Evaluation Logic</h3>
+            <h3 className="text-xs font-black text-indigo-600 uppercase tracking-widest border-b border-slate-100 pb-2">3. Grading & Points</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-4 border border-slate-200 rounded-xl flex items-center justify-between bg-white shadow-sm hover:border-slate-300 transition-colors">
                 <div>
-                  <p className="text-xs font-bold text-slate-800">Total Structural Weight Points</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Maximum evaluation baseline points</p>
+                  <p className="text-xs font-bold text-slate-800">Total Points</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Maximum points available</p>
                 </div>
                 <input type="number" name="totalPoints" value={formData.totalPoints} onChange={handleChange} className="w-20 text-right font-mono font-bold text-sm text-indigo-600 bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg" />
               </div>
 
               <div className="p-4 border border-slate-200 rounded-xl flex items-center justify-between bg-white shadow-sm hover:border-slate-300 transition-colors">
                 <div>
-                  <p className="text-xs font-bold text-slate-800">Maximum Relational Grade Value</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Normalization scaling target index ceiling</p>
+                  <p className="text-xs font-bold text-slate-800">Max Grade Value</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">e.g., scale to 100%</p>
                 </div>
                 <input type="number" name="maxGrade" value={formData.maxGrade} onChange={handleChange} className="w-20 text-right font-mono font-bold text-sm text-indigo-600 bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg" />
               </div>
 
               <div className="p-4 border border-slate-200 rounded-xl flex items-center justify-between bg-white shadow-sm">
                 <div>
-                  <p className="text-xs font-bold text-slate-800">Virtual Infrastructure Delivery</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Execute via secure browser pipeline</p>
+                  <p className="text-xs font-bold text-slate-800">Online Test</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Students take this test on their devices</p>
                 </div>
                 <input type="checkbox" name="isOnline" checked={formData.isOnline} onChange={handleChange} className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300" />
               </div>
@@ -764,8 +764,8 @@ const AssignmentFormModal: React.FC<AssignmentFormModalProps> = ({
               {formData.isOnline && (
                 <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="p-4 border border-indigo-100 rounded-xl flex items-center justify-between bg-indigo-50/40 shadow-inner">
                   <div>
-                    <p className="text-xs font-bold text-indigo-900">Asynchronous Machine Evaluation</p>
-                    <p className="text-[10px] text-indigo-500 mt-0.5">Automate evaluation loops on MCQ keys</p>
+                    <p className="text-xs font-bold text-indigo-900">Auto-Grade (Multiple Choice)</p>
+                    <p className="text-[10px] text-indigo-500 mt-0.5">System grades it automatically</p>
                   </div>
                   <input type="checkbox" name="autoGrade" checked={formData.autoGrade} onChange={handleChange} className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-indigo-300" />
                 </motion.div>
@@ -774,8 +774,8 @@ const AssignmentFormModal: React.FC<AssignmentFormModalProps> = ({
               {isEdit && (
                 <div className="p-4 border border-slate-200 rounded-xl flex items-center justify-between bg-white shadow-sm md:col-span-2">
                   <div>
-                    <p className="text-xs font-bold text-slate-800">Synchronize Results Immediately</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Expose finalized grading states to student portals immediately</p>
+                    <p className="text-xs font-bold text-slate-800">Publish Immediately</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Make this visible to students right away</p>
                   </div>
                   <input type="checkbox" name="isPublished" checked={formData.isPublished} onChange={handleChange} className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300" />
                 </div>
@@ -783,17 +783,17 @@ const AssignmentFormModal: React.FC<AssignmentFormModalProps> = ({
             </div>
           </section>
 
-          {/* Section 4: Supplementary Metadata Documentation */}
+          {/* Section 4: Extra notes */}
           <section className="space-y-3">
-            <label className={labelClass}>Student-Facing Curriculum Directives & Syllabus References</label>
-            <textarea name="notes" value={formData.notes} onChange={handleChange} rows={3} className={inputClass} placeholder="Add criteria maps, target objectives, textbook reading logs, calculator permission notices..." />
+            <label className={labelClass}>4. Extra Notes (Visible to students)</label>
+            <textarea name="notes" value={formData.notes} onChange={handleChange} rows={3} className={inputClass} placeholder="List required textbook readings, allowed calculators, etc..." />
           </section>
 
         </form>
 
         <footer className="px-6 py-4 bg-slate-50 border-t border-slate-200/80 flex justify-end gap-3 items-center">
           <button type="button" onClick={onClose} disabled={isLoading} className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-slate-700 transition-colors disabled:opacity-40">
-            Abort Mission
+            Cancel
           </button>
           <button
             type="submit"
@@ -801,7 +801,7 @@ const AssignmentFormModal: React.FC<AssignmentFormModalProps> = ({
             disabled={isLoading}
             className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-md transition-all disabled:opacity-50 flex items-center gap-2"
           >
-            {isLoading ? 'Processing Pipeline Transactions...' : isEdit ? 'Commit Framework Update' : 'Instantiate Framework Architecture'}
+            {isLoading ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Assignment'}
           </button>
         </footer>
       </motion.div>
@@ -810,7 +810,7 @@ const AssignmentFormModal: React.FC<AssignmentFormModalProps> = ({
 };
 
 // =======================================================================
-// Timezone-Safe Calendar Dashboard Engine Component
+// Calendar Component
 // =======================================================================
 function AssignmentCalendar({ assignments, onEdit }: { assignments: AssignmentData[]; onEdit: (a: AssignmentData) => void }) {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -839,7 +839,7 @@ function AssignmentCalendar({ assignments, onEdit }: { assignments: AssignmentDa
         </div>
       </div>
 
-      {/* Weekday Matrix Map Tags */}
+      {/* Weekday Labels */}
       <div className="grid grid-cols-7 border-b border-slate-100 bg-slate-50/30">
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
           <div key={day} className="py-2.5 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">
@@ -848,7 +848,7 @@ function AssignmentCalendar({ assignments, onEdit }: { assignments: AssignmentDa
         ))}
       </div>
 
-      {/* Grid Matrix Calculations Cell Blocks */}
+      {/* Calendar Grid */}
       <div className="grid grid-cols-7 auto-rows-[130px] divide-x divide-y divide-slate-100">
         {Array.from({ length: firstDayOfMonth }).map((_, i) => (
           <div key={`padding-cell-${i}`} className="bg-slate-50/30 border-t-0 first:border-l-0" />
@@ -857,7 +857,6 @@ function AssignmentCalendar({ assignments, onEdit }: { assignments: AssignmentDa
         {Array.from({ length: daysInMonth }).map((_, i) => {
           const targetDayInteger = i + 1;
           
-          // Timezone-safe structural validation context filters
           const dayAssignments = assignments.filter((assignment) => {
             if (!assignment.dueDate) return false;
             const assignmentDateNode = new Date(assignment.dueDate);

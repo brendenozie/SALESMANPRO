@@ -5296,8 +5296,8 @@ enum EmploymentStatus {
 // Represents a non-medical staff member within a company, linked to a User profile.
 model StaffProfile {
   id     String @id @default(auto()) @map("_id") @db.ObjectId
-  userId String @unique @db.ObjectId // One-to-one link to the User model
-  user   User   @relation("StaffProfile", fields: [userId], references: [id])
+  userId String? @unique @db.ObjectId // One-to-one link to the User model
+  user   User?   @relation("StaffProfile", fields: [userId], references: [id])
 
   companyId String  @db.ObjectId
   company   Company @relation(fields: [companyId], references: [id])

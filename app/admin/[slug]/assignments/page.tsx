@@ -281,7 +281,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
       }
     });
     if (educatorsRes.ok) {
-      allEducators = (await educatorsRes.json()).data.data as EducatorOption[];
+      allEducators = (await educatorsRes.json()).data as EducatorOption[];
     } else {
       // console.error(`[ExamsManagerPage] Failed to fetch educators: ${educatorsRes.status} ${educatorsRes.statusText}`);
       fetchError = true;

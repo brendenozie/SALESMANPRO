@@ -291,7 +291,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
       }
     });
     if (educatorsRes.ok) {
-      allEducators = (await educatorsRes.json()).data.data as EducatorOption[];
+      allEducators = (await educatorsRes.json()).data as EducatorOption[];
     } else {
       // console.error(`[ExamsManagerPage] Failed to fetch educators: ${educatorsRes.status} ${educatorsRes.statusText}`);
       fetchError = true;
@@ -334,15 +334,15 @@ export default async function ExamsManagerPage({ params }: PageProps) {
   }
 
   // If any fetch failed or returned empty, use sample data as fallback
-  if (fetchError && initialExams.length === 0 && allCourses.length === 0 && allEducators.length === 0 && allAcademicLevels.length === 0 && allClassRooms.length === 0) {
-    // console.log("[ExamsManagerPage] Using sample data as fallback.");
-    const { sampleExams, sampleCourses, sampleEducators, sampleAcademicLevels, sampleClassRooms } = generateSampleExamData(companyId);
-    initialExams = sampleExams;
-    allCourses = sampleCourses;
-    allEducators = sampleEducators;
-    allAcademicLevels = sampleAcademicLevels;
-    allClassRooms = sampleClassRooms;
-  }
+  // if (fetchError && initialExams.length === 0 && allCourses.length === 0 && allEducators.length === 0 && allAcademicLevels.length === 0 && allClassRooms.length === 0) {
+  //   // console.log("[ExamsManagerPage] Using sample data as fallback.");
+  //   const { sampleExams, sampleCourses, sampleEducators, sampleAcademicLevels, sampleClassRooms } = generateSampleExamData(companyId);
+  //   initialExams = sampleExams;
+  //   allCourses = sampleCourses;
+  //   allEducators = sampleEducators;
+  //   allAcademicLevels = sampleAcademicLevels;
+  //   allClassRooms = sampleClassRooms;
+  // }
 
   return (
     <AdminExamsOverviewPage

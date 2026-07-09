@@ -237,7 +237,7 @@ export default function EventRegistrationsPage({
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/event-registrations?eventId=${encodeURIComponent(eventDetails.id)}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/event-registrations?eventId=${encodeURIComponent(eventDetails.id)}`, {
         next: { revalidate: 60 },
       });
       if (res.ok) {
@@ -304,7 +304,7 @@ export default function EventRegistrationsPage({
     setError(null);
 
     const method = registrationData.id ? 'PATCH' : 'POST';
-    const url = registrationData.id ? `${apiBaseUrl}/event-registrations/${registrationData.id}` : `${apiBaseUrl}/event-registrations`;
+    const url = registrationData.id ? `${apiBaseUrl}/admin/event-registrations/${registrationData.id}` : `${apiBaseUrl}/admin/event-registrations`;
 
     try {
       const res = await fetch(url, {
@@ -336,7 +336,7 @@ export default function EventRegistrationsPage({
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/event-registrations/${registrationId}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/event-registrations/${registrationId}`, {
         method: 'DELETE',
       });
 
@@ -357,7 +357,7 @@ export default function EventRegistrationsPage({
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/event-registrations/${registrationId}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/event-registrations/${registrationId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),

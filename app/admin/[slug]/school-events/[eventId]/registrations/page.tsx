@@ -116,7 +116,7 @@ export default async function EventRegistrationsOverviewPage({ params }: PagePro
 
   try {
     // Fetch event details
-    const eventRes = await fetch(`${apiBaseUrl}/events/${eventId}`, {
+    const eventRes = await fetch(`${apiBaseUrl}/admin/events/${eventId}`, {
       next: { revalidate: 60 },
     });
     if (eventRes.ok) {
@@ -139,7 +139,7 @@ export default async function EventRegistrationsOverviewPage({ params }: PagePro
     }
 
     // Fetch event registrations for this event
-    const registrationsRes = await fetch(`${apiBaseUrl}/event-registrations?eventId=${encodeURIComponent(eventId)}`, {
+    const registrationsRes = await fetch(`${apiBaseUrl}/admin/event-registrations?eventId=${encodeURIComponent(eventId)}`, {
       next: { revalidate: 60 },
     });
     if (registrationsRes.ok) {
@@ -150,7 +150,7 @@ export default async function EventRegistrationsOverviewPage({ params }: PagePro
     }
 
     // Fetch all users in the company (for registration form/filtering)
-    const usersRes = await fetch(`${apiBaseUrl}/users?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
+    const usersRes = await fetch(`${apiBaseUrl}/admin/users?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
       next: { revalidate: 60 },
     });
     if (usersRes.ok) {
@@ -161,7 +161,7 @@ export default async function EventRegistrationsOverviewPage({ params }: PagePro
     }
 
     // Fetch all students in the company (for registration form/filtering)
-    const studentsRes = await fetch(`${apiBaseUrl}/students?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/students endpoint
+    const studentsRes = await fetch(`${apiBaseUrl}/admin/students?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/students endpoint
       next: { revalidate: 60 },
     });
     if (studentsRes.ok) {
@@ -178,14 +178,14 @@ export default async function EventRegistrationsOverviewPage({ params }: PagePro
   }
 
   // If any fetch failed or returned empty, use sample data as fallback
-  if (fetchError || !initialEventDetails || initialRegistrations.length === 0 || allUsers.length === 0 || allStudents.length === 0) {
-    // console.log("[EventRegistrationsOverviewPage] Using sample data as fallback.");
-    const { sampleEventDetails, sampleRegistrations, sampleUsers, sampleStudents } = generateSampleRegistrationData(companyId, eventId);
-    initialEventDetails = sampleEventDetails;
-    initialRegistrations = sampleRegistrations;
-    allUsers = sampleUsers;
-    allStudents = sampleStudents;
-  }
+  // if (fetchError || !initialEventDetails || initialRegistrations.length === 0 || allUsers.length === 0 || allStudents.length === 0) {
+  //   // console.log("[EventRegistrationsOverviewPage] Using sample data as fallback.");
+  //   const { sampleEventDetails, sampleRegistrations, sampleUsers, sampleStudents } = generateSampleRegistrationData(companyId, eventId);
+  //   initialEventDetails = sampleEventDetails;
+  //   initialRegistrations = sampleRegistrations;
+  //   allUsers = sampleUsers;
+  //   allStudents = sampleStudents;
+  // }
 
   if (!initialEventDetails) {
     return (

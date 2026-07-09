@@ -160,7 +160,7 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({
     resetError();
 
     if (!formData.title || !formData.courseId || !formData.date || !formData.createdByEducatorId || !formData.type || formData.totalPoints === null) {
-      alert("Please fill all required fields: Title, Course, Date, Educator, Type, and Total Points.");
+      alert("Please fill out all required fields: Title, Course, Date, Instructor, Exam Type, and Max Points.");
       return;
     }
 
@@ -178,7 +178,7 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({
         const start = new Date(`1970-01-01T${formData.startTime}:00Z`);
         const end = new Date(`1970-01-01T${formData.endTime}:00Z`);
         if (start >= end) {
-            alert("Start time must be before end time.");
+            alert("The start time must be before the end time.");
             return;
         }
     }
@@ -189,26 +189,26 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({
   const isEdit = !!examData;
 
   return (
-    <div className="fixed inset-0 bg-slate-900 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-300">
-      <div className="bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 shadow-2xl p-6 w-full max-w-xl relative max-h-[90vh] overflow-y-auto ring-1 ring-black/5 animate-in fade-in-50 zoom-in-95 duration-150">
+    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-300">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 w-full max-w-xl relative max-h-[90vh] overflow-y-auto ring-1 ring-black/5 animate-in fade-in-50 zoom-in-95 duration-150">
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1.5 rounded-xl hover:bg-slate-100 transition-colors"
+          className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         >
           <XMarkIcon className="h-5 w-5" />
         </button>
 
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-slate-900">
-            {isEdit ? 'Update Assessment Details' : 'Configure New Assessment'}
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+            {isEdit ? 'Edit Exam' : 'Create a New Exam'}
           </h2>
-          <p className="text-xs text-slate-500 mt-1">Fill out the performance guidelines and schedules below.</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Fill out the basic details and schedule for this exam below.</p>
         </div>
 
         {error && (
-          <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl mb-6 flex items-center justify-between text-sm">
+          <div className="bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 px-4 py-3 rounded-xl mb-6 flex items-center justify-between text-sm">
             <span>{error}</span>
-            <button onClick={resetError} className="text-rose-500 hover:text-rose-800">
+            <button onClick={resetError} className="text-rose-500 hover:text-rose-800 dark:hover:text-rose-200">
               <XMarkIcon className="h-4 w-4" />
             </button>
           </div>
@@ -216,22 +216,22 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-1">
-            <label htmlFor="title" className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Exam Title <span className="text-rose-500">*</span></label>
+            <label htmlFor="title" className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Exam Title <span className="text-rose-500">*</span></label>
             <input type="text" name="title" id="title" value={formData.title} onChange={handleChange} required
-              className="block w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 transition-colors bg-slate-50/50" />
+              className="block w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 dark:focus:border-indigo-500 transition-colors bg-slate-50/50 dark:bg-slate-800 dark:text-white" />
           </div>
 
           <div className="space-y-1">
-            <label htmlFor="description" className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Description</label>
+            <label htmlFor="description" className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Description</label>
             <textarea name="description" id="description" value={formData.description || ''} onChange={handleChange} rows={2}
-              className="block w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 transition-colors bg-slate-50/50" />
+              className="block w-full px-3.5 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 dark:focus:border-indigo-500 transition-colors bg-slate-50/50 dark:bg-slate-800 dark:text-white" />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label htmlFor="examCategoryId" className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Exam Category</label>
+              <label htmlFor="examCategoryId" className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Category</label>
               <select name="examCategoryId" id="examCategoryId" value={formData.examCategoryId || ''} onChange={handleChange}
-                className="block w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 bg-white transition-colors"
+                className="block w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 dark:focus:border-indigo-500 bg-white dark:bg-slate-800 dark:text-white transition-colors"
               >
                 <option value="">Select Category</option>
                 {allExamCategories.map(category => (
@@ -241,9 +241,9 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="courseId" className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Course <span className="text-rose-500">*</span></label>
+              <label htmlFor="courseId" className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Course <span className="text-rose-500">*</span></label>
               <select name="courseId" id="courseId" value={formData.courseId} onChange={handleChange} required
-                className="block w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 bg-white transition-colors"
+                className="block w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 dark:focus:border-indigo-500 bg-white dark:bg-slate-800 dark:text-white transition-colors"
               >
                 <option value="">Select Course</option>
                 {allCourses.map(course => (
@@ -255,9 +255,9 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="createdByEducatorId" className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Assigned Educator <span className="text-rose-500">*</span></label>
+              <label htmlFor="createdByEducatorId" className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Instructor <span className="text-rose-500">*</span></label>
               <select name="createdByEducatorId" id="createdByEducatorId" value={formData.createdByEducatorId} onChange={handleChange} required
-                className="block w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 bg-white transition-colors"
+                className="block w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 dark:focus:border-indigo-500 bg-white dark:bg-slate-800 dark:text-white transition-colors"
               >
                 <option value="">Select Instructor</option>
                 {allEducators.map(educator => (
@@ -267,45 +267,45 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="date" className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Assessment Date <span className="text-rose-500">*</span></label>
+              <label htmlFor="date" className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Date <span className="text-rose-500">*</span></label>
               <input type="date" name="date" id="date" value={formData.date} onChange={handleChange} required
-                className="block w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 transition-colors" />
+                className="block w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 dark:focus:border-indigo-500 transition-colors dark:bg-slate-800 dark:text-white text-slate-900" />
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="type" className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Evaluation Profile <span className="text-rose-500">*</span></label>
+              <label htmlFor="type" className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Exam Type <span className="text-rose-500">*</span></label>
               <select name="type" id="type" value={formData.type} onChange={handleChange} required
-                className="block w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 bg-white transition-colors"
+                className="block w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 dark:focus:border-indigo-500 bg-white dark:bg-slate-800 dark:text-white transition-colors"
               >
                 <option value="QUIZ">Quiz</option>
                 <option value="UNIT_TEST">Unit Test</option>
                 <option value="MIDTERM">Midterm</option>
-                <option value="FINAL">Final Examination</option>
-                <option value="ASSIGNMENT_BASED">Assignment Based</option>
-                <option value="PRACTICE">Practice Session</option>
+                <option value="FINAL">Final Exam</option>
+                <option value="ASSIGNMENT_BASED">Assignment</option>
+                <option value="PRACTICE">Practice</option>
                 <option value="OTHER">Other</option>
               </select>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <label htmlFor="startTime" className="text-[11px] font-semibold text-slate-700 uppercase tracking-wider">Start (HH:MM)</label>
+                <label htmlFor="startTime" className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Start Time</label>
                 <input type="text" name="startTime" id="startTime" value={formData.startTime || ''} onChange={handleChange} placeholder="09:00"
-                  className="block w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600" />
+                  className="block w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 dark:focus:border-indigo-500 dark:bg-slate-800 dark:text-white" />
               </div>
               <div className="space-y-1">
-                <label htmlFor="endTime" className="text-[11px] font-semibold text-slate-700 uppercase tracking-wider">End (HH:MM)</label>
+                <label htmlFor="endTime" className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">End Time</label>
                 <input type="text" name="endTime" id="endTime" value={formData.endTime || ''} onChange={handleChange} placeholder="10:30"
-                  className="block w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600" />
+                  className="block w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 dark:focus:border-indigo-500 dark:bg-slate-800 dark:text-white" />
               </div>
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="classroomId" className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Target Classroom</label>
+              <label htmlFor="classroomId" className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Classroom (Optional)</label>
               <select name="classroomId" id="classroomId" value={formData.classroomId || ''} onChange={handleChange}
-                className="block w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 bg-white transition-colors"
+                className="block w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 dark:focus:border-indigo-500 bg-white dark:bg-slate-800 dark:text-white transition-colors"
               >
-                <option value="">Universal / Standalone</option>
+                <option value="">Applies to everyone</option>
                 {allClassRooms.map(classRoom => (
                   <option key={classRoom.id} value={classRoom.id}>{classRoom.name}</option>
                 ))}
@@ -313,63 +313,63 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="location" className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Facility Venue</label>
-              <input type="text" name="location" id="location" value={formData.location || ''} onChange={handleChange} placeholder="e.g., Block B Hall / Remote"
-                className="block w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600" />
+              <label htmlFor="location" className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Location / Room</label>
+              <input type="text" name="location" id="location" value={formData.location || ''} onChange={handleChange} placeholder="e.g., Room 101 or Online"
+                className="block w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 dark:focus:border-indigo-500 dark:bg-slate-800 dark:text-white" />
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="totalPoints" className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Max Points <span className="text-rose-500">*</span></label>
+              <label htmlFor="totalPoints" className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Max Points <span className="text-rose-500">*</span></label>
               <input type="number" name="totalPoints" id="totalPoints" value={formData.totalPoints} onChange={handleChange} min="0" required
-                className="block w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600" />
+                className="block w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 dark:focus:border-indigo-500 dark:bg-slate-800 dark:text-white" />
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="durationMinutes" className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Duration (Mins)</label>
+              <label htmlFor="durationMinutes" className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Duration (Minutes)</label>
               <input type="number" name="durationMinutes" id="durationMinutes" value={formData.durationMinutes || ''} onChange={handleChange} min="1" placeholder="Untimed"
-                className="block w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600" />
+                className="block w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 dark:focus:border-indigo-500 dark:bg-slate-800 dark:text-white" />
             </div>
           </div>
 
-          <div className="space-y-3 bg-slate-50/70 p-4 rounded-xl border border-slate-100">
+          <div className="space-y-3 bg-slate-50/70 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
             <div className="flex items-center justify-between">
-              <label htmlFor="isOnline" className="text-sm font-medium text-slate-800">Deliver Electronically (Online Test)</label>
+              <label htmlFor="isOnline" className="text-sm font-medium text-slate-800 dark:text-slate-200">This is an online exam</label>
               <input type="checkbox" name="isOnline" id="isOnline" checked={formData.isOnline} onChange={handleChange}
-                className="h-4 w-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-600" />
+                className="h-4 w-4 text-indigo-600 border-slate-300 dark:border-slate-600 rounded focus:ring-indigo-600 dark:focus:ring-indigo-500 dark:bg-slate-700" />
             </div>
 
             {formData.isOnline && (
-              <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 animate-in fade-in-40 duration-100">
-                <label htmlFor="autoGrade" className="text-xs font-medium text-slate-600">Automate Submissions Matrix Grading</label>
+              <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-slate-700 animate-in fade-in-40 duration-100">
+                <label htmlFor="autoGrade" className="text-xs font-medium text-slate-600 dark:text-slate-400">Grade automatically when submitted</label>
                 <input type="checkbox" name="autoGrade" id="autoGrade" checked={formData.autoGrade} onChange={handleChange}
-                  className="h-4 w-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-600" />
+                  className="h-4 w-4 text-indigo-600 border-slate-300 dark:border-slate-600 rounded focus:ring-indigo-600 dark:focus:ring-indigo-500 dark:bg-slate-700" />
               </div>
             )}
 
             {isEdit && (
-              <div className="flex items-center justify-between pt-2 border-t border-slate-200/60">
-                <label htmlFor="isPublished" className="text-sm font-medium text-slate-800">Publish Transcripts to Students</label>
+              <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-slate-700">
+                <label htmlFor="isPublished" className="text-sm font-medium text-slate-800 dark:text-slate-200">Show results to students</label>
                 <input type="checkbox" name="isPublished" id="isPublished" checked={formData.isPublished} onChange={handleChange}
-                  className="h-4 w-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500" />
+                  className="h-4 w-4 text-emerald-600 border-slate-300 dark:border-slate-600 rounded focus:ring-emerald-500 dark:bg-slate-700" />
               </div>
             )}
           </div>
 
-          <div className="flex justify-end gap-2.5 pt-4 border-t border-slate-100">
+          <div className="flex justify-end gap-2.5 pt-4 border-t border-slate-100 dark:border-slate-800">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-slate-200 text-sm font-medium text-slate-700 rounded-xl hover:bg-slate-50 transition-colors"
+              className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
               disabled={isLoading}
             >
-              Discard
+              Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-slate-900 text-sm font-medium text-white rounded-xl shadow-sm hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
+              className="px-4 py-2 bg-indigo-600 text-sm font-medium text-white rounded-xl shadow-sm hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
               disabled={isLoading}
             >
-              {isLoading ? 'Processing...' : isEdit ? 'Apply Changes' : 'Create Exam'}
+              {isLoading ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Exam'}
             </button>
           </div>
         </form>
@@ -420,10 +420,10 @@ export default function AdminExamsOverviewPage({
         setExams(data);
       } else {
         const errorData = await res.json();
-        setError(errorData.message || "Failed to fetch operational logs.");
+        setError(errorData.message || "Failed to load exams.");
       }
     } catch (err: any) {
-      setError(err.message || "Network exception encountered.");
+      setError(err.message || "A network error occurred.");
     } finally {
       setIsLoading(false);
     }
@@ -516,17 +516,17 @@ export default function AdminExamsOverviewPage({
         setEditingExam(null);
       } else {
         const errorData = await res.json();
-        setError(errorData.message || "Failed execution constraints.");
+        setError(errorData.message || "Failed to save the exam.");
       }
     } catch (err: any) {
-      setError(err.message || "Network layout disruption.");
+      setError(err.message || "A network error occurred.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDeleteExam = async (examId: string) => {
-    if (!confirm("Are you sure you want to completely erase this evaluation? All relative analytics metrics will be detached.")) {
+    if (!confirm("Are you sure you want to delete this exam? This action cannot be undone and will remove all student grades for it.")) {
       return;
     }
     setIsLoading(true);
@@ -540,10 +540,10 @@ export default function AdminExamsOverviewPage({
         await fetchExams();
       } else {
         const errorData = await res.json();
-        setError(errorData.message || "Failed deletion framework routine.");
+        setError(errorData.message || "Failed to delete the exam.");
       }
     } catch (err: any) {
-      setError(err.message || "Operational exception occurred.");
+      setError(err.message || "A network error occurred.");
     } finally {
       setIsLoading(false);
     }
@@ -562,7 +562,7 @@ export default function AdminExamsOverviewPage({
       if (res.ok) {
         await fetchExams();
       } else {
-        setError("Failed execution metrics publishing adjust.");
+        setError("Failed to update the exam publication status.");
       }
     } catch (err: any) {
       setError(err.message);
@@ -572,48 +572,48 @@ export default function AdminExamsOverviewPage({
   };
 
   return (
-    <div className="p-6 lg:p-10 space-y-8 bg-slate-50/60 dark:bg-slate-900 min-h-screen font-sans antialiased selection:bg-indigo-500/10">
+    <div className="p-6 lg:p-10 space-y-8 bg-slate-50 dark:bg-slate-950 min-h-screen font-sans antialiased selection:bg-indigo-500/10">
       
-      {/* Dynamic Command Navbar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/60 pb-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-indigo-600 uppercase tracking-widest">
-            <span>Academic Control Center</span>
-            <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-            <span>Assessments</span>
+          <div className="flex items-center gap-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">
+            <span>School Admin</span>
+            <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></span>
+            <span>Exams & Tests</span>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight mt-1 sm:text-3xl">
-            Examination Registers
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight mt-1 sm:text-3xl">
+            Exam Dashboard
           </h1>
         </div>
 
         <div className="flex items-center gap-3 self-start md:self-auto">
-          <div className="bg-white px-3.5 py-1.5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-2 text-xs font-medium text-slate-600">
+          <div className="bg-white dark:bg-slate-900 px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-300">
             <CalendarDaysIcon className="h-4 w-4 text-indigo-500" />
             <span>{today}</span>
           </div>
           <button
             onClick={() => { setEditingExam(null); setShowFormModal(true); setError(null); }}
-            className="flex items-center gap-1.5 px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-xl shadow-sm hover:bg-slate-800 active:scale-95 transition-all duration-150"
+            className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-xl shadow-sm hover:bg-indigo-700 active:scale-95 transition-all duration-150"
           >
             <PlusCircleIcon className="h-4 w-4" /> 
-            <span>Create Assessment</span>
+            <span>Create Exam</span>
           </button>
         </div>
       </div>
 
-      {/* Analytics Matrix Overview Cards */}
+      {/* Stats Overview */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Evaluation Space', val: stats.total, color: 'text-blue-600', icon: ClipboardDocumentCheckIcon, bg: 'bg-blue-50/50' },
-          { label: 'Upcoming Slates', val: stats.upcoming, color: 'text-amber-600', icon: ExclamationTriangleIcon, bg: 'bg-amber-50/50' },
-          { label: 'Concluded Audits', val: stats.completed, color: 'text-emerald-600', icon: CheckCircleIcon, bg: 'bg-emerald-50/50' },
-          { label: 'Baseline Target', val: stats.scoreAverage, color: 'text-purple-600', icon: TrophyIcon, bg: 'bg-purple-50/50' }
+          { label: 'Total Exams', val: stats.total, color: 'text-blue-600 dark:text-blue-400', icon: ClipboardDocumentCheckIcon, bg: 'bg-blue-50 dark:bg-blue-900/20' },
+          { label: 'Upcoming Exams', val: stats.upcoming, color: 'text-amber-600 dark:text-amber-400', icon: ExclamationTriangleIcon, bg: 'bg-amber-50 dark:bg-amber-900/20' },
+          { label: 'Completed Exams', val: stats.completed, color: 'text-emerald-600 dark:text-emerald-400', icon: CheckCircleIcon, bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
+          { label: 'Average Score', val: stats.scoreAverage, color: 'text-purple-600 dark:text-purple-400', icon: TrophyIcon, bg: 'bg-purple-50 dark:bg-purple-900/20' }
         ].map((c, i) => (
-          <div key={i} className="bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-between shadow-sm/50">
+          <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-sm/50">
             <div className="space-y-1">
-              <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">{c.label}</span>
-              <h4 className="text-xl font-bold text-slate-900">{c.val}</h4>
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">{c.label}</span>
+              <h4 className="text-xl font-bold text-slate-900 dark:text-white">{c.val}</h4>
             </div>
             <div className={`p-2.5 rounded-xl ${c.bg} border border-transparent`}>
               <c.icon className={`h-5 w-5 ${c.color}`} />
@@ -622,26 +622,25 @@ export default function AdminExamsOverviewPage({
         ))}
       </div>
 
-      {/* Operational List Dashboard */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+      {/* Main List Box */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
         
-        {/* Sub-header Filter Action Controls */}
-        <div className="p-5 border-b border-slate-100 bg-slate-50/30 space-y-4">
+        {/* Search & Filters */}
+        <div className="p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900 space-y-4">
           <div className="flex items-center gap-2">
-            <AdjustmentsHorizontalIcon className="h-4 w-4 text-slate-400" />
-            <h3 className="text-sm font-semibold text-slate-800">Operational Aggregation Layout</h3>
+            <AdjustmentsHorizontalIcon className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+            <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Search & Filters</h3>
           </div>
 
-          {/* Clean Segment Filters Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2.5">
             <div className="md:col-span-2 relative">
               <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search index context..."
+                placeholder="Search exams..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-200 rounded-xl bg-white focus:outline-none focus:border-indigo-500 placeholder:text-slate-400"
+                className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 dark:text-white focus:outline-none focus:border-indigo-500 placeholder:text-slate-400"
               />
             </div>
             
@@ -650,11 +649,11 @@ export default function AdminExamsOverviewPage({
               { val: selectedYear || 'All', set: (v: string) => { setSelectedYear(v); }, opt: academicYearOptions, lbl: 'Years' },
               { val: filterCourse, set: setFilterCourse, opt: allCourses, lbl: 'Courses', useTitle: true },
               { val: filterClass, set: setFilterClass, opt: allClassRooms, lbl: 'Classrooms' },
-              { val: filterEducator, set: setFilterEducator, opt: allEducators, lbl: 'Educators' }
+              { val: filterEducator, set: setFilterEducator, opt: allEducators, lbl: 'Instructors' }
             ].map((f, i) => (
               <select
                 key={i} value={f.val} onChange={(e) => f.set(e.target.value)}
-                className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-xl bg-white focus:outline-none focus:border-indigo-500 text-slate-700"
+                className="w-full px-2 py-1.5 text-xs border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:border-indigo-500 text-slate-700 dark:text-slate-300"
               >
                 <option value="All">All {f.lbl}</option>
                 {f && f.opt && f.opt.map((o: any) => (
@@ -665,52 +664,52 @@ export default function AdminExamsOverviewPage({
 
             <select
               value={filterType} onChange={(e) => setFilterType(e.target.value)}
-              className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-xl bg-white focus:outline-none focus:border-indigo-500 text-slate-700"
+              className="w-full px-2 py-1.5 text-xs border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:border-indigo-500 text-slate-700 dark:text-slate-300"
             >
-              <option value="All">All Frameworks</option>
+              <option value="All">All Exam Types</option>
               {uniqueExamTypes.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
         </div>
 
-        {/* Runtime Notifications Container */}
+        {/* Errors */}
         {error && (
-          <div className="m-5 bg-rose-50 border border-rose-100 text-rose-800 p-3.5 rounded-xl flex items-center justify-between text-xs">
+          <div className="m-5 bg-rose-50 dark:bg-rose-900/30 border border-rose-100 dark:border-rose-800 text-rose-800 dark:text-rose-300 p-3.5 rounded-xl flex items-center justify-between text-xs">
             <span>{error}</span>
-            <button onClick={() => setError(null)} className="text-rose-400 hover:text-rose-600"><XMarkIcon className="h-4 w-4" /></button>
+            <button onClick={() => setError(null)} className="text-rose-400 hover:text-rose-600 dark:hover:text-rose-200"><XMarkIcon className="h-4 w-4" /></button>
           </div>
         )}
 
-        {/* High-Performance Micro-Data Sheet Table Layout */}
+        {/* Table */}
         <div className="overflow-x-auto">
           {filteredExams.length === 0 ? (
-            <div className="text-center py-12 text-slate-400 space-y-2">
-              <FolderOpenIcon className="h-8 w-8 mx-auto text-slate-300" />
-              <p className="text-xs font-medium">No matching assessments discovered within this sector scope.</p>
+            <div className="text-center py-12 text-slate-400 dark:text-slate-500 space-y-2">
+              <FolderOpenIcon className="h-8 w-8 mx-auto text-slate-300 dark:text-slate-600" />
+              <p className="text-xs font-medium">No exams found matching your search.</p>
             </div>
           ) : (
             <table className="w-full border-collapse text-left">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/40 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                  <th className="px-5 py-3">Audit Registry Label</th>
-                  <th className="px-5 py-3">Instructor Matrix</th>
-                  <th className="px-5 py-3">Location Venue</th>
-                  <th className="px-5 py-3">Schedule Slot</th>
-                  <th className="px-5 py-3 text-center">Digital Delivery</th>
-                  <th className="px-5 py-3 text-center">Quantities</th>
-                  <th className="px-5 py-3">Publication</th>
-                  <th className="px-5 py-3 text-right">Actions Panel Interface</th>
+                <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-800/50 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <th className="px-5 py-3">Exam Name</th>
+                  <th className="px-5 py-3">Instructor</th>
+                  <th className="px-5 py-3">Location</th>
+                  <th className="px-5 py-3">Date & Time</th>
+                  <th className="px-5 py-3 text-center">Online?</th>
+                  <th className="px-5 py-3 text-center">Questions / Subs</th>
+                  <th className="px-5 py-3">Status</th>
+                  <th className="px-5 py-3 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-xs text-slate-600">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs text-slate-600 dark:text-slate-300">
                 {filteredExams.map((exam) => {
                   const isConcluded = new Date(exam.date).getTime() < new Date().setHours(0,0,0,0);
                   return (
-                    <tr key={exam.id} className="hover:bg-slate-50/60 transition-colors group">
+                    <tr key={exam.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/50 transition-colors group">
                       <td className="px-5 py-3.5">
-                        <div className="font-semibold text-slate-900">{exam.title}</div>
+                        <div className="font-semibold text-slate-900 dark:text-white">{exam.title}</div>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold tracking-wide uppercase bg-slate-100 text-slate-700">
+                          <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold tracking-wide uppercase bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
                             {exam.type}
                           </span>
                           <span className={`w-1.5 h-1.5 rounded-full ${isConcluded ? 'bg-emerald-500' : 'bg-amber-400'}`}></span>
@@ -718,41 +717,41 @@ export default function AdminExamsOverviewPage({
                       </td>
 
                       <td className="px-5 py-3.5">
-                        <div className="font-medium text-slate-800">{exam.courseTitle}</div>
-                        <div className="text-slate-400 text-[10px]">{exam.createdByEducatorName}</div>
+                        <div className="font-medium text-slate-800 dark:text-slate-200">{exam.courseTitle}</div>
+                        <div className="text-slate-400 dark:text-slate-500 text-[10px]">{exam.createdByEducatorName}</div>
                       </td>
 
                       <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-1 text-slate-700">
+                        <div className="flex items-center gap-1 text-slate-700 dark:text-slate-400">
                           <MapPinIcon className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
-                          <span className="truncate max-w-[120px]">{exam.location || exam.classroom?.name || 'Universal'}</span>
+                          <span className="truncate max-w-[120px]">{exam.location || exam.classroom?.name || 'Everyone'}</span>
                         </div>
                       </td>
 
                       <td className="px-5 py-3.5 whitespace-nowrap">
-                        <div className="font-medium text-slate-800">{new Date(exam.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
-                        <div className="text-[10px] text-slate-400 flex items-center gap-0.5 mt-0.5">
+                        <div className="font-medium text-slate-800 dark:text-slate-200">{new Date(exam.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
+                        <div className="text-[10px] text-slate-400 dark:text-slate-500 flex items-center gap-0.5 mt-0.5">
                           <ClockIcon className="h-3 w-3" />
-                          <span>{exam.startTime ? `${exam.startTime} - ${exam.endTime}` : 'Variable Schedule'}</span>
+                          <span>{exam.startTime ? `${exam.startTime} - ${exam.endTime}` : 'No set time'}</span>
                         </div>
                       </td>
 
                       <td className="px-5 py-3.5 text-center">
                         {exam.isOnline ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
-                            <GlobeAltIcon className="h-3 w-3" /> Online
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800">
+                            <GlobeAltIcon className="h-3 w-3" /> Yes
                           </span>
                         ) : (
-                          <span className="text-slate-300 text-[10px]">—</span>
+                          <span className="text-slate-300 dark:text-slate-600 text-[10px]">—</span>
                         )}
                       </td>
 
                       <td className="px-5 py-3.5 text-center whitespace-nowrap">
-                        <span className="font-bold text-slate-800">{exam.totalQuestions}</span>
-                        <span className="text-slate-400"> Q</span>
-                        <span className="mx-1 text-slate-300">|</span>
-                        <span className="font-bold text-slate-800">{exam.totalSubmissions}</span>
-                        <span className="text-slate-400"> S</span>
+                        <span className="font-bold text-slate-800 dark:text-slate-200">{exam.totalQuestions}</span>
+                        <span className="text-slate-400 dark:text-slate-500"> Qs</span>
+                        <span className="mx-1 text-slate-300 dark:text-slate-700">|</span>
+                        <span className="font-bold text-slate-800 dark:text-slate-200">{exam.totalSubmissions}</span>
+                        <span className="text-slate-400 dark:text-slate-500"> Subs</span>
                       </td>
 
                       <td className="px-5 py-3.5">
@@ -760,30 +759,30 @@ export default function AdminExamsOverviewPage({
                           onClick={() => toggleResultsPublished(exam.id, exam.isPublished)}
                           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold transition-colors
                             ${exam.isPublished 
-                              ? 'bg-indigo-50 text-indigo-700 border border-indigo-100 hover:bg-indigo-100' 
-                              : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                              ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/50' 
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent'}`}
                         >
-                          {exam.isPublished ? 'Published' : 'Draft Access'}
+                          {exam.isPublished ? 'Published' : 'Hidden'}
                         </button>
                       </td>
 
                       <td className="px-5 py-3.5 text-right">
                         <div className="flex items-center justify-end gap-1">
                           
-                          {/* Module Route Hubs */}
+                          {/* Links to inner pages */}
                           {exam.isOnline && (
-                            <div className="flex items-center gap-1 border-r border-slate-200/60 pr-1 mr-1">
+                            <div className="flex items-center gap-1 border-r border-slate-200/60 dark:border-slate-700 pr-1 mr-1">
                               <Link 
                                 href={`/admin/${companyId}/exams/${exam.id}/questions`}
-                                className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-colors"
-                                title="Configure Evaluation Tasks"
+                                className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                                title="Edit Questions"
                               >
                                 <BookOpenIcon className="h-4 w-4" />
                               </Link>
                               <Link 
                                 href={`/admin/${companyId}/exams/${exam.id}/submissions`}
-                                className="p-1.5 text-slate-500 hover:text-emerald-600 hover:bg-slate-100 rounded-lg transition-colors"
-                                title="Analyze Interactive Submissions"
+                                className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                                title="View Submissions"
                               >
                                 <FolderOpenIcon className="h-4 w-4" />
                               </Link>
@@ -792,24 +791,24 @@ export default function AdminExamsOverviewPage({
 
                           <Link 
                             href={`/admin/${companyId}/exams/${exam.id}/grades?courseId=${exam.courseId}&classroomId=${exam.classroomId || ''}&educatorId=${exam.createdByEducatorId}&academicYearId=${exam.academicYearId}&termId=${exam.termId}`}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 text-slate-700 transition-colors"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors"
                           >
-                            <UsersIcon className="h-3.5 w-3.5 text-slate-500" />
-                            <span>Grades Matrix</span>
+                            <UsersIcon className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
+                            <span>Grades</span>
                           </Link>
 
                           <button
                             onClick={() => { setEditingExam(exam); setShowFormModal(true); setError(null); }}
-                            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
-                            title="Edit Core Metrics"
+                            className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                            title="Edit Exam Info"
                           >
                             <PencilIcon className="h-3.5 w-3.5" />
                           </button>
                           
                           <button
                             onClick={() => handleDeleteExam(exam.id)}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                            title="Erase Log"
+                            className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors"
+                            title="Delete Exam"
                           >
                             <TrashIcon className="h-3.5 w-3.5" />
                           </button>
@@ -824,7 +823,7 @@ export default function AdminExamsOverviewPage({
         </div>
       </div>
 
-      {/* Modular Form Dialog Overlay */}
+      {/* Pop-up form */}
       {showFormModal && (
         <ExamFormModal
           examData={editingExam}
