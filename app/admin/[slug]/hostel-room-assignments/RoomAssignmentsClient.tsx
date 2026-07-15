@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import { 
   ArrowsRightLeftIcon, 
@@ -8,15 +8,35 @@ import {
   UserGroupIcon,
   MagnifyingGlassIcon,
   PlusCircleIcon,
-  XMarkIcon
+  XMarkIcon,
+  SunIcon,
+  MoonIcon,
+  ArrowLongRightIcon
 } from "@heroicons/react/24/outline";
 
-const RoomAssignmentsClient = ({ initialUnassigned, initialRooms, schoolId }: any) => {
+interface Props {
+  initialUnassigned: any[];
+  initialRooms: any[];
+  schoolId: string;
+}
+
+const RoomAssignmentsClient = ({ initialUnassigned, initialRooms, schoolId }: Props) => {
   const [unassigned, setUnassigned] = useState(initialUnassigned);
   const [rooms, setRooms] = useState(initialRooms);
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
   const [transferSource, setTransferSource] = useState<any>(null); 
   const [searchTerm, setSearchTerm] = useState("");
+  const [darkMode, setDarkMode] = useState(false);
+
+  // Sync state with HTML class for tailwind dark: selectors
+  // useEffect(() => {
+  //   const root = window.document.documentElement;
+  //   if (darkMode) {
+  //     root.classList.add("dark");
+  //   } else {
+  //     root.classList.remove("dark");
+  //   }
+  // }, [darkMode]);
 
   const handleTransferOrAssign = async (targetRoom: any) => {
     // 1. Logic for Transferring an existing resident
@@ -83,7 +103,6 @@ const RoomAssignmentsClient = ({ initialUnassigned, initialRooms, schoolId }: an
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           roomId: targetRoom.id, 
-          // Use the type to decide which ID to send based on your XOR API logic
           studentId: selectedStudent.type === 'STUDENT' ? selectedStudent.id : null,
           educatorId: selectedStudent.type === 'STAFF' ? selectedStudent.id : null,
           companyId: schoolId
@@ -92,7 +111,7 @@ const RoomAssignmentsClient = ({ initialUnassigned, initialRooms, schoolId }: an
 
       toast.promise(promise, {
         loading: 'Finalizing assignment...',
-        success: (response) => {
+        success: () => {
           setUnassigned(unassigned.filter((s: any) => s.id !== selectedStudent.id));
           setRooms(rooms.map((r: any) => 
             r.id === targetRoom.id 
@@ -114,179 +133,271 @@ const RoomAssignmentsClient = ({ initialUnassigned, initialRooms, schoolId }: an
   const totalAvailableBeds = rooms.reduce((acc: number, r: any) => acc + (r.capacity - r.occupancy), 0);
 
   return (
-    <main className="min-h-screen bg-[#05070A] text-slate-200 p-6 lg:p-12 font-sans selection:bg-indigo-500/30">
-      <Toaster position="bottom-right" toastOptions={{ style: { background: '#0F172A', color: '#fff', border: '1px solid #1E293B' }}} />
+    <main className="min-h-screen bg-slate-50 dark:bg-[#07090e] text-slate-800 dark:text-slate-200 p-4 md:p-8 lg:p-12 transition-colors duration-200 font-sans selection:bg-indigo-600 selection:text-white">
+      <Toaster 
+        position="bottom-right" 
+        toastOptions={{ 
+          style: { 
+            background: darkMode ? '#0f172a' : '#ffffff', 
+            color: darkMode ? '#f1f5f9' : '#0f172a', 
+            border: darkMode ? '1px solid #1e293b' : '1px solid #e2e8f0',
+            borderRadius: '1rem',
+            fontSize: '12px',
+            fontWeight: 'bold'
+          } 
+        }} 
+      />
       
-      <div className="max-w-7xl mx-auto h-[85vh] flex flex-col">
-        {/* Header */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="h-1 w-10 bg-indigo-500 rounded-full" />
-              <span className="text-indigo-400 text-[10px] font-black uppercase tracking-[0.2em]">Deployment Logic</span>
-            </div>
-            <h1 className="text-5xl font-black text-white tracking-tighter">
-              Room <span className="text-slate-500">Assignments.</span>
-            </h1>
+      <div className="max-w-7xl mx-auto flex flex-col gap-8">
+        
+        {/* Top Meta Navigation & Dark Mode Utility */}
+        <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-850 pb-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-2 w-2 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-600 dark:bg-indigo-500"></span>
+            </span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Interactive Allocation Module
+            </span>
           </div>
           
-          <div className="flex gap-4">
-              {/* Transfer Cancellation Button */}
-              {transferSource && (
-                <button 
-                  onClick={() => setTransferSource(null)}
-                  className="px-6 py-3 bg-amber-500/10 border border-amber-500/50 rounded-2xl flex items-center gap-2 backdrop-blur-md text-amber-500 hover:bg-amber-500 hover:text-white transition-all"
-                >
-                  <XMarkIcon className="h-4 w-4" />
-                  <span className="text-xs font-black uppercase tracking-widest">Cancel Transfer</span>
-                </button>
-              )}
+          {/* <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm"
+            aria-label="Toggle structural theme layout"
+          >
+            {darkMode ? <SunIcon className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}
+          </button> */}
+        </div>
 
-              <div className="px-6 py-3 bg-slate-900/50 border border-slate-800 rounded-2xl flex items-center gap-4 backdrop-blur-md">
-                <div className="relative flex items-center justify-center">
-                  <div className="h-3 w-3 rounded-full bg-emerald-500 animate-ping absolute" />
-                  <div className="h-2 w-2 rounded-full bg-emerald-500 relative" />
-                </div>
-                <span className="text-xs font-black text-white uppercase tracking-widest">{totalAvailableBeds} Beds Vacant</span>
-              </div>
+        {/* Master Control Header Panel */}
+        <header className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <span className="text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-[0.2em]">Deployment Logic</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-black text-slate-950 dark:text-white tracking-tight">
+              Room Assignments
+            </h1>
+            <p className="text-xs text-slate-400 dark:text-slate-500 max-w-sm font-medium">
+              Assign waiting residents to open suites, or click an active resident card below to initialize a cross-wing transfer.
+            </p>
+          </div>
+          
+          {/* Dashboard Control Badges & Actions */}
+          <div className="flex items-center gap-3 w-full xl:w-auto">
+            {transferSource && (
+              <button 
+                onClick={() => setTransferSource(null)}
+                className="px-4 py-3 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/60 rounded-xl flex items-center gap-2 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/50 transition-all text-xs font-bold uppercase tracking-wide"
+              >
+                <XMarkIcon className="h-4 w-4" />
+                Cancel Transfer
+              </button>
+            )}
+
+            {selectedStudent && (
+              <button 
+                onClick={() => setSelectedStudent(null)}
+                className="px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center gap-2 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-750 transition-all text-xs font-bold uppercase tracking-wide"
+              >
+                <XMarkIcon className="h-4 w-4" />
+                Deselect Resident
+              </button>
+            )}
+
+            <div className="px-5 py-3 bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/40 rounded-xl flex items-center gap-3">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <span className="text-xs font-bold text-indigo-950 dark:text-indigo-300 uppercase tracking-wider">
+                {totalAvailableBeds} Empty Beds Available
+              </span>
+            </div>
           </div>
         </header>
 
-        <div className="flex-grow grid grid-cols-12 gap-8 overflow-hidden">
-          {/* Left Side: Unassigned Residents */}
-          <section className="col-span-12 lg:col-span-4 bg-slate-900/30 border border-slate-800 rounded-[3rem] flex flex-col overflow-hidden backdrop-blur-sm">
-            <div className="p-8 border-b border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400">
-                  <InboxArrowDownIcon className="h-5 w-5" />
+        {/* Dynamic Dual-Panel Workspace Grid */}
+        <div className="grid grid-cols-12 gap-6 lg:h-[70vh]">
+          
+          {/* LEFT: Unassigned/Pending List */}
+          <section className="col-span-12 lg:col-span-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2rem] flex flex-col overflow-hidden shadow-sm">
+            <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/20">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-indigo-100 dark:bg-indigo-950 rounded-lg text-indigo-600 dark:text-indigo-400">
+                  <InboxArrowDownIcon className="h-4 w-4" />
                 </div>
-                <h3 className="font-black text-white text-sm uppercase tracking-tight">Pending Residents</h3>
+                <h3 className="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wide">Waiting Pool</h3>
               </div>
-              <span className="bg-indigo-600 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg shadow-indigo-500/20">
-                {unassigned.length}
+              <span className="bg-indigo-600 dark:bg-indigo-550 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-md">
+                {unassigned.length} Pending
               </span>
             </div>
 
-            <div className="px-8 py-4 border-b border-slate-800 bg-black/20">
-                <div className="relative group">
-                  <MagnifyingGlassIcon className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
-                  <input 
-                    className="w-full bg-transparent border-none rounded-xl py-2 pl-10 pr-4 text-xs outline-none text-white placeholder:text-slate-600" 
-                    placeholder="Filter by name or ADM..." 
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
+            {/* Quick Filter Search Bar */}
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-950/10">
+              <div className="relative">
+                <MagnifyingGlassIcon className="h-3.5 w-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input 
+                  className="w-full bg-slate-100 dark:bg-slate-950 border-none rounded-xl py-2.5 pl-10 pr-4 text-xs outline-none text-slate-800 dark:text-white placeholder:text-slate-450 dark:placeholder:text-slate-600 focus:ring-1 focus:ring-indigo-500" 
+                  placeholder="Search waiting pool..." 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
             </div>
 
-            <div className="flex-grow overflow-y-auto p-6 space-y-4 custom-scrollbar">
+            {/* List Body */}
+            <div className="flex-grow overflow-y-auto p-4 space-y-2.5 max-h-[500px] lg:max-h-full">
               {unassigned
                 .filter((s: any) => s.name.toLowerCase().includes(searchTerm.toLowerCase()) || s.idNumber.toLowerCase().includes(searchTerm.toLowerCase()))
-                .map((resident: any) => (
-                <button 
-                  key={resident.id} 
-                  onClick={() => {
-                    setSelectedStudent(resident);
-                    setTransferSource(null); // Assignment mode cancels transfer mode
-                  }}
-                  className={`w-full text-left p-5 border rounded-[2rem] transition-all duration-300 relative overflow-hidden group ${
-                    selectedStudent?.id === resident.id 
-                    ? 'bg-indigo-600 border-indigo-400 shadow-xl shadow-indigo-500/20 scale-[1.02]' 
-                    : 'bg-slate-800/20 border-slate-800 hover:border-indigo-500/40'
-                  }`}
-                >
-                  <div className="flex justify-between items-center relative z-10">
-                    <div>
-                      <p className="text-sm font-black text-white tracking-tight">{resident.name}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <p className={`text-[10px] font-bold uppercase ${selectedStudent?.id === resident.id ? 'text-indigo-100' : 'text-slate-500'}`}>
-                          {resident.idNumber}
+                .map((resident: any) => {
+                  const isCurrentSelection = selectedStudent?.id === resident.id;
+                  return (
+                    <button 
+                      key={resident.id} 
+                      onClick={() => {
+                        setSelectedStudent(resident);
+                        setTransferSource(null); // Cancel transferring state
+                      }}
+                      className={`w-full text-left p-4 rounded-xl border transition-all duration-150 flex items-center justify-between ${
+                        isCurrentSelection 
+                          ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm' 
+                          : 'bg-slate-50 dark:bg-slate-950 border-slate-150 dark:border-slate-850 hover:border-slate-300 dark:hover:border-slate-700 text-slate-800 dark:text-slate-200'
+                      }`}
+                    >
+                      <div className="min-w-0 pr-2">
+                        <p className={`text-xs font-bold truncate ${isCurrentSelection ? 'text-white' : 'text-slate-950 dark:text-white'}`}>
+                          {resident.name}
                         </p>
-                        <span className={`text-[8px] px-1.5 py-0.5 rounded-md font-bold ${resident.type === 'STAFF' ? 'bg-amber-500/20 text-amber-500' : 'bg-blue-500/20 text-blue-400'}`}>
-                          {resident.type}
-                        </span>
+                        <div className="flex items-center gap-2 mt-1">
+                          <p className={`text-[9px] font-bold tracking-wide uppercase ${isCurrentSelection ? 'text-indigo-200' : 'text-slate-400 dark:text-slate-500'}`}>
+                            {resident.idNumber}
+                          </p>
+                          <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${
+                            isCurrentSelection 
+                              ? 'bg-white/20 text-white' 
+                              : resident.type === 'STAFF' 
+                                ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-500' 
+                                : 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400'
+                          }`}>
+                            {resident.type}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <PlusCircleIcon className={`h-5 w-5 transition-transform duration-500 ${selectedStudent?.id === resident.id ? 'text-white' : 'text-slate-700'}`} />
-                  </div>
-                </button>
-              ))}
+                      <PlusCircleIcon className={`h-5 w-5 flex-shrink-0 transition-transform ${isCurrentSelection ? 'text-white rotate-45' : 'text-slate-350 dark:text-slate-650'}`} />
+                    </button>
+                  );
+                })}
+
+              {unassigned.length === 0 && (
+                <div className="text-center py-12 text-slate-400 dark:text-slate-600">
+                  <p className="text-xs font-bold">Waiting pool is empty</p>
+                </div>
+              )}
             </div>
           </section>
 
-          {/* Right Side: Room Grid */}
-          <section className="col-span-12 lg:col-span-8 bg-slate-900/10 border border-slate-800 rounded-[3rem] flex flex-col overflow-hidden">
-            <div className="flex-grow overflow-y-auto p-10 grid grid-cols-1 md:grid-cols-2 gap-8 custom-scrollbar">
+          {/* RIGHT: Active Rooms Workspace Grid */}
+          <section className="col-span-12 lg:col-span-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2rem] flex flex-col overflow-hidden shadow-sm">
+            <div className="flex-grow overflow-y-auto p-6 lg:p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
               {rooms.map((room: any) => {
                 const isFull = room.occupancy >= room.capacity;
-                const isActiveAction = (selectedStudent || transferSource) && !isFull;
+                const isTargetable = (selectedStudent || transferSource) && !isFull;
 
                 return (
                   <div 
                     key={room.id} 
-                    className={`group/room bg-slate-900/40 border-[1px] rounded-[2.5rem] p-8 transition-all duration-500 relative ${
-                      isActiveAction 
-                      ? 'border-indigo-500/30 cursor-pointer hover:bg-indigo-500/5 hover:border-indigo-500 hover:shadow-2xl' 
-                      : 'border-slate-800 shadow-inner'
+                    className={`group/room border rounded-2xl p-5 flex flex-col justify-between transition-all duration-200 relative ${
+                      isTargetable 
+                        ? 'border-indigo-500 bg-indigo-50/20 dark:bg-indigo-950/10 cursor-pointer hover:shadow-md' 
+                        : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20'
                     }`}
-                    onClick={() => isActiveAction && handleTransferOrAssign(room)}
+                    onClick={() => isTargetable && handleTransferOrAssign(room)}
                   >
-                    <div className="flex justify-between items-start mb-8">
-                      <div>
-                        <h4 className="text-3xl font-black text-white italic tracking-tighter group-hover/room:text-indigo-400 transition-colors">
-                          {room.roomNumber}
-                        </h4>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{room.wing} Wing</span>
-                          <span className="text-slate-700">•</span>
-                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Floor {room.floor}</span>
-                        </div>
-                      </div>
-                      <div className={`p-3 rounded-2xl ${isFull ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
-                        <UserGroupIcon className="h-6 w-6" />
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      {/* Active Residents */}
-                      {room.residents.map((res: any, i: number) => (
-                        <div 
-                          key={i} 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setTransferSource({
-                              allocationId: res.allocationId,
-                              studentName: res.name,
-                              fromRoomId: room.id
-                            });
-                            setSelectedStudent(null); 
-                            toast.success(`Moving ${res.name}. Select a new room.`, { icon: '🔄' });
-                          }}
-                          className={`group/resident p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
-                            transferSource?.allocationId === res.allocationId
-                            ? 'bg-amber-500/20 border-amber-500 shadow-lg'
-                            : 'border-indigo-500/10 bg-indigo-500/5 hover:border-amber-500/50'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className={`h-2 w-2 rounded-full ${transferSource?.allocationId === res.allocationId ? 'bg-amber-400 animate-pulse' : 'bg-indigo-400'}`} />
-                            <span className="text-xs font-black text-white uppercase tracking-tight">{res.name}</span>
+                    <div>
+                      {/* Room Banner Header */}
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h4 className="text-2xl font-black text-slate-950 dark:text-white tracking-tight">
+                            Suite {room.roomNumber}
+                          </h4>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{room.wing} Wing</span>
+                            <span className="text-slate-300 dark:text-slate-700 text-[8px]">•</span>
+                            <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Lvl {room.floor}</span>
                           </div>
-                          <ArrowsRightLeftIcon className="h-4 w-4 text-amber-500 opacity-0 group-hover/resident:opacity-100 transition-opacity" />
                         </div>
-                      ))}
+                        <div className={`p-2 rounded-xl border ${
+                          isFull 
+                            ? 'bg-rose-50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/40 text-rose-600 dark:text-rose-500' 
+                            : 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-500'
+                        }`}>
+                          <UserGroupIcon className="h-4 w-4" />
+                        </div>
+                      </div>
 
-                      {/* Ghost Slots */}
-                      {Array.from({ length: room.capacity - room.occupancy }).map((_, i) => (
-                        <div key={i} className={`p-4 rounded-2xl border border-dashed flex items-center justify-between transition-colors ${isActiveAction ? 'border-indigo-500/40 bg-indigo-500/5' : 'border-slate-800'}`}>
-                          <span className={`text-[10px] font-black uppercase tracking-widest italic ${isActiveAction ? 'text-indigo-400 animate-pulse' : 'text-slate-700'}`}>
-                            {transferSource ? "Transfer Here" : selectedStudent ? "Deploy Here" : "Vacant Slot"}
-                          </span>
-                          <PlusCircleIcon className={`h-5 w-5 ${isActiveAction ? 'text-indigo-500' : 'text-slate-800'}`} />
-                        </div>
-                      ))}
+                      {/* Room Occupants Directory */}
+                      <div className="space-y-2">
+                        {room.residents.map((res: any, i: number) => {
+                          const isBeingTransferred = transferSource?.allocationId === res.allocationId;
+                          return (
+                            <div 
+                              key={i} 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setTransferSource({
+                                  allocationId: res.allocationId,
+                                  studentName: res.name,
+                                  fromRoomId: room.id
+                                });
+                                setSelectedStudent(null); 
+                                toast(`Select target room to reassign ${res.name}`, { icon: '🔄' });
+                              }}
+                              className={`group/resident p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
+                                isBeingTransferred
+                                  ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-400 dark:border-amber-500 text-amber-700 dark:text-amber-400'
+                                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-amber-400 dark:hover:border-amber-500/50'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className={`h-1.5 w-1.5 rounded-full ${isBeingTransferred ? 'bg-amber-500 animate-pulse' : 'bg-indigo-500'}`} />
+                                <span className="text-xs font-bold text-slate-900 dark:text-slate-250 truncate max-w-[140px] uppercase">
+                                  {res.name}
+                                </span>
+                              </div>
+                              <ArrowsRightLeftIcon className="h-3.5 w-3.5 text-amber-500 opacity-0 group-hover/resident:opacity-100 transition-opacity" />
+                            </div>
+                          );
+                        })}
+
+                        {/* Ghost/Empty Slots */}
+                        {Array.from({ length: room.capacity - room.occupancy }).map((_, i) => (
+                          <div 
+                            key={i} 
+                            className={`p-3 rounded-xl border border-dashed flex items-center justify-between transition-colors ${
+                              isTargetable 
+                                ? 'border-indigo-400 dark:border-indigo-500/50 bg-indigo-500/5' 
+                                : 'border-slate-200 dark:border-slate-800 bg-transparent'
+                            }`}
+                          >
+                            <span className={`text-[9px] font-bold uppercase tracking-widest ${
+                              isTargetable 
+                                ? 'text-indigo-600 dark:text-indigo-400 animate-pulse' 
+                                : 'text-slate-400 dark:text-slate-600'
+                            }`}>
+                              {transferSource ? "Transfer Here" : selectedStudent ? "Deploy Here" : "Vacant Slot"}
+                            </span>
+                            {isTargetable ? (
+                              <ArrowLongRightIcon className="h-4 w-4 text-indigo-500" />
+                            ) : (
+                              <PlusCircleIcon className="h-4 w-4 text-slate-200 dark:text-slate-800" />
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                )
+                );
               })}
             </div>
           </section>
