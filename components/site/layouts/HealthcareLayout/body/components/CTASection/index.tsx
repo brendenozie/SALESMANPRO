@@ -1,11 +1,16 @@
-// File: components/site/layouts/HealthcareLayout/components/CTASection.tsx
-
 'use client';
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { ArrowRightIcon } from '@heroicons/react/24/outline';
+import { 
+  ArrowRightIcon, 
+  EnvelopeIcon, 
+  UserIcon, 
+  PhoneIcon, 
+  ChatBubbleBottomCenterTextIcon,
+  CheckCircleIcon
+} from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
 
 interface CTASectionProps {
@@ -41,8 +46,39 @@ export default function CTASection({ storeSlug }: CTASectionProps) {
 
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#0d9488';
 
+  // Form State Management
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' });
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!formData.name || !formData.email || !formData.message) return;
+
+    setStatus('submitting');
+
+    // Simulate healthcare secure pipeline submission
+    try {
+      console.log("Submitting clinical inquiry:", formData);
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      setStatus('success');
+    } catch (err) {
+      console.error("Submission failed:", err);
+      setStatus('idle');
+    }
+  };
+
+  const handleReset = () => {
+    setFormData({ name: '', email: '', phone: '', message: '' });
+    setStatus('idle');
+  };
+
   return (
-    <section className="relative py-28 lg:py-40 bg-slate-950 text-white overflow-hidden">
+    <section id="contact" className="relative py-28 lg:py-40 bg-slate-950 text-white overflow-hidden">
       
       {/* PREMIUM HIGH-OUTPUT LIGHTING DISK */}
       <div 
@@ -71,7 +107,7 @@ export default function CTASection({ storeSlug }: CTASectionProps) {
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
+          viewport={{ once: true, amount: 0.2 }}
         >
           {/* MICRO TAG OVERLAY */}
           <motion.div variants={itemVariants} className="inline-block mb-6">
@@ -79,7 +115,7 @@ export default function CTASection({ storeSlug }: CTASectionProps) {
               className="text-[10px] font-extrabold tracking-widest uppercase px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10"
               style={{ color: primaryColor }}
             >
-              Next Step Deployment
+              Secure Communication Gateway
             </span>
           </motion.div>
 
@@ -99,32 +135,129 @@ export default function CTASection({ storeSlug }: CTASectionProps) {
             className="mt-6 text-base sm:text-lg font-medium text-slate-400 max-w-xl mx-auto leading-relaxed"
             variants={itemVariants}
           >
-            Reserve your foundational timeline with our healthcare professionals today. We are engineered to support your progression toward optimal systemic vitality.
+            Reach out directly to establish secure contact. Our dedicated medical professionals are available to clarify clinical structures and pathing.
           </motion.p>
 
-          {/* PREMIUM INTERACTIVE CTAS */}
+          {/* COMPACT & INTUITIVE CONTACT CONSOLE */}
           <motion.div
-            className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
             variants={itemVariants}
+            className="mt-12 max-w-xl mx-auto bg-slate-900/40 backdrop-blur-xl border border-slate-800 rounded-2xl p-6 sm:p-10 text-left shadow-2xl relative overflow-hidden"
           >
-            <button
-              onClick={() => router.push(`/${storeSlug}/book`)}
-              className="group relative w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-xs font-extrabold tracking-wider text-white uppercase rounded-xl transition-all duration-300 shadow-xl overflow-hidden"
-              style={{ backgroundColor: primaryColor }}
-            >
-              {/* BUTTON LIGHTING OVERLAY */}
-              <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              
-              <span>Initiate Appointment</span>
-              <ArrowRightIcon className="w-3.5 h-3.5 ml-2.5 transition-transform duration-300 group-hover:translate-x-1" />
-            </button>
+            <AnimatePresence mode="wait">
+              {status !== 'success' ? (
+                <motion.form
+                  key="healthcare-contact-form"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onSubmit={handleSubmit}
+                  className="space-y-5"
+                >
+                  {/* Name Input Container */}
+                  <div className="relative border-b border-slate-800 focus-within:border-slate-500 transition-colors pb-1">
+                    <UserIcon className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                    <input
+                      type="text"
+                      name="name"
+                      required
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      placeholder="Your Name"
+                      className="w-full bg-transparent py-3 pl-7 text-white placeholder:text-slate-600 focus:outline-none text-sm font-medium"
+                    />
+                  </div>
 
-            <button
-              onClick={() => router.push(`/${storeSlug}/contact-form`)}
-              className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-xs font-extrabold tracking-wider text-slate-300 hover:text-white uppercase rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all duration-300"
-            >
-              Inquire Directly
-            </button>
+                  {/* Dual Grid Fields: Email & Phone */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div className="relative border-b border-slate-800 focus-within:border-slate-500 transition-colors pb-1">
+                      <EnvelopeIcon className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                      <input
+                        type="email"
+                        name="email"
+                        required
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        placeholder="Email Address"
+                        className="w-full bg-transparent py-3 pl-7 text-white placeholder:text-slate-600 focus:outline-none text-sm font-medium"
+                      />
+                    </div>
+
+                    <div className="relative border-b border-slate-800 focus-within:border-slate-500 transition-colors pb-1">
+                      <PhoneIcon className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        placeholder="Phone Number (Optional)"
+                        className="w-full bg-transparent py-3 pl-7 text-white placeholder:text-slate-600 focus:outline-none text-sm font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Clinical Query Input Container */}
+                  <div className="relative border-b border-slate-800 focus-within:border-slate-500 transition-colors pb-1">
+                    <ChatBubbleBottomCenterTextIcon className="absolute left-0 top-3.5 h-4 w-4 text-slate-500" />
+                    <textarea
+                      name="message"
+                      required
+                      rows={3}
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      placeholder="Describe your inquiry or requested treatment scope..."
+                      className="w-full bg-transparent py-3 pl-7 text-white placeholder:text-slate-600 focus:outline-none text-sm font-medium resize-none"
+                    />
+                  </div>
+
+                  {/* Transmission Submit Trigger */}
+                  <motion.button
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    type="submit"
+                    disabled={status === 'submitting'}
+                    className="group relative w-full py-4 text-xs font-extrabold tracking-wider text-white uppercase rounded-xl transition-all duration-300 shadow-xl flex items-center justify-center gap-2 disabled:opacity-80"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    {status === 'submitting' ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <span>Submit Secure Inquiry</span>
+                        <ArrowRightIcon className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+                      </>
+                    )}
+                  </motion.button>
+                </motion.form>
+              ) : (
+                <motion.div
+                  key="healthcare-success-screen"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="text-center py-8 flex flex-col items-center justify-center space-y-6"
+                >
+                  <div className="p-4 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                    <CheckCircleIcon className="h-12 w-12 text-emerald-400" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-bold text-white">Inquiry Transmitted</h3>
+                    <p className="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-sm mx-auto">
+                      Your details were verified. Our scheduling team will establish contact within 24 business hours at <span className="text-white underline underline-offset-4">{formData.email.toLowerCase()}</span>.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className="text-xs font-semibold uppercase tracking-widest hover:text-white transition-colors mt-4"
+                    style={{ color: primaryColor }}
+                  >
+                    Submit Another Inquiry
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         </motion.div>
       </div>

@@ -1,41 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  PhoneIcon, 
+  EnvelopeIcon, 
+  MapPinIcon, 
+  ClockIcon, 
+  ArrowRightIcon,
+  CheckCircleIcon
+} from "@heroicons/react/24/outline";
 
-// --- SYSTEM LIGHTWEIGHT VECTOR ICONS ---
-const PhoneIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.622k0-1.314.08-.235.154-.345a11.054 11.054 0 005.13 5.13c.11.074.23.147.345.154.108.007.235-.062.314-.08l2.62-2.623a1.125 1.125 0 011.606 0l3.6 3.6a1.125 1.125 0 010 1.606l-1.546 1.546c-.438.438-1.109.5-1.664.155a13.566 13.566 0 01-5.202-5.202c-.345-.555-.283-1.226.155-1.664l1.546-1.546z" />
-  </svg>
-);
-
-const EnvelopeIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-  </svg>
-);
-
-const MapPinIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-  </svg>
-);
-
-const ClockIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
-
-const ArrowRightIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-  </svg>
-);
-
-// --- ANIMATION CONFIGURATIONS ---
+// --- SYSTEM CONFIGURATIONS & ANIMATION DICTIONARY ---
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -53,12 +29,46 @@ const itemVariants = {
   },
 };
 
+const formVariants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 100, damping: 12 } },
+  exit: { opacity: 0, y: -20, transition: { duration: 0.4 } }
+};
+
 export default function ContactSection() {
   const [isHovered, setIsHovered] = useState(false);
+  const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
+  const [status, setStatus] = useState<"idle" | "submitting" | "success">("idle");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Message secure transfer initiated. (Mock Action)");
+    if (!formData.name || !formData.email || !formData.subject || !formData.message) return;
+
+    setStatus("submitting");
+
+    // Simulate API integration pipeline
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      
+      // Optional real API target endpoint:
+      // const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api'}/contact`, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(formData)
+      // });
+      // if (response.ok) setStatus("success");
+
+      setStatus("success");
+      setFormData({ name: "", email: "", subject: "", message: "" });
+    } catch (err) {
+      console.error("Transmission failed:", err);
+      setStatus("idle");
+    }
   };
 
   return (
@@ -96,13 +106,13 @@ export default function ContactSection() {
             </div>
 
             {/* Structured Contact Matrix Blocks */}
-            <div className="space-y-6">
+            <div className="space-y-4">
               <motion.div variants={itemVariants} className="flex items-start gap-4 p-4 rounded-2xl bg-white border border-slate-200/50 shadow-sm">
                 <div className="p-3 bg-blue-50 text-blue-600 rounded-xl flex-shrink-0">
                   <PhoneIcon className="h-5 w-5" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-0.5">Direct Line</h4>
+                  <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Direct Line</h4>
                   <a href="tel:+1234567890" className="text-sm font-bold text-slate-800 hover:text-blue-600 transition-colors">
                     +1 (234) 567-890
                   </a>
@@ -114,7 +124,7 @@ export default function ContactSection() {
                   <EnvelopeIcon className="h-5 w-5" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-0.5">Secure Encryption Mail</h4>
+                  <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Secure Encryption Mail</h4>
                   <a href="mailto:info@yourcompany.com" className="text-sm font-bold text-slate-800 hover:text-blue-600 transition-colors">
                     info@yourcompany.com
                   </a>
@@ -126,7 +136,7 @@ export default function ContactSection() {
                   <MapPinIcon className="h-5 w-5" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-0.5">Corporate Headquarters</h4>
+                  <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Corporate Headquarters</h4>
                   <p className="text-sm font-bold text-slate-800 leading-normal">
                     123 Lumina Tower, Suite 500<br />
                     Strategic Avenue, Nairobi, Kenya
@@ -139,7 +149,7 @@ export default function ContactSection() {
                   <ClockIcon className="h-5 w-5" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-0.5">Operational Window</h4>
+                  <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Operational Window</h4>
                   <p className="text-sm font-bold text-slate-800">
                     Mon–Fri: 9:00 AM – 5:00 PM EAT
                   </p>
@@ -154,61 +164,118 @@ export default function ContactSection() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.1 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="lg:col-span-7 bg-white rounded-3xl border border-slate-200 p-8 sm:p-10 shadow-sm flex flex-col justify-between"
+            className="lg:col-span-7 bg-white rounded-3xl border border-slate-200 p-8 sm:p-10 shadow-sm flex flex-col justify-between overflow-hidden"
           >
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold tracking-wider uppercase text-slate-400">Full Corporate Name</label>
-                  <input
-                    type="text"
-                    placeholder="John Doe"
-                    className="w-full px-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-all duration-200 text-sm font-medium"
-                    required
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold tracking-wider uppercase text-slate-400">Email Address Address</label>
-                  <input
-                    type="email"
-                    placeholder="john@company.com"
-                    className="w-full px-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-all duration-200 text-sm font-medium"
-                    required
-                  />
-                </div>
-              </div>
+            <AnimatePresence mode="wait">
+              {status !== "success" ? (
+                <motion.form 
+                  key="contact-form-layout"
+                  onSubmit={handleSubmit} 
+                  className="space-y-6"
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  variants={formVariants}
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold tracking-wider uppercase text-slate-400">Full Corporate Name</label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        placeholder="John Doe"
+                        className="w-full px-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-all duration-200 text-sm font-medium"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold tracking-wider uppercase text-slate-400">Email Address</label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        placeholder="john@company.com"
+                        className="w-full px-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-all duration-200 text-sm font-medium"
+                        required
+                      />
+                    </div>
+                  </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold tracking-wider uppercase text-slate-400">Inquiry Routing Subject</label>
-                <input
-                  type="text"
-                  placeholder="Strategic Asset Consultation"
-                  className="w-full px-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-all duration-200 text-sm font-medium"
-                  required
-                />
-              </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold tracking-wider uppercase text-slate-400">Inquiry Routing Subject</label>
+                    <input
+                      type="text"
+                      name="subject"
+                      value={formData.subject}
+                      onChange={handleInputChange}
+                      placeholder="Strategic Asset Consultation"
+                      className="w-full px-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-all duration-200 text-sm font-medium"
+                      required
+                    />
+                  </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold tracking-wider uppercase text-slate-400">Operational Summary Brief</label>
-                <textarea
-                  placeholder="Provide context regarding parameters..."
-                  rows={4}
-                  className="w-full px-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-all duration-200 text-sm font-medium resize-none"
-                  required
-                />
-              </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold tracking-wider uppercase text-slate-400">Operational Summary Brief</label>
+                    <textarea
+                      name="message"
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      placeholder="Provide context regarding parameters..."
+                      rows={4}
+                      className="w-full px-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-all duration-200 text-sm font-medium resize-none"
+                      required
+                    />
+                  </div>
 
-              {/* Form Submission Anchor Action */}
-              <button
-                type="submit"
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-                className="w-full sm:w-auto px-8 py-4 rounded-xl text-xs font-bold uppercase tracking-widest bg-slate-900 text-white hover:bg-blue-600 shadow-md shadow-slate-900/10 hover:shadow-blue-600/20 transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.98]"
-              >
-                <span>Transmit Secure Intake</span>
-                <ArrowRightIcon className={`h-3.5 w-3.5 transition-transform duration-300 ${isHovered ? "translate-x-1" : ""}`} />
-              </button>
-            </form>
+                  {/* Form Submission Anchor Action */}
+                  <button
+                    type="submit"
+                    disabled={status === "submitting"}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                    className="w-full sm:w-auto px-8 py-4 rounded-xl text-xs font-bold uppercase tracking-widest bg-slate-900 text-white hover:bg-blue-600 shadow-md shadow-slate-900/10 hover:shadow-blue-600/20 transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50"
+                  >
+                    {status === "submitting" ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <span>Transmit Secure Intake</span>
+                        <ArrowRightIcon className={`h-3.5 w-3.5 transition-transform duration-300 ${isHovered ? "translate-x-1" : ""}`} />
+                      </>
+                    )}
+                  </button>
+                </motion.form>
+              ) : (
+                <motion.div 
+                  key="success-container"
+                  className="py-12 flex flex-col items-center justify-center text-center space-y-6"
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  variants={formVariants}
+                >
+                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-full text-emerald-600">
+                    <CheckCircleIcon className="h-12 w-12" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-2xl font-bold text-slate-900">Transmission Complete</h3>
+                    <p className="text-sm text-slate-600 max-w-sm">
+                      Your operational inquiry has been cataloged. Our strategic intake managers will establish dynamic contact shortly.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setStatus("idle")}
+                    className="text-xs font-bold uppercase tracking-wider text-blue-600 hover:text-blue-700 transition-colors"
+                  >
+                    Submit Another Inquiry
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Map Canvas Frame Area Component Replacement */}
             <div className="w-full h-44 sm:h-52 mt-8 rounded-2xl overflow-hidden shadow-inner border border-slate-200 relative grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-500">
