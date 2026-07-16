@@ -45,6 +45,8 @@ export default function CallToActionSection({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           companyId: companyId,
+          email: email,
+          name: name,
           content: formattedContent,
         }),
       });

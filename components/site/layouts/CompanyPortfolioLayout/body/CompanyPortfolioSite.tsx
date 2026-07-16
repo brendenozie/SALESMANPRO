@@ -72,7 +72,7 @@ export default function CompanyPortfolioSite({ pageData, companyId }: { pageData
         {/* FAQs - Render when data is ready */}
         {<FAQSection pagedata={pageData} />}
 
-        <CallToActionSection />
+        <CallToActionSection companyId={companyId} schedulingLink={``} pagedata={pageData}   />
       </main>
   );
 }

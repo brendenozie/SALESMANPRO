@@ -1,112 +1,249 @@
 "use client";
-import React, { useEffect, useRef, useState, useCallback } from "react";
+
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
-import { ArrowRightIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { 
+  PaperAirplaneIcon, 
+  CalendarIcon, 
+  CheckIcon, 
+  ExclamationTriangleIcon 
+} from "@heroicons/react/24/outline";
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-const heroSlides = [
-  {
-    type: "image",
-    url: "/coach-hero.jpg",
-    headline: "Unlock Your True Potential",
-    subline:
-      "Empowering ambitious individuals and teams to create a life of purpose, clarity, and success.",
-  },
-  {
-    type: "image",
-    url: "https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?q=80&w=2670&auto=format&fit=crop",
-    headline: "Transform Your Vision into Action",
-    subline:
-      "Through strategic coaching and tailored consultation, I help you move from ideas to impact.",
-  },
-  {
-    type: "video",
-    url: "https://cdn.pixabay.com/video/2024/02/26/200827-919106201_large.mp4",
-    headline: "Lead with Confidence, Inspire with Purpose",
-    subline:
-      "Gain clarity, build resilience, and become the leader you were meant to be.",
-  },
-];
-
-const autoAdvanceDelay = 9000; // 9 seconds
-
-const CallToActionSection: React.FC = () => {
-  const [current, setCurrent] = useState(0);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const advanceSlide = useCallback(
-    (direction: "next" | "prev") => {
-      setCurrent((prev) =>
-        direction === "next"
-          ? (prev + 1) % heroSlides.length
-          : (prev - 1 + heroSlides.length) % heroSlides.length
-      );
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => advanceSlide("next"), autoAdvanceDelay);
-    return () => clearTimeout(timeoutRef.current!);
-  }, [current, advanceSlide]);
-
-  return (
-    
-    // {/* 6. Call to Action / Lead Magnet Section */}
-    <section
-      id="contact"
-      className="relative py-28 bg-gradient-to-br from-orange-600 via-red-500 to-orange-700 text-white overflow-hidden"
-    >
-      {/* Ambient Glow Accents */}
-      <div className="absolute inset-0 pointer-events-none opacity-30">
-        <div className="absolute top-10 left-20 w-72 h-72 bg-orange-300 rounded-full mix-blend-overlay filter blur-3xl animate-pulse-slow"></div>
-        <div className="absolute bottom-10 right-20 w-96 h-96 bg-red-400 rounded-full mix-blend-overlay filter blur-3xl animate-pulse-slow"></div>
-      </div>
-
-      {/* Foreground Content */}
-      <div className="relative container mx-auto px-6 text-center">
-        <h2 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">
-          Ready to <span className="text-orange-200">Transform</span> Your Future?
-        </h2>
-        <p className="text-xl max-w-3xl mx-auto text-orange-100 mb-10 leading-relaxed">
-          Take the bold first step toward unlocking your potential. Let’s connect for a free discovery call — 
-          no pressure, just clarity, strategy, and purpose.
-        </p>
-
-        {/* CTA Button */}
-        <a
-          href="#"
-          className="relative inline-flex items-center justify-center px-12 py-6 font-bold text-lg md:text-xl text-orange-700 bg-white rounded-full shadow-[0_10px_25px_rgba(0,0,0,0.25)] hover:bg-orange-50 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="w-7 h-7 mr-3 text-orange-600"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M8 7V3m8 4V3m-9 8h10m-7 4h4m-5 4h6m4 0a2 2 0 002-2V7a2 2 0 00-2-2h-2V3H8v2H6a2 2 0 00-2 2v10a2 2 0 002 2h12z"
-            />
-          </svg>
-          Schedule Your Free Call Today
-        </a>
-
-        {/* Decorative Line */}
-        <div className="mt-12 w-32 h-1 bg-gradient-to-r from-orange-200 via-white to-orange-200 mx-auto rounded-full opacity-80"></div>
-      </div>
-
-      {/* Floating Shapes */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[140%] h-full bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.08)_0%,transparent_70%)]"></div>
-    </section>
-
-  );
+// Framer Motion variants for subtle interactive polish
+const buttonVariants = {
+  rest: { scale: 1 },
+  hover: { scale: 1.02, y: -2, transition: { duration: 0.2 } },
+  tap: { scale: 0.98, y: 0 },
 };
 
-export default CallToActionSection;
+interface CallToActionSectionProps {
+  companyId?: string;
+  schedulingLink?: string; 
+}
+
+export default function CallToActionSection({ 
+  companyId, 
+  schedulingLink 
+}: CallToActionSectionProps) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!message.trim() || !email.trim()) return;
+    setStatus("sending");
+
+    // Clear and clean formatting for your admin panel conversations
+    const formattedContent = `Sender Name: ${name || "Not provided"}\nContact Email: ${email}\n\nMessage:\n${message}`;
+
+    try {
+      const res = await fetch(`${apiBaseUrl}/conversations/send-to-admin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          companyId: companyId,
+          content: formattedContent, // Fallback for plain-text layouts
+          email: email.trim(),       // Crucial for Guest Auto-Upsert
+          name: name.trim(),         // Links to automatic user creation
+        }),
+      });
+
+      if (res.ok) {
+        setStatus("sent");
+        setMessage("");
+        setEmail("");
+        setName("");
+        setTimeout(() => setStatus("idle"), 5000);
+      } else {
+        setStatus("error");
+      }
+    } catch (err) {
+      console.error("Error sending message:", err);
+      setStatus("error");
+    }
+  };
+
+  return (
+    <section
+      id="contact"
+      className="relative py-24 md:py-32 bg-gray-950 text-white overflow-hidden"
+    >
+      {/* Background Gradient Layer for 'Power' */}
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-900 via-red-900 to-amber-950 opacity-95" />
+
+      {/* Ambient Glow Accents */}
+      <div className="absolute inset-0 pointer-events-none opacity-40">
+        <div className="absolute top-1/4 left-[5%] w-96 h-96 bg-orange-500 rounded-full mix-blend-lighten filter blur-[120px] animate-pulse" />
+        <div className="absolute bottom-1/4 right-[5%] w-[450px] h-[450px] bg-red-600 rounded-full mix-blend-lighten filter blur-[150px] animate-pulse" />
+      </div>
+
+      <div className="relative container mx-auto px-6 z-10 max-w-6xl">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+          
+          {/* Left Column: Direct Call-to-Action & Scheduling */}
+          <div className="lg:col-span-5 space-y-6 text-left">
+            <h2 className="text-4xl md:text-5xl font-black leading-tight tracking-tight uppercase">
+              Ready to <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-orange-400 to-red-400">
+                Ignite
+              </span> Your Success?
+            </h2>
+            
+            <p className="text-lg text-orange-100 font-light leading-relaxed">
+              Stop planning and start doing. Drop us a message, or jump right into our calendar to book a free 15-minute discovery session to map out your strategic next steps.
+            </p>
+
+            {schedulingLink && (
+              <div className="pt-4">
+                <motion.a
+                  href={schedulingLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  variants={buttonVariants}
+                  initial="rest"
+                  whileHover="hover"
+                  whileTap="tap"
+                  className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 font-bold text-base text-zinc-950 bg-white hover:bg-orange-50 rounded-xl shadow-xl transition-colors duration-300"
+                >
+                  <CalendarIcon className="w-5 h-5 mr-3 text-orange-600" />
+                  Book Free Discovery Call
+                </motion.a>
+              </div>
+            )}
+          </div>
+
+          {/* Right Column: Premium Inline Contact Card */}
+          <div className="lg:col-span-7">
+            <div className="bg-black/30 border border-white/10 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-2xl relative">
+              
+              {/* Form Label Corner Details */}
+              <div className="absolute top-4 left-6 text-[10px] font-mono tracking-widest text-orange-400/70 uppercase">
+                
+              </div>
+              <div className="absolute top-4 right-6 flex gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500/50" />
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500/50" />
+                <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
+              </div>
+
+              <form onSubmit={handleSendMessage} className="space-y-4 mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Name Input */}
+                  <div className="bg-black/40 border border-white/5 rounded-xl p-3 focus-within:border-orange-500/50 transition-colors duration-200">
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-orange-300/80 mb-1">
+                      Your Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Jane Doe"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full bg-transparent text-sm text-zinc-100 placeholder-zinc-700 focus:outline-none focus:ring-0 border-0 p-0"
+                    />
+                  </div>
+
+                  {/* Email Input */}
+                  <div className="bg-black/40 border border-white/5 rounded-xl p-3 focus-within:border-orange-500/50 transition-colors duration-200">
+                    <label className="block text-[10px] font-mono uppercase tracking-wider text-orange-300/80 mb-1">
+                      Email Address *
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="jane@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full bg-transparent text-sm text-zinc-100 placeholder-zinc-700 focus:outline-none focus:ring-0 border-0 p-0"
+                    />
+                  </div>
+                </div>
+
+                {/* Message Textarea */}
+                <div className="bg-black/40 border border-white/5 rounded-xl p-3 focus-within:border-orange-500/50 transition-colors duration-200">
+                  <label className="block text-[10px] font-mono uppercase tracking-wider text-orange-300/80 mb-1">
+                    Your Message *
+                  </label>
+                  <textarea
+                    required
+                    rows={5}
+                    placeholder="Tell us about your goals or current bottlenecks..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    className="w-full bg-transparent text-sm text-zinc-100 placeholder-zinc-700 focus:outline-none focus:ring-0 border-0 p-0 resize-none"
+                  />
+                </div>
+
+                {/* Submission Action */}
+                <div className="pt-2">
+                  <motion.button
+                    type="submit"
+                    disabled={status === "sending" || !message.trim() || !email.trim()}
+                    variants={buttonVariants}
+                    initial="rest"
+                    whileHover="hover"
+                    whileTap="tap"
+                    className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white py-4 rounded-xl font-bold text-base tracking-wider uppercase shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-300"
+                  >
+                    {status === "sending" ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        Tuning engine...
+                      </>
+                    ) : (
+                      <>
+                        <PaperAirplaneIcon className="w-5 h-5 -rotate-45" />
+                        Launch Message
+                      </>
+                    )}
+                  </motion.button>
+                </div>
+
+                {/* Inline Status Messages */}
+                <AnimatePresence mode="wait">
+                  {status === "sent" && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="flex items-start gap-3 text-xs font-mono text-emerald-400 border border-emerald-500/20 bg-emerald-500/5 p-4 rounded-xl"
+                    >
+                      <CheckIcon className="w-5 h-5 flex-shrink-0 text-emerald-400" />
+                      <div>
+                        <p className="font-bold">Transmission Successful!</p>
+                        <p className="text-emerald-400/80 mt-0.5">Your message has landed. Expect a reply within one business day.</p>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {status === "error" && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="flex items-start gap-3 text-xs font-mono text-rose-400 border border-rose-500/20 bg-rose-500/5 p-4 rounded-xl"
+                    >
+                      <ExclamationTriangleIcon className="w-5 h-5 flex-shrink-0 text-rose-400" />
+                      <div>
+                        <p className="font-bold">Transmission Interrupted</p>
+                        <p className="text-rose-400/80 mt-0.5">We ran into an issue dispatching your request. Please check your network and try again.</p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+              </form>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  );
+}

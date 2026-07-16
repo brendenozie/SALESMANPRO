@@ -5,21 +5,32 @@ import { motion, AnimatePresence, useSpring, useMotionValue, useTransform } from
 import { useStoreContext } from '@/contexts/StoreContext';
 // Using Hero Icons as requested
 import { 
-  EnvelopeOpenIcon, 
   CheckCircleIcon, 
   SparklesIcon,
   GiftIcon,
   FaceSmileIcon,
-  HeartIcon
+  HeartIcon,
+  UserIcon,
+  EnvelopeIcon,
+  ChatBubbleBottomCenterTextIcon,
+  ExclamationCircleIcon
 } from '@heroicons/react/24/solid';
 
-export default function NewsletterSection({className}: {className?: string}) {
+export default function ContactSection({ className }: { className?: string }) {
   const { storeFormData } = useStoreContext();
   const primary = storeFormData?.themeSettings?.primaryColor || '#F472B6';
   const secondary = storeFormData?.themeSettings?.secondaryColor || '#3B82F6';
   
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
   const [isHovering, setIsHovering] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
   
   // Cursor Tracking Logic
   const mouseX = useMotionValue(0);
@@ -40,10 +51,37 @@ export default function NewsletterSection({className}: {className?: string}) {
     mouseY.set(e.clientY - rect.top);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.name || !formData.email || !formData.message) return;
+
     setStatus('loading');
-    setTimeout(() => setStatus('success'), 2000);
+    setErrorMessage('');
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          storeId: storeFormData?._id || storeFormData?.id,
+          ...formData,
+        }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData?.message || 'Failed to dispatch message. Please try again.');
+      }
+
+      setStatus('success');
+      setFormData({ name: '', email: '', message: '' });
+    } catch (err: any) {
+      console.error('Contact Submission Error:', err);
+      setStatus('error');
+      setErrorMessage(err?.message || 'Inquiry delivery failed.');
+    }
   };
 
   return (
@@ -66,7 +104,7 @@ export default function NewsletterSection({className}: {className?: string}) {
               left: -24,
               top: -24,
             }}
-            className="pointer-events-none absolute z-50 flex items-center justify-center"
+            className="pointer-events-none absolute z-50 flex items-center justify-center hidden md:flex"
           >
             <div 
               className="w-12 h-12 rounded-full flex items-center justify-center shadow-2xl border-2 border-white/50 backdrop-blur-sm"
@@ -102,7 +140,7 @@ export default function NewsletterSection({className}: {className?: string}) {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
             
             {/* Left Side: Editorial Content */}
-            <div className="lg:col-span-7 space-y-8 text-left">
+            <div className="lg:col-span-6 space-y-8 text-left">
               <div className="flex items-center gap-3">
                 <div className="flex -space-x-2">
                   {[1, 2, 3].map((i) => (
@@ -115,9 +153,9 @@ export default function NewsletterSection({className}: {className?: string}) {
               </div>
               
               <h2 className="text-5xl md:text-6xl font-black text-zinc-900 dark:text-white leading-none tracking-tighter">
-                Every little bit of <br />
+                We are here to <br />
                 <span className="relative inline-block mt-2">
-                  <span className="relative z-10 italic" style={{ color: primary }}>love</span>
+                  <span className="relative z-10 italic" style={{ color: primary }}>support</span>
                   <motion.svg 
                     viewBox="0 0 100 20" 
                     className="absolute -bottom-2 left-0 w-full h-4 opacity-30"
@@ -125,15 +163,15 @@ export default function NewsletterSection({className}: {className?: string}) {
                   >
                     <path d="M0 10 Q 25 20 50 10 T 100 10" fill="none" stroke="currentColor" strokeWidth="4" />
                   </motion.svg>
-                </span> helps.
+                </span> you.
               </h2>
               
               <p className="text-xl text-zinc-500 dark:text-zinc-400 font-medium max-w-lg leading-relaxed">
-                Join our village today and take <span className="text-zinc-900 dark:text-white font-black underline decoration-pink-300">15% OFF</span> your first nursery essential.
+                Have questions about sizing, nursery delivery, or custom gift designs? Send us a note and we will reply within <span className="text-zinc-900 dark:text-white font-black underline decoration-pink-300">24 HOURS</span>.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {['Early VIP Access', 'Weekly Care Tips', 'Birthday Surprises', 'Exclusive Drops'].map((item) => (
+                {['24/7 Parent Support', 'Hassle-Free Returns', 'Personalized Advice', 'Friendly Care Team'].map((item) => (
                   <div key={item} className="flex items-center gap-3 group">
                     <div className="p-1 rounded-full bg-zinc-50 dark:bg-zinc-800 group-hover:scale-110 transition-transform">
                       <CheckCircleIcon className="w-5 h-5" style={{ color: primary }} />
@@ -144,8 +182,8 @@ export default function NewsletterSection({className}: {className?: string}) {
               </div>
             </div>
 
-            {/* Right Side: High-Engagement Form */}
-            <div className="lg:col-span-5 relative">
+            {/* Right Side: Contact Form */}
+            <div className="lg:col-span-6 relative">
               <AnimatePresence mode="wait">
                 {status !== 'success' ? (
                   <motion.div 
@@ -155,24 +193,107 @@ export default function NewsletterSection({className}: {className?: string}) {
                     exit={{ opacity: 0, scale: 1.1 }}
                   >
                     <form onSubmit={handleSubmit} className="space-y-4">
-                      <div className="relative group cursor-text">
+                      {/* Name Field */}
+                      <div 
+                        className="relative group cursor-text transition-all duration-300 bg-zinc-50 dark:bg-zinc-800/50 rounded-[2rem] border-2"
+                        style={{ 
+                          borderColor: focusedField === 'name' ? primary : 'transparent'
+                        }}
+                      >
                         <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none z-10">
-                          <EnvelopeOpenIcon className="h-6 w-6 text-zinc-300 group-focus-within:text-zinc-900 transition-colors" />
+                          <UserIcon 
+                            className="h-5 w-5 transition-colors" 
+                            style={{ color: focusedField === 'name' ? primary : '#D1D5DB' }}
+                          />
+                        </div>
+                        <input
+                          type="text"
+                          required
+                          placeholder="YOUR NAME"
+                          value={formData.name}
+                          onFocus={() => setFocusedField('name')}
+                          onBlur={() => setFocusedField(null)}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          className="w-full bg-transparent py-5 pl-16 pr-8 text-zinc-900 dark:text-white font-bold text-sm placeholder:text-zinc-300 dark:placeholder:text-zinc-600 outline-none uppercase tracking-wider"
+                        />
+                      </div>
+
+                      {/* Email Field */}
+                      <div 
+                        className="relative group cursor-text transition-all duration-300 bg-zinc-50 dark:bg-zinc-800/50 rounded-[2rem] border-2"
+                        style={{ 
+                          borderColor: focusedField === 'email' ? primary : 'transparent'
+                        }}
+                      >
+                        <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none z-10">
+                          <EnvelopeIcon 
+                            className="h-5 w-5 transition-colors" 
+                            style={{ color: focusedField === 'email' ? primary : '#D1D5DB' }}
+                          />
                         </div>
                         <input
                           type="email"
                           required
-                          placeholder="hello@newmama.com"
-                          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border-2 border-transparent focus:border-zinc-200 dark:focus:border-zinc-700 focus:bg-white dark:focus:bg-zinc-800 rounded-[2.5rem] py-6 pl-16 pr-8 text-zinc-900 dark:text-white font-bold text-lg placeholder:text-zinc-300 dark:placeholder:text-zinc-600 outline-none transition-all shadow-inner"
+                          placeholder="EMAIL ADDRESS"
+                          value={formData.email}
+                          onFocus={() => setFocusedField('email')}
+                          onBlur={() => setFocusedField(null)}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          className="w-full bg-transparent py-5 pl-16 pr-8 text-zinc-900 dark:text-white font-bold text-sm placeholder:text-zinc-300 dark:placeholder:text-zinc-600 outline-none uppercase tracking-wider"
                         />
                       </div>
 
+                      {/* Message Field */}
+                      <div 
+                        className="relative group cursor-text transition-all duration-300 bg-zinc-50 dark:bg-zinc-800/50 rounded-[2rem] border-2"
+                        style={{ 
+                          borderColor: focusedField === 'message' ? primary : 'transparent'
+                        }}
+                      >
+                        <div className="absolute left-6 top-5 flex items-center pointer-events-none z-10">
+                          <ChatBubbleBottomCenterTextIcon 
+                            className="h-5 w-5 transition-colors" 
+                            style={{ color: focusedField === 'message' ? primary : '#D1D5DB' }}
+                          />
+                        </div>
+                        <textarea
+                          required
+                          rows={4}
+                          placeholder="HOW CAN WE HELP YOU?"
+                          value={formData.message}
+                          onFocus={() => setFocusedField('message')}
+                          onBlur={() => setFocusedField(null)}
+                          onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                          className="w-full bg-transparent py-5 pl-16 pr-8 text-zinc-900 dark:text-white font-bold text-sm placeholder:text-zinc-300 dark:placeholder:text-zinc-600 outline-none resize-none uppercase tracking-wider"
+                        />
+                      </div>
+
+                      {/* Error Banner inside app layout */}
+                      {status === 'error' && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-xs font-bold"
+                        >
+                          <ExclamationCircleIcon className="w-5 h-5 shrink-0" />
+                          <p className="flex-1 uppercase tracking-wider">{errorMessage}</p>
+                          <button
+                            type="button"
+                            onClick={() => setStatus('idle')}
+                            className="underline font-black hover:text-red-400"
+                          >
+                            RETRY
+                          </button>
+                        </motion.div>
+                      )}
+
+                      {/* Submit Button */}
                       <motion.button
                         whileHover={{ scale: 1.02, y: -4 }}
                         whileTap={{ scale: 0.98 }}
                         type="submit"
                         disabled={status === 'loading'}
-                        className="relative w-full py-6 rounded-[2.5rem] text-white font-black text-xl shadow-2xl transition-all flex items-center justify-center gap-4 overflow-hidden group/btn"
+                        className="relative w-full py-6 rounded-[2.5rem] text-white font-black text-xl shadow-2xl transition-all flex items-center justify-center gap-4 overflow-hidden group/btn disabled:opacity-60"
                         style={{ backgroundColor: primary }}
                       >
                         {status === 'loading' ? (
@@ -180,7 +301,7 @@ export default function NewsletterSection({className}: {className?: string}) {
                         ) : (
                           <>
                             <HeartIcon className="w-6 h-6 group-hover/btn:animate-ping" />
-                            Join the Village
+                            Send Message
                           </>
                         )}
                         {/* Shimmer Effect */}
@@ -188,7 +309,7 @@ export default function NewsletterSection({className}: {className?: string}) {
                       </motion.button>
                     </form>
                     <p className="mt-6 text-center text-xs font-bold text-zinc-400 uppercase tracking-widest">
-                      No spam, just soft things. Unsubscribe anytime.
+                      Your details are safe. We never sell your data.
                     </p>
                   </motion.div>
                 ) : (
@@ -206,8 +327,15 @@ export default function NewsletterSection({className}: {className?: string}) {
                     >
                       <SparklesIcon className="w-12 h-12 text-white" />
                     </motion.div>
-                    <h3 className="text-3xl font-black text-white mb-3 tracking-tighter">Welcome Home!</h3>
-                    <p className="text-zinc-400 font-medium">Check your inbox for your 15% discount code.</p>
+                    <h3 className="text-3xl font-black text-white mb-3 tracking-tighter uppercase">Message Sent!</h3>
+                    <p className="text-zinc-400 font-medium">Thank you. One of our specialists will be in touch shortly.</p>
+                    <button
+                      type="button"
+                      onClick={() => setStatus('idle')}
+                      className="mt-6 text-xs font-black uppercase tracking-widest text-zinc-300 border border-zinc-800 hover:border-zinc-700 rounded-2xl px-6 py-3 transition-colors"
+                    >
+                      Send another message
+                    </button>
                   </motion.div>
                 )}
               </AnimatePresence>

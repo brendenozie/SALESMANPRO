@@ -13,6 +13,7 @@ import {
   MapPinIcon,
   ChartBarIcon,
 } from '@heroicons/react/24/outline';
+import CallToActionSection from '@/components/site/layouts/CompanyPortfolioLayout/body/components/CallToActionSection';
 
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => 
   `${src}?w=${width}&q=${quality || 75}`;
@@ -320,7 +321,8 @@ export default function AboutClient({ baseCompany }: { baseCompany: any }) {
           </div>
         </div>
       </section>
-      
+      {/* /* 5. CALL TO ACTION SECTION - SCHEDULING LINK * / */}
+      <CallToActionSection companyId={baseCompany} schedulingLink={``} pagedata={baseCompany}   />
     </div>
   );
 }
