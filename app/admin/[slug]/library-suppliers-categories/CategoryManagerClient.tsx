@@ -32,7 +32,7 @@ const CategoryManagerClient: React.FC<Props> = ({ initialCategories, schoolId })
   const [name, setName] = useState('');
   
   // Theme state synced with system preferences and localStorage
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
@@ -127,7 +127,7 @@ const CategoryManagerClient: React.FC<Props> = ({ initialCategories, schoolId })
 
             <div className="flex items-center gap-3 w-full sm:w-auto">
               {/* Theme Toggle Button */}
-              <button 
+              {/* <button 
                 onClick={toggleTheme}
                 className="flex items-center justify-center gap-2 p-3 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 hover:border-blue-500/30 dark:hover:border-blue-500/30 rounded-2xl transition-all shadow-sm"
                 title="Toggle Theme"
@@ -143,7 +143,7 @@ const CategoryManagerClient: React.FC<Props> = ({ initialCategories, schoolId })
                     <span className="hidden md:inline text-xs font-semibold text-slate-700">Dark Mode</span>
                   </>
                 )}
-              </button>
+              </button> */}
 
               <button 
                 onClick={() => setIsModalOpen(true)}

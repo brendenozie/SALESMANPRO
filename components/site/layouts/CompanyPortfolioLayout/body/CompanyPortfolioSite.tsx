@@ -24,8 +24,9 @@ const NewsSection = dynamic(() => import('./components/NewsSection'), { loading:
 const TestimonialsNewsSection = dynamic(() => import('./components/TestimonialsNewsSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
 const CtaBoldSection = dynamic(() => import('./components/CtaBoldSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
 const FAQSection = dynamic(() => import('./components/FAQSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
-
+const CallToActionSection = dynamic(() => import('./components/CallToActionSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, ssr: false });
 // Generic fetcher
+
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 // Updated component signature
@@ -70,6 +71,8 @@ export default function CompanyPortfolioSite({ pageData, companyId }: { pageData
 
         {/* FAQs - Render when data is ready */}
         {<FAQSection pagedata={pageData} />}
+
+        <CallToActionSection />
       </main>
   );
 }

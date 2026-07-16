@@ -112,12 +112,12 @@ const LibraryInventoryClient: React.FC<Props> = ({ initialItems = [], schoolId =
             </div>
 
             <div className="flex items-center gap-4">
-              <button 
+              {/* <button 
                 onClick={toggleTheme}
                 className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-blue-500/50 transition-colors"
               >
                 {theme === "dark" ? <SunIcon className="h-5 w-5 text-orange-400" /> : <MoonIcon className="h-5 w-5 text-slate-600" />}
-              </button>
+              </button> */}
               
               <div className="px-6 py-2.5 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col">
                 <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Items Loaded</span>

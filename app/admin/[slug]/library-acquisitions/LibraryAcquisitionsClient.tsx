@@ -105,12 +105,12 @@ const LibraryAcquisitionsClient: React.FC<Props> = ({ initialOrders = [], school
             </div>
 
             <div className="flex items-center gap-3 w-full xl:w-auto">
-              <button 
+              {/* <button 
                 onClick={toggleTheme}
                 className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:border-lime-500/50 transition-colors"
               >
                 {theme === "dark" ? <SunIcon className="h-5 w-5 text-orange-400" /> : <MoonIcon className="h-5 w-5 text-slate-600" />}
-              </button>
+              </button> */}
 
               <div className="relative flex-grow xl:w-48">
                 <FunnelIcon className="h-4 w-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />

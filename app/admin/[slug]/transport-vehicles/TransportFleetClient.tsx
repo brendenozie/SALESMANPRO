@@ -36,7 +36,7 @@ const TransportFleetClient = ({ initialVehicles, schoolId }: Props) => {
   const [fleet, setFleet] = useState<Vehicle[]>(initialVehicles);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
   // Form State
   const [formData, setFormData] = useState({
@@ -145,7 +145,7 @@ const TransportFleetClient = ({ initialVehicles, schoolId }: Props) => {
 
           <div className="flex gap-3 items-center">
             {/* Theme Toggle Button */}
-            <button
+            {/* <button
               onClick={toggleTheme}
               aria-label="Toggle Theme"
               className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-2xl transition-all shadow-sm active:scale-95 hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -155,7 +155,7 @@ const TransportFleetClient = ({ initialVehicles, schoolId }: Props) => {
               ) : (
                 <MoonIcon className="h-5 w-5 text-slate-600" />
               )}
-            </button>
+            </button> */}
 
             <button 
               onClick={() => setIsModalOpen(true)}

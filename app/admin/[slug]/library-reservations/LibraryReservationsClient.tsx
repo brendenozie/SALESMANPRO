@@ -39,7 +39,7 @@ const LibraryReservationsClient = ({ initialReservations = [], schoolId = '' }: 
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Theme state synced with system preferences and localStorage
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
@@ -168,7 +168,7 @@ const LibraryReservationsClient = ({ initialReservations = [], schoolId = '' }: 
               </div>
 
               {/* Theme Toggle Button */}
-              <button 
+              {/* <button 
                 onClick={toggleTheme}
                 className="flex items-center justify-center gap-2 p-3 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/80 hover:border-violet-500/30 dark:hover:border-violet-500/30 rounded-2xl transition-all shadow-sm"
                 title="Toggle Theme"
@@ -184,7 +184,7 @@ const LibraryReservationsClient = ({ initialReservations = [], schoolId = '' }: 
                     <span className="text-xs font-semibold text-slate-700">Dark Mode</span>
                   </>
                 )}
-              </button>
+              </button> */}
             </div>
           </header>
 

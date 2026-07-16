@@ -31,7 +31,7 @@ const LibraryReturnsPageClient = ({ schoolId, initialHistory = [] }: { schoolId:
   const [returnId, setReturnId] = useState("");
   const [recentReturns, setRecentReturns] = useState<ReturnLog[]>(initialHistory);
   const [isDamaged, setIsDamaged] = useState(false); 
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
   const [mounted, setMounted] = useState(false);
 
   // Sync theme with local storage & root document class on mount
@@ -161,13 +161,13 @@ const LibraryReturnsPageClient = ({ schoolId, initialHistory = [] }: { schoolId:
           
           <div className="flex items-center gap-4">
             {/* Theme Toggle Button */}
-            <button 
+            {/* <button 
               onClick={toggleTheme}
               aria-label="Toggle Theme"
               className="p-3 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-slate-300 dark:hover:border-slate-700 transition-all text-slate-600 dark:text-slate-400"
             >
               {theme === "dark" ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
-            </button>
+            </button> */}
 
             <div className="flex items-center gap-3 bg-white dark:bg-slate-900/50 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
               <div className="px-4 py-2 text-center border-r border-slate-200 dark:border-slate-800">

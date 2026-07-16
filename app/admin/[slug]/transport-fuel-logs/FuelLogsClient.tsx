@@ -173,7 +173,7 @@ const FuelLogsClient = ({ initialData, schoolId }: FuelLogsClientProps) => {
 
           <div className="flex gap-3 w-full md:w-auto justify-end items-center">
             {/* Dark & Light mode toggle */}
-            <button
+            {/* <button
               onClick={toggleTheme}
               aria-label="Toggle Theme"
               className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-2xl transition-all shadow-sm active:scale-95 hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -183,7 +183,7 @@ const FuelLogsClient = ({ initialData, schoolId }: FuelLogsClientProps) => {
               ) : (
                 <MoonIcon className="h-5 w-5 text-slate-600" />
               )}
-            </button>
+            </button> */}
 
             <button 
               onClick={handleExportCSV}

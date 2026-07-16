@@ -181,13 +181,13 @@ const IncidentPageClient = () => {
 
           <div className="flex items-center gap-3 self-stretch lg:self-auto justify-end">
             {/* Sun/Moon Theme Switcher */}
-            <button 
+            {/* <button 
               onClick={() => setDarkMode(!darkMode)}
               aria-label="Toggle Theme Mode"
               className="p-3 bg-white hover:bg-slate-100 border border-slate-200 dark:bg-slate-900/50 dark:border-slate-800/80 dark:hover:bg-slate-900 text-slate-500 dark:text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 rounded-2xl transition-all shadow-sm"
             >
               {darkMode ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
-            </button>
+            </button> */}
 
             <button 
               onClick={() => setIsReportModalOpen(true)}
