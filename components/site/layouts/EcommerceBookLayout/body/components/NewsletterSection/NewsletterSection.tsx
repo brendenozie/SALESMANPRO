@@ -32,24 +32,51 @@ export default function ContactSection() {
     message: ''
   });
 
+  const [errorMessage, setErrorMessage] = useState('');
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setStatus('loading');
+      const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!formData.name || !formData.email || !formData.message) return;
     
-    // Simulate API dispatch latency
-    setTimeout(() => {
-      setStatus('success');
-    }, 1800);
-  };
+        setStatus('loading');
+        setErrorMessage('');
+    
+        try {
+          const response = await fetch(`${apiBaseUrl}/conversations/send-to-admin`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              storeId: storeFormData?._id || storeFormData?.id,
+              ...formData,
+            }),
+          });
+    
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData?.message || 'Failed to dispatch message. Please try again.');
+          }
+    
+          setStatus('success');
+          setFormData({ name: '', email: '', message: '', subject: 'commission' });
+        } catch (err: any) {
+          console.error('Contact Submission Error:', err);
+          setStatus('error');
+          setErrorMessage(err?.message || 'Inquiry delivery failed.');
+        }
+      };
 
   const resetForm = () => {
     setFormData({ name: '', email: '', subject: 'commission', message: '' });
     setStatus('idle');
+    setErrorMessage('');
   };
 
   return (

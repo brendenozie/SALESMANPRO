@@ -23,9 +23,12 @@ const DISPATCH_CLASSIFICATIONS = [
   { id: 'general', code: '04', label: 'Pit Support' }
 ];
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
+
 export default function AutomotiveDispatchSection() {
   const { storeFormData } = useStoreContext();
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#EF4444'; // Racing Red
+  
   
   const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle');
   const [isHovering, setIsHovering] = useState(false);
@@ -35,6 +38,8 @@ export default function AutomotiveDispatchSection() {
     email: '',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -54,21 +59,32 @@ export default function AutomotiveDispatchSection() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) return;
-
-    setStatus('loading');
-    // Simulate system dispatch latency
-    setTimeout(() => {
-      setStatus('success');
-    }, 2000);
-  };
+   const handleSubmit = async (e: React.FormEvent) => {
+          e.preventDefault();
+          setIsSubmitting(true);
+          const formattedContent = `NEW INQUIRY\n\nName: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`;
+  
+          try {
+              const res = await fetch(`${apiBaseUrl}/conversations/send-to-admin`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ companyId: storeFormData?.id, content: formattedContent }),
+              });
+              if (!res.ok) throw new Error("API Error");
+              setSubmitStatus('success');
+              setFormData({ name: '', email: '', message: '' });
+          } catch (error) {
+              setSubmitStatus('error');
+          } finally {
+              setIsSubmitting(false);
+          }
+      };
 
   const resetTerminal = () => {
     setFormData({ name: '', email: '', message: '' });
     setActiveClassification('tuning');
     setStatus('idle');
+    setSubmitStatus('idle');
   };
 
   return (

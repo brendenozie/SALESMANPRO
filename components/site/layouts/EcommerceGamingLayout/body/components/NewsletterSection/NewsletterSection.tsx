@@ -13,6 +13,8 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
+
 export default function ContactSection() {
   const { storeFormData } = useStoreContext();
   const primary = storeFormData?.themeSettings?.primaryColor || '#dc2626'; // Red-600 default fallback
@@ -23,7 +25,7 @@ export default function ContactSection() {
     message: ''
   });
 
-  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
@@ -31,11 +33,11 @@ export default function ContactSection() {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) return;
 
-    setStatus('submitting');
+    setStatus('loading');
     setErrorMessage('');
 
     try {
-      const response = await fetch('/api/contact', {
+      const response = await fetch(`${apiBaseUrl}/conversations/send-to-admin`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

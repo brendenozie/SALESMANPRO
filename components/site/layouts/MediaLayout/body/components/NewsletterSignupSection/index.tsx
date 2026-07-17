@@ -33,15 +33,15 @@ export default function ContactUsForm() {
 
     // Simulate API pipeline integration
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network latency
+      // await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network latency
       
       // Real integration example:
-      // const response = await fetch(`${apiBaseUrl}/contact`, { 
-      //   method: 'POST', 
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData) 
-      // });
-      // if (response.ok) { setSubmitted(true); }
+      const response = await fetch(`${apiBaseUrl}/conversations/send-to-admin`, { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData) 
+      });
+      if (response.ok) { setSubmitted(true); }
 
       setSubmitted(true);
       setFormData({ name: '', email: '', message: '' });

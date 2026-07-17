@@ -59,7 +59,7 @@ export default function ContactSection({ className }: { className?: string }) {
     setErrorMessage('');
 
     try {
-      const response = await fetch('/api/contact', {
+      const response = await fetch('/api/conversations/send-to-admin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

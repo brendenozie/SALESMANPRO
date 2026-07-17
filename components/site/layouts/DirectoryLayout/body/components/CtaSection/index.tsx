@@ -1,8 +1,11 @@
 'use client';
 
-import Image from 'next/image';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { ArrowRightIcon } from '@heroicons/react/24/outline';
+import { useStoreContext } from '@/contexts/StoreContext';
+import Image from 'next/image';
 
 // Define the structure of a single AppPromo as it might come from StoreForm
 export type AppPromo = {
@@ -71,6 +74,12 @@ export default function HeroCtaSection({
   // Destructure storeFormData from context
   const { storeFormData } = useStoreContext() || {};
   const { appPromos, name: storeName, tagline: storeTagline, themeSettings } = storeFormData || {};
+  const primaryColor = themeSettings?.primaryColor || '#2563EB'; // Default to Tailwind blue-600 if not set
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
 
   // Select the first AppPromo if available, or use a default structure
   const mainAppPromo = (Array.isArray(appPromos) && appPromos.length > 0)
@@ -116,6 +125,28 @@ export default function HeroCtaSection({
     e.currentTarget.onerror = null; // Prevents infinite loop if placeholder also fails
     e.currentTarget.src = 'https://images.unsplash.com/photo-1556740738-b6154637d57a?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'; // Generic placeholder
   };
+
+
+         const handleSubmit = async (e: React.FormEvent) => {
+                e.preventDefault();
+                setIsSubmitting(true);
+                const formattedContent = `NEW INQUIRY\n\nName: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`;
+        
+                try {
+                    const res = await fetch(`${apiBaseUrl}/conversations/send-to-admin`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ companyId: storeFormData?.id, content: formattedContent }),
+                    });
+                    if (!res.ok) throw new Error("API Error");
+                    setSubmitStatus('success');
+                    setFormData({ name: '', email: '', message: '' });
+                } catch (error) {
+                    setSubmitStatus('error');
+                } finally {
+                    setIsSubmitting(false);
+                }
+            };
 
   return (
     <motion.section

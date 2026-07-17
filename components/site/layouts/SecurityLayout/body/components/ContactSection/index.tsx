@@ -41,22 +41,55 @@ export default function ContactSection() {
   const primaryColor = themeSettings.primaryColor || '#00A880'; 
 
   const [formData, setFormData] = useState({
-    fullName: '',
+    name: '',
     email: '',
     message: '',
   });
+
+  const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'success'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Form telemetry dispatched:', formData);
-    alert('Transmission successful. Our operations desk will respond shortly.');
-    setFormData({ fullName: '', email: '', message: '' });
-  };
+  
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!formData.name || !formData.email || !formData.message) return;
+  
+      setStatus('loading');
+      setErrorMessage('');
+  
+      try {
+        const response = await fetch('/api/conversations/send-to-admin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            storeId: storeFormData?._id || storeFormData?.id,
+            ...formData,
+          }),
+        });
+  
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData?.message || 'Failed to dispatch message. Please try again.');
+        }
+  
+        setStatus('success');
+        setFormData({ name: '', email: '', message: '' });
+      } catch (err: any) {
+        console.error('Contact Submission Error:', err);
+        setStatus('error');
+        setErrorMessage(err?.message || 'Inquiry delivery failed.');
+      }
+    };
+  
 
   const sanitizedPhone = contactPhone ? contactPhone.replace(/\D/g, '') : '';
   const whatsappHref = sanitizedPhone ? `https://wa.me/${sanitizedPhone}` : '';
@@ -111,16 +144,16 @@ export default function ContactSection() {
               <form className="space-y-6" onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="fullName" className="block text-[10px] font-mono font-bold uppercase tracking-wider text-gray-500 mb-2">
+                    <label htmlFor="name" className="block text-[10px] font-mono font-bold uppercase tracking-wider text-gray-500 mb-2">
                       01 // FULL_NAME
                     </label>
                     <input
                       type="text"
-                      id="fullName"
-                      name="fullName"
+                      id="name"
+                      name="name"
                       placeholder="Identity parameter"
                       className="w-full bg-white px-4 py-3 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-gray-900 transition-colors placeholder-gray-300 font-mono"
-                      value={formData.fullName}
+                      value={formData.name}
                       onChange={handleInputChange}
                       required
                     />

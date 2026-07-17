@@ -1,13 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  EnvelopeIcon, 
-  UserIcon, 
-  ChatBubbleBottomCenterTextIcon, 
-  CheckCircleIcon 
-} from '@heroicons/react/24/outline';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Animation variants for text elements
 const textVariants = {
@@ -36,34 +31,51 @@ const formVariants = {
   },
 };
 
-export default function ContactFormSection() {
-  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
-  const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+export default function ContactSection() {
+  const { storeFormData } = useStoreContext() || {};
+  const { themeSettings = {} } = storeFormData || {};
+  const primaryColor = themeSettings?.primaryColor || '#000000';
+  
+  const [formData, setFormData] = React.useState({ name: '', email: '', message: '' });
+  const [status, setStatus] = React.useState<'idle' | 'loading' | 'error' | 'success'>('idle');
+  const [errorMessage, setErrorMessage] = React.useState('');
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) return;
 
-    setStatus('submitting');
+    setStatus('loading');
+    setErrorMessage('');
 
-    // Simulate API routing dispatch
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setStatus('success');
-    } catch (err) {
-      console.error("Submission failed:", err);
-      setStatus('idle');
-    }
-  };
+      const response = await fetch('/api/conversations/send-to-admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          storeId: storeFormData?._id || storeFormData?.id,
+          ...formData,
+        }),
+      });
 
-  const handleReset = () => {
-    setFormData({ name: '', email: '', message: '' });
-    setStatus('idle');
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData?.message || 'Failed to dispatch message. Please try again.');
+      }
+
+      setStatus('success');
+      setFormData({ name: '', email: '', message: '' });
+    } catch (err: any) {
+      console.error('Contact Submission Error:', err);
+      setStatus('error');
+      setErrorMessage(err?.message || 'Inquiry delivery failed.');
+    }
   };
 
   return (
@@ -73,152 +85,120 @@ export default function ContactFormSection() {
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
     >
-      {/* Background Shapes/Graphics for visual interest */}
-      <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 dark:bg-white/[0.02] rounded-full mix-blend-overlay animate-blob animation-delay-2000 pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-80 h-80 bg-white/5 dark:bg-white/[0.02] rounded-full mix-blend-overlay animate-blob animation-delay-4000 pointer-events-none" />
-      <div className="absolute top-1/4 left-[30%] w-48 h-48 bg-white/5 dark:bg-white/[0.02] rounded-full mix-blend-overlay animate-blob pointer-events-none" />
+      {/* Decorative Background Shapes */}
+      <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 dark:bg-white/[0.02] rounded-full mix-blend-overlay animate-blob animation-delay-2000" />
+      <div className="absolute bottom-0 right-0 w-80 h-80 bg-white/5 dark:bg-white/[0.02] rounded-full mix-blend-overlay animate-blob animation-delay-4000" />
+      <div className="absolute top-1/4 left-[30%] w-48 h-48 bg-white/5 dark:bg-white/[0.02] rounded-full mix-blend-overlay animate-blob" />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-        
-        {/* Dynamic Context Headline */}
-        <motion.h2
-          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-6 drop-shadow-lg"
-          variants={textVariants}
-        >
-          Let's Start a <span className="text-amber-300 dark:text-amber-400">Conversation!</span>
-        </motion.h2>
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center mb-12">
+          {/* Title */}
+          <motion.h2
+            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-6 drop-shadow-lg"
+            variants={textVariants}
+          >
+            Get in <span className="text-amber-300 dark:text-amber-400">Touch!</span>
+          </motion.h2>
 
-        {/* Subtitle Description */}
-        <motion.p
-          className="text-lg sm:text-xl text-indigo-100 dark:text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed"
-          variants={textVariants}
-          transition={{ delay: 0.2, duration: 0.7, ease: "easeOut" }}
-        >
-          Have questions about listings, market insights, or customized pipelines? Fill out the form below to establish a direct connection with our specialists.
-        </motion.p>
+          {/* Description */}
+          <motion.p
+            className="text-lg sm:text-xl text-indigo-100 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed"
+            variants={textVariants}
+            transition={{ delay: 0.2, duration: 0.7, ease: "easeOut" }}
+          >
+            Have questions about a listing, market trends, or looking to partner up? Drop us a message below and we will get right back to you.
+          </motion.p>
+        </div>
 
-        {/* Form Outer Shell */}
-        <motion.div 
-          variants={formVariants} 
-          className="max-w-xl mx-auto bg-white/10 dark:bg-gray-800/40 backdrop-blur-md rounded-3xl p-6 sm:p-10 shadow-2xl border border-white/20 dark:border-gray-800"
-        >
-          <AnimatePresence mode="wait">
-            {status !== 'success' ? (
-              <motion.form
-                key="contact-form"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onSubmit={handleSubmit}
-                className="space-y-5 text-left"
-              >
-                {/* Operator Name Field */}
-                <div className="relative">
-                  <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-indigo-200 dark:text-gray-400" />
-                  <input
-                    type="text"
-                    name="name"
-                    required
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    placeholder="Full Name"
-                    className="w-full p-4 pl-12 rounded-2xl bg-white/90 dark:bg-gray-900/90 border-2 border-transparent
-                               text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400
-                               focus:outline-none focus:ring-4 focus:ring-amber-400 focus:border-transparent
-                               transition duration-300 ease-in-out shadow-inner"
-                  />
-                </div>
-
-                {/* Email Endpoint Field */}
-                <div className="relative">
-                  <EnvelopeIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-indigo-200 dark:text-gray-400" />
-                  <input
-                    type="email"
-                    name="email"
-                    required
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    placeholder="Your Email Address"
-                    className="w-full p-4 pl-12 rounded-2xl bg-white/90 dark:bg-gray-900/90 border-2 border-transparent
-                               text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400
-                               focus:outline-none focus:ring-4 focus:ring-amber-400 focus:border-transparent
-                               transition duration-300 ease-in-out shadow-inner"
-                  />
-                </div>
-
-                {/* Message Field */}
-                <div className="relative">
-                  <ChatBubbleBottomCenterTextIcon className="absolute left-4 top-5 h-5 w-5 text-indigo-200 dark:text-gray-400" />
-                  <textarea
-                    name="message"
-                    required
-                    rows={4}
-                    value={formData.message}
-                    onChange={handleInputChange}
-                    placeholder="How can we help you today?"
-                    className="w-full p-4 pl-12 rounded-2xl bg-white/90 dark:bg-gray-900/90 border-2 border-transparent
-                               text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400
-                               focus:outline-none focus:ring-4 focus:ring-amber-400 focus:border-transparent
-                               transition duration-300 ease-in-out shadow-inner resize-none"
-                  />
-                </div>
-
-                {/* Submit Trigger */}
-                <motion.button
-                  type="submit"
-                  disabled={status === 'submitting'}
-                  whileHover={{ scale: 1.02, boxShadow: "0 10px 20px rgba(0,0,0,0.2)" }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-bold uppercase py-5 rounded-2xl
-                             shadow-xl hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-amber-400/70
-                             transition duration-300 ease-in-out flex items-center justify-center gap-2"
-                >
-                  {status === 'submitting' ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    "Send Message"
-                  )}
-                </motion.button>
-              </motion.form>
-            ) : (
-              <motion.div
-                key="success-screen"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="text-center py-6 flex flex-col items-center justify-center space-y-6"
-              >
-                <div className="p-4 rounded-full bg-emerald-500/20 border border-emerald-400/30">
-                  <CheckCircleIcon className="h-12 w-12 text-emerald-400" />
-                </div>
-                
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-extrabold text-white">Transmission Received</h3>
-                  <p className="text-sm text-indigo-100 dark:text-gray-300 leading-relaxed max-w-sm mx-auto">
-                    Thank you, <span className="font-bold text-white">{formData.name}</span>! Your request was compiled successfully. Our dispatchers will reach out to <span className="underline decoration-amber-400 underline-offset-4 text-white font-medium">{formData.email.toLowerCase()}</span> shortly.
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleReset}
-                  className="text-xs font-bold uppercase tracking-wider text-amber-300 dark:text-amber-400 hover:text-white underline decoration-amber-300/40 underline-offset-4 transition-colors pt-2"
-                >
-                  Initialize New Transmission
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-
-        {/* Visual privacy guarantee text */}
-        <motion.p
-          className="mt-8 text-sm text-indigo-200 dark:text-gray-400"
+        {/* Contact Form */}
+        <motion.form
+          onSubmit={handleSubmit}
+          className="space-y-6 max-w-xl mx-auto bg-white/10 dark:bg-gray-800/40 p-6 sm:p-10 rounded-3xl backdrop-blur-md shadow-2xl border border-white/10"
           variants={formVariants}
-          transition={{ delay: 0.5, duration: 0.7, ease: "easeOut" }}
         >
-          We respect your private endpoints. No unsolicited spam, ever.
-        </motion.p>
+          {/* Row for Name & Email */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-indigo-100 dark:text-gray-300 mb-2">Name</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="John Doe"
+                required
+                disabled={status === 'loading'}
+                className="w-full p-4 rounded-xl bg-white/90 dark:bg-gray-800/90 border-2 border-transparent
+                           text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500
+                           focus:outline-none focus:ring-4 focus:ring-amber-400 focus:border-transparent
+                           transition duration-300 ease-in-out shadow-inner disabled:opacity-50"
+              />
+            </div>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-indigo-100 dark:text-gray-300 mb-2">Email Address</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="john@example.com"
+                required
+                disabled={status === 'loading'}
+                className="w-full p-4 rounded-xl bg-white/90 dark:bg-gray-800/90 border-2 border-transparent
+                           text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500
+                           focus:outline-none focus:ring-4 focus:ring-amber-400 focus:border-transparent
+                           transition duration-300 ease-in-out shadow-inner disabled:opacity-50"
+              />
+            </div>
+          </div>
+
+          {/* Message Area */}
+          <div>
+            <label htmlFor="message" className="block text-sm font-medium text-indigo-100 dark:text-gray-300 mb-2">Your Message</label>
+            <textarea
+              id="message"
+              name="message"
+              value={formData.message}
+              onChange={handleChange}
+              placeholder="How can we help you?"
+              rows={4}
+              required
+              disabled={status === 'loading'}
+              className="w-full p-4 rounded-xl bg-white/90 dark:bg-gray-800/90 border-2 border-transparent
+                         text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500
+                         focus:outline-none focus:ring-4 focus:ring-amber-400 focus:border-transparent
+                         transition duration-300 ease-in-out shadow-inner resize-none disabled:opacity-50"
+            />
+          </div>
+
+          {/* Messages Alerts */}
+          {status === 'success' && (
+            <div className="p-4 rounded-xl bg-emerald-500/20 border border-emerald-500 text-emerald-200 text-sm font-medium">
+              Thank you! Your message has been sent successfully.
+            </div>
+          )}
+
+          {status === 'error' && (
+            <div className="p-4 rounded-xl bg-rose-500/20 border border-rose-500 text-rose-200 text-sm font-medium">
+              {errorMessage}
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <motion.button
+            type="submit"
+            disabled={status === 'loading'}
+            whileHover={status !== 'loading' ? { scale: 1.02, boxShadow: "0 10px 20px rgba(0,0,0,0.2)" } : {}}
+            whileTap={status !== 'loading' ? { scale: 0.98 } : {}}
+            className="w-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-bold uppercase py-4 px-10 rounded-xl
+                       shadow-xl hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-amber-400/70
+                       transition duration-300 ease-in-out transform disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {status === 'loading' ? 'Sending Message...' : 'Send Message'}
+          </motion.button>
+        </motion.form>
       </div>
     </motion.section>
   );

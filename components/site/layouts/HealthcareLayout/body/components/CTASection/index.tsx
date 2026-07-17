@@ -47,30 +47,50 @@ export default function CTASection({ storeSlug }: CTASectionProps) {
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#0d9488';
 
   // Form State Management
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' });
-  const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '',  });
+  const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'success'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) return;
-
-    setStatus('submitting');
-
-    // Simulate healthcare secure pipeline submission
-    try {
-      console.log("Submitting clinical inquiry:", formData);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setStatus('success');
-    } catch (err) {
-      console.error("Submission failed:", err);
-      setStatus('idle');
-    }
-  };
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!formData.name || !formData.email || !formData.message) return;
+  
+      setStatus('loading');
+      setErrorMessage('');
+  
+      try {
+        const response = await fetch('/api/conversations/send-to-admin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            storeId: storeFormData?._id || storeFormData?.id,
+            ...formData,
+          }),
+        });
+  
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData?.message || 'Failed to dispatch message. Please try again.');
+        }
+  
+        setStatus('success');
+        setFormData({ name: '', email: '', message: '', phone: '' });
+      } catch (err: any) {
+        console.error('Contact Submission Error:', err);
+        setStatus('error');
+        setErrorMessage(err?.message || 'Inquiry delivery failed.');
+      }
+    };
 
   const handleReset = () => {
     setFormData({ name: '', email: '', phone: '', message: '' });

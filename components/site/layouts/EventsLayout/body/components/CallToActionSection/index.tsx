@@ -29,29 +29,47 @@ export default function CallToActionSection() {
 
   // Form State Management
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
-  const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+  const [formStatus, setFormStatus] = useState<'idle' | 'loading' | 'error' | 'submitting' | 'success'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) return;
-
-    setFormStatus('submitting');
-
-    // Simulate reliable API/webhook dispatch sequence
-    try {
-      console.log("Transmitting lead dispatch:", formData);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setFormStatus('success');
-    } catch (err) {
-      console.error("Submission pipeline failed:", err);
-      setFormStatus('idle');
-    }
-  };
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!formData.name || !formData.email || !formData.message) return;
+  
+      setFormStatus('loading');
+      setErrorMessage('');
+  
+      try {
+        const response = await fetch(`${apiBaseUrl}/conversations/send-to-admin`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            storeId: storeFormData?._id || storeFormData?.id,
+            ...formData,
+          }),
+        });
+  
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData?.message || 'Failed to dispatch message. Please try again.');
+        }
+  
+        setFormStatus('success');
+        setFormData({ name: '', email: '', message: '' });
+      } catch (err: any) {
+        console.error('Contact Submission Error:', err);
+        setFormStatus('error');
+        setErrorMessage(err?.message || 'Inquiry delivery failed.');
+      }
+    };
 
   const handleReset = () => {
     setFormData({ name: "", email: "", message: "" });

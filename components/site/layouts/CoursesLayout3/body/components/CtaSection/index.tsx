@@ -33,28 +33,37 @@ export default function ContactFormSection() {
   // Form State Management
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) return;
-
-    setFormStatus('submitting');
-
-    // Simulate database post/payload dispatch latency
-    try {
-      console.log("Transmitting payload to core system:", formData);
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setFormStatus('success');
-    } catch (error) {
-      console.error("Transmission error:", error);
-      setFormStatus('idle');
-    }
-  };
+  
+         const handleSubmit = async (e: React.FormEvent) => {
+                e.preventDefault();
+                setIsSubmitting(true);
+                const formattedContent = `NEW INQUIRY\n\nName: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`;
+        
+                try {
+                    const res = await fetch(`${apiBaseUrl}/conversations/send-to-admin`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ companyId: storeFormData?.id, content: formattedContent }),
+                    });
+                    if (!res.ok) throw new Error("API Error");
+                    setSubmitStatus('success');
+                    setFormData({ name: '', email: '', message: '' });
+                } catch (error) {
+                    setSubmitStatus('error');
+                } finally {
+                    setIsSubmitting(false);
+                }
+            };
 
   const handleResetForm = () => {
     setFormData({ name: '', email: '', message: '' });

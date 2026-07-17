@@ -17,24 +17,47 @@ export default function ContactSection() {
   const primaryColor = storeFormData?.themeSettings?.primaryColor || "#f97316";
 
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
-  const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "error" | "success">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://127.0.0.1:3000/api";
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) return;
+      const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!formData.name || !formData.email || !formData.message) return;
     
-    setStatus("loading");
-    // Simulate tactical API verification cycle
-    setTimeout(() => {
-      setStatus("success");
-      setFormData({ name: "", email: "", message: "" });
-    }, 1500);
-  };
+        setStatus('loading');
+        setErrorMessage('');
+    
+        try {
+          const response = await fetch('/api/conversations/send-to-admin', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              storeId: storeFormData?._id || storeFormData?.id,
+              ...formData,
+            }),
+          });
+    
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData?.message || 'Failed to dispatch message. Please try again.');
+          }
+    
+          setStatus('success');
+          setFormData({ name: '', email: '', phone: '', message: '' });
+        } catch (err: any) {
+          console.error('Contact Submission Error:', err);
+          setStatus('error');
+          setErrorMessage(err?.message || 'Inquiry delivery failed.');
+        }
+      };
 
   return (
     <section className="relative py-20 sm:py-28 bg-neutral-50 dark:bg-neutral-950 transition-colors duration-500 overflow-hidden border-t border-b border-neutral-200/60 dark:border-neutral-900/40">

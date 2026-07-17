@@ -75,11 +75,17 @@ interface TestimonialsSectionProps {
     } | null;
 }
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
+
 export default function PremiumBentoTestimonials({ name = 'Our Platform', testimonials = [], themeSettings }: TestimonialsSectionProps) {
+    const { storeFormData } = useStoreContext();    
     const items = testimonials.length ? testimonials : staticTestimonials;
     const primaryColor = themeSettings?.primaryColor || '#059669';
     
     const [activeFilter, setActiveFilter] = useState('All');
+    const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
     // Unique Categories Extract
     const categories = useMemo(() => {
@@ -102,6 +108,28 @@ export default function PremiumBentoTestimonials({ name = 'Our Platform', testim
             default: return <ChatBubbleLeftRightIcon className="w-4 h-4" />;
         }
     };
+
+
+       const handleSubmit = async (e: React.FormEvent) => {
+              e.preventDefault();
+              setIsSubmitting(true);
+              const formattedContent = `NEW INQUIRY\n\nName: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`;
+      
+              try {
+                  const res = await fetch(`${apiBaseUrl}/conversations/send-to-admin`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ companyId: storeFormData?.id, content: formattedContent }),
+                  });
+                  if (!res.ok) throw new Error("API Error");
+                  setSubmitStatus('success');
+                  setFormData({ name: '', email: '', message: '' });
+              } catch (error) {
+                  setSubmitStatus('error');
+              } finally {
+                  setIsSubmitting(false);
+              }
+          };
 
     return (
         <section id="testimonials" className="relative bg-[#0b1329] py-28 lg:py-40 px-6 lg:px-8 text-white overflow-hidden">

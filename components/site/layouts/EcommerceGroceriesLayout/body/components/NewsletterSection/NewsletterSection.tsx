@@ -19,7 +19,7 @@ export default function ContactSection() {
   // Dynamic values sourced from context with elegant defaults
   const emailVal = storeFormData?.contactEmail || 'support@yourstore.com';
   const phoneVal = storeFormData?.contactPhone || '+254 700 000 000';
-  const addressVal = storeFormData?.contactAddress || 'Nairobi, Kenya';
+  const addressVal = storeFormData?.address || 'Nairobi, Kenya';
 
   const contactChannels = [
     { icon: EnvelopeIcon, label: "Email Us", value: emailVal },
@@ -27,35 +27,56 @@ export default function ContactSection() {
     { icon: MapPinIcon, label: "Our Headquarters", value: addressVal }
   ];
 
+  const [errorMessage, setErrorMessage] = useState('');
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
+
+
   // State Management
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     message: ''
   });
-  const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'submitting' | 'success'>('idle');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) return;
-
-    setStatus('submitting');
-
-    try {
-      // Simulate API transit delay
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-      setStatus('success');
-      setFormData({ name: '', email: '', message: '' });
-    } catch (error) {
-      console.error("Submission failed:", error);
-      setStatus('idle');
-    }
-  };
+      const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!formData.name || !formData.email || !formData.message) return;
+    
+        setStatus('loading');
+        setErrorMessage('');
+    
+        try {
+          const response = await fetch('/api/conversations/send-to-admin', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              storeId: storeFormData?._id || storeFormData?.id,
+              ...formData,
+            }),
+          });
+    
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData?.message || 'Failed to dispatch message. Please try again.');
+          }
+    
+          setStatus('success');
+          setFormData({ name: '', email: '', message: '' });
+        } catch (err: any) {
+          console.error('Contact Submission Error:', err);
+          setStatus('error');
+          setErrorMessage(err?.message || 'Inquiry delivery failed.');
+        }
+      };
 
   return (
     <section className="py-24 px-6 bg-white overflow-hidden">

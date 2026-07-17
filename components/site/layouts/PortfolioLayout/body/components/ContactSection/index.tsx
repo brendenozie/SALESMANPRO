@@ -64,22 +64,53 @@ export default function ContactSection() {
   const primaryColor = themeSettings?.primaryColor || '#000000';
 
   const [formData, setFormData] = useState({
-    fullName: '',
+    name: '',
     email: '',
     message: '',
   });
+
+  const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'success'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Form submitted:', formData);
-    alert('Thank you for your message! We will get back to you soon.');
-    setFormData({ fullName: '', email: '', message: '' });
-  };
+      const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!formData.name || !formData.email || !formData.message) return;
+    
+        setStatus('loading');
+        setErrorMessage('');
+    
+        try {
+          const response = await fetch('/api/conversations/send-to-admin', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              storeId: storeFormData?._id || storeFormData?.id,
+              ...formData,
+            }),
+          });
+    
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData?.message || 'Failed to dispatch message. Please try again.');
+          }
+    
+          setStatus('success');
+          setFormData({ name: '', email: '', message: '' });
+        } catch (err: any) {
+          console.error('Contact Submission Error:', err);
+          setStatus('error');
+          setErrorMessage(err?.message || 'Inquiry delivery failed.');
+        }
+      };
 
   const sanitizedPhone = contactPhone ? contactPhone.replace(/\D/g, '') : '';
   const whatsappHref = sanitizedPhone ? `https://wa.me/${sanitizedPhone}` : '';
@@ -161,7 +192,7 @@ export default function ContactSection() {
                     name="fullName"
                     placeholder="John Doe"
                     className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 font-medium placeholder-slate-400 text-sm focus:outline-none focus:border-slate-900 transition-colors"
-                    value={formData.fullName}
+                    value={formData.name}
                     onChange={handleInputChange}
                     required
                   />

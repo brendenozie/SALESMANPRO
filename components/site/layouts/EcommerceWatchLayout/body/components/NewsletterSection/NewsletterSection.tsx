@@ -28,6 +28,8 @@ export default function ContactSection() {
   const [errorMessage, setErrorMessage] = useState('');
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) return;
@@ -36,7 +38,7 @@ export default function ContactSection() {
     setErrorMessage('');
 
     try {
-      const response = await fetch('/api/contact', {
+      const response = await fetch(`${apiBaseUrl}/conversations/send-to-admin`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

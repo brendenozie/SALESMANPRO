@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EnvelopeIcon, GlobeAltIcon, BellAlertIcon } from '@heroicons/react/24/outline';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 const INQUIRY_TOPICS = [
   { id: 'bespoke', label: 'Bespoke Commission' },
@@ -12,40 +13,59 @@ const INQUIRY_TOPICS = [
 ];
 
 export default function ContactSection() {
+
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
+
+  const { storeFormData } = useStoreContext();
+
   const [selectedTopic, setSelectedTopic] = useState('bespoke');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     message: '',
   });
-  const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'submitting' | 'success'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+  const primary = storeFormData?.themeSettings?.primaryColor || '#f97316';
+  const secondary = storeFormData?.themeSettings?.secondaryColor || '#3b82f6';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) return;
-
-    setStatus('submitting');
-
-    try {
-      // Package payload with the selected interactive topic
-      const payload = {
-        ...formData,
-        topic: selectedTopic,
+      const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!formData.name || !formData.email || !formData.message) return;
+    
+        setStatus('loading');
+        setErrorMessage('');
+    
+        try {
+          const response = await fetch('/api/conversations/send-to-admin', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              storeId: storeFormData?._id || storeFormData?.id,
+              ...formData,
+            }),
+          });
+    
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData?.message || 'Failed to dispatch message. Please try again.');
+          }
+    
+          setStatus('success');
+          setFormData({ name: '', email: '', message: '' });
+        } catch (err: any) {
+          console.error('Contact Submission Error:', err);
+          setStatus('error');
+          setErrorMessage(err?.message || 'Inquiry delivery failed.');
+        }
       };
-      
-      // Simulate high-security transmission delay
-      await new Promise((resolve) => setTimeout(resolve, 1400));
-      setStatus('success');
-    } catch (error) {
-      console.error("Transmission failed:", error);
-      setStatus('idle');
-    }
-  };
 
   const handleReset = () => {
     setFormData({ name: '', email: '', message: '' });

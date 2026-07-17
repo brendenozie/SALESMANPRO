@@ -27,7 +27,7 @@ export default function CtaBoldSection({ storeFormData }: CtaBoldSectionProps) {
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#FF5722';
 
   // Contact Form States
-  const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'submitting' | 'success'>('idle');
   const [activeChannel, setActiveChannel] = useState('join');
   const [formData, setFormData] = useState({
     name: '',
@@ -35,26 +35,45 @@ export default function CtaBoldSection({ storeFormData }: CtaBoldSectionProps) {
     message: ''
   });
 
+  const [errorMessage, setErrorMessage] = useState('');
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) return;
-
-    setStatus('submitting');
-
-    // Simulate reliable API/webhook dispatch sequence
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setStatus('success');
-    } catch (err) {
-      console.error("Submission pipeline failed:", err);
-      setStatus('idle');
-    }
-  };
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!formData.name || !formData.email || !formData.message) return;
+  
+      setStatus('loading');
+      setErrorMessage('');
+  
+      try {
+        const response = await fetch('/api/conversations/send-to-admin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            storeId: storeFormData?._id || storeFormData?.id,
+            ...formData,
+          }),
+        });
+  
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData?.message || 'Failed to dispatch message. Please try again.');
+        }
+  
+        setStatus('success');
+        setFormData({ name: '', email: '', message: '' });
+      } catch (err: any) {
+        console.error('Contact Submission Error:', err);
+        setStatus('error');
+        setErrorMessage(err?.message || 'Inquiry delivery failed.');
+      }
+    };
 
   const handleReset = () => {
     setFormData({ name: '', email: '', message: '' });

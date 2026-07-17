@@ -24,7 +24,7 @@ export default function NetworkIntegrationSection() {
   const { storeFormData } = useStoreContext();
   const primary = storeFormData?.themeSettings?.primaryColor || '#F59E0B'; // Dynamic primary theme color
   
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'success'>('idle');
   const [isHovering, setIsHovering] = useState(false);
   const [activeSignal, setActiveSignal] = useState('general');
   const [formData, setFormData] = useState({
@@ -32,6 +32,9 @@ export default function NetworkIntegrationSection() {
     email: '',
     message: ''
   });
+
+  const [errorMessage, setErrorMessage] = useState('');
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
   
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -51,26 +54,38 @@ export default function NetworkIntegrationSection() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) return;
-
-    setStatus('loading');
-    
-    try {
-      const payload = {
-        ...formData,
-        signalType: activeSignal,
-      };
-
-      // Simulated network packet transmission delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      setStatus('success');
-    } catch (err) {
-      console.error('System Dispatch Failure:', err);
-      setStatus('idle');
-    }
-  };
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!formData.name || !formData.email || !formData.message) return;
+  
+      setStatus('loading');
+      setErrorMessage('');
+  
+      try {
+        const response = await fetch('/api/conversations/send-to-admin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            storeId: storeFormData?._id || storeFormData?.id,
+            ...formData,
+          }),
+        });
+  
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData?.message || 'Failed to dispatch message. Please try again.');
+        }
+  
+        setStatus('success');
+        setFormData({ name: '', email: '', message: '' });
+      } catch (err: any) {
+        console.error('Contact Submission Error:', err);
+        setStatus('error');
+        setErrorMessage(err?.message || 'Inquiry delivery failed.');
+      }
+    };
 
   const resetTerminal = () => {
     setFormData({ name: '', email: '', message: '' });

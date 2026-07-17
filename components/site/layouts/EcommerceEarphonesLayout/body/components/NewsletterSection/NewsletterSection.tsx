@@ -8,6 +8,50 @@ import { useStoreContext } from '@/contexts/StoreContext';
 export default function NewsletterSection() {
   const { storeFormData } = useStoreContext();
   const primary = storeFormData?.themeSettings?.primaryColor || '#f97316';
+  const secondary = storeFormData?.themeSettings?.secondaryColor || '#3b82f6';
+
+  const [formData, setFormData] = React.useState({
+    name: '',
+    email: '',
+    message: '',
+  });
+  const [status, setStatus] = React.useState<'idle' | 'loading' | 'submitting' | 'error' | 'success'>('idle');
+  const [errorMessage, setErrorMessage] = React.useState('');
+
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
+
+      const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!formData.name || !formData.email || !formData.message) return;
+    
+        setStatus('loading');
+        setErrorMessage('');
+    
+        try {
+          const response = await fetch(`${apiBaseUrl}/conversations/send-to-admin`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              storeId: storeFormData?._id || storeFormData?.id,
+              ...formData,
+            }),
+          });
+    
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData?.message || 'Failed to dispatch message. Please try again.');
+          }
+    
+          setStatus('success');
+          setFormData({ name: '', email: '', message: '' });
+        } catch (err: any) {
+          console.error('Contact Submission Error:', err);
+          setStatus('error');
+          setErrorMessage(err?.message || 'Inquiry delivery failed.');
+        }
+      };
 
   return (
     <section className="relative py-24 bg-white dark:bg-[#050505] border-y border-black/5 dark:border-white/5 transition-colors duration-300 overflow-hidden">

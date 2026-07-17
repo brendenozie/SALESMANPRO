@@ -56,12 +56,12 @@ export default function ContactSection() {
       await new Promise((resolve) => setTimeout(resolve, 1500));
       
       // Optional real API target endpoint:
-      // const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api'}/contact`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData)
-      // });
-      // if (response.ok) setStatus("success");
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api'}/conversations/send-to-admin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      if (response.ok) setStatus("success");
 
       setStatus("success");
       setFormData({ name: "", email: "", subject: "", message: "" });

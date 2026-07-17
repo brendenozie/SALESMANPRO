@@ -27,12 +27,41 @@ export default function CtaBoldSection({ pagedata }: { pagedata: any }) {
   // Institutional system colors mapped to premium dark specs
   const systemAccent = pagedata?.themeSettings?.primaryColor || '#F59E0B'; // Amber Node Accent
   const organizationSlug = pagedata?.slug || 'grey-trading';
+  const { storeFormData } = useStoreContext();
+
+  const [formData, setFormData] = React.useState({ name: '', email: '', message: '' });
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [submitStatus, setSubmitStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
+
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
 
   // Transformed corporate copy matrix with definitive rollbacks
   const ctaTitle = 'Optimize Your Cash Flow & Trade Speed';
   const ctaSubtitle = `Open a dedicated account with us to move your goods and capital more efficiently. You will gain direct access to the ${pagedata?.name || 'Trading Limited'} global network, backed by our automated security and risk-management systems.`;
   const ctaButtonLabel = 'Request a Connection';
   const ctaButtonHref = `/companyprofile/services`;
+
+
+         const handleSubmit = async (e: React.FormEvent) => {
+                e.preventDefault();
+                setIsSubmitting(true);
+                const formattedContent = `NEW INQUIRY\n\nName: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`;
+        
+                try {
+                    const res = await fetch(`${apiBaseUrl}/conversations/send-to-admin`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ companyId: storeFormData?.id, content: formattedContent }),
+                    });
+                    if (!res.ok) throw new Error("API Error");
+                    setSubmitStatus('success');
+                    setFormData({ name: '', email: '', message: '' });
+                } catch (error) {
+                    setSubmitStatus('error');
+                } finally {
+                    setIsSubmitting(false);
+                }
+            };
 
   return (
     <section

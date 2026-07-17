@@ -15,6 +15,8 @@ import {
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://127.0.0.1:3000/api';
+
 export default function ContactSection() {
   const { storeFormData } = useStoreContext();
   const primary = storeFormData?.themeSettings?.primaryColor || '#10B981';
@@ -37,7 +39,7 @@ export default function ContactSection() {
     setErrorMessage('');
 
     try {
-      const response = await fetch('/api/contact', {
+      const response = await fetch(`${apiBaseUrl}/conversations/send-to-admin`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
