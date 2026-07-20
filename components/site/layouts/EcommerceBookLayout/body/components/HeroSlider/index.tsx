@@ -66,7 +66,7 @@ export default function BookDukaResponsiveHero({ heroSlides }: BookDukaHeroProps
   }, [slides.length]);
 
   const handleDragEnd = (e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const threshold = 60; // Optimized response threshold
+    const threshold = 60;
     if (info.offset.x > threshold) {
       paginate(-1);
     } else if (info.offset.x < -threshold) {
@@ -96,7 +96,7 @@ export default function BookDukaResponsiveHero({ heroSlides }: BookDukaHeroProps
       </div>
 
       {/* VISUAL COMPONENT LAYER (Tactile Asset Showcase) */}
-      <div className="relative w-full h-[45vh] lg:h-full bg-zinc-50 dark:bg-zinc-900/20 flex items-center justify-center p-6 sm:p-12 lg:p-16 border-b lg:border-b-0 lg:border-r border-zinc-100 dark:border-zinc-900/60 transition-colors duration-300 z-10 [perspective:1200px]">
+      <div className="relative w-full h-[50vh] lg:h-full bg-zinc-50 dark:bg-zinc-900/20 flex items-center justify-center p-3 sm:p-6 lg:p-8 border-b lg:border-b-0 lg:border-r border-zinc-100 dark:border-zinc-900/60 transition-colors duration-300 z-10 [perspective:1200px]">
         <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-zinc-100/30 dark:to-zinc-950/20 pointer-events-none" />
         
         <AnimatePresence mode="wait" custom={direction}>
@@ -111,23 +111,20 @@ export default function BookDukaResponsiveHero({ heroSlides }: BookDukaHeroProps
             exit={{ opacity: 0, rotateY: direction > 0 ? -45 : 45, z: -100, scale: 0.9 }}
             transition={{ type: "spring", stiffness: 90, damping: 18 }}
             whileHover={{ scale: 1.02, rotateY: -6, transition: { duration: 0.3 } }}
-            className="relative w-[50%] sm:w-[45%] lg:w-[60%] xl:w-[50%] aspect-[3/4] z-10 cursor-grab active:cursor-grabbing [transform-style:preserve-3d]"
+            className="relative w-[85%] sm:w-[75%] lg:w-[85%] xl:w-[80%] h-[85%] max-h-[580px] lg:max-h-[640px] z-10 cursor-grab active:cursor-grabbing [transform-style:preserve-3d]"
           >
             <Image
               src={activeSlide.productImgUrl || activeSlide.imageUrl || defaultSlides[0].imageUrl}
               alt={activeSlide.headline || 'Featured Book Cover'}
               fill
-              className="object-contain drop-shadow-[15px_25px_35px_rgba(0,0,0,0.18)] dark:drop-shadow-[0_20px_50px_rgba(20,184,166,0.12)] select-none pointer-events-none"
+              className="object-contain drop-shadow-[20px_30px_45px_rgba(0,0,0,0.22)] dark:drop-shadow-[0_25px_60px_rgba(20,184,166,0.18)] select-none pointer-events-none"
               loader={loader}
               priority
               unoptimized
             />
             
-            {/* Edge Shadow Mimic (Real Book Spine Illusion) */}
-            {/* <div className="absolute top-0 left-0 bottom-0 w-[4%] bg-gradient-to-r from-black/20 via-black/5 to-transparent pointer-events-none rounded-l-sm" /> */}
-            
             {/* Gesture Overlay HUD for Mobile Screens */}
-            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 lg:hidden opacity-30 select-none pointer-events-none whitespace-nowrap">
+            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1.5 lg:hidden opacity-40 select-none pointer-events-none whitespace-nowrap">
               <ChevronLeftIcon className="w-3.5 h-3.5 animate-pulse" />
               <span className="text-[9px] font-black tracking-[0.2em] uppercase">Swipe Cover</span>
               <ChevronRightIcon className="w-3.5 h-3.5 animate-pulse" />
@@ -137,7 +134,7 @@ export default function BookDukaResponsiveHero({ heroSlides }: BookDukaHeroProps
       </div>
 
       {/* TYPOGRAPHY CONTROL BLOCKS */}
-      <div className="w-full h-auto lg:h-full flex flex-col justify-center px-6 sm:px-12 md:px-16 xl:px-24 py-10 lg:py-0 relative z-20">
+      <div className="w-full h-auto lg:h-full flex flex-col justify-between lg:justify-center px-6 sm:px-12 md:px-16 xl:px-24 pt-8 lg:pt-0 pb-28 sm:pb-32 lg:pb-24 relative z-20">
         <div className="max-w-xl w-full mx-auto lg:mx-0">
           <AnimatePresence mode="wait">
             <motion.div
@@ -185,8 +182,8 @@ export default function BookDukaResponsiveHero({ heroSlides }: BookDukaHeroProps
           </AnimatePresence>
         </div>
 
-        {/* CONTROLS INTERFACE ARCHITECTURE */}
-        <div className="absolute bottom-6 lg:bottom-12 right-6 sm:right-12 lg:right-auto lg:left-16 xl:left-24 flex items-center gap-4 z-30">
+        {/* CONTROLS INTERFACE ARCHITECTURE (NOW POSITIONED SAFELY BELOW BUTTONS) */}
+        <div className="absolute bottom-6 lg:bottom-8 left-6 sm:left-12 lg:left-16 xl:left-24 flex items-center gap-4 z-30">
           <div className="flex bg-zinc-900/90 dark:bg-zinc-100/90 backdrop-blur-md rounded-xl p-1 shadow-lg border border-white/10 dark:border-black/5">
             <button 
               onClick={() => paginate(-1)}

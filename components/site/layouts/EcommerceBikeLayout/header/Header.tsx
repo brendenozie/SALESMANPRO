@@ -92,9 +92,21 @@ export default function Header() {
             </button>
             
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 flex items-center justify-center bg-white rounded-sm transform group-hover:rotate-[15deg] transition-transform duration-300">
-                <span className="text-black font-black italic text-xl">M</span>
-              </div>
+              {logoUrl ? (
+                  <Image
+                    src={logoUrl}
+                    alt={name || 'Store Logo'}
+                    className={`transition-all duration-300 ${scrolled ? 'scale-90' : 'scale-100'} h-20 w-32`}
+                    width={128}
+                    height={80}
+                    loader={imageLoader}
+                  />
+                ) : (
+                  <div className="w-10 h-10 flex items-center justify-center bg-white rounded-sm transform group-hover:rotate-[15deg] transition-transform duration-300">
+                  <span className="text-black font-black italic text-xl">{name?.charAt(0) || 'M'}</span>
+                </div>
+                )}
+              
               <span className="hidden md:block text-white text-2xl font-black italic tracking-tighter uppercase leading-none">
                 {name || 'MAMMOTH'}
               </span>

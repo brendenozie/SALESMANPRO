@@ -48,13 +48,13 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
   const imageUrl = cat.image || cat.category?.image || "https://images.unsplash.com/photo-1595113316349-9fa4ee24f884";
 
   return (
-    <motion.div variants={cardVariants} className="flex-shrink-0 group">
+    <motion.div variants={cardVariants} className="flex-shrink-0 snap-start group">
       <Link
         href={`/bookecommerce/products?category=${cat.categoryId || cat.category?.id || catSlug}`}
-        className="block w-72 md:w-[400px]"
+        className="block w-[260px] sm:w-[320px] md:w-[360px] lg:w-[400px]"
       >
-        <div className="relative aspect-[4/5] overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
-          <span className="absolute top-6 left-6 z-20 font-mono text-[10px] text-white/50 mix-blend-difference uppercase tracking-widest">
+        <div className="relative aspect-[4/5] overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-sm">
+          <span className="absolute top-4 left-4 sm:top-6 sm:left-6 z-20 font-mono text-[9px] sm:text-[10px] text-white/70 mix-blend-difference uppercase tracking-widest">
             Index No. {index < 9 ? `0${index + 1}` : index + 1}
           </span>
 
@@ -67,17 +67,17 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
           />
 
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
-            <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-              <ArrowUpRightIcon className="w-6 h-6 text-black" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-white rounded-full flex items-center justify-center translate-y-4 group-hover:translate-y-0 transition-transform duration-500 shadow-md">
+              <ArrowUpRightIcon className="w-5 h-5 sm:w-6 sm:h-6 text-black" />
             </div>
           </div>
         </div>
 
-        <div className="mt-8 flex justify-between items-baseline">
-          <h3 className="text-2xl md:text-3xl font-serif italic text-zinc-900 dark:text-white">
+        <div className="mt-4 sm:mt-6 md:mt-8 flex justify-between items-baseline gap-2">
+          <h3 className="text-xl sm:text-2xl md:text-3xl font-serif italic text-zinc-900 dark:text-white truncate">
             {cat.displayName}
           </h3>
-          <span className="font-mono text-[10px] text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
+          <span className="font-mono text-[9px] sm:text-[10px] text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors flex-shrink-0">
             ENTER ARCHIVE
           </span>
         </div>
@@ -90,7 +90,7 @@ export default function CategoriesSectionMerged({ store }: { store: StoreForm | 
   const scrollRef = useRef<HTMLDivElement>(null);
   const primaryColor = store?.themeSettings?.primaryColor || '#0D9488';
 
-  /* --- Original Functional Logic --- */
+  /* --- Functional Logic --- */
   const categoriesToShow = useMemo(() => {
     return (store?.StoreCategory ?? [])
       .filter((c) => c.visible ?? true)
@@ -113,7 +113,8 @@ export default function CategoriesSectionMerged({ store }: { store: StoreForm | 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
       const { scrollLeft, clientWidth } = scrollRef.current;
-      const scrollTo = direction === "left" ? scrollLeft - clientWidth / 2 : scrollLeft + clientWidth / 2;
+      const scrollAmount = clientWidth * 0.75;
+      const scrollTo = direction === "left" ? scrollLeft - scrollAmount : scrollLeft + scrollAmount;
       scrollRef.current.scrollTo({ left: scrollTo, behavior: "smooth" });
     }
   };
@@ -121,33 +122,47 @@ export default function CategoriesSectionMerged({ store }: { store: StoreForm | 
   if (categoriesToShow.length === 0) return null;
 
   return (
-    <section className="relative bg-[#FDFDFB] dark:bg-zinc-950 py-32 transition-colors duration-500 overflow-hidden border-t border-zinc-100 dark:border-zinc-900">
+    <section className="relative bg-[#FDFDFB] dark:bg-zinc-950 py-16 sm:py-24 md:py-32 transition-colors duration-500 overflow-hidden border-t border-zinc-100 dark:border-zinc-900">
       
-      <div className="max-w-[1600px] mx-auto px-6 md:px-12 relative z-10">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 md:px-12 relative z-10">
         
         {/* Editorial Header Block */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-24 gap-12">
-          <div className="space-y-6">
-            <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} className="flex items-center gap-4">
-               <div className="p-2 rounded-full border border-zinc-200 dark:border-zinc-800">
-                <SparklesIcon className="h-4 w-4" style={{ color: primaryColor }} />
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 sm:mb-16 md:mb-24 gap-8 md:gap-12">
+          <div className="space-y-3 sm:space-y-6">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }} 
+              whileInView={{ opacity: 1, x: 0 }} 
+              viewport={{ once: true }}
+              className="flex items-center gap-3 sm:gap-4"
+            >
+              <div className="p-1.5 sm:p-2 rounded-full border border-zinc-200 dark:border-zinc-800">
+                <SparklesIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ color: primaryColor }} />
               </div>
-              <span className="font-mono text-[10px] uppercase tracking-[0.5em] text-zinc-400">
+              <span className="font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.35em] sm:tracking-[0.5em] text-zinc-400">
                 {isFew ? "Curated Collections" : "The Seasonal Index"}
               </span>
             </motion.div>
-            <h2 className="text-6xl md:text-9xl font-serif text-zinc-900 dark:text-white leading-[0.8] tracking-tighter">
+
+            <h2 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-serif text-zinc-900 dark:text-white leading-[0.9] sm:leading-[0.8] tracking-tighter whitespace-pre-line">
               {isFew ? "Direct\nIntent" : "Explore\nBy Genre"}
             </h2>
           </div>
 
           {!isFew && (
-            <div className="flex gap-4">
-               <button onClick={() => scroll("left")} className="w-16 h-16 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center hover:bg-zinc-900 dark:hover:bg-white hover:text-white dark:hover:text-black transition-all">
-                <ChevronLeftIcon className="h-6 w-6" />
+            <div className="flex gap-2 sm:gap-4 self-end md:self-auto">
+              <button 
+                onClick={() => scroll("left")} 
+                aria-label="Scroll left"
+                className="w-11 h-11 sm:w-14 sm:h-14 md:w-16 md:h-16 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center hover:bg-zinc-900 dark:hover:bg-white hover:text-white dark:hover:text-black transition-all active:scale-95"
+              >
+                <ChevronLeftIcon className="h-5 w-5 sm:h-6 sm:w-6" />
               </button>
-              <button onClick={() => scroll("right")} className="w-16 h-16 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center hover:bg-zinc-900 dark:hover:bg-white hover:text-white dark:hover:text-black transition-all">
-                <ChevronRightIcon className="h-6 w-6" />
+              <button 
+                onClick={() => scroll("right")} 
+                aria-label="Scroll right"
+                className="w-11 h-11 sm:w-14 sm:h-14 md:w-16 md:h-16 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center hover:bg-zinc-900 dark:hover:bg-white hover:text-white dark:hover:text-black transition-all active:scale-95"
+              >
+                <ChevronRightIcon className="h-5 w-5 sm:h-6 sm:w-6" />
               </button>
             </div>
           )}
@@ -160,40 +175,44 @@ export default function CategoriesSectionMerged({ store }: { store: StoreForm | 
           whileInView="visible"
           viewport={{ once: true }}
           ref={scrollRef}
-          className={`flex overflow-x-auto scrollbar-hide space-x-12 pb-12 ${isFew ? 'lg:justify-start' : ''}`}
+          className={`flex overflow-x-auto snap-x snap-mandatory scrollbar-hide space-x-4 sm:space-x-8 md:space-x-12 pb-8 sm:pb-12 ${isFew ? 'lg:justify-start' : ''}`}
         >
           {categoriesToShow.map((cat, idx) => (
             <CategoryCard key={cat.id || idx} cat={cat} index={idx} />
           ))}
         </motion.div>
 
-        {/* Adaptive Subcategory functionality merged */}
+        {/* Adaptive Subcategory functionality */}
         <AnimatePresence>
           {isFew && subcategoriesForGrid.length > 0 && (
             <motion.div 
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
-              className="mt-32 pt-24 border-t border-zinc-100 dark:border-zinc-800"
+              viewport={{ once: true }}
+              className="mt-16 sm:mt-24 lg:mt-32 pt-12 sm:pt-16 lg:pt-24 border-t border-zinc-100 dark:border-zinc-800"
             >
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
-                <div className="lg:col-span-4 space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 lg:gap-16">
+                <div className="lg:col-span-4 space-y-3 sm:space-y-6">
                   <div className="inline-block px-3 py-1 bg-zinc-100 dark:bg-zinc-900 font-mono text-[9px] uppercase tracking-widest text-zinc-500">
                     Deep Dive
                   </div>
-                  <h4 className="text-4xl font-serif text-zinc-900 dark:text-white">Refine your search within these genres</h4>
+                  <h3 className="text-2xl sm:text-3xl lg:text-4xl font-serif text-zinc-900 dark:text-white leading-snug">
+                    Refine your search within these genres
+                  </h3>
                 </div>
-                <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2">
+
+                <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-x-8 lg:gap-x-12 gap-y-1 sm:gap-y-2">
                   {subcategoriesForGrid.map((sub, idx) => (
-                    <motion.div key={sub.id || idx} variants={cardVariants} className="border-b border-zinc-100 dark:border-zinc-800 py-6 group">
+                    <motion.div key={sub.id || idx} variants={cardVariants} className="border-b border-zinc-100 dark:border-zinc-800 py-4 sm:py-6 group">
                       <Link 
                         href={`/bookecommerce/products?subcategory=${sub.slug || sub.name}`}
                         className="flex items-center justify-between"
                       >
-                        <span className="text-lg font-medium text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
+                        <span className="text-base sm:text-lg font-medium text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
                           {sub.name}
                         </span>
-                        <div className="w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-800 flex items-center justify-center group-hover:bg-zinc-900 dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-black transition-all">
-                           <PlusIcon className="w-4 h-4 transition-transform group-hover:rotate-90" />
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-zinc-200 dark:border-zinc-800 flex items-center justify-center group-hover:bg-zinc-900 dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-black transition-all">
+                          <PlusIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform group-hover:rotate-90" />
                         </div>
                       </Link>
                     </motion.div>

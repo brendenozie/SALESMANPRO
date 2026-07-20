@@ -93,7 +93,7 @@ export default function Header() {
           {/* ===== LOGO ===== */}
           <Link href="/" className="flex items-center gap-2">
             {logoUrl ? (
-              <div className="relative w-10 h-10 overflow-hidden rounded-lg">
+              <div className="relative w-32 h-20 overflow-hidden rounded-lg">
                 <Image
                   src={logoUrl}
                   alt={name || 'Store Logo'}

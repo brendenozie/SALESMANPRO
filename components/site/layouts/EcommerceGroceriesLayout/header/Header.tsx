@@ -72,14 +72,14 @@ export default function Header() {
               <Image
                 src={logoUrl}
                 alt={name || 'Store Logo'}
-                width={120}
-                height={50}
                 className={`transition-all duration-300 ${scrolled ? 'scale-90' : 'scale-100'}  h-20 w-32`}
                 loader={imageLoader}
+                width={128}
+                height={80}
               />
             ) : (
               <span className={`text-2xl font-black tracking-tighter transition-colors ${scrolled ? 'text-gray-900' : 'text-white'}`}>
-                {name?.toUpperCase()}
+                {name?.charAt(0)?.toUpperCase() || 'M'}
               </span>
             )}
           </Link>

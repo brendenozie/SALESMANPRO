@@ -356,7 +356,7 @@ const FeesClient = ({
             >
               <div className="p-6 border-b border-slate-200 dark:border-slate-850 flex flex-col md:flex-row justify-between gap-4 items-center">
                 <div className="relative w-full md:w-96">
-                  <MagnifyingGlassIcon className="h-4.5 w-4.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <MagnifyingGlassIcon className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input 
                     placeholder="Search by student identity parameters..."
                     className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl py-2.5 pl-11 pr-4 text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-slate-400"

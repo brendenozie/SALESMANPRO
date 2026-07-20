@@ -74,7 +74,7 @@ export default function Header() {
           {/* LOGO SECTION - Inspired by image_5f4e43.png */}
           <Link href={`/`} className="flex items-center group">
             {logoUrl ? (
-              <div className="relative h-10 w-32">
+              <div className="relative h-20 w-32">
                 <Image
                   src={logoUrl}
                   alt={name || 'MEERA'}

@@ -98,7 +98,7 @@ export default function PeanutHeader() {
           <Link href={`/`} className="flex items-center group">
             <motion.div whileHover={{ rotate: -5 }} className="relative flex items-center gap-3">
               {logoUrl ? (
-                <div className="w-10 h-10 relative">
+                <div className="w-32 h-20 relative">
                     <Image
                     src={logoUrl}
                     alt={name}
