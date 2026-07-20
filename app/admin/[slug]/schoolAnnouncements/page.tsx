@@ -43,7 +43,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
     const announcementsRes = await fetch(`${apiBaseUrl}/admin/announcements?companyId=${encodeURIComponent(companyId)}`, requestConfig);
     if (announcementsRes.ok) {
       const payload = await announcementsRes.json();
-      initialAnnouncements = (payload?.data || payload) as AnnouncementData[];
+      initialAnnouncements = (payload?.data.data || payload?.data || payload) as AnnouncementData[];
     } else {
       console.warn(`[Announcements Link] Could not retrieve existing announcements. Status code: ${announcementsRes.status}`);
       fetchError = true;
