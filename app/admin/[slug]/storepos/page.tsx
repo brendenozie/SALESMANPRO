@@ -63,21 +63,6 @@ export default async function PosPage({ params, searchParams }: PageProps) {
       // Map marketplace listings to the Product type expected by StorePOSPageClient
       initialProducts = productsData.results ;
       totalPages = productsData.meta?.totalPages || 1;
-    //   meta: {
-    //   companyId,
-    //   totalItems: total,
-    //   totalPages,
-    //   currentPage: page,
-    //   perPage: limit,
-    // },
-        
-      //   || []).map((listing: any) => ({
-      //   id: listing.id, // Use the listing's ID as the product ID for cart tracking
-      //   name: listing.product?.name || 'Unnamed Product',
-      //   description: listing.product?.description || 'No description available.',
-      //   price: listing.price, // Use the listing's specific price
-      //   imageUrl: listing.product?.images?.[0] || 'https://placehold.co/100x100/4B5563/ffffff?text=No+Image', // First image
-      //   stock: listing.quantityAvailable, // Listing's available quantity
       // }));
     } else {
       console.error(`Failed to fetch products: ${productsRes.status} ${productsRes.statusText}`);
