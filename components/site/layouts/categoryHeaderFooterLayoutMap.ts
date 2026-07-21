@@ -185,6 +185,12 @@ const CompanyPortfolioLayout = dynamic(
     ),
   );
 
+const CompanyPortfolioLightLayout = dynamic(
+    () => import(
+      "@/components/site/layouts/CompanyPortfolioLightLayout/CompanyPortfolioLightLayout"
+    ),
+  );
+
 const EcommerceAccessoriesLayout = dynamic(
   () =>
     import(
@@ -308,6 +314,7 @@ const categoryHeaderFooterLayoutMap: Record<
   barbershop: BarbershopBookingsLayout,
   drycleaning: DrycleaningBookingsLayout,
   "company portfolio": CompanyPortfolioLayout,
+  "company portfolio light": CompanyPortfolioLightLayout,
   "automotive store": EcommerceAccessoriesLayout,
 
   other: DefaultLayout,

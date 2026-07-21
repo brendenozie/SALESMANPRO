@@ -134,6 +134,7 @@ export const folderMap: Record<string, string> = {
   other: "DefaultLayout",
   "general-purpose-site": "DefaultLayout",
   "company-portfolio": "CompanyPortfolioLayout",
+  "company-portfolio-light": "CompanyPortfolioLightLayout",
   "automotive-store": "EcommerceAccessoriesLayout",
 };
 
@@ -191,6 +192,7 @@ export const siteComponentNameMap: Record<string, string> = {
   FashionLayout: "FashionSite",
   DefaultLayout: "DefaultSite",
   CompanyPortfolioLayout: "CompanyPortfolioSite",
+  CompanyPortfolioLightLayout: "CompanyPortfolioLightSite",
   EcommerceAccessoriesLayout: "EcommerceAccessoriesSite", 
 };
 

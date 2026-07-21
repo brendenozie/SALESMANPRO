@@ -55,6 +55,7 @@ import DrycleaningBookingsSite from './layouts/DrycleaningBookingsLayout/body/Dr
 import PropertyManagementSite from './layouts/PropertyManagementLayout/body/PropertyManagementSite';
 import CompanyPortfolioSite from './layouts/CompanyPortfolioLayout/body/CompanyPortfolioSite';
 import EcommerceAccessoriesSite from './layouts/EcommerceAccessoriesLayout/body/EcommerceAccessoriesSite';
+import CompanyPortfolioLightSite from './layouts/CompanyPortfolioLightLayout/body/CompanyPortfolioLightSite';
 
 // A single, clean map from component name to the component itself.
 export const BodyComponentMap: Record<string, React.ComponentType<{ pageData: StoreForm; companyId: string; paymentMethods: PublicPaymentMethod[] }>> = {
@@ -85,6 +86,7 @@ export const BodyComponentMap: Record<string, React.ComponentType<{ pageData: St
   'RealEstateSite': RealEstateSite,
   'PropertyManagementSite': PropertyManagementSite,
   'CompanyPortfolioSite': CompanyPortfolioSite,
+  'CompanyPortfolioLightSite': CompanyPortfolioLightSite,
   'BlogSite': BlogSite,
   'CoursesSite': CoursesSite,
   'CoursesSite2': CoursesSite2,
